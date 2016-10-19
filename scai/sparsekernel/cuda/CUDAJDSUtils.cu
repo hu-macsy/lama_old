@@ -183,45 +183,45 @@ void CUDAJDSUtils::getRow(
 
 template<typename ValueType, typename OtherValueType>
 __global__
-void scaleValueKernel(
+void scaleRowsKernel(
+    ValueType* jdsValues,
     const IndexType numRows,
     const IndexType* perm,
     const IndexType* ilg,
     const IndexType* dlg,
-    ValueType* mValues,
-    const OtherValueType* values )
+    const OtherValueType* rowValues )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numRows )
     {
         IndexType offset = i;
-        OtherValueType value = values[perm[i]];
+        ValueType rowScale = static_cast<ValueType>( rowValues[perm[i]] );
 
         for ( IndexType j = 0; j < ilg[i]; j++ )
         {
-            mValues[offset] *= static_cast<ValueType>( value );
+            jdsValues[offset] *= rowScale;
             offset += dlg[j];
         }
     }
 }
 
 template<typename ValueType, typename OtherValueType>
-void CUDAJDSUtils::scaleValue(
+void CUDAJDSUtils::scaleRows(
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    ValueType mValues[],
-    const OtherValueType values[] )
+    const OtherValueType rowValues[] )
 {
     SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
     SCAI_CHECK_CUDA_ACCESS
     const int blockSize = CUDASettings::getBlockSize();
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-    scaleValueKernel <<< dimGrid, dimBlock>>>( numRows, perm, ilg, dlg, mValues, values );
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleValueKernel FAILED" )
+    scaleRowsKernel <<< dimGrid, dimBlock>>>( jdsValues, numRows, perm, ilg, dlg, rowValues );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS:scaleRowsKernel FAILED" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -381,26 +381,6 @@ IndexType CUDAJDSUtils::ilg2dlg(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  sortRows                                                          */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void CUDAJDSUtils::sortRows( IndexType array[], IndexType perm[], const IndexType n )
-{
-    SCAI_REGION( "CUDA.JDS:sortRows" )
-    SCAI_LOG_INFO( logger, "sort " << n << " rows by sizes" )
-
-    if ( n > 1 )
-    {
-        SCAI_CHECK_CUDA_ACCESS
-        thrust::device_ptr<IndexType> array_d( array );
-        thrust::device_ptr<IndexType> perm_d( perm );
-        // stable sort, descending order, so override default comparison
-        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<IndexType>() );
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: synchronize for sortRows FAILED" )
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  setCSRValues                                                      */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -507,25 +487,6 @@ void CUDAJDSUtils::setCSRValues(
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "csr2jdsKernel failed" );
     SCAI_LOG_INFO( logger, "Ready csr2jds_kernel<" << TypeTraits<JDSValueType>::id()
                    << ", " << TypeTraits<CSRValueType>::id() << " )" )
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-/*                                                  setInversePerm                                                    */
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void CUDAJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
-    SCAI_CHECK_CUDA_ACCESS
-
-    if ( n > 0 )
-    {
-        thrust::device_ptr<IndexType> inversePermPtr( const_cast<IndexType*>( inversePerm ) );
-        thrust::device_ptr<IndexType> permPtr( const_cast<IndexType*>( perm ) );
-        thrust::counting_iterator<IndexType> sequence( 0 );
-        thrust::scatter( sequence, sequence + n, permPtr, inversePermPtr );
-        SCAI_CHECK_CUDA_ERROR
-    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -2651,8 +2612,6 @@ void CUDAJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kern
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_INFO( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag << "]" )
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
 }
@@ -2678,7 +2637,7 @@ void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
                      << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }

@@ -75,7 +75,8 @@ struct JDSKernelTrait
         }
     };
 
-    /** Structure with type definitions for solver routines */
+    /** Structure with trait for jacobi iterate on halo for JDS storage */
+
     template<typename ValueType>
     struct jacobiHalo
     {
@@ -97,59 +98,6 @@ struct JDSKernelTrait
         static const char* getId()
         {
             return "JDS.jacobiHalo";
-        }
-    };
-
-    struct sortRows
-    {
-        /** Stable sorting of values in array in descending order.
-         *
-         *  @param[in,out] array are the values to be sorted
-         *  @param[in,out] perm, where perm[i] has the value of the original position
-         *  @param[in]    n is the number of values to be sorted
-         *
-         *  \code
-         *           array =   1  4   1  8  5  7
-         *           perm  =   0  1   2  3  4  5
-         +
-         *           array =   8  7   5  4  1  1
-         *           perm  =   3  5   4  1  0  2
-         *  \endcode
-         */
-
-        typedef void ( *FuncType ) ( IndexType array[],
-                                     IndexType perm[],
-                                     const IndexType n );
-
-        static const char* getId()
-        {
-            return "JDS.sortRows";
-        }
-    };
-
-    struct setInversePerm
-    {
-        /** Compute the inverse permutation for a given permutation.
-         *
-         *  inversePerm [ perm [i] ] == i , 0 <= i < n
-         *
-         *  @param[out] inversePerm, size = n, will contain the inverse permutation
-         *  @param[in] perm, size = n, is input permuation of 0, ..., n-1
-         *  @param[in] n specifies the size of perm and inversePerm
-         *
-         *  /code
-         *       perm      2  5  1  4  6  3  0
-         *     inperm      6  2  0  5  3  1  4
-         *  /endcode
-         */
-
-        typedef void ( *FuncType ) ( IndexType inversePerm[],
-                                     const IndexType perm[],
-                                     const IndexType n );
-
-        static const char* getId()
-        {
-            return "JDS.setInversePerm";
         }
     };
 
@@ -395,18 +343,27 @@ struct JDSKernelTrait
     };
 
     template<typename ValueType, typename OtherValueType>
-    struct scaleValue
+    struct scaleRows
     {
-        typedef void ( *FuncType ) ( const IndexType numRows,
+        /** This method scales each row of the matrix with a certain value 
+         *
+         * @param[in]     numRows    is the number of rows
+         * @param[in]     perm       perm[i] is the original position of row i
+         * @param[in]     ilg        ilg[i] number of entries in row i
+         * @param[in]     dlg        diagonals 
+         * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
+         * @param[in]     rowValues  rowvalues[i] is used to scale row i
+         */
+        typedef void ( *FuncType ) ( ValueType jdsValues[],
+                                     const IndexType numRows,
                                      const IndexType perm[],
                                      const IndexType ilg[],
                                      const IndexType dlg[],
-                                     ValueType mValues[],
-                                     const OtherValueType values[] );
+                                     const OtherValueType rowValues[] );
 
         static const char* getId()
         {
-            return "JDS.scaleValue";
+            return "JDS.scaleRows";
         }
     };
 

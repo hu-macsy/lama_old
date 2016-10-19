@@ -59,21 +59,21 @@ class COMMON_DLL_IMPORTEXPORT CUDAUtils
 {
 public:
 
-    /*  CUDA implementation of UtilKernelTrait::validIndexes  */
+    /** CUDA implementation of UtilKernelTrait::validIndexes  */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /*  CUDA implementation of UtilKernelTrait::reduce  */
+    /** CUDA implementation of UtilKernelTrait::reduce  */
 
     template<typename ValueType>
     static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
 
-    /*  CUDA implementation of UtilKernelTrait::setVal  */
+    /** CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
-    /*  CUDA implementation of UtilKernelTrait::setOrder  */
+    /** CUDA implementation of UtilKernelTrait::setOrder  */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
@@ -83,17 +83,17 @@ public:
     template<typename ValueType>
     static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
 
-    /*  CUDA implementation of UtilKernelTrait::getValue  */
+    /** CUDA implementation of UtilKernelTrait::getValue  */
 
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 
-    /** CUDA function implements UtilKernelTrait::absMaxVal */
+    /** CUDA implementation UtilKernelTrait::absMaxVal */
 
     template<typename ValueType>
     static ValueType absMaxVal( const ValueType array[], const IndexType n );
 
-    /** CUDA function implements UtilKernelTrait::absMaxDiffVal */
+    /** CUDA implementation UtilKernelTrait::absMaxDiffVal */
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
@@ -114,27 +114,27 @@ public:
     static void setSection( ValueType out[], const IndexType inc_out, 
                             const otherValueType in[], const IndexType inc_in, const IndexType n, const binary::BinaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::applyUnaryOp */
+    /** CUDA implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void applyUnaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::applyBinaryOp */
-
-    template<typename ValueType>
-    static void applyBinaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::applyBinaryOpScalar1 */
+    /** CUDA implementation for UtilKernelTrait::binaryOp */
 
     template<typename ValueType>
-    static void applyBinaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::applyBinaryOpScalar2 */
+    /** CUDA implementation for UtilKernelTrait::binaryOpScalar1 */
 
     template<typename ValueType>
-    static void applyBinaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
+    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::setGather, out[i]] = in[ indexes[i] ] */
+    /** CUDA implementation for UtilKernelTrait::binaryOpScalar2 */
+
+    template<typename ValueType>
+    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
+
+    /** CUDA implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType, typename otherValueType>
     static void setGather( 
@@ -144,12 +144,17 @@ public:
         const utilskernel::binary::BinaryOp op,
         const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::setScatter, out[ indexes[i] ] op= in [i] */
+    /** CUDA implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType, typename otherValueType>
-    static void setScatter( ValueType out[], const IndexType indexes[], const otherValueType in[], const binary::BinaryOp op, const IndexType n );
+    static void setScatter( 
+        ValueType out[], 
+        const IndexType indexes[], 
+        const otherValueType in[], 
+        const binary::BinaryOp op, 
+        const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::scatterVal */
+    /** CUDA implementation for UtilKernelTrait::scatterVal */
 
     template<typename ValueType>
     static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
@@ -162,14 +167,18 @@ public:
     /** CUDA implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void sort( ValueType array[], IndexType perm[], const IndexType n );
+    static void sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
 
-    /** OpenMP implementation of UtilsKernelTrait::countNonZeros */
+    /** CUDA implementation for UtilKernelTrait::setInversePerm */
+
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
+
+    /** CUDA implementation of UtilKernelTrait::countNonZeros */
 
     template<typename ValueType>
     static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
 
-    /** OpenMP implementation of UtilsKernelTrait::compress */
+    /** CUDA implementation of UtilKernelTrait::compress */
 
     template<typename ValueType>
     static IndexType compress(

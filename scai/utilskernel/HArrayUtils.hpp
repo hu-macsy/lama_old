@@ -231,6 +231,7 @@ public:
      *  @param sourceStride is the stride used in source array
      *  @param n is the number of elements to set
      *  @param op specifies how to combine old and new value
+     *  @param context is the preferred context where option is done
      */
 
     template<typename TargetValueType, typename SourceValueType>
@@ -303,8 +304,8 @@ public:
 
     template<typename ValueType>
     static void unaryOp(
-        hmemo::HArray<ValueType>& out,
-        const hmemo::HArray<ValueType>& in,
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
         const unary::UnaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -348,7 +349,7 @@ public:
      *  @param[in]  op      specifies operation to apply on input values
      *  @param[in]  prefLoc location where operation should be done if possible
      *
-     *  Note: this operation is different to binaryOpScalar1( y, x) if op is not commutative
+     *  Note: this operation is different to binaryOpScalar1( result, y, x, loc ) if op is not commutative
      */
     template<typename ValueType>
     static void binaryOpScalar2(
@@ -398,17 +399,20 @@ public:
 
     /** Sort an array of values
      *
-     *  @param[in,out] array is the array of values to be sorted
-     *  @param[out] perm is the permutation that gives the sorted array
-     *  @param[in] prefLoc is the preferred context where computation should be done
+     *  @param[in,out] array      is the array of values to be sorted
+     *  @param[out]    perm       is the permutation that gives the sorted array
+     *  @param[in]     ascending  sort ascending (true) or descending (false)
+     *  @param[in]     prefLoc    is the preferred context where computation should be done
      * 
      *  Note: array_out = array_in[ perm ]
-     *
-     *  ToDo: ascending or descending, why no choice
      */
 
     template<typename ValueType>
-    static void sort( hmemo::HArray<ValueType>& array, hmemo::HArray<IndexType>& perm, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void sort( 
+        hmemo::HArray<ValueType>& array, 
+        hmemo::HArray<IndexType>& perm, 
+        const bool ascending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Bucket sort of an array with integer values
      *

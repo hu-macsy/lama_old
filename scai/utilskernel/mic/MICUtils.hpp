@@ -60,26 +60,26 @@ class COMMON_DLL_IMPORTEXPORT MICUtils
 {
 public:
 
-    /*  This method is an implementation of UtilKernelTrait::validIndexes */
+    /** MIC implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /** MIC implementation for UtilKernelTrait::Reductions::reduce */
+    /** MIC implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
     static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::Setter::setVal */
+    /** MIC implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::Setter::setOrder */
+    /** MIC implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
-    /** MIC implementation for UtilKernelTrait::Setter::setSequence */
+    /** MIC implementation for UtilKernelTrait::setSequence */
 
     template<typename ValueType>
     static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
@@ -99,10 +99,12 @@ public:
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
+    /** MIC implementation for UtilKernelTrait::set */
+
     template<typename ValueType1, typename ValueType2>
     static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::setGather, out[i]] op = in[ indexes[i] ] */
+    /** MIC implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType, typename otherValueType>
     static void setGather(
@@ -112,33 +114,35 @@ public:
         const utilskernel::binary::BinaryOp op,
         const IndexType n );
 
-    /** Set out[ indexes[i] ] = in [i] */
+    /** MIC implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType1, typename ValueType2>
     static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const binary::BinaryOp op, const IndexType n );
 
+    /** MIC implementation for UtilKernelTrait::scatterVal */
+
     template<typename ValueType>
     static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
 
-    /** MIC implementation for UtilKernelTrait::applyUnaryOp */
+    /** MIC implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void applyUnaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::applyBinaryOp */
-
-    template<typename ValueType>
-    static void applyBinaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
-
-    /** MIC implementation for UtilKernelTrait::applyBinaryOpScalar1 */
+    /** MIC implementation for UtilKernelTrait::binaryOp */
 
     template<typename ValueType>
-    static void applyBinaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::applyBinaryOpScalar2 */
+    /** MIC implementation for UtilKernelTrait::binaryOpScalar1 */
 
     template<typename ValueType>
-    static void applyBinaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
+    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+
+    /** MIC implementation for UtilKernelTrait::binaryOpScalar2 */
+
+    template<typename ValueType>
+    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
 
 protected:
 

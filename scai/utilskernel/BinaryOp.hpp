@@ -66,17 +66,17 @@ struct binary
 
     typedef enum
     {
-        COPY,         // for assign   x = y
-        ADD,          // for operator x += y
-        SUB,          // for operator x -= y
-        MULT,         // for operator x *= y
-        DIVIDE,       // for operator x /= y
-        MIN,          // for operator x = min( x, y )
-        MAX,          // for operator x = max( x, y )
-        ABS_MAX,      // for operator x = max( x, abs(y) )
-        POW,          // for operator x = pow( x, y )
-        COPY_SIGN,    // for operator x = magnitude(x), sign(y)
-        MAX_BINARY_OP // for internal use only
+        COPY,         //!< for assign   x = y
+        ADD,          //!< for operator x += y
+        SUB,          //!< for operator x -= y
+        MULT,         //!< for operator x *= y
+        DIVIDE,       //!< for operator x /= y
+        MIN,          //!< for operator x = min( x, y )
+        MAX,          //!< for operator x = max( x, y )
+        ABS_MAX,      //!< for operator x = max( x, abs(y) )
+        POW,          //!< for operator x = pow( x, y )
+        COPY_SIGN,    //!< for operator x = magnitude(x), sign(y)
+        MAX_BINARY_OP //!< for internal use only
     } BinaryOp;
 
 };

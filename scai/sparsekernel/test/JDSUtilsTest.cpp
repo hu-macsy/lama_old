@@ -180,12 +180,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
     ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<JDSKernelTrait::scaleValue<ValueType, OtherValueType> > scaleValue;
-    ContextPtr loc = Context::getContextPtr( scaleValue.validContext( testContext->getType() ) );
+    KernelTraitContextFunction<JDSKernelTrait::scaleRows<ValueType, OtherValueType> > scaleRows;
+    ContextPtr loc = Context::getContextPtr( scaleRows.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     ValueType valuesValues[] = { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
     IndexType valuesDlg[]    = { 3, 3, 3, 3, 2, 1 };
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleValueTest, ValueType, scai_numeric_test_type
         ReadAccess<OtherValueType> rDiagonal( diagonal, loc );
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        scaleValue[loc->getType()]( numRows, rPerm.get(), rIlg.get(), rDlg.get(), wValues.get(), rDiagonal.get() );
+        scaleRows[loc->getType()]( wValues.get(), numRows, rPerm.get(), rIlg.get(), rDlg.get(), rDiagonal.get() );
     }
     {
         ReadAccess<ValueType> rValues( values );
@@ -338,99 +338,6 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
         for ( IndexType i = 0; i < numDiagonals; i++ )
         {
             BOOST_CHECK_EQUAL( expectedValues[i], rDlg.get()[i] );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( sortRowsTest )
-{
-    ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<JDSKernelTrait::sortRows> sortRows;
-    ContextPtr loc = Context::getContextPtr( sortRows.validContext( testContext->getType() ) );
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    {
-        IndexType valuesIlg[] =
-        { 5, 2, 4, 4, 2, 7 };
-        const IndexType nIlg = sizeof( valuesIlg ) / sizeof( IndexType );
-        IndexType valuesPerm[] =
-        { 0, 1, 2, 3, 4, 5 };
-        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-        IndexType expectedIlg[] =
-        { 7, 5, 4, 4, 2, 2 };
-        IndexType expectedPerm[] =
-        { 5, 0, 2, 3, 1, 4 };
-        const IndexType numRows = 6;
-        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-        HArray<IndexType> ilg( nIlg, valuesIlg, testContext );
-        {
-            WriteAccess<IndexType> wPerm( perm, loc );
-            WriteAccess<IndexType> wIlg( ilg, loc );
-            SCAI_CONTEXT_ACCESS( loc );
-            sortRows[loc->getType()]( wIlg.get(), wPerm.get(), numRows );
-        }
-        ReadAccess<IndexType> rIlg( ilg );
-        ReadAccess<IndexType> rPerm( perm );
-
-        for ( IndexType i = 0; i < numRows; i++ )
-        {
-            BOOST_CHECK_EQUAL( expectedIlg[i], rIlg.get()[i] );
-            BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
-        }
-    }
-    {
-        const IndexType numRows = 0;
-        HArray<IndexType> perm( numRows );
-        HArray<IndexType> ilg( numRows );
-        {
-            WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
-            WriteOnlyAccess<IndexType> wIlg( ilg, loc, numRows );
-            SCAI_CONTEXT_ACCESS( loc );
-            sortRows[loc->getType()]( wIlg.get(), wPerm.get(), numRows );
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-BOOST_AUTO_TEST_CASE( setInversePermTest )
-{
-    ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<JDSKernelTrait::setInversePerm> setInversePerm;
-    ContextPtr loc = Context::getContextPtr( setInversePerm.validContext( testContext->getType() ) );
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
-    {
-        IndexType valuesPerm[] =
-        { 5, 0, 2, 3, 1, 4 };
-        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-        IndexType expectedPerm[] =
-        { 1, 4, 2, 3, 5, 0 };
-        const IndexType numRows = 6;
-        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-        HArray<IndexType> inversePerm;  // will be allocated/used on loc
-        {
-            ReadAccess<IndexType> rPerm( perm, loc );
-            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
-            SCAI_CONTEXT_ACCESS( loc );
-            setInversePerm[loc->getType()]( wInversePerm.get(), rPerm.get(), numRows );
-        }
-        ReadAccess<IndexType> rInversePerm( inversePerm );
-
-        for ( IndexType i = 0; i < numRows; i++ )
-        {
-            BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
-        }
-    }
-    {
-        const IndexType numRows = 0;
-        HArray<IndexType> perm( numRows );
-        HArray<IndexType> inversePerm( numRows );
-        {
-            ReadAccess<IndexType> rPerm( perm, loc );
-            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
-            SCAI_CONTEXT_ACCESS( loc );
-            setInversePerm[loc->getType()]( wInversePerm.get(), rPerm.get(), numRows );
         }
     }
 }
