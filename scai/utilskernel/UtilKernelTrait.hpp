@@ -113,26 +113,6 @@ struct UtilKernelTrait
     };
 
     template <typename ValueType>
-    struct copysign
-    {
-        /** @brief Composes a floating point value with the magnitude of x and the sign of y
-         *
-         *  @param x[out] result array
-         *  @param x[in]  first array giving the magnitude of the result vector
-         *  @param y[in]  second array giving the sign of the result vector
-         *  @param n      size of the arrays
-         *
-         *  Function is helpful to compute maximum norm for vectors and matrices
-         */
-
-        typedef void ( *FuncType ) ( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
-        static const char* getId()
-        {
-            return "Util.copysign";
-        }
-    };
-
-    template <typename ValueType>
     struct isSorted
     {
         /** @brief Predicate that tests whether a sequene is sorted.
@@ -140,9 +120,10 @@ struct UtilKernelTrait
          *  @param[in] array values to be checked
          *  @param[in] n number of values to check
          *  @param[in] ascending if true check for ascending order, otherwise for descending
+         *  @returns true iff \f$ a[i] \le a[i+1] \f$ (ascending=true) or \f$ a[i] \ge a[i+1] \f$ (ascending=false)
          */
 
-        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, bool ascending );
+        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const bool ascending );
         static const char* getId()
         {
             return "Util.isSorted";
@@ -229,7 +210,7 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct applyUnaryOp
+    struct unaryOp
     {
         /** Apply unary op sin/cos/sqrt/... function elementwise on vector
          *  This routine can also be used for aliased arrays, i.e. in == out
@@ -243,16 +224,22 @@ struct UtilKernelTrait
 
         static const char* getId()
         {
-            return "Util.applyUnaryOp";
+            return "Util.unaryOp";
         }
     };
 
     template<typename ValueType>
-    struct applyBinaryOp
+    struct binaryOp
     {
         /** Apply binary op ADD, MULT, POW, COPY_SIGN, ... on array with one given numeric type. 
          *  This routine can also be used for aliased arrays, i.e. in1 == out or in2 == out
          *  This method can only be used for numeric types, not for IndexType
+         *
+         *  @param[out] out array with output values
+         *  @param[in]  in1 array with input values
+         *  @param[in]  in2 array with input values
+         *  @param[in]  n   number of elements
+         *  @param[in]  op  binary operation to be applied
          */
         typedef void ( *FuncType ) ( 
             ValueType out[], 
@@ -263,16 +250,22 @@ struct UtilKernelTrait
 
         static const char* getId()
         {   
-            return "Util.applyBinaryOp";
+            return "Util.binaryOp";
         }
     };
 
     template<typename ValueType>
-    struct applyBinaryOpScalar1
+    struct binaryOpScalar1
     {
-        /** Same as applyBinaryOp but first operand is only a scalar
+        /** Same as binaryOp but first operand is only a scalar
          *
          *  This operation is only available for numeric types, not for IndexType
+         *
+         *  @param[out] out   array with output values
+         *  @param[in]  value scalar value as first argument
+         *  @param[in]  in    array with values for second argument
+         *  @param[in]  n     number of elements
+         *  @param[in]  op    binary operation to be applied
          */
         typedef void ( *FuncType ) (
             ValueType out[],
@@ -283,14 +276,14 @@ struct UtilKernelTrait
 
         static const char* getId()
         {
-            return "Util.applyBinaryOpScalar1";
+            return "Util.binaryOpScalar1";
         }
     };
 
     template<typename ValueType>
-    struct applyBinaryOpScalar2
+    struct binaryOpScalar2
     {
-        /** Same as applyBinaryOp but 2nd arg of the input arrays is just a scalar value 
+        /** Same as binaryOp but 2nd arg of the input arrays is just a scalar value 
          *
          *  This operation is only available for numeric types, not for IndexType
          */
@@ -303,7 +296,7 @@ struct UtilKernelTrait
 
         static const char* getId()
         {
-            return "Util.applyBinaryOpScalar2";
+            return "Util.binaryOpScalar2";
         }
     };
 
@@ -444,7 +437,8 @@ struct UtilKernelTrait
          *
          *  @param[in,out] array are the values to be sorted
          *  @param[in,out] perm, where perm[i] has the value of the original position
-         *  @param[in]    n is the number of values to be sorted
+         *  @param[in]     n is the number of values to be sorted
+         *  @param[in]     ascending if true sort in ascending order, descending otherwise
          *
          *  \code
          *           array =   1  4   1  8  5  7
@@ -458,7 +452,7 @@ struct UtilKernelTrait
          *        sorting might be more efficient with countBuckets, sortInBuckets
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n );
+        typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
 
         static const char* getId()
         {
@@ -520,6 +514,32 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Utils.sortInBuckets";
+        }
+    };
+
+    struct setInversePerm
+    {
+        /** Compute the inverse permutation for a given permutation.
+         *
+         *  inversePerm [ perm [i] ] == i , 0 <= i < n
+         *
+         *  @param[out] inversePerm, size = n, will contain the inverse permutation
+         *  @param[in] perm, size = n, is input permuation of 0, ..., n-1
+         *  @param[in] n specifies the size of perm and inversePerm
+         *
+         *  /code
+         *       perm      2  5  1  4  6  3  0
+         *     inperm      6  2  0  5  3  1  4
+         *  /endcode
+         */
+
+        typedef void ( *FuncType ) ( IndexType inversePerm[],
+                                     const IndexType perm[],
+                                     const IndexType n );
+
+        static const char* getId()
+        {
+            return "Utils.setInversePerm";
         }
     };
 

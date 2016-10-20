@@ -253,15 +253,16 @@ IndexType MICJDSUtils::getValuePosCol(
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType, typename OtherValueType>
-void MICJDSUtils::scaleValue(
+void MICJDSUtils::scaleRows(
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType jdsPerm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    ValueType jdsValues[],
     const OtherValueType values[] )
 {
-    SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "scaleRows, #rows = " << numRows )
+
     int device = MICContext::getCurrentDevice();
     const void* jdsPermPtr = jdsPerm;
     const void* ilgPtr = ilg;
@@ -281,11 +282,11 @@ void MICJDSUtils::scaleValue(
         for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType offset = i;
-            OtherValueType scalar = values[jdsPerm[i]];
+            ValueType scaleRow = static_cast<ValueType>( values[jdsPerm[i]] );
 
             for ( IndexType jj = 0; jj < ilg[i]; jj++ )
             {
-                jdsValues[offset] *= static_cast<ValueType>( scalar );
+                jdsValues[offset] *= scaleRow;
                 offset += dlg[jj];
             }
         }
@@ -360,127 +361,6 @@ bool MICJDSUtils::checkDiagonalProperty(
     }
 
     return diagonalProperty;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void MICJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
-    void* inversePermPtr = inversePerm;
-    const void* permPtr = perm;
-    // Parallel execution is safe as perm does not contain a value twice
-    int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ) in( permPtr, inversePermPtr, n )
-    {
-        IndexType* inversePerm = reinterpret_cast<IndexType*>( inversePermPtr );
-        const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
-
-        #pragma omp parallel for
-        for ( IndexType ii = 0; ii < n; ii++ )
-        {
-            IndexType i = perm[ii];
-            inversePerm[i] = ii;
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void MICJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexType n )
-{
-    void* ilgPtr = ilg;
-    void* permPtr = perm;
-    int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ) in( ilgPtr, permPtr, n )
-    {
-        IndexType* ilg = reinterpret_cast<IndexType*>( ilgPtr );
-        IndexType* perm = reinterpret_cast<IndexType*>( permPtr );
-        // Help array needed, because bucket sort cannot be done in-place
-        IndexType* input = new IndexType[n];
-        // Open: can this routine be called where perm is a valid permutation as input
-        #pragma omp parallel for
-
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            input[i] = perm[i];
-        }
-
-        // The number of buckets is determined by the max value of ilg
-        IndexType maxBucket = 0;
-        #pragma omp parallel
-        {
-            IndexType threadMax = 0;
-            #pragma omp for
-
-            for ( IndexType i = 0; i < n; ++i )
-            {
-                if ( ilg[i] > threadMax )
-                {
-                    threadMax = ilg[i];
-                }
-            }
-
-            #pragma omp critical
-            {
-                if ( threadMax > maxBucket )
-                {
-                    maxBucket = threadMax;
-                }
-            }
-        }
-        // longest row = maxBucket, but rows with length 0 is possible too!
-        IndexType* bucket = new IndexType[maxBucket + 1];
-
-        for ( IndexType i = 0; i <= maxBucket; i++ )
-        {
-            bucket[i] = 0;
-        }
-
-        // counts how many diagonals exist for each possible length
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            bucket[ilg[i]]++;
-        }
-
-        // use now bucket array for finding right offsets
-        // diag length:                 0   1   2   3   4   5
-        // number of (now in bucket):   3   4   3   5   1   5
-        // becomes (end of first for): 18  14  11   6   5   0
-        // later (end of second for):  21  18  14  11   6   5
-        IndexType total = 0;
-
-        for ( IndexType i = maxBucket; i >= 0; i-- )
-        {
-            IndexType cnt = bucket[i];
-            bucket[i] = total;
-            total += cnt;
-        }
-
-        // now we can build the new perm array
-        // diagonals with same lengths are moved to position bucket[b] upwards
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            IndexType b = ilg[i];
-            perm[bucket[b]++] = input[i];
-        }
-
-        // reorganize of ilg has to wait until after filling of perm array is finished
-        total = 0;
-
-        for ( IndexType i = maxBucket; i >= 0; i-- )
-        {
-            for ( IndexType k = total; k < bucket[i]; k++ )
-            {
-                ilg[k] = i;
-            }
-
-            total = bucket[i];
-        }
-
-        delete[] bucket;
-        delete[] input;
-    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -702,7 +582,7 @@ void MICJDSUtils::normalGEMV(
     else
     {
         // result = beta * y
-        MICUtils::applyBinaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+        MICUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
     }
 
     if ( ndlg == 0 )
@@ -928,8 +808,6 @@ void MICJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Kerne
 
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: untyped routines" )
 
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
@@ -958,7 +836,7 @@ void MICJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kre
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
                              common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );

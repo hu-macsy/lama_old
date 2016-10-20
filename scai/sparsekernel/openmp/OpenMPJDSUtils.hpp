@@ -59,18 +59,18 @@ class COMMON_DLL_IMPORTEXPORT OpenMPJDSUtils
 {
 public:
 
-    /** This method scales the matrix using an value vector */
+    /** Implementation for JDSKernelTrait::scaleRows */
 
     template<typename ValueType, typename OtherValueType>
-    static void scaleValue(
+    static void scaleRows(
+        ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        ValueType mValues[],
-        const OtherValueType values[] );
+        const OtherValueType rowValues[] );
 
-    /** This method sets row as dens vector of the i'th row of the matrix */
+    /** Implementation for JDSKernelTrait::getRow */
 
     template<typename ValueType, typename OtherValueType>
     static void getRow(
@@ -83,6 +83,8 @@ public:
         const IndexType dlg[],
         const IndexType ja[],
         const ValueType values[] );
+
+    /** Implementation for JDSKernelTrait::setRow */
 
     template<typename ValueType, typename OtherValueType>
     static void setRow(
@@ -120,7 +122,7 @@ public:
         const IndexType perm[],
         const IndexType ja[] );
 
-    /** This method checks if the matrix has diagonal property */
+    /** Implementation for JDSKernelTrait::checkDiagonalProperty */
 
     static bool checkDiagonalProperty(
         const IndexType numDiagonals,
@@ -130,15 +132,7 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** Bucket sort for row sorting */
-
-    static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
-
-    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
-
-    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
-
-    /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
+    /** Implementation for JDSKernelTrait::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
@@ -146,7 +140,7 @@ public:
         const IndexType ilg[],
         const IndexType numRows );
 
-    /** Conversion of JDS to CSR as specified in JDSUtilKernelTrait::Conversions::getCSRValues  */
+    /** Implementation for JDSKernelTrait::getCSRValues */
 
     template<typename JDSValueType, typename CSRValueType>
     static void getCSRValues(
@@ -160,7 +154,7 @@ public:
         const IndexType jdsJA[],
         const JDSValueType jdsValues[] );
 
-    /** Conversion of CSR to JDS as specified in JDSUtilKernelTrait::Conversions::setCSRValues. */
+    /** Implementation for JDSKernelTrait::setCSRValues */
 
     template<typename JDSValueType, typename CSRValueType>
     static void setCSRValues(
@@ -175,7 +169,7 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEMV with OpenMP on Host */
+    /** OpenMP implementation for JDSUtilKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -192,7 +186,7 @@ public:
         const IndexType jdsJA[],
         const ValueType jdsValues[] );
 
-    /** Implementation for JDSUtilKernelTrait::Mult:normalGEVM with OpenMP on Host */
+    /** OpenMP implementation for JDSUtilKernelTrait::normalGEVM  */
 
     template<typename ValueType>
     static void normalGEVM(
@@ -209,6 +203,8 @@ public:
         const IndexType jdsJA[],
         const ValueType jdsValues[] );
 
+    /** OpenMP implementation for JDSUtilKernelTrait::jacobi  */
+
     template<typename ValueType>
     static void jacobi(
         ValueType solution[],
@@ -222,6 +218,8 @@ public:
         const ValueType oldSolution[],
         const ValueType rhs[],
         const ValueType omega );
+
+    /** OpenMP implementation for JDSUtilKernelTrait::jacobiHalo  */
 
     template<typename ValueType>
     static void jacobiHalo(

@@ -59,7 +59,7 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /*  This method is an implementation of UtilKernelTrait::validIndexes */
+    /** OpenMP implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
@@ -68,20 +68,22 @@ public:
     template<typename ValueType>
     static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
+    /** OpenMP implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
+    /** OpenMP implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setSequence */
+    /** OpenMP implementation for UtilKernelTrait::setSequence */
 
     template<typename ValueType>
     static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::getValue */
 
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
@@ -104,29 +106,33 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType1, typename ValueType2>
-    static void setSection( ValueType1 out[], const IndexType inc1,
-                            const ValueType2 in[], const IndexType inc2,
-                            const IndexType n, const binary::BinaryOp op );
+    static void setSection( 
+        ValueType1 out[], 
+        const IndexType inc1,
+        const ValueType2 in[], 
+        const IndexType inc2,
+        const IndexType n,
+        const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::applyUnaryOp */
-
-    template<typename ValueType>
-    static void applyUnaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
-
-    /** OpenMP implementation for UtilKernelTrait::applyBinaryOp */
-
-    template<typename ValueType>
-    static void applyBinaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
-
-    /** OpenMP implementation for UtilKernelTrait::applyBinaryOpScalar1 */
+    /** OpenMP implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void applyBinaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::applyBinaryOpScalar2 */
+    /** OpenMP implementation for UtilKernelTrait::binaryOp */
 
     template<typename ValueType>
-    static void applyBinaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar1 */
+
+    template<typename ValueType>
+    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar2 */
+
+    template<typename ValueType>
+    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
@@ -162,10 +168,10 @@ public:
     template<typename ValueType>
     static ValueType unscan( ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::sort, uses bucket sort */
+    /** OpenMP implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void sort( ValueType array[], IndexType perm[], const IndexType n );
+    static void sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
