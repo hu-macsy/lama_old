@@ -35,8 +35,6 @@
 // hpp
 #include <scai/utilskernel/cuda/CUDAUtils.hpp>
 
-// local library
-#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 
 // internal scai libraries
@@ -50,6 +48,9 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/Math.hpp>
+
+// local library
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -255,7 +256,7 @@ void ceilKernel( ValueType out[], const ValueType in[], const IndexType n )
 
 template<typename ValueType>
 __global__
-void copysignKernel( ValueType* out, const ValueType* in1, const ValueType* in2, const IndexType n )
+void copysignKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -265,9 +266,17 @@ void copysignKernel( ValueType* out, const ValueType* in1, const ValueType* in2,
     }
 }
 
+// template specialization for IndexType, might be instantiated, but is never called 
+
+template<>
+__global__
+void copysignKernel( IndexType[], const IndexType[], const IndexType[], const IndexType )
+{
+}
+
 template<typename ValueType>
 __global__
-void powKernel( ValueType* out, const ValueType* in1, const ValueType* in2, const IndexType n )
+void powKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -275,6 +284,14 @@ void powKernel( ValueType* out, const ValueType* in1, const ValueType* in2, cons
     {
         out[i] = Math::pow( in1[i], in2[i] );
     }
+}
+
+// template specialization for IndexType, might be instantiated, but is never called 
+
+template<>
+__global__
+void powKernel( IndexType[], const IndexType[], const IndexType[], const IndexType )
+{
 }
 
 template<typename ValueType>
@@ -485,7 +502,10 @@ struct InvalidIndex
 
 bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const IndexType size )
 {
+    SCAI_REGION( "CUDA.Utils.validIndexes" )
+
     SCAI_LOG_DEBUG( logger, "validIndexes: array[" << n << "], size " << size )
+
     bool validFlag = true;
 
     if ( n > 0 )
@@ -512,12 +532,13 @@ bool CUDAUtils::validIndexes( const IndexType array[], const IndexType n, const 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::reduceSum( const ValueType array[], const IndexType n )
+ValueType CUDAUtils::reduceSum( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    SCAI_REGION( "CUDA.Utils.reduceSum" )
     SCAI_LOG_INFO( logger, "sum # array = " << array << ", n = " << n )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType zero = ValueType( 0 );
+
     ValueType result = thrust::reduce( data, data + n, zero, thrust::plus<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "sum of " << n << " values = " << result )
@@ -527,12 +548,12 @@ ValueType CUDAUtils::reduceSum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::reduceMaxVal( const ValueType array[], const IndexType n )
+ValueType CUDAUtils::reduceMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    SCAI_REGION( "CUDA.Utils.reduceMax" )
     SCAI_LOG_INFO( logger, "maxval for " << n << " elements " )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType zero( TypeTraits<ValueType>::getMin() );
     ValueType result = thrust::reduce( data, data + n, zero, thrust::maximum<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "max of " << n << " values = " << result )
@@ -542,12 +563,12 @@ ValueType CUDAUtils::reduceMaxVal( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::reduceMinVal( const ValueType array[], const IndexType n )
+ValueType CUDAUtils::reduceMinVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    SCAI_REGION( "CUDA.Utils.reduceMin" )
     SCAI_LOG_INFO( logger, "minval for " << n << " elements " )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType zero( TypeTraits<ValueType>::getMax() );
     ValueType result = thrust::reduce( data, data + n, zero, thrust::minimum<ValueType>() );
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "min of " << n << " values = " << result )
@@ -568,14 +589,23 @@ struct absolute_value: public thrust::unary_function<ValueType, ValueType>
 };
 
 template<typename ValueType>
-ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n )
+ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    SCAI_REGION( "CUDA.Utils.reduceAbsMax" )
+
     SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
+
     SCAI_CHECK_CUDA_ACCESS
+
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-    ValueType zero( 0 );
-    ValueType result = thrust::transform_reduce( data, data + n, absolute_value<ValueType>(), zero,
-                       thrust::maximum<ValueType>() );
+
+    ValueType result = thrust::transform_reduce( 
+                          data, 
+                          data + n, 
+                          absolute_value<ValueType>(), 
+                          zero,
+                          thrust::maximum<ValueType>() );
+
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
     return result;
@@ -584,7 +614,7 @@ ValueType CUDAUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, binary::BinaryOp op )
+ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, const ValueType zero, binary::BinaryOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
     ValueType result;
@@ -592,24 +622,52 @@ ValueType CUDAUtils::reduce( const ValueType array[], const IndexType n, binary:
     switch ( op )
     {
         case binary::ADD :
-            result = reduceSum( array, n );
+            result = reduceSum( array, n, zero );
             break;
 
         case binary::MAX :
-            result = reduceMaxVal( array, n );
+            result = reduceMaxVal( array, n, zero );
             break;
 
         case binary::MIN :
-            result = reduceMinVal( array, n );
+            result = reduceMinVal( array, n, zero );
             break;
 
         case binary::ABS_MAX :
-            result = reduceAbsMaxVal( array, n );
+            result = reduceAbsMaxVal( array, n, zero );
             break;
 
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
     }
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template <typename ValueType>
+ValueType CUDAUtils::reduce2(
+    const ValueType array1[],
+    const ValueType array2[],
+    const IndexType n,
+    const binary::BinaryOp binOp,
+    const ValueType zero,
+    const binary::BinaryOp redOp )
+{
+    SCAI_REGION( "CUDA.Utils.reduce2" )
+
+    SCAI_LOG_DEBUG( logger, "reduce2<" << TypeTraits<ValueType>::id() << ">, n = " << n )
+
+    // Currently on CUDA: reduce operator requires temporary array in any case
+
+    thrust::device_vector<ValueType> temp( n );
+
+    ValueType* tmpData  = temp.data().get();
+    
+    binaryOp( tmpData, array1, array2, n, binOp );
+
+    ValueType result = reduce( tmpData, n, zero, redOp );
 
     return result;
 }
@@ -647,61 +705,68 @@ void powExpKernel( ValueType* array, const ValueType exp, const IndexType n )
 template<typename ValueType>
 void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op )
 {
+    SCAI_REGION( "CUDA.Utils.setVal" )
+
     using namespace thrust::placeholders;
+
     SCAI_LOG_INFO( logger, "setVal # array = " << array << ", n = " << n << ", val = " << val << ", op = " << op )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
     SCAI_CHECK_CUDA_ACCESS
 
-    if ( n > 0 )
+    thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
+
+    ValueType value = static_cast<ValueType>( val );
+
+    switch ( op )
     {
-        thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
-        ValueType value = static_cast<ValueType>( val );
+        case binary::COPY:
+            thrust::fill( data, data + n, value );
+            break;
 
-        switch ( op )
+        case binary::ADD:
+            thrust::for_each( data, data + n,  _1 += value );
+            break;
+
+        case binary::SUB:
+            thrust::for_each( data, data + n,  _1 -= value );
+            break;
+
+        case binary::MULT:
         {
-            case binary::COPY:
-                thrust::fill( data, data + n, value );
-                break;
-
-            case binary::ADD:
-                thrust::for_each( data, data + n,  _1 += value );
-                break;
-
-            case binary::SUB:
-                thrust::for_each( data, data + n,  _1 -= value );
-                break;
-
-            case binary::MULT:
+            if ( val == scai::common::constants::ZERO )
             {
-                if ( val == scai::common::constants::ZERO )
-                {
-                    thrust::fill( data, data + n, ValueType( 0 ) );
-                }
-                else
-                {
-                    thrust::for_each( data, data + n,  _1 *= value );
-                }
+                thrust::fill( data, data + n, ValueType( 0 ) );
             }
-            break;
-
-            case binary::DIVIDE:
+            else
             {
-                if ( val == scai::common::constants::ZERO )
-                {
-                    COMMON_THROWEXCEPTION( "Divide by ZERO" )
-                }
-                else
-                {
-                    thrust::for_each( data, data + n,  _1 /= value );
-                }
+                thrust::for_each( data, data + n,  _1 *= value );
             }
-            break;
-
-            default:
-                COMMON_THROWEXCEPTION( "unsupported binary op: " << op )
         }
+        break;
 
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+        case binary::DIVIDE:
+        {
+            if ( val == scai::common::constants::ZERO )
+            {
+                COMMON_THROWEXCEPTION( "Divide by ZERO" )
+            }
+            else
+            {
+                thrust::for_each( data, data + n,  _1 /= value );
+            }
+        }
+        break;
+
+        default:
+            COMMON_THROWEXCEPTION( "unsupported binary op: " << op )
     }
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -709,6 +774,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 template<typename ValueType>
 void CUDAUtils::setOrder( ValueType array[], const IndexType n )
 {
+    SCAI_REGION( "CUDA.Utils.setOrder" )
     SCAI_LOG_INFO( logger, "setOrder # array = " << array << ", n = " << n )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
@@ -721,6 +787,7 @@ void CUDAUtils::setOrder( ValueType array[], const IndexType n )
 template<typename ValueType>
 void CUDAUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
 {
+    SCAI_REGION( "CUDA.Utils.setSequence" )
     SCAI_LOG_INFO( logger, "setSequence # array = " << array << ", n = " << n )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> array_ptr( const_cast<ValueType*>( array ) );
@@ -733,38 +800,12 @@ void CUDAUtils::setSequence( ValueType array[], const ValueType startValue, cons
 template<typename ValueType>
 ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
 {
+    SCAI_REGION( "CUDA.Utils.getValue" )
     SCAI_LOG_INFO( logger, "getValue # i = " << i )
     SCAI_CHECK_CUDA_ACCESS
     thrust::device_ptr<ValueType> arrayPtr( const_cast<ValueType*>( array ) );
     thrust::host_vector<ValueType> arrayHost( arrayPtr + i, arrayPtr + i + 1 );
     return arrayHost[0];
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-ValueType CUDAUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "absMaxDiffVal for " << n << " elements " )
-    SCAI_CHECK_CUDA_ACCESS
-    thrust::device_ptr<ValueType> data1( const_cast<ValueType*>( array1 ) );
-    thrust::device_ptr<ValueType> data2( const_cast<ValueType*>( array2 ) );
-    thrust::device_vector<ValueType> temp( n );
-    // compute temp =  array1 - array2
-    thrust::transform( data1, data1 + n, data2, temp.begin(), thrust::minus<ValueType>() );
-    ValueType result = thrust::transform_reduce( temp.begin(), temp.end(), absolute_value<ValueType>(), static_cast<ValueType>( 0.0 ),
-                       thrust::maximum<ValueType>() );
-    /* Not available, but would be useful:
-
-     ValueType result = thrust::transform_reduce( data1, data1 + n,
-     data2,
-     thrust::minus<ValueType>(),
-     zero,
-     thrust::maximum<ValueType>());
-     */
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" )
-    SCAI_LOG_INFO( logger, "abs max diff of " << n << " values = " << result )
-    return result;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1781,7 +1822,9 @@ struct changeIndexWithZeroSize
     __host__ __device__
     IndexType operator()( const ValueType& value, const IndexType& index )
     {
-        if ( common::Math::abs( value ) > mEps )
+        ValueType tmp = common::Math::abs( value );
+
+        if ( tmp > mEps )
         {
             return index;
         }
@@ -1879,10 +1922,10 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     // Note: these kernels will be instantiated for numeric types + IndexType
 
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );

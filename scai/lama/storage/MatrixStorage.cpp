@@ -232,7 +232,7 @@ IndexType _MatrixStorage::getNumValues() const
     ContextPtr loc = sizes.getValidContext();
     reduce.getSupportedContext( loc );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, utilskernel::binary::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, utilskernel::binary::ADD );
     return numValues;
 }
 

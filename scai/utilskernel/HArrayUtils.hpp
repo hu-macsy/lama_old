@@ -273,6 +273,14 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static ValueType reduce2(
+        const hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        const binary::BinaryOp binOp,
+        const binary::BinaryOp redOp,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType asum(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );

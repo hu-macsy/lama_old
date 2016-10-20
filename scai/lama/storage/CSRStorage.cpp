@@ -2265,7 +2265,8 @@ ValueType CSRStorage<ValueType>::maxNorm() const
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> csrValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, binary::ABS_MAX );
+    ValueType zero   = 0;
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, zero, binary::ABS_MAX );
     return maxval;
 }
 

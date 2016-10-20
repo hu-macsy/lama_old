@@ -965,7 +965,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
     WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
     compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
     // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, utilskernel::binary::MAX );
+    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, 0, utilskernel::binary::MAX );
 
     // Do further steps, if new array could be smaller
     if ( newNumValuesPerRow < mNumValuesPerRow )
@@ -1804,7 +1804,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
         matrixMultiplySizes[loc] ( cIA.get(), a.getNumRows(), a.getNumColumns(), b.getNumRows(), false, aIA.get(), aJA.get(),
                                    a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, utilskernel::binary::MAX );
+        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, 0, utilskernel::binary::MAX );
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
@@ -1850,7 +1850,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
         matrixAddSizes[loc]( cIA.get(), a.getNumRows(), a.getNumColumns(), false, aIA.get(), aJA.get(),
                              a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, utilskernel::binary::MAX );
+        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, 0, utilskernel::binary::MAX );
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );

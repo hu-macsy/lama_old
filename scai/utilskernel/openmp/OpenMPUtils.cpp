@@ -62,13 +62,16 @@ SCAI_LOG_DEF_LOGGER( OpenMPUtils::logger, "OpenMP.Utils" )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::reduceSum( const ValueType array[], const IndexType n )
+ValueType OpenMPUtils::reduceSum( const ValueType array[], const IndexType n, const ValueType zero )
 {
     SCAI_REGION( "OpenMP.Utils.reduceSum" )
-    ValueType val( 0 );
+
+    ValueType val = zero;
+
     #pragma omp parallel shared( val )
     {
-        ValueType threadVal( 0 );
+        ValueType threadVal = zero;
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < n; ++i )
@@ -84,13 +87,16 @@ ValueType OpenMPUtils::reduceSum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n )
+ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
     SCAI_REGION( "OpenMP.Utils.reduceMaxVal" )
-    ValueType val( TypeTraits<ValueType>::getMin() );
+
+    ValueType val = zero;
+
     #pragma omp parallel
     {
-        ValueType threadVal( TypeTraits<ValueType>::getMin() );
+        ValueType threadVal = zero;
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < n; ++i )
@@ -115,13 +121,16 @@ ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n )
+ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
     SCAI_REGION( "OpenMP.Utils.reduceMinVal" )
-    ValueType val( TypeTraits<ValueType>::getMax() );
+
+    ValueType val = zero;
+
     #pragma omp parallel
     {
-        ValueType threadVal( TypeTraits<ValueType>::getMax() );
+        ValueType threadVal = zero;
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < n; ++i )
@@ -146,13 +155,16 @@ ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n )
+ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
     SCAI_REGION( "OpenMP.Utils.reduceAbsMaxVal" )
-    ValueType val( 0 );
+
+    ValueType val = zero;
+
     #pragma omp parallel
     {
-        ValueType threadVal( 0 );
+        ValueType threadVal = zero;
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < n; ++i )
@@ -179,23 +191,27 @@ ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op )
+ValueType OpenMPUtils::reduce( 
+    const ValueType array[], 
+    const IndexType n, 
+    const ValueType zero,
+    const binary::BinaryOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array<" << TypeTraits<ValueType>::id() << ">[" << n << "], op = " << op )
 
     switch ( op )
     {
         case binary::ADD :
-            return reduceSum( array, n );
+            return reduceSum( array, n, zero );
 
         case binary::MAX :
-            return reduceMaxVal( array, n );
+            return reduceMaxVal( array, n, zero );
 
         case binary::MIN :
-            return reduceMinVal( array, n );
+            return reduceMinVal( array, n, zero );
 
         case binary::ABS_MAX :
-            return reduceAbsMaxVal( array, n );
+            return reduceAbsMaxVal( array, n, zero );
 
         default:
             COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
@@ -390,6 +406,48 @@ ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType 
             {
                 val = threadVal;
             }
+        }
+    }
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template <typename ValueType>
+ValueType OpenMPUtils::reduce2( 
+    const ValueType array1[], 
+    const ValueType array2[], 
+    const IndexType n,
+    const binary::BinaryOp binOp,
+    const ValueType zero,
+    const binary::BinaryOp redOp )
+{
+    if ( binOp == binary::SUB && redOp == binary::ABS_MAX )
+    {
+        return absMaxDiffVal( array1, array2, n );
+    }
+
+    SCAI_REGION( "OpenMP.Utils.reduce2" )
+
+    SCAI_LOG_DEBUG( logger, "reduce2<" << TypeTraits<ValueType>::id() << ">: " << "arr1,2[" << n << "]" )
+               
+    ValueType val = zero;
+
+    #pragma omp parallel
+    {
+        ValueType threadVal = zero;
+
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType elem = applyBinary( array1[i], binOp, array2[i] );
+            threadVal = applyBinary( threadVal, redOp, elem );
+        }
+
+        #pragma omp critical
+        {
+            val = applyBinary( val, redOp, threadVal );
         }
     }
     return val;
@@ -807,9 +865,9 @@ void OpenMPUtils::binaryOpScalar1(
     const IndexType n, 
     const binary::BinaryOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.binaryOpScalar" )
+    SCAI_REGION( "OpenMP.Utils.binOpScalar" )
 
-    SCAI_LOG_DEBUG( logger, "binaryOpScalar<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
+    SCAI_LOG_DEBUG( logger, "binaryOpScalar1<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
 
     if ( n <= 0 )
     {
@@ -932,9 +990,10 @@ void OpenMPUtils::binaryOpScalar2(
     const IndexType n, 
     const binary::BinaryOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.binaryOpScalar" )
+    SCAI_REGION( "OpenMP.Utils.binOpScalar" )
 
-    SCAI_LOG_DEBUG( logger, "binaryOpScalar<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
+    SCAI_LOG_DEBUG( logger, "binaryOpScalar2<" << TypeTraits<ValueType>::id() << ", op = " << op 
+                            << ", value = " << value << ", n = " << n  )
 
     if ( n <= 0 )
     {
@@ -1040,7 +1099,7 @@ void OpenMPUtils::binaryOpScalar2(
 template<typename ValueType>
 void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.binaryOp" )
+    SCAI_REGION( "OpenMP.Utils.binOp" )
 
     SCAI_LOG_DEBUG( logger, "binaryOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
 
@@ -1679,11 +1738,11 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
