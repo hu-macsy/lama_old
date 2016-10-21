@@ -609,6 +609,78 @@ void HArrayUtils::arrayPlusArray(
 }
 
 template<typename ValueType>
+void HArrayUtils::arrayPlusScalar(
+    hmemo::HArray<ValueType>& result,
+    const ValueType alpha,
+    const hmemo::HArray<ValueType>& x,
+    const ValueType beta,
+    hmemo::ContextPtr prefLoc )
+{
+    // operation is result = alpha * x + b (elementwise)
+    SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << ", x = " << x 
+                           << ", result = " << result )
+
+    // check for zero terms as we do not need read access and assert correct sizes
+
+    if ( alpha == common::constants::ZERO ) // result = b
+    {
+        assignScalar( result, beta, binary::COPY, prefLoc );
+        return;
+    }
+
+    if ( &x == &result && alpha == common::constants::ONE ) // result += b (elementwise)
+    {
+        assignScalar( result, beta, binary::ADD, prefLoc );
+        return;
+    }
+
+    if ( alpha == common::constants::ONE ) // result = x + b (elementwise)
+    {
+        binaryOpScalar1( result, beta, x, binary::ADD, prefLoc );
+        return;
+    }
+
+    if ( beta == common::constants::ZERO )
+    {
+        if ( alpha == common::constants::ZERO ) // result = 0
+        {
+            setScalar( result, ValueType( 0 ), binary::COPY, prefLoc );
+        }
+        else // result = alpha * x
+        {
+            binaryOpScalar1( result, alpha, x, binary::MULT, prefLoc );
+        }
+        return;
+    }
+
+    // else full operation: result = alpha * x + b (elementwise)
+
+    const IndexType n = x.size();
+
+    static LAMAKernel<UtilKernelTrait::scaleVectorAddScalar<ValueType> > scaleVectorAddScalar;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = x.getValidContext();
+    }
+
+    scaleVectorAddScalar.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    // due to possible alias of result and x, write access must follow read
+
+    ReadAccess<ValueType> rX( x, loc );
+    WriteOnlyAccess<ValueType> wResult( result, loc, n );
+
+    scaleVectorAddScalar[loc]( wResult.get(), rX.get(), alpha, beta, n );
+}
+
+template<typename ValueType>
 void HArrayUtils::arrayTimesArray(
     hmemo::HArray<ValueType>& result,
     const ValueType alpha,
@@ -1260,6 +1332,8 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::arrayPlusArray<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                        \
             const hmemo::HArray<ValueType>&, const ValueType,                                                                \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                                            \
+    template void HArrayUtils::arrayPlusScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                       \
+            const hmemo::HArray<ValueType>&, const ValueType, hmemo::ContextPtr );                                           \
     template void HArrayUtils::arrayTimesArray<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                       \
             const hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                           \
     template ValueType HArrayUtils::dotProduct<ValueType>( const hmemo::HArray<ValueType>&,                                  \

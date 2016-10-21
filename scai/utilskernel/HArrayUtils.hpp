@@ -192,6 +192,23 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Addition of scaled array with scalar: result = alpha * x + beta (elementwise)
+     *
+     *  @param[out] result  output array
+     *  @param[in]  alpha   scaling factor
+     *  @param[in]  x       source array
+     *  @param[in]  beta    scaling factor
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
+
+    template<typename ValueType>
+    static void arrayPlusScalar(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Multiplication of two arrays: result = alpha * x * y
      *
      *  @param[out] result  output array

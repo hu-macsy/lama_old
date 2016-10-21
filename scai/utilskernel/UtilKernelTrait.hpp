@@ -150,6 +150,18 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
+    struct scaleVectorAddScalar
+    {
+        /** Calculates array1 = alpha * array2 + beta (elementwise) */
+
+        typedef void ( *FuncType ) ( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
+        static const char* getId()
+        {
+            return "Util.scaleVectorAddScalar";
+        }
+    };
+
+    template<typename ValueType>
     struct setOrder
     {
         /** Set all elements of a contiguous array with its order number 0, 1, 2, ... */

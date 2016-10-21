@@ -599,6 +599,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
             SCAI_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
         }
 #endif
+
         SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
         utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues, mContext );
     }
@@ -660,7 +661,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
     const Expression_SV& exp = expression.getArg1();
     const ValueType alpha = exp.getArg1().getValue<ValueType>();
     const Vector& x = exp.getArg2();
-    const ValueType beta = expression.getArg2().getValueType<ValueType>();
+    const ValueType beta = expression.getArg2().getValue<ValueType>();
 
     SCAI_LOG_INFO( logger, "z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha 
                            << " , x = " << x << " , beta = " << beta )
@@ -683,14 +684,14 @@ void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
             localAccess.resize( denseX.mLocalValues.size() );
         }
 
-        SCAI_LOG_DEBUG( logger, "call assignArrayPlusScalar" )
-        utilskernel::HArrayUtils::assignArrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, denseY.mLocalValues, mContext );
+        SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
+        utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, beta, mContext );
     }
     else
     {
         COMMON_THROWEXCEPTION(
             "Can not calculate  z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha 
-                << ", x = " << x << ", y = " << y << " because of type mismatch." );
+                << ", x = " << x << " because of type mismatch." );
     }
 }
 
