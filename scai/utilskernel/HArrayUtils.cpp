@@ -729,7 +729,7 @@ void HArrayUtils::arrayPlusScalar(
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    scaleVectorAddScalar[loc]( wResult.get(), rX.get(), alpha, beta, n );
+    scaleVectorAddScalar[loc]( wResult.get(), rX.get(), n, alpha, beta );
 }
 
 template<typename ValueType>
