@@ -350,7 +350,8 @@ void subScalarKernel( ValueType out[], const ValueType value, const ValueType in
 }
 
 template<typename ValueType>
-__global__ void scaleVectorAddScalarKernel( ValueType array1[], const ValueType array2[], const ValueType alpha, const ValueType beta, const IndexType n )
+__global__
+void scaleVectorAddScalarKernel( ValueType array1[], const ValueType array2[], const ValueType alpha, const ValueType beta, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -733,7 +734,7 @@ void CUDAUtils::scaleVectorAddScalar( ValueType array1[], const ValueType array2
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-    scaleVectorAddScalarKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( array1, array2, alpha, beta, n );
+    scaleVectorAddScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( array1, array2, alpha, beta, n );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
