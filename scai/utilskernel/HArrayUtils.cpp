@@ -676,6 +676,7 @@ void HArrayUtils::arrayPlusScalar(
 
     if ( alpha == common::constants::ZERO ) // result = b
     {
+        result.resize( x.size() );
         assignScalar( result, beta, binary::COPY, prefLoc );
         return;
     }
@@ -722,12 +723,12 @@ void HArrayUtils::arrayPlusScalar(
 
     scaleVectorAddScalar.getSupportedContext( loc );
 
-    SCAI_CONTEXT_ACCESS( loc )
-
     // due to possible alias of result and x, write access must follow read
 
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     scaleVectorAddScalar[loc]( wResult.get(), rX.get(), n, alpha, beta );
 }
