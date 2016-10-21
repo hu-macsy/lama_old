@@ -402,26 +402,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };
-    IndexType indexVals[]  = { 0, 2, 1, 2, 1, 3 };
+    IndexType indexVals1[]  = { 0, 2, 1, 2, 1, 3 };
+    IndexType indexVals2[]  = { 1, 1, 1, 0, 2, 3 };
     const IndexType M = sizeof( sourceVals ) / sizeof( ValueType );
-    const IndexType N = sizeof( indexVals ) / sizeof( IndexType );
+    const IndexType N = sizeof( indexVals1 ) / sizeof( IndexType );
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        BOOST_REQUIRE( indexVals[i] < M );
+        BOOST_REQUIRE( indexVals1[i] < M );
     }
 
     // target = source[ indexes ]
+
     LArray<ValueType> source( M, sourceVals );
-    LArray<IndexType> indexes( N, indexVals );
+    LArray<IndexType> indexes1( N, indexVals1 );
+    LArray<IndexType> indexes2( N, indexVals2 );
     LArray<ValueType> target;
-    BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
-    BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
-    HArrayUtils::gatherImpl( target, source, indexes, binary::COPY );
+
+    BOOST_CHECK( HArrayUtils::validIndexes( indexes1, M ) );
+    BOOST_CHECK( !HArrayUtils::validIndexes( indexes1, 1 ) );
+
+    HArrayUtils::gatherImpl( target, source, indexes1, binary::COPY );
+
+    BOOST_REQUIRE_EQUAL( target.size(), indexes1.size() );
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        ValueType x1 = source[indexes[i]];
+        ValueType x1 = sourceVals[indexVals1[i]];
+        ValueType x2 = target[i];
+        BOOST_CHECK_EQUAL( x1, x2 );
+    }
+
+    HArrayUtils::gatherImpl( target, source, indexes2, binary::ADD );
+    HArrayUtils::gatherImpl( target, source, indexes1, binary::MULT );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType x1 = ( sourceVals[indexVals1[i]] + sourceVals[indexVals2[i]] ) * sourceVals[indexVals1[i]];
         ValueType x2 = target[i];
         BOOST_CHECK_EQUAL( x1, x2 );
     }

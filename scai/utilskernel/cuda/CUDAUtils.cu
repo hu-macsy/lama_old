@@ -308,6 +308,42 @@ void powBaseScalarKernel( ValueType out[], const ValueType value, const ValueTyp
 
 template<typename ValueType>
 __global__
+void binOpScalar1Kernel( ValueType out[], const ValueType value, const binary::BinaryOp op, const ValueType in[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = applyBinary( value, op, in[i] );
+    }
+}
+
+template<typename ValueType>
+__global__
+void binOpKernel( ValueType out[], const ValueType in1[], const binary::BinaryOp op, const ValueType in2[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = applyBinary( in1[i], op, in2[i] );
+    }
+}
+
+template<typename ValueType>
+__global__
+void binOpScalar2Kernel( ValueType out[], const ValueType in[], const binary::BinaryOp op, const ValueType value, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = applyBinary( in[i], op, value );
+    }
+}
+
+template<typename ValueType>
+__global__
 void powExpScalarKernel( ValueType out[], const ValueType in[], const ValueType value, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -1517,7 +1553,7 @@ void CUDAUtils::binaryOp(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "Unsupported binary op " << op )
+            binOpKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, op, in2, n );
         }
     }
 
@@ -1609,7 +1645,7 @@ void CUDAUtils::binaryOpScalar1(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "Unsupported binary op " << op )
+            binOpScalar1Kernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, op, in, n );
         }
     }
 
@@ -1694,7 +1730,7 @@ void CUDAUtils::binaryOpScalar2(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "Unsupported binary op " << op )
+            binOpScalar2Kernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, op, value, n );
         }
     }
 

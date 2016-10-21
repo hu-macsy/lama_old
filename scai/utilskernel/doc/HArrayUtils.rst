@@ -25,15 +25,35 @@ For arithmetic operations the ValueType must be known at compile time.
     // result[i] *= 2.5
     HArrayUtils::binaryOpScalar2( result, result, 2.5, binaryOp::MULT );
 
-Reduction Operations
---------------------
+Filling
+-------
+
+Setting all array elements with one value.
+
+.. code-block:: c++
+
+    HArray<double> x;
+
+Heterogeneous arrays can be filled with random numbers. By an additional
+argument, a fill rate can be specified to generate sparse arrays.
+
+.. code-block:: c++
+
+    _HArray& x = ...
+    float fillRate = 0.1;  
+    HArrayUtils::setRandom( x, 100, fillRate )
+
+Reductions
+----------
 
 .. code-block:: c++
 
     HArray<double> x;
 
     double sum = scan( x );
-    double sum = scan( x );
+    double sum = reduce( x, binaryOp::MIN );   // get min val
+
+    double maxDiff = HArrayUtils::reduce2( x, y, binaryOp::SUB, binaryOp::ABS_MAX ); 
 
 Conversions
 -----------
@@ -58,6 +78,19 @@ Conversion operations can take arrays of different value types.
 Sorting
 -------
 
+The sort utility can be used to sort values in ascending or descending order.
+
+.. code-block:: c++
+
+    HArray<double> x( ... )
+    bool ascending = true;
+    HArrayUtils::sort( x, ascending );
+
+Another possibility for sorting is usin bucket sort.
+
+ToDo: example
+
+
 Sparse Arrays
 -------------
 
@@ -68,6 +101,15 @@ and vice versa.
 
     HArray<double> denseArray;
     HArray<IndexType> sparseIndexes;
+    HArray<double> sparseArray;
 
     HArrayUtils::buildSparseIndexes( sparseIndexes, denseArray );
+
+    // by gathering the non-zero values an array with the non-zero values is built
+
+    HArrayUtils::setGather( sparseArray, denseArray, sparseIndexes, binary::COPY );
+
+    // both operations in one call
+
+    HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray );
 
