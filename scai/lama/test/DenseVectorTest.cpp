@@ -614,4 +614,39 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
+{
+     typedef float ValueType;
+
+     const IndexType n = 7;
+     dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
+
+     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+     DenseVector<ValueType> x( ctx );
+     x.setRandom( dist );
+     DenseVector<ValueType> xCopy( x );
+
+     ValueType alpha = 34.7;
+     ValueType beta  = 5.2;
+
+     // test expression
+     DenseVector<ValueType> res1;
+     res1 = alpha * x + beta; 
+     // test constructor with expression
+     DenseVector<ValueType> res2( alpha * x + beta );
+     // test alias
+     x = alpha * x + beta;
+
+     for( IndexType i = 0; i < xCopy.size(); ++i )
+     {
+        ValueType erg = alpha * xCopy.getValue(i).getValue<ValueType>() + beta; 
+        BOOST_CHECK_EQUAL( erg, res1.getValue(i).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg, res2.getValue(i).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg,    x.getValue(i).getValue<ValueType>() );
+     }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
