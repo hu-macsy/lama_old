@@ -663,6 +663,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType xVals[] = { 3, 1, 4, 2, 2, 1, 4, 3 };
+    ValueType yVals[] = { 2, -1, -1, -5, 5, 3, 1 };
+
+    const IndexType nx = sizeof( xVals ) / sizeof( ValueType );
+    const IndexType ny = sizeof( yVals ) / sizeof( ValueType );
+
+    LArray<ValueType> x( nx, xVals, loc );
+    LArray<ValueType> y( ny, yVals, loc );
+    
+    const IndexType n = 3;
+    const IndexType ofs_x = 1;
+    const IndexType inc_x = 2;
+    const IndexType ofs_y = 1;
+    const IndexType inc_y = 2;
+
+    HArrayUtils::setArraySection( x, ofs_x, inc_x, y, ofs_y, inc_y, n, binary::COPY, loc );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        ValueType elem = x[ ofs_x + i * inc_x];
+        BOOST_CHECK_EQUAL( yVals[ ofs_y + i * inc_y ], elem );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
