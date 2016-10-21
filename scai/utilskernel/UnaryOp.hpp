@@ -85,6 +85,7 @@ struct unary
 };
 
 template <typename ValueType>
+MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
 inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
 {
     switch ( op )
@@ -101,7 +102,19 @@ inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
         case unary::LOG:    return common::Math::log( x );
         case unary::FLOOR:  return common::Math::floor( x );
         case unary::CEIL:   return common::Math::ceil( x );
-        default:            return x;  // no error handling here
+        default:            return ValueType( 0 );
+    }
+}
+
+template <>
+inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
+{
+    switch ( op )
+    {
+        case unary::CONJ:   return x;
+        case unary::ABS:    return common::Math::abs( x );
+        case unary::MINUS:  return -x;
+        default:            return IndexType( 0 );
     }
 }
 

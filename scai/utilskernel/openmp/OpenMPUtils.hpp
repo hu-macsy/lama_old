@@ -202,6 +202,8 @@ public:
                                const IndexType n );
 private:
 
+    /** Optimized reduce for binary::ADD as reduction operator. */
+
     template<typename ValueType>
     static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
 
@@ -213,6 +215,15 @@ private:
 
     template<typename ValueType>
     static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    /** The following method is the same as reduce but will not switch for optimized routines any more. */
+
+    template<typename ValueType>
+    static ValueType reduceBinOp( 
+        const ValueType array[], 
+        const IndexType n, 
+        const ValueType zero,
+        const binary::BinaryOp op );
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );

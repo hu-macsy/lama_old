@@ -64,6 +64,22 @@ int main( int argc, const char* argv[] )
     HArrayUtils::setScalar( values1, ValueType( 2 ), binary::ADD );
     HArrayUtils::setScalar( values2, ValueType( 2 ), binary::ADD );
 
+    for ( int i = 0; i < unary::MAX_UNARY_OP; ++i )
+    {
+        unary::UnaryOp op = unary::UnaryOp( i );
+
+        double start = common::Walltime::get();
+
+        for ( int iter = 0; iter < 10; ++iter )
+        {
+            HArrayUtils::unaryOp( values3, values1, op, ctx );
+        }
+
+        double time1 = common::Walltime::get() - start;
+
+        cout << "Time for unary op = " << op << ": " << time1 << " seconds." << endl;
+    }
+
     for ( int i = 0; i < binary::MAX_BINARY_OP; ++i )
     {
         binary::BinaryOp op = binary::BinaryOp( i );
@@ -77,6 +93,29 @@ int main( int argc, const char* argv[] )
 
         double time1 = common::Walltime::get() - start;
 
-        cout << "Time for op = " << op << ": " << time1 << " seconds." << endl;
+        cout << "Time for binary op = " << op << ": " << time1 << " seconds." << endl;
+    }
+
+    for ( int i = 0; i < binary::MAX_BINARY_OP; ++i )
+    {
+        ValueType sum = 0;
+
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        if ( op != binary::ADD && op != binary::MAX && op != binary::MIN && op != binary::ABS_MAX )
+        {
+            continue;
+        }
+
+        double start = common::Walltime::get();
+
+        for ( int iter = 0; iter < 10; ++iter )
+        {
+            sum = HArrayUtils::reduce( values1, op, ctx );
+        }
+
+        double time1 = common::Walltime::get() - start;
+
+        cout << "Time for reduce op = " << op << ": " << time1 << " seconds. Result = " << sum << endl;
     }
 }
