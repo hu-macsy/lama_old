@@ -35,6 +35,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <sstream>
 
 using namespace scai;
@@ -54,3 +55,32 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
         }
     }
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
+{
+    // we do not check here the results but make sure that all ops are supported
+
+    for ( int op = binary::COPY; op < binary::MAX_BINARY_OP; ++op )
+    {
+        T x = 5;
+        T y = 2;
+        T z = 0;
+
+        if ( common::TypeTraits<T>::stype == common::TypeTraits<IndexType>::stype )
+        {
+            if ( op == binary::POW || op == binary::COPY_SIGN )
+            {
+                // ToDo: we could check that an exception is thrown
+
+                continue;
+            }
+        }
+
+        binary::BinaryOp binop = binary::BinaryOp( op );
+
+        z = applyBinary( x, binop, y );
+
+        BOOST_CHECK( z != T( 0 ) );
+    }
+}
+

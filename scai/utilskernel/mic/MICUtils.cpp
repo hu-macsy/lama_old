@@ -97,7 +97,11 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICUtils::reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op )
+ValueType MICUtils::reduce( 
+    const ValueType array[], 
+    const IndexType n, 
+    const ValueType zero,
+    const binary::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
 

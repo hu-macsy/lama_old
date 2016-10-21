@@ -290,6 +290,14 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static ValueType reduce2(
+        const hmemo::HArray<ValueType>& array1,
+        const hmemo::HArray<ValueType>& array2,
+        const binary::BinaryOp binOp,
+        const binary::BinaryOp redOp,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType asum(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
@@ -481,11 +489,16 @@ public:
      */
 
     template<typename ValueType>
-    static void setSequence( hmemo::HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void setSequence( 
+        hmemo::HArray<ValueType>& array, 
+        ValueType startValue, 
+        ValueType inc, 
+        IndexType n, 
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Set an array with random values.
+    /** Set an array with random values, untyped version.
      *
-     *  @param[out] array    will contain random values of its type
+     *  @param[out] array    arbitray array, will contain random values of its type
      *  @param[in]  n        number of values, becomes size of array
      *  @param[in]  fillRate ratio of non-zero values
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
@@ -496,7 +509,7 @@ public:
                            float fillRate = 1.0f,
                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Sete an array with random values.
+    /** Set an array with random values, typed version
      *
      *  @param[out] array    will contain random values of its type
      *  @param[in]  n        number of values, becomes size of array

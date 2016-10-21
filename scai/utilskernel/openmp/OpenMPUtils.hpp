@@ -66,7 +66,22 @@ public:
     /** OpenMP implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
+    static ValueType reduce( 
+        const ValueType array[], 
+        const IndexType n, 
+        const ValueType zero,
+        const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::reduce2 */
+
+    template<typename ValueType>
+    static ValueType reduce2( 
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const binary::BinaryOp binOp,
+        const ValueType zero,
+        const binary::BinaryOp redOp );
 
     /** OpenMP implementation for UtilKernelTrait::setVal */
 
@@ -92,11 +107,6 @@ public:
 
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
-
-    /** OpenMP implementation for UtilKernelTrait::absMaxDiffVal */
-
-    template<typename ValueType>
-    static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::isSorted */
 
@@ -198,16 +208,19 @@ public:
 private:
 
     template<typename ValueType>
-    static ValueType reduceSum( const ValueType array[], const IndexType n );
+    static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    template<typename ValueType>
+    static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     template<typename ValueType>
     static ValueType scanSerial( ValueType array[], const IndexType numValues );

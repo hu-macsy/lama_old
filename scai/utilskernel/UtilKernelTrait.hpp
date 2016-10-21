@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Struct with traits for all LAMA utilities provided as kernels.
+ * @brief Struct with traits for all LAMA utilities on heterogeneous arrays provided as kernels.
  * @author Thomas Brandes
  * @date 03.04.2013
  */
@@ -47,7 +47,12 @@ namespace scai
 namespace utilskernel
 {
 
-/** Structure with traits for all Utils kernels. */
+/** Structure just to group traits for all Utils kernels.
+ *
+ *  This struct does not contain any data at all. 
+ *  Therefore it could also be a namespace but it is more convenient as 
+ *  each trait must always be used qualified: UtilKernelTrait::utiliy
+ */
 
 struct UtilKernelTrait
 {
@@ -81,34 +86,48 @@ struct UtilKernelTrait
          *
          *  @param[in] array is an array of values
          *  @param[in] n is the size of array
+         *  @param[in] zero  is the zero element used for reduction 
          *  @param[in] op is the binary reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
          *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n, const binary::BinaryOp op );
+        typedef ValueType ( *FuncType ) ( const ValueType array[], 
+                                          const IndexType n, 
+                                          const ValueType zero,
+                                          const binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.reduce";
         }
     };
 
+    /** @brief Trait for register kernel function reduce that transforms/reduces elements of two array
+     *
+     *  @tparam ValueType specifies the value type used in the reduction.
+     */
     template <typename ValueType>
-    struct absMaxDiffVal
+    struct reduce2
     {
-        /** @brief Building absolute maximum of element-wise difference of vector elements.
+        /** @brief reduce combined values of two arays
          *
-         *  @param array1i[in] first array
-         *  @param array2i[in] second array
-         *  @param n           size of array1 and array2
-         *  @returns           max( abs( array1[i] - array2[i] ) ), \f$ 0 \le i < n \f$
-         *
-         *  Function is helpful to compute maximum norm for vectors and matrices
+         *  @param[in] array1 is first array of values
+         *  @param[in] array2 is second array of values
+         *  @param[in] n is the size of arrays
+         *  @param[in] binop is the binary operator applied elementwise on array1 and array2
+         *  @param[in] zero  is the zero element used for reduction 
+         *  @param[in] redop is the binary reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
+         *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( const ValueType array1[], 
+                                          const ValueType array2[],
+                                          const IndexType n, 
+                                          const binary::BinaryOp binop,
+                                          const ValueType zero,
+                                          const binary::BinaryOp redop );
         static const char* getId()
         {
-            return "Util.absMaxDiffVal";
+            return "Util.reduce2";
         }
     };
 

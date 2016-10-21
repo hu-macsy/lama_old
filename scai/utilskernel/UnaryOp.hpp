@@ -37,6 +37,9 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/Math.hpp>
+
 // std
 #include <iostream>
 
@@ -81,6 +84,27 @@ struct unary
     } UnaryOp;
 };
 
+template <typename ValueType>
+inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
+{
+    switch ( op )
+    {
+        case unary::CONJ:   return common::Math::conj( x );
+        case unary::ABS:    return common::Math::abs( x );
+        case unary::MINUS:  return -x;
+        case unary::EXP:    return common::Math::exp( x );
+        case unary::SQRT:   return common::Math::sqrt( x );
+        case unary::SIN:    return common::Math::sin( x );
+        case unary::COS:    return common::Math::cos( x );
+        case unary::TAN:    return common::Math::tan( x );
+        case unary::ATAN:   return common::Math::atan( x );
+        case unary::LOG:    return common::Math::log( x );
+        case unary::FLOOR:  return common::Math::floor( x );
+        case unary::CEIL:   return common::Math::ceil( x );
+        default:            return x;  // no error handling here
+    }
+}
+
 /*
  * Output of UnaryOp in stream by writing strings instead of numbers
  */
@@ -89,7 +113,7 @@ inline std::ostream& operator<<( std::ostream& stream, const unary::UnaryOp& op 
 {
     switch ( op )
     {
-        case unary::CONJ:
+        case unary::unary::CONJ:
             stream << "CONJ";
             break;
 

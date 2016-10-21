@@ -66,7 +66,22 @@ public:
     /** CUDA implementation of UtilKernelTrait::reduce  */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const binary::BinaryOp op );
+    static ValueType reduce(
+        const ValueType array[],
+        const IndexType n,
+        const ValueType zero,
+        const binary::BinaryOp op );
+
+    /** CUDA implementation for UtilKernelTrait::reduce2 */
+
+    template<typename ValueType>
+    static ValueType reduce2(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const binary::BinaryOp binOp,
+        const ValueType zero,
+        const binary::BinaryOp redOp );
 
     /** CUDA implementation of UtilKernelTrait::setVal  */
 
@@ -97,11 +112,6 @@ public:
 
     template<typename ValueType>
     static ValueType absMaxVal( const ValueType array[], const IndexType n );
-
-    /** CUDA implementation UtilKernelTrait::absMaxDiffVal */
-
-    template<typename ValueType>
-    static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::isSorted */
 
@@ -198,16 +208,16 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     template<typename ValueType>
-    static ValueType reduceSum( const ValueType array[], const IndexType n );
+    static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
 
     /** Routine that registers all methods at the kernel registry. */
 

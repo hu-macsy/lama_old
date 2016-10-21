@@ -597,8 +597,8 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, utilskernel::binary::ADD ), mNumValues )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, utilskernel::binary::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, 0, utilskernel::binary::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, 0, utilskernel::binary::ADD ), mNumValues )
     }
 
     // check index values in Perm for out of range
@@ -629,7 +629,7 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         SCAI_CONTEXT_ACCESS( loc )
         // set inverse permutation, should overwrite all values 'mNumRows'
         setInversePerm[loc]( wInversePerm.get(), rPerm.get(), mNumRows );
-        IndexType maxIndex = reduce[loc]( wInversePerm.get(), mNumRows, utilskernel::binary::MAX );
+        IndexType maxIndex = reduce[loc]( wInversePerm.get(), mNumRows, 0, utilskernel::binary::MAX );
         SCAI_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
     }
 
@@ -701,7 +701,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     WriteAccess<IndexType> perm( mPerm, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0
-    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, utilskernel::binary::ABS_MAX );
+    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, 0, utilskernel::binary::ABS_MAX );
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
     bool descending = false;
     sortRows[loc]( ilg.get(), perm.get(), mNumRows, descending );

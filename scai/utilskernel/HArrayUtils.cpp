@@ -406,7 +406,8 @@ ValueType HArrayUtils::reduce(
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> readArray( array, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), redOp );
+    ValueType zero = zeroBinary<ValueType>( redOp );
+    ValueType redVal = reduce[loc]( readArray.get(), readArray.size(), zero, redOp );
     return redVal;
 }
 
@@ -462,6 +463,12 @@ ValueType HArrayUtils::absMaxDiffVal(
     const HArray<ValueType>& array2,
     ContextPtr prefLoc )
 {
+    // is just a special case of a reduction with two combined arrays
+
+    return reduce2( array1, array2, binary::SUB, binary::ABS_MAX, prefLoc );
+} 
+
+/*
     SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for building differences" )
     static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
     ContextPtr loc = prefLoc;
@@ -478,6 +485,49 @@ ValueType HArrayUtils::absMaxDiffVal(
     ReadAccess<ValueType> readArray2( array2, loc );
     SCAI_CONTEXT_ACCESS( loc )
     ValueType redVal = absMaxDiffVal[loc]( readArray1.get(), readArray2.get(), readArray1.size() );
+    return redVal;
+*/
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType HArrayUtils::reduce2(
+    const HArray<ValueType>& array1,
+    const HArray<ValueType>& array2,
+    const binary::BinaryOp binOp,
+    const binary::BinaryOp redOp,
+    ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for reduce2" )
+
+    const IndexType n = array1.size();
+
+    static LAMAKernel<UtilKernelTrait::reduce2<ValueType> > reduce2;
+
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array1.getValidContext();
+    }
+
+    ValueType zero = zeroBinary<ValueType>( redOp );
+
+    reduce2.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray1( array1, loc );
+    ReadAccess<ValueType> readArray2( array2, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ValueType redVal = reduce2[loc]( readArray1.get(), 
+                                     readArray2.get(), 
+                                     n,
+                                     binOp, 
+                                     zero, 
+                                     redOp );
     return redVal;
 }
 
@@ -506,6 +556,8 @@ ValueType HArrayUtils::dotProduct(
     SCAI_CONTEXT_ACCESS( loc )
     const ValueType res = dot[loc]( readArray1.size(), readArray1.get(), 1, readArray2.get(), 1 );
     return res;
+
+    // Note: other solution: reduce2( array1, array2, n, binary::MULT, 0, binary::ADD )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1312,19 +1364,14 @@ void HArrayUtils::buildDenseArray(
                                                         const binary::BinaryOp, hmemo::ContextPtr);                          \
     template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                             \
                                                      const binary::BinaryOp, hmemo::ContextPtr);                             \
-    template void HArrayUtils::unaryOp<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&,               \
-                                                   const unary::UnaryOp, hmemo::ContextPtr);                                 \
-    template void HArrayUtils::binaryOp<ValueType>( hmemo::HArray<ValueType>&,                                               \
-                                                    const hmemo::HArray<ValueType>&, const hmemo::HArray<ValueType>&,        \
-                                                    const binary::BinaryOp, hmemo::ContextPtr);                              \
-    template void HArrayUtils::binaryOpScalar1<ValueType>( hmemo::HArray<ValueType>&,                                        \
-                                                           const ValueType, const hmemo::HArray<ValueType>&,                 \
-                                                           const binary::BinaryOp, hmemo::ContextPtr);                       \
-    template void HArrayUtils::binaryOpScalar2<ValueType>( hmemo::HArray<ValueType>&,                                        \
-                                                           const hmemo::HArray<ValueType>&, const ValueType,                 \
-                                                           const binary::BinaryOp, hmemo::ContextPtr);                       \
     template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                      \
             const binary::BinaryOp, hmemo::ContextPtr );                                                                     \
+    template ValueType HArrayUtils::reduce2<ValueType>(                                                                      \
+            const hmemo::HArray<ValueType>&,                                                                                 \
+            const hmemo::HArray<ValueType>&,                                                                                 \
+            const binary::BinaryOp,                                                                                          \
+            const binary::BinaryOp,                                                                                          \
+            hmemo::ContextPtr );                                                                                             \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>( const hmemo::HArray<ValueType>&,                               \
             const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                                            \
     template void HArrayUtils::axpy<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                                  \
@@ -1361,6 +1408,30 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2
 
+// The unary/binary operations are only instantiated for numeric data types, not IndexType
+
+#define HARRAYUTILS_SPECIFIER( ValueType )                                                               \
+    template void HArrayUtils::unaryOp<ValueType>( hmemo::HArray<ValueType>&,                            \
+                                                   const hmemo::HArray<ValueType>&,                      \
+                                                   const unary::UnaryOp, hmemo::ContextPtr);             \
+    template void HArrayUtils::binaryOp<ValueType>( hmemo::HArray<ValueType>&,                           \
+                                                    const hmemo::HArray<ValueType>&,                     \
+                                                    const hmemo::HArray<ValueType>&,                     \
+                                                    const binary::BinaryOp, hmemo::ContextPtr);          \
+    template void HArrayUtils::binaryOpScalar1<ValueType>( hmemo::HArray<ValueType>&,                    \
+                                                           const ValueType,                              \
+                                                           const hmemo::HArray<ValueType>&,              \
+                                                           const binary::BinaryOp, hmemo::ContextPtr);   \
+    template void HArrayUtils::binaryOpScalar2<ValueType>( hmemo::HArray<ValueType>&,                    \
+                                                           const hmemo::HArray<ValueType>&,              \
+                                                           const ValueType,                              \
+                                                           const binary::BinaryOp, hmemo::ContextPtr);   
+
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
+
+#undef HARRAYUTILS_SPECIFIER
+
+// ToDo: template instantiation of bucketSort/bucketCount for PartitionId but only if PartitionId != IndexType
 // ToDo: template instantiation of bucketSort/bucketCount for PartitionId but only if PartitionId != IndexType
 
 template void HArrayUtils::bucketSort( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm,

@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, binary::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), binary::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), binary::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), binary::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }

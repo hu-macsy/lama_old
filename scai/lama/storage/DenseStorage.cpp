@@ -1045,7 +1045,8 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> read1( mData, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType maxval = reduce[loc]( read1.get(), n, utilskernel::binary::ABS_MAX );
+    ValueType zero   = 0;
+    ValueType maxval = reduce[loc]( read1.get(), n, zero, utilskernel::binary::ABS_MAX );
     return maxval;
 }
 
@@ -1080,6 +1081,7 @@ template<typename ValueType>
 ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<ValueType>& other ) const
 {
     // no more checks needed here
+
     IndexType n = mNumRows * mNumColumns;
 
     if ( n == 0 )
@@ -1087,14 +1089,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
         return static_cast<ValueType>( 0 );
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
-    ContextPtr loc = this->getContextPtr();
-    absMaxDiffVal.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> read1( mData, loc );
-    ReadAccess<ValueType> read2( other.mData, loc );
-    ValueType maxval = absMaxDiffVal[loc]( read1.get(), read2.get(), n );
-    return maxval;
+    return HArrayUtils::absMaxDiffVal( mData, other.mData, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
