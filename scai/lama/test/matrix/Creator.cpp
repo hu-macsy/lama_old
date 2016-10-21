@@ -188,6 +188,38 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 
 /* ------------------------------------------------------------------------- */
 
+
+BOOST_AUTO_TEST_CASE( randomSeedTest )
+{
+    // it should be okay just to test one ValueType 
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    IndexType n = 4, m = 6;
+    CSRSparseMatrix<ValueType> matrix1( n, m );
+    CSRSparseMatrix<ValueType> matrix2( n, m );
+    CSRSparseMatrix<ValueType> matrix3( n, m );
+
+    MatrixCreator::setSeed( 5 );
+    MatrixCreator::fillRandom( matrix1, 0.1f );
+    MatrixCreator::setSeed( 11 );
+    MatrixCreator::fillRandom( matrix2, 0.1f );
+    MatrixCreator::setSeed( 5 );
+    MatrixCreator::fillRandom( matrix3, 0.1f );
+
+    for( IndexType i = 0; i < n; ++i )
+    {
+        for ( IndexType j = 0; j < m; ++j )
+        {
+            Scalar s1 = matrix1.getValue( i, j );
+            Scalar s3 = matrix3.getValue( i, j );
+            BOOST_CHECK_EQUAL( s1.getValue<ValueType>(), s3.getValue<ValueType>() );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* ------------------------------------------------------------------------- */

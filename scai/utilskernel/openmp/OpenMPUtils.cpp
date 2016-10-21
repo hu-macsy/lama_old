@@ -378,6 +378,24 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPUtils::scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n,
+                                  const ValueType alpha, const ValueType beta )
+{
+    SCAI_REGION( "OpenMP.Utils.scaleVectorAddScalar" )
+    SCAI_LOG_DEBUG( logger,
+                    "scaleVectorAddScalar<" << TypeTraits<ValueType>::id() << ">: " << "array1[" << n << "] = alpha( " << alpha
+                    << ") * array2 + beta (" << beta << ")" )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        array1[i] = alpha * array2[i] + beta;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPUtils::setOrder( ValueType array[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setOrder" )
@@ -1641,6 +1659,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scaleVectorAddScalar<ValueType> >( scaleVectorAddScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );

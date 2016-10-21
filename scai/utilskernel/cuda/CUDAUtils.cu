@@ -254,6 +254,34 @@ void addScalarKernel( ValueType out[], const ValueType in[], const ValueType val
 
 template<typename ValueType>
 __global__
+void scaleVectorAddScalarKernel( ValueType array1[], const ValueType array2[], const ValueType alpha, const ValueType beta, const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        array1[i] = alpha * array2[i] + beta;
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/*   binary::MULT kernel                                                                                              */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType1, typename ValueType2>
+__global__
+void multKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = in1[i] * in2[i];
+    }
+}
+
+template<typename ValueType>
+__global__
 void multScalarKernel( ValueType out[], const ValueType in[], const ValueType value, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -558,6 +586,29 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
         default:
             COMMON_THROWEXCEPTION( "unsupported binary op: " << op )
     }
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
+}
+
+template<typename ValueType>
+void CUDAUtils::scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n,
+                                      const ValueType alpha, const ValueType beta )
+{
+    SCAI_REGION( "CUDA.Utils.scaleVectorAddScalar" )
+
+    SCAI_LOG_INFO( logger, "scaleVectorAddScalar<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+    const int blockSize = CUDASettings::getBlockSize( n );
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( n, dimBlock.x );
+
+    scaleVectorAddScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( array1, array2, alpha, beta, n );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
 }
@@ -1611,6 +1662,7 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scaleVectorAddScalar<ValueType> >( scaleVectorAddScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );

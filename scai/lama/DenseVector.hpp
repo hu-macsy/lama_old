@@ -206,6 +206,13 @@ public:
     DenseVector( const Expression_SV& expression );
 
     /**
+     * @brief creates a DenseVector with the Expression alpha + x.
+     *
+     * @param[in] expression    alpha * x + beta
+     */
+    DenseVector( const Expression_SV_S& expression );
+
+    /**
      *  @brief creates a DenseVector with the Expression alpha * x * Y.
      *
      * @param[in] expression    x * y
@@ -407,6 +414,8 @@ public:
     virtual void assign( const Expression_SV_SV& expression );
 
     virtual void assign( const Expression_SVV& expression );
+
+    virtual void assign( const Expression_SV_S& expression );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 

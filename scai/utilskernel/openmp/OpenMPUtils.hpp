@@ -88,6 +88,11 @@ public:
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
+    /** OpenMP implementation for UtilKernelTrait::scaleVectorAddScalar */
+
+    template<typename ValueType>
+    static void scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
+
     /** OpenMP implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
