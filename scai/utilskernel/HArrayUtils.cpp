@@ -1246,6 +1246,86 @@ void HArrayUtils::bucketCount(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void HArrayUtils::mergeSort(
+    hmemo::HArray<ValueType>& values,
+    const hmemo::HArray<IndexType>& offsets,
+    bool ascending,
+    hmemo::ContextPtr )
+{
+    IndexType n  = values.size();       // number of values to sort
+    IndexType nb = offsets.size() - 1;  // number of sorted subarray
+
+    SCAI_LOG_INFO( logger, "mergeSort of values[" << n << "] with " << nb << " sorted subarrays." )
+
+    // we need a (writeable) copy of the offset array for running offsets
+
+    HArray<IndexType> copyOffsets( offsets ); 
+
+    // Temporary array required for the sorted values, in-place not supported
+
+    HArray<ValueType> sorted; 
+
+    {
+        WriteAccess<IndexType> wOffsets( copyOffsets );
+        ReadAccess<IndexType> rOffsets( offsets );
+        WriteOnlyAccess<ValueType> wSorted( sorted, n );
+        ReadAccess<ValueType> rValues( values );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            // find the next minimal element
+ 
+            IndexType nextIndex = nIndex;
+
+            for ( IndexType k = 0; k < nb; ++k )
+            {
+                if ( wOffsets[k] == rOffsets[k+1] )
+                {
+                    continue;  // no more values in subarray k
+                }
+
+                if ( nextIndex == nIndex )
+                {
+                    nextIndex = k;
+                }
+                else if ( ascending && rValues[wOffsets[k]] < rValues[wOffsets[nextIndex]] )
+                {
+                    nextIndex = k;
+                }
+                else if ( !ascending && rValues[wOffsets[k]] > rValues[wOffsets[nextIndex]] )
+                {
+                    nextIndex = k;
+                }
+            }
+
+            SCAI_ASSERT_NE_ERROR( nextIndex, nIndex, "no more elements found" )
+
+            IndexType& pos = wOffsets[nextIndex];
+
+            SCAI_LOG_DEBUG( logger, "Next elem in subarray = " << nextIndex 
+                                    << ", pos = " << pos << ", val = " << rValues[pos] );
+
+            // sort in the next minimal element
+
+            wSorted[i] = rValues[pos++];
+        }
+
+        // Proof: wOffsets[k] == rOffsets[k+1]
+
+        for ( IndexType k = 0; k < nb; ++k )
+        { 
+            SCAI_ASSERT_EQ_ERROR( rOffsets[k+1], wOffsets[k], "serious problem during mergesort" )
+        }
+    }
+
+    // set the sorted values back in the input array
+
+    values.swap( sorted );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HArrayUtils::buildSparseIndexes(
     hmemo::HArray<IndexType>& sparseIndexes,
     const hmemo::HArray<ValueType>& denseArray,
@@ -1392,6 +1472,8 @@ void HArrayUtils::buildDenseArray(
     template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                         \
     template ValueType HArrayUtils::unscan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                       \
     template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                        \
+                                                const bool, hmemo::ContextPtr );                                             \
+    template void HArrayUtils::mergeSort<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<IndexType>&,             \
                                                 const bool, hmemo::ContextPtr );                                             \
     template void HArrayUtils::setSequence<ValueType>( hmemo::HArray<ValueType>&, ValueType, ValueType, IndexType,           \
             hmemo::ContextPtr );                                                                                             \

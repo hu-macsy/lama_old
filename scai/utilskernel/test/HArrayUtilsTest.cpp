@@ -627,6 +627,37 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( mergeSortTest )
+{
+    typedef double ValueType;
+
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType vals[]    = { 0, 5, 18, 3, 6, 9, 10, 11, 12 };
+    IndexType offsets[] = { 0,        3, 3,        6,        9 };
+
+    // Note: one empty subarray
+
+    const IndexType n  = sizeof( vals ) / sizeof( ValueType );        // number values to sort
+    const IndexType nb = sizeof( offsets) / sizeof( IndexType ) - 1;  // number of sorted subarray
+
+    BOOST_REQUIRE_EQUAL( 0, offsets[0] );
+    BOOST_REQUIRE_EQUAL( n, offsets[nb] );
+
+    // make LAMA Arrays of the data to use it in different context
+
+    LArray<ValueType> array( n, vals, loc );
+    LArray<IndexType> sortOffsets( nb + 1, offsets, loc );
+
+    bool ascending = true;
+
+    HArrayUtils::mergeSort( array, sortOffsets, ascending );
+
+    BOOST_CHECK( HArrayUtils::isSorted( array, ascending, loc ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     ContextPtr loc = Context::getContextPtr();
