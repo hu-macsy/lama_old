@@ -639,6 +639,16 @@ Scalar DenseVector<ValueType>::l2Norm() const
     return Scalar( common::Math::sqrt( globalDotProduct ) );
 }
 
+template<>
+Scalar DenseVector<IndexType>::l2Norm() const
+{
+    // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
+
+    ScalarRepType localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return Scalar( common::Math::sqrt( globalDotProduct ) );
+}
+
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1285,7 +1295,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseVector, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARRAY_TYPES_HOST )
 
 } /* end namespace lama */
 
