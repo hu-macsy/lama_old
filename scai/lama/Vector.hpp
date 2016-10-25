@@ -566,6 +566,8 @@ public:
 
     virtual void assign( const Expression_SVV& expression ) = 0;
 
+    virtual void assign( const Expression_SV_S& expression ) = 0;
+
     /**
      * @brief Returns the dot product of this and other.
      *

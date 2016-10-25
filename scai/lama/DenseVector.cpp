@@ -48,6 +48,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -377,6 +378,130 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 
     assign( value );
     return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+
+/** Determine splitting values for sorting distributed values.
+ *
+ *  A value v belongs to partition p if splitValues[p] <= v < splitValues[p+1] 
+ */
+
+template<typename ValueType>
+static void getSplitValues( ValueType splitValues[], const IndexType nPartitions )
+{
+    // split values by uniformly distribution of range -1.0 .. 1.0 
+
+    for ( PartitionId p = 0; p <= nPartitions; ++p )
+    {
+        splitValues[p] = ValueType( -1 ) + ( ValueType( p ) / ValueType( nPartitions ) ) * ValueType( 2 );
+    }
+
+    // make sure to cover the full range
+
+    splitValues[0] = common::TypeTraits<ValueType>::getMin();
+    splitValues[nPartitions] = common::TypeTraits<ValueType>::getMax();
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::sort( bool ascending )
+{
+    const dmemo::Distribution& distribution = getDistribution();
+
+    const dmemo::Communicator& comm = distribution.getCommunicator();
+
+    IndexType blockSize = distribution.getBlockDistributionSize();
+
+    SCAI_ASSERT_NE_ERROR( blockSize, nIndex, "sort only possible on block distributed vectors" )
+
+    // Now sort the local values
+
+    HArray<IndexType> perm;
+
+    utilskernel::HArrayUtils::sort( mLocalValues, perm, ascending );
+
+    // Determine the splitting values
+ 
+    PartitionId nPartitions = comm.getSize();
+
+    common::scoped_array<ValueType> splitValues( new ValueType[ nPartitions + 1 ] );
+  
+    getSplitValues( splitValues.get(), nPartitions );
+
+    common::scoped_array<IndexType> quantities( new IndexType[ nPartitions ] );
+
+    // Determine quantities for each processor
+
+    for ( PartitionId ip = 0; ip < nPartitions; ++ip )
+    {
+        quantities[ip] = 0;
+    }
+
+    PartitionId p = 0;
+
+    {
+        ReadAccess<ValueType> rValues( mLocalValues );
+ 
+        for ( IndexType i = 0; i < blockSize; ++i )
+        {
+            while ( rValues[i] > splitValues[p + 1] )
+            {
+               p++;
+               SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+            }
+
+            quantities[p]++;
+        }
+    }
+
+    // make communication plans for sending data and receiving data
+
+    dmemo::CommunicationPlan sendPlan;
+
+    sendPlan.allocate( quantities.get(), nPartitions );
+
+    dmemo::CommunicationPlan recvPlan;
+
+    recvPlan.allocateTranspose( sendPlan, comm );
+  
+    SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
+
+    LArray<ValueType> newValues;
+
+    IndexType newLocalSize = recvPlan.totalQuantity();  
+
+    {
+        WriteOnlyAccess<ValueType> recvVals( newValues, newLocalSize );
+        ReadAccess<ValueType> sendVals( mLocalValues );
+        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+    }
+
+    // Merge the values received from other processors
+
+    HArray<IndexType> mergeOffsets;   // offsets for sorted subarrays in mergesort
+
+    {
+        IndexType nOffsets = recvPlan.size();
+
+        WriteOnlyAccess<IndexType> wOffsets( mergeOffsets, nOffsets + 1 );
+    
+        wOffsets[0] = 0;
+
+        for ( IndexType k = 0; k < nOffsets; ++k )
+        {
+           wOffsets[k+1] = wOffsets[k] + recvPlan[k].quantity;
+        }
+    }
+
+    utilskernel::HArrayUtils::mergeSort( newValues, mergeOffsets, ascending );
+
+    // Create the new general block distribution
+
+    DistributionPtr newDist( new dmemo::GenBlockDistribution( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() ) );
+
+    mLocalValues.swap( newValues );
+
+    setDistributionPtr( newDist );
 }
 
 /* ------------------------------------------------------------------------- */

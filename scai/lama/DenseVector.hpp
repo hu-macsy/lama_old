@@ -324,6 +324,19 @@ public:
 
     virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution );
 
+    /** Sort all elements of this vector. 
+     *
+     *  Currently, sorting is only possible on block distributed vectors. 
+     *  Keep in mind that this operation might introduce a new (general block) distribution
+     *  for the vector. 
+     *
+     *  @param[in] ascending flag if sorting is ascending or descending
+     */
+
+    virtual void sort( bool ascending );
+
+    /** Implementation of Vector::getValueType */
+
     virtual common::scalar::ScalarType getValueType() const;
 
     /**

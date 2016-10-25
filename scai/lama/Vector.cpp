@@ -489,9 +489,8 @@ Vector& Vector::operator=( const Expression_SV_S expression )
                     << expression.getArg1().getArg1() << " x=" << expression.getArg1().getArg2()
                     << " y=" << expression.getArg2() )
 
-    Distributed::operator=( expression.getArg1().getArg2() );
-    assign( expression.getArg1().getArg2() );
-    add( expression.getArg2() );
+    // Distributed::operator=( expression.getArg1().getArg2() );
+    assign( expression );
     return *this;
 }
 
