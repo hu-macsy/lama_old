@@ -84,6 +84,16 @@ struct unary
     } UnaryOp;
 };
 
+/** This method provides a general routine for applying an unary operator. 
+ *
+ *  @param[in] op specifies the operator
+ *  @param[in] x  is the input value
+ *  @returns   op( x ) 
+ *
+ *  Due to inlining this method can also be used within loops where op
+ *  is loop invariant without losing performance. But therefore good
+ *  compiler optimization must be switched on.
+ */
 template <typename ValueType>
 MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
 inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )

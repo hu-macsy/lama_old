@@ -1491,24 +1491,33 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 #undef HARRAYUTILS_SPECIFIER
 #undef HARRAUTILS_SPECIFIER_LVL2
 
-// The unary/binary operations are only instantiated for numeric data types, not IndexType
+// The unary/binary operations are instantiated for all array types
+// But keep in mind that some operations are not supported for IndexType
+// and will therefore cause runtime errors, i.e. throw an exception
 
-#define HARRAYUTILS_SPECIFIER( ValueType )                                                               \
-    template void HArrayUtils::unaryOp<ValueType>( hmemo::HArray<ValueType>&,                            \
-                                                   const hmemo::HArray<ValueType>&,                      \
-                                                   const unary::UnaryOp, hmemo::ContextPtr);             \
-    template void HArrayUtils::binaryOp<ValueType>( hmemo::HArray<ValueType>&,                           \
-                                                    const hmemo::HArray<ValueType>&,                     \
-                                                    const hmemo::HArray<ValueType>&,                     \
-                                                    const binary::BinaryOp, hmemo::ContextPtr);          \
-    template void HArrayUtils::binaryOpScalar1<ValueType>( hmemo::HArray<ValueType>&,                    \
-                                                           const ValueType,                              \
-                                                           const hmemo::HArray<ValueType>&,              \
-                                                           const binary::BinaryOp, hmemo::ContextPtr);   \
-    template void HArrayUtils::binaryOpScalar2<ValueType>( hmemo::HArray<ValueType>&,                    \
-                                                           const hmemo::HArray<ValueType>&,              \
-                                                           const ValueType,                              \
-                                                           const binary::BinaryOp, hmemo::ContextPtr);   
+#define HARRAYUTILS_SPECIFIER( ValueType )                    \
+    template void HArrayUtils::unaryOp<ValueType>(            \
+        hmemo::HArray<ValueType>&,                            \
+        const hmemo::HArray<ValueType>&,                      \
+        const unary::UnaryOp, hmemo::ContextPtr);             \
+    template void HArrayUtils::binaryOp<ValueType>(           \
+        hmemo::HArray<ValueType>&,                            \
+         const hmemo::HArray<ValueType>&,                     \
+         const hmemo::HArray<ValueType>&,                     \
+         const binary::BinaryOp,                              \
+         hmemo::ContextPtr);                                  \
+    template void HArrayUtils::binaryOpScalar1<ValueType>(    \
+        hmemo::HArray<ValueType>&,                            \
+        const ValueType,                                      \
+        const hmemo::HArray<ValueType>&,                      \
+        const binary::BinaryOp,                               \
+        hmemo::ContextPtr);                                   \
+    template void HArrayUtils::binaryOpScalar2<ValueType>(    \
+        hmemo::HArray<ValueType>&,                            \
+        const hmemo::HArray<ValueType>&,                      \
+        const ValueType,                                      \
+        const binary::BinaryOp,                               \
+        hmemo::ContextPtr);   
 
 // Note: it is now safe to instantiate unary/binary kernels also for IndexType 
 

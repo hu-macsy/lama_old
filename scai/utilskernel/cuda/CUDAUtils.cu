@@ -268,18 +268,6 @@ void scaleVectorAddScalarKernel( ValueType array1[], const ValueType array2[], c
 /*   binary::MULT kernel                                                                                              */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType1, typename ValueType2>
-__global__
-void multKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = in1[i] * in2[i];
-    }
-}
-
 template<typename ValueType>
 __global__
 void multScalarKernel( ValueType out[], const ValueType in[], const ValueType value, const IndexType n )
