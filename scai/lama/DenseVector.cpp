@@ -394,7 +394,7 @@ static void getSplitValues( ValueType splitValues[], const IndexType nPartitions
 
     for ( PartitionId p = 0; p <= nPartitions; ++p )
     {
-        splitValues[p] = -1.0 + ( ValueType( p ) / ValueType( nPartitions ) ) * 2.0;
+        splitValues[p] = ValueType( -1 ) + ( ValueType( p ) / ValueType( nPartitions ) ) * ValueType( 2 );
     }
 
     // make sure to cover the full range

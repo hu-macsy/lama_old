@@ -699,7 +699,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
     ContextPtr loc = Context::getContextPtr();
 
     ValueType xVals[] = { 3, 1, 4, 2, 2, 1, 4, 3 };
-    ValueType yVals[] = { 2, -1, -1, -5, 5, 3, 1 };
+    ValueType yVals[] = { 2, 1, 1, 5, 5, 3, 9 };
 
     const IndexType nx = sizeof( xVals ) / sizeof( ValueType );
     const IndexType ny = sizeof( yVals ) / sizeof( ValueType );
