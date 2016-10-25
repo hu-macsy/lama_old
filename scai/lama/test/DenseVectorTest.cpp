@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 {
      typedef float ValueType;
 
-     const IndexType n = 7;
+     const IndexType n = 4;
      ValueType sourceVals[] = { 3, 1, 4, 2 };
      hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
@@ -637,7 +637,7 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 
      for( IndexType i = 0; i < n; ++i )
      {
-        ValueType erg = alpha * sourceVals[i] + beta; 
+        ValueType erg = alpha * sourceVals[i] + beta;
         BOOST_CHECK_EQUAL( erg, res1.getValue(i).getValue<ValueType>() );
         BOOST_CHECK_EQUAL( erg, res2.getValue(i).getValue<ValueType>() );
         BOOST_CHECK_EQUAL( erg,    x.getValue(i).getValue<ValueType>() );
