@@ -470,6 +470,24 @@ public:
         const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Sorting of an array where its subarrays are already sorted 
+     *
+     *  @param[in,out] values array to be sorted
+     *  @param[in]     array with offsets that specify the sorted subarrays 
+     *  @param[in]     ascending true for ascending sort, false for descending
+     *  @param[in]     prefLoc context where merging should take place
+     *  
+     *  Note: offset[0] == 0, offset[ offset.size() ] == array.size() must be valid
+     *
+     *  Each array[offset[i]::offset[i+1]] must already be sorted.
+     */
+    template<typename ValueType>
+    static void mergeSort(
+        hmemo::HArray<ValueType>& values,
+        const hmemo::HArray<IndexType>& offsets,
+        bool acending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Initialize an array with the sequence 0, .., n-1
      *
      *  @param[out] array   will contain the values 0, ..., n-1

@@ -81,22 +81,25 @@ SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 /*                                 unary kernels                               */
 /* --------------------------------------------------------------------------- */
 
-/* invert / reciprocal */
+/** This kernel can be applied for any arbitrary unary operation */
 
 template<typename ValueType>
 __global__
-void invertKernel( ValueType out[], const ValueType in[], const IndexType n )
+void unaryOpKernel( ValueType out[], const unary::UnaryOp op, const ValueType in[], IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-    ValueType one = 1;
 
     if ( i < n )
     {
-        out[i] = one / in[i];
+        out[i] = applyUnary( op, in[i] );
     }
 }
 
-/* conj */
+/** The following kernel is a specialization of unaryOpKernel with op == unary::CONJ 
+ *
+ *  Note: latest CUDA compiler releases show no performance benefits but we keep it
+ *        here to demonstrate how specific kernels might be used for optimization
+ */
 
 template<typename ValueType>
 __global__
@@ -107,6 +110,20 @@ void conjKernel( ValueType out[], const ValueType in[], const IndexType n )
     if ( i < n )
     {
         out[i] = Math::conj( in[i] );
+    }
+}
+
+/** A specialization of conj kernel is required at Math::conj is not defined for IndexType  */
+
+template<>
+__global__
+void conjKernel( IndexType out[], const IndexType in[], const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = in[i];
     }
 }
 
@@ -124,104 +141,6 @@ void absKernel( ValueType out[], const ValueType in[], const IndexType n )
     }
 }
 
-/* exp */
-
-template<typename ValueType>
-__global__
-void expKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::exp( in[i] );
-    }
-}
-
-/* sqrt */
-
-template<typename ValueType>
-__global__
-void sqrtKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-       out[i] = Math::sqrt( in[i] );
-    }
-}
-
-/* sin */
-
-template<typename ValueType>
-__global__
-void sinKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::sin( in[i] );
-    }
-}
-
-/* cos */
-
-template<typename ValueType>
-__global__
-void cosKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::cos( in[i] );
-    }
-}
-
-/* tan */
-
-template<typename ValueType>
-__global__
-void tanKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::tan( in[i] );
-    }
-}
-
-/* atan */
-
-template<typename ValueType>
-__global__
-void atanKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::atan( in[i] );
-    }
-}
-
-/* log */
-
-template<typename ValueType>
-__global__
-void logKernel( ValueType out[], const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::log( in[i] );
-    }
-}
-
 /* floor */
 
 template<typename ValueType>
@@ -236,73 +155,64 @@ void floorKernel( ValueType out[], const ValueType in[], const IndexType n )
     }
 }
 
-/* ceil */
-
-template<typename ValueType>
+template<>
 __global__
-void ceilKernel( ValueType out[], const ValueType in[], const IndexType n )
+void floorKernel( IndexType out[], const IndexType in[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
-        out[i] = Math::ceil( in[i] );
+        out[i] = in[i];
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*                                            copysign                                                                */
+/*   binaryOp kernels for two input arrays                                                                            */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+/** The following kernel can be used as binary operation on arrays for each operation.
+ *  Due to inlining the code has the same efficiency than using any kernel were the operation
+ *  is explicitly coded.
+ */
+
 template<typename ValueType>
 __global__
-void copysignKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
+void binOpKernel( ValueType out[], const ValueType in1[], const binary::BinaryOp op, const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
-        out[i] = Math::copysign( in1[i], in2[i] ); 
+        out[i] = applyBinary( in1[i], op, in2[i] );
     }
 }
 
-// template specialization for IndexType, might be instantiated, but is never called 
+/** Special version of binOpKernel with op == binary::MULT */
 
-template<>
+template<typename ValueType1, typename ValueType2>
 __global__
-void copysignKernel( IndexType[], const IndexType[], const IndexType[], const IndexType )
-{
-}
-
-template<typename ValueType>
-__global__
-void powKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
+void multKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
-        out[i] = Math::pow( in1[i], in2[i] );
+        out[i] = in1[i] * in2[i];
     }
 }
 
-// template specialization for IndexType, might be instantiated, but is never called 
+/** Special version of binOpKernel with op == binary::ADD */
 
-template<>
+template<typename ValueType1, typename ValueType2>
 __global__
-void powKernel( IndexType[], const IndexType[], const IndexType[], const IndexType )
-{
-}
-
-template<typename ValueType>
-__global__
-void powBaseScalarKernel( ValueType out[], const ValueType value, const ValueType in[], const IndexType n )
+void addKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < n )
     {
-        out[i] = Math::pow( value, in[i] );
+        out[i] = in1[i] + in2[i];
     }
 }
 
@@ -320,18 +230,6 @@ void binOpScalar1Kernel( ValueType out[], const ValueType value, const binary::B
 
 template<typename ValueType>
 __global__
-void binOpKernel( ValueType out[], const ValueType in1[], const binary::BinaryOp op, const ValueType in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = applyBinary( in1[i], op, in2[i] );
-    }
-}
-
-template<typename ValueType>
-__global__
 void binOpScalar2Kernel( ValueType out[], const ValueType in[], const binary::BinaryOp op, const ValueType value, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -344,30 +242,6 @@ void binOpScalar2Kernel( ValueType out[], const ValueType in[], const binary::Bi
 
 template<typename ValueType>
 __global__
-void powExpScalarKernel( ValueType out[], const ValueType in[], const ValueType value, const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = Math::pow( in[i], value );
-    }
-}
-
-template<typename ValueType1, typename ValueType2>
-__global__
-void addKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = in1[i] + in2[i];
-    }
-}
-
-template<typename ValueType>
-__global__
 void addScalarKernel( ValueType out[], const ValueType in[], const ValueType value, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -375,30 +249,6 @@ void addScalarKernel( ValueType out[], const ValueType in[], const ValueType val
     if ( i < n )
     {
         out[i] = in[i] + value;
-    }
-}
-
-template<typename ValueType1, typename ValueType2>
-__global__
-void subKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = in1[i] - in2[i];
-    }
-}
-
-template<typename ValueType>
-__global__
-void subScalarKernel( ValueType out[], const ValueType value, const ValueType in[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = value - in[i];
     }
 }
 
@@ -442,18 +292,6 @@ void multScalarKernel( ValueType out[], const ValueType in[], const ValueType va
     }
 }
 
-template<typename ValueType1, typename ValueType2>
-__global__
-void divKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = in1[i] / in2[i];
-    }
-}
-
 template<typename ValueType>
 __global__
 void divScalarKernel( ValueType out[], const ValueType value, const ValueType in[], const IndexType n )
@@ -468,18 +306,6 @@ void divScalarKernel( ValueType out[], const ValueType value, const ValueType in
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType1, typename ValueType2>
-__global__
-void minKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = common::Math::min( in1[i], static_cast<ValueType1>( in2[i] ) );
-    }
-}
-
 template<typename ValueType>
 __global__
 void minScalarKernel( ValueType out[], const ValueType in[], const ValueType val, const IndexType n )
@@ -492,18 +318,6 @@ void minScalarKernel( ValueType out[], const ValueType in[], const ValueType val
     }
 }
 
-template<typename ValueType1, typename ValueType2>
-__global__
-void maxKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = common::Math::max( in1[i], static_cast<ValueType1>( in2[i] ) );
-    }
-}
-
 template<typename ValueType>
 __global__
 void maxScalarKernel( ValueType out[], const ValueType in[], const ValueType val, const IndexType n )
@@ -513,19 +327,6 @@ void maxScalarKernel( ValueType out[], const ValueType in[], const ValueType val
     if ( i < n )
     {
         out[i] = common::Math::max( val, in[i] );
-    }
-}
-
-template<typename ValueType>
-__global__
-void absMaxKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = common::Math::max( common::Math::abs( in1[i] ), 
-                                    common::Math::abs( in2[i] ) );
     }
 }
 
@@ -721,34 +522,6 @@ ValueType CUDAUtils::reduce2(
 }
 
 /* --------------------------------------------------------------------------- */
-
-/* powBase */
-
-template<typename ValueType>
-__global__
-void powBaseKernel( ValueType* array, const ValueType base, const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        array[i] = Math::pow( base, array[i] );
-    }
-}
-
-/* powExp */
-
-template<typename ValueType>
-__global__
-void powExpKernel( ValueType* array, const ValueType exp, const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        array[i] = Math::pow( array[i], exp );
-    }
-}
 
 template<typename ValueType>
 void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op )
@@ -1436,71 +1209,19 @@ void CUDAUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType 
             break;
         }
 
-        case unary::EXP :
-        {
-            expKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
-        case unary::SQRT :
-        {
-            sqrtKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
-        case unary::SIN :
-        {
-            sinKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
-        case unary::COS :
-        {
-            cosKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
-        case unary::TAN :
-        {
-            tanKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
-        case unary::ATAN :
-        {
-            atanKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
-        case unary::LOG :
-        {
-            logKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
         case unary::FLOOR :
         {
+            // the performance of this kernel should be compared to 
+            // unaryOpKernel with op == unary::CEIL to decide whether it is worth
+
             floorKernel <<< dimGrid, dimBlock>>>( out, in, n );
         
             break;
         }
 
-        case unary::CEIL :
-        {
-            ceilKernel <<< dimGrid, dimBlock>>>( out, in, n );
-        
-            break;
-        }
-
         default:
-            COMMON_THROWEXCEPTION( "Unsupported binary op " << op )
+
+            unaryOpKernel <<< dimGrid, dimBlock>>>( out, op, in, n );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
@@ -1530,6 +1251,8 @@ void CUDAUtils::binaryOp(
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n, dimBlock.x );
 
+    // Specific kernels for a given binary op does not give relevant performance gain
+
     switch ( op )
     {
         case binary::ADD :
@@ -1538,51 +1261,9 @@ void CUDAUtils::binaryOp(
             break;
         }
 
-        case binary::SUB :
-        {
-            subKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
         case binary::MULT :
         {
             multKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
-        case binary::DIVIDE :
-        {
-            divKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
-        case binary::MIN :
-        {
-            minKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
-        case binary::MAX :
-        {
-            maxKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
-        case binary::ABS_MAX :
-        {
-            absMaxKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
-        case binary::POW :
-        {
-            powKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
-            break;
-        }
-
-        case binary::COPY_SIGN :
-        {
-            copysignKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
             break;
         }
 
@@ -1628,12 +1309,6 @@ void CUDAUtils::binaryOpScalar1(
             break;
         }
 
-        case binary::SUB :
-        {
-            subScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, in, n );
-            break;
-        }
-
         case binary::MULT :
         {
             if ( value == scai::common::constants::ZERO )
@@ -1669,12 +1344,6 @@ void CUDAUtils::binaryOpScalar1(
         case binary::MIN :
         {
             minScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
-        case binary::POW :
-        {
-            powBaseScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, in, n );
             break;
         }
 
@@ -1754,12 +1423,6 @@ void CUDAUtils::binaryOpScalar2(
         case binary::MIN :
         {
             minScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
-        case binary::POW :
-        {
-            powExpScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
             break;
         }
 
@@ -2005,17 +1668,6 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
-}
-
-template<typename ValueType>
-void CUDAUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::CUDA;
-
-    SCAI_LOG_DEBUG( logger, "registerV numeric UtilsKernel CUDA [" << flag
-                   << "] --> ValueType = " << common::getScalarType<ValueType>() )
-
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar1<ValueType> >( binaryOpScalar1, ctx, flag );
@@ -2046,7 +1698,6 @@ CUDAUtils::CUDAUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorV<RegNumericKernels, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_CUDA_LIST, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
@@ -2056,7 +1707,6 @@ CUDAUtils::~CUDAUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     Registrator::registerKernels( flag );
     kregistry::mepr::RegistratorV<RegArrayKernels, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorV<RegNumericKernels, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
     kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARRAY_TYPES_CUDA_LIST, SCAI_ARRAY_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 

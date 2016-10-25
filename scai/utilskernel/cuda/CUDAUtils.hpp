@@ -227,12 +227,6 @@ private:
     };
 
     template<typename ValueType>
-    struct RegNumericKernels
-    {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
-    };
-
-    template<typename ValueType>
     struct RegArrayKernels
     {
         static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
