@@ -619,13 +619,10 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
      typedef float ValueType;
 
      const IndexType n = 7;
-     dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
-
+     ValueType sourceVals[] = { 3, 1, 4, 2 };
      hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-     DenseVector<ValueType> x( ctx );
-     x.setRandom( dist );
-     DenseVector<ValueType> xCopy( x );
+     DenseVector<ValueType> x( n, sourceVals, ctx );
 
      ValueType alpha = 34.7;
      ValueType beta  = 5.2;
@@ -638,9 +635,9 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
      // test alias
      x = alpha * x + beta;
 
-     for( IndexType i = 0; i < xCopy.size(); ++i )
+     for( IndexType i = 0; i < n; ++i )
      {
-        ValueType erg = alpha * xCopy.getValue(i).getValue<ValueType>() + beta; 
+        ValueType erg = alpha * sourceVals[i] + beta; 
         BOOST_CHECK_EQUAL( erg, res1.getValue(i).getValue<ValueType>() );
         BOOST_CHECK_EQUAL( erg, res2.getValue(i).getValue<ValueType>() );
         BOOST_CHECK_EQUAL( erg,    x.getValue(i).getValue<ValueType>() );
