@@ -1510,7 +1510,9 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
                                                            const ValueType,                              \
                                                            const binary::BinaryOp, hmemo::ContextPtr);   
 
-SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
+// Note: it is now safe to instantiate unary/binary kernels also for IndexType 
+
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 
 #undef HARRAYUTILS_SPECIFIER
 
