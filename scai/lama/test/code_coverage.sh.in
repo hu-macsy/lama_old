@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverage.sh
@@ -37,6 +37,9 @@
 
 source scai_code_coverage_functions.sh
 
+# Check requirements for codecoverage
+requirements_coverage
+
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
 prepare_coverage $dirname ../..
@@ -46,64 +49,75 @@ export SCAI_TRACE=time
 	
 # check if installed LAMA version supports MPI communicator
 
-LAMA_SUPPORTS_MPI=0
-./lamaTest --SCAI_COMMUNICATOR=MPI --run_test=VersionTest > /dev/null >& /dev/null
-if [ "$?" -eq 0 ]
-then
-   LAMA_SUPPORTS_MPI=1
-fi
+check_feature LAMA_SUPPORTS_MPI ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --run_test=SparseMatrixTest/localConstructorTest
+check_feature LAMA_SUPPORTS_GPI ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=GPI --run_test=SparseMatrixTest/localConstructorTest
+
+check_feature LAMA_SUPPORTS_CUDA ./lamaTest --SCAI_CONTEXT=CUDA --run_test=VersionTest
+check_feature LAMA_SUPPORTS_MIC ./lamaTest --SCAI_CONTEXT=MIC --run_test=VersionTest
 
 # Running lama tests
 echo "Running serial lama tests"
-./lamaTest --SCAI_CONTEXT=Host >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in lama_test"
-	error_count=$(($error_count + $?))
-fi
+count_error ./lamaTest --SCAI_CONTEXT=Host
 
 #Running lama storage tests
 echo "Running serial lama storage tests"
-./storage/lamaStorageTest --SCAI_CONTEXT=Host >/dev/null
-if [ $? -ne 0 ]
-then
-    echo "ERROR in lamaStorageTest"
-    error_count=$(($error_count + $?))
-fi
+count_error ./storage/lamaStorageTest --SCAI_CONTEXT=Host
 
 #Running lama matrix tests
 echo "Running serial lama matrix tests"
-./matrix/lamaMatrixTest --SCAI_CONTEXT=Host >/dev/null
-if [ $? -ne 0 ]
+count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=Host
+
+if [ ${LAMA_SUPPORTS_CUDA} -eq 1 ]
 then
-    echo "ERROR in lamaMatrixTest"
-    error_count=$(($error_count + $?))
+	# Running lama tests
+	echo "Running serial lama tests on CUDA"
+	count_error ./lamaTest --SCAI_CONTEXT=CUDA
+	
+	#Running lama storage tests
+	echo "Running serial lama storage tests on CUDA"
+	count_error ./storage/lamaStorageTest --SCAI_CONTEXT=CUDA
+	
+	#Running lama matrix tests
+	echo "Running serial lama matrix tests on CUDA"
+	count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA
 fi
 
-if [ "${LAMA_SUPPORTS_MPI}" -eq 1 ];
+if [ ${LAMA_SUPPORTS_MIC} -eq 1 ]
+then
+	# Running lama tests
+	echo "Running serial lama tests on MIC"
+	count_error ./lamaTest --SCAI_CONTEXT=MIC
+	
+	#Running lama storage tests
+	echo "Running serial lama storage tests on MIC"
+	count_error ./storage/lamaStorageTest --SCAI_CONTEXT=MIC
+	
+	#Running lama matrix tests
+	echo "Running serial lama matrix tests on MIC"
+	count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=MIC
+fi
+
+if [ ${LAMA_SUPPORTS_MPI} -eq 1 ];
 then
     echo "Running lamaTest with  3 processes"
-    mpirun -np 3 ./lamaTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1 >/dev/null
-    if [ $? -ne 0 ]
-    then
-        echo "ERROR in lamaTest with 3 processes"
-        error_count=$(($error_count + $?))
-    fi
+    count_error mpirun -np 3 ./lamaTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1
+
     echo "Running lamaMatrixTest with 3 processes"
-    mpirun -np 3 ./matrix/lamaMatrixTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1 >/dev/null
-    if [ $? -ne 0 ]
-    then
-        echo "ERROR in lamaMatrixTest with 3 processes"
-        error_count=$(($error_count + $?))
-    fi
+    count_error mpirun -np 3 ./matrix/lamaMatrixTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1
+fi
+
+if [ ${LAMA_SUPPORTS_GPI} -eq 1 ];
+then
+    echo "Running lamaTest with  3 processes"
+    count_error gpirun -np 3 ./lamaTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1
+
+    echo "Running lamaMatrixTest with 3 processes"
+    count_error gpirun -np 3 ./matrix/lamaMatrixTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1
 fi
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure $?
 
 zip -qr ../lama_coverage.zip *
 

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ###
  # @file scai_code_coverage_functions.sh
  #
@@ -33,36 +35,6 @@
  # @date 15.08.2012
 ###
 
-###
- # @file scai_code_coverage_functions.sh
- #
- # @license
- # Copyright (c) 2009-2016
- # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- # for Fraunhofer-Gesellschaft
- #
- # This file is part of the SCAI framework LAMA.
- #
- # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
- # Software Foundation, either version 3 of the License, or (at your option)
- # any later version.
- #
- # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
- # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- # more details.
- #
- # You should have received a copy of the GNU Affero General Public License
- # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- # @endlicense
- #
- # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
- # @date 15.08.2012
-###
-
 function create_dir
 {
 	# Creating dir using current unix timestamp
@@ -86,6 +58,52 @@ function find_dir
 	echo "coverage_${biggest}"
 }
 
+function count_error
+{
+	${*} &> /dev/null
+	if [ $? -ne 0 ]
+    then
+        echo "ERROR in ${*}"
+        error_count=$(($error_count + $?))
+    fi
+}
+
+function check_program
+{
+	$(which ${1} &> /dev/null)
+	if [ "$?" != "0" ]
+	then
+		echo "${1} not found"
+		exit
+	fi
+}
+
+# $1 Option to set $... call
+function check_feature
+{
+	${@:2} &> /dev/null
+	if [ "$?" == "0" ]
+	then
+		eval ${1}=1
+	else
+		eval ${1}=0
+	fi
+}
+
+function exit_on_failure
+{
+	if [[ "${*}" != 0 ]]
+	then
+	    exit 1
+	fi
+}
+
+function requirements_coverage
+{
+	check_program lcov
+	check_program genhtml
+}
+
 # $1: code coveage dirname $2: base coverage dir
 function prepare_coverage
 {
@@ -93,6 +111,9 @@ function prepare_coverage
 	cd $1
 	lcov --base-directory $2 --directory $2 --zerocounters
 	cd -
+	
+	# Reset error counter
+	error_count=0
 }
 
 # $1: code coveage dirname $2: base coverage dir $3: current source dir
@@ -103,33 +124,18 @@ function do_coverage
 	local error_count=0
 
 	#Running lcov and creating data
-	lcov --base-directory $2 --directory $2 --capture --output-file=data.info
-	if [ $? -ne 0 ]
-	then
-		echo "ERROR in running lcov"
-		error_count=$(($error_count + $?))
-	fi
+	count_error lcov --base-directory $2 --directory $2 --capture --output-file=data.info
 
 	#Extracting just Sourcefiles
-	lcov --extract data.info "$3/*" --output-file=data.info
-	if [ $? -ne 0 ]
-	then
-		echo "ERROR in extracting lcov data"
-		error_count=$(($error_count + $?))
-	fi
+	count_error lcov --extract data.info "$3/*" --output-file=data.info
 
 	# Generating html-structure
-	genhtml data.info
-	if [ $? -ne 0 ]
-	then
-		echo "ERROR in generating html-structure"
-		error_count=$(($error_count + $?))
-	fi
+	count_error genhtml data.info
+
+	cd -
 
 	if [[ $error_count != 0 ]]
 	then
-	    exit 1
+	    return 1
 	fi
-
-	cd -
 }

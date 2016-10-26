@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file sparsekernel/test/code_coverageSecond.sh
@@ -30,6 +30,11 @@
  # @date 15.08.2012
 ###
 
+source scai_code_coverage_functions.sh
+
+# Check requirements for codecoverage
+requirements_coverage
+
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 
@@ -37,27 +42,13 @@ error_count=0
 
 # Running tests serial
 echo "Running serial tests"
-./sparsekernelTest --SCAI_CONTEXT=Host >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in sparsekernelTest"
-	error_count=$(($error_count + $?))
-fi
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host
 
 if [ -d ../cuda ];
 then
     #Running common CUDA tests
     echo "Running blaskernel tests with CUDA context"
-    ./sparsekernelTest --SCAI_CONTEXT=CUDA >/dev/null
-    if [ $? -ne 0 ]
-    then
-        echo "ERROR in sparsekernelTest with CUDA context"
-        error_count=$(($error_count + $?))
-    fi
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA
 fi
 
-if [ $error_count -eq 0 ]; then
-    exit
-else
-    exit 1
-fi
+exit ${error_count}

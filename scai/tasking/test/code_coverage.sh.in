@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverage.sh
@@ -32,6 +32,9 @@
 
 source scai_code_coverage_functions.sh
 
+# Check requirements for codecoverage
+requirements_coverage
+
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
 
@@ -42,30 +45,17 @@ export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running serial tests"
-./taskingTest >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in taskingTest"
-	error_count=$(($error_count + $?))
-fi
+count_error ./taskingTest
 
 if [ -d cuda ];
 then
-    #Running common CUDA tests
-    echo "Running common CUDA tests"
-    ./cuda/taskingCUDATest >/dev/null
-    if [ $? -ne 0 ]
-    then
-        echo "ERROR in taskingCUDATest"
-        error_count=$(($error_count + $?))
-    fi
+    #Running tasking CUDA tests
+    echo "Running tasking CUDA tests"
+    count_error ./cuda/taskingCUDATest
 fi
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure
 
 zip -qr ../tasking_coverage.zip *
