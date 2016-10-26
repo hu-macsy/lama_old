@@ -201,7 +201,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_numeric_test_types )
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType res = applyUnary( op, values[i] );
+            ValueType res = 0;
+
+            switch ( op ) 
+            {
+                case unary::CONJ  : res = common::Math::conj( values[i] ); break;
+                case unary::MINUS : res = -values[i]; break;
+                case unary::EXP   : res = common::Math::exp( values[i] ); break;
+                case unary::LOG   : res = common::Math::log( values[i] ); break;
+                case unary::FLOOR : res = common::Math::floor( values[i] ); break;
+                case unary::CEIL  : res = common::Math::ceil( values[i] ); break;
+                case unary::SQRT  : res = common::Math::sqrt( values[i] ); break;
+                case unary::SIN   : res = common::Math::sin( values[i] ); break;
+                case unary::COS   : res = common::Math::cos( values[i] ); break;
+                case unary::TAN   : res = common::Math::tan( values[i] ); break;
+                case unary::ATAN  : res = common::Math::atan( values[i] ); break;
+
+                default: res = read[i];   // give correct result for all other ops
+            }
 
             ValueType x = read[i] - res;
 
@@ -256,19 +273,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType x1  = values1[i];
+            ValueType res = 0;
 
-            if ( op == binary::POW )
+            switch ( op ) 
             {
-                x1 = common::Math::abs( x1 );
+                case binary::ADD       : res = values1[i] + values2[i]; break;
+                case binary::SUB       : res = values1[i] - values2[i]; break;
+                case binary::MULT      : res = values1[i] * values2[i]; break;
+                case binary::DIVIDE    : res = values1[i] / values2[i]; break;
+                case binary::COPY_SIGN : res = common::Math::copysign( values1[i], values2[i] ); break;
+                case binary::MIN       : res = common::Math::min( values1[i], values2[i] ); break;
+                case binary::MAX       : res = common::Math::max( values1[i], values2[i] ); break;
+                case binary::POW       : {
+                                             ValueType tmp = common::Math::abs( values1[i] );
+                                             res = common::Math::pow( tmp, values2[i] ); break;
+                                         }
+
+                default: res = read[i];   // give correct result for all other ops
             }
-           
-            ValueType res = applyBinary( x1, op, values2[i] );
 
-            ValueType d = read[i] - res;
+            ValueType x = read[i] - res;
 
-            BOOST_CHECK_SMALL( common::Math::real( d ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( d ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
 }
@@ -309,92 +336,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType res = applyBinary( scalar, op, values[i] ); 
+            ValueType res = 0;
 
-            ValueType d = read[i] - res;
+            switch ( op ) 
+            {
+                case binary::ADD       : res = scalar + values[i]; break;
+                case binary::SUB       : res = scalar - values[i]; break;
+                case binary::MULT      : res = scalar * values[i]; break;
+                case binary::DIVIDE    : res = scalar / values[i]; break;
+                case binary::COPY_SIGN : res = common::Math::copysign( scalar, values[i] ); break;
+                case binary::MIN       : res = common::Math::min( scalar, values[i] ); break;
+                case binary::MAX       : res = common::Math::max( scalar, values[i] ); break;
+                case binary::POW       : res = common::Math::pow( scalar, values[i] ); break;
 
-            BOOST_CHECK_SMALL( common::Math::real( d ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( d ), common::TypeTraits<ValueType>::small() );
+                default: res = read[i];   // give correct result for all other ops
+            }
+
+            ValueType x = read[i] - res;
+
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types )
 {
-    // check of all unary array operations
-
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
-
-    const ValueType values[] = { 1.0, 1.2, -1.3, -1.0 };
-    const ValueType scalar = 3.5;
-
-    const IndexType n = sizeof( values ) / sizeof( ValueType );
-
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    const ValueType magnitude[] = {  1.0, 1.2,  1.3, 1.0 };
+    const ValueType sign[]      = { -1.0, 1.0, -2.0, 2.0 };
+    const ValueType result[]    = { -1.0, 1.2, -1.3, 1.0 };
+    const IndexType n = sizeof( magnitude ) / sizeof( ValueType );
+    HArray<ValueType> magArray( ctx );
+    HArray<ValueType> signArray( ctx );
+    HArray<ValueType> resultArray( ctx );
+    magArray.init( magnitude, n );
+    signArray.init( sign, n );
+    resultArray.init( result, n );
+    HArrayUtils::binaryOp( resultArray, magArray, signArray, binary::COPY_SIGN, ctx );
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
-
-        if ( op == binary::COPY || op == binary::COPY_SIGN || op == binary::ABS_MAX || op == binary::POW )
-        {
-            continue;    // not implemented
-        }
-
-        HArray<ValueType> array1( ctx );
-        HArray<ValueType> array2( ctx );
-
-        array1.init( values, n );
-
-        HArrayUtils::binaryOpScalar2( array2, array1, scalar, op, ctx );
-
-        BOOST_REQUIRE_EQUAL( n, array2.size() );
-
-        ReadAccess<ValueType> read( array2, host );  // read result array
-
+        ReadAccess<ValueType> readMag( magArray, host );
+        ReadAccess<ValueType> readSign( signArray, host );
+        ReadAccess<ValueType> readResult( resultArray, host );
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType res = applyBinary( values[i], op, scalar );
-
-            ValueType d = read[i] - res;
-
-            BOOST_CHECK_SMALL( common::Math::real( d ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( d ), common::TypeTraits<ValueType>::small() );
+            ValueType x = readResult[i] - common::Math::copysign(readMag[i], readSign[i]);
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_numeric_test_types )
-{
-    // check of all unary array operations
-
-    ContextPtr ctx  = Context::getContextPtr();
-    ContextPtr host = Context::getHostPtr();
-
-    const ValueType values1[] = { 1.0, 1.2, -1.3, -1.0 };
-    const ValueType values2[] = { 1.1, 1.1, -1.4, -0.9 };
-
-    const IndexType n = sizeof( values1 ) / sizeof( ValueType );
-
-    HArray<ValueType> array1( ctx );
-    HArray<ValueType> array2( ctx );
-
-    array1.init( values1, n );
-    array2.init( values2, n );
-
-    ValueType s = HArrayUtils::reduce2( array1, array2, binary::MULT, binary::ADD, ctx );
-
-    ValueType res = 0;
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        res += values1[i] * values2[i];
-    }
-
-    BOOST_CHECK( common::Math::abs( res - s ) < 0.001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -546,19 +539,50 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
+
     ValueType vals[] = { 13, 5, 14, 2 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
     LArray<ValueType> array( n, vals, loc );
+
     LArray<IndexType> perm;
-    HArrayUtils::sort( array, perm, true );
-    BOOST_CHECK_EQUAL( perm.size(), n );
-    LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
-    HArrayUtils::gatherImpl( array1, origArray, perm, binary::COPY );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
+    HArrayUtils::sort( &perm, &array1, array, true );
+
+    BOOST_REQUIRE_EQUAL( perm.size(), n );
+    BOOST_REQUIRE_EQUAL( array1.size(), n );
+
+    LArray<ValueType> array2;   // = array[perm] 
+    HArrayUtils::gatherImpl( array2, array, perm, binary::COPY );
+
+    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    bool descending = false;
+    bool ascending = true;
+
+    ValueType vals[] = { 13, 5, 14, 2, 8, 2, 1 };
+
+    const IndexType n = sizeof( vals ) / sizeof( ValueType );
+    LArray<ValueType> array( n, vals, loc );
+
+    HArrayUtils::sort( NULL, &array, array, descending );
+    BOOST_CHECK( HArrayUtils::isSorted( array, descending ) );
+
+    ValueType expectedVals[] = { 1, 2,  2, 5, 8, 13, 14 };
+    LArray<ValueType> array1( n, expectedVals, loc );
+    LArray<ValueType> array2;
+    HArrayUtils::sort( NULL, &array2, array, ascending );
+
+    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -634,6 +658,61 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( mergeSortTest )
+{
+    typedef double ValueType;
+
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType vals[]    = { 0, 5, 18, 3, 6, 9, 10, 11, 12 };
+    IndexType offsets[] = { 0,        3, 3,        6,        9 };
+
+    // Note: one empty subarray
+
+    const IndexType n  = sizeof( vals ) / sizeof( ValueType );        // number values to sort
+    const IndexType nb = sizeof( offsets) / sizeof( IndexType ) - 1;  // number of sorted subarray
+
+    BOOST_REQUIRE_EQUAL( 0, offsets[0] );
+    BOOST_REQUIRE_EQUAL( n, offsets[nb] );
+
+    // make LAMA Arrays of the data to use it in different context
+
+    LArray<ValueType> array( n, vals, loc );
+    LArray<IndexType> sortOffsets( nb + 1, offsets, loc );
+
+    bool ascending = true;
+
+    HArrayUtils::mergeSort( array, sortOffsets, ascending );
+
+    BOOST_CHECK( HArrayUtils::isSorted( array, ascending, loc ) );
+
+    array.init( vals, n );
+
+    LArray<IndexType> perm;                   // will contain the sort permutation
+    HArrayUtils::setOrder( perm, n, loc );   
+
+    HArrayUtils::mergeSort( array, perm, sortOffsets, ascending );
+
+    // perm = [ 0, 3, 1, 4, 5, 6, 7, 8, 2 ]
+
+    LArray<ValueType> arrayUnsorted( n, vals, loc );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        SCAI_LOG_DEBUG( logger, "array_sorted[" << i << "] = " << array[i] 
+                                << ", perm[" << i << "] = " << perm[i] 
+                                << ", array_unsorted[" << i << "] = " << arrayUnsorted[i] )
+    }
+
+    // check that array_sorted  ==  array_unsorted[perm]
+
+    HArrayUtils::gather( array, arrayUnsorted, perm, binary::SUB, loc );
+
+    BOOST_CHECK_EQUAL( 0, array.maxNorm() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( setOrderTest )
 {
     ContextPtr loc = Context::getContextPtr();
@@ -665,6 +744,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setSequenceTest, ValueType, array_types )
     {
         ValueType elem = array[i];
         BOOST_CHECK_EQUAL( start + static_cast<ValueType>( i ) * inc, elem );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType xVals[] = { 3, 1, 4, 2, 2, 1, 4, 3 };
+    ValueType yVals[] = { 2, 1, 1, 5, 5, 3, 9 };
+
+    const IndexType nx = sizeof( xVals ) / sizeof( ValueType );
+    const IndexType ny = sizeof( yVals ) / sizeof( ValueType );
+
+    LArray<ValueType> x( nx, xVals, loc );
+    LArray<ValueType> y( ny, yVals, loc );
+    
+    const IndexType n = 3;
+    const IndexType ofs_x = 1;
+    const IndexType inc_x = 2;
+    const IndexType ofs_y = 1;
+    const IndexType inc_y = 2;
+
+    HArrayUtils::setArraySection( x, ofs_x, inc_x, y, ofs_y, inc_y, n, binary::COPY, loc );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        ValueType elem = x[ ofs_x + i * inc_x];
+        BOOST_CHECK_EQUAL( yVals[ ofs_y + i * inc_y ], elem );
     }
 }
 
@@ -755,6 +864,41 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_numeric_test_
             {
                 ValueType v = target[i];
                 BOOST_CHECK_EQUAL( v, alpha * sourceVals1[i] + beta * sourceVals2[i] );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusScalarTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+    ValueType sourceVals1[] = { 3, 1, 4, 2 };
+    const IndexType n1 = sizeof( sourceVals1 ) / sizeof( ValueType );
+    LArray<ValueType> x1( n1, sourceVals1, loc );
+    LArray<ValueType> target( loc );
+    ValueType factors[] = { -1, 0, 1, 2 };
+    int NCASE = sizeof( factors ) / sizeof( ValueType );
+
+    for ( int k1 = 0; k1 < NCASE; ++k1 )
+    {
+        ValueType alpha = factors[k1];
+
+        for ( int k2 = 0; k2 < NCASE; ++k2 )
+        {
+            ValueType beta = factors[k2];
+            SCAI_LOG_DEBUG( logger, "target = " << alpha << " * x1 + " << beta )
+            target.purge();
+
+            HArrayUtils::arrayPlusScalar( target, alpha, x1, beta, loc );
+
+            BOOST_CHECK_EQUAL( x1.size(), target.size() );
+
+            for ( IndexType i = 0; i < n1; ++i )
+            {
+                ValueType v = target[i];
+                BOOST_CHECK_EQUAL( v, alpha * sourceVals1[i] + beta );
             }
         }
     }

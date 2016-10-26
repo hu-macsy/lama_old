@@ -88,6 +88,11 @@ public:
     template<typename ValueType>
     static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
 
+    /** OpenMP implementation for UtilKernelTrait::scaleVectorAddScalar */
+
+    template<typename ValueType>
+    static void scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
+
     /** OpenMP implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
@@ -181,7 +186,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
+    static void sort( 
+        IndexType perm[], 
+        ValueType outValues[], 
+        const ValueType inValues[], 
+        const IndexType n, 
+        const bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
@@ -202,6 +212,8 @@ public:
                                const IndexType n );
 private:
 
+    /** Optimized reduce for binary::ADD as reduction operator. */
+
     template<typename ValueType>
     static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
 
@@ -213,6 +225,15 @@ private:
 
     template<typename ValueType>
     static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    /** The following method is the same as reduce but will not switch for optimized routines any more. */
+
+    template<typename ValueType>
+    static ValueType reduceBinOp( 
+        const ValueType array[], 
+        const IndexType n, 
+        const ValueType zero,
+        const binary::BinaryOp op );
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
@@ -237,6 +258,11 @@ private:
         const ValueType denseArray[],
         const IndexType n,
         const ValueType eps );
+
+    template<typename ValueType>
+    static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
+
+    /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
     /** Routine that registers all methods at the kernel registry. */
 

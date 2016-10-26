@@ -49,6 +49,8 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <parallel/sort.h>
+
 namespace scai
 {
 
@@ -155,6 +157,38 @@ ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType OpenMPUtils::reduceBinOp( 
+    const ValueType array[], 
+    const IndexType n, 
+    const ValueType zero,
+    const binary::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.reduceBinOp" )
+
+    ValueType val = zero;
+
+    #pragma omp parallel
+    {
+        ValueType threadVal = zero;
+
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            threadVal = applyBinary( threadVal, op, array[i] );
+        }
+
+        #pragma omp critical
+        {
+            val = applyBinary( val, op, threadVal );
+        }
+    }
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
     SCAI_REGION( "OpenMP.Utils.reduceAbsMaxVal" )
@@ -199,22 +233,25 @@ ValueType OpenMPUtils::reduce(
 {
     SCAI_LOG_INFO ( logger, "reduce # array<" << TypeTraits<ValueType>::id() << ">[" << n << "], op = " << op )
 
+    // Own reduction methods for specific binary op are more efficient than a general solution.
+    // Performance gain is a factor of 1.3 - 1.4 
+ 
     switch ( op )
     {
         case binary::ADD :
             return reduceSum( array, n, zero );
 
-        case binary::MAX :
-            return reduceMaxVal( array, n, zero );
-
         case binary::MIN :
             return reduceMinVal( array, n, zero );
+
+        case binary::MAX :
+            return reduceMaxVal( array, n, zero );
 
         case binary::ABS_MAX :
             return reduceAbsMaxVal( array, n, zero );
 
         default:
-            COMMON_THROWEXCEPTION( "Unsupported reduce op " << op )
+            return reduceBinOp( array, n, zero, op );
     }
 
     return ValueType( 0 );
@@ -329,7 +366,32 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
         }
 
         default:
-            COMMON_THROWEXCEPTION( "Unsupported binary op : " << op )
+        {
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                array[i] = applyBinary( array[i], op, value );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPUtils::scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n,
+                                  const ValueType alpha, const ValueType beta )
+{
+    SCAI_REGION( "OpenMP.Utils.scaleVectorAddScalar" )
+    SCAI_LOG_DEBUG( logger,
+                    "scaleVectorAddScalar<" << TypeTraits<ValueType>::id() << ">: " << "array1[" << n << "] = alpha( " << alpha
+                    << ") * array2 + beta (" << beta << ")" )
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        array1[i] = alpha * array2[i] + beta;
     }
 }
 
@@ -587,7 +649,14 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
         default:
         {
-            COMMON_THROWEXCEPTION( "unsupported binary op in set: " << op )
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = applyBinary( out[i], op, static_cast<ValueType1>( in[i] ) );
+            }
+
+            break;
         }
     }
 }
@@ -676,12 +745,41 @@ void OpenMPUtils::setSection(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "unsupported binary op in setSection: " << op )
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i * inc1] = applyBinary( out[i * inc1], op, static_cast<ValueType1>( in[i * inc2] ) );
+            }
         }
     }
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static void floorOp( ValueType out[], const ValueType in[], const IndexType n )
+{
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        out[i] = common::Math::floor( in[i] );
+    }
+}
+
+// template specialization for IndexType as floor not available on IndexType
+
+template<>
+void floorOp( IndexType out[], const IndexType in[], const IndexType n )
+{
+    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        out[i] = in[i];
+    }
+}
 
 template<typename ValueType>
 void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op )
@@ -697,21 +795,6 @@ void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexTyp
 
     switch ( op )
     {
-        case unary::CONJ :
-        {
-            if ( common::isComplex( TypeTraits<ValueType>::stype ) )
-            {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-                for ( IndexType i = 0; i < n; i++ )
-                {
-                    out[i] = common::Math::conj( in[i] );
-                }
-            }
-
-            break;
-        }
-
         case unary::MINUS :
         {
             {
@@ -740,117 +823,21 @@ void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexTyp
             break;
         }
 
-        case unary::EXP :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::exp( in[i] );
-            }
-
-            break;
-        }
-
-        case unary::SQRT :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::sqrt( in[i] );
-            }
-
-            break;
-        }
-        
-        case unary::SIN :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::sin( in[i] );
-            }
-
-            break;
-        }
-
-        case unary::COS :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::cos( in[i] );
-            }
-
-            break;
-        }
-
-        case unary::TAN :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::tan( in[i] );
-            }
-
-            break;
-        }
-
-        case unary::ATAN :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::atan( in[i] );
-            }
-
-            break;
-        }
-
-        case unary::LOG :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::log( in[i] );
-            }
-
-            break;
-        }
-
         case unary::FLOOR :
         {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::floor( in[i] );
-            }
-
-            break;
-        }
-
-        case unary::CEIL :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::ceil( in[i] );
-            }
+            floorOp( out, in, n );
 
             break;
         }
 
         default:
         {
-            COMMON_THROWEXCEPTION( "unsupported binary op in set: " << op )
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = applyUnary( op, in[i] );
+            }
         }
     }
 }
@@ -975,7 +962,12 @@ void OpenMPUtils::binaryOpScalar1(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "binarOpScalar1: unsupported op = " << op )
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = applyBinary( value, op, in[i] );
+            }
         }
     }
 }
@@ -1087,9 +1079,12 @@ void OpenMPUtils::binaryOpScalar2(
 
         default:
         {
-            // all other operations are commutative and we call the other kernel routine
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-            COMMON_THROWEXCEPTION( "binarOpScalar2: unsupported op = " << op )
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = applyBinary( in[i], op, value );
+            }
         }
     }
 }
@@ -1108,6 +1103,10 @@ void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueT
         return;
     }
 
+    // using parallel loops with a specific operator might give a slight performance gain 
+    // but did not show any relevant gain when full compile time optimization is enabled. 
+    // But make sure: applyBinary must be inlined
+
     switch ( op )
     {
         case binary::ADD :
@@ -1117,18 +1116,6 @@ void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueT
             for ( IndexType i = 0; i < n; i++ )
             {
                 out[i] = in1[i] + in2[i];
-            }
-
-            break;
-        }
-
-        case binary::SUB :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = in1[i] - in2[i];
             }
 
             break;
@@ -1146,82 +1133,14 @@ void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueT
             break;
         }
 
-        case binary::DIVIDE :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = in1[i] / in2[i];
-            }
-
-            break;
-        }
-
-        case binary::MIN :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::min( in1[i], in2[i] );
-            }
-
-            break;
-        }
-
-        case binary::MAX :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::max( in1[i], in2[i] );
-            }
-
-            break;
-        }
-
-        case binary::ABS_MAX :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::max( common::Math::abs( in1[i] ), 
-                                            common::Math::abs( in2[i] ) );
-            }
-
-            break;
-        }
-
-        case binary::POW :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::pow( in1[i], in2[i] );
-            }
-
-            break;
-        }
-
-        case binary::COPY_SIGN :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::copysign( in1[i], in2[i] );
-            }
-
-            break;
-        }
-
         default:
         {
-            COMMON_THROWEXCEPTION( "unsupported binary op binaryOp: " << op )
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = applyBinary( in1[i], op, in2[i] );
+            }
         }
     }
 }
@@ -1333,7 +1252,12 @@ void OpenMPUtils::setGather(
 
         default:
         {
-            COMMON_THROWEXCEPTION( "Unsupported binary op : " << op )
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[i] = applyBinary( out[i], op, static_cast<ValueType1>( in[indexes[i]] ) );
+            }
         }
     }
 }
@@ -1520,11 +1444,62 @@ ValueType OpenMPUtils::unscan( ValueType array[], const IndexType n )
 
 /* --------------------------------------------------------------------------- */
 
-static void* ptr = NULL;
+template<typename ValueType>
+void OpenMPUtils::sortValues( 
+    ValueType outValues[], 
+    const ValueType inValues[], 
+    const IndexType n, 
+    const bool ascending )
+{
+    if ( outValues != inValues )
+    {
+        set( outValues, inValues, n, binary::COPY );
+        sortValues( outValues, outValues, n, ascending );
+        return;
+    }
+
+    SCAI_REGION( "OpenMP.Utils.sortValues" )
+
+    // sort using a custom function object
+
+    struct compare
+    {
+        static bool greater ( const ValueType a, const ValueType b )
+        {
+            return a > b;
+        }
+        static bool less ( const ValueType a, const ValueType b )
+        {
+            return a < b;
+        }
+    };
+
+    if ( ascending )
+    {
+        std::sort( outValues, outValues + n, compare::less );
+    }
+    else
+    {
+        std::sort( outValues, outValues + n, compare::greater );
+    }
+}
+
+static const void* ptr = NULL;
 
 template<typename ValueType>
-void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending )
+void OpenMPUtils::sort( 
+    IndexType perm[], 
+    ValueType outValues[], 
+    const ValueType inValues[], 
+    const IndexType n, 
+    const bool ascending )
 {
+    if ( perm == NULL )
+    {
+        sortValues( outValues, inValues, n, ascending );
+        return;
+    }
+
     SCAI_REGION( "OpenMP.Utils.sort" )
 
     for ( IndexType i = 0; i < n; ++i )
@@ -1537,37 +1512,40 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n, 
     {
         static bool isAscending ( const IndexType a, const IndexType b )
         {
-            ValueType* arr = reinterpret_cast<ValueType*>( ptr );
+            const ValueType* arr = reinterpret_cast<const ValueType*>( ptr );
             return arr[a] < arr[b];
         }
         static bool isDescending ( const IndexType a, const IndexType b )
         {
-            ValueType* arr = reinterpret_cast<ValueType*>( ptr );
+            const ValueType* arr = reinterpret_cast<const ValueType*>( ptr );
             return arr[a] > arr[b];
         }
     };
 
-    ptr = array;
+    // comparison function needs a global array 
+
+    ptr = inValues;
    
     if ( ascending )
     {
-        std::sort( perm, perm + n, compare::isAscending );
+        std::stable_sort( perm, perm + n, compare::isAscending );
     }
     else
     {
-        std::sort( perm, perm + n, compare::isDescending );
+        std::stable_sort( perm, perm + n, compare::isDescending );
     }
 
-    common::scoped_array<ValueType> tmp( new ValueType[n] );
+    // now use perm to compute outValues if required
 
-    for ( IndexType i = 0; i < n; ++i )
+    if ( outValues == inValues )
     {
-        tmp[i] = array[i];
+        common::scoped_array<ValueType> tmp( new ValueType[n] );
+        set( tmp.get(), inValues, n, binary::COPY );
+        setGather( outValues, tmp.get(), perm, binary::COPY, n );
     }
-
-    for ( IndexType i = 0; i < n; ++i )
+    else if ( outValues != NULL )
     {
-        array[i] = tmp[perm[i]];
+        setGather( outValues, inValues, perm, binary::COPY, n );
     }
 }
 
@@ -1640,6 +1618,8 @@ void OpenMPUtils::countBuckets(
     const BucketType bucketMap[],
     const IndexType n )
 {
+    SCAI_REGION( "OpenMP.Utils.countBuckets" )
+
     SCAI_LOG_INFO( logger, "countBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
 
     // initialize size array for each bucket
@@ -1650,6 +1630,9 @@ void OpenMPUtils::countBuckets(
     }
 
     // increment size of a bucket for each value mapped to this bucket
+    // OpenMP parallelization requires atomicInc to be safe
+
+    #pragma omp parallel for
 
     for ( IndexType k = 0; k < n; k++ )
     {
@@ -1659,7 +1642,7 @@ void OpenMPUtils::countBuckets(
 
         if ( scai::common::Utils::validIndex( iBucket, nBuckets ) )
         {
-            bucketSizes[iBucket]++;
+            atomicInc( bucketSizes[iBucket] );
         }
     }
 
@@ -1675,32 +1658,21 @@ void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
                                  const BucketType bucketMap[],
                                  const IndexType n )
 {
+    SCAI_REGION( "OpenMP.Utils.sortInBuckets" )
+
     SCAI_LOG_INFO( logger, "sortInBuckets, #elems = " << n << ", #buckets = " << nBuckets ) 
+   
+    // OpenMP parallelization not helpful as it destroys stable sorting
 
-    #pragma omp parallel
+    for ( IndexType k = 0; k < n; k++ )
     {
-        BucketType lb;
-        BucketType ub;
+        BucketType iBucket = bucketMap[k];
 
-        // each thread takes responsability for a range of buckets
-
-        omp_get_my_range( lb, ub, nBuckets );
-
-        SCAI_LOG_DEBUG( logger, "take care of buckets from " << lb << " - " << ub )
-
-        for ( IndexType k = 0; k < n; k++ )
-        {
-            BucketType iBucket = bucketMap[k];
-
-            if ( lb <= iBucket && iBucket < ub )
-            {
-                IndexType& offset = offsets[iBucket];
-                SCAI_ASSERT_LT_DEBUG( offset, n, "out of range offset" )
-                sortedIndexes[offset] = k;
-                offset++;
-                SCAI_LOG_TRACE( logger, k << " is in bucket " << iBucket << ", offset = " << offsets[iBucket] )
-            }
-        }
+        IndexType& offset = offsets[iBucket];
+        SCAI_ASSERT_LT_DEBUG( offset, n, "out of range offset" )
+        sortedIndexes[offset] = k;
+        offset++;
+        SCAI_LOG_TRACE( logger, k << " is in bucket " << iBucket << ", offset = " << offsets[iBucket] )
     }
 
     // set back the old offsets
@@ -1743,22 +1715,13 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::scaleVectorAddScalar<ValueType> >( scaleVectorAddScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
-}
-
-template<typename ValueType>
-void OpenMPUtils::NumericKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
-{
-    using kregistry::KernelRegistry;
-    const common::context::ContextType ctx = common::context::Host;
-
-    SCAI_LOG_DEBUG( logger, "register arithmetic UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
-                    << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
@@ -1789,7 +1752,6 @@ OpenMPUtils::OpenMPUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     BaseKernels::registerKernels( flag );
     kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorV<NumericKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
     kregistry::mepr::RegistratorVO<BinOpKernels, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
@@ -1799,7 +1761,6 @@ OpenMPUtils::~OpenMPUtils()
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     BaseKernels::registerKernels( flag );
     kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
-    kregistry::mepr::RegistratorV<NumericKernels, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
     kregistry::mepr::RegistratorVO<BinOpKernels, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
 }
 

@@ -192,6 +192,23 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Addition of scaled array with scalar: result = alpha * x + beta (elementwise)
+     *
+     *  @param[out] result  output array
+     *  @param[in]  alpha   scaling factor
+     *  @param[in]  x       source array
+     *  @param[in]  beta    scaling factor
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
+
+    template<typename ValueType>
+    static void arrayPlusScalar(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Multiplication of two arrays: result = alpha * x * y
      *
      *  @param[out] result  output array
@@ -407,18 +424,20 @@ public:
 
     /** Sort an array of values
      *
-     *  @param[in,out] array      is the array of values to be sorted
-     *  @param[out]    perm       is the permutation that gives the sorted array
+     *  @param[out]    perm       if not NULL, contains the permutation vector
+     *  @param[out]    outValues  if not NULL, contains the sorted values
+     *  @param[out]    inValues   array with the values to be sorted
      *  @param[in]     ascending  sort ascending (true) or descending (false)
      *  @param[in]     prefLoc    is the preferred context where computation should be done
      * 
-     *  Note: array_out = array_in[ perm ]
+     *  Note: outValues = inValues[ perm ]
+     *        i.e.: perm[i] contains the original position 
      */
-
     template<typename ValueType>
-    static void sort( 
-        hmemo::HArray<ValueType>& array, 
-        hmemo::HArray<IndexType>& perm, 
+    static void sort(
+        hmemo::HArray<IndexType>* perm,
+        hmemo::HArray<ValueType>* outValues,
+        const hmemo::HArray<ValueType>& inValues,
         const bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -453,6 +472,33 @@ public:
         const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Sorting of an array where its subarrays are already sorted 
+     *
+     *  @param[in,out] values array to be sorted
+     *  @param[in,out] perm array where values reorded in the same way as values
+     *  @param[in]     array with offsets that specify the sorted subarrays 
+     *  @param[in]     ascending true for ascending sort, false for descending
+     *  @param[in]     prefLoc context where merging should take place
+     *  
+     *  Note: offset[0] == 0, offset[ offset.size() ] == array.size() must be valid
+     *
+     *  Each array[offset[i]::offset[i+1]] must already be sorted.
+     */
+    template<typename ValueType>
+    static void mergeSort(
+        hmemo::HArray<ValueType>& values,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& offsets,
+        bool acending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static void mergeSort(
+        hmemo::HArray<ValueType>& values,
+        const hmemo::HArray<IndexType>& offsets,
+        bool acending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Initialize an array with the sequence 0, .., n-1
      *
      *  @param[out] array   will contain the values 0, ..., n-1
@@ -472,11 +518,16 @@ public:
      */
 
     template<typename ValueType>
-    static void setSequence( hmemo::HArray<ValueType>& array, ValueType startValue, ValueType inc, IndexType n, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void setSequence( 
+        hmemo::HArray<ValueType>& array, 
+        ValueType startValue, 
+        ValueType inc, 
+        IndexType n, 
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Set an array with random values.
+    /** Set an array with random values, untyped version.
      *
-     *  @param[out] array    will contain random values of its type
+     *  @param[out] array    arbitray array, will contain random values of its type
      *  @param[in]  n        number of values, becomes size of array
      *  @param[in]  fillRate ratio of non-zero values
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
@@ -487,7 +538,7 @@ public:
                            float fillRate = 1.0f,
                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Sete an array with random values.
+    /** Set an array with random values, typed version
      *
      *  @param[out] array    will contain random values of its type
      *  @param[in]  n        number of values, becomes size of array
@@ -538,6 +589,14 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:
+
+    template<typename ValueType>
+    static void mergeSortOptional(
+        hmemo::HArray<ValueType>& values,
+        hmemo::HArray<IndexType>* perm,
+        const hmemo::HArray<IndexType>& offsets,
+        bool acending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

@@ -138,6 +138,58 @@ inline Expression_SVV operator*( const Vector& v, const Expression_SV exp )
 }
 
 /* ------------------------------------------------------------------------- */
+/*   operator+ to generate Expression_S_V                                    */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        a vector adding a scalar to each vector element.
+ *
+ * @param[in] alpha The scalar.
+ * @param[in] x     The vector.
+ * @return          The expression representing this sum.
+ */
+
+inline Expression_SV_S operator+( const Scalar& alpha, const Vector& x )
+{
+    // return Expression_S_V( alpha, vectorX );
+    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x), alpha );
+}
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        a vector adding a scalar to each vector element.
+ *
+ * @param[in] x     The vector.
+ * @param[in] alpha The scalar.
+ * @return          The expression representing this sum.
+ */
+
+inline Expression_SV_S operator+( const Vector& x, const Scalar& alpha )
+{
+    // return Expression_S_V( alpha, vectorX );
+    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x), alpha );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   operator+ to generate Expression_SV_V                                   */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        a vector adding a scalar to each vector element.
+ *
+ * @param[in] exp   an existing expression scalar * vector
+ * @param[in] beta  The scalar.
+ * @return          The expression representing this sum.
+ */
+
+inline Expression_SV_S operator+( const Expression_SV exp, const Scalar& beta )
+{
+    return Expression_SV_S( exp, beta );
+}
+
+/* ------------------------------------------------------------------------- */
 /*   operator+ to generate Expression_SV_SV                                  */
 /* ------------------------------------------------------------------------- */
 

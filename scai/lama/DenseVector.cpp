@@ -48,6 +48,7 @@
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 
@@ -256,6 +257,16 @@ DenseVector<ValueType>::DenseVector( const Expression_SV& expression )
     Vector::operator=( expression );
 }
 
+// linear algebra expression: a+x/x+a
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const Expression_SV_S& expression )
+
+    : Vector( expression.getArg1().getArg2() )
+{
+    SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
+    Vector::operator=( expression );
+}
+
 // linear algebra expression: x*y
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const Expression_VV& expression )
@@ -367,6 +378,198 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 
     assign( value );
     return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+
+/** Determine splitting values for sorting distributed values.
+ *
+ *  A value v belongs to partition p if splitValues[p] <= v < splitValues[p+1] 
+ */
+
+template<typename ValueType>
+static void getSplitValues( ValueType splitValues[], const IndexType nPartitions )
+{
+    // split values by uniformly distribution of range -1.0 .. 1.0 
+
+    for ( PartitionId p = 0; p <= nPartitions; ++p )
+    {
+        splitValues[p] = ValueType( -1 ) + ( ValueType( p ) / ValueType( nPartitions ) ) * ValueType( 2 );
+    }
+
+    // make sure to cover the full range
+
+    splitValues[0] = common::TypeTraits<ValueType>::getMin();
+    splitValues[nPartitions] = common::TypeTraits<ValueType>::getMax();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::sort( bool ascending )
+{
+    sortImpl( NULL, this, *this, ascending );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::sort( DenseVector<IndexType>& perm, bool ascending )
+{
+    sortImpl( &perm, this, *this, ascending );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::sortImpl( 
+    DenseVector<IndexType>* perm, 
+    DenseVector<ValueType>* out,
+    DenseVector<ValueType>& in,
+    bool ascending )
+{
+    const dmemo::Distribution& distribution = in.getDistribution();
+
+    const dmemo::Communicator& comm = distribution.getCommunicator();
+
+    IndexType blockSize = distribution.getBlockDistributionSize();
+
+    SCAI_ASSERT_NE_ERROR( blockSize, nIndex, "sort only possible on block distributed vectors" )
+
+    // Now sort the local values
+
+    HArray<IndexType>* localPerm = NULL;
+
+    if ( perm )
+    {
+        localPerm = & perm->getLocalValues();
+    }
+
+    const HArray<ValueType>&  inValues = in.getLocalValues();
+
+    SCAI_ASSERT_ERROR( out, "Optional argument out, must be present" )
+
+    HArray<ValueType>& sortedValues = out->getLocalValues();
+
+    utilskernel::HArrayUtils::sort( localPerm, &sortedValues, inValues, ascending );
+
+    // Determine the splitting values
+ 
+    PartitionId nPartitions = comm.getSize();
+
+    common::scoped_array<ValueType> splitValues( new ValueType[ nPartitions + 1 ] );
+  
+    getSplitValues( splitValues.get(), nPartitions );
+
+    common::scoped_array<IndexType> quantities( new IndexType[ nPartitions ] );
+
+    // Determine quantities for each processor
+
+    for ( PartitionId ip = 0; ip < nPartitions; ++ip )
+    {
+        quantities[ip] = 0;
+    }
+
+    PartitionId p = 0;
+
+    {
+        ReadAccess<ValueType> rValues( sortedValues );
+ 
+        for ( IndexType i = 0; i < blockSize; ++i )
+        {
+            while ( rValues[i] > splitValues[p + 1] )
+            {
+               p++;
+               SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+            }
+
+            quantities[p]++;
+        }
+    }
+
+    // make communication plans for sending data and receiving data
+
+    dmemo::CommunicationPlan sendPlan;
+
+    sendPlan.allocate( quantities.get(), nPartitions );
+
+    dmemo::CommunicationPlan recvPlan;
+
+    recvPlan.allocateTranspose( sendPlan, comm );
+  
+    SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
+
+    LArray<ValueType> newValues;
+
+    IndexType newLocalSize = recvPlan.totalQuantity();  
+
+    {
+        WriteOnlyAccess<ValueType> recvVals( newValues, newLocalSize );
+        ReadAccess<ValueType> sendVals( sortedValues );
+        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+    }
+
+    // Also communicate the original index positions of the array values 
+
+    if ( perm )
+    {
+        LArray<IndexType> newPerm;
+        WriteOnlyAccess<IndexType> recvVals( newPerm, newLocalSize );
+        ReadAccess<IndexType> sendVals( *localPerm );
+        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+        localPerm->swap( newPerm );
+    }
+
+    // Merge the values received from other processors
+
+    HArray<IndexType> mergeOffsets;   // offsets for sorted subarrays in mergesort
+
+    {
+        IndexType nOffsets = recvPlan.size();
+
+        WriteOnlyAccess<IndexType> wOffsets( mergeOffsets, nOffsets + 1 );
+    
+        wOffsets[0] = 0;
+
+        for ( IndexType k = 0; k < nOffsets; ++k )
+        {
+           wOffsets[k+1] = wOffsets[k] + recvPlan[k].quantity;
+        }
+    }
+
+    if ( perm )
+    {
+        utilskernel::HArrayUtils::mergeSort( newValues, *localPerm, mergeOffsets, ascending );
+    }
+    else
+    {
+        utilskernel::HArrayUtils::mergeSort( newValues, mergeOffsets, ascending );
+    }
+
+    // Create the new general block distribution
+
+    DistributionPtr newDist( new dmemo::GenBlockDistribution( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() ) );
+
+    if ( out )
+    {
+        out->swap( newValues, newDist );
+    }
+
+    if ( perm )
+    {
+        perm->swap( *localPerm, newDist );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::swap( HArray<ValueType>& newValues, DistributionPtr newDist )
+{
+    SCAI_ASSERT_EQ_ERROR( newValues.size(), newDist->getLocalSize(), "serious mismatch" )
+
+    mLocalValues.swap( newValues );
+    setDistributionPtr( newDist );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -504,6 +707,16 @@ Scalar DenseVector<ValueType>::l2Norm() const
     return Scalar( common::Math::sqrt( globalDotProduct ) );
 }
 
+template<>
+Scalar DenseVector<IndexType>::l2Norm() const
+{
+    // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
+
+    ScalarRepType localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return Scalar( common::Math::sqrt( globalDotProduct ) );
+}
+
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -589,6 +802,7 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
             SCAI_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
         }
 #endif
+
         SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
         utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues, mContext );
     }
@@ -641,6 +855,46 @@ void DenseVector<ValueType>::assign( const Expression_SVV& expression )
     {
         COMMON_THROWEXCEPTION(
             "Can not calculate  z = x * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
+    }
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
+{
+    const Expression_SV& exp = expression.getArg1();
+    const ValueType alpha = exp.getArg1().getValue<ValueType>();
+    const Vector& x = exp.getArg2();
+    const ValueType beta = expression.getArg2().getValue<ValueType>();
+
+    SCAI_LOG_INFO( logger, "z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha 
+                           << " , x = " << x << " , beta = " << beta )
+    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
+
+    if ( x.getDistribution() != getDistribution() || x.size() != size() )
+    {
+        allocate( x.getDistributionPtr() );
+    }
+
+    if ( typeid( *this ) == typeid( x ) )
+    {
+        const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
+
+        if ( mLocalValues.size() != denseX.mLocalValues.size() )
+        {
+            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
+            mLocalValues.clear();
+            WriteAccess<ValueType> localAccess( mLocalValues, mContext );
+            localAccess.resize( denseX.mLocalValues.size() );
+        }
+
+        SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
+        utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, beta, mContext );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION(
+            "Can not calculate  z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha 
+                << ", x = " << x << " because of type mismatch." );
     }
 }
 
@@ -1109,7 +1363,7 @@ DenseVector<ValueType>::DenseVector( const DenseVector<ValueType>& other )
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseVector, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_INST_CLASS( DenseVector, SCAI_ARRAY_TYPES_HOST )
 
 } /* end namespace lama */
 

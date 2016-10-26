@@ -148,6 +148,10 @@ typedef Expression<Vector, Vector, Times> Expression_VV;
 
 typedef Expression<Scalar, Expression<Vector, Vector, Times>, Times> Expression_SVV;
 
+/** Symbolic expression 'Scalar * Vector + Scalar' */
+
+typedef Expression<Expression_SV, Scalar, Plus> Expression_SV_S;
+
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
 typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;

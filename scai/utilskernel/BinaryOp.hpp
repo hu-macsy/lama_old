@@ -69,6 +69,7 @@ struct binary
         SUB,          //!< for operator x - y
         MULT,         //!< for operator x * y
         DIVIDE,       //!< for operator x / y
+        MODULO,       //!< for operator x % y
         MIN,          //!< for operator min( x, y )
         MAX,          //!< for operator max( x, y )
         ABS_MAX,      //!< for operator max( abs(x), abs(y) )
@@ -83,8 +84,11 @@ struct binary
  *  @param[in] x1, x2 the operands
  *  @param[in] op     specifies the binary operator
  *  @return    x1 op x2
+ *
+ *  Note: keep in mind that there is no exception handling in device code
  */
 template <typename ValueType>
+MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
 inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, const ValueType& x2 )
 {
     switch ( op )
@@ -94,16 +98,17 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
         case binary::SUB:       return x1 - x2;
         case binary::MULT:      return x1 * x2;
         case binary::DIVIDE:    return x1 / x2;
+        case binary::MODULO:    return common::Math::mod( x1, x2 );
         case binary::COPY_SIGN: return common::Math::copysign( x1, x2 );
         case binary::POW:       return common::Math::pow( x1, x2 );
         case binary::MIN:       return common::Math::min( x1, x2 );
         case binary::MAX:       return common::Math::max( x1, x2 );
         case binary::ABS_MAX:   return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
-        default:        return x1;  // no error handling here
+        default:                return ValueType( 0 );
     }
 }
 
-// Template specialization for IndexType required, as some math operations, e.g pow, copysign are undefined
+// Template specialization for IndexType required, as some math operations, e.g pow, copysign are not defined
 
 template <>
 inline IndexType applyBinary( const IndexType& x1, const binary::BinaryOp op, const IndexType& x2 )
@@ -115,10 +120,11 @@ inline IndexType applyBinary( const IndexType& x1, const binary::BinaryOp op, co
         case binary::SUB:       return x1 - x2;
         case binary::MULT:      return x1 * x2;
         case binary::DIVIDE:    return x1 / x2;
+        case binary::MODULO:    return x1 % x2;
         case binary::MIN:       return common::Math::min( x1, x2 );
         case binary::MAX:       return common::Math::max( x1, x2 );
         case binary::ABS_MAX:   return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
-        default:        return x1;  // no error handling here
+        default:                return IndexType( 0 );
     }
 }
 
@@ -171,6 +177,10 @@ inline std::ostream& operator<<( std::ostream& stream, const binary::BinaryOp& o
 
         case binary::DIVIDE:
             stream << "DIVIDE";
+            break;
+
+        case binary::MODULO:
+            stream << "MODULO";
             break;
 
         case binary::MIN:

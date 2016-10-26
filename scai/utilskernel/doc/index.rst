@@ -26,6 +26,7 @@ Contents
    :titlesonly:
    :maxdepth: 1
    
+   HArrayUtils
    LArray
    LAMAKernel
    BinaryOp

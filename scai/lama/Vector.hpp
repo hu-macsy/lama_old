@@ -192,13 +192,17 @@ public:
 
     Vector& operator=( const Expression_SV& expression );
 
+    /** this = alpha * x + beta */
+
+    Vector& operator=( const Expression_SV_S );
+
     /** this = x * y */
 
-    Vector& operator=( const Expression_VV );
+    Vector& operator=( const Expression_VV& );
 
     /** this = alpha * x * y */
 
-    Vector& operator=( const Expression_SVV );
+    Vector& operator=( const Expression_SVV& );
 
     /** this +=  alpha * A * x */
 
@@ -561,6 +565,8 @@ public:
     virtual void assign( const Expression_SV_SV& expression ) = 0;
 
     virtual void assign( const Expression_SVV& expression ) = 0;
+
+    virtual void assign( const Expression_SV_S& expression ) = 0;
 
     /**
      * @brief Returns the dot product of this and other.
