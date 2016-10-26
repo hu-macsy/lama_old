@@ -49,6 +49,8 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <parallel/sort.h>
+
 namespace scai
 {
 
@@ -1442,11 +1444,62 @@ ValueType OpenMPUtils::unscan( ValueType array[], const IndexType n )
 
 /* --------------------------------------------------------------------------- */
 
-static void* ptr = NULL;
+template<typename ValueType>
+void OpenMPUtils::sortValues( 
+    ValueType outValues[], 
+    const ValueType inValues[], 
+    const IndexType n, 
+    const bool ascending )
+{
+    if ( outValues != inValues )
+    {
+        set( outValues, inValues, n, binary::COPY );
+        sortValues( outValues, outValues, n, ascending );
+        return;
+    }
+
+    SCAI_REGION( "OpenMP.Utils.sortValues" )
+
+    // sort using a custom function object
+
+    struct compare
+    {
+        static bool greater ( const ValueType a, const ValueType b )
+        {
+            return a > b;
+        }
+        static bool less ( const ValueType a, const ValueType b )
+        {
+            return a < b;
+        }
+    };
+
+    if ( ascending )
+    {
+        std::sort( outValues, outValues + n, compare::less );
+    }
+    else
+    {
+        std::sort( outValues, outValues + n, compare::greater );
+    }
+}
+
+static const void* ptr = NULL;
 
 template<typename ValueType>
-void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending )
+void OpenMPUtils::sort( 
+    IndexType perm[], 
+    ValueType outValues[], 
+    const ValueType inValues[], 
+    const IndexType n, 
+    const bool ascending )
 {
+    if ( perm == NULL )
+    {
+        sortValues( outValues, inValues, n, ascending );
+        return;
+    }
+
     SCAI_REGION( "OpenMP.Utils.sort" )
 
     for ( IndexType i = 0; i < n; ++i )
@@ -1459,37 +1512,40 @@ void OpenMPUtils::sort( ValueType array[], IndexType perm[], const IndexType n, 
     {
         static bool isAscending ( const IndexType a, const IndexType b )
         {
-            ValueType* arr = reinterpret_cast<ValueType*>( ptr );
+            const ValueType* arr = reinterpret_cast<const ValueType*>( ptr );
             return arr[a] < arr[b];
         }
         static bool isDescending ( const IndexType a, const IndexType b )
         {
-            ValueType* arr = reinterpret_cast<ValueType*>( ptr );
+            const ValueType* arr = reinterpret_cast<const ValueType*>( ptr );
             return arr[a] > arr[b];
         }
     };
 
-    ptr = array;
+    // comparison function needs a global array 
+
+    ptr = inValues;
    
     if ( ascending )
     {
-        std::sort( perm, perm + n, compare::isAscending );
+        std::stable_sort( perm, perm + n, compare::isAscending );
     }
     else
     {
-        std::sort( perm, perm + n, compare::isDescending );
+        std::stable_sort( perm, perm + n, compare::isDescending );
     }
 
-    common::scoped_array<ValueType> tmp( new ValueType[n] );
+    // now use perm to compute outValues if required
 
-    for ( IndexType i = 0; i < n; ++i )
+    if ( outValues == inValues )
     {
-        tmp[i] = array[i];
+        common::scoped_array<ValueType> tmp( new ValueType[n] );
+        set( tmp.get(), inValues, n, binary::COPY );
+        setGather( outValues, tmp.get(), perm, binary::COPY, n );
     }
-
-    for ( IndexType i = 0; i < n; ++i )
+    else if ( outValues != NULL )
     {
-        array[i] = tmp[perm[i]];
+        setGather( outValues, inValues, perm, binary::COPY, n );
     }
 }
 

@@ -182,7 +182,12 @@ public:
     /** CUDA implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
+    static void sort(
+        IndexType perm[],
+        ValueType outValues[],
+        const ValueType inValues[],
+        const IndexType n,
+        const bool ascending );
 
     /** CUDA implementation for UtilKernelTrait::setInversePerm */
 
@@ -218,6 +223,15 @@ private:
 
     template<typename ValueType>
     static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    template<typename ValueType>
+    static void sortPerm( IndexType perm[], const ValueType array[], const IndexType n, bool ascending );
+
+    template<typename ValueType>
+    static void sortValues( ValueType array[], const IndexType n, bool ascending );
+
+    template<typename ValueType>
+    static void sortBoth( ValueType array[], IndexType perm[], const IndexType n, bool ascending );
 
     /** Routine that registers all methods at the kernel registry. */
 

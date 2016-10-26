@@ -464,26 +464,37 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct sort
     {
-        /** Stable sorting of values in array in descending order.
+        /** Stable sorting of values 
          *
-         *  @param[in,out] array are the values to be sorted
-         *  @param[in,out] perm, where perm[i] has the value of the original position
-         *  @param[in]     n is the number of values to be sorted
-         *  @param[in]     ascending if true sort in ascending order, descending otherwise
+         *  @param[out]  perm      contains the positions of the sorted values in the input array inValues, optional
+         *  @param[out]  outValues array with sorted values, optional
+         *  @param[in]   inValues  array with values to be sorted
+         *  @param[in]   n is the number of values to be sorted
+         *  @param[in]   ascending if true sort in ascending order, descending otherwise
          *
          *  \code
-         *           array =   1  4   1  8  5  7
-         *           perm  =   0  1   2  3  4  5
-         +
-         *           array =   8  7   5  4  1  1
-         *           perm  =   3  5   4  1  0  2
+         *         inValues =   1  4   1  8  5  7
+         *
+         *        outValues =   8   7   5   4   1   1
+         *           perm   =   3   5   4   1   0   2
+         *
+         *         outValues = inValues[ perm ]
          *  \endcode
+         *
+         *  - perm == NULL specifies that this optional argument is not present
+         *  - outValues == NULL specifies that this optional argument is not present
+         *  - at least perm or outValues must be available
+         *  - inValues == outValues is supported, this alias implies sorting in-place
          *
          *  Note: if the values to be sorted are int values in a certain range like 0, ..., nb - 1, 
          *        sorting might be more efficient with countBuckets, sortInBuckets
          */
-
-        typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
+        typedef void ( *FuncType ) ( 
+            IndexType perm[], 
+            ValueType outValues[], 
+            const ValueType inValues[], 
+            const IndexType n, 
+            const bool ascending );
 
         static const char* getId()
         {

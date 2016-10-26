@@ -186,7 +186,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void sort( ValueType array[], IndexType perm[], const IndexType n, const bool ascending );
+    static void sort( 
+        IndexType perm[], 
+        ValueType outValues[], 
+        const ValueType inValues[], 
+        const IndexType n, 
+        const bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
@@ -253,6 +258,11 @@ private:
         const ValueType denseArray[],
         const IndexType n,
         const ValueType eps );
+
+    template<typename ValueType>
+    static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
+
+    /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
     /** Routine that registers all methods at the kernel registry. */
 

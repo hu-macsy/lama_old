@@ -424,18 +424,20 @@ public:
 
     /** Sort an array of values
      *
-     *  @param[in,out] array      is the array of values to be sorted
-     *  @param[out]    perm       is the permutation that gives the sorted array
+     *  @param[out]    perm       if not NULL, contains the permutation vector
+     *  @param[out]    outValues  if not NULL, contains the sorted values
+     *  @param[out]    inValues   array with the values to be sorted
      *  @param[in]     ascending  sort ascending (true) or descending (false)
      *  @param[in]     prefLoc    is the preferred context where computation should be done
      * 
-     *  Note: array_out = array_in[ perm ]
+     *  Note: outValues = inValues[ perm ]
+     *        i.e.: perm[i] contains the original position 
      */
-
     template<typename ValueType>
-    static void sort( 
-        hmemo::HArray<ValueType>& array, 
-        hmemo::HArray<IndexType>& perm, 
+    static void sort(
+        hmemo::HArray<IndexType>* perm,
+        hmemo::HArray<ValueType>* outValues,
+        const hmemo::HArray<ValueType>& inValues,
         const bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -473,6 +475,7 @@ public:
     /** Sorting of an array where its subarrays are already sorted 
      *
      *  @param[in,out] values array to be sorted
+     *  @param[in,out] perm array where values reorded in the same way as values
      *  @param[in]     array with offsets that specify the sorted subarrays 
      *  @param[in]     ascending true for ascending sort, false for descending
      *  @param[in]     prefLoc context where merging should take place
@@ -481,6 +484,14 @@ public:
      *
      *  Each array[offset[i]::offset[i+1]] must already be sorted.
      */
+    template<typename ValueType>
+    static void mergeSort(
+        hmemo::HArray<ValueType>& values,
+        hmemo::HArray<IndexType>& perm,
+        const hmemo::HArray<IndexType>& offsets,
+        bool acending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     template<typename ValueType>
     static void mergeSort(
         hmemo::HArray<ValueType>& values,
@@ -578,6 +589,14 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:
+
+    template<typename ValueType>
+    static void mergeSortOptional(
+        hmemo::HArray<ValueType>& values,
+        hmemo::HArray<IndexType>* perm,
+        const hmemo::HArray<IndexType>& offsets,
+        bool acending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

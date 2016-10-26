@@ -704,7 +704,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, 0, utilskernel::binary::ABS_MAX );
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
     bool descending = false;
-    sortRows[loc]( ilg.get(), perm.get(), mNumRows, descending );
+    sortRows[loc]( perm.get(), ilg.get(), ilg.get(), mNumRows, descending );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

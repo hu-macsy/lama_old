@@ -708,6 +708,23 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
 
 template<typename ValueType1, typename ValueType2>
 __global__
+void gatherKernel( 
+    ValueType1 out[], 
+    const ValueType2 in[], 
+    const IndexType indexes[], 
+    const binary::BinaryOp op, 
+    const IndexType n )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[i] = applyBinary( out[i], op, static_cast<ValueType1>( in[indexes[i]] ) );
+    }
+}
+
+template<typename ValueType1, typename ValueType2>
+__global__
 void gatherCopyKernel( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -776,8 +793,8 @@ void CUDAUtils::setGather(
 {
     SCAI_REGION( "CUDA.Utils.setGather" )
 
-    SCAI_LOG_INFO( logger,
-                   "setGather<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_INFO( logger, "setGather<" << TypeTraits<ValueType1>::id() << "," << TypeTraits<ValueType2>::id() 
+                            << ">, n = " << n << ", op = " << op )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -791,6 +808,7 @@ void CUDAUtils::setGather(
             gatherCopyKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
             break;
 
+        /*
         case binary::ADD :
             gatherAddKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
             break;
@@ -806,9 +824,10 @@ void CUDAUtils::setGather(
         case binary::DIVIDE :
             gatherDivideKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
             break;
+        */
 
         default:
-            COMMON_THROWEXCEPTION( "Unsupported binary op " << op )
+            gatherKernel <<< dimGrid, dimBlock>>>( out, in, indexes, op, n );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "setGather::kernel" );
@@ -1441,28 +1460,158 @@ ValueType CUDAUtils::scan( ValueType array[], const IndexType n )
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void CUDAUtils::sort( ValueType array[], IndexType perm[], const IndexType n, bool ascending )
+void CUDAUtils::sortBoth( ValueType array[], IndexType perm[], const IndexType n, bool ascending )
+{
+    SCAI_REGION( "CUDA.Utils.sortBoth" )
+
+    thrust::device_ptr<ValueType> array_d( array );
+    thrust::device_ptr<IndexType> perm_d( perm );
+
+    // stable sort, descending order, so override default comparison
+
+    if ( ascending )
+    {
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::less<ValueType>() );
+    }
+    else
+    {
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<ValueType>() );
+    }
+}
+
+template<typename ValueType>
+void CUDAUtils::sortValues( ValueType array[], const IndexType n, bool ascending )
+{
+    SCAI_REGION( "CUDA.Utils.sortValues" )
+
+    thrust::device_ptr<ValueType> array_d( array );
+
+    if ( ascending )
+    {
+        thrust::sort( array_d, array_d + n, thrust::less<ValueType>() );
+    }
+    else
+    {
+        thrust::sort( array_d, array_d + n, thrust::greater<ValueType>() );
+    }
+}
+
+template<typename ValueType>
+struct myLess
+{
+    const ValueType* mArray;
+
+    myLess( const ValueType array[] ) : mArray( array )
+    {
+    }
+
+    __host__ __device__
+    bool operator()( const IndexType& i1, const IndexType& i2 )
+    {
+        return mArray[i1] < mArray[i2];
+    }
+};
+
+
+template<typename ValueType>
+struct myGreater
+{
+    const ValueType* mArray;
+
+    myGreater( const ValueType array[] ) : mArray( array )
+    {
+    }
+
+    __host__ __device__
+    bool operator()( const IndexType& i1, const IndexType& i2 )
+    {
+        return mArray[i1] > mArray[i2];
+    }
+};
+
+template<typename ValueType>
+void CUDAUtils::sortPerm( IndexType perm[], const ValueType array[], const IndexType n, bool ascending )
+{
+    SCAI_REGION( "CUDA.Utils.sortValues" )
+
+    thrust::device_ptr<IndexType> perm_d( perm );
+
+    // stable sort, descending order, so override default comparison
+
+    if ( ascending )
+    {
+        thrust::stable_sort( perm_d, perm_d + n, myLess<ValueType>( array ) );
+    }
+    else
+    {
+        thrust::stable_sort( perm_d, perm_d + n, myGreater<ValueType>( array ) );
+    }
+
+}
+
+template<typename ValueType>
+void CUDAUtils::sort( 
+    IndexType perm[], 
+    ValueType outValues[], 
+    const ValueType inValues[], 
+    const IndexType n, 
+    bool ascending )
 {
     SCAI_REGION( "CUDA.Utils.sort" )
 
-    SCAI_LOG_INFO( logger, "sort " << n << " values" )
+    SCAI_LOG_INFO( logger, "sort " << n << " values, ascending = " << ascending )
+
+    if ( n <= 0 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    if ( perm == NULL )
+    {
+        // just sort the values, but can only be done in place
+
+        if ( inValues != outValues )
+        {
+           set( outValues, inValues, n, binary::COPY );
+        }
+
+        if ( n > 1 )
+        {
+            sortValues( outValues, n, ascending );
+        }
+
+        return;
+    }
+
+    // Initialize permutation array
+
+    thrust::device_ptr<IndexType> perm_d( perm );
+    thrust::sequence( perm_d, perm_d + n );
+
+    if ( outValues == NULL )
+    {
+        if ( n > 1 )
+        {
+            sortPerm( perm, inValues, n, ascending );
+
+            // Sorting of values might be done as follows
+            // thrust::device_vector<ValueType> array_tmp( n );
+            // thrust::copy( array_d, array_d + n, array_tmp.begin() );
+            // thrust::gather( perm_d, perm_d + n, array_tmp.begin(), array_d );
+        }
+        return;
+    }
+        
+    if ( inValues != outValues )
+    {
+        set( outValues, inValues, n, binary::COPY );
+    }
 
     if ( n > 1 )
     {
-        SCAI_CHECK_CUDA_ACCESS
-        thrust::device_ptr<ValueType> array_d( array );
-        thrust::device_ptr<IndexType> perm_d( perm );
-        thrust::sequence( perm_d, perm_d + n );
-        // stable sort, descending order, so override default comparison
-        if ( ascending )
-        {
-            thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::less<ValueType>() );
-        }
-        else
-        {
-            thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<ValueType>() );
-        }
-        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "Utils: synchronize for sort FAILED" )
+        sortBoth( outValues, perm, n, ascending );
     }
 }
 

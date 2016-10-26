@@ -403,10 +403,32 @@ static void getSplitValues( ValueType splitValues[], const IndexType nPartitions
     splitValues[nPartitions] = common::TypeTraits<ValueType>::getMax();
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::sort( bool ascending )
 {
-    const dmemo::Distribution& distribution = getDistribution();
+    sortImpl( NULL, this, *this, ascending );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::sort( DenseVector<IndexType>& perm, bool ascending )
+{
+    sortImpl( &perm, this, *this, ascending );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::sortImpl( 
+    DenseVector<IndexType>* perm, 
+    DenseVector<ValueType>* out,
+    DenseVector<ValueType>& in,
+    bool ascending )
+{
+    const dmemo::Distribution& distribution = in.getDistribution();
 
     const dmemo::Communicator& comm = distribution.getCommunicator();
 
@@ -416,9 +438,20 @@ void DenseVector<ValueType>::sort( bool ascending )
 
     // Now sort the local values
 
-    HArray<IndexType> perm;
+    HArray<IndexType>* localPerm = NULL;
 
-    utilskernel::HArrayUtils::sort( mLocalValues, perm, ascending );
+    if ( perm )
+    {
+        localPerm = & perm->getLocalValues();
+    }
+
+    const HArray<ValueType>&  inValues = in.getLocalValues();
+
+    SCAI_ASSERT_ERROR( out, "Optional argument out, must be present" )
+
+    HArray<ValueType>& sortedValues = out->getLocalValues();
+
+    utilskernel::HArrayUtils::sort( localPerm, &sortedValues, inValues, ascending );
 
     // Determine the splitting values
  
@@ -440,7 +473,7 @@ void DenseVector<ValueType>::sort( bool ascending )
     PartitionId p = 0;
 
     {
-        ReadAccess<ValueType> rValues( mLocalValues );
+        ReadAccess<ValueType> rValues( sortedValues );
  
         for ( IndexType i = 0; i < blockSize; ++i )
         {
@@ -472,8 +505,19 @@ void DenseVector<ValueType>::sort( bool ascending )
 
     {
         WriteOnlyAccess<ValueType> recvVals( newValues, newLocalSize );
-        ReadAccess<ValueType> sendVals( mLocalValues );
+        ReadAccess<ValueType> sendVals( sortedValues );
         comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+    }
+
+    // Also communicate the original index positions of the array values 
+
+    if ( perm )
+    {
+        LArray<IndexType> newPerm;
+        WriteOnlyAccess<IndexType> recvVals( newPerm, newLocalSize );
+        ReadAccess<IndexType> sendVals( *localPerm );
+        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+        localPerm->swap( newPerm );
     }
 
     // Merge the values received from other processors
@@ -493,14 +537,38 @@ void DenseVector<ValueType>::sort( bool ascending )
         }
     }
 
-    utilskernel::HArrayUtils::mergeSort( newValues, mergeOffsets, ascending );
+    if ( perm )
+    {
+        utilskernel::HArrayUtils::mergeSort( newValues, *localPerm, mergeOffsets, ascending );
+    }
+    else
+    {
+        utilskernel::HArrayUtils::mergeSort( newValues, mergeOffsets, ascending );
+    }
 
     // Create the new general block distribution
 
     DistributionPtr newDist( new dmemo::GenBlockDistribution( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() ) );
 
-    mLocalValues.swap( newValues );
+    if ( out )
+    {
+        out->swap( newValues, newDist );
+    }
 
+    if ( perm )
+    {
+        perm->swap( *localPerm, newDist );
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::swap( HArray<ValueType>& newValues, DistributionPtr newDist )
+{
+    SCAI_ASSERT_EQ_ERROR( newValues.size(), newDist->getLocalSize(), "serious mismatch" )
+
+    mLocalValues.swap( newValues );
     setDistributionPtr( newDist );
 }
 

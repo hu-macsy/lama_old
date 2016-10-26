@@ -398,30 +398,59 @@ BOOST_AUTO_TEST_CASE( sortIndexesTest )
     ContextPtr loc = Context::getContextPtr( sort.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
+    // just one simple example of a typical sort with permutation
+
     {
+        bool ascending = false;
+
         IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
-        IndexType valuesPerm[]   = { 0, 1, 2, 3, 4, 5 };
         IndexType expectedArr[]  = { 7, 5, 4, 4, 2, 2 };
         IndexType expectedPerm[] = { 5, 0, 2, 3, 1, 4 };
 
-        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-        const IndexType nArr = sizeof( valuesArr ) / sizeof( IndexType );
-        const IndexType numRows = 6;
-        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-        HArray<IndexType> ilg( nArr, valuesArr, testContext );
+        const IndexType n = sizeof( valuesArr ) / sizeof( IndexType );
+        HArray<IndexType> array( n, valuesArr, testContext );
+
+        HArray<IndexType> perm;
+
         {
-            WriteAccess<IndexType> wPerm( perm, loc );
-            WriteAccess<IndexType> wArr( ilg, loc );
+            WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+            WriteAccess<IndexType> wArr( array, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            sort[loc]( wArr.get(), wPerm.get(), numRows, false );
+            sort[loc]( wPerm.get(), wArr.get(), wArr.get(), n, ascending );
         }
-        ReadAccess<IndexType> rArr( ilg );
+
+        ReadAccess<IndexType> rArr( array );
         ReadAccess<IndexType> rPerm( perm );
 
-        for ( IndexType i = 0; i < numRows; i++ )
+        for ( IndexType i = 0; i < n; i++ )
         {
             BOOST_CHECK_EQUAL( expectedArr[i], rArr.get()[i] );
             BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
+        }
+    }
+    {
+        bool ascending = true;
+
+        IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
+        IndexType expectedArr[]  = { 2, 2, 4, 4, 5, 7 };
+
+        const IndexType n = sizeof( valuesArr ) / sizeof( IndexType );
+
+        HArray<IndexType> unsortedArray( n, valuesArr, testContext );
+        HArray<IndexType> sortedArray;
+
+        {   
+            WriteOnlyAccess<IndexType> wOut( sortedArray, loc, n );
+            ReadAccess<IndexType> rIn( unsortedArray, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( NULL, wOut.get(), rIn.get(), n, ascending );
+        }
+        
+        ReadAccess<IndexType> rArr( sortedArray );
+        
+        for ( IndexType i = 0; i < n; i++ )
+        {   
+            BOOST_CHECK_EQUAL( expectedArr[i], rArr[i] );
         }
     }
     {
@@ -431,15 +460,15 @@ BOOST_AUTO_TEST_CASE( sortIndexesTest )
         IndexType expectedPerm[] = { 1, 4, 2, 3, 0, 5 };
 
         const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
-        const IndexType nArr = sizeof( valuesArr ) / sizeof( IndexType );
+        const IndexType n = sizeof( valuesArr ) / sizeof( IndexType );
         const IndexType numRows = 6;
         HArray<IndexType> perm( nPerm, valuesPerm, testContext );
-        HArray<IndexType> ilg( nArr, valuesArr, testContext );
+        HArray<IndexType> ilg( n, valuesArr, testContext );
         {
             WriteAccess<IndexType> wPerm( perm, loc );
             WriteAccess<IndexType> wArr( ilg, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            sort[loc]( wArr.get(), wPerm.get(), numRows, true );
+            sort[loc]( wPerm.get(), wArr.get(), wArr.get(), numRows, true );
         }
         ReadAccess<IndexType> rArr( ilg );
         ReadAccess<IndexType> rPerm( perm );
@@ -451,14 +480,14 @@ BOOST_AUTO_TEST_CASE( sortIndexesTest )
         }
     }
     {
-        const IndexType numRows = 0;
-        HArray<IndexType> perm( numRows );
-        HArray<IndexType> ilg( numRows );
+        const IndexType n = 0;
+        HArray<IndexType> perm( n );
+        HArray<IndexType> ilg( n );
         {
-            WriteOnlyAccess<IndexType> wPerm( perm, loc, numRows );
-            WriteOnlyAccess<IndexType> wArr( ilg, loc, numRows );
+            WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+            WriteOnlyAccess<IndexType> wArr( ilg, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            sort[loc]( wArr.get(), wPerm.get(), numRows, false );
+            sort[loc]( wPerm.get(), wArr.get(), wArr.get(), n, false );
         }
     }
 }
@@ -499,7 +528,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
 
     SCAI_CONTEXT_ACCESS( loc );
 
-    sort[loc]( wValues.get(), wPerm.get(), n, ascending );
+    sort[loc]( wPerm.get(), wValues.get(), wValues.get(), n, ascending );
     bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending );
 
     BOOST_CHECK( valuesSorted );

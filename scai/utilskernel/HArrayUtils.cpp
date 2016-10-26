@@ -227,12 +227,29 @@ void HArrayUtils::gatherImpl(
 
     setGather.getSupportedContext( loc );
     const IndexType n = indexes.size();
-    WriteOnlyAccess<TargetValueType> wTarget( target, loc, n );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<SourceValueType> rSource( source, loc );
-    ReadAccess<IndexType> rIndexes( indexes, loc );
-    //  target[i] = source[ indexes[i] ]
-    setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), op, n );
+ 
+    if ( op == binary::COPY )
+    {
+        //  target[i] = source[ indexes[i] ]
+
+        WriteOnlyAccess<TargetValueType> wTarget( target, loc, n );
+        SCAI_CONTEXT_ACCESS( loc )
+        ReadAccess<SourceValueType> rSource( source, loc );
+        ReadAccess<IndexType> rIndexes( indexes, loc );
+        setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), op, n );
+    }
+    else
+    {
+        //  target[i] op= source[ indexes[i] ]
+
+        SCAI_ASSERT_GE_ERROR( target.size(), n, "target array too small" )
+
+        WriteAccess<TargetValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        ReadAccess<SourceValueType> rSource( source, loc );
+        ReadAccess<IndexType> rIndexes( indexes, loc );
+        setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), op, n );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1122,34 +1139,59 @@ ValueType HArrayUtils::unscan(
 
 template<typename ValueType>
 void HArrayUtils::sort(
-    hmemo::HArray<ValueType>& array,
-    hmemo::HArray<IndexType>& perm,
+    hmemo::HArray<IndexType>* perm,
+    hmemo::HArray<ValueType>* outValues,
+    const hmemo::HArray<ValueType>& inValues,
     const bool ascending,
     hmemo::ContextPtr prefLoc )
 {
-    const IndexType n = array.size();
+    const IndexType n = inValues.size();
 
     if ( n == 0 )
     {
-        perm.clear();
+        if ( perm )
+        { 
+            perm->clear();
+        }
+
         return;
     }
 
     static LAMAKernel<UtilKernelTrait::sort<ValueType> > sort;
+
     ContextPtr loc = prefLoc;
 
     // default location for check: where we have valid entries
 
     if ( loc == ContextPtr() )
     {
-        loc = array.getValidContext();
+        loc = inValues.getValidContext();
     }
 
     sort.getSupportedContext( loc );
+
     SCAI_CONTEXT_ACCESS( loc )
-    WriteAccess<ValueType> wValues( array, loc );
-    WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
-    sort[loc]( wValues.get(), wPerm.get(), n, ascending );
+
+    // ReadAccess for inValues is always before WriteAccess for outValues, so alias is okay
+
+    ReadAccess<ValueType> rValues( inValues, loc );
+
+    if ( perm == NULL )
+    {
+        WriteOnlyAccess<ValueType> wValues( *outValues, loc, n );
+        sort[loc]( NULL, wValues.get(), rValues.get(), n, ascending );
+    }
+    else if ( outValues == NULL )
+    {
+        WriteOnlyAccess<IndexType> wPerm( *perm, loc, n );
+        sort[loc]( wPerm.get(), NULL, rValues.get(), n, ascending );
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wValues( *outValues, loc, n );
+        WriteOnlyAccess<IndexType> wPerm( *perm, loc, n );
+        sort[loc]( wPerm.get(), wValues.get(), rValues.get(), n, ascending );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1250,12 +1292,39 @@ void HArrayUtils::mergeSort(
     hmemo::HArray<ValueType>& values,
     const hmemo::HArray<IndexType>& offsets,
     bool ascending,
+    hmemo::ContextPtr ctx )
+{
+    mergeSortOptional( values, NULL, offsets, ascending, ctx );
+}
+
+template<typename ValueType>
+void HArrayUtils::mergeSort(
+    hmemo::HArray<ValueType>& values,
+    hmemo::HArray<IndexType>& perm,
+    const hmemo::HArray<IndexType>& offsets,
+    bool ascending,
+    hmemo::ContextPtr ctx )
+{
+    mergeSortOptional( values, &perm, offsets, ascending, ctx );
+}
+
+template<typename ValueType>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ValueType>& values,
+    hmemo::HArray<IndexType>* perm,
+    const hmemo::HArray<IndexType>& offsets,
+    bool ascending,
     hmemo::ContextPtr )
 {
     IndexType n  = values.size();       // number of values to sort
     IndexType nb = offsets.size() - 1;  // number of sorted subarray
 
     SCAI_LOG_INFO( logger, "mergeSort of values[" << n << "] with " << nb << " sorted subarrays." )
+
+    if ( perm )
+    {
+        SCAI_ASSERT_EQ_ERROR( values.size(), perm->size(), "array size mismatch" )
+    }
 
     // we need a (writeable) copy of the offset array for running offsets
 
@@ -1264,12 +1333,22 @@ void HArrayUtils::mergeSort(
     // Temporary array required for the sorted values, in-place not supported
 
     HArray<ValueType> sorted; 
+    HArray<IndexType> newPerm; 
 
     {
         WriteAccess<IndexType> wOffsets( copyOffsets );
         ReadAccess<IndexType> rOffsets( offsets );
         WriteOnlyAccess<ValueType> wSorted( sorted, n );
         ReadAccess<ValueType> rValues( values );
+
+        common::unique_ptr<WriteOnlyAccess<IndexType> > wPerm;
+        common::unique_ptr<ReadAccess<IndexType> > rPerm;
+
+        if ( perm )
+        {
+            wPerm.reset( new WriteOnlyAccess<IndexType>( newPerm, n ) );
+            rPerm.reset( new ReadAccess<IndexType>( *perm ) );
+        }
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -1307,7 +1386,14 @@ void HArrayUtils::mergeSort(
 
             // sort in the next minimal element
 
-            wSorted[i] = rValues[pos++];
+            wSorted[i] = rValues[pos];
+
+            if ( perm )
+            {
+                (*wPerm)[i] = (*rPerm)[pos];
+            }
+
+            pos++;
         }
 
         // Proof: wOffsets[k] == rOffsets[k+1]
@@ -1318,9 +1404,14 @@ void HArrayUtils::mergeSort(
         }
     }
 
-    // set the sorted values back in the input array
+    // set the sorted values back in the input array, also for perm if available
 
     values.swap( sorted );
+
+    if ( perm )
+    {
+        perm->swap( newPerm );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1471,10 +1562,23 @@ void HArrayUtils::buildDenseArray(
     template bool HArrayUtils::isSorted<ValueType>( const hmemo::HArray<ValueType>&, const bool, hmemo::ContextPtr );        \
     template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                         \
     template ValueType HArrayUtils::unscan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                       \
-    template void HArrayUtils::sort<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,                        \
-                                                const bool, hmemo::ContextPtr );                                             \
-    template void HArrayUtils::mergeSort<ValueType>( hmemo::HArray<ValueType>&, const hmemo::HArray<IndexType>&,             \
-                                                const bool, hmemo::ContextPtr );                                             \
+    template void HArrayUtils::sort<ValueType>(                                                                              \
+        hmemo::HArray<IndexType>*,                                                                                           \
+        hmemo::HArray<ValueType>*,                                                                                           \
+        const hmemo::HArray<ValueType>&,                                                                                     \
+        const bool,                                                                                                          \
+        hmemo::ContextPtr );                                                                                                 \
+    template void HArrayUtils::mergeSort<ValueType>(                                                                         \
+        hmemo::HArray<ValueType>&,                                                                                           \
+        const hmemo::HArray<IndexType>&,                                                                                     \
+        const bool,                                                                                                          \
+        hmemo::ContextPtr );                                                                                                 \
+    template void HArrayUtils::mergeSort<ValueType>(                                                                         \
+        hmemo::HArray<ValueType>&,                                                                                           \
+        hmemo::HArray<IndexType>&,                                                                                           \
+        const hmemo::HArray<IndexType>&,                                                                                     \
+        const bool,                                                                                                          \
+        hmemo::ContextPtr );                                                                                                 \
     template void HArrayUtils::setSequence<ValueType>( hmemo::HArray<ValueType>&, ValueType, ValueType, IndexType,           \
             hmemo::ContextPtr );                                                                                             \
     template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );   \

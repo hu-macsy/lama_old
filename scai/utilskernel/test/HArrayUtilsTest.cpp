@@ -539,19 +539,50 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sortTest, ValueType, array_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
+
     ValueType vals[] = { 13, 5, 14, 2 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
     LArray<ValueType> array( n, vals, loc );
+
     LArray<IndexType> perm;
-    HArrayUtils::sort( array, perm, true );
-    BOOST_CHECK_EQUAL( perm.size(), n );
-    LArray<ValueType> origArray( n, vals, loc );
     LArray<ValueType> array1;
-    HArrayUtils::gatherImpl( array1, origArray, perm, binary::COPY );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( array1 ), ValueType( 0 ) );
+    HArrayUtils::sort( &perm, &array1, array, true );
+
+    BOOST_REQUIRE_EQUAL( perm.size(), n );
+    BOOST_REQUIRE_EQUAL( array1.size(), n );
+
+    LArray<ValueType> array2;   // = array[perm] 
+    HArrayUtils::gatherImpl( array2, array, perm, binary::COPY );
+
+    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    bool descending = false;
+    bool ascending = true;
+
+    ValueType vals[] = { 13, 5, 14, 2, 8, 2, 1 };
+
+    const IndexType n = sizeof( vals ) / sizeof( ValueType );
+    LArray<ValueType> array( n, vals, loc );
+
+    HArrayUtils::sort( NULL, &array, array, descending );
+    BOOST_CHECK( HArrayUtils::isSorted( array, descending ) );
+
+    ValueType expectedVals[] = { 1, 2,  2, 5, 8, 13, 14 };
+    LArray<ValueType> array1( n, expectedVals, loc );
+    LArray<ValueType> array2;
+    HArrayUtils::sort( NULL, &array2, array, ascending );
+
+    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -654,6 +685,30 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
     HArrayUtils::mergeSort( array, sortOffsets, ascending );
 
     BOOST_CHECK( HArrayUtils::isSorted( array, ascending, loc ) );
+
+    array.init( vals, n );
+
+    LArray<IndexType> perm;                   // will contain the sort permutation
+    HArrayUtils::setOrder( perm, n, loc );   
+
+    HArrayUtils::mergeSort( array, perm, sortOffsets, ascending );
+
+    // perm = [ 0, 3, 1, 4, 5, 6, 7, 8, 2 ]
+
+    LArray<ValueType> arrayUnsorted( n, vals, loc );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        SCAI_LOG_DEBUG( logger, "array_sorted[" << i << "] = " << array[i] 
+                                << ", perm[" << i << "] = " << perm[i] 
+                                << ", array_unsorted[" << i << "] = " << arrayUnsorted[i] )
+    }
+
+    // check that array_sorted  ==  array_unsorted[perm]
+
+    HArrayUtils::gather( array, arrayUnsorted, perm, binary::SUB, loc );
+
+    BOOST_CHECK_EQUAL( 0, array.maxNorm() );
 }
 
 /* --------------------------------------------------------------------- */
