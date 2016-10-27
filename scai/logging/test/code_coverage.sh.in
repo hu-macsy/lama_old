@@ -49,6 +49,8 @@ prepare_coverage $dirname ../..
 echo "Running logging tests"
 count_error ./test.sh CODE_COVERAGE
 
+exit_on_failure ${error_count}
+
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 exit_on_failure $?

@@ -115,6 +115,8 @@ then
     count_error gpirun -np 3 ./matrix/lamaMatrixTest --SCAI_CONTEXT=Host --SCAI_NUM_THREADS=1
 fi
 
+exit_on_failure ${error_count}
+
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 exit_on_failure $?

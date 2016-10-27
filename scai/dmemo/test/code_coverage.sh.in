@@ -66,6 +66,8 @@ then
 #        count_error gpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1
     done
 fi
+
+exit_on_failure ${error_count}
     
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 

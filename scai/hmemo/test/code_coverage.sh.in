@@ -56,6 +56,8 @@ then
 	count_error ./cuda/hmemoCUDATest
 fi
 
+exit_on_failure ${error_count}
+
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 exit_on_failure $?

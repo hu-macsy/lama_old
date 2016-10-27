@@ -47,6 +47,8 @@ count_error ./test.sh
 # problem with these, so first ignore
 rm simpleTracing.gcno simpleTracing.gcda
 
+exit_on_failure ${error_count}
+
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
 exit_on_failure $?

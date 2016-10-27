@@ -74,7 +74,7 @@ function check_program
 	if [ "$?" != "0" ]
 	then
 		echo "${1} not found"
-		exit
+		exit 1
 	fi
 }
 
