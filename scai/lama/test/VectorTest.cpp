@@ -139,9 +139,14 @@ BOOST_AUTO_TEST_CASE( InvertTest )
     {   
         VectorPtr v = vectors[i];
         
+        if ( ! common::isNumeric( v->getValueType() ) )
+        {
+            continue;   // this test does not work for int, uint, ....
+        }
+
         v->allocate( dist );
 
-        *v = 0.5;
+        *v = 4;
  
         v->invert();
  
@@ -149,7 +154,7 @@ BOOST_AUTO_TEST_CASE( InvertTest )
 
         // s should be 2, but might not be exact
 
-        BOOST_CHECK( ( s - Scalar( 2 ) ) < 0.00001 );
+        BOOST_CHECK( ( s - Scalar( 0.25) ) < 0.00001 );
     }
 }
 
@@ -166,6 +171,11 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
         VectorPtr v1 = vectors[i];
+
+        if ( ! common::isNumeric( v1->getValueType() ) )
+        {
+            continue;   // this test does not work for int, uint, ....
+        }
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
@@ -203,6 +213,11 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
         VectorPtr v1 = vectors[i];
+
+        if ( ! common::isNumeric( v1->getValueType() ) )
+        {
+            continue;   // this test does not work for int, uint, ....
+        }
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
@@ -261,6 +276,11 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
         VectorPtr v1 = vectors[i];
+
+        if ( ! common::isNumeric( v1->getValueType() ) )
+        {
+            continue;   // this test does not work for int, uint, ....
+        }
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {   
@@ -353,6 +373,12 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
     for ( size_t i = 0; i < vectors.size(); ++i )
     {   
         VectorPtr v1 = vectors[i];
+
+        if ( ! common::isNumeric( v1->getValueType() ) )
+        {
+            continue;   // this test does not work for int, uint, ....
+        }
+
         VectorPtr v2( v1->newVector() );
 
         // generate two arrays of same value type with random numbers
@@ -403,6 +429,11 @@ BOOST_AUTO_TEST_CASE( scaleTest )
     for ( size_t i = 0; i < vectors.size(); ++i )
     {   
         VectorPtr v1 = vectors[i];
+
+        if ( ! common::isNumeric( v1->getValueType() ) )
+        {
+            continue;   // this test does not work for int, uint, ....
+        }
 
         common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
         utilskernel::HArrayUtils::setRandom( *data1, n );
