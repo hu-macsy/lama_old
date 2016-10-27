@@ -61,6 +61,7 @@ include ( Functions/relativeInstall )
 
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
+    include ( Dependencies/minimalSupportedVersions )
     include ( SetBuildFlags )
     include ( VersionCheck/Compiler )
     include ( Compiler/SetCPPFlags )

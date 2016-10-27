@@ -62,7 +62,7 @@ if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
     # Find Boost 
 
-    find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} )
+    find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} ${BOOST_MINIMUM_VERSION} )
 
     set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
 
