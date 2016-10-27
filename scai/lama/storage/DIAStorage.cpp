@@ -42,7 +42,6 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/utilskernel/ElementwiseOp.hpp>
 
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
@@ -209,7 +208,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
         WriteAccess<ValueType> wValues( mValues, loc );
         ReadAccess<IndexType> rOffset( mOffset, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        setVal[loc]( wValues.get(), numDiagonalElements, value, utilskernel::reduction::COPY );
+        setVal[loc]( wValues.get(), numDiagonalElements, value, utilskernel::binary::COPY );
     }
 }
 
@@ -249,7 +248,7 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-                                        const utilskernel::reduction::ReductionOp op )
+                                        const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
@@ -271,11 +270,11 @@ void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 
             switch ( op ) 
             {
-               case utilskernel::reduction::COPY : loc = val; break;
-               case utilskernel::reduction::ADD  : loc += val; break;
-               case utilskernel::reduction::SUB  : loc -= val; break;
-               case utilskernel::reduction::MULT : loc *= val; break;
-               case utilskernel::reduction::DIVIDE : loc /= val; break;
+               case utilskernel::binary::COPY : loc = val; break;
+               case utilskernel::binary::ADD  : loc += val; break;
+               case utilskernel::binary::SUB  : loc -= val; break;
+               case utilskernel::binary::MULT : loc *= val; break;
+               case utilskernel::binary::DIVIDE : loc /= val; break;
                default:  break;
             }
         }
@@ -318,7 +317,7 @@ void DIAStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-                                           const utilskernel::reduction::ReductionOp op )
+                                           const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
@@ -340,11 +339,11 @@ void DIAStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
             switch ( op ) 
             {
-               case utilskernel::reduction::COPY : loc = val; break;
-               case utilskernel::reduction::ADD  : loc += val; break;
-               case utilskernel::reduction::SUB  : loc -= val; break;
-               case utilskernel::reduction::MULT : loc *= val; break;
-               case utilskernel::reduction::DIVIDE : loc /= val; break;
+               case utilskernel::binary::COPY : loc = val; break;
+               case utilskernel::binary::ADD  : loc += val; break;
+               case utilskernel::binary::SUB  : loc -= val; break;
+               case utilskernel::binary::MULT : loc *= val; break;
+               case utilskernel::binary::DIVIDE : loc /= val; break;
                default:  break;
             }
         }
@@ -365,7 +364,7 @@ void DIAStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
     ReadAccess<ValueType> rValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // Diagonal is first column
-    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
+    set[ loc ]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::binary::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -382,7 +381,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::binary::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -390,7 +389,7 @@ void DIAStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 template<typename ValueType>
 void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 {
-    HArrayUtils::scale( mValues, value, this->getContextPtr() );
+    HArrayUtils::binaryOpScalar2( mValues, mValues, value, utilskernel::binary::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -398,7 +397,7 @@ void DIAStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DIAStorage<ValueType>::conj()
 {
-    HArrayUtils::execElementwiseNoArg( mValues, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, utilskernel::unary::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -495,7 +494,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
         setVal.getSupportedContext( loc );
         WriteOnlyAccess<IndexType> wOffset( mOffset, loc, mNumDiagonals );
         SCAI_CONTEXT_ACCESS( loc )
-        setVal[ loc ]( wOffset.get(), 1, 0, utilskernel::reduction::COPY );
+        setVal[ loc ]( wOffset.get(), 1, 0, utilskernel::binary::COPY );
     }
     {
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
@@ -503,7 +502,7 @@ void DIAStorage<ValueType>::setIdentity( const IndexType size )
         setVal.getSupportedContext( loc );
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumRows );
         SCAI_CONTEXT_ACCESS( loc )
-        setVal[ loc ]( values.get(), mNumRows, ValueType( 1 ), utilskernel::reduction::COPY );
+        setVal[ loc ]( values.get(), mNumRows, ValueType( 1 ), utilskernel::binary::COPY );
     }
     mDiagonalProperty = true;
 }
@@ -893,7 +892,7 @@ template<typename ValueType>
 void DIAStorage<ValueType>::setValue( const IndexType i,
                                       const IndexType j,
                                       const ValueType val,
-                                      const utilskernel::reduction::ReductionOp op )
+                                      const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1003,7 +1002,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, this->getContextPtr() );
         return;
     }
 
@@ -1063,13 +1062,13 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, loc );
     }
     else
     {
         // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -1139,13 +1138,13 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, loc );
     }
     else
     {
         // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, loc );
     }
 
     bool async = true;
@@ -1291,10 +1290,10 @@ SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void DIAStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void DIAStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-                                                     const utilskernel::reduction::ReductionOp );                          \
+                                                     const utilskernel::binary::BinaryOp );                          \
     template void DIAStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void DIAStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-                                                        const utilskernel::reduction::ReductionOp );                       \
+                                                        const utilskernel::binary::BinaryOp );                       \
     template void DIAStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void DIAStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void DIAStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

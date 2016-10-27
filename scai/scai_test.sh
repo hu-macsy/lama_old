@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 ###
  # @file scai_test.sh

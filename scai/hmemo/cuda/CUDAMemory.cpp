@@ -241,7 +241,7 @@ SyncToken* CUDAMemory::memcpyAsync( void* dst, const void* src, const size_t siz
 
 void CUDAMemory::memcpyFromHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyFromHost" )
+    SCAI_REGION( "CUDA.Memory.memcpyHToD" )
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
@@ -270,7 +270,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const si
 
 void CUDAMemory::memcpyToHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyFromHost" )
+    SCAI_REGION( "CUDA.Memory.memcpyDToH" )
 
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
@@ -300,7 +300,7 @@ SyncToken* CUDAMemory::memcpyAsyncToHost( void* dst, const void* src, const size
 
 void CUDAMemory::memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyHToD")
+    SCAI_REGION( "CUDA.Memory.memcpyFastHToD")
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
     SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
@@ -311,7 +311,7 @@ void CUDAMemory::memcpyFromCUDAHost( void* dst, const void* src, const size_t si
 
 SyncToken* CUDAMemory::memcpyAsyncFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyHtoDAsync" )
+    SCAI_REGION( "CUDA.Memory.memcpyFastHtoDAsync" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();
@@ -324,7 +324,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromCUDAHost( void* dst, const void* src, cons
 
 void CUDAMemory::memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyDToH")
+    SCAI_REGION( "CUDA.Memory.memcpyFastDToH")
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (cuda host) " )
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),
@@ -335,7 +335,7 @@ void CUDAMemory::memcpyToCUDAHost( void* dst, const void* src, const size_t size
 
 SyncToken* CUDAMemory::memcpyAsyncToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyDtoHAsync" )
+    SCAI_REGION( "CUDA.Memory.memcpyFastDtoHAsync" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (device) to " << dst << " (host) " )
     CUDAStreamSyncToken* token = mCUDAContext->getTransferSyncToken();

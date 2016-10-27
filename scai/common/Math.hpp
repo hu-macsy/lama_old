@@ -161,6 +161,23 @@ struct Math
 #endif
 
     /*
+     * mod-function for ValueType
+     */
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float mod( const float& x, const float& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double mod( const double& x, const double& y );
+
+    static inline MIC_CALLABLE_MEMBER long double mod( const long double& x, const long double& y );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> mod( const Complex<float>& x, const Complex<float>& y );
+
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> mod( const Complex<double>& x, const Complex<double>& y );
+
+    static inline MIC_CALLABLE_MEMBER Complex<long double> mod( const Complex<long double>& x, const Complex<long double>& y );
+#endif
+
+    /*
      * log-function for ValueType
      */
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float log( const float& x );
@@ -576,6 +593,23 @@ double Math::pow( const double& base, const double& exponent )
 long double Math::pow( const long double& base, const long double& exponent )
 {
     return powl( base, exponent );
+}
+
+// -------------------------------- mod -----------------------------
+
+float Math::mod( const float& x, const float& y )
+{
+    return fmodf( x, y );
+}
+
+double Math::mod( const double& x, const double& y )
+{
+    return fmod( x, y );
+}
+
+long double Math::mod( const long double& x, const long double& y )
+{
+    return fmodl( x, y );
 }
 
 // -------------------------------- log -----------------------------

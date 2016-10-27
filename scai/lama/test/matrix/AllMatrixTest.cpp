@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
                       matrix.getRow( *row, iRow );
-                      matrix.setRow( *row, iRow, utilskernel::reduction::SUB );
+                      matrix.setRow( *row, iRow, utilskernel::binary::SUB );
                 }
 
                 // the final matrix should be zero
@@ -653,7 +653,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
                 for ( IndexType iCol = 0; iCol < matrix.getNumColumns(); ++iCol )
                 {
                     matrix.getColumn( *col, iCol );
-                    matrix.setColumn( *col, iCol, utilskernel::reduction::SUB );
+                    matrix.setColumn( *col, iCol, utilskernel::binary::SUB );
                 }
 
                 // the final matrix should be zero

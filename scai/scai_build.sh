@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 ###
  # @file scai_build.sh
  #

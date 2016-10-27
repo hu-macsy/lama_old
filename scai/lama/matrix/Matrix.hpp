@@ -49,7 +49,7 @@
 
 // internal scai libraries
 
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
@@ -457,10 +457,10 @@ public:
 
     /** @brief This method returns one column of the matrix.
      *
-     * @param[out] col              is a distributed vector with all values of the col
+     * @param[out] column           is a distributed vector with all values of the col
      * @param[in]  globalColIndex   global column index of the col that should be extracted
      *
-     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     * - the vector column might be of any type but for efficiency it should have the same type as the matrix
      *   (otherwise conversion)
      * - the distribution of col will be the same as the row distribution of the matrix
      */
@@ -478,11 +478,11 @@ public:
      */
     virtual void setRow( const Vector& row, 
                          const IndexType globalRowIndex,
-                         const utilskernel::reduction::ReductionOp op ) = 0;
+                         const utilskernel::binary::BinaryOp op ) = 0;
 
     /** @brief Pure method to set one column of the matrix.
      *
-     * @param[in]  col              is a distributed vector with all values of the col
+     * @param[in]  column           is a distributed vector with all values of the col
      * @param[in]  globalColIndex   global column index of the col that should be set
      * @param[in]  op               specifies the binary op how to combine old and new element
      *
@@ -494,7 +494,7 @@ public:
     virtual void setColumn( 
         const Vector& column, 
         const IndexType globalColIndex,
-        const utilskernel::reduction::ReductionOp op ) = 0;
+        const utilskernel::binary::BinaryOp op ) = 0;
 
     /** @brief This method returns the diagonal.
      *

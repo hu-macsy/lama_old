@@ -57,6 +57,8 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( MatrixCreator::logger, "MatrixCreator" )
 
+int MatrixCreator::mSeed = 15191;
+
 static inline void getStencilProperties(
     IndexType& dimension,
     IndexType& length,
@@ -479,20 +481,19 @@ void MatrixCreator::buildPoisson3D(
 
 void MatrixCreator::fillRandom( Matrix& matrix, double density )
 {
-    int seed = 15191;
     // Shape and distribution of matrix is not changed
     const dmemo::Distribution& dist = matrix.getRowDistribution();
 
     if ( dist.getNumPartitions() == 1 )
     {
         // all processors must have the same random numbers
-        std::srand( seed );
+        std::srand( mSeed );
     }
     else
     {
         // processors must generate different numbers
         PartitionId rank = dist.getCommunicator().getRank();
-        std::srand( seed + rank );
+        std::srand( mSeed + rank );
     }
 
     const IndexType localRowSize = dist.getLocalSize();

@@ -368,9 +368,11 @@ void CUDAELLUtils::scaleValue(
     thrust::device_ptr<IndexType> ia_ptr( const_cast<IndexType*>( ia ) );
     thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
     thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
-    IndexType maxCols = CUDAUtils::reduce( ia, numRows, utilskernel::reduction::MAX );
 
-    //TODO: maybe find better implementation
+    IndexType maxCols = CUDAUtils::reduce( ia, numRows, IndexType( 0 ), utilskernel::binary::MAX );
+
+    // TODO: maybe find better implementation
+
     for ( IndexType i = 0; i < maxCols; i++ )
     {
         thrust::transform( ellValues_ptr + i * numRows, ellValues_ptr + i * numRows + numRows, values_ptr,

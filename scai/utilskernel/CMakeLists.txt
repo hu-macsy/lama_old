@@ -111,13 +111,12 @@ scai_project (
 
     HEADERS                  # .hpp only
 
-        ElementwiseOp
         LAMAKernel
         LArray
         LArrayRef
         UtilKernelTrait
-        ReductionOp
-        
+        BinaryOp
+        UnaryOp
 )
 
 

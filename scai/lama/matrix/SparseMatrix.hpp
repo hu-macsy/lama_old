@@ -571,7 +571,7 @@ public:
 
     void setLocalRow( const hmemo::HArray<ValueType>& row, 
                       const IndexType localRowIndex, 
-                      const utilskernel::reduction::ReductionOp op  );
+                      const utilskernel::binary::BinaryOp op  );
 
     /** Get the local part of a col of this matrix */
 
@@ -581,7 +581,7 @@ public:
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column, 
                          const IndexType colIndex,
-                         const utilskernel::reduction::ReductionOp op  );
+                         const utilskernel::binary::BinaryOp op  );
 
 protected:
 

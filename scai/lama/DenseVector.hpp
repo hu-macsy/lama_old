@@ -206,6 +206,13 @@ public:
     DenseVector( const Expression_SV& expression );
 
     /**
+     * @brief creates a DenseVector with the Expression alpha + x.
+     *
+     * @param[in] expression    alpha * x + beta
+     */
+    DenseVector( const Expression_SV_S& expression );
+
+    /**
      *  @brief creates a DenseVector with the Expression alpha * x * Y.
      *
      * @param[in] expression    x * y
@@ -317,6 +324,26 @@ public:
 
     virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution );
 
+    /** Sort all elements of this vector. 
+     *
+     *  Currently, sorting is only possible on block distributed vectors. 
+     *  Keep in mind that this operation might introduce a new (general block) distribution
+     *  for the vector. 
+     *
+     *  @param[out] perm         permutation vector with the global indexes of original positions
+     *  @param[in]  ascending    flag if sorting is ascending or descending
+     *
+     *  Note:  oldVector[ perm ] ->  newVector
+     */
+
+    virtual void sort( DenseVector<IndexType>& perm, bool ascending );
+
+    /** Same sort but without perm vector. */
+
+    virtual void sort( bool ascending );
+
+    /** Implementation of Vector::getValueType */
+
     virtual common::scalar::ScalarType getValueType() const;
 
     /**
@@ -402,11 +429,26 @@ public:
 
     virtual void swap( Vector& other );
 
+    /** Reset a dense vector with a new array of local values and a new distribution.
+     *
+     *  @param[in,out] newValues array with the new values before, contains old values afterwards
+     *  @param[in]     newDist is the new distribution
+     *
+     *  This methods throws an exception if the size of the new local values does not fit with the
+     *  local size of the new distribution.
+     *
+     *  This method is more efficient than calling a constructor for DenseVector if the array
+     *  newValues is no more needed afterwards.
+     */
+    void swap( hmemo::HArray<ValueType>& newValues, dmemo::DistributionPtr newDist );
+
     virtual void writeAt( std::ostream& stream ) const;
 
     virtual void assign( const Expression_SV_SV& expression );
 
     virtual void assign( const Expression_SVV& expression );
+
+    virtual void assign( const Expression_SV_S& expression );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 
@@ -456,7 +498,9 @@ public:
 
     virtual void atan();
 
-    virtual void pow( const Vector& other );
+    virtual void powBase( const Vector& other );
+
+    virtual void powExp( const Vector& other );
 
     virtual void powBase( const Scalar base );
 
@@ -473,6 +517,14 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    /** Static method for sorting of DenseVector */
+
+    static void sortImpl( 
+        DenseVector<IndexType>* perm, 
+        DenseVector<ValueType>* out,
+        DenseVector<ValueType>& in,
+        bool descending );
 
     utilskernel::LArray<ValueType> mLocalValues; //!< my local values of vector
 

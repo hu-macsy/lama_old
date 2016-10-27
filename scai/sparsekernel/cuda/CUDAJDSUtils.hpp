@@ -58,18 +58,18 @@ class COMMON_DLL_IMPORTEXPORT CUDAJDSUtils
 {
 public:
 
-    /** This method scales the matrix using an value vector */
+    /** CUDA implementation of JDSKernelTrait::scaleRows */
 
     template<typename ValueType, typename OtherValueType>
-    static void scaleValue(
+    static void scaleRows(
+        ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        ValueType mValues[],
-        const OtherValueType values[] );
+        const OtherValueType rowValues[] );
 
-    /** This method sets row as dens vector of the i'th row of the matrix */
+    /** CUDA implementation of JDSKernelTrait::getRow */
 
     template<typename ValueType, typename OtherValueType>
     static void getRow(
@@ -83,18 +83,30 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType>
-    static ValueType getValue(
+    /** CUDA implementation of JDSKernelTrait::getValuePos */
+
+    static IndexType getValuePos(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
-        const IndexType* dlg,
-        const IndexType* ilg,
-        const IndexType* perm,
-        const IndexType* ja,
-        const ValueType* values );
+        const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType perm[],
+        const IndexType ja[] );
 
-    /** This method checks if the matrix has diagonal property */
+    /** Implementation for JDSKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType perm[],
+        const IndexType ja[] );
+
+    /** Implementation for JDSKernelTrait::checkDiagonalProperty */
 
     static bool checkDiagonalProperty(
         const IndexType numDiagonals,
@@ -104,21 +116,13 @@ public:
         const IndexType ja[],
         const IndexType dlg[] );
 
-    /** Implementation for function type JDSKernelTrait::sortRows  */
-
-    static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
-
-    /** Compute dlg array from ilg array as specified in JDSKernelTrait::ilg2dlg */
+    /** CUDA implementation for JDSKernelTrait::ilg2dlg */
 
     static IndexType ilg2dlg(
         IndexType dlg[],
         const IndexType numDiagonals,
         const IndexType ilg[],
         const IndexType numRows );
-
-    /** Compute the inverse permutation as specified in JDSKernelTrait::setInversePerm */
-
-    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
     /** Conversion of JDS to CSR as specified in JDSKernelTrait::getCSRValues  */
 
@@ -181,7 +185,7 @@ public:
         const ValueType oldSolutionHalo[],
         const ValueType omega );
 
-    /** Implementation for JDSKernelTrait::normalGEMV with CUDA on GPU */
+    /** CUDA implementation for JDSKernelTrait::normalGEMV */
 
     template<typename ValueType>
     static void normalGEMV(

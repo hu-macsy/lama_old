@@ -40,7 +40,7 @@
 #include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
@@ -276,10 +276,10 @@ public:
      */
     virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
 
-    virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::reduction::ReductionOp op ) = 0;
+    virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::binary::BinaryOp op ) = 0;
 
     virtual void setColumn( const hmemo::_HArray& column, const IndexType j, 
-                            utilskernel::reduction::ReductionOp op            ) = 0;
+                            utilskernel::binary::BinaryOp op            ) = 0;
 
     /** This method returns the j-th column of the matrix
      *
@@ -810,7 +810,7 @@ public:
     virtual void setValue( const IndexType i, 
         const IndexType j, 
         const ValueType val, 
-        const utilskernel::reduction::ReductionOp op = utilskernel::reduction::COPY ) = 0;
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.

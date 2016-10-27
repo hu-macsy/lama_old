@@ -26,9 +26,10 @@ Contents
    :titlesonly:
    :maxdepth: 1
    
+   HArrayUtils
    LArray
    LAMAKernel
-   ReductionOp
+   BinaryOp
 
 *******
 Example

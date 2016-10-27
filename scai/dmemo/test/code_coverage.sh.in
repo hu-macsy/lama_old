@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverage.sh
@@ -32,6 +32,9 @@
 
 source scai_code_coverage_functions.sh
 
+# Check requirements for codecoverage
+requirements_coverage
+
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
 
@@ -42,12 +45,7 @@ export SCAI_TRACE=time
 	
 # Running dmemo tests
 echo "Running dmemo tests"
-./dmemoTest --SCAI_COMMUNICATOR=NO >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in dmemoTest"
-	error_count=$(($error_count + $?))
-fi
+count_error ./dmemoTest --SCAI_COMMUNICATOR=NO
 
 if [ -d ../mpi ];
 then
@@ -55,20 +53,24 @@ then
     for i in 1 2 3 4;
     do
         echo "Running distributed tests with $i MPI processes"
-        mpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1 >/dev/null
-        if [ $? -ne 0 ]
-        then
-            echo "ERROR in dmemoTest"
-            error_count=$(($error_count + $?))
-        fi
+        count_error mpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
     done
 fi
+
+if [ -d ../gpi ];
+then
+    # Running parallel tests
+    for i in 1 2 3 4;
+    do
+        echo "Running distributed tests with $i GPI processes"
+#        count_error gpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1
+    done
+fi
+
+exit_on_failure ${error_count}
     
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure $?
 
 zip -qr ../dmemo_coverage.zip *

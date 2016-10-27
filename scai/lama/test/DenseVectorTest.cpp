@@ -350,6 +350,33 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 5;
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> x( dist, 3 );
+        SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
+        DenseVector<ValueType> y( 2 + x );
+        DenseVector<ValueType> z( x + 2 );
+        DenseVector<ValueType> r( dist, 5 );
+            
+        // prove same distribution, same values of r and y/z
+
+        BOOST_CHECK( r.getLocalValues().maxDiffNorm( y.getLocalValues() ) == 0 );
+        BOOST_CHECK( r.getLocalValues().maxDiffNorm( z.getLocalValues() ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( swapTest )
 {
     typedef RealType ValueType;
@@ -583,6 +610,81 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues(); 
 
     BOOST_CHECK_EQUAL( 0, v1.maxDiffNorm( v2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
+{
+     typedef float ValueType;
+
+     const IndexType n = 4;
+     ValueType sourceVals[] = { 3, 1, 4, 2 };
+     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+     DenseVector<ValueType> x( n, sourceVals, ctx );
+
+     ValueType alpha = 34.7;
+     ValueType beta  = 5.2;
+
+     // test expression
+     DenseVector<ValueType> res1;
+     res1 = alpha * x + beta; 
+     // test constructor with expression
+     DenseVector<ValueType> res2( alpha * x + beta );
+     // test alias
+     x = alpha * x + beta;
+
+     for( IndexType i = 0; i < n; ++i )
+     {
+        ValueType erg = alpha * sourceVals[i] + beta;
+        BOOST_CHECK_EQUAL( erg, res1.getValue(i).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg, res2.getValue(i).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg,    x.getValue(i).getValue<ValueType>() );
+     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
+{
+    return;
+
+    if ( common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        return;    // sort of complex numbers is not relevant
+    }
+
+    const IndexType n = 100;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr blockDist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
+
+    DenseVector<ValueType> x;
+    float fillRate = 1.0f;
+    srand( 131 + comm->getRank() );
+    x.setRandom( blockDist, fillRate );
+
+    DenseVector<ValueType> xUnsorted( x, repDist );   // save unsorted vector
+
+    bool ascending = true;
+    DenseVector<IndexType> perm;
+
+    x.sort( perm, ascending );    // parallel sorting with global permutation 
+
+    // check the results, therefore replicate it
+
+    x.redistribute( repDist ); 
+    perm.redistribute( repDist );
+
+    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( x.getLocalValues(), ascending ) );
+
+    utilskernel::LArray<ValueType> sortedValues;
+    utilskernel::HArrayUtils::gather( sortedValues, xUnsorted.getLocalValues(), perm.getLocalValues(), utilskernel::binary::COPY );
+
+    BOOST_CHECK_EQUAL( 0, sortedValues.maxDiffNorm( x.getLocalValues() ) );
 }
 
 /* --------------------------------------------------------------------- */

@@ -50,6 +50,8 @@
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/unique_ptr.hpp>
 
 using namespace std;
@@ -93,6 +95,8 @@ static void orCriterion( CriterionPtr& crit, const CriterionPtr& add )
  */
 int main( int argc, const char* argv[] )
 {
+    SCAI_REGION( "Main.lamaSolver" )
+
     common::Settings::parseArgs( argc, argv );
 
     LamaConfig lamaconf;   // must be defined after parseArgs
@@ -142,6 +146,8 @@ int main( int argc, const char* argv[] )
         HOST_PRINT( 0, "Read matrix from file " )
 
         {
+            SCAI_REGION( "Main.loadData" )
+
             LamaTiming timer( comm, "Loading data" );
 
             // read matrix + rhs from disk
@@ -226,6 +232,8 @@ int main( int argc, const char* argv[] )
 
         if ( numProcs > 1 )
         {
+            SCAI_REGION( "Main.redistribute" )
+
             LamaTiming timer( comm, "Redistribution" );
             // determine a new distribution so that each processor gets part of the matrix according to its weight
             float weight = lamaconf.getWeight();
@@ -392,6 +400,7 @@ int main( int argc, const char* argv[] )
         // Initialization with timing
 
         {
+            SCAI_REGION( "Main.solveSetup" )
             LamaTiming timer( comm, "Solver setup" );
             mySolver->initialize( matrix );
         }
@@ -401,6 +410,7 @@ int main( int argc, const char* argv[] )
         double solverTime;   // saves run-time spent in solve
 
         {
+            SCAI_REGION( "Main.solveIt" )
             LamaTiming timer( comm, "Solver solve" );
             mySolver->solve( solution, rhs );
             solverTime = timer.getTime();

@@ -1126,6 +1126,23 @@
         return Complex<long double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
     }
 
+// ------------------ Math::mod --------------------------------
+
+    Complex<float> Math::mod( const Complex<float>& x, const Complex<float>& y )
+    {
+        return x - floor( x / y ) * y;
+    }
+
+    Complex<double> Math::mod( const Complex<double>& x, const Complex<double>& y )
+    {
+        return x - floor( x / y ) * y;
+    }
+
+    Complex<long double> Math::mod( const Complex<long double>& x, const Complex<long double>& y )
+    {
+        return x - floor( x / y ) * y;
+    }
+
 // ------------------ Math::ceil --------------------------------
     Complex<float> Math::ceil( const Complex<float>& x )
     {

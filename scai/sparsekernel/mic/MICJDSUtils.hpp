@@ -59,13 +59,13 @@ public:
     /** This method scales the matrix using an value vector */
 
     template<typename ValueType, typename OtherValueType>
-    static void scaleValue(
+    static void scaleRows(
+        ValueType jdsValues[],
         const IndexType numRows,
         const IndexType perm[],
         const IndexType ilg[],
         const IndexType dlg[],
-        ValueType mValues[],
-        const OtherValueType values[] );
+        const OtherValueType rowValues[] );
 
     /** This method sets row as dens vector of the i'th row of the matrix */
 
@@ -81,16 +81,28 @@ public:
         const IndexType ja[],
         const ValueType values[] );
 
-    template<typename ValueType>
-    static ValueType getValue(
+    /** Implementation for JDSKernelTrait::getValuePos */
+
+    static IndexType getValuePos(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
-        const IndexType* dlg,
-        const IndexType* ilg,
-        const IndexType* perm,
-        const IndexType* ja,
-        const ValueType* values );
+        const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType perm[],
+        const IndexType ja[] );
+
+    /** Implementation for JDSKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType perm[],
+        const IndexType ja[] );
 
     /** This method checks if the matrix has diagonal property */
 
@@ -101,14 +113,6 @@ public:
         const IndexType perm[],
         const IndexType ja[],
         const IndexType dlg[] );
-
-    /** Bucket sort for row sorting */
-
-    static void sortRows( IndexType array[], IndexType perm[], const IndexType n );
-
-    /** Compute the inverse permutation as specified in JDSUtilKernelTrait::Sort::setInversePerm */
-
-    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
     /** Compute dlg array from ilg array as specified in JDSUtilKernelTrait::Conversions::ilg2dlg */
 

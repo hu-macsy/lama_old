@@ -45,7 +45,6 @@
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/ElementwiseOp.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
 #include <scai/common/Constants.hpp>
@@ -181,7 +180,7 @@ void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const Inde
 
     HArrayUtils::setArraySection( row, 0, 1,             // row (:) 
                                   mData, first, inc,
-                                  mNumColumns, utilskernel::reduction::COPY, this->getContextPtr() );
+                                  mNumColumns, utilskernel::binary::COPY, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -189,7 +188,7 @@ void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType rowIndex,
-                                              const utilskernel::reduction::ReductionOp op )
+                                              const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
 
@@ -226,7 +225,7 @@ void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, cons
     HArrayUtils::setArraySection( column, 0, 1,
                                   mData, first, inc, 
                                   mNumRows,    
-                                  utilskernel::reduction::COPY, 
+                                  utilskernel::binary::COPY, 
                                   this->getContextPtr() );
 }
 
@@ -235,7 +234,7 @@ void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, cons
 template<typename ValueType>
 template<typename OtherType>
 void DenseStorageView<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType colIndex,
-                                                 const utilskernel::reduction::ReductionOp op ) 
+                                                 const utilskernel::binary::BinaryOp op ) 
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mNumColumns, "column index out of range" )
 
@@ -272,7 +271,7 @@ void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal )
     HArrayUtils::setArraySection( diagonal, 0, 1,  
                                   mData, first, inc,
                                   numDiagonalValues,
-                                  utilskernel::reduction::COPY,
+                                  utilskernel::binary::COPY,
                                   mData.getValidContext() );
 }
 
@@ -295,7 +294,7 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diag
     HArrayUtils::setArraySection( mData, first, inc,
                                   diagonal, 0, 1,  
                                   numDiagonalValues,
-                                  utilskernel::reduction::COPY,
+                                  utilskernel::binary::COPY,
                                   mData.getValidContext() );
 }
 
@@ -319,7 +318,7 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DenseStorageView<ValueType>::conj()
 {
-    HArrayUtils::execElementwiseNoArg( mData, utilskernel::elementwise::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mData, mData, utilskernel::unary::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -640,7 +639,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, this->getContextPtr() );
         return;
     }
 
@@ -664,7 +663,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
     if ( beta == common::constants::ZERO )
     {
         result.resize( mNumRows );
-        utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, this->getContextPtr() );
+        utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, this->getContextPtr() );
     }
     else if ( &result != &y )
     {
@@ -691,7 +690,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
         }
         else
         {
-            utilskernel::HArrayUtils::scale( result, beta, this->getContextPtr() );
+            HArrayUtils::binaryOpScalar2( result, result, beta, utilskernel::binary::MULT, this->getContextPtr() );
         }
     }
     else
@@ -746,7 +745,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
     if ( beta == common::constants::ZERO )
     {
         result.resize( mNumColumns );
-        utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, this->getContextPtr() );
+        utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, this->getContextPtr() );
     }
     else if ( &result != &y )
     {
@@ -774,7 +773,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
         }
         else
         {
-            utilskernel::HArrayUtils::scale( result, beta, this->getContextPtr() );
+            utilskernel::HArrayUtils::binaryOpScalar2( result, result, beta, utilskernel::binary::MULT, this->getContextPtr() );
         }
     }
     else
@@ -935,7 +934,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
         SCAI_LOG_INFO( logger, "init this result with 0, size = " << m * n )
         WriteOnlyAccess<ValueType> resAccess( getData(), loc, m * n );
         SCAI_CONTEXT_ACCESS( loc )
-        setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), utilskernel::reduction::COPY );
+        setVal[loc]( resAccess.get(), m * n, ValueType( 0 ), utilskernel::binary::COPY );
     }
     else if ( this != &c )
     {
@@ -1046,7 +1045,8 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
     reduce.getSupportedContext( loc );
     ReadAccess<ValueType> read1( mData, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType maxval = reduce[loc]( read1.get(), n, utilskernel::reduction::ABS_MAX );
+    ValueType zero   = 0;
+    ValueType maxval = reduce[loc]( read1.get(), n, zero, utilskernel::binary::ABS_MAX );
     return maxval;
 }
 
@@ -1081,6 +1081,7 @@ template<typename ValueType>
 ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<ValueType>& other ) const
 {
     // no more checks needed here
+
     IndexType n = mNumRows * mNumColumns;
 
     if ( n == 0 )
@@ -1088,14 +1089,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
         return static_cast<ValueType>( 0 );
     }
 
-    static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
-    ContextPtr loc = this->getContextPtr();
-    absMaxDiffVal.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ReadAccess<ValueType> read1( mData, loc );
-    ReadAccess<ValueType> read2( other.mData, loc );
-    ValueType maxval = absMaxDiffVal[loc]( read1.get(), read2.get(), n );
-    return maxval;
+    return HArrayUtils::absMaxDiffVal( mData, other.mData, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1184,7 +1178,7 @@ template<typename ValueType>
 void DenseStorageView<ValueType>::setValue( const IndexType i,
                                             const IndexType j,
                                             const ValueType val,
-                                            const utilskernel::reduction::ReductionOp op )
+                                            const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1431,10 +1425,10 @@ SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );            \
     template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;      \
     template void DenseStorageView<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,        \
-                                                           const utilskernel::reduction::ReductionOp );                  \
+                                                           const utilskernel::binary::BinaryOp );                  \
     template void DenseStorageView<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;   \
     template void DenseStorageView<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,     \
-                                                              const utilskernel::reduction::ReductionOp );               \
+                                                              const utilskernel::binary::BinaryOp );               \
     template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                  \
     template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                  \
     template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                        \

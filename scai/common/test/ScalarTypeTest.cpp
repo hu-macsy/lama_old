@@ -65,11 +65,15 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
 
     BOOST_CHECK( typeSize( scalar::PATTERN ) == 0 );
 
+    BOOST_CHECK( ! isNumeric( scalar::INT ) );
+
+    BOOST_CHECK( ! isNumeric( scalar::INDEX_TYPE ) );
+
     BOOST_CHECK_EQUAL( sizeof( IndexType ), typeSize( scalar::INDEX_TYPE ) );
 
     BOOST_CHECK_THROW (
     {
         typeSize( scalar::INTERNAL );
     }, common::Exception );
-
 }
+

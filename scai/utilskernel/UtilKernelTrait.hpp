@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Struct with traits for all LAMA utilities provided as kernels.
+ * @brief Struct with traits for all LAMA utilities on heterogeneous arrays provided as kernels.
  * @author Thomas Brandes
  * @date 03.04.2013
  */
@@ -36,7 +36,8 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/utilskernel/UnaryOp.hpp>
 
 namespace scai
 {
@@ -46,7 +47,12 @@ namespace scai
 namespace utilskernel
 {
 
-/** Structure with traits for all Utils kernels. */
+/** Structure just to group traits for all Utils kernels.
+ *
+ *  This struct does not contain any data at all. 
+ *  Therefore it could also be a namespace but it is more convenient as 
+ *  each trait must always be used qualified: UtilKernelTrait::utiliy
+ */
 
 struct UtilKernelTrait
 {
@@ -80,54 +86,48 @@ struct UtilKernelTrait
          *
          *  @param[in] array is an array of values
          *  @param[in] n is the size of array
-         *  @param[in] op is the reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
+         *  @param[in] zero  is the zero element used for reduction 
+         *  @param[in] op is the binary reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
          *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
+        typedef ValueType ( *FuncType ) ( const ValueType array[], 
+                                          const IndexType n, 
+                                          const ValueType zero,
+                                          const binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.reduce";
         }
     };
 
+    /** @brief Trait for register kernel function reduce that transforms/reduces elements of two array
+     *
+     *  @tparam ValueType specifies the value type used in the reduction.
+     */
     template <typename ValueType>
-    struct absMaxDiffVal
+    struct reduce2
     {
-        /** @brief Building absolute maximum of element-wise difference of vector elements.
+        /** @brief reduce combined values of two arays
          *
-         *  @param array1i[in] first array
-         *  @param array2i[in] second array
-         *  @param n           size of array1 and array2
-         *  @returns           max( abs( array1[i] - array2[i] ) ), \f$ 0 \le i < n \f$
-         *
-         *  Function is helpful to compute maximum norm for vectors and matrices
+         *  @param[in] array1 is first array of values
+         *  @param[in] array2 is second array of values
+         *  @param[in] n is the size of arrays
+         *  @param[in] binop is the binary operator applied elementwise on array1 and array2
+         *  @param[in] zero  is the zero element used for reduction 
+         *  @param[in] redop is the binary reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
+         *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array1[], const ValueType array2[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( const ValueType array1[], 
+                                          const ValueType array2[],
+                                          const IndexType n, 
+                                          const binary::BinaryOp binop,
+                                          const ValueType zero,
+                                          const binary::BinaryOp redop );
         static const char* getId()
         {
-            return "Util.absMaxDiffVal";
-        }
-    };
-
-    template <typename ValueType>
-    struct copysign
-    {
-        /** @brief Composes a floating point value with the magnitude of x and the sign of y
-         *
-         *  @param x[out] result array
-         *  @param x[in]  first array giving the magnitude of the result vector
-         *  @param y[in]  second array giving the sign of the result vector
-         *  @param n      size of the arrays
-         *
-         *  Function is helpful to compute maximum norm for vectors and matrices
-         */
-
-        typedef void ( *FuncType ) ( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
-        static const char* getId()
-        {
-            return "Util.copysign";
+            return "Util.reduce2";
         }
     };
 
@@ -139,9 +139,10 @@ struct UtilKernelTrait
          *  @param[in] array values to be checked
          *  @param[in] n number of values to check
          *  @param[in] ascending if true check for ascending order, otherwise for descending
+         *  @returns true iff \f$ a[i] \le a[i+1] \f$ (ascending=true) or \f$ a[i] \ge a[i+1] \f$ (ascending=false)
          */
 
-        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, bool ascending );
+        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const bool ascending );
         static const char* getId()
         {
             return "Util.isSorted";
@@ -157,13 +158,25 @@ struct UtilKernelTrait
     struct setVal
     {
         /** Set all elements of a contiguous array with a value.
-         *  A reduction operator like ADD, MULT can be used to combine the new value with the old value.
+         *  A binary operator like ADD, MULT can be used to combine the new value with the old value.
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.setVal";
+        }
+    };
+
+    template<typename ValueType>
+    struct scaleVectorAddScalar
+    {
+        /** Calculates array1 = alpha * array2 + beta (elementwise) */
+
+        typedef void ( *FuncType ) ( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
+        static const char* getId()
+        {
+            return "Util.scaleVectorAddScalar";
         }
     };
 
@@ -206,7 +219,7 @@ struct UtilKernelTrait
     {
         /** Set out[i] _op= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
+        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.set";
@@ -220,7 +233,7 @@ struct UtilKernelTrait
 
         typedef void ( *FuncType ) ( ValueType1 out[], const IndexType inc_out,
                                      const ValueType2 in[], const IndexType inc_in,
-                                     const IndexType n, const reduction::ReductionOp op );
+                                     const IndexType n, const binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.setSection";
@@ -228,72 +241,93 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct execElementwiseNoArg
+    struct unaryOp
     {
-        /** Execute sin/cos/sqrt/... function elementwise on vector */
+        /** Apply unary op sin/cos/sqrt/... function elementwise on vector
+         *  This routine can also be used for aliased arrays, i.e. in == out
+         *  This method can only be used for numeric types, not for IndexType
+         */
+        typedef void ( *FuncType ) ( 
+            ValueType out[], 
+            const ValueType in[], 
+            const IndexType n, 
+            const unary::UnaryOp op );
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const elementwise::ElementwiseOpNoArg op );
         static const char* getId()
         {
-            return "Util.execElementwiseNoArg";
+            return "Util.unaryOp";
         }
     };
 
     template<typename ValueType>
-    struct execElementwiseOneArg
+    struct binaryOp
     {
-        /** Execute sin/cos/sqrt/... function elementwise on vector */
-
-        typedef void ( *FuncType ) ( ValueType array[], const ValueType arg, const IndexType n, 
-                                     const elementwise::ElementwiseOpOneArg op );
-        static const char* getId()
-        {
-            return "Util.execElementwiseOneArg";
-        }
-    };
-
-    template <typename ValueType>
-    struct vectorScale
-    {
-        /** @brief Building absolute maximum of element-wise difference of vector elements.
+        /** Apply binary op ADD, MULT, POW, COPY_SIGN, ... on array with one given numeric type. 
+         *  This routine can also be used for aliased arrays, i.e. in1 == out or in2 == out
+         *  This method can only be used for numeric types, not for IndexType
          *
-         *  @param result[out] result array
-         *  @param x[in]       first input array
-         *  @param y[in]       second input array
-         *  @param n           size of all three arrays
-         *  @returns           result[i] = x[i] * y[i], \f$ 0 \le i < n \f$
-         *
-         *  Function is helpful to compute maximum norm for vectors and matrices
+         *  @param[out] out array with output values
+         *  @param[in]  in1 array with input values
+         *  @param[in]  in2 array with input values
+         *  @param[in]  n   number of elements
+         *  @param[in]  op  binary operation to be applied
          */
+        typedef void ( *FuncType ) ( 
+            ValueType out[], 
+            const ValueType in1[], 
+            const ValueType in2[], 
+            const IndexType n, 
+            const binary::BinaryOp op );
 
-        typedef void ( *FuncType ) ( ValueType result[], const ValueType x[], const ValueType y[], const IndexType n );
         static const char* getId()
-        {
-            return "Util.vectorScale";
+        {   
+            return "Util.binaryOp";
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
-    struct setScale
+    template<typename ValueType>
+    struct binaryOpScalar1
     {
-        /** @brief scaled array assignment, out = in * value
+        /** Same as binaryOp but first operand is only a scalar
          *
-         *  Set out[i] = scale * in[i],  0 <= i < n
+         *  This operation is only available for numeric types, not for IndexType
          *
-         *  @param[out]     outValues  is the output array
-         *  @param[in]      scaleValue scaling factor
-         *  @param[in]      inValues   is the array with entries to scale
-         *  @param[in]      n          is the number of entries
+         *  @param[out] out   array with output values
+         *  @param[in]  value scalar value as first argument
+         *  @param[in]  in    array with values for second argument
+         *  @param[in]  n     number of elements
+         *  @param[in]  op    binary operation to be applied
          */
         typedef void ( *FuncType ) (
-            ValueType1 outValues[],
-            const ValueType1 scaleValue,
-            const ValueType2 inValues[],
-            const IndexType n );
+            ValueType out[],
+            const ValueType value,
+            const ValueType in[],
+            const IndexType n,
+            const binary::BinaryOp op );
 
         static const char* getId()
         {
-            return "Util.setScale";
+            return "Util.binaryOpScalar1";
+        }
+    };
+
+    template<typename ValueType>
+    struct binaryOpScalar2
+    {
+        /** Same as binaryOp but 2nd arg of the input arrays is just a scalar value 
+         *
+         *  This operation is only available for numeric types, not for IndexType
+         */
+        typedef void ( *FuncType ) (
+            ValueType out[],
+            const ValueType in[],
+            const ValueType value,
+            const IndexType n,
+            const binary::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "Util.binaryOpScalar2";
         }
     };
 
@@ -306,7 +340,7 @@ struct UtilKernelTrait
             ValueType1 out[],
             const ValueType2 in[],
             const IndexType indexes[],
-            const reduction::ReductionOp op,
+            const binary::BinaryOp op,
             const IndexType n );
 
         static const char* getId()
@@ -366,7 +400,7 @@ struct UtilKernelTrait
             ValueType1 out[],
             const IndexType indexes[],
             const ValueType2 in[],
-            const reduction::ReductionOp op,
+            const binary::BinaryOp op,
             const IndexType n );
 
         static const char* getId()
@@ -430,25 +464,37 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct sort
     {
-        /** Stable sorting of values in array in descending order.
+        /** Stable sorting of values 
          *
-         *  @param[in,out] array are the values to be sorted
-         *  @param[in,out] perm, where perm[i] has the value of the original position
-         *  @param[in]    n is the number of values to be sorted
+         *  @param[out]  perm      contains the positions of the sorted values in the input array inValues, optional
+         *  @param[out]  outValues array with sorted values, optional
+         *  @param[in]   inValues  array with values to be sorted
+         *  @param[in]   n is the number of values to be sorted
+         *  @param[in]   ascending if true sort in ascending order, descending otherwise
          *
          *  \code
-         *           array =   1  4   1  8  5  7
-         *           perm  =   0  1   2  3  4  5
-         +
-         *           array =   8  7   5  4  1  1
-         *           perm  =   3  5   4  1  0  2
+         *         inValues =   1  4   1  8  5  7
+         *
+         *        outValues =   8   7   5   4   1   1
+         *           perm   =   3   5   4   1   0   2
+         *
+         *         outValues = inValues[ perm ]
          *  \endcode
+         *
+         *  - perm == NULL specifies that this optional argument is not present
+         *  - outValues == NULL specifies that this optional argument is not present
+         *  - at least perm or outValues must be available
+         *  - inValues == outValues is supported, this alias implies sorting in-place
          *
          *  Note: if the values to be sorted are int values in a certain range like 0, ..., nb - 1, 
          *        sorting might be more efficient with countBuckets, sortInBuckets
          */
-
-        typedef void ( *FuncType ) ( ValueType array[], IndexType perm[], const IndexType n );
+        typedef void ( *FuncType ) ( 
+            IndexType perm[], 
+            ValueType outValues[], 
+            const ValueType inValues[], 
+            const IndexType n, 
+            const bool ascending );
 
         static const char* getId()
         {
@@ -513,6 +559,32 @@ struct UtilKernelTrait
         }
     };
 
+    struct setInversePerm
+    {
+        /** Compute the inverse permutation for a given permutation.
+         *
+         *  inversePerm [ perm [i] ] == i , 0 <= i < n
+         *
+         *  @param[out] inversePerm, size = n, will contain the inverse permutation
+         *  @param[in] perm, size = n, is input permuation of 0, ..., n-1
+         *  @param[in] n specifies the size of perm and inversePerm
+         *
+         *  /code
+         *       perm      2  5  1  4  6  3  0
+         *     inperm      6  2  0  5  3  1  4
+         *  /endcode
+         */
+
+        typedef void ( *FuncType ) ( IndexType inversePerm[],
+                                     const IndexType perm[],
+                                     const IndexType n );
+
+        static const char* getId()
+        {
+            return "Utils.setInversePerm";
+        }
+    };
+
     template<typename ValueType>
     struct countNonZeros
     {
@@ -556,63 +628,6 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Utils.compress";
-        }
-    };
-
-    template<typename ValueType>
-    struct pow
-    {
-        /** @brief Calculates elementwise pow(array1, array2)
-         *
-         *  @param[out] result is the result array
-         *  @param[in]  array1 is the base array
-         *  @param[in]  array2 is the exponent array
-         *  @param      n      is the number of entries
-         */
-
-        typedef void ( *FuncType ) ( ValueType array1[], const ValueType array2[], const IndexType n );
-
-        static const char* getId()
-        {
-            return "Util.pow";
-        }
-    };
-
-    template<typename ValueType>
-    struct powBase
-    {
-        /** @brief Calculates elementwise pow(array1, array2)
-         *
-         *  @param[out] result is the result array
-         *  @param[in]  array is the exponent array
-         *  @param[in]  base  is the base
-         *  @param      n     is the number of entries
-         */
-
-        typedef void ( *FuncType ) ( ValueType array[], ValueType base, const IndexType n );
-
-        static const char* getId()
-        {
-            return "Util.powBase";
-        }
-    };
-
-    template<typename ValueType>
-    struct powExp
-    {
-        /** @brief Calculates elementwise pow(array1, array2)
-         *
-         *  @param[out] result is the result array
-         *  @param[in]  array is the base array
-         *  @param[in]  exp   is the exponent
-         *  @param      n     is the number of entries
-         */
-
-        typedef void ( *FuncType ) ( ValueType array[], ValueType exp, const IndexType n );
-
-        static const char* getId()
-        {
-            return "Util.powExp";
         }
     };
 };

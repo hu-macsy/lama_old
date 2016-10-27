@@ -192,13 +192,17 @@ public:
 
     Vector& operator=( const Expression_SV& expression );
 
+    /** this = alpha * x + beta */
+
+    Vector& operator=( const Expression_SV_S );
+
     /** this = x * y */
 
-    Vector& operator=( const Expression_VV );
+    Vector& operator=( const Expression_VV& );
 
     /** this = alpha * x * y */
 
-    Vector& operator=( const Expression_SVV );
+    Vector& operator=( const Expression_SVV& );
 
     /** this +=  alpha * A * x */
 
@@ -562,6 +566,8 @@ public:
 
     virtual void assign( const Expression_SVV& expression ) = 0;
 
+    virtual void assign( const Expression_SV_S& expression ) = 0;
+
     /**
      * @brief Returns the dot product of this and other.
      *
@@ -698,7 +704,12 @@ public:
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    virtual void pow( const Vector& other ) = 0;
+    virtual void powBase( const Vector& other ) = 0;
+
+    /**
+     *  Calculates the pow function for the vector elements with the elements of another vector.
+     */
+    virtual void powExp( const Vector& other ) = 0;
 
     /**
      *  Calculates the pow function for a base the vector elements as exponents.

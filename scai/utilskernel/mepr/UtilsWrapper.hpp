@@ -78,7 +78,7 @@ template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullT
     static void setArray( 
         hmemo::HArray<ValueType>&, 
         const hmemo::_HArray&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
     }
@@ -87,7 +87,7 @@ template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullT
         hmemo::HArray<ValueType>&, 
         const hmemo::_HArray&, 
         const hmemo::HArray<IndexType>&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr ) 
     {
     }
@@ -96,12 +96,12 @@ template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullT
         hmemo::HArray<ValueType>&, 
         const hmemo::HArray<IndexType>&, 
         const hmemo::_HArray&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
     }
 
-    static void setScalar( hmemo::_HArray&, const ValueType, const reduction::ReductionOp, const hmemo::ContextPtr )
+    static void setScalar( hmemo::_HArray&, const ValueType, const binary::BinaryOp, const hmemo::ContextPtr )
     {
     }
 
@@ -120,7 +120,7 @@ template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
     static void setArray( 
         hmemo::_HArray&,
         const hmemo::_HArray&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
     }
@@ -129,7 +129,7 @@ template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
         hmemo::_HArray&,
         const hmemo::_HArray&, 
         const hmemo::HArray<IndexType>&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr ) 
     {
     }
@@ -138,7 +138,7 @@ template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
         hmemo::_HArray&, 
         const hmemo::HArray<IndexType>&, 
         const hmemo::_HArray&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
     }
@@ -149,7 +149,7 @@ template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::Nul
     static void setArray( 
         hmemo::HArray<ValueType>&, 
         const hmemo::_HArray&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
     }
@@ -158,7 +158,7 @@ template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::Nul
         hmemo::HArray<ValueType>&, 
         const hmemo::_HArray&, 
         const hmemo::HArray<IndexType>&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr ) 
     {
     }
@@ -167,7 +167,7 @@ template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::Nul
         hmemo::HArray<ValueType>&, 
         const hmemo::HArray<IndexType>&, 
         const hmemo::_HArray&, 
-        const reduction::ReductionOp, 
+        const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
     }
@@ -199,7 +199,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
     static void setArray( 
         hmemo::HArray<ValueType>& target, 
         const hmemo::_HArray& source, 
-        const reduction::ReductionOp op, 
+        const binary::BinaryOp op, 
         const hmemo::ContextPtr loc )
     {
         if ( common::getScalarType<H>() ==  source.getValueType() )
@@ -217,7 +217,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         hmemo::HArray<ValueType>& target, 
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& indexes, 
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() ==  source.getValueType() )
@@ -235,7 +235,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         hmemo::HArray<ValueType>& target,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& source,
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() ==  source.getValueType() )
@@ -249,7 +249,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
     }
 
-    static void setScalar( hmemo::_HArray& target, const ValueType value, const reduction::ReductionOp op, const hmemo::ContextPtr ctx )
+    static void setScalar( hmemo::_HArray& target, const ValueType value, const binary::BinaryOp op, const hmemo::ContextPtr ctx )
     {
         if ( common::getScalarType<H>() ==  target.getValueType() )
         {
@@ -267,7 +267,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         {
             HArrayUtils::setValImpl( reinterpret_cast<hmemo::HArray<H>&>( target ), 
                                      indexes, 
-                                     static_cast<H>( val ), reduction::COPY );
+                                     static_cast<H>( val ), binary::COPY );
         }
         else
         {
@@ -291,7 +291,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
 template<typename H, typename T, typename TList2>
 struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >
 {
-    static void setArray( hmemo::_HArray& target, const hmemo::_HArray& source, const reduction::ReductionOp op, const hmemo::ContextPtr loc )
+    static void setArray( hmemo::_HArray& target, const hmemo::_HArray& source, const binary::BinaryOp op, const hmemo::ContextPtr loc )
     {
         if ( common::getScalarType<H>() == target.getValueType() )
         {
@@ -307,7 +307,7 @@ struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >
         hmemo::_HArray& target, 
         const hmemo::_HArray& source, 
         const hmemo::HArray<IndexType>& indexes, 
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() == target.getValueType() )
@@ -325,7 +325,7 @@ struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >
         hmemo::_HArray& target, 
         const hmemo::HArray<IndexType>& indexes, 
         const hmemo::_HArray& source, 
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() == target.getValueType() )
@@ -346,7 +346,7 @@ struct UtilsWrapperTT2<ValueType, common::mepr::TypeList<H, T> >
     static void setArray( 
         hmemo::HArray<ValueType>& target, 
         const hmemo::_HArray& source, 
-        const reduction::ReductionOp op, 
+        const binary::BinaryOp op, 
         const hmemo::ContextPtr loc )
     {
         if ( common::getScalarType<H>() == source.getValueType() )
@@ -364,7 +364,7 @@ struct UtilsWrapperTT2<ValueType, common::mepr::TypeList<H, T> >
         hmemo::HArray<ValueType>& target, 
         const hmemo::_HArray& source, 
         const hmemo::HArray<IndexType>& indexes, 
-        const reduction::ReductionOp op,
+        const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() == source.getValueType() )
@@ -382,7 +382,7 @@ struct UtilsWrapperTT2<ValueType, common::mepr::TypeList<H, T> >
         hmemo::HArray<ValueType>& target, 
         const hmemo::HArray<IndexType>& indexes, 
         const hmemo::_HArray& source, 
-        const reduction::ReductionOp op, 
+        const binary::BinaryOp op, 
         const hmemo::ContextPtr prefLoc )
     {
         if ( common::getScalarType<H>() == source.getValueType() )

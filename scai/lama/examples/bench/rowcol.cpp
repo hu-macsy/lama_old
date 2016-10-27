@@ -78,7 +78,7 @@ int main( int argc, const char* argv[] )
     for ( IndexType i = 0; i < size; ++i )
     {
         mat.getRow( row, i );
-        mat.setRow( row, i, utilskernel::reduction::SUB );
+        mat.setRow( row, i, utilskernel::binary::SUB );
     }
 
     double time = common::Walltime::get() - tstart;
@@ -103,7 +103,7 @@ int main( int argc, const char* argv[] )
     for ( IndexType j = 0; j < size; ++j )
     {
         mat.getColumn( col, j );
-        mat.setColumn( col, j, utilskernel::reduction::SUB );
+        mat.setColumn( col, j, utilskernel::binary::SUB );
     }
 
     time = common::Walltime::get() - tstart;
