@@ -44,7 +44,7 @@ export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
 # Running dmemo tests
-echo "Running dmemo tests"
+echo "Running dmemo tests serial"
 count_error ./dmemoTest --SCAI_COMMUNICATOR=NO
 
 if [ -d ../mpi ];
@@ -63,7 +63,16 @@ then
     for i in 1 2 3 4;
     do
         echo "Running distributed tests with $i GPI processes"
-#        count_error gpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1
+        hostname > machines
+        for (( k=2; k<=$i; k++ ))
+        do
+            hostname >> machines
+        done
+        cat machines
+        # For GPI-2: only root processor output is available
+        count_error gaspi_run -m machines ${PWD}/dmemoTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1 1> ${dirname}/dist_tests_gpi_${i}.xml
+        # wait a little bit to get resources freed
+        sleep 1
     done
 fi
 

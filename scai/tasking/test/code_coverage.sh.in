@@ -44,7 +44,7 @@ export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
 # Running tests serial
-echo "Running serial tests"
+echo "Running tasking tests on Host"
 count_error ./taskingTest
 
 if [ -d cuda ];

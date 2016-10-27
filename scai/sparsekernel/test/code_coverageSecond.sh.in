@@ -41,14 +41,21 @@ export SCAI_TRACE=time
 error_count=0
 
 # Running tests serial
-echo "Running serial tests"
+echo "Running sparsekernel tests on Host"
 count_error ./sparsekernelTest --SCAI_CONTEXT=Host
 
 if [ -d ../cuda ];
 then
     #Running common CUDA tests
-    echo "Running blaskernel tests with CUDA context"
+    echo "Running sparsekernel tests with CUDA context"
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA
+fi
+
+if [ -d ../mic ]
+then
+    #Running common MIC tests
+    echo "Running sparsekernel tests with MIC context"
+    count_error ./sparsekernelTest --SCAI_CONTEXT=MIC
 fi
 
 exit ${error_count}

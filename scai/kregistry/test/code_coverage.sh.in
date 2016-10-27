@@ -44,7 +44,7 @@ export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
 # Running kregistry serial
-echo "Running serial tests"
+echo "Running kregistry tests on Host"
 count_error ./kregistryTest
 
 exit_on_failure ${error_count}
