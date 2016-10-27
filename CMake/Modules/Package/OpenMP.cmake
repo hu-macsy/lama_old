@@ -50,7 +50,7 @@ set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
 
 ## get OpenMP version
 if    ( OPENMP_FOUND )
-	    try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
+	try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}/VersionCheck
         ${CMAKE_MODULE_PATH}/VersionCheck/openmp.cpp
         CMAKE_FLAGS 
@@ -58,13 +58,13 @@ if    ( OPENMP_FOUND )
         COMPILE_OUTPUT_VARIABLE OPENMP_COMPILE_OUTPUT_VAR
         RUN_OUTPUT_VARIABLE OPENMP_RUN_OUTPUT_VAR )
 
-        set ( OPENMP_VERSION ${OPENMP_RUN_OUTPUT_VAR} )
-endif ( OPENMP_FOUND )
+    set ( OPENMP_VERSION ${OPENMP_RUN_OUTPUT_VAR} )
 
-if    ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
-	message ( WARNING "Found OpenMP version (${OPENMP_VERSION}) of your compiler (${CMAKE_CXX_COMPILER_ID} v ${CXX_COMPILER_VERSION}) is to old - must be at least ${OMP_MINIMUM_VERSION}, disable OpenMP support!!!" )
-	set ( OPENMP_FOUND FALSE )
-endif ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
+    if    ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
+			message ( WARNING "Found OpenMP version (${OPENMP_VERSION}) of your compiler (${CMAKE_CXX_COMPILER_ID} v ${CXX_COMPILER_VERSION}) is to old - must be at least ${OMP_MINIMUM_VERSION}, disable OpenMP support!!!" )
+		set ( OPENMP_FOUND FALSE )
+	endif ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
+endif ( OPENMP_FOUND )
 
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( OPENMP ) # sets USE_OPENMP
