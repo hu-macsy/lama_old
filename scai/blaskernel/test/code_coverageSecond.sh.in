@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverageSecond.sh
@@ -30,6 +30,11 @@
  # @date 15.08.2012
 ###
 
+source scai_code_coverage_functions.sh
+
+# Check requirements for codecoverage
+requirements_coverage
+
 export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 
@@ -37,27 +42,20 @@ error_count=0
 
 # Running blaskernel serial
 echo "Running serial tests"
-./blaskernelTest --SCAI_CONTEXT=Host >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in blaskernelTest"
-	error_count=$(($error_count + $?))
-fi
+count_error ./blaskernelTest --SCAI_CONTEXT=Host
 
-#if [ -d ../cuda ];
-#then
+if [ -d ../cuda ]
+then
     #Running common CUDA tests
     echo "Running blaskernel tests with CUDA context"
-    ./blaskernelTest --SCAI_CONTEXT=CUDA >/dev/null
-    if [ $? -ne 0 ]
-    then
-        echo "ERROR in blaskernelTest with CUDA context"
-        error_count=$(($error_count + $?))
-    fi
-#fi
-
-if [ $error_count -eq 0 ]; then
-    exit
-else
-    exit 1
+    count_error ./blaskernelTest --SCAI_CONTEXT=CUDA
 fi
+
+if [ -d ../mic ]
+then
+    #Running common CUDA tests
+    echo "Running blaskernel tests with CUDA context"
+    count_error ./blaskernelTest --SCAI_CONTEXT=MIC
+fi
+
+exit $error_count

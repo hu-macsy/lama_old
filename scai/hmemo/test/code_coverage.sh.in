@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverage.sh
@@ -32,6 +32,9 @@
 
 source scai_code_coverage_functions.sh
 
+# Check requirements for codecoverage
+requirements_coverage
+
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
 
@@ -42,32 +45,21 @@ export SCAI_TRACE=time
 	
 # Running tests serial
 echo "Running serial tests"
-./hmemoTest >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in hmemoTest"
-	error_count=$(($error_count + $?))
-fi
+count_error ./hmemoTest --SCAI_CONTEXT=Host
 
 if [ -d cuda ];
 then
 	#Running CUDA tests
 	echo "Running tests with CUDA context"
-	./hmemoTest --SCAI_CONTEXT=CUDA >/dev/null
+	count_error ./hmemoTest --SCAI_CONTEXT=CUDA
 	echo "Running cuda tests"
-	./cuda/hmemoCUDATest >/dev/null
-	if [ $? -ne 0 ]
-	then
-		echo "ERROR in CudaTest"
-		error_count=$(($error_count + $?))
-	fi
+	count_error ./cuda/hmemoCUDATest
 fi
+
+exit_on_failure ${error_count}
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure $?
 
 zip -qr ../hmemo_coverage.zip *

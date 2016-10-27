@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverage.sh
@@ -32,6 +32,9 @@
 
 source scai_code_coverage_functions.sh
 
+# Check requirements for codecoverage
+requirements_coverage
+
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
 
@@ -39,21 +42,15 @@ prepare_coverage $dirname ../..
 
 # Running tracing tests
 echo "Running tracing tests"
-./test.sh >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in commonTest"
-	error_count=$(($error_count + $?))
-fi
+count_error ./test.sh
 
 # problem with these, so first ignore
 rm simpleTracing.gcno simpleTracing.gcda
 
+exit_on_failure ${error_count}
+
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure $?
 
 zip -qr ../logging_coverage.zip *

@@ -49,7 +49,7 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
-#include <parallel/sort.h>
+//#include <parallel/sort.h>
 
 namespace scai
 {

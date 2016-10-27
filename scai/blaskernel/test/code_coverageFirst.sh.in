@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverageFirst.sh
@@ -31,6 +31,9 @@
 ###
 
 source scai_code_coverage_functions.sh
+
+# Check requirements for codecoverage
+requirements_coverage
 
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"

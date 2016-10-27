@@ -32,14 +32,14 @@
 
 source scai_code_coverage_functions.sh
 
+# Check requirements for codecoverage
+requirements_coverage
+
 dirname=$(find_dir)
 echo "Found coverage directory: ${dirname}"
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure $?
 
 zip -qr ../blaskernel_coverage.zip *
