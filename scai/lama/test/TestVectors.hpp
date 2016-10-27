@@ -79,7 +79,12 @@ public:
                 vectorPtr->setContextPtr( ctx );
             }
 
-            push_back( vectorPtr );
+            // currently we only consider numeric types
+
+            if ( vectorPtr->getValueType() != scai::common::TypeTraits<IndexType>::stype )
+            {
+                push_back( vectorPtr );
+            }
         }
     }
 };
