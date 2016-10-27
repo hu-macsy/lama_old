@@ -178,22 +178,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 {
     // check of all unary array operations
 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
-    const ValueType values[] = { 1.0, 1.2, 1.3, 1.0 };
+    const ValueType values[] = { 1, 3, 5, 11 };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
     for ( IndexType i = 0; i < unary::MAX_UNARY_OP; ++i )
     {
+        unary::UnaryOp op = unary::UnaryOp( i );
+
         HArray<ValueType> array( ctx );
+
         array.init( values, n );
 
-        unary::UnaryOp op = unary::UnaryOp( i );
+        SCAI_LOG_DEBUG( logger, "test unary op " << op << " for " << array )
+
+        if ( ! isUnarySupported<ValueType>( op ) )
+        {
+            BOOST_CHECK_THROW(
+            {
+                HArrayUtils::unaryOp( array, array, op, ctx );
+            }, Exception );
+
+            continue;  // not all operations are supported for IndexType
+        }
 
         HArrayUtils::unaryOp( array, array, op, ctx );
 
@@ -201,29 +214,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_numeric_test_types )
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType res = 0;
+            ValueType res = applyUnary( op, values[i] );
 
-            switch ( op ) 
-            {
-                case unary::CONJ  : res = common::Math::conj( values[i] ); break;
-                case unary::MINUS : res = -values[i]; break;
-                case unary::EXP   : res = common::Math::exp( values[i] ); break;
-                case unary::LOG   : res = common::Math::log( values[i] ); break;
-                case unary::FLOOR : res = common::Math::floor( values[i] ); break;
-                case unary::CEIL  : res = common::Math::ceil( values[i] ); break;
-                case unary::SQRT  : res = common::Math::sqrt( values[i] ); break;
-                case unary::SIN   : res = common::Math::sin( values[i] ); break;
-                case unary::COS   : res = common::Math::cos( values[i] ); break;
-                case unary::TAN   : res = common::Math::tan( values[i] ); break;
-                case unary::ATAN  : res = common::Math::atan( values[i] ); break;
+            typedef typename TypeTraits<ValueType>::AbsType AbsType;
 
-                default: res = read[i];   // give correct result for all other ops
-            }
+            // might happen that result on other devices are not exactly the same
 
-            ValueType x = read[i] - res;
+            AbsType diff = common::Math::abs( read[i] - res  );
 
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
     }
 }
@@ -273,29 +272,69 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType res = 0;
+            ValueType x1  = values1[i];
 
-            switch ( op ) 
+            if ( op == binary::POW ) x1 = common::Math::abs( x1 );
+
+            ValueType res = applyBinary( x1, op, values2[i] );
+
+            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+            // might happen that result on other devices are not exactly the same
+
+            AbsType diff = common::Math::abs( read[i] - res  );
+
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
+{
+    // check of all unary array operations
+
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+
+    const IndexType values1[] = { 1, 3, 7, 13 };
+    const IndexType values2[] = { 7, 3, 14, 2 };
+
+    const IndexType n = sizeof( values1 ) / sizeof( IndexType );
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    {
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        HArray<IndexType> array1( ctx );
+        HArray<IndexType> array2( ctx );
+        HArray<IndexType> array3( ctx );
+
+        array1.init( values1, n );
+        array2.init( values2, n );
+
+        if ( ! isBinarySupported<IndexType>( op ) )
+        {
+            BOOST_CHECK_THROW(
             {
-                case binary::ADD       : res = values1[i] + values2[i]; break;
-                case binary::SUB       : res = values1[i] - values2[i]; break;
-                case binary::MULT      : res = values1[i] * values2[i]; break;
-                case binary::DIVIDE    : res = values1[i] / values2[i]; break;
-                case binary::COPY_SIGN : res = common::Math::copysign( values1[i], values2[i] ); break;
-                case binary::MIN       : res = common::Math::min( values1[i], values2[i] ); break;
-                case binary::MAX       : res = common::Math::max( values1[i], values2[i] ); break;
-                case binary::POW       : {
-                                             ValueType tmp = common::Math::abs( values1[i] );
-                                             res = common::Math::pow( tmp, values2[i] ); break;
-                                         }
+                HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
+            }, Exception );
 
-                default: res = read[i];   // give correct result for all other ops
-            }
+            continue;  // not all operations are supported for IndexType
+        }
 
-            ValueType x = read[i] - res;
+        HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
 
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        BOOST_REQUIRE_EQUAL( n, array3.size() );
+
+        ReadAccess<IndexType> read( array3, host );  // read result array
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            IndexType res = applyBinary( values1[i], op, values2[i] );
+
+            BOOST_CHECK_EQUAL( res, read[i] );
         }
     }
 }
@@ -318,11 +357,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
     {
         binary::BinaryOp op = binary::BinaryOp( i );
 
-        if ( op == binary::COPY || op == binary::COPY_SIGN || op == binary::ABS_MAX )
-        {
-            continue;    // not implemented
-        }
-
         HArray<ValueType> array1( ctx );
         HArray<ValueType> array2( ctx );
 
@@ -336,26 +370,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType res = 0;
+            ValueType res = applyBinary( scalar, op, values[i] );
 
-            switch ( op ) 
-            {
-                case binary::ADD       : res = scalar + values[i]; break;
-                case binary::SUB       : res = scalar - values[i]; break;
-                case binary::MULT      : res = scalar * values[i]; break;
-                case binary::DIVIDE    : res = scalar / values[i]; break;
-                case binary::COPY_SIGN : res = common::Math::copysign( scalar, values[i] ); break;
-                case binary::MIN       : res = common::Math::min( scalar, values[i] ); break;
-                case binary::MAX       : res = common::Math::max( scalar, values[i] ); break;
-                case binary::POW       : res = common::Math::pow( scalar, values[i] ); break;
+            typedef typename TypeTraits<ValueType>::AbsType AbsType;
 
-                default: res = read[i];   // give correct result for all other ops
-            }
+            // might happen that result on other devices are not exactly the same
 
-            ValueType x = read[i] - res;
+            AbsType diff = common::Math::abs( read[i] - res  );
 
-            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
-            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
     }
 }

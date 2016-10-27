@@ -128,6 +128,18 @@ inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
     }
 }
 
+template <typename ValueType>
+inline bool isUnarySupported( const unary::UnaryOp op )
+{
+    return op < unary::MAX_UNARY_OP;
+}
+
+template <>
+inline bool isUnarySupported<IndexType>( const unary::UnaryOp op )
+{
+    return op <= unary::MINUS;
+}
+
 /*
  * Output of UnaryOp in stream by writing strings instead of numbers
  */

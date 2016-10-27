@@ -94,6 +94,10 @@ struct scalar
 
 COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType stype );
 
+/** Query an enum value whether it is supported and numeric. */
+
+COMMON_DLL_IMPORTEXPORT bool isNumeric( const scalar::ScalarType stype );
+
 /** Query an enum value about the precision used in output */
 
 COMMON_DLL_IMPORTEXPORT int precision( const scalar::ScalarType stype );

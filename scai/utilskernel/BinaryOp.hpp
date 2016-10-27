@@ -128,6 +128,27 @@ inline IndexType applyBinary( const IndexType& x1, const binary::BinaryOp op, co
     }
 }
 
+/** 
+ * Predicate to check whether a binary op is supported for a certain value type.
+ *
+ * @tparam   ValueType specifies the type for which check is done
+ * @param    op        is the binary operation for which the query is made
+ * @return   true      if binary op is supported for the ValueType.
+ *
+ * Note: This predicate is helpful as applyBinary has no error handling.
+ */
+template <typename ValueType>
+inline bool isBinarySupported( const binary::BinaryOp op )
+{
+    return op < binary::MAX_BINARY_OP;
+}
+
+template <>
+inline bool isBinarySupported<IndexType>( const binary::BinaryOp op )
+{   
+    return op <= binary::ABS_MAX;
+}
+
 /** This method returns for a binary operation reduced in a reduction the corresponding zero element.
  *
  *  @tparam ValueType specifies the type for which the operation is used
