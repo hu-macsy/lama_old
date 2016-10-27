@@ -53,6 +53,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables)
 include ( Dependencies/internal )
 include ( Dependencies/external )
+include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -61,7 +62,6 @@ include ( Functions/relativeInstall )
 
 ### Include compile dependent things
 if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( Dependencies/minimalSupportedVersions )
     include ( SetBuildFlags )
     include ( VersionCheck/Compiler )
     include ( Compiler/SetCPPFlags )
