@@ -81,6 +81,11 @@ struct ScalarTypeHelper<NullType>
     {
         return false;
     }
+
+    static bool isNumeric( const scalar::ScalarType )
+    {
+        return false;
+    }
 };
 
 /*
@@ -133,19 +138,25 @@ struct ScalarTypeHelper< TypeList<H, T> >
 
             typedef typename TypeTraits<H>::AbsType AbsType;
 
-            if ( typeid( H ) == typeid( AbsType ) )
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-
+            return typeid( H ) != typeid( AbsType );
         }
         else
         {
             return ScalarTypeHelper<T>::isComplex( stype );
+        }
+    }
+
+    static bool isNumeric( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            // a type is numeric if its small value is not ZERO
+
+            return TypeTraits<H>::small() != H( 0 );
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::isNumeric( stype );
         }
     }
 };

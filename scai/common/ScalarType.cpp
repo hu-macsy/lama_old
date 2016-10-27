@@ -129,6 +129,13 @@ bool isComplex( const scalar::ScalarType stype )
 
 /*************************************************************************/
 
+bool isNumeric( const scalar::ScalarType stype )
+{
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isNumeric( stype );
+}
+
+/*************************************************************************/
+
 
 int precision( const scalar::ScalarType stype )
 {
