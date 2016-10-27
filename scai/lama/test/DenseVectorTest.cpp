@@ -646,4 +646,47 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
+{
+    return;
+
+    if ( common::isComplex( common::TypeTraits<ValueType>::stype ) )
+    {
+        return;    // sort of complex numbers is not relevant
+    }
+
+    const IndexType n = 100;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr blockDist( new dmemo::BlockDistribution( n, comm ) );
+    dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
+
+    DenseVector<ValueType> x;
+    float fillRate = 1.0f;
+    srand( 131 + comm->getRank() );
+    x.setRandom( blockDist, fillRate );
+
+    DenseVector<ValueType> xUnsorted( x, repDist );   // save unsorted vector
+
+    bool ascending = true;
+    DenseVector<IndexType> perm;
+
+    x.sort( perm, ascending );    // parallel sorting with global permutation 
+
+    // check the results, therefore replicate it
+
+    x.redistribute( repDist ); 
+    perm.redistribute( repDist );
+
+    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( x.getLocalValues(), ascending ) );
+
+    utilskernel::LArray<ValueType> sortedValues;
+    utilskernel::HArrayUtils::gather( sortedValues, xUnsorted.getLocalValues(), perm.getLocalValues(), utilskernel::binary::COPY );
+
+    BOOST_CHECK_EQUAL( 0, sortedValues.maxDiffNorm( x.getLocalValues() ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
