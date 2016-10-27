@@ -438,7 +438,7 @@ void DenseVector<ValueType>::sortImpl(
 
     // Now sort the local values
 
-    HArray<IndexType>* localPerm = NULL;
+    LArray<IndexType>* localPerm = NULL;
 
     if ( perm )
     {
@@ -452,6 +452,28 @@ void DenseVector<ValueType>::sortImpl(
     HArray<ValueType>& sortedValues = out->getLocalValues();
 
     utilskernel::HArrayUtils::sort( localPerm, &sortedValues, inValues, ascending );
+
+    if ( localPerm )
+    {
+        const IndexType nLocalPerm = localPerm->size();
+        SCAI_ASSERT_EQ_ERROR( nLocalPerm, inValues.size(), "size mismatch for perm array from sort" );
+
+        // the local indexes of permutation must be translated to global indexes
+
+        if ( nLocalPerm > 0 )
+        {
+            // due to block distribution we need only global index of first one
+
+            *localPerm += distribution.local2global( 0 );
+        }
+
+        ReadAccess<IndexType> rPerm( *localPerm );
+
+        for ( IndexType i = 0; i < nLocalPerm; ++i )
+        {
+            SCAI_LOG_TRACE( logger, "localPerm[" << i << "] = " << rPerm[i] )
+        }
+    }
 
     // Determine the splitting values
  
@@ -514,10 +536,23 @@ void DenseVector<ValueType>::sortImpl(
     if ( perm )
     {
         LArray<IndexType> newPerm;
-        WriteOnlyAccess<IndexType> recvVals( newPerm, newLocalSize );
-        ReadAccess<IndexType> sendVals( *localPerm );
-        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+
+        {
+            WriteOnlyAccess<IndexType> recvVals( newPerm, newLocalSize );
+            ReadAccess<IndexType> sendVals( *localPerm );
+            comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+        }
+
+        // accesses must be released before swapping of arrays
+
         localPerm->swap( newPerm );
+
+        ReadAccess<IndexType> rPerm( *localPerm );
+
+        for ( IndexType i = 0; i < localPerm->size(); ++i )
+        {
+            SCAI_LOG_TRACE( logger, comm << ": newPerm[" << i << "] = " << rPerm[i] )
+        }
     }
 
     // Merge the values received from other processors

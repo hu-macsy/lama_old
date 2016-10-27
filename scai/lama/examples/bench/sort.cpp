@@ -52,48 +52,64 @@ using namespace dmemo;
 using namespace std;
 using scai::common::Walltime;
 
-int main()
+void bench( const IndexType N )
 {
-    const IndexType N = 20;  // global size of the sorting vector
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    DistributionPtr dist( new BlockDistribution( N, comm ) );
+    DistributionPtr blockDist( new BlockDistribution( N, comm ) );
+    DistributionPtr repDist( new NoDistribution( N ) );
 
     // generate random numbers
 
     DenseVector<double> X;
+    DenseVector<IndexType> perm;
 
     float fillRate = 1.0f;
 
     srand( 131 + comm->getRank() );
 
-    X.setRandom( dist, fillRate );
+    X.setRandom( blockDist, fillRate );
+
+    DenseVector<double> Xrep( X, repDist );   // save unsorted vector
 
     double tmpTime = Walltime::get();
 
     bool ascending = true;
 
-    X.sort( ascending );
+    // X.sort( ascending );
+  
+    X.sort( perm, ascending );
 
     tmpTime = Walltime::get() - tmpTime;
 
     std::cout << "Sort time: " << tmpTime << " seconds" << std::endl;
 
     const utilskernel::LArray<double>& localValues = X.getLocalValues();
+    const utilskernel::LArray<IndexType>& permValues = perm.getLocalValues();
 
     for ( IndexType i = 0; i < X.getDistribution().getLocalSize(); ++i )
     {
         std::cout << "X[local:" << i << "] = " << localValues[i] << std::endl;
+        std::cout << "perm[local:" << i << "] = " << permValues[i] << std::endl;
     }
 
     // check the sorted values
 
-    DistributionPtr repDist( new NoDistribution( N ) );
-
     X.redistribute( repDist );
+    perm.redistribute( repDist );
  
     const HArray<double>& repLocalValues = X.getLocalValues();
 
     SCAI_ASSERT( utilskernel::HArrayUtils::isSorted( repLocalValues, ascending ), "Vector X is not sorted correctly." )
+
+    utilskernel::LArray<double> sortedValues;
+
+    utilskernel::HArrayUtils::gather( sortedValues, Xrep.getLocalValues(), perm.getLocalValues(), utilskernel::binary::COPY );
+
+    std::cout << "diff = " << sortedValues.maxDiffNorm( X.getLocalValues() ) << std::endl;
+}
+
+int main()
+{
+    bench( 20 );
 }
