@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
-    const ValueType values[] = { 1.0, 1.2, 2.5, 3.0 };
+    const ValueType values[] = { 1, 3, 5, 11 };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
     for ( IndexType i = 0; i < unary::MAX_UNARY_OP; ++i )
@@ -285,6 +285,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
             AbsType diff = common::Math::abs( read[i] - res  );
 
             BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
+{
+    // check of all unary array operations
+
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+
+    const IndexType values1[] = { 1, 3, 7, 13 };
+    const IndexType values2[] = { 7, 3, 14, 2 };
+
+    const IndexType n = sizeof( values1 ) / sizeof( IndexType );
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    {
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        HArray<IndexType> array1( ctx );
+        HArray<IndexType> array2( ctx );
+        HArray<IndexType> array3( ctx );
+
+        array1.init( values1, n );
+        array2.init( values2, n );
+
+        if ( ! isBinarySupported<IndexType>( op ) )
+        {
+            BOOST_CHECK_THROW(
+            {
+                HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
+            }, Exception );
+
+            continue;  // not all operations are supported for IndexType
+        }
+
+        HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
+
+        BOOST_REQUIRE_EQUAL( n, array3.size() );
+
+        ReadAccess<IndexType> read( array3, host );  // read result array
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            IndexType res = applyBinary( values1[i], op, values2[i] );
+
+            BOOST_CHECK_EQUAL( res, read[i] );
         }
     }
 }
