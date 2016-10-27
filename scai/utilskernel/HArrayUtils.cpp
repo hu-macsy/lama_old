@@ -118,28 +118,30 @@ void HArrayUtils::setArray(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    // verify that dynamic cast operations went okay before
-//    SCAI_ASSERT_ERROR( &target, "NULL target" )
-//    SCAI_ASSERT_ERROR( &source, "NULL source" )
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+                       op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
+
     // set should be available on interface for each loc
+
     static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
+
     ContextPtr loc = prefLoc;
     set.getSupportedContext( loc );
+
     const IndexType n = source.size();
+
     SCAI_CONTEXT_ACCESS( loc )
 
     if ( op == binary::COPY )
     {
         ReadAccess<SourceValueType> sourceVals( source, loc );
         WriteOnlyAccess<TargetValueType> targetVals( target, loc, n );
-        // Implemenation of set @ loc is available
         set[loc]( targetVals.get(), sourceVals.get(), n, op );
     }
     else
     {
         ReadAccess<SourceValueType> sourceVals( source, loc );
         WriteAccess<TargetValueType> targetVals( target, loc );
-        // Implemenation of set @ loc is available
         set[loc]( targetVals.get(), sourceVals.get(), n, op );
     }
 }
@@ -158,6 +160,9 @@ void HArrayUtils::setArraySection(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+                       op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
+
     // in contrary to setArray we assume correctly allocated target
 
     static LAMAKernel<UtilKernelTrait::setSection<TargetValueType, SourceValueType> > setSection;
@@ -211,6 +216,9 @@ void HArrayUtils::gatherImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+                       op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
+
     SCAI_REGION( "HArray.gather" )
 
     SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] " << op << " = source [ indexes [ " 
@@ -262,6 +270,9 @@ void HArrayUtils::scatterImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+                       op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
+
     SCAI_REGION( "HArray.scatter" )
 
     SCAI_LOG_INFO( logger, "target[ indexes[ " << indexes.size() << " ] : " << target.size() 
@@ -312,6 +323,9 @@ void HArrayUtils::setScalar(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( op ), 
+                       op << " not supported for " << common::TypeTraits<ValueType>::id() )
+
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
     ContextPtr loc = prefLoc;
 
@@ -361,6 +375,9 @@ void HArrayUtils::setValImpl(
     const ValueType val,
     const binary::BinaryOp op )
 {
+    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( op ), 
+                       op << " not supported for " << common::TypeTraits<ValueType>::id() )
+
     // setting single value will directly copy to the device with the valid incarnation
 
     ContextPtr loc = target.getValidContext();  
@@ -485,26 +502,6 @@ ValueType HArrayUtils::absMaxDiffVal(
     return reduce2( array1, array2, binary::SUB, binary::ABS_MAX, prefLoc );
 } 
 
-/*
-    SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for building differences" )
-    static LAMAKernel<UtilKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
-    ContextPtr loc = prefLoc;
-
-    // Rule for default location: where array1 has valid values
-
-    if ( loc == ContextPtr() )
-    {
-        loc = array1.getValidContext();
-    }
-
-    absMaxDiffVal.getSupportedContext( loc );
-    ReadAccess<ValueType> readArray1( array1, loc );
-    ReadAccess<ValueType> readArray2( array2, loc );
-    SCAI_CONTEXT_ACCESS( loc )
-    ValueType redVal = absMaxDiffVal[loc]( readArray1.get(), readArray2.get(), readArray1.size() );
-    return redVal;
-*/
-
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -515,6 +512,11 @@ ValueType HArrayUtils::reduce2(
     const binary::BinaryOp redOp,
     ContextPtr prefLoc )
 {
+    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( binOp ), 
+                       binOp << " not supported for " << common::TypeTraits<ValueType>::id() )
+
+    ValueType zero = zeroBinary<ValueType>( redOp ); // checks also for valid op
+
     SCAI_ASSERT_EQUAL( array1.size(), array2.size(), "array size mismatch for reduce2" )
 
     const IndexType n = array1.size();
@@ -529,8 +531,6 @@ ValueType HArrayUtils::reduce2(
     {
         loc = array1.getValidContext();
     }
-
-    ValueType zero = zeroBinary<ValueType>( redOp );
 
     reduce2.getSupportedContext( loc );
 
@@ -801,6 +801,9 @@ void HArrayUtils::unaryOp(
     const unary::UnaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_ASSERT( isUnarySupported<ValueType>( op ), 
+                 op << " not supported for " << common::TypeTraits<ValueType>::id() )
+
     const IndexType n = x.size();
 
     static LAMAKernel<UtilKernelTrait::unaryOp<ValueType> > unaryOpKernel;
@@ -836,6 +839,9 @@ void HArrayUtils::binaryOp(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_ASSERT( isBinarySupported<ValueType>( op ), 
+                 op << " not supported for " << common::TypeTraits<ValueType>::id() )
+
     const IndexType n = x.size();
 
     static LAMAKernel<UtilKernelTrait::binaryOp<ValueType> > binaryOp;
@@ -872,6 +878,9 @@ void HArrayUtils::binaryOpScalar1(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_ASSERT( isBinarySupported<ValueType>( op ), 
+                 op << " not supported for " << common::TypeTraits<ValueType>::id() )
+
     const IndexType n = y.size();
 
     static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binaryOpScalar1;
@@ -907,6 +916,9 @@ void HArrayUtils::binaryOpScalar2(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
+    SCAI_ASSERT( isBinarySupported<ValueType>( op ), 
+                 op << " not supported for " << common::TypeTraits<ValueType>::id() )
+
     const IndexType n = x.size();
 
     static LAMAKernel<UtilKernelTrait::binaryOpScalar2<ValueType> > binaryOpScalar2;
