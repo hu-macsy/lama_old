@@ -58,6 +58,6 @@ exit_on_failure ${error_count}
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-exit_on_failure
+exit_on_failure $?
 
 zip -qr ../tasking_coverage.zip *
