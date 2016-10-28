@@ -37,11 +37,11 @@ ERROR_LEVEL=test_suite
 
 # Running utilskernel serial (only Host)
 echo "Running utilskernel test on Host"
-./utilskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+./utilskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTestHost.xml
 
 # Running test on CUDA
 #if [ -d cuda ];
 #then
 	echo "Running utilskernel test on CUDA"
-	./utilskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+	./utilskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTestCUDA.xml
 #fi

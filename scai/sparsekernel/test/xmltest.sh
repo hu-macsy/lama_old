@@ -43,5 +43,5 @@ echo "Running sparsekernel tests on Host"
 if [ -d cuda ];
 then
     echo "Running sparsekernel tests for CUDA"
-	./sparsekernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/SparseKernelTestHost.xml
+	./sparsekernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/SparseKernelTestCUDA.xml
 fi

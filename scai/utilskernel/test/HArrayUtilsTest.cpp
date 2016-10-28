@@ -220,11 +220,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 
             AbsType diff = common::Math::abs( read[i] - res  );
 
-            // might happen that result on other devices are not exactly the same, give warning
+            // might happen that result on other devices are not exactly the same, give message
 
-            BOOST_WARN_EQUAL( diff, AbsType( 0 ) );
+            if ( diff != AbsType( 0 ) )
+            {
+                BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx 
+                                    << " is different from expected result " << res 
+                                    << " = " << op << " " << values[i] );
+            }
 
-            // but they should be close
+            // but they must be close, otherwise fail
 
             BOOST_CHECK( diff <= AbsType( 10 ) * TypeTraits<AbsType>::small() );
         }
@@ -284,9 +289,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
             typedef typename TypeTraits<ValueType>::AbsType AbsType;
 
-            // might happen that result on other devices are not exactly the same
-
             AbsType diff = common::Math::abs( read[i] - res  );
+
+            // might happen that result on other devices are not exactly the same, give message
+
+            if ( diff != AbsType( 0 ) )
+            {
+                BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx 
+                                    << " is different from expected result " << res 
+                                    << " = " << x1 << " " << op << " " << values2[i] );
+            }
+
+            // but they must be close, otherwise fail
 
             BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
