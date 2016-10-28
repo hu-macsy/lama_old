@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
-            dmemo::DistributionPtr dist = dists[i];
+            dmemo::DistributionPtr dist = dists[j];
 
             v1->allocate( dist );
             *v1 = 3;
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
-            dmemo::DistributionPtr dist = dists[i];
+            dmemo::DistributionPtr dist = dists[j];
 
             v1->setSequence( 3, 1, dist );
 
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {   
-            dmemo::DistributionPtr dist = dists[i];
+            dmemo::DistributionPtr dist = dists[j];
             
             v1->allocate( dist );
             *v1 = 3;
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
         {   
             // now compute the dot product with distributed vectors
 
-            dmemo::DistributionPtr dist = dists[i];
+            dmemo::DistributionPtr dist = dists[j];
             
             v1->redistribute( dist );
             v2->redistribute( dist );
