@@ -866,6 +866,24 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( randomSeedTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    double val1, val2, val3;
+
+    comm->setSeed( 5 );
+    common::Math::random( val1 );
+    comm->setSeed( 11 );
+    common::Math::random( val2 );
+    comm->setSeed( 5 );
+    common::Math::random( val3 );
+
+    BOOST_CHECK_EQUAL( val1, val3 );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* --------------------------------------------------------------------- */

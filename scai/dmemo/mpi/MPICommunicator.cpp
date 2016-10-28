@@ -256,8 +256,7 @@ void MPICommunicator::initialize( int& argc, char**& argv )
         SCAI_MPICALL( logger, MPI_Comm_size( mComm, &mpiSize ), "MPI_Comm_size" )
         SCAI_MPICALL( logger, MPI_Comm_rank( mComm, &mpiRank ), "MPI_Comm_rank" )
 
-        mSize = static_cast<PartitionId>( mpiSize );
-        mRank = static_cast<PartitionId>( mpiRank );
+        setSizeAndRank( static_cast<PartitionId>( mpiSize ), static_cast<PartitionId>( mpiRank ) );
     }
 
     // set rank, output string in an environment variable
@@ -267,7 +266,7 @@ void MPICommunicator::initialize( int& argc, char**& argv )
     commVal << *this;
 
     common::Settings::putEnvironment( "SCAI_COMM", commVal.str().c_str() );
-    common::Settings::putEnvironment( "SCAI_RANK", mRank );
+    common::Settings::putEnvironment( "SCAI_RANK", getRank() );
 
     // tracing of MPI calls for getting node data can already be traced
 
@@ -327,7 +326,7 @@ void MPICommunicator::getProcessorName( char* name ) const
 
     SCAI_MPICALL( logger, MPI_Get_processor_name( name, &nodeNameLength ), "MPI_Get_processor_name" )
 
-    SCAI_LOG_INFO( logger, "Processor " << mRank << " runs on node " << name )
+    SCAI_LOG_INFO( logger, "Processor " << getRank() << " runs on node " << name )
 }
 
 /* --------------------------------------------------------------- */
@@ -488,7 +487,7 @@ void MPICommunicator::exchangeByPlanImpl(
         SCAI_LOG_DEBUG( logger,
                         *this << ": receive " << quantity << " elements" << " from processor " << p << " at offset " << offset )
 
-        if ( p != mRank )
+        if ( p != getRank() )
         {
             commRequest[noReceives] = startrecv( recvDataForI, quantity, p, stype );
             noReceives++;
@@ -511,7 +510,7 @@ void MPICommunicator::exchangeByPlanImpl(
         SCAI_LOG_DEBUG( logger,
                         *this << ": send " << quantity << " elements" << " to processor " << p << " at offset " << offset )
 
-        if ( p != mRank )
+        if ( p != getRank() )
         {
             send( sendDataForI, quantity, p, stype );
         }
@@ -563,7 +562,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
         PartitionId p = recvPlan[i].partitionId;
         SCAI_LOG_DEBUG( logger, *this << ": receive " << quantity << " elements" << " from processor " << p )
 
-        if ( p != mRank )
+        if ( p != getRank() )
         {
             syncToken.pushRequest( startrecv( recvDataForI, quantity, p, stype ) );
         }
@@ -583,7 +582,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
         PartitionId p = sendPlan[i].partitionId;
         SCAI_LOG_DEBUG( logger, *this << ": send " << quantity << " elements" << " to processor " << p )
 
-        if ( p != mRank )
+        if ( p != getRank() )
         {
             syncToken.pushRequest( startsend( sendDataForI, quantity, p, stype ) );
         }
@@ -643,15 +642,15 @@ void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
 
     int noReceives = 0;
 
-    scoped_array<MPI_Request> commRequest( new MPI_Request[mSize] );
+    scoped_array<MPI_Request> commRequest( new MPI_Request[getSize()] );
 
-    for ( PartitionId i = 0; i < mSize; ++i )
+    for ( PartitionId i = 0; i < getSize(); ++i )
     {
         commRequest[noReceives] = startrecv( recvBuffer[i], recvCount[i], i, stype );
         noReceives++;
     }
 
-    for ( PartitionId i = 0; i < mSize; ++i )
+    for ( PartitionId i = 0; i < getSize(); ++i )
     {
         send( sendBuffer[i], sendCount[i], i, stype );
     }
@@ -1061,7 +1060,7 @@ bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType vType, co
 
 void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const
 {
-    if ( partner == mRank )
+    if ( partner == getRank() )
     {
         return;   // swap with same processor is redundant
     }
@@ -1114,7 +1113,7 @@ hmemo::ContextPtr MPICommunicator::getCommunicationContext( const hmemo::_HArray
 void MPICommunicator::writeAt( std::ostream& stream ) const
 {
     // Info about rank and size of the communicator is very useful
-    stream << "MPI(" << mRank << ":" << mSize << ")";
+    stream << "MPI(" << getRank() << ":" << getSize() << ")";
 }
 
 /* --------------------------------------------------------------- */

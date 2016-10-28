@@ -138,15 +138,14 @@ GPICommunicator::GPICommunicator( )
     SCAI_GASPI_CALL( gaspi_proc_init( init_timeout ) )
     SCAI_GASPI_CALL( gaspi_proc_num( &gSize ) )
     SCAI_GASPI_CALL( gaspi_proc_rank( &gRank ) )
-    mRank = gRank;
-    mSize = gSize;
-    SCAI_LOG_INFO( logger, "GASPI proc " << mRank << " of " << mSize << " started" )
+    setSizeAndRank( gSize, gRank );
+    SCAI_LOG_INFO( logger, "GASPI proc " << getRank() << " of " << getSize() << " started" )
     gaspi_number_t num_notifications;
     SCAI_GASPI_CALL( gaspi_notification_num ( &num_notifications ) )
     mMaxNotifications = num_notifications;
-    SCAI_ASSERT_ERROR( mMaxNotifications >= 2 * mSize,
+    SCAI_ASSERT_ERROR( mMaxNotifications >= 2 * getSize(),
                        "# notifications = " << mMaxNotifications << " not sufficient"
-                       << ", need at least 2 * " << mSize )
+                       << ", need at least 2 * " << getSize() )
 
     // the following call is for convenience to get correct node rank by hostnames
     // Note: mRank, mSize must be set correctly before
@@ -156,7 +155,7 @@ GPICommunicator::GPICommunicator( )
     std::ostringstream commVal;
     commVal << *this;
     common::Settings::putEnvironment( "SCAI_COMM", commVal.str().c_str() );
-    common::Settings::putEnvironment( "SCAI_RANK", mRank );
+    common::Settings::putEnvironment( "SCAI_RANK", getRank() );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -256,46 +255,46 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
 
     // mSize will be the same on all processors
 
-    SegmentData sendSegment( common::scalar::INDEX_TYPE, this, mSize, const_cast<IndexType*>( sendSizes ) );  // locally used for sending
-    SegmentData recvSegment( common::scalar::INDEX_TYPE, this, mSize, recvSizes );  // other procs do remote write here
+    SegmentData sendSegment( common::scalar::INDEX_TYPE, this, getSize(), const_cast<IndexType*>( sendSizes ) );  // locally used for sending
+    SegmentData recvSegment( common::scalar::INDEX_TYPE, this, getSize(), recvSizes );  // other procs do remote write here
 
     SCAI_LOG_DEBUG( logger, *this << ": all2all exchange of sizes" )
 
     // Step 1: notify each receive partner that segment is available and give him the write offset
 
-    for ( PartitionId fromP = 0; fromP < mSize; ++fromP )
+    for ( PartitionId fromP = 0; fromP < getSize(); ++fromP )
     {
-        if ( fromP == mRank )
+        if ( fromP == getRank() )
         {
             continue;
         }
 
         const IndexType recvOffset = fromP + recvSegment.getOffset();
-        notify( recvSegment.getID(), fromP, mRank, recvOffset );
+        notify( recvSegment.getID(), fromP, getRank(), recvOffset );
     }
 
-    sendSegment.assign( sendSizes, mSize );
+    sendSegment.assign( sendSizes, getSize() );
 
     // Step 2: wait for notifications and then write the remote data
 
-    for ( PartitionId toP = 0; toP < mSize; ++toP )
+    for ( PartitionId toP = 0; toP < getSize(); ++toP )
     {
         // blocking wait until we get the remote offset that also indicates availability
         const IndexType quantity = 1;
         const IndexType localOffset = toP;
 
-        if ( toP != mRank )
+        if ( toP != getRank() )
         {
             const IndexType remoteOffset = notifyWait( recvSegment.getID(), toP );
             remoteWrite( sendSegment, localOffset, toP, recvSegment, remoteOffset, quantity );
             // no more possible: SCAI_LOG_DEBUG( logger, *this << ": write " << toP << " " << sendSegment[ localOffset ] )
             // notify partner and tell him the number of written items
-            notify( recvSegment.getID(), toP, mRank + mSize, 1 );
+            notify( recvSegment.getID(), toP, getRank() + getSize(), 1 );
         }
         else
         {
             // recvSegment[mRank] = sendSegment[mRank];
-            localWrite( sendSegment, localOffset, recvSegment, mRank, quantity );
+            localWrite( sendSegment, localOffset, recvSegment, getRank(), quantity );
         }
     }
 
@@ -303,19 +302,19 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
 
     // Step 3: wait until my receive partners have me written my needed values
 
-    for ( PartitionId fromP = 0; fromP < mSize; ++fromP )
+    for ( PartitionId fromP = 0; fromP < getSize(); ++fromP )
     {
-        if ( fromP == mRank )
+        if ( fromP == getRank() )
         {
             continue;
         }
 
-        const IndexType quantity = notifyWait( recvSegment.getID(), fromP + mSize );
+        const IndexType quantity = notifyWait( recvSegment.getID(), fromP + getSize() );
         // notifiaction value is written size that we match against what is expected
         SCAI_ASSERT_EQ_ERROR( 1, quantity, "serious mismatch" );
     }
 
-    recvSegment.copyTo( recvSizes, mSize );  // copy from recvSegment back to recvSizes
+    recvSegment.copyTo( recvSizes, getSize() );  // copy from recvSegment back to recvSizes
     SCAI_LOG_DEBUG( logger, *this << ": all2all done" )
 }
 
@@ -346,8 +345,8 @@ void GPICommunicator::notify( const gaspi_segment_id_t segID,
 {
     SCAI_LOG_DEBUG( logger, *this << ": notify processor " << target << " at id " << pos << " with val = " << val )
     SCAI_ASSERT_ERROR( pos < mMaxNotifications, "notifiation id " << pos << " illegal, max = " << mMaxNotifications )
-    SCAI_ASSERT_ERROR( target < mSize, "target rank = " << target << " illegal, size = " << mSize )
-    SCAI_ASSERT_ERROR( target != mRank, *this << ": notify for myself is not supported yet" )
+    SCAI_ASSERT_ERROR( target < getSize(), "target rank = " << target << " illegal, size = " << getSize() )
+    SCAI_ASSERT_ERROR( target != getRank(), *this << ": notify for myself is not supported yet" )
     SCAI_ASSERT_ERROR( val >= 0, "notify val must not be negative" )
     // Be careful: val must not be 0
     gaspi_notification_t notVal = static_cast<gaspi_notification_t>( val + 1 );
@@ -408,7 +407,7 @@ void GPICommunicator::exchangeByPlanImpl(
     {
         const PartitionId source = recvPlan[i].partitionId;
         const IndexType   offset = dstDataSegment.getOffset() + recvPlan[i].offset;
-        notify( dstDataSegment.getID(), source, mRank, offset );
+        notify( dstDataSegment.getID(), source, getRank(), offset );
     }
 
     // now fill my buffer with the send data
@@ -425,7 +424,7 @@ void GPICommunicator::exchangeByPlanImpl(
         const IndexType localOffset  = sendPlan[i].offset;
         remoteWrite( srcDataSegment, localOffset, toP, dstDataSegment, remoteOffset, quantity );
         // notify partner and tell him the number of written items
-        notify( dstDataSegment.getID(), toP, mRank + mSize, quantity );
+        notify( dstDataSegment.getID(), toP, getRank() + getSize(), quantity );
     }
 
     // Step 3: wait until my receive partners have me written my needed values
@@ -434,7 +433,7 @@ void GPICommunicator::exchangeByPlanImpl(
     {
         const PartitionId fromP    = recvPlan[i].partitionId;
         const IndexType   quantity = recvPlan[i].quantity;
-        const IndexType val = notifyWait( dstDataSegment.getID(), fromP + mSize );
+        const IndexType val = notifyWait( dstDataSegment.getID(), fromP + getSize() );
         // notifiaction value is written size that we match against what is expected
         SCAI_ASSERT_EQ_ERROR( quantity, val, "notification mismatch" );
     }
@@ -484,7 +483,7 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
         {
             const PartitionId source = recvPlan[i].partitionId;
             const IndexType   offset = segOffset + recvPlan[i].offset;
-            notify( segId, source, mRank, offset );
+            notify( segId, source, getRank(), offset );
         }
     }
 
@@ -501,7 +500,7 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
         const IndexType localOffset  = sendPlan[i].offset;
         remoteWrite( *srcDataSegment, localOffset, toP, *dstDataSegment, remoteOffset, quantity );
         // notify partner and tell him the number of written items
-        notify( dstDataSegment->getID(), toP, mRank + mSize, quantity );
+        notify( dstDataSegment->getID(), toP, getRank() + getSize(), quantity );
     }
 
     // need an GPI Sync Token that waits on queue
@@ -512,7 +511,7 @@ tasking::SyncToken* GPICommunicator::exchangeByPlanAsyncImpl(
     for ( PartitionId i = 0; i < noReceives; ++i )
     {
         const PartitionId fromP = recvPlan[i].partitionId;
-        pSyncToken->pushNotification( fromP + mSize );
+        pSyncToken->pushNotification( fromP + getSize() );
     }
 
     // Keep SegmentData until synchronization of token
@@ -541,8 +540,8 @@ IndexType GPICommunicator::shiftImpl(
 {
     SCAI_REGION( "Communicator.GPI.shift" )
 
-    SCAI_ASSERT_ERROR( source != mRank, "source must not be this partition" )
-    SCAI_ASSERT_ERROR( dest != mRank, "dest must not be this partition" )
+    SCAI_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
+    SCAI_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
     SCAI_ASSERT_ERROR( sendSize <= recvSize, "too large send" )
 
     SCAI_LOG_INFO( logger,
@@ -558,7 +557,7 @@ IndexType GPICommunicator::shiftImpl(
     // Give my source process the offset where it can write the data
     {
         const IndexType offset = dstDataSegment.getOffset();
-        notify( dstDataSegment.getID(), source, mRank, offset );
+        notify( dstDataSegment.getID(), source, getRank(), offset );
     }
     {
         // SCAI_REGION( "Communicator.GPI.shift.assign" )
@@ -573,8 +572,8 @@ IndexType GPICommunicator::shiftImpl(
     }
     {
         // SCAI_REGION( "Communicator.GPI.shift.notification" )
-        notify( dstDataSegment.getID(), dest, mRank + mSize, sendSize );
-        realRecvSize = notifyWait( dstDataSegment.getID(), source + mSize );
+        notify( dstDataSegment.getID(), dest, getRank() + getSize(), sendSize );
+        realRecvSize = notifyWait( dstDataSegment.getID(), source + getSize() );
     }
     // cpy the real receive size and the received data
     {
@@ -602,15 +601,15 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
 
     SCAI_LOG_DEBUG( logger,
                     *this << ": recv from " << source << ", send to " << dest << ", both " << size << " values." )
-    SCAI_ASSERT_ERROR( source != mRank, "source must not be this partition" )
-    SCAI_ASSERT_ERROR( dest != mRank, "dest must not be this partition" )
+    SCAI_ASSERT_ERROR( source != getRank(), "source must not be this partition" )
+    SCAI_ASSERT_ERROR( dest != getRank(), "dest must not be this partition" )
 
     shared_ptr<SegmentData> srcSegment( new SegmentData( stype, this, size ) );
     shared_ptr<SegmentData> dstSegment( new SegmentData( stype, this, size ) );
 
     {
         const IndexType offset = dstSegment->getOffset();
-        notify( dstSegment->getID(), source, mRank, offset );
+        notify( dstSegment->getID(), source, getRank(), offset );
     }
 
     srcSegment->assign( sendVals, size );
@@ -619,9 +618,9 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
     const IndexType remoteOffset = notifyWait( dstSegment->getID(), dest );
     const IndexType localOffset  = 0;
     remoteWrite( *srcSegment, localOffset, dest, *dstSegment, remoteOffset, size );
-    notify( dstSegment->getID(), dest, mRank + mSize, size );
+    notify( dstSegment->getID(), dest, getRank() + getSize(), size );
     // wait on receive is pushed in SyncToken
-    pSyncToken->pushNotification( source + mSize );
+    pSyncToken->pushNotification( source + getSize() );
     // routines to be executed after the wait
     pSyncToken->pushRoutine( common::bind( &SegmentData::copyTo, dstSegment.get(), recvVals, size ) );
     // Keep SegmentData until synchronization of token
@@ -876,19 +875,19 @@ void GPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
 
     int distance = 1;
 
-    if ( mRank == root )
+    if ( getRank() == root )
     {
         segment.assign( val, n );
     }
 
     // Note: If root processor is not 0 an 'implicit' shift of '-root' is done
 
-    while ( distance < mSize )    /* log NP (base 2) loop */
+    while ( distance < getSize() )    /* log NP (base 2) loop */
     {
         distance = 2 * distance;
     }
 
-    const PartitionId gRank = ( mRank + mSize - root ) % mSize;
+    const PartitionId gRank = ( getRank() + getSize() - root ) % getSize();
 
     while ( distance > 1 )
     {
@@ -899,15 +898,15 @@ void GPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
         {
             PartitionId partner = gRank + distance;
 
-            if ( partner < mSize )
+            if ( partner < getSize() )
             {
                 // send partner data
-                PartitionId target = ( partner + root ) % mSize;
+                PartitionId target = ( partner + root ) % getSize();
                 SCAI_LOG_DEBUG( logger, *this << ": bcast send to " << target )
                 const IndexType remoteOffset = notifyWait( segment.getID(), target );
                 const IndexType localOffset  = 0;
                 remoteWrite( segment, localOffset, target, segment, remoteOffset, n );
-                notify( segment.getID(), target, mRank + mSize, n );
+                notify( segment.getID(), target, getRank() + getSize(), n );
             }
         }
 
@@ -915,18 +914,18 @@ void GPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
         {
             PartitionId partner = gRank - distance;
             // receive partner data
-            PartitionId source = ( partner + root ) % mSize;
+            PartitionId source = ( partner + root ) % getSize();
             SCAI_LOG_DEBUG( logger, *this << ": bcast recv from " << source )
             const IndexType offset = segment.getOffset();
-            notify( segment.getID(), source, mRank, offset );
-            const IndexType val = notifyWait( segment.getID(), source + mSize );
+            notify( segment.getID(), source, getRank(), offset );
+            const IndexType val = notifyWait( segment.getID(), source + getSize() );
             SCAI_ASSERT_EQ_ERROR( n, val, "notify mismatch" );
         }
     }
 
     SCAI_LOG_DEBUG( logger, *this << ": done bcast with n = " << n << ", root = " << root );
 
-    if ( root != mRank )
+    if ( root != getRank() )
     {
         segment.copyTo( val, n ); // copy from segment to ptr
     }
@@ -953,19 +952,19 @@ void GPICommunicator::scatterImpl(
         return;
     }
 
-    SegmentData srcSegment( stype, this, n * mSize );  // for allVals
+    SegmentData srcSegment( stype, this, n * getSize() );  // for allVals
     SegmentData dstSegment( stype, this, n );          // for myVals
 
-    if ( mRank == root )
+    if ( getRank() == root )
     {
-        srcSegment.assign( reinterpret_cast<const double*>( allVals ), n * mSize ); // copy from ptr to segment
+        srcSegment.assign( reinterpret_cast<const double*>( allVals ), n * getSize() ); // copy from ptr to segment
         IndexType offset = srcSegment.getOffset();
 
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
-            if ( pid != mRank )
+            if ( pid != getRank() )
             {
-                notify( srcSegment.getID(), pid, mRank, offset );
+                notify( srcSegment.getID(), pid, getRank(), offset );
                 SCAI_LOG_DEBUG( logger, *this << ": notified " << pid << " with offset " << offset )
             }
 
@@ -975,15 +974,15 @@ void GPICommunicator::scatterImpl(
 
     // each processor reads its contribution from root processor and notifies
 
-    if ( root != mRank )
+    if ( root != getRank() )
     {
         IndexType remoteOffset = notifyWait( srcSegment.getID(), root );
         remoteRead( dstSegment, 0, root, srcSegment, remoteOffset, n );
-        notify( srcSegment.getID(), root, mRank + mSize, n );
+        notify( srcSegment.getID(), root, getRank() + getSize(), n );
     }
     else
     {
-        remoteRead( dstSegment, 0, root, srcSegment, mRank * n + srcSegment.getOffset(), n );
+        remoteRead( dstSegment, 0, root, srcSegment, getRank() * n + srcSegment.getOffset(), n );
     }
 
     wait();  // make sure that remoteRead has finished
@@ -997,16 +996,16 @@ void GPICommunicator::scatterImpl(
 
     // root waits for all processor until data has been read
 
-    if ( root == mRank )
+    if ( root == getRank() )
     {
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
-            if ( pid == mRank )
+            if ( pid == getRank() )
             {
                 continue;
             }
 
-            IndexType writtenSize = notifyWait( srcSegment.getID(), pid + mSize );
+            IndexType writtenSize = notifyWait( srcSegment.getID(), pid + getSize() );
             SCAI_ASSERT_EQ_ERROR( n, writtenSize, "notify mismatch" )
         }
     }
@@ -1033,11 +1032,11 @@ void GPICommunicator::scatterVImpl(
 
     // Array sizes might be available only on root processor
 
-    if ( mRank == root )
+    if ( getRank() == root )
     {
         totalSize = 0;
 
-        for ( int i = 0; i < mSize; ++i )
+        for ( int i = 0; i < getSize(); ++i )
         {
             totalSize += sizes[i];
         }
@@ -1050,12 +1049,12 @@ void GPICommunicator::scatterVImpl(
 
     IndexType rootOffset = 0;  // only used if mRank == root and n > 0
 
-    if ( mRank == root )
+    if ( getRank() == root )
     {
         srcSegment.assign( allVals, totalSize ); // copy from ptr to segment
         IndexType offset = srcSegment.getOffset();
 
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
             int size = sizes[pid];
 
@@ -1064,9 +1063,9 @@ void GPICommunicator::scatterVImpl(
                 continue;
             }
 
-            if ( pid != mRank )
+            if ( pid != getRank() )
             {
-                notify( srcSegment.getID(), pid, mRank, offset );
+                notify( srcSegment.getID(), pid, getRank(), offset );
                 SCAI_LOG_DEBUG( logger, *this << ": notified " << pid << " with offset " << offset )
             }
             else
@@ -1082,11 +1081,11 @@ void GPICommunicator::scatterVImpl(
 
     if ( n > 0 )
     {
-        if ( root != mRank )
+        if ( root != getRank() )
         {
             IndexType remoteOffset = notifyWait( srcSegment.getID(), root );
             remoteRead( dstSegment, 0, root, srcSegment, remoteOffset, n );
-            notify( srcSegment.getID(), root, mRank + mSize, n );
+            notify( srcSegment.getID(), root, getRank() + getSize(), n );
         }
         else
         {
@@ -1099,11 +1098,11 @@ void GPICommunicator::scatterVImpl(
 
     // root waits for all processor until data has been read
 
-    if ( root == mRank )
+    if ( root == getRank() )
     {
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
-            if ( pid == mRank )
+            if ( pid == getRank() )
             {
                 continue;
             }
@@ -1112,7 +1111,7 @@ void GPICommunicator::scatterVImpl(
 
             if ( size > 0 )
             {
-                IndexType writtenSize = notifyWait( srcSegment.getID(), pid + mSize );
+                IndexType writtenSize = notifyWait( srcSegment.getID(), pid + getSize() );
                 SCAI_ASSERT_EQ_ERROR( size, writtenSize, "notify mismatch" )
             }
         }
@@ -1221,19 +1220,19 @@ void GPICommunicator::gatherImpl(
     }
 
     SegmentData srcSegment( stype, this, n );          // keeps myVals to be accessed by root
-    SegmentData dstSegment( stype, this, n * mSize );  // keeps allVals on root
+    SegmentData dstSegment( stype, this, n * getSize() );  // keeps allVals on root
 
     srcSegment.assign( myVals, n );  // copy from ptr to segment
 
-    if ( root == mRank )
+    if ( root == getRank() )
     {
         IndexType offset = dstSegment.getOffset();
 
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
-            if ( pid != mRank )
+            if ( pid != getRank() )
             {
-                notify( dstSegment.getID(), pid, mRank, offset );
+                notify( dstSegment.getID(), pid, getRank(), offset );
                 SCAI_LOG_DEBUG( logger, *this << ": notified " << pid << " with offset " << offset )
             }
 
@@ -1243,36 +1242,36 @@ void GPICommunicator::gatherImpl(
 
     // each processor write its contribution to root processor and notifies
 
-    if ( mRank != root )
+    if ( getRank() != root )
     {
         SCAI_LOG_DEBUG( logger, *this << ": wait for ready send data to root" )
         IndexType remoteOffset = notifyWait( dstSegment.getID(), root );
         remoteWrite( srcSegment, 0, root, dstSegment, remoteOffset, n );
-        notify( dstSegment.getID(), root, mRank + mSize, n );
+        notify( dstSegment.getID(), root, getRank() + getSize(), n );
         SCAI_LOG_DEBUG( logger, *this << ": sent to root" )
     }
     else
     {
         SCAI_LOG_DEBUG( logger, *this << " as root just copy my data" )
-        localWrite( srcSegment, 0, dstSegment, mRank * n, n );
+        localWrite( srcSegment, 0, dstSegment, getRank() * n, n );
     }
 
     // root waits for all processor until data is available
 
-    if ( root == mRank )
+    if ( root == getRank() )
     {
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
-            if ( pid == mRank )
+            if ( pid == getRank() )
             {
                 continue;
             }
 
-            IndexType writtenSize = notifyWait( dstSegment.getID(), pid + mSize );
+            IndexType writtenSize = notifyWait( dstSegment.getID(), pid + getSize() );
             SCAI_ASSERT_EQ_ERROR( n, writtenSize, "notify mismatch" )
         }
 
-        dstSegment.copyTo( allVals, n * mSize );
+        dstSegment.copyTo( allVals, n * getSize() );
     }
 }
 
@@ -1294,11 +1293,11 @@ void GPICommunicator::gatherVImpl(
     SCAI_LOG_DEBUG( logger, *this << ": gather, root = " << root )
     int totalSize = 1;   // default value for non-root processors
 
-    if ( mRank == root )
+    if ( getRank() == root )
     {
         totalSize = 0;
 
-        for ( int i = 0; i < mSize; ++i )
+        for ( int i = 0; i < getSize(); ++i )
         {
             totalSize += sizes[i];
         }
@@ -1316,19 +1315,19 @@ void GPICommunicator::gatherVImpl(
 
     IndexType rootOffset = 0;
 
-    if ( root == mRank )
+    if ( root == getRank() )
     {
         IndexType offset = dstSegment.getOffset();
 
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
             int size = sizes[pid];
 
             if ( size > 0 )
             {
-                if ( pid != mRank )
+                if ( pid != getRank() )
                 {
-                    notify( dstSegment.getID(), pid, mRank, offset );
+                    notify( dstSegment.getID(), pid, getRank(), offset );
                 }
                 else
                 {
@@ -1344,11 +1343,11 @@ void GPICommunicator::gatherVImpl(
 
     if ( n > 0 )
     {
-        if ( mRank != root )
+        if ( getRank() != root )
         {
             IndexType remoteOffset = notifyWait( dstSegment.getID(), root );
             remoteWrite( srcSegment, 0, root, dstSegment, remoteOffset, n );
-            notify( dstSegment.getID(), root, mRank + mSize, n );
+            notify( dstSegment.getID(), root, getRank() + getSize(), n );
         }
         else
         {
@@ -1359,11 +1358,11 @@ void GPICommunicator::gatherVImpl(
 
     // root waits for all processor until data is available
 
-    if ( root == mRank )
+    if ( root == getRank() )
     {
-        for ( PartitionId pid = 0; pid < mSize; ++pid )
+        for ( PartitionId pid = 0; pid < getSize(); ++pid )
         {
-            if ( pid == mRank )
+            if ( pid == getRank() )
             {
                 continue;
             }
@@ -1372,7 +1371,7 @@ void GPICommunicator::gatherVImpl(
 
             if ( size > 0 )
             {
-                IndexType writtenSize = notifyWait( dstSegment.getID(), pid + mSize );
+                IndexType writtenSize = notifyWait( dstSegment.getID(), pid + getSize() );
                 SCAI_ASSERT_EQ_ERROR( size, writtenSize, "notify mismatch" )
             }
         }
@@ -1412,7 +1411,7 @@ void GPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
 {
     // this is now safe as there is no global synchronization
 
-    if ( partner == mRank )
+    if ( partner == getRank() )
     {
         return;
     }
@@ -1423,15 +1422,15 @@ void GPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
     SCAI_LOG_DEBUG( logger, *this << ": swap with processor " << partner << ", n = " << n )
     // Tell my partner where to write
     const IndexType offset = dstSegment.getOffset();
-    notify( dstSegment.getID(), partner, mRank, offset );
+    notify( dstSegment.getID(), partner, getRank(), offset );
     srcSegment.assign( val, n );
     // wait for ready to write of my partner
     const IndexType remoteOffset = notifyWait( dstSegment.getID(), partner );
     const IndexType localOffset  = 0;
     remoteWrite( srcSegment, localOffset, partner, dstSegment, remoteOffset, n );
-    notify( dstSegment.getID(), partner, mRank + mSize, n );
+    notify( dstSegment.getID(), partner, getRank() + getSize(), n );
     // wait for acknowledge that my data has been written
-    const IndexType nn = notifyWait( dstSegment.getID(), partner + mSize );
+    const IndexType nn = notifyWait( dstSegment.getID(), partner + getSize() );
     SCAI_ASSERT_EQ_ERROR( n, nn, "notify mismatch" );
     dstSegment.copyTo( val, n );
 }
@@ -1454,7 +1453,7 @@ hmemo::ContextPtr GPICommunicator::getCommunicationContext( const hmemo::_HArray
 void GPICommunicator::writeAt( std::ostream& stream ) const
 {
     // Info about rank and size of the communicator is very useful
-    stream << "GPI(" << mRank << ":" << mSize << ")";
+    stream << "GPI(" << getRank() << ":" << getSize() << ")";
 }
 
 } // namespace dmemo

@@ -203,11 +203,7 @@ public:
                                  const IndexType nRepeatRow,
                                  const IndexType nRepeatCol );
 
-    static void setSeed ( int seed ) { mSeed = seed; }
-
 private:
-
-    static int mSeed;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

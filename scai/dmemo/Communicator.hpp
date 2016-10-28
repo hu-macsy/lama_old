@@ -774,25 +774,19 @@ public:
      */
     static void getUserProcArray( PartitionId userProcArray[3] );
 
+    void setSeed( int seed ) const;
+
 protected:
 
     /** Constructor of abstract classes are always protected. */
 
     Communicator( const CommunicatorKind& type );
 
-    CommunicatorKind mCommunicatorType; //!< type of this communicator
-
-    PartitionId mRank; //!< rank of this processor 
-
-    PartitionId mSize; //!< number of processors in this communicato
-
-    PartitionId mNodeRank; //!< rank of this processor on its node
-
-    PartitionId mNodeSize; //!< number of processors on same node
-
     /** This method determines node rank and node size by comparing the names. */
 
     void setNodeData();
+
+    void setSizeAndRank( PartitionId size, PartitionId rank );
 
     /** Get the processor name.
      *
@@ -811,6 +805,19 @@ protected:
     template<typename ValueType>
     IndexType shift0( ValueType newVals[], const IndexType newSize,
                       const ValueType oldVals[], const IndexType oldSize ) const;
+
+private:
+    CommunicatorKind mCommunicatorType; //!< type of this communicator
+
+    PartitionId mRank; //!< rank of this processor 
+
+    PartitionId mSize; //!< number of processors in this communicator
+
+    PartitionId mNodeRank; //!< rank of this processor on its node
+
+    PartitionId mNodeSize; //!< number of processors on same node
+
+    mutable int mSeed;
 };
 
 /* -------------------------------------------------------------------------- */

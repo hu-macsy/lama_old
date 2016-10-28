@@ -152,7 +152,8 @@ Communicator::Communicator( const CommunicatorKind& type ) :
       mRank( 0 ),
       mSize( 1 ),
       mNodeRank( 0 ),
-      mNodeSize( 1 )
+      mNodeSize( 1 ),
+      mSeed( 4711 )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
 }
@@ -176,6 +177,35 @@ void Communicator::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
     stream << "Communicator( type = " << mCommunicatorType << " )";
+}
+
+/* -------------------------------------------------------------------------- */
+
+void Communicator::setSizeAndRank( PartitionId size, PartitionId rank )
+{
+    mSize = size;
+    mRank = rank;
+    setSeed( mSeed );
+}
+
+void Communicator::setSeed( int seed ) const
+{
+    if ( seed == mSeed )
+    {
+        return;
+    }
+    mSeed = seed;
+
+    if ( mSize == 1 )
+    {
+        // all processors must have the same random numbers
+        std::srand( mSeed );
+    }
+    else
+    {
+        // processors must generate different numbers
+        std::srand( mSeed + mRank );
+    }
 }
 
 /* -------------------------------------------------------------------------- */
