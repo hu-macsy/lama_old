@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
-    const ValueType values[] = { 1, 3, 5, 11 };
+    const ValueType values[] = { 1, 2, 3, 4  };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
     for ( IndexType i = 0; i < unary::MAX_UNARY_OP; ++i )
@@ -226,12 +226,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
             {
                 BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx 
                                     << " is different from expected result " << res 
-                                    << " = " << op << " " << values[i] );
+                                    << " = " << op << " " << values[i] 
+                                    << ", diff = " << diff );
             }
 
             // but they must be close, otherwise fail
 
-            BOOST_CHECK( diff <= AbsType( 10 ) * TypeTraits<AbsType>::small() );
+            if ( common::isNumeric( TypeTraits<ValueType>::stype ) && AbsType( res ) > 1 )
+            {
+                // large numbers due to EXP function, so take relative error
+
+                diff /= AbsType( res );
+            }
+
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
     }
 }
@@ -293,11 +301,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
             // might happen that result on other devices are not exactly the same, give message
 
-            if ( diff != AbsType( 0 ) )
+            if ( diff <= TypeTraits<AbsType>::small() )
             {
                 BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx 
                                     << " is different from expected result " << res 
-                                    << " = " << x1 << " " << op << " " << values2[i] );
+                                    << " = " << x1 << " " << op << " " << values2[i]
+                                    << ", diff = " << diff );
             }
 
             // but they must be close, otherwise fail

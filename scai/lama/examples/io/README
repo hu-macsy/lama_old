@@ -2,7 +2,10 @@ This directory contains an example program that converts matrix files between
 different file formats.
 
 matrixConvert input_filename output_filename
-vectoronvert input_filename output_filename
+
+The following program can be used to convert vectors.
+
+vectorConvert input_filename output_filename
 
 -------------------------------------------------------------------------
 
@@ -12,24 +15,3 @@ SCAI_BINARY[bool] : if true, output file is written binary (Note: does not matte
 SCAI_TYPE = [ float | double | ComplexFloat | ComplexDouble | LongDouble | ComplexLongDouble ]
 
 ---------------------------------------------------------------------------
-
-Also in development: reorganisation of LAMA IO to support additional file formats
-
-class FileIO: abstract class for storage/array IO in a certain format
-class CRTPFileIO: provides metaprogramming to get routines for each value type
-
-----------------------------------------------------------------------------
-
-Next steps:
-
-- implement class MatrixMarketIO, is restructuring of current functionality
-- implement class SAMGIO, is restructuring of available functionality
-- factory of FileIO, register by type or string
-- get rid of FileType, not really needed as we decide by suffix about type
-
-- parallel I/0: write local storages of distributed array in separate files
-- challenge: distribution must also be saved in a file as otherwise 
-  we cannot get back to a full distributed matrix
-- be careful: save only global column indexes, i.e. do not use halo 
-- some software writes only local parts and communication schedule
-  (but some kind of global distribution can be determined)
