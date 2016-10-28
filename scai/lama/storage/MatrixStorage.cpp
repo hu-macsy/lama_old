@@ -53,6 +53,7 @@
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -557,6 +558,48 @@ void MatrixStorage<ValueType>::copyTo( _MatrixStorage& other ) const
     SCAI_LOG_DEBUG( logger, "build CSR data " << mNumRows << " x " << mNumColumns << ", #nnz = " << numValues )
     other.setCSRData( mNumRows, mNumColumns, numValues, csrIA, csrJA, csrValues );
     SCAI_LOG_INFO( logger, "now assigned: " << *this )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const
+{
+    using namespace utilskernel;
+
+    SCAI_ASSERT_LE( first, first + n, "illegal range" )
+    SCAI_ASSERT_VALID_INDEX( first, mNumRows, "first row out of range" )
+    SCAI_ASSERT_VALID_INDEX( first + n - 1, mNumRows, "last row out of range" );
+
+    LArray<IndexType> csrIA;
+    LArray<IndexType> csrJA;
+    LArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    ContextPtr loc = this->getContextPtr();
+
+    SCAI_LOG_INFO( logger, "copyBlockTo : first = " << first << ", n = " << n << ", from this : " << *this )
+
+    // copy out the corresponding sections, ia needs a shifting to zero 
+
+    LArray<IndexType> blockIA( n + 1 );
+    HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, binary::COPY, loc );
+
+    IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
+    HArrayUtils::binaryOpScalar2( blockIA, blockIA, offset, binary::SUB, loc );
+
+    IndexType numBlockValues = blockIA[n];
+
+    SCAI_LOG_DEBUG( logger, "offset = " << offset << ", #nnz = " << numBlockValues );
+
+    LArray<IndexType> blockJA( numBlockValues );
+    LArray<ValueType> blockValues( numBlockValues );
+
+    HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, binary::COPY, loc );
+
+    other.setCSRData( n, mNumColumns, numBlockValues, blockIA, blockJA, blockValues );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -430,6 +430,11 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const;
 
+    /**
+     * @brief override MatrixStorage<ValueType>::copyBlockTo with a more efficient solution
+     */
+    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const;
+
     /** Redistribution of CSR avoids unnecessary conversions. */
 
     virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );

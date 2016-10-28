@@ -456,6 +456,15 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const = 0;
 
+    /** 
+     *  Extract a contiguous block of n rows in a new storage
+     *
+     *  @param[out] other  will contain the corresponding storage of n x mNumColumns
+     *  @param[in]  first  index of first row to extract                            
+     *  @param[in]  n      number of rows to extract
+     */
+    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const = 0;
+
     /** Override default assignment operator. */
 
     _MatrixStorage& operator=( const _MatrixStorage& other );
@@ -832,6 +841,12 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const;
 
+    /** 
+     *  Implementation of _MatrixStorage::copyBlockTo 
+     */
+    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const;
+
+    /** Override default assignment operator. */
     /** Transpose of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      *

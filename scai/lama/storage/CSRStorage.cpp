@@ -1192,6 +1192,44 @@ void CSRStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const
+{
+    using namespace utilskernel;
+
+    SCAI_ASSERT_LE( first, first + n, "illegal range" )
+    SCAI_ASSERT_VALID_INDEX( first, mNumRows, "first row out of range" )
+    SCAI_ASSERT_VALID_INDEX( first + n - 1, mNumRows, "last row out of range" );
+
+    // we have not to extract csrIA, csrJA, csrValues, as already available
+
+    ContextPtr loc = this->getContextPtr();
+
+    SCAI_LOG_INFO( logger, "copyBlockTo : first = " << first << ", n = " << n << ", from this : " << *this )
+
+    // copy out the corresponding sections, ia needs a shifting to zero 
+
+    LArray<IndexType> blockIA( n + 1 );
+    HArrayUtils::setArraySection( blockIA, 0, 1, mIa, first, 1, n +  1, binary::COPY, loc );
+
+    IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
+    HArrayUtils::binaryOpScalar2( blockIA, blockIA, offset, binary::SUB, loc );
+
+    IndexType numBlockValues = blockIA[n];
+
+    SCAI_LOG_DEBUG( logger, "offset = " << offset << ", #nnz = " << numBlockValues );
+
+    LArray<IndexType> blockJA( numBlockValues );
+    LArray<ValueType> blockValues( numBlockValues );
+
+    HArrayUtils::setArraySection( blockJA, 0, 1, mJa, offset, 1, numBlockValues, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockValues, 0, 1, mValues, offset, 1, numBlockValues, binary::COPY, loc );
+
+    other.setCSRData( n, mNumColumns, numBlockValues, blockIA, blockJA, blockValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 CSRStorage<ValueType>* CSRStorage<ValueType>::newMatrixStorage() const
 {
     common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() );
