@@ -45,6 +45,12 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+#include <cuda_runtime_api.h>
+
+#ifndef CUDART_VERSION
+    #error CUDART_VERSION Undefined!
+#endif
+
 namespace scai
 {
 

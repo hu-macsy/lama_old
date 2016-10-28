@@ -36,15 +36,16 @@
 #include <scai/sparsekernel/external/MKLCSRUtils.hpp>
 
 // local library
-#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 
 #include <scai/sparsekernel/external/MKLCSRTrait.hpp>
 #include <scai/sparsekernel/external/MKLCSRWrapper.hpp>
+#include <scai/sparsekernel/external/PardisoError.hpp>
 
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/kregistry/KernelRegistry.hpp>
 
@@ -59,13 +60,13 @@
 #include <scai/tracing.hpp>
 
 // extern
+#include <mkl.h>
 #include <mkl_spblas.h>
-
-using namespace scai::utilskernel;
 
 namespace scai
 {
 
+using namespace utilskernel;
 using tasking::TaskSyncToken;
 
 namespace sparsekernel
@@ -97,8 +98,7 @@ void MKLCSRUtils::normalGEMV(
     typedef MKLCSRTrait::BLASMatrix BLASMatrix;
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
-    if ( common::TypeTraits<IndexType>::stype
-            != common::TypeTraits<BLASIndexType>::stype )
+    if ( common::TypeTraits<IndexType>::stype != common::TypeTraits<BLASIndexType>::stype )
     {
         COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
@@ -109,7 +109,7 @@ void MKLCSRUtils::normalGEMV(
         // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
-    if ( y != result && beta != scai::common::constants::ZERO )
+    if ( y != result && beta != common::constants::ZERO )
     {
         OpenMPUtils::set( result, y, numRows, utilskernel::binary::COPY );
     }
@@ -157,6 +157,173 @@ void MKLCSRUtils::convertCSR2CSC(
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MKLCSRUtils::decomposition(
+    ValueType* solution,
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const ValueType rhs[],
+    const IndexType numRows,
+    const IndexType nnz,
+    const bool isSymmetric )
+{
+    SCAI_REGION( "MKL.decomposition" )
+
+    SCAI_LOG_INFO( logger, "decomposition<" << common::TypeTraits<ValueType>::id() << "> of matrix,"
+                           << " numRows = " << numRows << ", nnz = " << nnz << ", isSymmetric = " << isSymmetric )
+
+    // dummy variables
+
+    ValueType vDum;
+    MKL_INT   iDum;
+
+    /* -------------------------------------------------------------------- */
+    /* .. Initialize the internal solver memory pointer. This is only       */
+    /* necessary for the FIRST call of the PARDISO solver.                  */
+    /* -------------------------------------------------------------------- */
+    void* pt[64];
+    for ( int i = 0; i < 64; ++i )
+    {
+        pt[i] = 0;
+    }
+
+    // TODO: check all posibilities of matrix type
+
+    //  1: Real structural symmetrix matrix
+    //  2: Real symmetric positive definite (spd) matrix
+    // -2: Real symmetric indefinite matrix
+    //  3: Complex structural symmetrix matrix
+    //  4: Complex hermitian positive definite matrix
+    // -4: Complex hermitian indefinite matrix
+    //  6: Complex symmetric matrix
+    // 11: Real unsymmetric matrix
+    // 13: Complex unsymmetric matrix
+    MKL_INT mtype;
+    if( common::isComplex( common::TypeTraits<ValueType>::stype ) ) // Complex
+    {
+        if( isSymmetric )
+        {
+            mtype = 6;
+            // also may be: 3, 4, -4
+        }
+        else
+        {
+            mtype = 13;
+        }
+    }
+    else // Real
+    {
+        if ( isSymmetric )
+        {
+            mtype = 1;
+            // also may be: 2, -2
+        }
+        else
+        {
+            mtype = 11;   
+        }
+    }
+
+    MKL_INT iparm[64];   /* control parameters */
+
+    for ( int i = 0; i < 64; ++i ) 
+    {
+        iparm[i] = 0;
+    }
+
+    SCAI_LOG_INFO( logger, "call pardisoinit, mtype = " << mtype )
+
+    pardisoinit( pt, &mtype, iparm );
+
+    for ( int i =0; i < 64; ++i )
+    {
+        if ( iparm[i] != 0 )
+        {
+            SCAI_LOG_DEBUG( logger, "iparm[" << i << "] = " << iparm[i] )
+        }
+    }
+
+    // iparm has now default values but some changes are required
+
+    if ( ( common::TypeTraits<ValueType>::stype == common::scalar::FLOAT ) ||
+         ( common::TypeTraits<ValueType>::stype == common::scalar::COMPLEX ) ) 
+    {
+        iparm[27] = 1;  /* float */
+    }
+    else if( ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE ) ||
+             ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE_COMPLEX ) )
+    {
+        iparm[27] = 2;  /* double */
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unsupported value type " << common::TypeTraits<ValueType>::stype )
+    }
+
+    iparm[34] = 1;  /* PARDISO use C-style indexing for ia and ja arrays */
+
+    MKL_INT phase;
+    MKL_INT maxfct = 1;  /* Maximum number of numerical factorizations. */
+    MKL_INT mnum   = 1;  /* Which factorization to use. */
+    MKL_INT nrhs   = 1;  /* Number of right hand sides */
+    MKL_INT msglvl = 0;  /* no statistics */
+    MKL_INT error  = 0;  /* Initialize error flag */
+
+    SCAI_LOG_INFO( logger, "Initialization completed ... " )
+
+    /* -------------------------------------------------------------------- */
+    /* .. Reordering and Symbolic Factorization. This step also allocates */
+    /* all memory that is necessary for the factorization. */
+    /* -------------------------------------------------------------------- */
+
+    phase = 11;
+
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
+             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+
+    SCAI_LOG_INFO( logger, "pardiso completed, error = " << error )
+
+    SCAI_PARDISO_ERROR_CHECK ( error, "ERROR during symbolic factorization" )
+    SCAI_LOG_INFO( logger, "Reordering completed ... " )
+    SCAI_LOG_INFO( logger, "Number of nonzeros in factors = " << iparm[17] );
+
+    /* -------------------------------------------------------------------- */
+    /* .. Numerical factorization.                                          */
+    /* -------------------------------------------------------------------- */
+
+    phase = 22;
+
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
+             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+
+    SCAI_PARDISO_ERROR_CHECK( error, "ERROR during numerical factorization" )
+    SCAI_LOG_INFO( logger, "Factorization completed ... " )
+
+    /* -------------------------------------------------------------------- */
+    /* .. Back substitution and iterative refinement.                       */
+    /* -------------------------------------------------------------------- */
+    phase = 33;
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
+             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl,
+             const_cast<ValueType*> (rhs), solution, &error );
+
+    SCAI_LOG_INFO( logger, "pardiso 33 completed, error = " << error )
+    SCAI_PARDISO_ERROR_CHECK( error, "ERROR during back substitution" )
+    SCAI_LOG_INFO( logger, "Solve completed ... " )
+
+    phase = -1; /* Release internal memory. */
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
+             &vDum, const_cast<IndexType*> (csrIA), const_cast<IndexType*> (csrJA),
+             &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+
+    SCAI_LOG_INFO( logger, "decomposition completed" )
+}
 
 /* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
@@ -170,6 +337,8 @@ void MKLCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelReg
     SCAI_LOG_INFO( logger, "register CSRUtils MKL-routines for Host at kernel registry [" << flag
                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

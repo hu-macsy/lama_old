@@ -1,7 +1,5 @@
-#!/bin/bash
-
 ###
- # @file code_coverageSecond.sh
+ # @file Dependencies/minimalSupportedVersions.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -22,40 +20,19 @@
  #
  # You should have received a copy of the GNU Affero General Public License
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ #
+ # Other Usage
+ # Alternatively, this file may be used in accordance with the terms and
+ # conditions contained in a signed written agreement between you and
+ # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
- # @date 15.08.2012
+ # @brief Defines minimal supported library versions for compatiblity check at find_package
+ # @author Lauretta Schubert
+ # @date 27.10.2016
 ###
 
-source scai_code_coverage_functions.sh
+#set ( BOOST_MINIMUM_VERSION 1.36 )
+set ( BOOST_TEST_MINIMUM_VERSION 1.41 )
 
-# Check requirements for codecoverage
-requirements_coverage
-
-export SCAI_LOG=TRACE
-export SCAI_TRACE=time
-
-error_count=0
-
-# Running blaskernel serial
-echo "Running blaskernel tests on Host"
-count_error ./blaskernelTest --SCAI_CONTEXT=Host
-
-if [ -d ../cuda ]
-then
-    #Running common CUDA tests
-    echo "Running blaskernel tests with CUDA context"
-    count_error ./blaskernelTest --SCAI_CONTEXT=CUDA
-fi
-
-if [ -d ../mic ]
-then
-    #Running common MIC tests
-    echo "Running blaskernel tests with MIC context"
-    count_error ./blaskernelTest --SCAI_CONTEXT=MIC
-fi
-
-exit $error_count
+set ( OMP_MINIMUM_VERSION 3.0 ) # because of use of collapse

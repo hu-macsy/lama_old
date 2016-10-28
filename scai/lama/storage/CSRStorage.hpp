@@ -114,6 +114,7 @@ public:
 
     explicit CSRStorage( const _MatrixStorage& other )
     {
+        _MatrixStorage::setContextPtr( other.getContextPtr() );
         assign( other );
     }
 
@@ -123,6 +124,7 @@ public:
 
         : CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>()
     {
+        _MatrixStorage::setContextPtr( other.getContextPtr() );
         assign( other );
     }
 
@@ -136,6 +138,8 @@ public:
 
     CSRStorage<ValueType>& operator=( const _MatrixStorage& other )
     {
+        // the assignment operator does not change the context any more
+
         assign( other );
         return *this;
     }

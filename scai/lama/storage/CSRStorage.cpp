@@ -94,8 +94,11 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRStorage<ValueType
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-CSRStorage<ValueType>::CSRStorage()
-    : CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>( 0, 0 ), mNumValues( 0 ), mSortedRows( false )
+CSRStorage<ValueType>::CSRStorage() :
+    
+    CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>( 0, 0 ), 
+    mNumValues( 0 ), 
+    mSortedRows( false )
 {
     allocate( 0, 0 ); // creates at least mIa
 }
@@ -109,10 +112,12 @@ CSRStorage<ValueType>::CSRStorage(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const _HArray& values )
+    const _HArray& values ) : 
 
-    : CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>()
+    CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>()
 {
+    // keeps host context for this storage
+
     this->setCSRData( numRows, numColumns, numValues, ia, ja, values );
 }
 
@@ -322,6 +327,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     HArrayUtils::assign( mValues, values, loc );
     HArrayUtils::assign( mJa, ja, loc );
+
     /* do not sort rows, destroys diagonal property during redistribute
 
      OpenMPCSRUtils::sortRowElements( myJA.get(), myValues.get(), myIA.get(),
@@ -329,6 +335,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
      */
     mDiagonalProperty = checkDiagonalProperty();
+    mSortedRows       = false;
     buildRowIndexes();
 }
 
@@ -404,7 +411,11 @@ void CSRStorage<ValueType>::sortRows( bool diagonalProperty )
         WriteAccess<ValueType> csrValues( mValues );
         OpenMPCSRUtils::sortRowElements( csrJA.get(), csrValues.get(), csrIA.get(), mNumRows, diagonalProperty );
     }
+
+    // diagonal property must not be given if diagonal elements are missing
+
     mDiagonalProperty = checkDiagonalProperty();
+    mSortedRows       = true;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -708,7 +719,8 @@ void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "CSRStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << mNumRows << " x " << mNumColumns
-           << ", nnz = " << mNumValues << ", diag = " << mDiagonalProperty << ", sorted = " << mSortedRows << " )";
+           << ", nnz = " << mNumValues << ", diag = " << mDiagonalProperty 
+           << ", sorted = " << mSortedRows << ", ctx = " << *getContextPtr() << " )";
 }
 
 /* --------------------------------------------------------------------------- */

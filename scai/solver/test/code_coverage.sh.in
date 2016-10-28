@@ -59,7 +59,7 @@ check_feature LAMA_SUPPORTS_CUDA ./solverTest --SCAI_CONTEXT=CUDA --run_test=Ver
 check_feature LAMA_SUPPORTS_MIC ./solverTest --SCAI_CONTEXT=MIC --run_test=VersionTest
 
 # Running tests serial
-echo "Running solver tests"
+echo "Running solver tests on Host"
 count_error ./solverTest
     
 if [ "${LAMA_SUPPORTS_MPI}" -eq 1 ]
@@ -76,13 +76,13 @@ fi
 
 if [ "${LAMA_SUPPORTS_CUDA}" -eq 1 ]
 then
-	echo "Running solver tests on cuda"
+	echo "Running solver tests on CUDA"
 	count_error ./solverTest --SCAI_CONTEXT=CUDA
 fi
 
 if [ "${LAMA_SUPPORTS_MIC}" -eq 1 ]
 then
-	echo "Running solver tests on mic"
+	echo "Running solver tests on MIC"
 	count_error ./solverTest --SCAI_CONTEXT=MIC
 fi
 

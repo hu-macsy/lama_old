@@ -53,6 +53,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables)
 include ( Dependencies/internal )
 include ( Dependencies/external )
+include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -114,6 +115,7 @@ scai_project (
         CGNE
         CGNR
         CGS
+        DecompositionSolver
         GMRES
         InverseSolver
         IterativeSolver

@@ -64,7 +64,11 @@ CUDACtx::CUDACtx( int deviceNr )
     SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << mDeviceNr )
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
-    SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuBLAS library" );
+    SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuSparse library" );
+#if ( CUDART_VERSION >= 7050 )
+    SCAI_CUSOLVER_CALL( cusolverDnCreate( &mcuSolverDnHandle ), "Initialization of cuSolverDn library" )
+    SCAI_CUSOLVER_CALL( cusolverSpCreate( &mcuSolverSpHandle ), "Initialization of cuSolverSp library" )
+#endif
     CUcontext tmp; // temporary for last context, not necessary to save it
     SCAI_CUDA_DRV_CALL( cuCtxPopCurrent( &tmp ), "could not pop context" )
 }
@@ -83,6 +87,22 @@ cublasHandle_t CUDACtx::getcuBLASHandle() const
     return mcuBLASHandle;
 }
 
+/* --------------------------------------------------------------------- */
+#if ( CUDART_VERSION >= 7050 )
+
+cusolverDnHandle_t CUDACtx::getcuSolverDnHandle() const
+{
+    return mcuSolverDnHandle;
+}
+
+/* --------------------------------------------------------------------- */
+
+cusolverSpHandle_t CUDACtx::getcuSolverSpHandle() const
+{
+    return mcuSolverSpHandle;
+}
+
+#endif
 /* --------------------------------------------------------------------- */
 
 CUDACtx::~CUDACtx()
@@ -135,6 +155,36 @@ CUDACtx::~CUDACtx()
 
         mcuSparseHandle = 0;
     }
+
+#if ( CUDART_VERSION >= 7050 )
+    // Be careful: cusolverDnDestroy should be called within the current CUDA context
+
+    if ( mcuSolverDnHandle )
+    {
+        cusolverStatus_t error = cusolverDnDestroy( mcuSolverDnHandle );
+
+        if ( error != CUSOLVER_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cusolverDn handle, status = " << error << std::endl;
+        }
+
+        mcuSolverDnHandle = 0;
+    }
+
+    // Be careful: cusolverSpDestroy should be called within the current CUDA context
+
+    if ( mcuSolverSpHandle )
+    {
+        cusolverStatus_t error = cusolverSpDestroy( mcuSolverSpHandle );
+
+        if ( error != CUSOLVER_STATUS_SUCCESS )
+        {
+            std::cerr << "Warn: could not destroy cusolverSp handle, status = " << error << std::endl;
+        }
+
+        mcuSolverSpHandle = 0;
+    }
+#endif
 
     res = cuCtxDestroy( mCUcontext );
 

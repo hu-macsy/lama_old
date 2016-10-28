@@ -473,6 +473,60 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
 /* ------------------------------------------------------------------------------------- */
 
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::decomposition<ValueType> > decomposition;
+    ContextPtr loc = Context::getContextPtr( decomposition.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+    SCAI_LOG_INFO( logger, "decomposition< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
+    const IndexType ia[] = { 0, 4, 8, 12, 15 };
+    const IndexType ja[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3 };
+    const ValueType values[] = { 3.0,  4.0, -5.0,  6.0,
+                                 6.0,  5.0, -6.0, 5.0,
+                                 9.0, -4.0,  2.0, 3.0,
+                                       2.0, -3.0, 1.0 };
+    const ValueType rhsValues[] = { 39.0, 43.0, 6.0, 13.0 };
+    const ValueType solValues[] = { 1.0, 2.0, -2.0, 3.0 };
+    const IndexType numRows = 4;
+    const IndexType nnz = 15;
+
+    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+    HArray<IndexType> csrJA( nnz, ja, testContext );
+    HArray<ValueType> csrValues( nnz, values, testContext );
+
+    HArray<ValueType> rhs( numRows, rhsValues, testContext );
+    HArray<ValueType> solution;
+
+    {
+        ReadAccess<IndexType> rCSRIA( csrIA, loc );
+        ReadAccess<IndexType> rCSRJA( csrJA, loc );
+        ReadAccess<ValueType> rCSRValues( csrValues, loc );
+        ReadAccess<ValueType> rRHS( rhs, loc );
+        WriteOnlyAccess<ValueType> wSol( solution, loc, numRows );
+        SCAI_CONTEXT_ACCESS( loc );
+        decomposition[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
+            rRHS.get(), numRows, nnz, false );
+    }
+
+    {
+        ContextPtr host = Context::getHostPtr();
+        ReadAccess<ValueType> rSol( solution, host );
+
+        for ( int i = 0; i < numRows; ++i )
+        {
+            ValueType x = rSol[i] - solValues[i];
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();

@@ -285,6 +285,19 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
+    /** Implementation for CSRKernelTrait::decomposition */
+
+    template<typename ValueType>
+    static void decomposition(
+        ValueType* const solution,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const ValueType rhs[],
+        const IndexType numRows,
+        const IndexType nnz,
+        const bool isSymmetic );
+
     /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(

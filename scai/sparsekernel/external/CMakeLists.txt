@@ -38,7 +38,7 @@
 
 if    ( SCAI_BLAS_NAME MATCHES "MKL" )
     if    ( SCAI_INDEX_TYPE STREQUAL "int" )
-	    set ( CLASSES ${CLASSES} MKLCSRUtils )
+		set ( CLASSES ${CLASSES} MKLCSRUtils PardisoError )
 	    set ( HEADERS ${HEADERS} MKLCSRTrait MKLCSRWrapper )
     endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 endif ( SCAI_BLAS_NAME MATCHES "MKL" )

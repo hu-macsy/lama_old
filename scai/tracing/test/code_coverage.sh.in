@@ -44,8 +44,9 @@ prepare_coverage $dirname ../..
 echo "Running tracing tests"
 count_error ./test.sh
 
+# todo: remove this if jenkins cc works fine without it
 # problem with these, so first ignore
-rm simpleTracing.gcno simpleTracing.gcda
+#rm simpleTracing.gcno simpleTracing.gcda
 
 exit_on_failure ${error_count}
 

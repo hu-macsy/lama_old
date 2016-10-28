@@ -47,6 +47,7 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 project ( LAMA_ALL CXX )
 
 ## general Settings for all projects
+include ( Dependencies/minimalSupportedVersions )
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
 include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )

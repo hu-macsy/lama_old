@@ -44,7 +44,7 @@ export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 
 # Running common tests
-echo "Running serial tests"
+echo "Running common tests on Host"
 count_error ./commonTest
 
 if [ -d cuda ];

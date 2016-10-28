@@ -212,6 +212,30 @@ struct CSRKernelTrait
         }
     };
 
+    /* LU factorization with Pardiso(MKL)/cusolver */
+    template <typename ValueType>
+    struct decomposition
+    {
+        /** Direct solving of linear equations
+         *
+         *  @since 2.1.0
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const ValueType rhs[],
+            const IndexType numRows,
+            const IndexType nnz,
+            const bool isSymmetic );
+
+        static const char* getId()
+        {
+            return "CSR.decomposition";
+        }
+    };
+
     /** Structure with type definitions for offset routines. */
 
     struct sizes2offsets
