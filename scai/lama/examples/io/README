@@ -15,3 +15,30 @@ SCAI_BINARY[bool] : if true, output file is written binary (Note: does not matte
 SCAI_TYPE = [ float | double | ComplexFloat | ComplexDouble | LongDouble | ComplexLongDouble ]
 
 ---------------------------------------------------------------------------
+
+matrixRepartition.exe
+----------------------
+
+This program allows to take to repartition a matrix that is partitioned over several files.
+It is always assumed that the partitions belong to a block distribution, i.e. the row concatenation
+of the storages gives the full storage.
+
+Usage: matrixRepartition.exe [--SCAI_xxx=vvv] infile_name np_in outfile_name np_out
+   infile_name   is input file with the full matrix, must contain %r if np_in > 1
+   np_in         is the number of partitions used for input matrix
+   outfile_name  is output file for the partitioned matrices, must contain %r if np_out > 1
+   np_out        specifies number of partitions for output matrix
+
+   Note: file format is chosen by suffix, e.g. frm, mtx, txt, psc
+
+   --SCAI_TYPE=<data_type> is data type of input file and used for internal representation
+   --SCAI_IO_BINARY=0|1 to force formatted or binary output file
+   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output
+
+Special case: join several partitions in a single file
+
+  matrixRepartition.exe input_%r.mtx 5 output.mtx 1
+
+Special case:  split a file with complete matrix into several files
+
+  matrixRepartition.exe input.mtx 1 output_%r.mtx 3

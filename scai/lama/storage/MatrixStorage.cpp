@@ -605,6 +605,80 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others )
+{
+    using namespace utilskernel;
+
+    IndexType numRows    = 0;
+    IndexType numColumns = 0;
+    IndexType numValues  = 0;
+
+    for ( size_t k = 0; k < others.size(); ++k )
+    {
+        SCAI_ASSERT_ERROR( others[k], "NULL pointer in concatenation" )
+
+        _MatrixStorage& other = *others[k];
+
+        numRows   += other.getNumRows();
+        numValues += other.getNumValues();
+
+        if ( other.getNumColumns() > numColumns )
+        {
+            numColumns = other.getNumColumns();
+        }
+    }
+
+    SCAI_LOG_ERROR( logger, "rowCat: final matrix " << numRows << " x " << numColumns << ", #non-zeros = " << numValues )
+
+    // now we know the final size and can allocate CSR storage for it
+
+    LArray<IndexType> csrIA( numRows + 1 );
+    LArray<IndexType> csrJA( numValues );
+    LArray<ValueType> csrValues( numValues );
+
+    IndexType lb     = 0;   
+    IndexType offset = 0;
+
+    ContextPtr ctx = this->getContextPtr();
+
+    for ( size_t k = 0; k < others.size(); ++k )
+    {
+        _MatrixStorage& other = *others[k];
+
+        // Get CSR data of other block on same context as this storage
+
+        LArray<IndexType> otherIA( ctx );
+        LArray<IndexType> otherJA( ctx );
+        LArray<ValueType> otherValues( ctx );
+
+        other.buildCSRData( otherIA, otherJA, otherValues );
+
+        IndexType n   = other.getNumRows();
+        IndexType nnz = other.getNumValues();
+
+        otherIA += offset;  // add elementwise the latest offset
+
+        HArrayUtils::setArraySection( csrIA, lb, 1, otherIA, 0, 1, n, binary::COPY, ctx );
+        HArrayUtils::setArraySection( csrJA, offset, 1, otherJA, 0, 1, nnz, binary::COPY, ctx );
+        HArrayUtils::setArraySection( csrValues, offset, 1, otherValues, 0, 1, nnz, binary::COPY, ctx );
+
+        lb += n;
+        offset += nnz;
+    }
+
+    SCAI_ASSERT_EQ_ERROR( lb, numRows, "serious mismatch of sizes" );
+    SCAI_ASSERT_EQ_ERROR( offset, numValues, "serious mismatch of sizes" );
+
+    // Still set the final value
+
+    csrIA[ numRows ] = numValues;
+
+    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& other )
 {
     SCAI_REGION( "Storage.assignTranspose" )

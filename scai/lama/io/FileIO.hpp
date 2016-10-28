@@ -130,6 +130,33 @@ public:
 
     virtual void readStorage( _MatrixStorage& storage, const std::string& fileName ) = 0;
 
+    /** Read in a matrix from a file but only a block of rows. 
+     *
+     *  @param[out] storage is the submatrix from the full matrix stored in the file
+     *  @param[in]  fileName is the name of the input file containing the matrix.
+     *  @param[in]  blockRank  value between 0 and blockSize - 1
+     *  @param[in]  blockSize  size of blocks 
+     *
+     *  The storage read will match exactly the local storage of the full matrix block distributed
+     *  among blockSize processors, where the part corresponds the part of processor with rank blockRank.
+     *
+     *  This routine can be used to read in one matrix from a single file with blockSize processors where
+     *  each processor reads in its local part.
+     *
+     *  This routine can also be used by a single processor that reads in the corresponding blocks and
+     *  writes them to separate files.
+     *
+     *  The default implementation of the base class reads in the full storage and extracts the local 
+     *  part of it. Derived classes should implement solutions where it is not necessary to allocate memory
+     *  for the full matrix but only for the corresponding block. In case of binary data, direct file access
+     *  might be exploited to extract the needed data from the input file.
+     */
+    virtual void readStorageBlock( 
+        _MatrixStorage& storage, 
+        const std::string& fileName,
+        const PartitionId blockRank,
+        const PartitionId blockSize );
+
     virtual void readArray( hmemo::_HArray& array, const std::string& fileName ) = 0; 
 
     /** File suffix can be used to decide about choice of FileIO class */

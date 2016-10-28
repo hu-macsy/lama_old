@@ -512,6 +512,8 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
             matrix.redistribute( dist, dist );
 
+            SCAI_LOG_DEBUG( logger, "diagonalTest for " << matrix )
+
             VectorPtr xPtr ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
             VectorPtr y1Ptr( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
             VectorPtr y2Ptr( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
