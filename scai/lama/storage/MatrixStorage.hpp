@@ -44,9 +44,11 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
+#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>
+#include <vector>
 
 namespace scai
 {
@@ -451,6 +453,13 @@ public:
      */
     virtual void assign( const _MatrixStorage& other ) = 0;
 
+    /** Vertical, row-wise concatenation of matrix storages
+     *
+     *  All storages in the vector must have the same number of columns.
+     *  The storages are concatenated rowwise vertically to this storage.
+     */
+    virtual void rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others ) = 0;
+
     /** The opposite routine to assign, for convenience as the other way around is
      *  sometimes more efficient
      */
@@ -840,6 +849,10 @@ public:
      *  sometimes more efficient
      */
     virtual void copyTo( _MatrixStorage& other ) const;
+
+    /** Implmentation of _MatrixStorage::rowCat for typed storages. */
+
+    virtual void rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others );
 
     /** 
      *  Implementation of _MatrixStorage::copyBlockTo 

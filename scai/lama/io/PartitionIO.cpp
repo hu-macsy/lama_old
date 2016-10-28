@@ -58,6 +58,30 @@ SCAI_LOG_DEF_LOGGER( PartitionIO::logger, "PartitionIO" )
 
 /* --------------------------------------------------------------------------------- */
 
+void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, const PartitionId rank, const PartitionId size )
+{
+    size_t pos = fileName.find( "%r" );
+
+    isPartitioned = false;
+
+    if ( pos == string::npos )
+    {
+        return;
+    }
+
+    ostringstream rankStr;
+
+    if ( size > 1 )
+    {
+        rankStr << rank << "." << size;
+        isPartitioned = true;
+    }
+
+    fileName.replace( pos, 2, rankStr.str() );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, const Communicator& comm )
 {
     size_t pos = fileName.find( "%r" );
