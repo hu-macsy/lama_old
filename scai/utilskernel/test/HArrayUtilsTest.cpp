@@ -218,11 +218,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 
             typedef typename TypeTraits<ValueType>::AbsType AbsType;
 
-            // might happen that result on other devices are not exactly the same
-
             AbsType diff = common::Math::abs( read[i] - res  );
 
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+            // might happen that result on other devices are not exactly the same, give warning
+
+            BOOST_WARN_EQUAL( diff, AbsType( 0 ) );
+
+            // but they should be close
+
+            BOOST_CHECK( diff <= AbsType( 10 ) * TypeTraits<AbsType>::small() );
         }
     }
 }
