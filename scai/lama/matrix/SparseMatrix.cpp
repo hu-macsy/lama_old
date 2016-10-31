@@ -579,18 +579,23 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, DistributionPtr colDistributionPtr )
 {
     SCAI_REGION( "Mat.Sp.redistribute" )
+
     SCAI_LOG_INFO( logger,
                    "redistribute " << *this << ": new row dist = " << *rowDistributionPtr << ", new col dist = " << *colDistributionPtr )
-    SCAI_ASSERT_ERROR(
-        rowDistributionPtr->getGlobalSize() == mNumRows,
-        "size of new row distribution = " << rowDistributionPtr->getGlobalSize() << " does not match number of rows = " << mNumRows );
-    SCAI_ASSERT_ERROR(
-        colDistributionPtr->getGlobalSize() == mNumColumns,
-        *this << ": size of new col distribution = " << colDistributionPtr->getGlobalSize() << " does not match number of columns = " << mNumColumns );
+
+    SCAI_ASSERT_EQ_ERROR( rowDistributionPtr->getGlobalSize(), mNumRows,
+                          "size of new row distribution mismatches #rows" );
+
+    SCAI_ASSERT_EQ_ERROR( colDistributionPtr->getGlobalSize(), mNumColumns,
+                          "size of new col distribution mismatches #colunns" );
+
     // Save the current distribution of this matrix; use shared pointers to avoid freeing
+
     DistributionPtr oldRowDistributionPtr = getRowDistributionPtr();
     DistributionPtr oldColDistributionPtr = getColDistributionPtr();
+
     // Set the new distributions
+
     setDistributionPtr( rowDistributionPtr );
     mColDistribution = colDistributionPtr;
 
