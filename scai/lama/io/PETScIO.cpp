@@ -151,10 +151,37 @@ void PETScIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void PETScIO::readArrayInfo( IndexType& n, const std::string& fileName )
+{
+    // int    VEC_FILE_CLASSID
+    // int    number of rows
+    // type   values
+
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read array info from file " << fileName )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<IndexType> headerVals;
+
+    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+
+    IndexType classid = headerVals[0];
+
+    SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
+
+    n = headerVals[1];
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void PETScIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
-    const std::string& fileName )
+    const std::string& fileName,
+    const IndexType first, 
+    const IndexType nelems )
 {
     // int    VEC_FILE_CLASSID
     // int    number of rows
@@ -181,6 +208,11 @@ void PETScIO::readArrayImpl(
     inFile.readBinary( array, n, mScalarTypeData );
  
     inFile.close();
+
+    if ( first != 0 || nelems != nIndex )
+    {
+        COMMON_THROWEXCEPTION( "not yet available" )
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -254,10 +286,35 @@ void PETScIO::writeStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+{
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read storage info from file " << fileName )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<IndexType> headerVals;
+
+    inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
+
+    IndexType classid = headerVals[0];
+
+    SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
+
+    numRows      = headerVals[1];
+    numColumns   = headerVals[2];
+    numValues    = headerVals[3];
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void PETScIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
-    const std::string& fileName ) 
+    const std::string& fileName,
+    const IndexType firstRow,
+    const IndexType nRows ) 
 {
     // int    MAT_FILE_CLASSID
     // int    number of rows
@@ -277,12 +334,12 @@ void PETScIO::readStorageImpl(
     inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
 
     IndexType classid = headerVals[0];
-    IndexType nrows   = headerVals[1];
-    IndexType ncols   = headerVals[2];
+    IndexType numRows   = headerVals[1];
+    IndexType numCols   = headerVals[2];
     IndexType nnz     = headerVals[3];
 
-    SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << nrows 
-                           << ", #cols = " << ncols << ", #nnz = " << nnz )
+    SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << numRows 
+                           << ", #cols = " << numCols << ", #nnz = " << nnz )
 
     SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
 
@@ -290,7 +347,7 @@ void PETScIO::readStorageImpl(
     HArray<IndexType> csrJA;
     HArray<ValueType> csrValues;
 
-    inFile.readBinary( csrSizes, nrows, mScalarTypeIndex );
+    inFile.readBinary( csrSizes, numRows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
 
     if ( mScalarTypeData != common::scalar::PATTERN )
@@ -302,7 +359,14 @@ void PETScIO::readStorageImpl(
         csrValues.init( ValueType( 1 ), nnz );
     }
 
-    storage.setCSRData( nrows, ncols, nnz, csrSizes, csrJA, csrValues );
+    if ( firstRow == 0 && nRows == nIndex )
+    {
+        storage.setCSRData( numRows, numCols, nnz, csrSizes, csrJA, csrValues );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "read block not yet available" )
+    }
 }
 
 }  // lama

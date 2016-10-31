@@ -122,6 +122,14 @@ public:
 
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName ) = 0;
 
+    /** Get info about the storage stored in a file. 
+     *
+     *  @param[out] numRows    number of rows for the storage in the file
+     *  @param[out] numColumns number of columns for the storage in the file
+     *  @param[out] numValues  number of non-zero values for the storage in the file
+     */
+    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName ) = 0;
+
     /** Read (local) matrix storage from a file
      *
      *   - implicit conversion by reading from formatted file
@@ -130,18 +138,15 @@ public:
 
     virtual void readStorage( _MatrixStorage& storage, const std::string& fileName ) = 0;
 
-    /** Read in a matrix from a file but only a block of rows. 
+    /** Read in a matrix from a file but only a contiguous section of rows. 
      *
-     *  @param[out] storage is the submatrix from the full matrix stored in the file
+     *  @param[out] storage  is the submatrix from the full matrix stored in the file
      *  @param[in]  fileName is the name of the input file containing the matrix.
-     *  @param[in]  blockRank  value between 0 and blockSize - 1
-     *  @param[in]  blockSize  size of blocks 
+     *  @param[in]  firstRow index of first row to read
+     *  @param[in]  nRows    number of rows to read
      *
-     *  The storage read will match exactly the local storage of the full matrix block distributed
-     *  among blockSize processors, where the part corresponds the part of processor with rank blockRank.
-     *
-     *  This routine can be used to read in one matrix from a single file with blockSize processors where
-     *  each processor reads in its local part.
+     *  This routine can be used to read in one matrix from a single file with multiple processors
+     *  where each processor reads in its local part.
      *
      *  This routine can also be used by a single processor that reads in the corresponding blocks and
      *  writes them to separate files.
@@ -154,10 +159,16 @@ public:
     virtual void readStorageBlock( 
         _MatrixStorage& storage, 
         const std::string& fileName,
-        const PartitionId blockRank,
-        const PartitionId blockSize );
+        const IndexType firstRow,
+        const IndexType nRows ) = 0;
 
     virtual void readArray( hmemo::_HArray& array, const std::string& fileName ) = 0; 
+
+    virtual void readArrayBlock( 
+        hmemo::_HArray& array,
+        const std::string& fileName,
+        const IndexType first,
+        const IndexType n ) = 0;
 
     /** File suffix can be used to decide about choice of FileIO class */
 

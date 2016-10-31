@@ -96,6 +96,8 @@ void MatlabIO::writeAt( std::ostream& stream ) const
     stream << ", only formatted )";
 }
 
+/* --------------------------------------------------------------------------------- */
+
 /** Method to count number of lines of a text file and the maximal number of entries in one line 
  *
  *  @param[out]  nLines is number of lines the file has
@@ -159,10 +161,23 @@ void MatlabIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void MatlabIO::readArrayInfo( IndexType& n, const std::string& fileName )
+{
+    IndexType nEntries;
+
+    checkTextFile( n, nEntries, fileName.c_str() );
+
+    // ToDo: nEntries should be 1
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
-    const std::string& fileName ) 
+    const std::string& fileName,
+    const IndexType first,
+    const IndexType nelems ) 
 {
     IndexType n;   // number of lines, size of array
     IndexType k;   // number of entries in one line
@@ -178,6 +193,11 @@ void MatlabIO::readArrayImpl(
     IOStream inFile( fileName, std::ios::in );
 
     inFile.readFormatted( array, n );
+
+    if ( first != 0 || nelems != nIndex )
+    {
+        COMMON_THROWEXCEPTION( "reading block not supported yet" )
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -213,9 +233,78 @@ void MatlabIO::writeStorageImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatlabIO::readData( 
+    HArray<IndexType>& ia, 
+    HArray<IndexType>& ja, 
+    HArray<ValueType>* values,
+    const IndexType nnz,
+    const std::string& fileName )
+{
+    LArray<double> dIA;
+    LArray<double> dJA;
+
+    IOStream inFile( fileName, std::ios::in );
+
+    if ( values != NULL )
+    {
+        inFile.readFormatted( dIA, dJA, *values, nnz );
+    }
+    else
+    {
+        inFile.readFormatted( dIA, dJA, nnz );
+    }
+
+    ContextPtr ctx = Context::getHostPtr();
+
+    HArrayUtils::setArray( ia, dIA, binary::COPY, ctx );  // conversion from double to IndexType
+    HArrayUtils::setArray( ja, dJA, binary::COPY, ctx );  // conversion from double to IndexType
+
+    IndexType minRowIndex = HArrayUtils::reduce( ia, binary::MIN );
+
+    if ( minRowIndex == 0 )
+    {
+        // okay, seems that indexing start with 0
+    }
+    else if ( minRowIndex == 1 )
+    {
+        // offset base = 1, convert it to 0
+
+        HArrayUtils::setScalar( ia, 1, binary::SUB );
+        HArrayUtils::setScalar( ja, 1, binary::SUB );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Index base = " << minRowIndex << " is illegal" )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+{
+    IndexType nEntries;
+
+    checkTextFile( numValues, nEntries, fileName.c_str() );
+
+    // As there is no header, we have to read the full file, at least the index values
+
+    LArray<IndexType> ia;
+    LArray<IndexType> ja;
+
+    readData<RealType>( ia, ja, NULL, numValues, fileName );
+
+    numRows    = ia.max() + 1;
+    numColumns = ja.max() + 1;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatlabIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
-    const std::string& fileName )
+    const std::string& fileName,
+    const IndexType firstRow, 
+    const IndexType nRows )
 {
     // binary mode does not matter as we have always formatted output
 
@@ -248,45 +337,18 @@ void MatlabIO::readStorageImpl(
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
-    LArray<double> dIA;
-    LArray<double> dJA;
+    LArray<IndexType> ia;
+    LArray<IndexType> ja;
     LArray<ValueType> val;
-
-    IOStream inFile( fileName, std::ios::in );
 
     if ( readPattern )
     {
-        inFile.readFormatted( dIA, dJA, nnz );
+        readData<ValueType>( ia, ja, NULL, nnz, fileName );
         val.init( ValueType( 1 ), nnz );
     }
     else
     {
-        inFile.readFormatted( dIA, dJA, val, nnz );
-    }
-
-    LArray<IndexType> ia( dIA );
-    LArray<IndexType> ja( dJA );
-
-    SCAI_LOG_DEBUG( logger, "read ia  : " << ia  )
-    SCAI_LOG_DEBUG( logger, "read ja  : " << ja  )
-    SCAI_LOG_DEBUG( logger, "read val : " << val )
-
-    IndexType minRowIndex = ia.min();
-
-    if ( minRowIndex == 0 )
-    {
-        // okay, seems that indexing start with 0
-    }
-    else if ( minRowIndex == 1 )
-    {
-        // offset base = 1, convert it to 0
-
-        ia -= minRowIndex;
-        ja -= minRowIndex;
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Index base = " << minRowIndex << " is illegal" )
+        readData<ValueType>( ia, ja, &val, nnz, fileName );
     }
 
     // we shape the matrix by maximal appearing indexes
@@ -296,7 +358,14 @@ void MatlabIO::readStorageImpl(
 
     COOStorage<ValueType> coo( nrows, ncols, ia, ja, val );
 
-    storage = coo;
+    if ( firstRow == 0 && nRows == nIndex )
+    {
+        storage = coo;
+    }
+    else
+    {
+        coo.copyBlockTo( storage, firstRow, nRows );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */

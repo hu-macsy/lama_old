@@ -441,10 +441,32 @@ void MatrixMarketIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void MatrixMarketIO::readArrayInfo( IndexType& n, const std::string& fileName )
+{
+    Symmetry symmetry;
+    common::scalar::ScalarType mmType;
+
+    IndexType numColumns;
+    IndexType numValues;
+
+    IOStream inFile( fileName, std::ios::in );
+
+    readMMHeader( n, numColumns, numValues, mmType, symmetry, inFile );
+
+    if ( numColumns != 1 )
+    {
+        SCAI_LOG_WARN( logger, "reading vector from mtx file, #columns = " << numColumns << ", ignored" )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void MatrixMarketIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
-    const std::string& fileName ) 
+    const std::string& fileName,
+    const IndexType first, 
+    const IndexType n ) 
 {
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
@@ -505,6 +527,11 @@ void MatrixMarketIO::readArrayImpl(
 
     inFile.close();
     SCAI_LOG_INFO( logger, "read array " << numRows )
+
+    if ( first != 0 || n != nIndex )
+    {
+        COMMON_THROWEXCEPTION( "not yet" )
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -748,10 +775,37 @@ void MatrixMarketIO::writeStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void MatrixMarketIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+{
+    Symmetry symmetry;
+    common::scalar::ScalarType mmType;
+
+    IndexType numValuesFile;
+
+    IOStream inFile( fileName, std::ios::in );
+
+    readMMHeader( numRows, numColumns, numValuesFile, mmType, symmetry, inFile );
+
+    numValues = numValuesFile;
+
+    if ( symmetry )
+    {
+        // in case of symmetry we assume one entry for each diagonal element and double the non-diagonal elements
+
+        SCAI_ASSERT_EQUAL( numRows, numColumns, "symmetry only possible for square matrices" )
+
+        numValues = numRows + 2 * ( numValuesFile - numRows );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void MatrixMarketIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
-    const std::string& fileName )
+    const std::string& fileName,
+    const IndexType firstRow,
+    const IndexType nRows )
 {
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
@@ -851,7 +905,14 @@ void MatrixMarketIO::readStorageImpl(
 
     coo.swap( ia, ja, val );
 
-    storage = coo;
+    if ( firstRow == 0 && nRows == nIndex )
+    {
+        storage = coo;
+    }
+    else
+    {
+        coo.copyBlockTo( storage, firstRow, nRows );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */

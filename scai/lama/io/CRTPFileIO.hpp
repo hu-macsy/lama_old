@@ -71,6 +71,10 @@ public:
 
     void readStorage( _MatrixStorage& storage, const std::string& fileName );
 
+    /** Implementation of pure virtual method FileIO::readStorageBlock  */
+
+    void readStorageBlock( _MatrixStorage& storage, const std::string& fileName, const IndexType offsetRow, const IndexType nRows );
+
     /** Implementation of pure virtual method FileIO::writeArray  */
 
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
@@ -78,6 +82,10 @@ public:
     /** Implementation of pure virtual method FileIO::readArray  */
 
     virtual void readArray( hmemo::_HArray& array, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readArrayBlock  */
+
+    virtual void readArrayBlock( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n );
 
     /** Default implementation for removeFile */
 
@@ -112,7 +120,7 @@ struct FileIOWrapper<Derived, common::mepr::NullType>
         COMMON_THROWEXCEPTION( "writeStorage " << storage << " unsupported, unknown type." )
     }
 
-    static void readStorageImpl( Derived&, _MatrixStorage& storage, const std::string& )
+    static void readStorageImpl( Derived&, _MatrixStorage& storage, const std::string&, const IndexType, const IndexType )
     {
         COMMON_THROWEXCEPTION( "readStorage " << storage << " unsupported, unknown type." )
     }
@@ -122,7 +130,7 @@ struct FileIOWrapper<Derived, common::mepr::NullType>
         COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
-    static void readArrayImpl( Derived&, hmemo::_HArray& array, const std::string& )
+    static void readArrayImpl( Derived&, hmemo::_HArray& array, const std::string&, const IndexType, const IndexType )
     {
         COMMON_THROWEXCEPTION( "readArray " << array << " unsupported, unknown type." )
     }
@@ -146,15 +154,20 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void readStorageImpl( Derived& io, _MatrixStorage& storage, const std::string& fileName )
+    static void readStorageImpl( 
+        Derived& io, 
+        _MatrixStorage& storage, 
+        const std::string& fileName, 
+        const IndexType offsetRow, 
+        const IndexType nRows )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readStorageImpl( reinterpret_cast< MatrixStorage<ValueType>& >( storage ), fileName );
+            io.readStorageImpl( reinterpret_cast< MatrixStorage<ValueType>& >( storage ), fileName, offsetRow, nRows );
         }
         else
         {
-            FileIOWrapper<Derived, TailTypes>::readStorageImpl( io, storage, fileName );
+            FileIOWrapper<Derived, TailTypes>::readStorageImpl( io, storage, fileName, offsetRow, nRows );
         }
     }
 
@@ -170,15 +183,20 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void readArrayImpl( Derived& io, hmemo::_HArray& array, const std::string& fileName )
+    static void readArrayImpl( 
+        Derived& io, 
+        hmemo::_HArray& array, 
+        const std::string& fileName,
+        const IndexType offset, 
+        const IndexType n )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readArrayImpl( reinterpret_cast< hmemo::HArray<ValueType>& >( array ), fileName );
+            io.readArrayImpl( reinterpret_cast< hmemo::HArray<ValueType>& >( array ), fileName, offset, n );
         }
         else
         {
-            FileIOWrapper<Derived, TailTypes>::readArrayImpl( io, array, fileName );
+            FileIOWrapper<Derived, TailTypes>::readArrayImpl( io, array, fileName, offset, n );
         }
     }
 };
@@ -210,7 +228,26 @@ void CRTPFileIO<Derived>::readStorage( _MatrixStorage& storage, const std::strin
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName );
+    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName, 0, nIndex );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
+void CRTPFileIO<Derived>::readStorageBlock( 
+    _MatrixStorage& storage, 
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, getMatrixFileSuffix() ),
+                 fileName << " illegal, must have suffix " << getMatrixFileSuffix() )
+
+    // just call the corresponding typed routine 
+
+    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName, offsetRow, nRows );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -240,7 +277,22 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
 
     // just call the corresponding typed routine 
 
-    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName );
+    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, 0, nIndex );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
+void CRTPFileIO<Derived>::readArrayBlock( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
+                 fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
+
+    // just call the corresponding typed routine 
+
+    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, offset, n );
 }
 
 /* --------------------------------------------------------------------------------- */

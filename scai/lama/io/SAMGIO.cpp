@@ -38,6 +38,7 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/io/IOStream.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
@@ -260,8 +261,18 @@ void SAMGIO::readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, 
 
 /* --------------------------------------------------------------------------------- */
 
+void SAMGIO::readArrayInfo( IndexType& n, const std::string& fileName )
+{
+    IndexType dataTypeSize = 0;
+    bool binary = false;
+
+    readVectorHeader( n, dataTypeSize, binary, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
-void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName )
+void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
 {
     IndexType dataTypeSize = 0;
     IndexType numRows = 0;
@@ -305,6 +316,14 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
     }
 
     inFile.closeCheck();
+
+    if ( first != 0 || n != nIndex )
+    {
+        hmemo::HArray<ValueType> block;
+        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+        utilskernel::HArrayUtils::setArraySection( block, 0, 1, array, first, 1, n, utilskernel::binary::COPY, ctx );
+        array.swap( block );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -450,10 +469,25 @@ void SAMGIO::readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& b
 
 /* --------------------------------------------------------------------------------- */
 
+void SAMGIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+{
+    bool binary;    // header only decides about formatted/binary read
+
+    // start with reading the header
+
+    readMatrixHeader( numRows, numValues, binary, fileName );
+
+    numColumns = numRows;   // SAMG assumes always square matrices
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void SAMGIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
-    const std::string& fileName ) 
+    const std::string& fileName,
+    const IndexType firstRow,
+    const IndexType nRows ) 
 {
     IndexType numRows;   // SAMG always assumes square matrices
     IndexType numValues; // number of non-zero entries
@@ -567,8 +601,18 @@ void SAMGIO::readStorageImpl(
     {
         numColumns = maxColumn;      // but might be bigger for partitioned data
     }
-
-    storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+ 
+    if ( firstRow == 0 && nRows == nIndex )
+    {
+        storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    }
+    else
+    {
+         CSRStorage<ValueType> tmp;
+         ContextPtr ctx = tmp.getContextPtr();
+         tmp.setCSRDataSwap( numRows, numColumns, numValues, csrIA, csrJA, csrValues, ctx );
+         tmp.copyBlockTo( storage, firstRow, nRows );
+    }
 }
 
 /* --------------------------------------------------------------------------------- */

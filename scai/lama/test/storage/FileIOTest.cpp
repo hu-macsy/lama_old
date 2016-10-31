@@ -234,6 +234,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
+        {
+            IndexType numRows;
+            IndexType numCols;
+            IndexType numValues;
+
+            fileIO->readStorageInfo( numRows, numCols, numValues, fileName );
+
+            BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
+        }
+
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
 
@@ -250,6 +260,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
             {
                 SCAI_CHECK_CLOSE( csrStorage.getValue( i, j ),
                                   readStorage.getValue( i, j ), 0.01f );
+            }
+        }
+
+        {
+            // read just a contiguous block, without first and last row
+
+            const IndexType n = csrStorage.getNumRows() - 2;
+
+            CSRStorage<ValueType> csrBlock;
+
+            fileIO->readStorageBlock( csrBlock, fileName, 1, n );
+
+            for ( IndexType i = 1; i < csrStorage.getNumRows() - 1; ++i )
+            {
+                for ( IndexType j = 0; j < csrStorage.getNumColumns(); ++j )
+                {
+                    SCAI_CHECK_CLOSE( csrStorage.getValue( i, j ),
+                                      csrBlock.getValue( i - 1, j ), 0.01f );
+                }
             }
         }
 

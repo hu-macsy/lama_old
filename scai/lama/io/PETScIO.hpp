@@ -78,6 +78,14 @@ public:
 
     static std::string createValue();
 
+    /** Implementation of pure methdod FileIO::readStorageInfo */
+
+    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+
+    /** Implementation of pure methdod FileIO::readArrayInfo */
+
+    virtual void readArrayInfo( IndexType& n, const std::string& fileName );
+
 public:
  
     /** Typed version of writeStorage
@@ -93,7 +101,7 @@ public:
     /** Typed version of readStorage */
 
     template<typename ValueType>
-    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName )
+    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows )
     __attribute( ( noinline ) );
 
     /** Typed version of the writeArray */
@@ -105,7 +113,7 @@ public:
     /** Typed version of readArray */
 
     template<typename ValueType>
-    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName )
+    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class

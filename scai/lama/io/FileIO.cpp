@@ -283,19 +283,9 @@ void FileIO::read( hmemo::_HArray& array, const std::string& inFileName )
 void FileIO::readStorageBlock( 
     _MatrixStorage& storage, 
     const std::string& fileName,
-    const PartitionId blockRank,
-    const PartitionId blockSize )
+    const PartitionId firstRow,
+    const PartitionId nRows )
 {
-    SCAI_ASSERT_VALID_INDEX( blockRank, blockSize, "Illegal rank/size values for block" )
-
-    if ( blockSize == 1 )
-    {
-        // That is exactly the full storage
-
-        this->readStorage( storage, fileName );
-        return;
-    }
-
     // For extraction of local range we read in the full matrix in a CSR storage of same type
 
     MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, storage.getValueType() );
@@ -304,16 +294,10 @@ void FileIO::readStorageBlock(
 
     this->readStorage( *fullStorage, fileName );
 
-    IndexType numRows = storage.getNumRows();
+    SCAI_ASSERT_VALID_INDEX( firstRow, fullStorage->getNumRows(), "index of first row illegal" )
+    SCAI_ASSERT_VALID_INDEX( firstRow + nRows, fullStorage->getNumRows() + 1, "not enough rows available" )
 
-    IndexType lb;
-    IndexType ub;
-
-    dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, blockRank, blockSize );
-
-    // now extract storage lb :: ub
-
-    fullStorage->copyBlockTo( storage, lb, ub - lb );
+    fullStorage->copyBlockTo( storage, firstRow, nRows );
 }
 
 }  // namespace lama
