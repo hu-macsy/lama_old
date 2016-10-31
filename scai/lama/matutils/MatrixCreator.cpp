@@ -501,8 +501,8 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
         for ( IndexType j = 0; j < colSize; ++j )
         {
             double value;
-            common::Math::random( value );
-            value = static_cast<double>( RAND_MAX );
+            common::Math::random( value );   // range -1.0 .. 1.0
+            value = 0.5 * ( value + 1.0 );   // range 0 .. 1.0
 
             if ( value < density )
             {
