@@ -74,6 +74,7 @@ set ( WHITELIST
         SCAI_TRACING
         # USE
         USE_CODE_COVERAGE
+        USE_OPENMP             # put this here, because OpenMP is used with 'common' in each subproject
     )
     
 set ( BOOST_WHITELIST
@@ -166,7 +167,6 @@ set ( MPI_WHITELIST
 
 set ( OPENMP_WHITELIST
         OpenMP_CXX_FLAGS
-        USE_OPENMP
     )
     
 set ( SCAI_BLAS_WHITELIST
