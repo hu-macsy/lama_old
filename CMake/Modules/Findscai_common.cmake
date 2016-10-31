@@ -85,7 +85,9 @@ if    ( SCAI_COMMON_FOUND )
     
     include ( Package/OpenMP )
     if    ( OPENMP_FOUND AND USE_OPENMP )
-        set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${OpenMP_CXX_FLAGS}" )
+        set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${ADDITIONAL_CXX_FLAGS_OPENMP}" )
+    else  ( OPENMP_FOUND AND USE_OPENMP )
+        set ( SCAI_COMMON_FLAGS "${SCAI_COMMON_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OPENMP}" )
     endif ( OPENMP_FOUND AND USE_OPENMP )
 
     # remove leading and trailing whitespaces
