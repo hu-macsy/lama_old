@@ -1030,17 +1030,6 @@ void OpenMPUtils::binaryOpScalar2(
             break;
         }
 
-        case binary::POW :
-        {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::pow( in[i], value );
-            }
-
-            break;
-        }
-
         case binary::MIN :
         {
             #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
