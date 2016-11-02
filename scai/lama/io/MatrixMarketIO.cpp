@@ -441,7 +441,7 @@ void MatrixMarketIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::readArrayInfo( IndexType& n, const std::string& fileName )
+void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
@@ -451,7 +451,7 @@ void MatrixMarketIO::readArrayInfo( IndexType& n, const std::string& fileName )
 
     IOStream inFile( fileName, std::ios::in );
 
-    readMMHeader( n, numColumns, numValues, mmType, symmetry, inFile );
+    readMMHeader( size, numColumns, numValues, mmType, symmetry, inFile );
 
     if ( numColumns != 1 )
     {
@@ -473,45 +473,64 @@ void MatrixMarketIO::readArrayImpl(
 
     IndexType numRows;
     IndexType numColumns;
-    IndexType numValues;
+    IndexType size;
 
     ValueType val;
     std::string line;
     IOStream inFile( fileName, std::ios::in );
-    readMMHeader( numRows, numColumns, numValues, mmType, symmetry, inFile );
+    readMMHeader( numRows, numColumns, size, mmType, symmetry, inFile );
 
     if ( numColumns != 1 )
     {
         SCAI_LOG_WARN( logger, "reading vector from mtx file, #columns = " << numColumns << ", ignored" )
     }
  
-    // Note: we ignore number of columns here and make a vector of size numRows x numColumns
-
-    WriteOnlyAccess<ValueType> vector( array, numValues );
-
-    IndexType i;
-    ValueType* vPtr = vector.get();
-
-    for ( IndexType l = 0; l < numValues && !inFile.eof(); ++l )
+    if ( ! common::Utils::validIndex( first, size ) )
     {
-        std::getline( inFile, line );
-        std::istringstream reader( line );
-
-        if ( mmType == common::scalar::PATTERN )
-        {
-            reader >> i;
-            val = ValueType( 1 );
-            i--;
-        }
-        else
-        {
-            reader >> val;
-            i = l;
-        }
-
-        vPtr[i] = val;
+        array.clear();
+        return;
     }
 
+    IndexType nEntries = n;
+
+    if ( n == nIndex )
+    {
+        nEntries = size - first;
+    }
+    else
+    {
+        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
+    }
+
+    // Note: we ignore number of columns here and make a vector of size numRows x numColumns
+
+    {
+        WriteOnlyAccess<ValueType> vector( array, size );
+
+        IndexType i;
+        ValueType* vPtr = vector.get();
+
+        for ( IndexType l = 0; l < size && !inFile.eof(); ++l )
+        {
+            std::getline( inFile, line );
+            std::istringstream reader( line );
+
+            if ( mmType == common::scalar::PATTERN )
+            {
+                reader >> i;
+                val = ValueType( 1 );
+                i--;
+            }
+            else
+            {
+                reader >> val;
+                i = l;
+            }
+    
+            vPtr[i] = val;
+        }
+    }
+ 
     if ( inFile.eof() )
     {
         COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
@@ -528,9 +547,16 @@ void MatrixMarketIO::readArrayImpl(
     inFile.close();
     SCAI_LOG_INFO( logger, "read array " << numRows )
 
-    if ( first != 0 || n != nIndex )
+    if ( nEntries != size )
     {
-        COMMON_THROWEXCEPTION( "not yet" )
+        hmemo::HArray<ValueType> block( nEntries );
+        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
+
+        IndexType inc = 1;
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+
+        array.swap( block );
     }
 }
 

@@ -415,7 +415,11 @@ public:
     /** Swaps this with other.
      * @param[in,out] other the JDSStorage to swap this with
      */
-    void swap( JDSStorage<ValueType>& other );
+    void swapImpl( JDSStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     virtual size_t getMemoryUsageImpl() const;
 

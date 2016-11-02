@@ -535,27 +535,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outArrayFormatted" + typeName + fileSuffix;
 
-        SCAI_LOG_INFO( logger, "FileIO(formatted): write this array: " << array << " via " << *fileIO << " to " << fileName )
+        SCAI_LOG_DEBUG( logger, "FileIO(formatted): write this array: " << array << " via " << *fileIO << " to " << fileName )
     
         fileIO->writeArray( array, fileName );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        LArray<ValueType> inArray;
-
-        fileIO->readArray( inArray, fileName );
-
-        BOOST_REQUIRE_EQUAL( inArray.size(), array.size() );
-
-        // due to binary output and using same data type there should be no loss
-
-        for ( IndexType i = 0; i < N; ++i )
+        // Test the method readArrayInfo for 
         {
-            ValueType expectedVal = array[i];
-            ValueType readVal = inArray[i];
-            SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+            IndexType size;
+            fileIO->readArrayInfo( size, fileName );
+
+            SCAI_LOG_DEBUG( logger, "readArrayInfo " << fileName << ": size = " << size )
+
+            BOOST_CHECK_EQUAL( N, size );
         }
 
+        // Test the method readArray
+ 
+        {
+            LArray<ValueType> inArray;
+
+            fileIO->readArray( inArray, fileName );
+
+            SCAI_LOG_DEBUG( logger, "Read from file: " << inArray )
+
+            BOOST_REQUIRE_EQUAL( N, inArray.size() );
+
+            for ( IndexType i = 0; i < N; ++i )
+            {
+                ValueType expectedVal = array[i];
+                ValueType readVal = inArray[i];
+
+                // Due to the formatted output there might be a loss of precision
+ 
+                SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+            }
+       }
+
+        // Test the method readArrayBlock
+
+        {
+            LArray<ValueType> inArray;
+
+            BOOST_CHECK_THROW(
+            { 
+                fileIO->readArrayBlock( inArray, fileName, 0, 5 * N ); 
+            }, common::Exception );
+
+            fileIO->readArrayBlock( inArray, fileName, 1, N - 2 );
+           
+            SCAI_LOG_DEBUG( logger, "Read block from file: " << inArray )
+
+            BOOST_REQUIRE_EQUAL( inArray.size(), N - 2 );
+
+            for ( IndexType i = 1; i < N - 1; ++i )
+            {
+                ValueType expectedVal = array[i];
+                ValueType readVal = inArray[i - 1];
+
+                // Due to the formatted output there might be a loss of precision
+
+                SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+            }
+       }
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );

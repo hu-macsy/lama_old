@@ -127,7 +127,11 @@ public:
      *
      *  @param[in,out] other is the storage to be swapped with this one
      */
-    void swap( SparseAssemblyStorage<ValueType>& other );
+    void swapImpl( SparseAssemblyStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     /** Implementation of pure method _MatrixStorage::allocate */
 

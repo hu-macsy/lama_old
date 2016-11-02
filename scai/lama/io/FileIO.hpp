@@ -142,7 +142,7 @@ public:
      *
      *  @param[out] storage  is the submatrix from the full matrix stored in the file
      *  @param[in]  fileName is the name of the input file containing the matrix.
-     *  @param[in]  firstRow index of first row to read
+     *  @param[in]  offsetRow index of first row to read
      *  @param[in]  nRows    number of rows to read
      *
      *  This routine can be used to read in one matrix from a single file with multiple processors
@@ -159,15 +159,45 @@ public:
     virtual void readStorageBlock( 
         _MatrixStorage& storage, 
         const std::string& fileName,
-        const IndexType firstRow,
+        const IndexType offsetRow,
         const IndexType nRows ) = 0;
 
+    /** Read in the size of an array saved in a file 
+     *
+     *  @param[out] size     number of entries for the array saved in the file           
+     *  @param[in]  fileName C++ string containing the name of the file where the array is saved
+     *  @throws common::Exception if file cannot be opened or if it does not contain an array
+     */
+    virtual void readArrayInfo( IndexType& size, const std::string& fileName ) = 0; 
+
+    /** Read in an array from a file in the corresponding format.
+     *
+     *  @param[out] array    container that will keep the array saved in file fileName
+     *  @param[in]  fileName C++ string containing the name of the file where the array is saved
+     *  @throws common::Exception if file cannot be opened or if it does not contain an array
+     *
+     *  If the value type of the array does not match the data stored in the file, an implicit
+     *  type conversion is done.
+     *
+     *  If the file contains binary data, it is assumed that its type is the same as the value 
+     *  type of the array argument unless the environment variable ``SCAI_IO_TYPE`` has been set.
+     */
     virtual void readArray( hmemo::_HArray& array, const std::string& fileName ) = 0; 
 
+    /** Read in an array block from a file in the corresponding format. 
+     *  
+     *  @param[out] array    will contain the corresponding array values
+     *  @param[in]  fileName name of the input file with array data
+     *  @param[in]  offset   first entry to read
+     *  @param[in]  n        number of entries to read, nIndex stands for all remaining entries
+     *  
+     *  This method has exactly the same behavior as readArray but with the difference that only
+     *  a part of the array is read.
+     */
     virtual void readArrayBlock( 
         hmemo::_HArray& array,
         const std::string& fileName,
-        const IndexType first,
+        const IndexType offset,
         const IndexType n ) = 0;
 
     /** File suffix can be used to decide about choice of FileIO class */

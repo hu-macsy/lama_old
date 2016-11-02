@@ -161,13 +161,13 @@ void MatlabIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readArrayInfo( IndexType& n, const std::string& fileName )
+void MatlabIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
-    IndexType nEntries;
+    IndexType nEntries;   // dummy variable needed for checkTextFile
 
-    checkTextFile( n, nEntries, fileName.c_str() );
+    // each array entry in one line, so count the number of lines in the file
 
-    // ToDo: nEntries should be 1
+    checkTextFile( size, nEntries, fileName.c_str() );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -177,26 +177,50 @@ void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName,
     const IndexType first,
-    const IndexType nelems ) 
+    const IndexType n ) 
 {
-    IndexType n;   // number of lines, size of array
-    IndexType k;   // number of entries in one line
+    IndexType size;   // number of lines, size of array
+    IndexType k;      // number of entries in one line
 
-    checkTextFile( n, k, fileName.c_str() );
+    checkTextFile( size, k, fileName.c_str() );
 
-    SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << n << ", #entries = " << k )
+    SCAI_LOG_INFO( logger, "File : " << fileName << ", #lines = " << size << ", #entries = " << k )
 
     SCAI_ASSERT_LE( k, 2, "#entries/row in file " << fileName << " must not excced 2" )
+
+    if ( ! common::Utils::validIndex( first, size ) )
+    {
+        array.clear();
+        return;
+    }
+    
+    IndexType nEntries = n;
+
+    if ( n == nIndex )
+    {
+        nEntries = size - first;
+    }
+    else
+    {
+        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
+    }
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
 
     IOStream inFile( fileName, std::ios::in );
 
-    inFile.readFormatted( array, n );
+    inFile.readFormatted( array, size );
 
-    if ( first != 0 || nelems != nIndex )
+    if ( nEntries != size )
     {
-        COMMON_THROWEXCEPTION( "reading block not supported yet" )
+        hmemo::HArray<ValueType> block( nEntries );
+        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
+
+        IndexType inc = 1;
+        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+
+        array.swap( block );
     }
 }
 
@@ -256,8 +280,8 @@ void MatlabIO::readData(
 
     ContextPtr ctx = Context::getHostPtr();
 
-    HArrayUtils::setArray( ia, dIA, binary::COPY, ctx );  // conversion from double to IndexType
-    HArrayUtils::setArray( ja, dJA, binary::COPY, ctx );  // conversion from double to IndexType
+    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from double to IndexType
+    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from double to IndexType
 
     IndexType minRowIndex = HArrayUtils::reduce( ia, binary::MIN );
 

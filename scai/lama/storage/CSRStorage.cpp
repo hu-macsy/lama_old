@@ -670,14 +670,34 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::swap( CSRStorage<ValueType>& other )
+void CSRStorage<ValueType>::swap( _MatrixStorage& other )
 {
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<CSRStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<CSRStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::swapImpl( CSRStorage<ValueType>& other )
+{
+    // swap data of base class
+    MatrixStorage<ValueType>::swapMS( other );
+
+    // swap own member variables
+
     std::swap( mNumValues, other.mNumValues );
+    std::swap( mSortedRows, other.mSortedRows );
+
     mIa.swap( other.mIa );
     mJa.swap( other.mJa );
     mValues.swap( other.mValues );
-    // swap sizes and row indexes
-    MatrixStorage<ValueType>::swap( other );
 }
 
 /* --------------------------------------------------------------------------- */

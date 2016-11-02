@@ -384,7 +384,11 @@ public:
     /** Swaps this with other.
      * @param[in,out] other the DIAStorage to swap this with
      */
-    void swap( DIAStorage<ValueType>& other );
+    void swapImpl( DIAStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     virtual size_t getMemoryUsageImpl() const;
 

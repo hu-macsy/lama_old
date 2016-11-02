@@ -76,12 +76,6 @@ public:
         const hmemo::_HArray& source,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    static void assignOp(
-        hmemo::_HArray& target,
-        const hmemo::_HArray& source,
-        const binary::BinaryOp op,
-        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
     /**
      *  @brief Gathering (unstructured read) of values with heterogeneous arrays.
      *
@@ -231,12 +225,18 @@ public:
     /*
      * Implementation of functions
      */
-    template<typename TargetValueType, typename SourceValueType>
     static void setArray(
+        hmemo::_HArray& target,
+        const hmemo::_HArray& source,
+        const binary::BinaryOp op = binary::COPY,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void setArrayImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const binary::BinaryOp op,
-        hmemo::ContextPtr context );
+        const binary::BinaryOp op = binary::COPY,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** General version for setting sectioned arrays. 
      *
@@ -251,8 +251,21 @@ public:
      *  @param context is the preferred context where option is done
      */
 
-    template<typename TargetValueType, typename SourceValueType>
     static void setArraySection(
+        hmemo::_HArray& target,
+        const IndexType targetOffset,
+        const IndexType targetStride,
+        const hmemo::_HArray& source,
+        const IndexType sourceOffset,
+        const IndexType sourceStride,
+        const IndexType n,
+        const binary::BinaryOp op = binary::COPY,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    /** Typed version for setting sectioned arrays */
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void setArraySectionImpl(
         hmemo::HArray<TargetValueType>& target,
         const IndexType targetOffset,
         const IndexType targetStride,
@@ -260,8 +273,8 @@ public:
         const IndexType sourceOffset,
         const IndexType sourceStride,
         const IndexType n,
-        const binary::BinaryOp op,
-        hmemo::ContextPtr context );
+        const binary::BinaryOp op = binary::COPY,
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static void setScalar(

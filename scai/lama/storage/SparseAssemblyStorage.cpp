@@ -135,11 +135,26 @@ SparseAssemblyStorage<ValueType>& SparseAssemblyStorage<ValueType>::operator=(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseAssemblyStorage<ValueType>::swap( SparseAssemblyStorage<ValueType>& other )
+void SparseAssemblyStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<SparseAssemblyStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<SparseAssemblyStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::swapImpl( SparseAssemblyStorage<ValueType>& other )
 {
     std::swap( mNumValues, other.mNumValues );
     mRows.swap( other.mRows );
-    MatrixStorage<ValueType>::swap( other );
+    MatrixStorage<ValueType>::swapMS( other );
 }
 
 /* --------------------------------------------------------------------------- */

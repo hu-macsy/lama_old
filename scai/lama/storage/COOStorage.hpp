@@ -419,7 +419,11 @@ public:
     /** Swaps this with other.
      * @param[in,out] other the COOStorage to swap this with
      */
-    void swap( COOStorage<ValueType>& other );
+    void swapImpl( COOStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     /**
      * @brief Swap the COO arrays with new arrays.

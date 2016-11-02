@@ -78,41 +78,25 @@ void HArrayUtils::assign( _HArray& target, const _HArray& source, const ContextP
     }
     else
     {
-        assignOp( target, source, binary::COPY, prefLoc );
+        setArray( target, source, binary::COPY, prefLoc );
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
-void HArrayUtils::assignOp(
+void HArrayUtils::setArray(
     _HArray& target,
     const _HArray& source,
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    ContextPtr loc = prefLoc;
-
-    if ( !loc )
-    {
-        if ( op == binary::COPY )
-        {
-            // if no context is given we assign where source has a valid copy available
-            loc = source.getValidContext();
-        }
-        else
-        {
-            // if no context is given we reduce where target has a valid copy available
-            loc = target.getValidContext();
-        }
-    }
-
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, op, loc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void HArrayUtils::setArray(
+void HArrayUtils::setArrayImpl(
     HArray<TargetValueType>& target,
     const HArray<SourceValueType>& source,
     const binary::BinaryOp op,
@@ -126,6 +110,21 @@ void HArrayUtils::setArray(
     static LAMAKernel<UtilKernelTrait::set<TargetValueType, SourceValueType> > set;
 
     ContextPtr loc = prefLoc;
+
+    if ( !loc )
+    {
+        if ( op == binary::COPY )
+        {   
+            // if no context is given we assign where source has a valid copy available
+            loc = source.getValidContext();
+        }
+        else
+        {   
+            // if no context is given we assign where target has a valid copy available
+            loc = target.getValidContext();
+        }
+    }
+
     set.getSupportedContext( loc );
 
     const IndexType n = source.size();
@@ -148,15 +147,34 @@ void HArrayUtils::setArray(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::setArraySection(
+    _HArray& target,
+    const IndexType targetOffset,
+    const IndexType targetStride,
+    const _HArray& source,
+    const IndexType sourceOffset,
+    const IndexType sourceStride,
+    const IndexType n,
+    const binary::BinaryOp op,
+    const ContextPtr prefLoc )
+{
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArraySection( 
+        target, targetOffset, targetStride,
+        source, sourceOffset, sourceStride,
+        n, op, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename TargetValueType, typename SourceValueType>
+void HArrayUtils::setArraySectionImpl(
     HArray<TargetValueType>& target,
-        const IndexType targetOffset,
-        const IndexType targetStride,
+    const IndexType targetOffset,
+    const IndexType targetStride,
     const HArray<SourceValueType>& source,
-        const IndexType sourceOffset,
-        const IndexType sourceStride,
-        const IndexType n,
+    const IndexType sourceOffset,
+    const IndexType sourceStride,
+    const IndexType n,
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
@@ -168,6 +186,14 @@ void HArrayUtils::setArraySection(
     static LAMAKernel<UtilKernelTrait::setSection<TargetValueType, SourceValueType> > setSection;
 
     ContextPtr loc = prefLoc;
+
+    if ( loc == ContextPtr() )
+    {
+        // optional argument has not been set, take default
+
+        loc = source.getValidContext();
+    }
+ 
     setSection.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
@@ -1518,11 +1544,11 @@ void HArrayUtils::buildDenseArray(
             const hmemo::HArray<IndexType>&,                                                                      \
             const binary::BinaryOp,                                                                               \
             const hmemo::ContextPtr );                                                                            \
-    template void HArrayUtils::setArray<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                    \
+    template void HArrayUtils::setArrayImpl<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                \
             const hmemo::HArray<OtherValueType>&,                                                                 \
             const binary::BinaryOp,                                                                               \
             hmemo::ContextPtr );                                                                                  \
-    template void HArrayUtils::setArraySection<ValueType, OtherValueType>(                                        \
+    template void HArrayUtils::setArraySectionImpl<ValueType, OtherValueType>(                                    \
             hmemo::HArray<ValueType>&, const IndexType, const IndexType,                                          \
             const hmemo::HArray<OtherValueType>&, const IndexType, const IndexType,                               \
             const IndexType,                                                                                      \

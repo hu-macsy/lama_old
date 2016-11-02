@@ -403,7 +403,9 @@ public:
      *  Note: swap is only possible for two storages of the same format and same type.
      */
 
-    void swap( CSRStorage<ValueType>& other );
+    void swapImpl( CSRStorage<ValueType>& other );
+
+    void swap( _MatrixStorage& other );
 
     /**
      * @brief Swap the CSR arrays with new arrays.

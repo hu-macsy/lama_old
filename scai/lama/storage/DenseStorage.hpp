@@ -364,7 +364,9 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    void swap( DenseStorageView<ValueType>& other );
+    void swapImpl( DenseStorageView<ValueType>& other );
+
+    void swap( _MatrixStorage& other );
 
     void allocate( const IndexType numRows, const IndexType numColumns );
 

@@ -94,7 +94,7 @@ public:
 
     /** Implementation of pure methdod FileIO::readArrayInfo */
 
-    virtual void readArrayInfo( IndexType& n, const std::string& fileName );
+    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
  

@@ -93,7 +93,7 @@ public:
 
     /** Implementation of pure methdod FileIO::readArrayInfo */
 
-    virtual void readArrayInfo( IndexType& n, const std::string& fileName );
+    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
  
@@ -107,7 +107,7 @@ public:
     void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName )
     __attribute( ( noinline ) );
 
-    /** Typed version of readStorage */
+    /** Typed version of readStorageBlock */
 
     template<typename ValueType>
     void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows )
@@ -119,7 +119,7 @@ public:
     void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName )
     __attribute( ( noinline ) );
 
-    /** Typed version of readArray */
+    /** Typed version of readArrayBlock */
 
     template<typename ValueType>
     void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
