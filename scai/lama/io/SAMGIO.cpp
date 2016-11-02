@@ -261,12 +261,12 @@ void SAMGIO::readVectorHeader( IndexType& n, IndexType& typeSize, bool& binary, 
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::readArrayInfo( IndexType& n, const std::string& fileName )
+void SAMGIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
-    IndexType dataTypeSize = 0;
-    bool binary = false;
+    IndexType dataTypeSize;   // dummy variable needed for readVectorHeader
+    bool binary;              // dummy variable needed for readVectorHeader
 
-    readVectorHeader( n, dataTypeSize, binary, fileName );
+    readVectorHeader( size, dataTypeSize, binary, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -275,12 +275,29 @@ template<typename ValueType>
 void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
 {
     IndexType dataTypeSize = 0;
-    IndexType numRows = 0;
+    IndexType size = 0;
     bool binary = false;
 
     // start with reading the *.frv header file
  
-    readVectorHeader( numRows, dataTypeSize, binary, fileName );
+    readVectorHeader( size, dataTypeSize, binary, fileName );
+
+    if ( ! common::Utils::validIndex( first, size ) )
+    {
+        array.clear();  
+        return;        
+    }
+
+    IndexType nEntries = n;
+
+    if ( n == nIndex )
+    {
+        nEntries = size - first;
+    }
+    else
+    {
+        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
+    }
 
     // check if the specified data size fits the expected data type
 
@@ -308,20 +325,24 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
 
     if ( binary )
     {
-        inFile.readBinary( array, numRows, dataType );
+        inFile.readBinary( array, size, dataType );
     }
     else
     {
-        inFile.readFormatted( array, numRows );
+        inFile.readFormatted( array, size );
     }
 
     inFile.closeCheck();
 
-    if ( first != 0 || n != nIndex )
+    if ( nEntries != size )
     {
-        hmemo::HArray<ValueType> block;
+        hmemo::HArray<ValueType> block( nEntries );
         hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
-        utilskernel::HArrayUtils::setArraySection( block, 0, 1, array, first, 1, n, utilskernel::binary::COPY, ctx );
+        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
+
+        IndexType inc = 1;
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+
         array.swap( block );
     }
 }

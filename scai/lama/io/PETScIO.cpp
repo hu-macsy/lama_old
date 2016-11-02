@@ -151,7 +151,7 @@ void PETScIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::readArrayInfo( IndexType& n, const std::string& fileName )
+void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
     // int    VEC_FILE_CLASSID
     // int    number of rows
@@ -171,7 +171,7 @@ void PETScIO::readArrayInfo( IndexType& n, const std::string& fileName )
 
     SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
 
-    n = headerVals[1];
+    size = headerVals[1];
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -181,7 +181,7 @@ void PETScIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName,
     const IndexType first, 
-    const IndexType nelems )
+    const IndexType n )
 {
     // int    VEC_FILE_CLASSID
     // int    number of rows
@@ -199,19 +199,45 @@ void PETScIO::readArrayImpl(
     inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
 
     IndexType classid = headerVals[0];
-    IndexType n       = headerVals[1];
+    IndexType size    = headerVals[1];
 
-    SCAI_LOG_INFO( logger, "Read: id = " << classid << ", #n = " << n )
+    SCAI_LOG_INFO( logger, "Read: id = " << classid << ", size = " << size )
 
     SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
 
-    inFile.readBinary( array, n, mScalarTypeData );
+    if ( ! common::Utils::validIndex( first, size ) )
+    {
+        array.clear();
+        return;
+    }
+
+    IndexType nEntries = n;
+
+    if ( n == nIndex )
+    {
+        nEntries = size - first;
+    }
+    else
+    {
+        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
+    }
+
+    // check if the specified data size fits the expected data type
+
+    inFile.readBinary( array, size, mScalarTypeData );
  
     inFile.close();
 
-    if ( first != 0 || nelems != nIndex )
+    if ( nEntries != array.size() )
     {
-        COMMON_THROWEXCEPTION( "not yet available" )
+        hmemo::HArray<ValueType> block( nEntries );
+        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
+
+        IndexType inc = 1;
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+
+        array.swap( block );
     }
 }
 
