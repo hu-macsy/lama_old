@@ -117,7 +117,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_my_test_types 
     DistributionPtr dist( new BlockDistribution( numRows, comm ) );
 
     ContextPtr context = Context::getContextPtr();
-    std::cout << "Context=" << *context << std::endl;
 
     CSRSparseMatrix<ValueType> matrix;
     matrix.setRawCSRData( dist, dist, nnz, ia, ja, values );
@@ -127,10 +126,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_my_test_types 
     DenseVector<ValueType> solution( numRows, 0.0, context );
     rhs.redistribute( dist );
     solution.redistribute( dist );
-
-    std::cout << "matrix=" << *matrix.getContextPtr() << std::endl;
-    std::cout << "sol=" << *solution.getContextPtr() << std::endl;
-    std::cout << "rhs=" << *rhs.getContextPtr() << std::endl;
 
     DecompositionSolver solver( "DecompositionSolver" );
     solver.initialize( matrix );
