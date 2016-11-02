@@ -581,6 +581,22 @@ public:
 
     virtual bool checkSymmetry() const = 0;
 
+    /** Swap data with other storage to avoid additional memory allocation. 
+     *
+     *  @param[in,out] other storage for swapping, must have same value type and same format
+     *
+     *  This method allows swapping for storages where the value
+     *  type or the format is not known at compile time.
+     *
+     *  \code
+     *  _MatrixStorage& arg;
+     *  common::unique_ptr<_MatrixStorage> tmp( arg.newMatrixStorage() );
+     *  ...
+     *  arg.swap( tmp );   // is okay as they have same 'unknown' type and 'unknown' format
+     *  \endcode
+     */
+    virtual void swap( _MatrixStorage& other ) = 0;
+
 protected:
 
     /** Swaps this with other.
@@ -590,7 +606,7 @@ protected:
      *
      * @param[in,out] other the _MatrixStorage to swap this with
      */
-    void swap( _MatrixStorage& other );
+    void _swapMS( _MatrixStorage& other );
 
     virtual void _assignTranspose( const _MatrixStorage& other );
 
@@ -1202,7 +1218,7 @@ protected:
      * \endcode
      */
 
-    void swap( MatrixStorage<ValueType>& other );
+    void swapMS( MatrixStorage<ValueType>& other );
 
 public:
     static MatrixStorage<ValueType>* create( const MatrixStorageCreateKeyType key );

@@ -1504,12 +1504,27 @@ void JDSStorage<ValueType>::wait() const
     mValues.wait();
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<JDSStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<JDSStorage<ValueType>& >( other ) );
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::swap( JDSStorage<ValueType>& other )
+void JDSStorage<ValueType>::swapImpl( JDSStorage<ValueType>& other )
 {
-    MatrixStorage<ValueType>::swap( other ); // swap member variable of base class
+    MatrixStorage<ValueType>::swapMS( other ); // swap member variable of base class
     std::swap( mNumDiagonals, other.mNumDiagonals );
     std::swap( mNumValues, other.mNumValues );
     mDlg.swap( other.mDlg );

@@ -317,7 +317,7 @@ void ELLStorage<ValueType>::buildCSR(
     IndexType numValues = 0;
     ia.clear();
     ia.reserve( context, mNumRows + 1 );  // reserve one more entry
-    HArrayUtils::setArray( ia, mIA, utilskernel::binary::COPY, context );
+    HArrayUtils::setArrayImpl( ia, mIA, utilskernel::binary::COPY, context );
 
     if ( ja == NULL || values == NULL )
     {
@@ -489,10 +489,10 @@ void ELLStorage<ValueType>::setELLData(
     _MatrixStorage::setDimension( numRows, numColumns );
     mNumValuesPerRow = numValuesPerRow;
     ContextPtr loc = getContextPtr();
-    HArrayUtils::setArray( mIA, ia, utilskernel::binary::COPY, loc );
-    HArrayUtils::setArray( mJA, ja, utilskernel::binary::COPY, loc );
-    // assign works in contrary to setArray with each typed array
-    HArrayUtils::assignOp( mValues, values, utilskernel::binary::COPY, loc );  // also type conversion
+    HArrayUtils::setArrayImpl( mIA, ia, utilskernel::binary::COPY, loc );
+    HArrayUtils::setArrayImpl( mJA, ja, utilskernel::binary::COPY, loc );
+    // setArray must be used here instead of setArrayImpl as values is untyped 
+    HArrayUtils::setArray( mValues, values, utilskernel::binary::COPY, loc );  // also type conversion
     // fill up my arrays ja and values to make matrix-multiplication fast
     {
         static LAMAKernel<ELLKernelTrait::fillELLValues<ValueType> > fillELLValues;
@@ -984,15 +984,34 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
-void ELLStorage<ValueType>::swap( ELLStorage<ValueType>& other )
+void ELLStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<ELLStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<ELLStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::swapImpl( ELLStorage<ValueType>& other )
 {
     SCAI_LOG_INFO( logger, "swap # other = " << other )
+
+    MatrixStorage<ValueType>::swapMS( other );
+
     std::swap( mNumValuesPerRow, other.mNumValuesPerRow );
     mIA.swap( other.mIA );
     mJA.swap( other.mJA );
     mValues.swap( other.mValues );
-    MatrixStorage<ValueType>::swap( other );
 }
 
 /* --------------------------------------------------------------------------- */

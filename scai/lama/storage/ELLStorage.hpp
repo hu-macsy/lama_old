@@ -467,7 +467,11 @@ public:
      *
      *  Note: swap is only possible for two storages of the same format and same type.
      */
-    void swap( ELLStorage<ValueType>& other );
+    void swapImpl( ELLStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     virtual size_t getMemoryUsageImpl() const;
 

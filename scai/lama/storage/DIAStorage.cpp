@@ -964,12 +964,27 @@ void DIAStorage<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::swap( DIAStorage<ValueType>& other )
+void DIAStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<DIAStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<DIAStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::swapImpl( DIAStorage<ValueType>& other )
 {
     std::swap( mNumDiagonals, other.mNumDiagonals );
     mOffset.swap( other.mOffset );
     mValues.swap( other.mValues );
-    MatrixStorage<ValueType>::swap( other );
+    MatrixStorage<ValueType>::swapMS( other );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -32,15 +32,17 @@
  # @date 02.12.2015
 ###
 
-set ( EXAMPLE_FILES matrixConvert.cpp vectorConvert.cpp matrixRepartition.cpp )
+set ( EXAMPLE_FILES matrixConvert.cpp vectorConvert.cpp matrixRepartition.cpp vectorRepartition.cpp )
 
 add_executable( matrixConvert.exe matrixConvert.cpp )
 add_executable( vectorConvert.exe vectorConvert.cpp )
 add_executable( matrixRepartition.exe matrixRepartition.cpp )
+add_executable( vectorRepartition.exe vectorRepartition.cpp )
 
 target_link_libraries( matrixConvert.exe ${PROJECT_NAME} )
 target_link_libraries( vectorConvert.exe ${PROJECT_NAME} )
 target_link_libraries( matrixRepartition.exe ${PROJECT_NAME} )
+target_link_libraries( vectorRepartition.exe ${PROJECT_NAME} )
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )

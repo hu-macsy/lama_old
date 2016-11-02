@@ -137,7 +137,7 @@ void _MatrixStorage::setCompressThreshold( float ratio )
 
 /* ---------------------------------------------------------------------------------- */
 
-void _MatrixStorage::swap( _MatrixStorage& other )
+void _MatrixStorage::_swapMS( _MatrixStorage& other )
 {
     std::swap( mNumRows, other.mNumRows );
     std::swap( mNumColumns, other.mNumColumns );
@@ -405,9 +405,9 @@ common::scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::swap( MatrixStorage<ValueType>& other )
+void MatrixStorage<ValueType>::swapMS( MatrixStorage<ValueType>& other )
 {
-    _MatrixStorage::swap( other );
+    _MatrixStorage::_swapMS( other );
     std::swap( mEpsilon, other.mEpsilon );
 }
 

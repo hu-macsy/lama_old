@@ -1300,9 +1300,25 @@ DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( const DenseStorage<
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::swap( DenseStorageView<ValueType>& other )
+void DenseStorageView<ValueType>::swap( _MatrixStorage& other )
 {
-    MatrixStorage<ValueType>::swap( other ); // swap dimensions
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<DenseStorageView<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<DenseStorageView<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseStorageView<ValueType>::swapImpl( DenseStorageView<ValueType>& other )
+{
+    MatrixStorage<ValueType>::swapMS( other ); // swap member variable of base class
+
     mData.swap( other.mData ); // swap data
 }
 

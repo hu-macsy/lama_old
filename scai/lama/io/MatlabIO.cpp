@@ -218,7 +218,7 @@ void MatlabIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
 
         array.swap( block );
     }
@@ -280,8 +280,8 @@ void MatlabIO::readData(
 
     ContextPtr ctx = Context::getHostPtr();
 
-    HArrayUtils::setArray( ia, dIA, binary::COPY, ctx );  // conversion from double to IndexType
-    HArrayUtils::setArray( ja, dJA, binary::COPY, ctx );  // conversion from double to IndexType
+    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from double to IndexType
+    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from double to IndexType
 
     IndexType minRowIndex = HArrayUtils::reduce( ia, binary::MIN );
 

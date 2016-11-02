@@ -497,13 +497,29 @@ void COOStorage<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
+void COOStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<COOStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<COOStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::swapImpl( COOStorage<ValueType>& other )
 {
     std::swap( mNumValues, other.mNumValues );
     mIA.swap( other.mIA );
     mJA.swap( other.mJA );
     mValues.swap( other.mValues );
-    MatrixStorage<ValueType>::swap( other );
+
+    MatrixStorage<ValueType>::swapMS( other );
 }
 
 /* --------------------------------------------------------------------------- */

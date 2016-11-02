@@ -975,7 +975,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
         COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
     }
 
-    HArrayUtils::assignOp( mLocalValues, other.getLocalValues(), utilskernel::binary::MULT, mContext );
+    HArrayUtils::setArray( mLocalValues, other.getLocalValues(), utilskernel::binary::MULT, mContext );
     return *this;
 }
 
