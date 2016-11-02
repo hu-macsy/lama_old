@@ -207,6 +207,22 @@ public:
 
     void clear();
 
+    /** Swap data with other array to avoid additional memory allocation. 
+     *
+     *  @param[in,out] other array for swapping, must have same value type.
+     *
+     *  This method allows swapping for heterogeneous arrays where the value
+     *  type is not known at compile time.
+     *
+     *  \code
+     *  common::unique_ptr<_Harray> arr1( _HArray::create( type ) );
+     *  common::unique_ptr<_Harray> arr2( _HArray::create( type ) );
+     *  ...
+     *  arr1.swap( arr2 );   // is okay as they have same 'unknown' type
+     *  \endcode
+     */
+    virtual void swap( _HArray& other ) = 0;
+
 protected:
 
     explicit _HArray( const IndexType n, const IndexType size ) :

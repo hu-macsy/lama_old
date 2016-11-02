@@ -276,8 +276,11 @@ BOOST_AUTO_TEST_CASE( swapTest )
     const IndexType n2 = 5;
     ContextPtr contextPtr = Context::getContextPtr();  // test context
     SCAI_LOG_INFO( logger, "swapTest with valid copies on " << *contextPtr );
+
     HArray<double> arr1( n1, 1 );
     HArray<double> arr2( n2, 2 );
+    HArray<float>  arr3( n1, 3 );
+
     // now make them valid on test device
     {
         WriteAccess<double> write1( arr1, contextPtr );
@@ -303,6 +306,11 @@ BOOST_AUTO_TEST_CASE( swapTest )
             BOOST_CHECK_EQUAL( 1, read[i] );
         }
     }
+
+    BOOST_CHECK_THROW(
+    {
+        arr1.swap( arr3 );
+    }, common::Exception );
 }
 
 /* --------------------------------------------------------------------- */

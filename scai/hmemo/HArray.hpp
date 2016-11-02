@@ -204,7 +204,9 @@ public:
      *
      * @param[in] other the HArray to swap the contens with.
      */
-    void swap( HArray<ValueType>& other );
+    void swapImpl( HArray<ValueType>& other );
+
+    void swap( _HArray& other );
 
     /**
      * @brief sets the size of this to 0 an frees all memory
@@ -480,7 +482,17 @@ void HArray<ValueType>::assign( const HArray<ValueType>& other, ContextPtr conte
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::swap( HArray<ValueType>& other )
+void HArray<ValueType>::swap( _HArray& other )
+{
+    SCAI_ASSERT_EQUAL( getValueType(), other.getValueType(), "swap only for same value type" )
+
+    swapImpl( reinterpret_cast<HArray<ValueType>& >( other ) );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void HArray<ValueType>::swapImpl( HArray<ValueType>& other )
 {
     SCAI_LOG_DEBUG( logger, *this << ": swap with other = " << other )
     // we cannot swap if there is any access for any array
