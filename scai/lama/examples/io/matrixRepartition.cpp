@@ -52,6 +52,10 @@ using namespace hmemo;
 using namespace utilskernel;
 using namespace lama;
 
+/** Define StoragePtr as shared pointer to any storage */
+
+typedef common::shared_ptr<_MatrixStorage> StoragePtr;
+
 static common::scalar::ScalarType getType() 
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
@@ -95,6 +99,49 @@ void printHelp( const char* cmd )
         cout << dataTypes[i] << " ";
     }
     cout << endl;
+}
+
+void readStorage( _MatrixStorage& storage, const string& inFileName, const IndexType np_in )
+{
+    vector<StoragePtr> storageVector;
+
+    // proof that all input files are available, read them and push the storages
+
+    for ( PartitionId ip = 0; ip < np_in; ++ ip )
+    {
+        string inFileNameBlock = inFileName;
+
+        bool isPartitioned;
+
+        PartitionIO::getPartitionFileName( inFileNameBlock, isPartitioned, ip, np_in );
+
+        SCAI_ASSERT( FileIO::fileExists( inFileNameBlock ),
+                     "Input file for block " << ip << " of " << np_in << " = "
+                     << inFileNameBlock << " could not be opened" )
+
+        StoragePtr blockStorage( storage.newMatrixStorage() );
+
+        blockStorage->readFromFile( inFileNameBlock );
+
+        storageVector.push_back( blockStorage );
+
+        if ( !isPartitioned && np_in > 1 )
+        {
+            cout << "Input file name does not contain %r for multiple partitions, np_in = " << np_in << " ignored." << endl;
+            break;
+        }
+    }
+
+    if ( storageVector.size() == 1 )
+    {
+        storage.swap( *storageVector[0] );
+    }
+    else
+    {
+        // concatenate all input storages in a new CSR storage
+
+        storage.rowCat( storageVector );
+    }
 }
 
 int main( int argc, const char* argv[] )
@@ -141,54 +188,11 @@ int main( int argc, const char* argv[] )
         COMMON_THROWEXCEPTION( "Illegal number of partitions for output file = " << np_out )
     }
 
-    typedef common::shared_ptr<_MatrixStorage> StoragePtr;
+    StoragePtr fullStorage( _MatrixStorage::create( key ) );
 
-    vector<StoragePtr> storageVector;
+    // read in one or all partitions in the memory
 
-    // proof that all input files are available, read them and push the storages
-
-    for ( PartitionId ip = 0; ip < np_in; ++ ip )
-    {
-        string inFileNameBlock = inFileName;
-
-        bool isPartitioned;
-
-        PartitionIO::getPartitionFileName( inFileNameBlock, isPartitioned, ip, np_in );
-   
-        if ( !FileIO::fileExists( inFileNameBlock ) )
-        {
-            cerr << "Input file for block " << ip << " of " << np_in << " = " << inFileNameBlock << " not available" << endl;
-            return -1;
-        }
-
-        StoragePtr blockStorage( _MatrixStorage::create( key ) );
-
-        blockStorage->readFromFile( inFileNameBlock );
-  
-        storageVector.push_back( blockStorage );
-
-        if ( !isPartitioned && np_in > 1 )
-        {
-            cout << "Input file name does not contain %r for multiple partitions, np_in = " << np_in << " ignored." << endl;
-            break;
-        }
-    }
-
-    StoragePtr fullStorage; 
-
-    if ( storageVector.size() == 1 )
-    {
-        // avoid concatenation with corresponding copies 
-
-        fullStorage = storageVector[0];
-    }
-    else
-    {
-        // concatenate all input storages in a new CSR storage
-
-        fullStorage.reset( _MatrixStorage::create( key ) );
-        fullStorage->rowCat( storageVector );
-    }
+    readStorage( *fullStorage, inFileName, np_in );
 
     for ( PartitionId ip = 0; ip < np_out; ++ip )
     {
