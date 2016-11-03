@@ -134,8 +134,7 @@ function do_coverage
 
 	cd -
 
-	if [[ $error_count != 0 ]]
-	then
-	    return 1
-	fi
+    echo "Local error_count=${error_count}"
+
+    return ${error_count}
 }
