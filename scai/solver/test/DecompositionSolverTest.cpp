@@ -114,6 +114,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_my_test_types 
     const IndexType nnz = 15;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    if ( comm->getSize() > 1 ) 
+    {
+        return;   // DecompositionSolver not yet parallel
+    }
+
     DistributionPtr dist( new BlockDistribution( numRows, comm ) );
 
     ContextPtr context = Context::getContextPtr();
