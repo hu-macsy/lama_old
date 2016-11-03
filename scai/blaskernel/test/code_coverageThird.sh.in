@@ -38,7 +38,7 @@ requirements_coverage
 dirname=$(find_dir)
 echo "Found coverage directory: ${dirname}"
 
-rm ../LAPACKTest.cpp.gcno
+rm LAPACKTest.cpp.gcno
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
