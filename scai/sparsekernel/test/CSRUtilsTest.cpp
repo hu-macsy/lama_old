@@ -483,6 +483,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
     SCAI_LOG_INFO( logger, "decomposition< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
+    if ( common::TypeTraits<IndexType>::stype != common::scalar::INT )
+    {
+        // decomposition external, requires IndexType = INT
+        return;
+    }
+
     const IndexType ia[] = { 0, 4, 8, 12, 15 };
     const IndexType ja[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3 };
     const ValueType values[] = { 3.0,  4.0, -5.0,  6.0,
