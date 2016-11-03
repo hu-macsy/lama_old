@@ -60,7 +60,8 @@ function find_dir
 
 function count_error
 {
-	${*} &> /dev/null
+//	${*} &> /dev/null
+    ${*}
 	if [ $? -ne 0 ]
     then
         echo "ERROR in ${*}"
