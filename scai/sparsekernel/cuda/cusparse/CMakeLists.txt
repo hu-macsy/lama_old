@@ -27,33 +27,18 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief sparsekernel/cuda/CMakeLists.txt
+ # @brief sparsekernel/cuda/cusparse/CMakeLists.txt
  # @author Eric Schricker
  # @date 18.02.2016
 ###
 
 ### Add classes and header files ###
 
-scai_project(
+### Currently CUsparse can only be used if IndexType == int is used
 
-    CLASSES      # .cpp, .hpp
+if    ( SCAI_INDEX_TYPE STREQUAL "int" )
+    set ( CLASSES ${CLASSES} CUSolverCSRUtils CUSparseCSRUtils )
+    set ( HEADERS ${HEADERS} CUSPARSETrait CUSPARSEWrapper CUSOLVERTrait CUSOLVERWrapper )
+endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 
-    CUDA_CLASSES  # .cu, .hpp
-
-        CUDACOOUtils
-        CUDACSRUtils
-        CUDADIAUtils
-        CUDAELLUtils
-        CUDAJDSUtils
-
-    CUDA_SOURCES   # .cu
-
-    HEADERS        # .hpp
-
-    ADD_PARENT_SCOPE
-)
-
-#  cuSPARSE, cuSOLVER come always with CUDA so no additional tests here
-
-add_subdirectory ( cusparse )
-
+scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
