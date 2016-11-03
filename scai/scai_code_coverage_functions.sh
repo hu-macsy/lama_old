@@ -64,7 +64,7 @@ function count_error
 	if [ $? -ne 0 ]
     then
         echo "ERROR in ${*}"
-        error_count=$(($error_count + $?))
+        error_count=$(($error_count + 1))
     fi
 }
 
