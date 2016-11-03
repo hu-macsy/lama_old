@@ -722,8 +722,8 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
     const IndexType n  = sizeof( vals ) / sizeof( ValueType );        // number values to sort
     const IndexType nb = sizeof( offsets) / sizeof( IndexType ) - 1;  // number of sorted subarray
 
-    BOOST_REQUIRE_EQUAL( 0, offsets[0] );
-    BOOST_REQUIRE_EQUAL( n, offsets[nb] );
+    BOOST_REQUIRE_EQUAL( IndexType( 0 ), offsets[0] );
+    BOOST_REQUIRE_EQUAL( IndexType( n ), offsets[nb] );
 
     // make LAMA Arrays of the data to use it in different context
 

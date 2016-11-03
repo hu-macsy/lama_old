@@ -293,8 +293,8 @@ void MatlabIO::readData(
     {
         // offset base = 1, convert it to 0
 
-        HArrayUtils::setScalar( ia, 1, binary::SUB );
-        HArrayUtils::setScalar( ja, 1, binary::SUB );
+        HArrayUtils::setScalar( ia, IndexType( 1 ), binary::SUB );
+        HArrayUtils::setScalar( ja, IndexType( 1 ), binary::SUB );
     }
     else
     {

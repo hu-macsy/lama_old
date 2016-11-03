@@ -308,14 +308,14 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
     }
 
-    BOOST_REQUIRE_EQUAL( cnt, 1 );   //  only one entry for column 1
+    BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
 
     {
         ReadAccess<IndexType> rPos( pos );
         ReadAccess<IndexType> rRow( row );
 
-        BOOST_CHECK_EQUAL( 1, rRow[0] );   // is in entry row
-        BOOST_CHECK_EQUAL( 3, rPos[0] );   // value of for (1,1) is at pos 3
+        BOOST_CHECK_EQUAL( IndexType( 1 ), rRow[0] );   // is in entry row
+        BOOST_CHECK_EQUAL( IndexType( 3 ), rPos[0] );   // value of for (1,1) is at pos 3
     }
 
     columnIndex = 2;
@@ -329,7 +329,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
     }
 
-    BOOST_REQUIRE_EQUAL( cnt, 2 );   //  two entries for column 2, order might be arbitrary
+    BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
 
     {
         ReadAccess<IndexType> rPos( pos );
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rSol( solution, host );
 
-        for ( int i = 0; i < numRows; ++i )
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             ValueType x = rSol[i] - solValues[i];
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );

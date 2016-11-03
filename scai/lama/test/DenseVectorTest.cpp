@@ -684,7 +684,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     utilskernel::LArray<ValueType> sortedValues;
     utilskernel::HArrayUtils::gather( sortedValues, xUnsorted.getLocalValues(), perm.getLocalValues(), utilskernel::binary::COPY );
 
-    BOOST_CHECK_EQUAL( 0, sortedValues.maxDiffNorm( x.getLocalValues() ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), sortedValues.maxDiffNorm( x.getLocalValues() ) );
 }
 
 /* --------------------------------------------------------------------- */

@@ -631,7 +631,7 @@ void OpenMPCSRUtils::normalGEMV_s(
                 temp += csrValues[jj] * x[j];
             }
 
-            if ( beta == scai::common::constants::ZERO )
+            if ( beta == common::constants::ZERO )
             {
                 result[i] = alpha * temp;
             }
@@ -761,7 +761,7 @@ void OpenMPCSRUtils::normalGEVM(
                 }
             }
 
-            if ( beta == scai::common::constants::ZERO )
+            if ( beta == common::constants::ZERO )
             {
                 result[i] = alpha * sum;
             }
@@ -981,7 +981,7 @@ void OpenMPCSRUtils::jacobi(
 
             // here we take advantange of a good branch precondiction
 
-            if ( omega == scai::common::constants::ONE )
+            if ( omega == common::constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -1036,7 +1036,7 @@ void OpenMPCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == scai::common::constants::ONE )
+            if ( omega == common::constants::ONE )
             {
                 solution[i] -= temp / diag;
             }
@@ -1086,7 +1086,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == scai::common::constants::ONE )
+            if ( omega == common::constants::ONE )
             {
                 solution[i] -= temp / diag;
             }
@@ -1111,8 +1111,8 @@ void OpenMPCSRUtils::decomposition(
     const IndexType /*nnz*/,
     const bool /*isSymmetic*/ )
 {
-    if ( scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::LONG_DOUBLE ||
-         scai::common::TypeTraits<ValueType>::stype == scai::common::scalar::LONG_DOUBLE_COMPLEX )
+    if ( common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE ||
+         common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE_COMPLEX )
     {
         COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet - not long double or long double complex supported." )
     }

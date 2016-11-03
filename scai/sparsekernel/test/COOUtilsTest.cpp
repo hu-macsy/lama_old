@@ -213,14 +213,14 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
     }
 
-    BOOST_REQUIRE_EQUAL( cnt, 1 );   //  only one entry for column 1
+    BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
 
     {
         ReadAccess<IndexType> rPos( pos );
         ReadAccess<IndexType> rRow( row );
 
-        BOOST_CHECK_EQUAL( 1, rRow[0] );   // is in entry row
-        BOOST_CHECK_EQUAL( 3, rPos[0] );   // value of for (1,1) is at pos 3
+        BOOST_CHECK_EQUAL( IndexType( 1 ), rRow[0] );   // is in entry row
+        BOOST_CHECK_EQUAL( IndexType( 3 ), rPos[0] );   // value of for (1,1) is at pos 3
     }
 
     columnIndex = 2;
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
     }
 
-    BOOST_REQUIRE_EQUAL( cnt, 2 );   //  two entries for column 2, order might be arbitrary
+    BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
 
     {
         ReadAccess<IndexType> rPos( pos );
@@ -294,14 +294,14 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
         cnt = getValuePosRow[loc->getType()]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
     }
 
-    BOOST_REQUIRE_EQUAL( cnt, 1 );   //  only one entry for column 1
+    BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
 
     {
         ReadAccess<IndexType> rPos( pos );
         ReadAccess<IndexType> rCol( col );
 
-        BOOST_CHECK_EQUAL( 2, rCol[0] );   // is in entry row
-        BOOST_CHECK_EQUAL( 4, rPos[0] );   // value of for (2,2) is at pos 4
+        BOOST_CHECK_EQUAL( IndexType( 2 ), rCol[0] );   // is in entry row
+        BOOST_CHECK_EQUAL( IndexType( 4 ), rPos[0] );   // value of for (2,2) is at pos 4
     }
 
     rowIndex = 1;
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
         cnt = getValuePosRow[loc->getType()]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
     }
 
-    BOOST_REQUIRE_EQUAL( cnt, 2 );   //  two entries for row 2, order might be arbitrary
+    BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for row 2, order might be arbitrary
 
     {
         ReadAccess<IndexType> rPos( pos );
