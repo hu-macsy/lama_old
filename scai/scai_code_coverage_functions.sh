@@ -121,8 +121,6 @@ function do_coverage
 {
 	cd $1
 
-	local error_count=0
-
 	#Running lcov and creating data
 	count_error lcov --base-directory $2 --directory $2 --capture --output-file=data.info
 
