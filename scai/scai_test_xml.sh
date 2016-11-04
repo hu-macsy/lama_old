@@ -170,7 +170,7 @@ done
 
 echo "All tests are finished, for XML result files see ${dirname}"
 
-if [ ! -z ${MPI_PROCS} ]; then
+if [ -n "${MPI_PROCS}" ]; then
 
 	# rename the MPI output file to end with xml
 
