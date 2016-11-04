@@ -554,9 +554,15 @@ public:
      * @brief read the matrix storage from an input file
      *
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
+     * @param[in] firstRow is the first row to read 
+     * @param[in] nRows    specifies the number of rows to read, defaults to #rows of full storage - firstRow
+     *
+     * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
      */
-
-    virtual void readFromFile( const std::string& fileName ) = 0;
+    virtual void readFromFile( 
+        const std::string& fileName, 
+        const IndexType firstRow = 0, 
+        const IndexType nRows = nIndex ) = 0;
 
     /**
      * @brief write the matrix storage to an output file
@@ -955,7 +961,7 @@ public:
         const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
-    virtual void readFromFile( const std::string& fileName );
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = nIndex );
 
     virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 

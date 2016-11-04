@@ -130,7 +130,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
         cout << "Vector block " << ip << " has range " << lb << " - " << ub 
              << ", write to file " << outFileNameBlock << endl;
 
-        inputIO->readArrayBlock( *array, inFileName, lb, ub - lb );
+        inputIO->readArray( *array, inFileName, lb, ub - lb );
 
         FileIO::write( *array, outFileNameBlock );
     }

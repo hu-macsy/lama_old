@@ -69,23 +69,19 @@ public:
 
     /** Implementation of pure virtual method FileIO::readStorage  */
 
-    void readStorage( _MatrixStorage& storage, const std::string& fileName );
-
-    /** Implementation of pure virtual method FileIO::readStorageBlock  */
-
-    void readStorageBlock( _MatrixStorage& storage, const std::string& fileName, const IndexType offsetRow, const IndexType nRows );
+    void readStorage( _MatrixStorage& storage, const std::string& fileName, const IndexType offsetRow, const IndexType nRows );
 
     /** Implementation of pure virtual method FileIO::writeArray  */
 
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
 
-    /** Implementation of pure virtual method FileIO::readArray  */
+    /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
-    virtual void readArray( hmemo::_HArray& array, const std::string& fileName );
-
-    /** Implementation of pure virtual method FileIO::readArrayBlock  */
-
-    virtual void readArrayBlock( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n );
+    virtual void readArray(
+        hmemo::_HArray& array,
+        const std::string& fileName,
+        const IndexType offset = 0,
+        const IndexType n = nIndex );
 
     /** Default implementation for removeFile */
 
@@ -219,22 +215,7 @@ void CRTPFileIO<Derived>::writeStorage( const _MatrixStorage& storage, const std
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::readStorage( _MatrixStorage& storage, const std::string& fileName )
-{
-    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
-
-    SCAI_ASSERT( FileIO::hasSuffix( fileName, getMatrixFileSuffix() ),
-                 fileName << " illegal, must have suffix " << getMatrixFileSuffix() )
-
-    // just call the corresponding typed routine 
-
-    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName, 0, nIndex );
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<class Derived>
-void CRTPFileIO<Derived>::readStorageBlock( 
+void CRTPFileIO<Derived>::readStorage( 
     _MatrixStorage& storage, 
     const std::string& fileName,
     const IndexType offsetRow,
@@ -268,22 +249,7 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& fileName ) 
-{
-    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
-
-    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
-                 fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
-
-    // just call the corresponding typed routine 
-
-    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, 0, nIndex );
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<class Derived>
-void CRTPFileIO<Derived>::readArrayBlock( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
 

@@ -248,7 +248,10 @@ int FileIO::removeFile( const std::string& fileName )
 
 /* -------------------------------------------------------------------------- */
 
-void FileIO::write( const hmemo::_HArray& array, const std::string& outFileName )
+void FileIO::write( 
+    const hmemo::_HArray& array, 
+    const std::string& outFileName, 
+    const common::scalar::ScalarType dataType )
 {
     std::string suffix = getSuffix( outFileName );
 
@@ -259,12 +262,18 @@ void FileIO::write( const hmemo::_HArray& array, const std::string& outFileName 
 
     common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
+    fileIO->setDataType( dataType );
     fileIO->writeArray( array, outFileName );
 }
 
 /* -------------------------------------------------------------------------- */
 
-void FileIO::read( hmemo::_HArray& array, const std::string& inFileName )
+void FileIO::read( 
+   hmemo::_HArray& array, 
+   const std::string& inFileName, 
+   const common::scalar::ScalarType dataType,
+   const IndexType first, 
+   const IndexType n )
 {
     std::string suffix = getSuffix( inFileName );
 
@@ -275,30 +284,11 @@ void FileIO::read( hmemo::_HArray& array, const std::string& inFileName )
 
     common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
-    fileIO->readArray( array, inFileName );
+    fileIO->setDataType( dataType );
+    fileIO->readArray( array, inFileName, first, n );
 }
 
 /* -------------------------------------------------------------------------- */
-
-void FileIO::readStorageBlock( 
-    _MatrixStorage& storage, 
-    const std::string& fileName,
-    const PartitionId firstRow,
-    const PartitionId nRows )
-{
-    // For extraction of local range we read in the full matrix in a CSR storage of same type
-
-    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, storage.getValueType() );
-
-    common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
-
-    this->readStorage( *fullStorage, fileName );
-
-    SCAI_ASSERT_VALID_INDEX( firstRow, fullStorage->getNumRows(), "index of first row illegal" )
-    SCAI_ASSERT_VALID_INDEX( firstRow + nRows, fullStorage->getNumRows() + 1, "not enough rows available" )
-
-    fullStorage->copyBlockTo( storage, firstRow, nRows );
-}
 
 }  // namespace lama
 

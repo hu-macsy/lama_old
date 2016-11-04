@@ -180,10 +180,8 @@ Vector::~Vector()
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*    Reading vector from a file                                                          */
+/*    Reading vector from a file, only host reads                                         */
 /* ---------------------------------------------------------------------------------------*/
-
-/* ---------------------------------------------------------------------------------*/
 
 void Vector::readFromSingleFile( const std::string& fileName )
 {
@@ -216,7 +214,63 @@ void Vector::readFromSingleFile( const std::string& fileName )
 
     DistributionPtr distribution( new CyclicDistribution( vectorSize, vectorSize, comm ) );
 
-    // works fine as assign can deal with alias, i.e. localValues und getLocalValuues() are same
+    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
+
+    assign( localValues, distribution );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    Reading vector from a file, every processor reads its partition                     */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
+{
+    if ( distribution.get() == NULL )
+    {
+        readFromSingleFile( fileName );
+        return;
+    }
+   
+    // dist must be block distributed, not checked again here
+
+    const IndexType n = distribution->getBlockDistributionSize();
+
+    if ( n == nIndex )
+    {
+        readFromSingleFile( fileName );
+        redistribute( distribution );
+        return;
+    }
+
+    IndexType first = 0;
+
+    if ( n > 0 )
+    {
+        first = distribution->local2global( 0 );   // first global index
+    }
+
+    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
+
+    bool error = false;
+
+    try
+    {
+        FileIO::read( localValues, fileName, common::scalar::INTERNAL, first, n );
+    }
+    catch ( Exception& ex )
+    {
+        SCAI_LOG_ERROR( logger, ex.what() )
+        error = true;
+    }
+
+    error = distribution->getCommunicator().any( error );
+
+    if ( error )
+    {
+        COMMON_THROWEXCEPTION( "readFromSingleFile failed." )
+    }
+
+    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
 
     assign( localValues, distribution );
 }
@@ -313,14 +367,7 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 
     if ( !isPartitioned )
     {
-        // Alternative solution: each processor reads form the file its local part
-     
-        readFromSingleFile( newFileName );
-
-        if ( distribution.get() )
-        {
-            redistribute( distribution );
-        }
+        readFromSingleFile( newFileName, distribution );
     }
     else
     {

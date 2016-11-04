@@ -1120,6 +1120,8 @@ protected:
     void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
 
     void readFromSingleFile( const std::string& fileName );
+
+    void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr distribution );
  
     void readFromPartitionedFile( const std::string& fileName );
 

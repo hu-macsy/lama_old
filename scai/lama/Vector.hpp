@@ -782,6 +782,10 @@ private:
 
     void readFromSingleFile( const std::string& fileName );
 
+    /** In this version each processor reads from input file its local part. */
+
+    void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr dist );
+
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 

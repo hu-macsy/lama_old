@@ -687,6 +687,64 @@ void Matrix::readFromSingleFile( const std::string& fileName )
 
 /* ---------------------------------------------------------------------------------*/
 
+void Matrix::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
+{
+    if ( distribution.get() == NULL )
+    {
+        readFromSingleFile( fileName );
+        return;
+    }
+
+    // dist must be block distributed, not checked again here
+
+    const IndexType n = distribution->getBlockDistributionSize();
+
+    if ( n == nIndex )
+    {
+        readFromSingleFile( fileName );
+        redistribute( distribution, getColDistributionPtr() );
+        return;
+    }
+
+    const Communicator& comm = distribution->getCommunicator();
+
+    IndexType first = 0;
+
+    if ( n > 0 )
+    {
+        first = distribution->local2global( 0 );   // first global index
+    }
+
+    _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
+
+    bool error = false;
+
+    try
+    {
+        localMatrix.readFromFile( fileName, first, n );
+    }
+    catch ( Exception& ex )
+    {
+        SCAI_LOG_ERROR( logger, ex.what() )
+        error = true;
+    }
+
+    error = distribution->getCommunicator().any( error );
+
+    if ( error )
+    {
+        COMMON_THROWEXCEPTION( "readFromSingleFile failed." )
+    }
+
+    IndexType numColumns = comm.max( localMatrix.getNumColumns() );
+
+    DistributionPtr colDist( new NoDistribution( numColumns ) );
+
+    assign( localMatrix, distribution, colDist );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 void Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -849,12 +907,7 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
     if ( !isPartitioned )
     {
-        readFromSingleFile( newFileName );
-
-        if ( rowDist.get() )
-        {
-            redistribute( rowDist, getColDistributionPtr() );
-        }
+        readFromSingleFile( newFileName, rowDist );
     }
     else
     {

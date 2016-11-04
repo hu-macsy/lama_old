@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
             CSRStorage<ValueType> csrBlock;
 
-            fileIO->readStorageBlock( csrBlock, fileName, 1, n );
+            fileIO->readStorage( csrBlock, fileName, 1, n );
 
             for ( IndexType i = 1; i < csrStorage.getNumRows() - 1; ++i )
             {
@@ -573,17 +573,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
             }
        }
 
-        // Test the method readArrayBlock
+        // Test the method readArray with first, n arguments
 
         {
             LArray<ValueType> inArray;
 
             BOOST_CHECK_THROW(
             { 
-                fileIO->readArrayBlock( inArray, fileName, 0, 5 * N ); 
+                fileIO->readArray( inArray, fileName, 0, 5 * N ); 
             }, common::Exception );
 
-            fileIO->readArrayBlock( inArray, fileName, 1, N - 2 );
+            fileIO->readArray( inArray, fileName, 1, N - 2 );
            
             SCAI_LOG_DEBUG( logger, "Read block from file: " << inArray )
 

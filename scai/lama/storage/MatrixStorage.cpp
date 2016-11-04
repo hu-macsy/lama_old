@@ -1473,7 +1473,7 @@ void MatrixStorage<ValueType>::writeToFile(
 /*****************************************************************************/
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
+void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
 {
     SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
     SCAI_REGION( "Storage.readFromFile" )
@@ -1495,7 +1495,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
 
         SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
 
-        fileIO->readStorage( *this, fileName );
+        fileIO->readStorage( *this, fileName, firstRow, nRows );
     }
     else
     {

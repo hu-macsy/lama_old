@@ -136,8 +136,6 @@ public:
      *   - for binary files the type must match the type of storage
      */
 
-    virtual void readStorage( _MatrixStorage& storage, const std::string& fileName ) = 0;
-
     /** Read in a matrix from a file but only a contiguous section of rows. 
      *
      *  @param[out] storage  is the submatrix from the full matrix stored in the file
@@ -156,11 +154,11 @@ public:
      *  for the full matrix but only for the corresponding block. In case of binary data, direct file access
      *  might be exploited to extract the needed data from the input file.
      */
-    virtual void readStorageBlock( 
+    virtual void readStorage( 
         _MatrixStorage& storage, 
         const std::string& fileName,
-        const IndexType offsetRow,
-        const IndexType nRows ) = 0;
+        const IndexType offsetRow = 0,
+        const IndexType nRows = nIndex ) = 0;
 
     /** Read in the size of an array saved in a file 
      *
@@ -182,7 +180,6 @@ public:
      *  If the file contains binary data, it is assumed that its type is the same as the value 
      *  type of the array argument unless the environment variable ``SCAI_IO_TYPE`` has been set.
      */
-    virtual void readArray( hmemo::_HArray& array, const std::string& fileName ) = 0; 
 
     /** Read in an array block from a file in the corresponding format. 
      *  
@@ -194,11 +191,11 @@ public:
      *  This method has exactly the same behavior as readArray but with the difference that only
      *  a part of the array is read.
      */
-    virtual void readArrayBlock( 
+    virtual void readArray( 
         hmemo::_HArray& array,
         const std::string& fileName,
-        const IndexType offset,
-        const IndexType n ) = 0;
+        const IndexType offset = 0,
+        const IndexType n = nIndex ) = 0;
 
     /** File suffix can be used to decide about choice of FileIO class */
 
@@ -250,9 +247,39 @@ public:
      */
     static int removeFile( const std::string& fileName );
 
-    static void write( const hmemo::_HArray& array, const std::string& fileName );
+    /** Static method to write an array into a file.
+     *
+     *  @param[in] array     is the array that is saved
+     *  @param[in] fileName  is the name of output file, suffix decides about Handler
+     *  @param[in] dataType  specifies the type to be used for representation in output file
+     *
+     *  If the optional argument dataType is not default, array.getValueType() is used.
+     */
+    static void write( 
+        const hmemo::_HArray& array, 
+        const std::string& fileName,
+        const common::scalar::ScalarType valueType = common::scalar::INTERNAL );
 
-    static void read( hmemo::_HArray& array, const std::string& fileName );
+    /** Static method to read an array or a contiguous section of an array from a file.
+     *
+     *  @param[out] array will contain the array data
+     *  @param[in]  fileName is the name of the input file where the array is saved
+     *  @param[in]  first index of the first element to read, defaults to 0
+     *  @param[in]  n     number of elements, default is nIndex that stands for up to the end
+     *
+     *  \code
+     *      LArray<double> data;
+     *      FileIO::read( data, "myData.txt" )           // reads the full array
+     *      FileIO::read( data, "myData.txt", 50 )       // reads array but skips first 50 entries
+     *      FileIO::read( data, "myData.txt", 50, 10 )   // reads for pos 50 next 10 elements
+     *  \endcode
+     */
+    static void read( 
+        hmemo::_HArray& array, 
+        const std::string& fileName,
+        const common::scalar::ScalarType valueType = common::scalar::INTERNAL,
+        const IndexType first = 0,
+        const IndexType n = nIndex );
 
     /** Override Printable::writeAt */
 

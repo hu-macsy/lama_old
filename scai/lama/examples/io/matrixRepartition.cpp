@@ -182,7 +182,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
         cout << "Matrix stroage block " << ip << " has range " << lb << " - " << ub
              << ", write to file " << outFileNameBlock << endl;
 
-        inputIO->readStorageBlock( *storage, inFileName, lb, ub - lb );
+        inputIO->readStorage( *storage, inFileName, lb, ub - lb );
 
         storage->writeToFile( outFileNameBlock );
     }
