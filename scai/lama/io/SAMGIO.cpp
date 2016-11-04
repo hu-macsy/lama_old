@@ -325,26 +325,18 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
 
     if ( binary )
     {
-        inFile.readBinary( array, size, dataType );
+        inFile.skipBinary( first, dataTypeSize );
+        inFile.readBinary( array, nEntries, dataType );
+        inFile.skipBinary( size - nEntries - first, dataTypeSize );
     }
     else
     {
-        inFile.readFormatted( array, size );
+        inFile.skipFormatted( first );
+        inFile.readFormatted( array, nEntries );
+        inFile.skipFormatted( size - nEntries - first );
     }
 
     inFile.closeCheck();
-
-    if ( nEntries != size )
-    {
-        hmemo::HArray<ValueType> block( nEntries );
-        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
-        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
-
-        IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
-
-        array.swap( block );
-    }
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -522,6 +514,23 @@ void SAMGIO::readStorageImpl(
     SCAI_LOG_INFO( logger, "Info from header file " << fileName << ": #rows = " << numRows
                            << ", #values = " << numValues << ", binary = " << binary )
 
+    if ( !common::Utils::validIndex( firstRow, numRows ) )
+    {
+        storage.clear();
+        return;
+    }
+
+    IndexType numBlockRows = nRows;
+
+    if ( nRows == nIndex )
+    {
+        numBlockRows = numRows - firstRow;
+    }
+    else
+    {
+        SCAI_ASSERT_LE_ERROR( firstRow + nRows, numRows, "storage block size " << numRows << " invalid" )
+    }
+
     // now open the associated data file in correct mode
 
     std::ios::openmode flags = std::ios::in;
@@ -539,26 +548,22 @@ void SAMGIO::readStorageImpl(
     utilskernel::LArray<IndexType> csrJA;
     utilskernel::LArray<ValueType> csrValues;
 
+    size_t indexTypeSize = common::typeSize( mScalarTypeIndex );
+    size_t valueTypeSize = sizeof( ValueType );
+
+    if ( mScalarTypeData != common::scalar::INTERNAL )
+    {
+        valueTypeSize = common::typeSize( mScalarTypeData );
+    }
+
     if ( binary )
     {
         // compare expected size with real size and give a warning
 
-        size_t expectedSize = numRows + 1 + numValues;
+        size_t expectedSize = ( numRows + 1 + numValues ) * indexTypeSize + numValues * valueTypeSize;
 
-        expectedSize *= common::typeSize( mScalarTypeIndex );
-
-        // common::typeSize( INTERNAL ) not possible, ValueType must be known
-
-        if ( mScalarTypeData == common::scalar::INTERNAL )
-        {
-            expectedSize += numValues * sizeof( ValueType );
-        }
-        else
-        {
-            // Note: works fine for PATTERN as typeSize( PATTERN ) == 0
-
-            expectedSize += numValues * common::typeSize( mScalarTypeData ) ;
-        }
+        SCAI_LOG_INFO( logger, "expected size = " << expectedSize << ", type size = " << valueTypeSize 
+                               << ", index size = " << indexTypeSize )
 
         inFile.seekg( 0, std::ios::end );
         size_t realSize = inFile.tellg();
@@ -571,48 +576,69 @@ void SAMGIO::readStorageImpl(
                                     ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData <<
                                     ", ValueType = " << common::TypeTraits<ValueType>::id() );
         }
+    }
 
+    if ( binary )
+    {
         // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE
 
-        inFile.readBinary( csrIA, numRows + 1, mScalarTypeIndex );
-        inFile.readBinary( csrJA, numValues, mScalarTypeIndex );
-
-        if ( mScalarTypeData != common::scalar::PATTERN )
-        {
-            inFile.readBinary( csrValues, numValues, mScalarTypeData );
-        }
-        else
-        { 
-            // set values with default value
-
-            csrValues.init( ValueType( 1 ), numValues );
-        }
+        inFile.skipBinary( firstRow, indexTypeSize );
+        inFile.readBinary( csrIA, numBlockRows + 1, mScalarTypeIndex );
+        inFile.skipBinary( numRows - numBlockRows - firstRow, indexTypeSize );
     }
     else
     {
-        // formatted read just takes it as it is
+        inFile.skipFormatted( firstRow );
+        inFile.readFormatted( csrIA, numBlockRows + 1 );
+        inFile.skipFormatted( numRows - numBlockRows - firstRow );
+    }
 
-        inFile.readFormatted( csrIA, numRows + 1 );
-        inFile.readFormatted( csrJA, numValues );
+    IndexType offsetBlock = csrIA[0];
 
-        if ( mScalarTypeData != common::scalar::PATTERN )
-        {
-            inFile.readFormatted( csrValues, numValues );
-        }
-        else
-        { 
-            // set values with default value
+    csrIA -= offsetBlock;    // offset array will now start at 0
 
-            csrValues.init( ValueType( 1 ), numValues );
-        }
+    offsetBlock -= IndexType( 1 );        // SAMG indexing starts with 1, deal correctly for reading ja, values
+
+    IndexType numBlockValues   = csrIA[numBlockRows];
+ 
+    SCAI_LOG_DEBUG( logger, "ia        : read, offset = " << firstRow << ", numBlockRows = " << numBlockRows << " of " << numRows )
+    SCAI_LOG_DEBUG( logger, "ja, values: read, offset = " << offsetBlock << ", numBlockValues = " << numBlockValues << " of " << numValues )
+
+    if ( binary )
+    {
+        inFile.skipBinary( offsetBlock, indexTypeSize );
+        inFile.readBinary( csrJA, numBlockValues, mScalarTypeIndex );
+        inFile.skipBinary( numValues - offsetBlock - numBlockValues, indexTypeSize );
+    }
+    else
+    {
+        inFile.skipFormatted( offsetBlock );
+        inFile.readFormatted( csrJA, numBlockValues );
+        inFile.skipFormatted( numValues - offsetBlock - numBlockValues );
+    }
+
+    IndexType maxColumn = csrJA.max();   // maximal column index used
+
+    csrJA -= IndexType( 1 );
+
+    if ( mScalarTypeData == common::scalar::PATTERN )
+    {
+        csrValues.init( ValueType( 1 ), numBlockValues );   // set values with default value
+    }
+    else if ( binary )
+    {
+        inFile.skipBinary( offsetBlock, valueTypeSize );
+        inFile.readBinary( csrValues, numBlockValues, mScalarTypeData );
+        inFile.skipBinary( numValues - numBlockValues - offsetBlock, valueTypeSize );
+    }
+    else
+    {
+        inFile.skipFormatted( offsetBlock );
+        inFile.readFormatted( csrValues, numBlockValues );
+        inFile.skipFormatted( numValues - numBlockValues - offsetBlock );
     }
 
     inFile.closeCheck();   // gives a warning if not complete file has been read
-
-    IndexType maxColumn = csrJA.max();   // maximal appearing column
-
-    csrIA -= 1;
-    csrJA -= 1;
 
     SCAI_LOG_INFO( logger, "CSR data: ia = " << csrIA << ", ja = " << csrJA << ", valaues = " << csrValues )
 
@@ -623,17 +649,7 @@ void SAMGIO::readStorageImpl(
         numColumns = maxColumn;      // but might be bigger for partitioned data
     }
  
-    if ( firstRow == 0 && nRows == nIndex )
-    {
-        storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-    }
-    else
-    {
-         CSRStorage<ValueType> tmp;
-         ContextPtr ctx = tmp.getContextPtr();
-         tmp.setCSRDataSwap( numRows, numColumns, numValues, csrIA, csrJA, csrValues, ctx );
-         tmp.copyBlockTo( storage, firstRow, nRows );
-    }
+    storage.setCSRData( numBlockRows, numColumns, numBlockValues, csrIA, csrJA, csrValues );
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -52,8 +52,6 @@ using namespace hmemo;
 using namespace utilskernel;
 using namespace lama;
 
-typedef common::shared_ptr<_HArray> ArrayPtr;
-
 static common::scalar::ScalarType getType() 
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
@@ -140,9 +138,11 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 
 /** Read in the vector in core form the input file that can be partitioned */
 
-void readVector( _HArray& array, const string& inFileName, const IndexType np_in )
+void readArrayBlocked( _HArray& array, const string& inFileName, const IndexType np_in )
 {
-    vector<ArrayPtr> storageVector;
+    typedef common::shared_ptr<_HArray> ArrayPtr;    // use shared pointer in vector
+
+    vector<ArrayPtr> blockVector;
 
     // proof that all input files are available, read them and push the storages
 
@@ -158,22 +158,16 @@ void readVector( _HArray& array, const string& inFileName, const IndexType np_in
                      "Input file for block " << ip << " of " << np_in << " = " 
                      << inFileNameBlock << " could not be opened" )
 
-        ArrayPtr blockVector( _HArray::create( array.getValueType() ) );
+        ArrayPtr blockArray( _HArray::create( array.getValueType() ) );
 
-        FileIO::read( *blockVector, inFileNameBlock );
+        FileIO::read( *blockArray, inFileNameBlock );
   
-        storageVector.push_back( blockVector );
-
-        if ( !isPartitioned && np_in > 1 )
-        {
-            cout << "Input file name does not contain %r for multiple partitions, np_in = " << np_in << " ignored." << endl;
-            break;
-        }
+        blockVector.push_back( blockArray );
     }
 
-    if ( storageVector.size() == 1 )
+    if ( blockVector.size() == 1 )
     {
-        array.swap( *storageVector[0] );
+        array.swap( *blockVector[0] );
     }
     else
     {
@@ -181,20 +175,67 @@ void readVector( _HArray& array, const string& inFileName, const IndexType np_in
 
         IndexType size = 0;   // determine at first size to get the right size
 
-        for ( size_t i = 0; i < storageVector.size(); ++i )
+        for ( size_t i = 0; i < blockVector.size(); ++i )
         {
-            size += storageVector[i]->size();
+            size += blockVector[i]->size();
         }
 
         array.resize( size );
 
         IndexType offset = 0;
 
-        for ( size_t i = 0; i < storageVector.size(); ++i )
+        for ( size_t i = 0; i < blockVector.size(); ++i )
         {
-            IndexType localSize = storageVector[i]->size();
-            HArrayUtils::setArraySection( array, offset, 1, *storageVector[i], 0, 1, localSize );
+            IndexType localSize = blockVector[i]->size();
+            HArrayUtils::setArraySection( array, offset, 1, *blockVector[i], 0, 1, localSize );
             offset += localSize;
+        }
+    }
+}
+
+/** This method saves a vector into multiple files each file containing a contiguous block of values
+ *
+ *  @param[in] array is the vector that is written
+ *  @param[in] outFileName name of output file, must contain "%r" as placeholder for block id
+ *  @param[in] np_out number of blocks to write
+ *
+ *  This method is exaclty the same as writing the vector block distributed with np number of processors.
+ */
+
+void writeArrayBlocked( const _HArray& array, const string& outFileName, const IndexType np )
+{
+    // create temporary array for each block of same type 
+
+    common::unique_ptr<_HArray> blockArray( _HArray::create( array.getValueType() ) );
+
+    IndexType size = array.size();
+
+    for ( PartitionId ip = 0; ip < np; ++ip )
+    {
+        string outFileNameBlock = outFileName;
+
+        bool isPartitioned;  // here used as dummy
+
+        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np );
+
+        IndexType lb;   // lower bound for range on a given partition
+        IndexType ub;   // upper bound of range for a given partition
+
+        dmemo::BlockDistribution::getLocalRange( lb, ub, size, ip, np );
+
+        cout << "Matrix block " << ip << " has range " << lb << " - " << ub
+                  << ", write to file " << outFileNameBlock << endl;
+
+        if ( np == 1 )
+        {
+            FileIO::write( array, outFileNameBlock );
+        }
+        else
+        {
+            blockArray->clear();  // invalidate content to avoid unnecessary mem transfer
+            blockArray->resize( ub - lb );
+            HArrayUtils::setArraySection( *blockArray, 0, 1, array, lb, 1, ub - lb );
+            FileIO::write( *blockArray, outFileNameBlock );
         }
     }
 }
@@ -253,83 +294,47 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    vector<ArrayPtr> storageVector;
-
-    // proof that all input files are available, read them and push the storages
-
-    for ( PartitionId ip = 0; ip < np_in; ++ ip )
-    {
-        string inFileNameBlock = inFileName;
-
-        bool isPartitioned;
-
-        PartitionIO::getPartitionFileName( inFileNameBlock, isPartitioned, ip, np_in );
-   
-        if ( !FileIO::fileExists( inFileNameBlock ) )
-        {
-            cerr << "Input file for block " << ip << " of " << np_in << " = " << inFileNameBlock << " not available" << endl;
-            return -1;
-        }
-
-        ArrayPtr blockVector( _HArray::create( type ) );
-
-        FileIO::read( *blockVector, inFileNameBlock );
-  
-        storageVector.push_back( blockVector );
-
-        if ( !isPartitioned && np_in > 1 )
-        {
-            cout << "Input file name does not contain %r for multiple partitions, np_in = " << np_in << " ignored." << endl;
-            break;
-        }
-    }
-
-    ArrayPtr fullVector( _HArray::create( type ) );
+    common::unique_ptr<_HArray> fullVector( _HArray::create( type ) );
  
     // read in one or all partitions in the memory
 
-    readVector( *fullVector, inFileName, np_in );
-
-    for ( PartitionId ip = 0; ip < np_out; ++ip )
+    if ( inFileName.find( "%r" ) == string::npos )
     {
-        string outFileNameBlock = outFileName;
-  
-        bool isPartitioned;
+        cout << "Read complete storage from single file " << inFileName << endl;
 
-        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np_out );
-
-        if ( np_out == 1 || !isPartitioned )
+        if ( np_in > 1 )
         {
-            if ( np_out > 1 )
-            {
-                cout << "Output file name does not contain %r for multiple partitions, np_out = " << np_out << " ignored" << endl;
-            }
-
-            FileIO::write( *fullVector, outFileNameBlock );
-            cout << "Write complete vector to file " << outFileNameBlock << endl;
-            break;
+            cout << "Attention: np_in = " << np_in << " ignored, no %r in filename " << inFileName << endl;
         }
-        else
+
+        FileIO::read( *fullVector, inFileName );
+    }
+    else
+    {
+        // read in one or all partitions in the memory
+
+        readArrayBlocked( *fullVector, inFileName, np_in );
+
+        cout << "Array (merged of " << np_in << " blocks) : " << *fullVector << endl;
+    }
+
+    if ( outFileName.find( "%r" ) == string::npos )
+    {
+        cout << "Write complete vector to single file " << outFileName << endl;
+
+        if ( np_out > 1 )
         {
-            if ( !isPartitioned )
-            {
-                return -1;
-            }
-
-            IndexType n = fullVector->size();
-
-            IndexType lb;   // lower bound for range on a given partition
-            IndexType ub;   // upper bound of range for a given partition
-
-            dmemo::BlockDistribution::getLocalRange( lb, ub, n, ip, np_out );
-
-            cout << "Vector block " << ip << " has range " << lb << " - " << ub 
-                      << ", write to file " << outFileNameBlock << endl;
-
-            ArrayPtr blockVector( _HArray::create( type ) );
-            blockVector->resize( ub - lb );
-            HArrayUtils::setArraySection( *blockVector, 0, 1, *fullVector, lb, 1, ub - lb );
-            FileIO::write( *blockVector, outFileNameBlock );
+            cout << "WARNING: np_out = " << np_out << " ignored, no %r in filename " << outFileName << endl;
         }
+
+        FileIO::write( *fullVector, outFileName );
+    }
+    else
+    {
+        cout << "Write vector in " << np_out << " blocks to file " << outFileName << endl;
+
+        // write the array in np_out block partitions in separate files
+
+        writeArrayBlocked( *fullVector, outFileName, np_out );
     }
 }
