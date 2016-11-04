@@ -106,6 +106,8 @@ public:
     inline void writeBinary( const hmemo::HArray<ValueType>& data,
                              const common::scalar::ScalarType type );
 
+    inline void skipBinary( const IndexType size, const size_t typeSize );
+
     template<typename ValueType>
     inline void readBinary( hmemo::HArray<ValueType>& data,
                             const IndexType size,
@@ -124,6 +126,8 @@ public:
         const hmemo::HArray<ValueType1>& val1, int prec1,
         const hmemo::HArray<ValueType2>& val2, int prec2,
         const hmemo::HArray<ValueType3>& val3, int prec3 );
+
+    inline void skipFormatted( const IndexType nline );
 
     template<typename ValueType>
     void readFormatted( hmemo::HArray<ValueType>& val,
@@ -251,6 +255,13 @@ inline void IOStream::writeBinary( const hmemo::HArray<ValueType>& data,
     {
         Wrapper < ValueType, SCAI_TYPELIST( SCAI_ARRAY_TYPES_HOST ) >::writeBinResolved( *this, data, type );
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void IOStream::skipBinary( const IndexType size, const size_t typeSize )
+{
+    std::fstream::ignore( size * typeSize );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -510,6 +521,27 @@ void IOStream::writeFormatted(
         if ( this->fail() )
         {
             SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void IOStream::skipFormatted( const IndexType nlines )
+{
+    SCAI_LOG_INFO( logger, "skipFormatted, nlines = " << nlines )
+
+    std::string line;
+
+    for ( IndexType k = 0; k < nlines; ++k )
+    {
+        std::getline( *this, line );
+
+        if ( this->fail() )
+        {
+            SCAI_THROWEXCEPTION( common::IOException,
+                                 "skipFormatted from " << mFileName
+                                 << " at entry line " << k << " of " << nlines )
         }
     }
 }

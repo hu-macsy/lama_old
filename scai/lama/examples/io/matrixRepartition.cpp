@@ -42,6 +42,7 @@
 #include <scai/common/shared_ptr.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
 
@@ -101,35 +102,35 @@ void printHelp( const char* cmd )
     cout << endl;
 }
 
-void readStorage( _MatrixStorage& storage, const string& inFileName, const IndexType np_in )
+/** Read in a matrix from multiple files, each containing a contiguous block of rows. 
+ *
+ *  @param[out] storage is the vertical (row) concatenation of the matrices read from multiple file
+ *  @param[in]  inFileName name of the input file, must contain a "%r" to have unique file name for each block
+ *  @param[in]  np         number of files among which the matrix is partitioned
+ */
+void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, const IndexType np )
 {
     vector<StoragePtr> storageVector;
 
     // proof that all input files are available, read them and push the storages
 
-    for ( PartitionId ip = 0; ip < np_in; ++ ip )
+    for ( PartitionId ip = 0; ip < np; ++ ip )
     {
         string inFileNameBlock = inFileName;
 
         bool isPartitioned;
 
-        PartitionIO::getPartitionFileName( inFileNameBlock, isPartitioned, ip, np_in );
+        PartitionIO::getPartitionFileName( inFileNameBlock, isPartitioned, ip, np );
 
         SCAI_ASSERT( FileIO::fileExists( inFileNameBlock ),
-                     "Input file for block " << ip << " of " << np_in << " = "
+                     "Input file for block " << ip << " of " << np << " = "
                      << inFileNameBlock << " could not be opened" )
 
-        StoragePtr blockStorage( storage.newMatrixStorage() );
+        StoragePtr blockStorage( storage.newMatrixStorage() );   // new temporary storage for each block
 
         blockStorage->readFromFile( inFileNameBlock );
 
         storageVector.push_back( blockStorage );
-
-        if ( !isPartitioned && np_in > 1 )
-        {
-            cout << "Input file name does not contain %r for multiple partitions, np_in = " << np_in << " ignored." << endl;
-            break;
-        }
     }
 
     if ( storageVector.size() == 1 )
@@ -144,9 +145,105 @@ void readStorage( _MatrixStorage& storage, const string& inFileName, const Index
     }
 }
 
+/** The following method is a special case where the input file contains the full matrix
+ *  and where the matrix should be saved into multiple partions 
+ * 
+ *  Important: this algorithm does not require memory for the full matrix
+ */
+void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
+{
+    common::scalar::ScalarType type = getType();
+
+    common::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
+
+    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
+
+    common::unique_ptr<_MatrixStorage> storage( _MatrixStorage::create( key ) );
+
+    IndexType numRows;     // partitioning is done among numbers of rows
+    IndexType numColumns;  // dummy here
+    IndexType numValues;   // dummy here
+
+    inputIO->readStorageInfo( numRows, numColumns, numValues, inFileName );
+
+    for ( PartitionId ip = 0; ip < np_out; ++ip )
+    {
+        string outFileNameBlock = outFileName;
+
+        bool isPartitioned;
+
+        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np_out );
+
+        IndexType lb;   // lower bound for range on a given partition
+        IndexType ub;   // upper bound of range for a given partition
+
+        dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, ip, np_out );
+
+        cout << "Matrix stroage block " << ip << " has range " << lb << " - " << ub
+             << ", write to file " << outFileNameBlock << endl;
+
+        inputIO->readStorageBlock( *storage, inFileName, lb, ub - lb );
+
+        storage->writeToFile( outFileNameBlock );
+    }
+}
+
+/** This method saves a matrix into multiple files each file containing a contiguous block of rows. 
+ *
+ *  @param[in] storage is the matrix that is written 
+ *  @param[in] outFileName name of output file, must contain "%r" as placeholder for block id
+ *  @param[in] np_out number of blocks to write
+ *
+ *  This method is exaclty the same as writing the matrix block distributed with np number of processors.
+ */
+
+void writeStorageBlocked( const _MatrixStorage& storage, const string& outFileName, const IndexType np )
+{
+    // create temporary storage for each block of same type / format
+
+    common::unique_ptr<_MatrixStorage> blockStorage( storage.newMatrixStorage() );
+
+    IndexType numRows = storage.getNumRows();
+
+    for ( PartitionId ip = 0; ip < np; ++ip )
+    {
+        string outFileNameBlock = outFileName;
+  
+        bool isPartitioned;  // here used as dummy
+
+        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np );
+
+        IndexType lb;   // lower bound for range on a given partition
+        IndexType ub;   // upper bound of range for a given partition
+
+        dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, ip, np );
+
+        cout << "Matrix block " << ip << " has range " << lb << " - " << ub 
+                  << ", write to file " << outFileNameBlock << endl;
+
+        if ( np == 1 )
+        {
+            storage.writeToFile( outFileNameBlock );
+        }
+        else
+        {
+            storage.copyBlockTo( *blockStorage, lb, ub - lb );
+            blockStorage->writeToFile( outFileNameBlock );
+        }
+    }
+}
+
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    if ( comm->getSize() > 1 )
+    {
+        cout << "This program runs only serially, but communicator is " << *comm << endl;
+        return -1;
+    }
 
     if ( argc != 5 )
     {
@@ -174,65 +271,71 @@ int main( int argc, const char* argv[] )
 
     input1 >> np_in;
  
-    if ( np_in < 1 )
-    {
-        COMMON_THROWEXCEPTION( "Illegal number of partitions for input file = " << np_in )
-    }
+    SCAI_ASSERT( !input1.fail(), "illegal: np_in=" << argv[2] << " in argument list" )
  
     istringstream input2( argv[4] );
 
     input2 >> np_out;
- 
-    if ( np_out < 1 )
+
+    SCAI_ASSERT( !input2.fail(), "illegal: np_out=" << argv[4] << " in argument list" )
+
+    if ( np_in < 1 && np_out > 1 )
     {
-        COMMON_THROWEXCEPTION( "Illegal number of partitions for output file = " << np_out )
+        cout << "Partitioning is done block-wise from input file " << inFileName << endl;
+
+        try
+        {
+            directPartitioning( inFileName, outFileName, np_out );
+            return 0;
+        }
+        catch ( common::Exception& ex )
+        {
+            cout << "Direct partitioning failed, error: " << ex.what() << endl;
+            return -1;
+        }
     }
 
     StoragePtr fullStorage( _MatrixStorage::create( key ) );
 
     // read in one or all partitions in the memory
 
-    readStorage( *fullStorage, inFileName, np_in );
-
-    for ( PartitionId ip = 0; ip < np_out; ++ip )
+    if ( inFileName.find( "%r" ) == string::npos )
     {
-        string outFileNameBlock = outFileName;
-  
-        bool isPartitioned;
+        cout << "Read complete storage from single file " << inFileName << endl;
 
-        PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np_out );
-
-        if ( np_out == 1 || !isPartitioned )
+        if ( np_in > 1 )
         {
-            if ( np_out > 1 )
-            {
-                cout << "Output file name does not contain %r for multiple partitions, np_out = " << np_out << " ignored" << endl;
-            }
-
-            fullStorage->writeToFile( outFileNameBlock );
-            cout << "Write complete storage to file " << outFileNameBlock << endl;
-            break;
+            cout << "Attention: np_in = " << np_in << " ignored, no %r in filename " << inFileName << endl;
         }
-        else
+
+        fullStorage->readFromFile( inFileName );
+    }
+    else
+    {
+        // write the storage in np_out block partitions in separate files
+
+        readStorageBlocked( *fullStorage, inFileName, np_in );
+
+        cout << "Storage (merged of " << np_in << " blocks) : " << *fullStorage << endl;
+    }
+
+    if ( outFileName.find( "%r" ) == string::npos )
+    {
+        cout << "Write complete storage to single file " << outFileName << endl;
+
+        if ( np_out > 1 )
         {
-            if ( !isPartitioned )
-            {
-                return -1;
-            }
-
-            IndexType numRows = fullStorage->getNumRows();
-
-            IndexType lb;   // lower bound for range on a given partition
-            IndexType ub;   // upper bound of range for a given partition
-
-            dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, ip, np_out );
-
-            cout << "Matrix block " << ip << " has range " << lb << " - " << ub 
-                      << ", write to file " << outFileNameBlock << endl;
-
-            StoragePtr blockStorage( _MatrixStorage::create( key ) );
-            fullStorage->copyBlockTo( *blockStorage, lb, ub - lb );
-            blockStorage->writeToFile( outFileNameBlock );
+            cout << "WARNING: np_out = " << np_out << " ignored, no %r in filename " << outFileName << endl;
         }
+
+        fullStorage->writeToFile( outFileName );
+    }
+    else
+    {
+        cout << "Write storage in " << np_out << " blocks to file " << outFileName << endl;
+
+        // write the storage in np_out block partitions in separate files
+
+        writeStorageBlocked( *fullStorage, outFileName, np_out );
     }
 }
