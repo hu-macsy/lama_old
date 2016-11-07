@@ -51,7 +51,8 @@ count_error ./test.sh CODE_COVERAGE
 
 exit_on_failure ${error_count}
 
-# results in errors
+# todo: remove this if jenkins cc works fine without it
+# problem with these, so first ignore
 rm simpleLogging.gcda simpleLogging.gcno
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"

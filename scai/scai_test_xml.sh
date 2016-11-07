@@ -170,13 +170,17 @@ done
 
 echo "All tests are finished, for XML result files see ${dirname}"
 
-# rename the MPI output file to end with xml
+if [ -n "${MPI_PROCS}" ]; then
 
-for filename in ${dirname}/*.xml.* ;
-do
-    # rename <filename>.xml.<rank> to <filename>.<rank>.xml
-    newname=${filename/\.xml/}.xml
-    mv $filename $newname
-done
+	# rename the MPI output file to end with xml
+
+	for filename in ${dirname}/*.xml.* ;
+	do
+	    # rename <filename>.xml.<rank> to <filename>.<rank>.xml
+	    newname=${filename/\.xml/}.xml
+	    mv $filename $newname
+	done
+
+fi
 
 unset CONTEXTS
