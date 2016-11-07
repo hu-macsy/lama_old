@@ -38,6 +38,9 @@ requirements_coverage
 dirname=$(find_dir)
 echo "Found coverage directory: ${dirname}"
 
+dirname=$(pwd)
+echo "actual directory: $dirname"
+
 # todo: remove this if jenkins cc works fine without it
 # problem with these, so first ignore
 rm LAPACKTest.cpp.gcno LAPACKTest.cpp.gcda
