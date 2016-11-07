@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 ###
  # @file code_coverageThird.sh
@@ -41,7 +41,7 @@ echo "Found coverage directory: ${dirname}"
 # todo: remove this if jenkins cc works fine without it
 # problem with these, so first ignore
 tmpdir=CMakeFiles/blaskernelTest.dir
-rm $tmpdir/LAPACKTest.cpp.gcno $tmpdir/LAPACKTest.cpp.gcda
+rm $tmpdir/LAPACKTest.cpp.gcno $tmpdir/LAPACKTest.cpp.gcda $tmpdir/BLAS2Test.cpp.gcno $tmpdir/BLAS2Test.cpp.gcda
 
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
