@@ -41,6 +41,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 
 // internal scai libraries
@@ -869,6 +870,32 @@ void Matrix::readFromFile( const std::string& matrixFileName, const std::string&
     {
         readFromFile( matrixFileName );
         resetRowDistributionByFirstColumn();
+    }
+    else if ( distributionFileName == "BLOCK" )
+    {
+         CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+         DistributionPtr rowDist;
+
+         // for a single file we set a BlockDistribution
+
+         if ( matrixFileName.find( "%r" ) == std::string::npos )
+         {
+             PartitionId root = 0;
+
+             IndexType numRows = nIndex;
+
+             if ( comm->getRank() == root )
+             {
+                 numRows = FileIO::getStorageSize( matrixFileName );
+             }
+
+             comm->bcast( &numRows, 1, root );
+
+             rowDist.reset( new BlockDistribution( numRows, comm ) );
+        }
+
+        readFromFile( matrixFileName, rowDist );
     }
     else
     {

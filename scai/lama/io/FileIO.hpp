@@ -281,6 +281,14 @@ public:
         const IndexType first = 0,
         const IndexType n = nIndex );
 
+    /** Return the size of an array saved in a file. */
+
+    static IndexType getArraySize( const std::string& fileName );
+
+    /** Return the size of a storage saved in a file. */
+
+    static IndexType getStorageSize( const std::string& fileName );
+
     /** Override Printable::writeAt */
 
     void writeAt( std::ostream& stream ) const;

@@ -290,6 +290,49 @@ void FileIO::read(
 
 /* -------------------------------------------------------------------------- */
 
+IndexType FileIO::getArraySize( const std::string& fileName )
+{
+    std::string suffix = getSuffix( fileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    IndexType size = nIndex;
+
+    fileIO->readArrayInfo( size, fileName );
+
+    return size;
+}
+
+/* -------------------------------------------------------------------------- */
+
+IndexType FileIO::getStorageSize( const std::string& fileName )
+{
+    std::string suffix = getSuffix( fileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    IndexType size = nIndex;
+
+    IndexType numColumns = 0;   // dummy
+    IndexType numValues = 0;    // dummy
+
+    fileIO->readStorageInfo( size, numColumns, numValues, fileName );
+
+    return size;
+}
+
+/* -------------------------------------------------------------------------- */
+
 }  // namespace lama
 
 }  // namespace scai

@@ -41,6 +41,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Distribution.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
@@ -340,7 +341,34 @@ void Vector::readFromFile( const std::string& vectorFileName, const std::string&
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    DistributionPtr distribution = PartitionIO::readDistribution( distributionFileName, comm );
+    DistributionPtr distribution;
+
+    if ( distributionFileName == "BLOCK" )
+    {
+         // for a single file we set a BlockDistribution
+
+         if ( vectorFileName.find( "%r" ) == std::string::npos )
+         {
+             PartitionId root = 0;
+
+             IndexType numRows = nIndex;
+
+             if ( comm->getRank() == root )
+             {
+                 numRows = FileIO::getStorageSize( vectorFileName );
+             }
+
+             comm->bcast( &numRows, 1, root );
+
+             distribution.reset( new BlockDistribution( numRows, comm ) );
+        }
+
+        // for a partitioned file general block distribution is default 
+    }
+    else
+    {
+        distribution = PartitionIO::readDistribution( distributionFileName, comm );
+    }
 
     readFromFile( vectorFileName, distribution );
 }
