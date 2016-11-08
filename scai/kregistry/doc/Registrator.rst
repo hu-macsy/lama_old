@@ -9,10 +9,7 @@ The ``Registrator`` is used for the registration of functions that have one or t
 arguments. It uses meta-programming techniques to register these functions for a certain number
 of types.
 
-The template class ``mepr::RegistratorV`` is used to call the method with one template argument and 
-``mepor::RegistratorVO`` for the method with two template arguments. This meta-programming
- is based on template programming that where only classes or structs can be used as arguments, but not functions. This is the 
-reason why the ``registerKernels`` functions are encapsulated in a struct.
+The template class ``mepr::RegistratorV`` is used to call the method with one template argument and ``mepor::RegistratorVO`` for the method with two template arguments. This meta-programming is based on template programming that where only classes or structs can be used as arguments, but not functions. This is the reason why the ``registerKernels`` functions are encapsulated in a struct.
 
 .. code-block:: c++
 

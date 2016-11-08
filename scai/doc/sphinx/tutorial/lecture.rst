@@ -53,7 +53,7 @@ into your library path.
 The following example program can be used to verify that compilation, linking
 and running works fine.
 
-:doc:`Solver <example_solver>`
+:download:`Solver <solver.cpp>`
 
 An example **Makefile** can be found together with the **simple.cpp** example
 and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_source/tutorial/**.
