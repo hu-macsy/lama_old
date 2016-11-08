@@ -53,7 +53,7 @@ using utilskernel::LArray;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
-#define DELETE_OUTPUT_FILES
+#undef DELETE_OUTPUT_FILES
 
 /* ------------------------------------------------------------------------- */
 
@@ -96,6 +96,25 @@ static void setNonSquareData( MatrixStorage<ValueType>& storage )
     LArray<IndexType> csrIA( numRows + 1, ia );
     LArray<IndexType> csrJA( numValues, ja ); 
     LArray<ValueType> csrValues( numValues, ValueType( 1 ) );
+
+    storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static void setSymmetricData( MatrixStorage<ValueType>& storage )
+{
+    const IndexType numRows = 5;
+    const IndexType numColumns = 5;
+    const IndexType ia[]     = { 0,             3,   4,        6,        8, 9 };
+    const IndexType ja[]     = { 0,   2,   3,   1,   2,   0,   0,   3,   4  };
+    const ValueType values[] = { 1.1, 0.1, 0.6, 1.2, 1.3, 0.1, 0.6, 1.4, 1.5 };
+    const IndexType numValues = ia[numRows];
+
+    LArray<IndexType> csrIA( numRows + 1, ia );
+    LArray<IndexType> csrJA( numValues, ja );
+    LArray<ValueType> csrValues( numValues, values );
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
@@ -423,6 +442,80 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
             for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
             {
                 BOOST_CHECK_EQUAL( csrStorage.getValue( i, j ), readStorage.getValue( i, j ) );
+            }
+        }
+
+#ifdef DELETE_OUTPUT_FILES
+        int rc = FileIO::removeFile( fileName );
+    
+        BOOST_CHECK_EQUAL( rc, 0 );
+        BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+#endif
+
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( SymmetricStorage )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+ 
+        if ( fileSuffix != fileIO->getMatrixFileSuffix() )
+        {
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
+            continue;   
+        }
+
+        CSRStorage<ValueType> csrStorage;
+        setSymmetricData( csrStorage );
+
+        BOOST_CHECK( csrStorage.checkSymmetry() );
+
+        LArray<IndexType> firstColIndexes1;
+        csrStorage.getFirstColumnIndexes( firstColIndexes1 );
+     
+        std::string typeName = TypeTraits<ValueType>::id();
+        std::string fileName = "outStorageSymmetric" + typeName + fileSuffix;
+
+        SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
+    
+        csrStorage.writeToFile( fileName );
+
+        BOOST_CHECK( FileIO::fileExists( fileName ) );
+
+        CSRStorage<ValueType> readStorage;
+        readStorage.readFromFile( fileName );
+
+        // The storage read can have less columns 
+
+        BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
+        BOOST_REQUIRE( readStorage.getNumColumns() <= csrStorage.getNumColumns() );
+
+        BOOST_CHECK( readStorage.checkSymmetry() );
+
+        // We verify that the order of the column indexes has not changed
+
+        for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
+        {
+            for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
+            {
+                BOOST_CHECK_MESSAGE( csrStorage.getValue( i, j ) == readStorage.getValue( i, j ),
+                                     "matrix[" << i << ", " << j << "] of " << fileName 
+                                      << ", written " << csrStorage.getValue( i, j ) 
+                                      << ", read " << readStorage.getValue( i, j ) );
             }
         }
 
