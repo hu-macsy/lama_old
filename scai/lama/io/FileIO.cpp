@@ -279,7 +279,8 @@ void FileIO::read(
 
     if ( !canCreate( suffix ) )
     {
-        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+        SCAI_THROWEXCEPTION( common::IOException, "ERROR: read from file " << inFileName <<
+                                                  ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
     common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
@@ -290,20 +291,21 @@ void FileIO::read(
 
 /* -------------------------------------------------------------------------- */
 
-IndexType FileIO::getArraySize( const std::string& fileName )
+IndexType FileIO::getArraySize( const std::string& inFileName )
 {
-    std::string suffix = getSuffix( fileName );
+    std::string suffix = getSuffix( inFileName );
 
     if ( !canCreate( suffix ) )
     {
-        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+        SCAI_THROWEXCEPTION( common::IOException, "ERROR: read from file " << inFileName <<
+                                                  ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
     common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     IndexType size = nIndex;
 
-    fileIO->readArrayInfo( size, fileName );
+    fileIO->readArrayInfo( size, inFileName );
 
     return size;
 }

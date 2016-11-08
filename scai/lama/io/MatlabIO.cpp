@@ -202,7 +202,10 @@ void MatlabIO::readArrayImpl(
     }
     else
     {
-        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
+        // give useful error message as this is a typical error if wrong file is specified
+
+        SCAI_ASSERT_LE_ERROR( first + n, size, "Read array block( offset = " << first << ", n = " << nEntries << ") failed: "
+                                                << "size of array in file " << fileName << " is " << size )
     }
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
@@ -298,7 +301,7 @@ void MatlabIO::readData(
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Index base = " << minRowIndex << " is illegal" )
+        COMMON_THROWEXCEPTION( "ERROR reading file " << fileName << ": minimal row index " << minRowIndex << " is illegal" )
     }
 }
 

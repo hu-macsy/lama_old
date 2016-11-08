@@ -232,8 +232,6 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
         return;
     }
    
-    // dist must be block distributed, not checked again here
-
     const IndexType n = distribution->getBlockDistributionSize();
 
     if ( n == nIndex )
@@ -242,6 +240,8 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
         redistribute( distribution );
         return;
     }
+
+    // we have a block distribution, so every processor reads its own part
 
     IndexType first = 0;
 
@@ -268,7 +268,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
 
     if ( error )
     {
-        COMMON_THROWEXCEPTION( "readFromSingleFile failed." )
+        COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
     }
 
     // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
