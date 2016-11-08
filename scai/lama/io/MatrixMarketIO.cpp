@@ -702,7 +702,7 @@ static void removeUpperTriangular( HArray<IndexType>& cooIA, HArray<IndexType>& 
             {
                 ia[k] = ia[pos];
                 ja[k] = ja[pos];
-       
+                values[k] = values[pos];
                 k++;
             }
         }

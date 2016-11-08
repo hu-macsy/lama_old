@@ -74,7 +74,7 @@ void bench( const IndexType N )
 
     double tmpTime = Walltime::get();
 
-    bool ascending = true;
+    bool ascending = false;
 
     // X.sort( ascending );
   
@@ -92,6 +92,10 @@ void bench( const IndexType N )
         std::cout << "X[local:" << i << "] = " << localValues[i] << std::endl;
         std::cout << "perm[local:" << i << "] = " << permValues[i] << std::endl;
     }
+
+    // check the sorted values
+
+    std::cout << "X.isSorted( " << ascending << " ) = " << X.isSorted( ascending ) << std::endl;
 
     // check the sorted values
 

@@ -386,21 +386,39 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
  *
  *  A value v belongs to partition p if splitValues[p] <= v < splitValues[p+1] 
  */
-
 template<typename ValueType>
-static void getSplitValues( ValueType splitValues[], const IndexType nPartitions )
+static void getSplitValues( 
+    ValueType splitValues[], 
+    const Communicator& comm,
+    const ValueType sortedValues[],
+    const IndexType n,
+    const bool ascending )
 {
-    // split values by uniformly distribution of range -1.0 .. 1.0 
+    const PartitionId nPartitions = comm.getSize();
 
-    for ( PartitionId p = 0; p <= nPartitions; ++p )
+    if ( ascending )
     {
-        splitValues[p] = ValueType( -1 ) + ( ValueType( p ) / ValueType( nPartitions ) ) * ValueType( 2 );
+        ValueType minV = n > 0 ? sortedValues[0] : TypeTraits<ValueType>::getMax();
+        ValueType maxV = n > 0 ? sortedValues[n-1] : TypeTraits<ValueType>::getMin();
+
+        splitValues[0]           = comm.min( minV );
+        splitValues[nPartitions] = comm.max( maxV );
+    }
+    else
+    {
+        ValueType maxV = n > 0 ? sortedValues[0] : TypeTraits<ValueType>::getMin();
+        ValueType minV = n > 0 ? sortedValues[n-1] : TypeTraits<ValueType>::getMax();
+
+        splitValues[0]           = comm.max( maxV );
+        splitValues[nPartitions] = comm.min( minV );
     }
 
-    // make sure to cover the full range
+    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[nPartitions]
 
-    splitValues[0] = common::TypeTraits<ValueType>::getMin();
-    splitValues[nPartitions] = common::TypeTraits<ValueType>::getMax();
+    for ( PartitionId p = 1; p < nPartitions; ++p )
+    {
+        splitValues[p] = splitValues[0] + ( splitValues[nPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( nPartitions );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -417,6 +435,101 @@ template<typename ValueType>
 void DenseVector<ValueType>::sort( DenseVector<IndexType>& perm, bool ascending )
 {
     sortImpl( &perm, this, *this, ascending );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool DenseVector<ValueType>::isSorted( bool ascending ) const
+{
+    const dmemo::Distribution& distribution = getDistribution();
+    const dmemo::Communicator& comm         = distribution.getCommunicator();
+
+    PartitionId rank = comm.getRank();
+    PartitionId size = comm.getSize();
+
+    IndexType blockSize = distribution.getBlockDistributionSize();
+
+    SCAI_ASSERT_NE_ERROR( blockSize, nIndex, "isSorted only possible on block distributed vectors" )
+
+    const HArray<ValueType>& localValues = getLocalValues();
+
+    bool is = HArrayUtils::isSorted( localValues, ascending );
+
+    if ( size == 1 )
+    {
+        return is;    // we are done
+    }
+
+    SCAI_LOG_DEBUG( logger, "local array is sorted = " << is )
+
+    const IndexType n = localValues.size();
+
+    ValueType tmp;
+
+    if ( n == 0 )
+    {
+        comm.shift( &tmp, IndexType( 1 ), &tmp, IndexType( 0 ), 1 );
+        comm.shift( &tmp, IndexType( 1 ), &tmp, IndexType( 0 ), -1 );
+
+        is = comm.all( is );
+
+        return is;
+    }
+
+    ReadAccess<ValueType> rLocalValues( localValues );
+
+    // send right value to right neighbor
+
+    IndexType nt = comm.shift( &tmp, IndexType( 1 ), &rLocalValues[n-1], IndexType( 1 ), 1 );
+
+    if ( nt && rank > 0 )
+    {
+        if ( ascending )
+        {
+            if ( tmp > rLocalValues[0] )
+            {
+                is = false;
+                SCAI_LOG_INFO( logger, comm << ": value of left neighbor " << tmp << " greater than my lowest value " << rLocalValues[0] )
+            }
+        }
+        else
+        {
+            if ( tmp < rLocalValues[0] )
+            {
+                is = false;
+                SCAI_LOG_INFO( logger, comm << ": value of left neighbor " << tmp << " less than my greatest value " << rLocalValues[0] )
+            }
+        }
+    }
+
+    // send left value to left neighbor
+
+    nt = comm.shift( &tmp, IndexType( 1 ), &rLocalValues[0], IndexType( 1 ), -1 );
+
+    if ( nt && rank < size - 1 )
+    {
+        if ( ascending )
+        {
+            if ( tmp < rLocalValues[n-1] )
+            {
+                is = false;
+                SCAI_LOG_INFO( logger, comm << ": value of right neighbor " << tmp << " less than my highest value " << rLocalValues[n-1] )
+            }
+        }
+        else
+        {
+            if ( tmp > rLocalValues[n-1] )
+            {
+                is = false;
+                SCAI_LOG_INFO( logger, comm << ": value of right neighbor " << tmp << " greater than my highest value " << rLocalValues[n-1] )
+            }
+        }
+    }
+
+    is = comm.all( is );
+
+    return is;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -480,8 +593,11 @@ void DenseVector<ValueType>::sortImpl(
     PartitionId nPartitions = comm.getSize();
 
     common::scoped_array<ValueType> splitValues( new ValueType[ nPartitions + 1 ] );
-  
-    getSplitValues( splitValues.get(), nPartitions );
+
+    {
+        ReadAccess<ValueType> rSortedValues( sortedValues );
+        getSplitValues( splitValues.get(), comm, rSortedValues.get(), sortedValues.size(), ascending );
+    }
 
     common::scoped_array<IndexType> quantities( new IndexType[ nPartitions ] );
 
@@ -499,10 +615,21 @@ void DenseVector<ValueType>::sortImpl(
  
         for ( IndexType i = 0; i < blockSize; ++i )
         {
-            while ( rValues[i] > splitValues[p + 1] )
+            if ( ascending )
             {
-               p++;
-               SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+                while ( rValues[i] > splitValues[p + 1] )
+                {
+                   p++;
+                   SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+                }
+            }
+            else
+            {
+                while ( rValues[i] < splitValues[p + 1] )
+                {
+                   p++;
+                   SCAI_ASSERT_LT_DEBUG( p, nPartitions, "Illegal split values, mLocalValues[" << i << "] = " << rValues[i] );
+                }
             }
 
             quantities[p]++;

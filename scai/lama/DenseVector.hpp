@@ -342,6 +342,12 @@ public:
 
     virtual void sort( bool ascending );
 
+    /** Checking whether all values in a dense vector are sorted. 
+     *
+     *  This method can only be applied for block distributions. 
+     */
+    virtual bool isSorted( bool ascending ) const;
+
     /** Implementation of Vector::getValueType */
 
     virtual common::scalar::ScalarType getValueType() const;
