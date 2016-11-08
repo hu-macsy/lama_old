@@ -559,7 +559,8 @@ void LamaConfig::printHelp( const char* progName )
     using std::cout;
     using std::endl;
 
-    cout << "Usage: " << progName << " <matrix_filename> [ rhs_filename ] [ sol_filename ] [ options ] " << endl;
+    cout << "Usage: " << progName << " <matrix_filename> [ rhs ] [start_solution] [ final_solution_filename ] [ options ] " << endl;
+    cout << "         rhs, start_solution can be either a value or a filename" << endl;
     cout << "         solver specific options:" << endl;
     cout << "         --SCAI_SOLVER=[" << getLoggers() << "]" << endl;
     cout << "         --SCAI_SOLVER_LOG=[" << getLogLevels() << "]" << endl;

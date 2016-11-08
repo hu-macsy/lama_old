@@ -70,6 +70,39 @@ typedef RealType ValueType;
         }                                       \
     }                                           \
      
+static bool isNumeric( double& val, const string& str )
+{
+    bool is = true;
+
+    for ( std::string::const_iterator p = str.begin(); str.end() != p; ++p )
+    {
+        if ( isdigit( *p ) )
+        {  
+            continue;
+        }
+        if ( *p == '-' )
+        {  
+            continue;
+        }
+        if ( *p == '.' )
+        {  
+            continue;
+        }
+
+        is = false;
+        break;
+    }
+
+    if ( is )
+    {
+        istringstream valStr( str );
+        valStr >> val;
+        is = ! valStr.fail();
+    }
+
+    return is;
+}
+
 /** Help routine to combine criterions. */
 
 static void orCriterion( CriterionPtr& crit, const CriterionPtr& add )
@@ -108,7 +141,7 @@ int main( int argc, const char* argv[] )
 
     // accept only 2 - 4 arguments, --SCAI_xxx do not count here
 
-    if ( argc < 2  || argc > 4 )
+    if ( argc < 2  || argc > 5 )
     {
         if ( myRank == 0 )
         {
@@ -120,17 +153,20 @@ int main( int argc, const char* argv[] )
 
     try
     {
-        std::string matrixFilename = argv[1];
-        std::string rhsFilename    = argc <= 2 ? "" : argv[2];
-        std::string solFilename    = argc <= 3 ? "" : argv[3];
+        std::string matrixFilename        = argv[1];
+        std::string rhsFilename           = argc <= 2 ? "" : argv[2];
+        std::string startSolutionFilename = argc <= 3 ? "" : argv[3];
+        std::string finalSolutionFilename = argc <= 4 ? "" : argv[4];
 
         // use auto pointer so that matrix will be deleted at program exit
 
         scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
         scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
+        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
 
-        Matrix& matrix = *matrixPtr;
-        Vector& rhs = *rhsPtr;
+        Matrix& matrix   = *matrixPtr;
+        Vector& rhs      = *rhsPtr;
+        Vector& solution = *solutionPtr;
 
         // input matrix will be CSR format
 
@@ -143,7 +179,7 @@ int main( int argc, const char* argv[] )
 
         // Now read in matrix and rhs
 
-        HOST_PRINT( 0, "Read matrix from file " )
+        HOST_PRINT( 0, "Setup matrix, rhs, initial solution" )
 
         {
             SCAI_REGION( "Main.loadData" )
@@ -152,27 +188,29 @@ int main( int argc, const char* argv[] )
 
             // read matrix + rhs from disk
 
-            std::string distFileName = "";
+            std::string distFilename = "";
 
-            if ( common::Settings::getEnvironment( distFileName, "SCAI_DISTRIBUTION" ) )
+            if ( common::Settings::getEnvironment( distFilename, "SCAI_DISTRIBUTION" ) )
             {
-                if ( distFileName.size() < 2 )
+                if ( distFilename.size() < 2 )
                 {
-                    distFileName = "";
+                    distFilename = "";
                     HOST_PRINT( 0 , "Read matrix from file " << matrixFilename << ", with mapping by cols" )
                 }
                 else
                 {
-                    HOST_PRINT( 0, "Read matrix from file " << matrixFilename << ", with mapping from file " << distFileName )
+                    HOST_PRINT( 0, "Read matrix from file " << matrixFilename << ", with mapping from file " << distFilename )
                 }
 
-                inMatrix.readFromFile( matrixFilename, distFileName );
+                inMatrix.readFromFile( matrixFilename, distFilename );
             }
             else
             {
                 HOST_PRINT( myRank, "Read matrix from file " << matrixFilename )
                 inMatrix.readFromFile( matrixFilename );
             }
+
+            SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "solver only with square matrices" )
 
             HOST_PRINT( myRank, "Matrix from file " << matrixFilename << " : " << inMatrix )
 
@@ -181,26 +219,28 @@ int main( int argc, const char* argv[] )
                 // this filename can also be taken for vector
 
                 rhsFilename = matrixFilename.substr( 0, matrixFilename.size() - 4 ) + ".frv";
+            
+                if ( ! FileIO::fileExists( rhsFilename ) )
+                {
+                    HOST_PRINT( myRank, "rhs file " << rhsFilename << " does not exist, take default rhs" )
+                    rhsFilename = "";
+                }
             }
 
-            if ( ! FileIO::fileExists( rhsFilename ) )
+            double val;
+
+            if ( isNumeric( val, rhsFilename ) )
             {
-                HOST_PRINT( myRank, "rhs file " << rhsFilename << " does not exist, take default rhs" )
-                rhsFilename = "";
+                rhs.allocate( inMatrix.getRowDistributionPtr() );
+                rhs = Scalar( val );
+
+                HOST_PRINT( myRank, "Set rhs = " << val )
             }
-
-            if ( rhsFilename.size() )
+            else if ( rhsFilename.size() )
             {
-                if ( distFileName.size() > 0 )
-                {
-                    rhs.readFromFile( rhsFilename );
-                }
-                else
-                {
-                    rhs.readFromFile( rhsFilename, inMatrix.getRowDistributionPtr() );
-                }
+                rhs.readFromFile( rhsFilename, inMatrix.getRowDistributionPtr() );
 
-                HOST_PRINT( myRank, "rhs from file " << rhsFilename << " : " << rhs )
+                HOST_PRINT( myRank, "Read rhs from file " << rhsFilename << " : " << rhs )
             }
             else
             {
@@ -212,21 +252,37 @@ int main( int argc, const char* argv[] )
                 x = Scalar( 1 );
                 rhs = inMatrix * x;
 
-                HOST_PRINT( myRank, "rhs is sum( Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
+            }
+
+            if ( isNumeric( val, startSolutionFilename ) )
+            {
+                solution.allocate( inMatrix.getRowDistributionPtr() );
+                solution = Scalar( val );
+                HOST_PRINT( myRank, "Set initial solution = " << val )
+            }
+            else if ( startSolutionFilename.size() )
+            {
+                solution.readFromFile( startSolutionFilename, inMatrix.getRowDistributionPtr() );
+                HOST_PRINT( myRank, "Read initial solution from file " << startSolutionFilename << ": " << solution )
+            }
+            else
+            {
+                solution.allocate( inMatrix.getRowDistributionPtr() );
+                solution = Scalar( 0 );   // initialize of a vector
+                HOST_PRINT( myRank, "Set initial solution = 0" )
             }
 
             // only square matrices are accetpted
-            SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "size mismatch" )
-            SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch" )
+
+            SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch: #rows of matrix must be equal size of rhs" )
+            SCAI_ASSERT_EQUAL( inMatrix.getNumColumns(), solution.size(), 
+                               "size mismatch: #cols of matrix must be equal size of initial solution" )
         }
 
         // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
-        scai::common::unique_ptr<Vector> solutionPtr( rhs.newVector() );
-        Vector& solution = *solutionPtr;
         int numRows = inMatrix.getNumRows();
-        solution.allocate( inMatrix.getColDistributionPtr() );
-        solution = 0.0;   // initialize of a vector
 
         // distribute data (trivial block partitioning)
 
@@ -424,32 +480,25 @@ int main( int argc, const char* argv[] )
 
         // if 3rd argument for solution file is specified, write it or compare it
 
-        if ( solFilename.size() )
+        if ( finalSolutionFilename.size() )
         {
-            if ( FileIO::fileExists( solFilename ) )
+            if ( FileIO::fileExists( finalSolutionFilename ) )
             {
-                HOST_PRINT( myRank, "Compare solution with vector in " << solFilename )
+                HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
                 scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
                 Vector& compSolution = *compSolutionPtr;
-                compSolution.readFromFile( solFilename );
+                compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
                 Scalar maxDiff = compSolution.maxNorm();
-                HOST_PRINT( myRank, "Maximal difference between solution in " << solFilename << ": " << maxDiff )
+                HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else
             {
-                HOST_PRINT( myRank, "Write solution to output file " << solFilename << ".mtx (Matrix Market)" )
+                HOST_PRINT( myRank, "Write solution to output file " << finalSolutionFilename )
                 LamaTiming timer( comm, "Writing solution" );
-                // replicate solution on all processors
-                DistributionPtr repDist( new NoDistribution( solution.size() ) );
-                solution.redistribute( repDist );
-
-                if ( myRank == 0 )
-                {
-                    solution.writeToFile( solFilename );
-                }
+                solution.writeToFile( finalSolutionFilename );
             }
         }
     }
