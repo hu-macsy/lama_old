@@ -562,8 +562,9 @@ void LamaConfig::printHelp( const char* progName )
     cout << "Usage: " << progName << " <matrix_filename> [ rhs ] [start_solution] [ final_solution_filename ] [ options ] " << endl;
     cout << "         rhs, start_solution can be either a value or a filename" << endl;
     cout << "         solver specific options:" << endl;
-    cout << "         --SCAI_SOLVER=[" << getLoggers() << "]" << endl;
-    cout << "         --SCAI_SOLVER_LOG=[" << getLogLevels() << "]" << endl;
+    cout << "         --SCAI_DISTRBUTION=BLOCK|<dist_filename>" << endl;
+    cout << "         --SCAI_SOLVER=" << getLoggers() << endl;
+    cout << "         --SCAI_SOLVER_LOG=" << getLogLevels() << endl;
     cout << "         --SCAI_MAX_ITER=<int_val>" << endl;
     cout << "         --SCAI_NORM=L1|L2|Max" << endl;
     cout << "         --SCAI_REL_TOL=<val>" << endl;

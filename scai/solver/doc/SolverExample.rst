@@ -12,18 +12,28 @@ Command Line Arguments
 
 .. code-block:: bash
 
-    solver.exe [options] <matrix_filename> [ <rhs_filename> [ solution_filename ] ]
+    lamaSolver.exe [options] <matrix_filename> [ rhs ] [start_solution] [ final_solution_filename ] [ options ] 
 
-The name of the file that contains the matrix is a mandatory argument. The name
-of the file that contains the right-hand-side is optional; if not specified the
-right hand side is sum( matrix, dim = 2 ), i.e. each entry is the sum of the corresponding
-row. If a solution filename is specified, the solution is either written into this
-file (file does not exist) or it is compared with the vector in the file (file exists).
+* The mandatory argument ``matrix_filename`` is the name of the file that contains the matrix.
+* The optional argument ``rhs`` is either a single value or the name of the file that contains the right-hand-side.
+  If not specified the right hand side is sum( matrix, dim = 2 ), i.e. each entry is the sum of the corresponding
+  row. 
+* The optional argument ``start_solution`` is either a single value or the name of the file that contains the intitial
+  solution. If not specified the start solution is set to 0.
+* If a solution filename is specified, the solution is either written into this
+  file (file does not exist) or it is compared with the vector in the file (file exists).
+
+Note: If an optional argument should be set but a previous one is not set, the previous optional argument should be ``""``.
+
+.. code-block:: bash
+
+    lamaSolver.exe matrix.mtx "" solution.mtx
 
 These are the supported options:
 
 .. code-block:: bash
 
+         --SCAI_DISTRIBUTION=BLOCK|<dist_file_name>
          --SCAI_SOLVER=[BiCG|BiCGstab|CG|CGNE|CGNR|CGS|GMRES|InverseSolver|Jacobi|MINRES|QMR|Richardson|SimpleAMG|TFQMR]
          --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]
          --SCAI_MAX_ITER=<int_val>
@@ -43,6 +53,13 @@ These are the supported options:
          --SCAI_CUDA_USE_TEXTURE=[0|1]
          --SCAI_CUDA_USE_SHARED_MEM=[0|1]
          --SCAI_CUDA_BLOCK_SIZE=[64|128|...]
+
+* Via ``SCAI_DISTRIBUTION`` a distribution for the matrix and the vectors can be set explicitly. 
+  The value ``BLOCK`` stands for a block distribution without having an explicit mapping file.
+  Otherwise the mapping is read from the corresponding file. For more information see 
+  the command ``Matrix::readFromFile( matrix_filename, dist_filename)``.
+* Via ``SCAI_SOLVER`` one of the available solvers can be chosen. As all solver classes register 
+  themselves in a factory, they can be created dynamically at runtime.
 
 Before the solve method is called, a summary of the whole configuration is given. Without any arguments
 specified, it will print all the default settings.
