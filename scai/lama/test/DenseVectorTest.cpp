@@ -756,4 +756,55 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( scatterTest )
+{
+    typedef float ValueType;
+
+    ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2 };
+    ValueType indexValues[]  = { 3, 4, 1, 0, 5, 2 };
+    ValueType targetValues[] = { 8, 4, 2, 5, 9, 1 };
+
+    const IndexType n1 = sizeof( sourceValues ) / sizeof( ValueType );
+    const IndexType n  = sizeof( indexValues ) / sizeof( ValueType );
+    const IndexType m  = sizeof( targetValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n, n1 );
+
+    DenseVector<ValueType> source;
+    hmemo::HArray<ValueType> sourceArray( m, sourceValues );
+    source.assign( sourceArray );
+
+    DenseVector<ValueType> index;
+    hmemo::HArray<ValueType> indexArray( n, indexValues );
+    index.assign( indexArray );
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr targetDist( new dmemo::BlockDistribution( m, comm ) );
+    dmemo::DistributionPtr indexDist( new dmemo::BlockDistribution( n, comm ) );
+
+    source.redistribute( indexDist );
+    index.redistribute( indexDist );
+ 
+    DenseVector<ValueType> target( targetDist );
+
+    target.scatter( index, source );
+
+    hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType localIndex = target.getDistribution().global2local( i );
+
+        if ( localIndex != nIndex )
+        {
+            BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i], 
+                                 *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
+                                 << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

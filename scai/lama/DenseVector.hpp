@@ -484,6 +484,19 @@ public:
         const DenseVector<IndexType>& index,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
+    /** Scattering values from another vector into this vector
+     * 
+     *  @param[in] index  specifies positions where to update values     
+     *  @param[in] source values that are scattered
+     *  @param[in] op     specifies how to combine elements with existing ones
+     *
+     *  *this[ index ] = source, index and source must have same size/distribution 
+     */
+    virtual void scatter(
+        const DenseVector<IndexType>& index,
+        const DenseVector<ValueType>& source,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
