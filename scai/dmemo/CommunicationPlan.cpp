@@ -213,6 +213,39 @@ void CommunicationPlan::allocate( const IndexType quantities[], const PartitionI
 
 /* ------------------------------------------------------------------------- */
 
+void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const PartitionId noPartitions, bool compressFlag )
+{
+    mCompressed = false;
+
+    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions by offsets" )
+
+    mEntries.resize( noPartitions );
+
+    SCAI_ASSERT_EQ_ERROR( offsets[0], 0, "Illegal offsets array" )
+
+    for ( PartitionId i = 0; i < noPartitions; ++i )
+    {
+        Entry& entry = mEntries[i];
+        SCAI_ASSERT_LE_ERROR( offsets[i], offsets[i+1], "illegal offsets for i = " << i )
+        entry.quantity = offsets[i+1] - offsets[i];
+        entry.offset = offsets[i];
+        entry.partitionId = i;
+        SCAI_LOG_TRACE( logger, "Entries[" << i << "].quantity = " << mEntries[i].quantity )
+        SCAI_LOG_TRACE( logger, " mQuantity = " << mQuantity )
+    }
+
+    mQuantity = offsets[noPartitions];   // total quantity
+
+    mAllocated = true;
+
+    if ( compressFlag )
+    {
+        compress();
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 void CommunicationPlan::allocate(
     const PartitionId noPartitions,
     const PartitionId owners[],

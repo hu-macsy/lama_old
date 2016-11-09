@@ -166,6 +166,10 @@ public:
      */
     void allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag = true );
 
+    /** Allocate a communication plan by offsets instead of quantities for each partition.
+     */
+    void allocateByOffsets( const IndexType offsets[], const PartitionId noPartitions, bool compressFlag = true );
+
     /** @brief Allocate communication plan by an array of owners.
      *
      *  @param[in] noPartitions  number of partitions that exist

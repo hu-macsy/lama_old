@@ -120,6 +120,58 @@ BOOST_AUTO_TEST_CASE( allocatePlanTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( allocatePlanByOffsetTest )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId rank = comm->getRank();
+
+    std::vector<IndexType> quantities;
+
+    setQuantities( quantities, *comm );
+
+    std::vector<IndexType> offsets;
+
+    IndexType offs = 0;
+
+    offsets.push_back( offs );
+
+    for ( size_t i = 0; i < quantities.size(); ++i )
+    {
+        offs += quantities[i];
+        offsets.push_back( offs );
+    }
+
+    BOOST_REQUIRE_EQUAL( offsets.size(), quantities.size() + 1 );
+
+    bool compressFlag = true;
+
+    CommunicationPlan requiredPlan;
+   
+    requiredPlan.allocateByOffsets( &offsets[0], quantities.size(), compressFlag );
+
+    BOOST_CHECK( requiredPlan.compressed() );
+
+    // verify that requiredPlan is correctly set up
+
+    IndexType offsetCheck = 0;
+
+    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
+    {
+        IndexType n = requiredPlan[p].quantity;
+        PartitionId partitionId = requiredPlan[p].partitionId;
+        IndexType nExpected = required( rank, partitionId );
+        BOOST_CHECK_EQUAL( n, nExpected );
+        BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
+        offsetCheck += n;
+    }
+
+    BOOST_CHECK_EQUAL( offs, offsetCheck );
+    BOOST_CHECK_EQUAL( offsetCheck, requiredPlan.totalQuantity() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
