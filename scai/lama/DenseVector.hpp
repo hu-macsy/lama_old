@@ -470,6 +470,20 @@ public:
 
     virtual void assign( const hmemo::_HArray& globalValues );
 
+    /** Setting this vector by gathering vector elements from another vector.
+     * 
+     *  @param[in] source is the vector from which elements are gathered
+     *  @param[in] index  are the elements needed from other processors
+     *  @param[in] op     specifies how to combine elements with existing ones
+     *
+     *  If op is COPY, this vector will have the same size and distribution as index, otherwise
+     *  this vector and the other vector must have the same size and distribution.
+     */
+    virtual void gather( 
+        const DenseVector<ValueType>& source, 
+        const DenseVector<IndexType>& index,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;

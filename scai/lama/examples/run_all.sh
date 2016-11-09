@@ -70,7 +70,7 @@ RUN 1 bench/matadd.exe
 RUN 1 bench/matmul.exe
 RUN 1 bench/maxnorm.exe
 RUN 1 bench/rowcol.exe
-RUN 1 bench/sort.exe
+RUN 1 bench/sort.exe 10000
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/bench/*.exe | wc -l`

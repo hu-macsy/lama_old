@@ -1060,6 +1060,113 @@ void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
     }
 }
 
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::gather(
+    const DenseVector<ValueType>& source, 
+    const DenseVector<IndexType>& index, 
+    const utilskernel::binary::BinaryOp op)
+{
+    if ( op != utilskernel::binary::COPY )
+    {
+        SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
+    }
+
+    const Distribution& sourceDistribution = source.getDistribution();
+
+    if ( sourceDistribution.isReplicated() )
+    {
+        // we can just do it locally and are done
+
+        HArrayUtils::gather( mLocalValues, source.getLocalValues(), index.getLocalValues(), op );
+
+        assign( mLocalValues, index.getDistributionPtr() );
+
+        return;
+    }
+
+    const Communicator& comm = sourceDistribution.getCommunicator();
+
+    // otherwise we have to set up a communication plan 
+
+    HArray<PartitionId> owners;
+
+    sourceDistribution.computeOwners( owners, index.getLocalValues() );
+
+    // set up required values by sorting the indexes corresponding to the owners via bucketsort
+
+    const PartitionId size = comm.getSize();
+
+    HArray<IndexType> offsets;  // used to allocate the communication plan
+    HArray<IndexType> perm;     // used to sort required indexes and to scatter the gathered values
+
+    HArrayUtils::bucketSort( offsets, perm, owners, size );
+
+    SCAI_ASSERT_EQ_DEBUG( offsets.size(), size + 1, "wrong offsets" )
+    SCAI_ASSERT_EQ_DEBUG( perm.size(), owners.size(), "illegal perm" )
+
+    HArray<IndexType> requiredIndexes;  // local index values sorted by owner
+
+    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, utilskernel::binary::COPY );
+
+    // exchange communication plans
+
+    dmemo::CommunicationPlan recvPlan;
+    dmemo::CommunicationPlan sendPlan;
+
+    {
+        hmemo::ReadAccess<IndexType> rOffsets( offsets );
+        recvPlan.allocateByOffsets( rOffsets.get(), size );
+    }
+
+    sendPlan.allocateTranspose( recvPlan, comm );
+
+    SCAI_LOG_DEBUG( logger, comm << ": recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
+
+    HArray<IndexType> sendIndexes;
+
+    comm.exchangeByPlan( sendIndexes, sendPlan, requiredIndexes, recvPlan );
+
+    // translate global sendIndexes to local indexes, all must be local
+
+    {
+        WriteAccess<IndexType> wSendIndexes( sendIndexes );
+
+        for ( IndexType i = 0; i < sendIndexes.size(); ++i )
+        {
+            IndexType localIndex = sourceDistribution.global2local( wSendIndexes[i] );
+            SCAI_ASSERT_NE_DEBUG( localIndex, nIndex, "got required index " << wSendIndexes[i] << " but I'm not owner" )
+            wSendIndexes[i] = localIndex;
+        }
+    }
+
+    // exchange communication plan
+
+    HArray<ValueType> sendValues;  // values to send from my source values
+ 
+    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, utilskernel::binary::COPY );
+
+    // send via communication plan
+
+    HArray<ValueType> recvValues;
+
+    comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
+
+    if ( op == utilskernel::binary::COPY )
+    {
+        mLocalValues.resize( perm.size() );
+    }
+
+    // required indexes were sorted according to perm, using inverse perm here via scatter
+
+    HArrayUtils::scatter( mLocalValues, perm, recvValues, op );
+
+    assign( mLocalValues, index.getDistributionPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 {

@@ -1,5 +1,5 @@
 /**
- * @file maxnorm.cpp
+ * @file sort.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test of maxnorm for all valuetypes
- * @author Eric Schricker
- * @date 21.03.2016
+ * @brief Benchmark program to measure runtime of (parallel) sort
+ * @author Thomas Brandes
+ * @date 09.11.2016
  */
 
 #include <iostream>
@@ -44,6 +44,8 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/common/Walltime.hpp>
+#include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -52,16 +54,30 @@ using namespace dmemo;
 using namespace std;
 using scai::common::Walltime;
 
+#define HOST_PRINT( rank, msg )   \
+{                                 \
+    if ( rank == 0 )              \
+    {                             \
+        cout << msg << endl;      \
+    }                             \
+}                                 \
+
+/** Generic routine for benchmarking sort routine.
+ *
+ *  @tparam    ValueType type of values to be sorted
+ *  @param[in] N         number of values to sort
+ */
+template<typename ValueType>
 void bench( const IndexType N )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    PartitionId rank = comm->getRank();
 
     DistributionPtr blockDist( new BlockDistribution( N, comm ) );
-    DistributionPtr repDist( new NoDistribution( N ) );
 
     // generate random numbers
 
-    DenseVector<double> X;
+    DenseVector<ValueType> X;
     DenseVector<IndexType> perm;
 
     float fillRate = 1.0f;
@@ -70,50 +86,111 @@ void bench( const IndexType N )
 
     X.setRandom( blockDist, fillRate );
 
-    DenseVector<double> Xrep( X, repDist );   // save unsorted vector
+    DenseVector<ValueType> Xsave( X );  // save for comparison
+
+    bool debug = false;
+
+    bool ascending = true;
 
     double tmpTime = Walltime::get();
 
-    bool ascending = false;
+    X.sort( ascending );
 
-    // X.sort( ascending );
-  
+    tmpTime = Walltime::get() - tmpTime;
+
+    HOST_PRINT( rank, "Sort time (  NO  perm) : " << tmpTime << " seconds" )
+
+    X = Xsave;  // restore old values 
+
+    tmpTime = Walltime::get();
+
     X.sort( perm, ascending );
 
     tmpTime = Walltime::get() - tmpTime;
 
-    std::cout << "Sort time: " << tmpTime << " seconds" << std::endl;
+    HOST_PRINT( rank, "Sort time ( with perm) : " << tmpTime << " seconds" )
 
-    const utilskernel::LArray<double>& localValues = X.getLocalValues();
-    const utilskernel::LArray<IndexType>& permValues = perm.getLocalValues();
+    cout << *comm << ": sorted vector X = " << X << endl;
 
-    for ( IndexType i = 0; i < X.getDistribution().getLocalSize(); ++i )
+    // The following code might be used for debugging
+
+    if ( debug )
     {
-        std::cout << "X[local:" << i << "] = " << localValues[i] << std::endl;
-        std::cout << "perm[local:" << i << "] = " << permValues[i] << std::endl;
+        const utilskernel::LArray<ValueType>& localValues = X.getLocalValues();
+        const utilskernel::LArray<IndexType>& permValues = perm.getLocalValues();
+
+        for ( IndexType i = 0; i < X.getDistribution().getLocalSize(); ++i )
+        {
+            cout << "X[local:" << i << "] = " << localValues[i] << endl;
+            cout << "perm[local:" << i << "] = " << permValues[i] << endl;
+        }
     }
 
+    // check for sorted values
+
+    bool isSorted = X.isSorted( ascending );
+
+    SCAI_ASSERT( isSorted, "Vector not sorted correctly" )
+
+    // check for correct permutation by testing X == Xsave[perm]
+
+    HOST_PRINT( rank, "X.isSorted( " << ascending << " ) = " << isSorted )
+
     // check the sorted values
 
-    std::cout << "X.isSorted( " << ascending << " ) = " << X.isSorted( ascending ) << std::endl;
+    DenseVector<ValueType> Xcomp;
 
-    // check the sorted values
+    tmpTime = Walltime::get();
 
-    X.redistribute( repDist );
-    perm.redistribute( repDist );
- 
-    const HArray<double>& repLocalValues = X.getLocalValues();
+    Xcomp.gather( Xsave, perm );
+    Xcomp -= X;
+    Scalar maxDiff = Xcomp.maxNorm();
 
-    SCAI_ASSERT( utilskernel::HArrayUtils::isSorted( repLocalValues, ascending ), "Vector X is not sorted correctly." )
+    tmpTime = Walltime::get() - tmpTime;
 
-    utilskernel::LArray<double> sortedValues;
+    HOST_PRINT( rank, "Gather/compare time: " << tmpTime << " seconds" )
 
-    utilskernel::HArrayUtils::gather( sortedValues, Xrep.getLocalValues(), perm.getLocalValues(), utilskernel::binary::COPY );
-
-    std::cout << "diff = " << sortedValues.maxDiffNorm( X.getLocalValues() ) << std::endl;
+    SCAI_ASSERT_EQUAL( 0, maxDiff, "wrong sort result" )
 }
 
-int main()
+/* ----------------------------------------------------------------------------- */
+
+int main( int argc, const char* argv[] )
 {
-    bench( 20 );
+    SCAI_REGION( "Main.sort" )
+
+    common::Settings::parseArgs( argc, argv );
+
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    PartitionId rank = comm->getRank();
+
+    if ( argc != 2 )
+    {
+        HOST_PRINT( rank, "Usage: " << argv[0] << " <n>" )
+        HOST_PRINT( rank, " - n is the size of vector to sort" )
+        return -1;
+    }
+
+    istringstream val( argv[1] );
+
+    IndexType n = 0;
+
+    val >> n;
+
+    if ( val.fail() )
+    {
+        HOST_PRINT( rank, argv[1] << ": is not a legal size value" )
+        return -1;
+    }
+
+    bench<double>( n );
+
+    return 0;
 }

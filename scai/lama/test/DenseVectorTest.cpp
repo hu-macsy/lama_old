@@ -648,43 +648,110 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 {
-    return;
-
     if ( common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
         return;    // sort of complex numbers is not relevant
     }
 
-    const IndexType n = 100;
+    ValueType sortValues[]   = { 5, 9, 4, 8, 1, 2, 3 };
+    ValueType sortedValues[] = { 1, 2, 3, 4, 5, 8, 9 };
+    IndexType sortPerm[]     = { 4, 5, 6, 2, 0, 3, 1 };
+
+    const IndexType n = sizeof( sortValues ) / sizeof( ValueType );
+
+    DenseVector<ValueType> sortVector;
+    hmemo::HArray<ValueType> sortArray( n, sortValues );
+    sortVector.assign( sortArray );
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
     dmemo::DistributionPtr blockDist( new dmemo::BlockDistribution( n, comm ) );
-    dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
 
-    DenseVector<ValueType> x;
-    float fillRate = 1.0f;
-    srand( 131 + comm->getRank() );
-    x.setRandom( blockDist, fillRate );
-
-    DenseVector<ValueType> xUnsorted( x, repDist );   // save unsorted vector
+    sortVector.redistribute( blockDist );
 
     bool ascending = true;
+
     DenseVector<IndexType> perm;
 
-    x.sort( perm, ascending );    // parallel sorting with global permutation 
+    sortVector.sort( perm, ascending );    // parallel sorting with global permutation 
 
-    // check the results, therefore replicate it
+    BOOST_REQUIRE_EQUAL( n, perm.size() );
 
-    x.redistribute( repDist ); 
+    dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
+
+    sortVector.redistribute( repDist );
     perm.redistribute( repDist );
 
-    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( x.getLocalValues(), ascending ) );
+    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), ascending ) );
 
-    utilskernel::LArray<ValueType> sortedValues;
-    utilskernel::HArrayUtils::gather( sortedValues, xUnsorted.getLocalValues(), perm.getLocalValues(), utilskernel::binary::COPY );
+    hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
+    hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );
+    
+    BOOST_REQUIRE_EQUAL( n, rSorted.size() );
+    BOOST_REQUIRE_EQUAL( n, rPerm.size() );
 
-    BOOST_CHECK_EQUAL( ValueType( 0 ), sortedValues.maxDiffNorm( x.getLocalValues() ) );
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        BOOST_CHECK_EQUAL( rPerm[i], sortPerm[i] );
+        BOOST_CHECK_EQUAL( rSorted[i], sortedValues[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE ( gatherTest, ValueType, scai_array_test_types )
+
+BOOST_AUTO_TEST_CASE( gatherTest )
+{
+    typedef float ValueType;
+
+    ValueType sourceValues[] = { 5, 9, 4, 8, 1, 2, 3 };
+    ValueType indexValues[]  = { 3, 4, 1, 0, 6, 2 };
+    ValueType targetValues[] = { 8, 1, 9, 5, 3, 4 };
+
+    const IndexType m  = sizeof( sourceValues ) / sizeof( ValueType );
+    const IndexType n  = sizeof( indexValues ) / sizeof( ValueType );
+    const IndexType n1 = sizeof( targetValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n, n1 );
+
+    DenseVector<ValueType> source;
+    hmemo::HArray<ValueType> sourceArray( m, sourceValues );
+    source.assign( sourceArray );
+
+    DenseVector<ValueType> index;
+    hmemo::HArray<ValueType> indexArray( n, indexValues );
+    index.assign( indexArray );
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr sourceDist( new dmemo::BlockDistribution( m, comm ) );
+    dmemo::DistributionPtr indexDist( new dmemo::BlockDistribution( n, comm ) );
+
+    source.redistribute( sourceDist );
+    index.redistribute( indexDist );
+ 
+    DenseVector<ValueType> target;
+
+    target.gather( source, index );
+
+    BOOST_CHECK_EQUAL( target.size(), index.size() );
+    BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
+    BOOST_CHECK_EQUAL( target.getDistribution().getLocalSize(), target.getLocalValues().size() );
+
+    hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType localIndex = target.getDistribution().global2local( i );
+
+        if ( localIndex != nIndex )
+        {
+            BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i], 
+                                 *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
+                                 << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+        }
+    }
 }
 
 /* --------------------------------------------------------------------- */
