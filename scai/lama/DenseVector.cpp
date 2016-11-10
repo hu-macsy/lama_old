@@ -1179,10 +1179,11 @@ void DenseVector<ValueType>::scatter(
 
     const Distribution& targetDistribution = getDistribution();
 
+    SCAI_ASSERT_EQ_ERROR( source.getDistribution().isReplicated(), targetDistribution.isReplicated(),
+                          "scatter: either all arrays are replicated or all are distributed" )
+
     if ( targetDistribution.isReplicated() )
     {
-        SCAI_ASSERT( source.getDistribution().isReplicated(), "Not implemented: scatter a distributed array into replicated array" )
-    
         // so all involved arrays are replicated, we can do it just locally
 
         HArrayUtils::scatter( mLocalValues, index.getLocalValues(), source.getLocalValues(), op );
