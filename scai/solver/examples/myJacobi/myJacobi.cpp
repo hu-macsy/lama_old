@@ -59,7 +59,7 @@ int main( int , char** )
     MatrixCreator::buildPoisson( matrix, dim, stencil, size, size, size );
     int vectorSize = static_cast<int>( std::pow( size, dim ) );
     DenseVector<ValueType> exactSolution( vectorSize, 1.0 );
-    DenseVector<ValueType> rhs = matrix * exactSolution;
+    DenseVector<ValueType> rhs ( matrix * exactSolution );
     DenseVector<ValueType> solution( vectorSize, 0.0 );
     LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
     MyJacobi jacobiSolver( "MyJacobi", slogger );
