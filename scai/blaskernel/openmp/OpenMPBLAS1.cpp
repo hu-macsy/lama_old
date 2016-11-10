@@ -165,6 +165,12 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
     return common::Math::sqrt( sumOfSquares );
 }
 
+template<>
+IndexType OpenMPBLAS1::nrm2( const IndexType, const IndexType*, const IndexType )
+{
+    COMMON_THROWEXCEPTION( "BLAS1.nrm2 unsupported for " << TypeTraits<IndexType>::stype );
+}
+
 /** asum (l1 norm) */
 
 template<typename ValueType>
@@ -187,7 +193,8 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
         return result;
     }
 
-// OpenMP reduction clause cannot be used as it doesn't support complex numbers
+    // OpenMP reduction clause cannot be used as it doesn't support complex numbers
+
     #pragma omp parallel shared( result )
     {
         ValueType tResult = 0; // private for each thread
@@ -214,6 +221,12 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
         atomicAdd( result, tResult );
     }
     return result;
+}
+
+template<>
+IndexType OpenMPBLAS1::asum( const IndexType, const IndexType*, const IndexType )
+{
+    COMMON_THROWEXCEPTION( "BLAS1.asum unsupported for IndexType = " << TypeTraits<IndexType>::stype );
 }
 
 /** iamax */
@@ -509,6 +522,17 @@ ValueType OpenMPBLAS1::dot(
     return result;
 }
 
+template<>
+IndexType OpenMPBLAS1::dot(
+    const IndexType,
+    const IndexType*,
+    const IndexType,
+    const IndexType*,
+    const IndexType )
+{
+    COMMON_THROWEXCEPTION( "BLAS1.dot unsupported for IndexType = " << TypeTraits<IndexType>::stype );
+}
+
 /** sum */
 
 template<typename ValueType>
@@ -573,7 +597,7 @@ OpenMPBLAS1::OpenMPBLAS1()
 {
     SCAI_LOG_INFO( logger, "register BLAS1 OpenMP-routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
@@ -581,7 +605,7 @@ OpenMPBLAS1::~OpenMPBLAS1()
 {
     SCAI_LOG_INFO( logger, "unregister BLAS1 OpenMP-routines for Host at kernel registry" )
 
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

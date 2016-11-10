@@ -93,6 +93,7 @@ BOOST_AUTO_TEST_CASE( asumOpenMPTest )
 } 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;   // initialization/free  of context not here
@@ -129,7 +130,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( asumTest, ValueType, blas_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::axpy<ValueType> > axpy;
@@ -217,7 +218,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, blas_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, blas_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::copy<ValueType> > copy;
@@ -474,7 +475,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scalTest, ValueType, blas_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::sum<ValueType> > sum;
@@ -532,7 +533,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, blas_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, blas_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::swap<ValueType> > swap;
