@@ -184,7 +184,7 @@ inline Expression_SV_S operator+( const Vector& x, const Scalar& alpha )
  * @return          The expression representing this sum.
  */
 
-inline Expression_SV_S operator+( const Expression_SV exp, const Scalar& beta )
+inline Expression_SV_S operator+( const Expression_SV& exp, const Scalar& beta )
 {
     return Expression_SV_S( exp, beta );
 }

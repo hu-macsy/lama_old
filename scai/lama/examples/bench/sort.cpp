@@ -46,13 +46,15 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/OpenMP.hpp>
+#include <scai/common/mepr/TypeList.hpp>
 
 using namespace scai;
 using namespace lama;
 using namespace hmemo;
 using namespace dmemo;
 using namespace std;
-using scai::common::Walltime;
+
+using common::Walltime;
 
 #define HOST_PRINT( rank, msg )   \
 {                                 \
@@ -68,7 +70,7 @@ using scai::common::Walltime;
  *  @param[in] N         number of values to sort
  */
 template<typename ValueType>
-void bench( const IndexType N )
+static void bench( const IndexType N )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     PartitionId rank = comm->getRank();
@@ -89,6 +91,8 @@ void bench( const IndexType N )
     DenseVector<ValueType> Xsave( X );  // save for comparison
 
     bool debug = false;
+
+    common::Settings::getEnvironment( debug, "SCAI_DEBUG" );
 
     bool ascending = true;
 
@@ -148,10 +152,77 @@ void bench( const IndexType N )
 
     tmpTime = Walltime::get() - tmpTime;
 
+    SCAI_ASSERT_EQUAL( 0, maxDiff, "wrong sort result (gather test)" )
+
     HOST_PRINT( rank, "Gather/compare time: " << tmpTime << " seconds" )
 
-    SCAI_ASSERT_EQUAL( 0, maxDiff, "wrong sort result" )
+    // equivalent check by testing Xcmp[perm] = X, Xcmp == Xsave
+
+    tmpTime = Walltime::get();
+
+    // in contrary to gather the scatter method requires an allocated array
+
+    Xcomp.allocate( Xsave.getDistributionPtr() );
+    Xcomp.scatter( perm, X );
+
+    if ( debug )
+    {
+        const utilskernel::LArray<ValueType>& localValues1 = Xcomp.getLocalValues();
+        const utilskernel::LArray<ValueType>& localValues2 = Xsave.getLocalValues();
+
+        SCAI_ASSERT_EQUAL( localValues1.size(), localValues2.size(), "serious mismatch" )
+
+        for ( IndexType i = 0; i < localValues1.size(); ++i )
+        {
+            cout << "Xcomp[local:" << i << "] = " << localValues1[i] << endl;
+            cout << "Xsave[local:" << i << "] = " << localValues2[i] << endl;
+        }
+    }
+
+    Xcomp -= Xsave;
+    maxDiff = Xcomp.maxNorm();
+
+    tmpTime = Walltime::get() - tmpTime;
+
+    // check for sorted values
+
+    SCAI_ASSERT_EQUAL( 0, maxDiff, "wrong sort result (scatter test)" )
+
+    HOST_PRINT( rank, "Scatter/compare time: " << tmpTime << " seconds" )
 }
+
+/* ----------------------------------------------------------------------------- */
+
+template<typename TList> struct Calling;
+
+// termination call
+
+template<> struct Calling<common::mepr::NullType>
+{
+    static bool callBench( const common::scalar::ScalarType, const IndexType )
+    {
+        return false;
+    }
+};
+
+// call bench for header T and recursive call for tail of list
+
+template<typename HeadType, typename TailTypes>
+struct Calling<common::mepr::TypeList<HeadType, TailTypes> >
+{
+    static bool callBench( const common::scalar::ScalarType stype, const IndexType n )
+    {
+        if ( common::TypeTraits<HeadType>::stype == stype )
+        {
+            bench<HeadType>( n );
+            return true;
+        }
+        else
+        {
+            return Calling<TailTypes>::callBench( stype, n );
+        }
+    }
+};
 
 /* ----------------------------------------------------------------------------- */
 
@@ -161,15 +232,34 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
+    // evaluate SCAI_NUM_THREADS
+
     int nThreads;
 
-    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    if ( common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
     {
         omp_set_num_threads( nThreads );
     }
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     PartitionId rank = comm->getRank();
+
+    // evaluate SCAI_TYPE
+
+    string typeString;
+
+    common::scalar::ScalarType dataType = common::scalar::DOUBLE;
+ 
+    if ( common::Settings::getEnvironment( typeString, "SCAI_TYPE" ) )
+    {
+        dataType = common::str2ScalarType( typeString.c_str() );
+
+        if ( dataType == common::scalar::UNKNOWN )
+        {
+            HOST_PRINT( rank, "SCAI_TYPE=" << typeString << ": is not a known data type" )
+            return -1;
+        }
+    }
 
     if ( argc != 2 )
     {
@@ -190,7 +280,14 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    bench<double>( n );
-
-    return 0;
+    if ( Calling<SCAI_ARRAY_TYPES_HOST_LIST>::callBench( dataType, n ) )
+    {
+        HOST_PRINT( rank, "sort bench for dataType " << dataType << " completed" )
+        return 0;
+    }
+    else
+    {
+        HOST_PRINT( rank, "sort for dataType " << dataType << " unsupported" )
+        return -1;
+    }
 }

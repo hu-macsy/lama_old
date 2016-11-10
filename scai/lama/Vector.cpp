@@ -558,7 +558,7 @@ Vector& Vector::operator=( const Vector& other )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SV_S expression )
+Vector& Vector::operator=( const Expression_SV_S& expression )
 {
     SCAI_LOG_DEBUG( logger, "operator=, SV_V( alpha, x, beta ) -> alpha * x + beta, alpha="
                     << expression.getArg1().getArg1() << " x=" << expression.getArg1().getArg2()

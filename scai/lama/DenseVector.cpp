@@ -1175,15 +1175,26 @@ void DenseVector<ValueType>::scatter(
 {
     SCAI_ASSERT_EQ_ERROR( source.getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
 
-    // get the owners of my local index values 
+    // get the owners of my local index values, relevant is distribution of this target vector
 
-    const Distribution& sourceDistribution = source.getDistribution();
+    const Distribution& targetDistribution = getDistribution();
 
-    const Communicator& comm = sourceDistribution.getCommunicator();
+    if ( targetDistribution.isReplicated() )
+    {
+        SCAI_ASSERT( source.getDistribution().isReplicated(), "Not implemented: scatter a distributed array into replicated array" )
+    
+        // so all involved arrays are replicated, we can do it just locally
+
+        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), source.getLocalValues(), op );
+
+        return;
+    }
+
+    const Communicator& comm = targetDistribution.getCommunicator();
 
     HArray<PartitionId> owners;
 
-    sourceDistribution.computeOwners( owners, index.getLocalValues() );
+    targetDistribution.computeOwners( owners, index.getLocalValues() );
 
     // set up provided values by sorting the indexes corresponding to the owners via bucketsort
 
@@ -1230,7 +1241,7 @@ void DenseVector<ValueType>::scatter(
 
         for ( IndexType i = 0; i < recvIndexes.size(); ++i )
         {
-            IndexType localIndex = sourceDistribution.global2local( wRecvIndexes[i] );
+            IndexType localIndex = targetDistribution.global2local( wRecvIndexes[i] );
             SCAI_ASSERT_NE_DEBUG( localIndex, nIndex, "got required index " << wRecvIndexes[i] << " but I'm not owner" )
             wRecvIndexes[i] = localIndex;
         }

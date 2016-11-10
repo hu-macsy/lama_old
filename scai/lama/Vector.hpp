@@ -194,7 +194,7 @@ public:
 
     /** this = alpha * x + beta */
 
-    Vector& operator=( const Expression_SV_S );
+    Vector& operator=( const Expression_SV_S& );
 
     /** this = x * y */
 

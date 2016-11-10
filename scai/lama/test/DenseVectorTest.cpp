@@ -719,7 +719,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
     hmemo::HArray<ValueType> sourceArray( m, sourceValues );
     source.assign( sourceArray );
 
-    DenseVector<ValueType> index;
+    DenseVector<IndexType> index;
     hmemo::HArray<ValueType> indexArray( n, indexValues );
     index.assign( indexArray );
 
@@ -774,7 +774,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
     hmemo::HArray<ValueType> sourceArray( m, sourceValues );
     source.assign( sourceArray );
 
-    DenseVector<ValueType> index;
+    DenseVector<IndexType> index;
     hmemo::HArray<ValueType> indexArray( n, indexValues );
     index.assign( indexArray );
 

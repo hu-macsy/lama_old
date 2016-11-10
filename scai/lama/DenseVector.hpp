@@ -98,7 +98,7 @@ public:
      * @param[in] distribution  the distribution to use for the new vector.
      * @param[in] context  the context to use for the new vector.
      */
-    explicit DenseVector ( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
+    DenseVector ( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
 
     /**
      * @brief creates a replicated DenseVector of the passed size initialized to the passed value.
@@ -163,9 +163,19 @@ public:
 
     /**
      * More general constructor that creates a deep copy of an arbitrary vector.
+     * 
+     * The explicit specifier avoids implict conversions as the following example shows.
+     *
+     * \code
+     *     subroutine sub( const DenseVector<float>& v );
+     *     ...
+     *     DenseVector<float> vf;
+     *     DenseVector<double> vd;
+     *     sub( vf );               // that is okay
+     *     sub( vd );               // compile error to avoid implicit conversions
+     * \endcode
      */
-
-    DenseVector( const Vector& other );
+    explicit DenseVector( const Vector& other );
 
     /**
      * @brief creates a redistributed copy of the passed vector
@@ -175,7 +185,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
+    explicit DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
@@ -183,7 +193,7 @@ public:
      * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution the
      */
-    DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+    explicit DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -196,21 +206,21 @@ public:
      *
      * Note: Only the first processor will read the matrix file.
      */
-    DenseVector( const std::string& filename );
+    explicit DenseVector( const std::string& filename );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x.
      *
      * @param[in] expression    alpha * x
      */
-    DenseVector( const Expression_SV& expression );
+    explicit DenseVector( const Expression_SV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha + x.
      *
      * @param[in] expression    alpha * x + beta
      */
-    DenseVector( const Expression_SV_S& expression );
+    explicit DenseVector( const Expression_SV_S& expression );
 
     /**
      *  @brief creates a DenseVector with the Expression alpha * x * Y.
@@ -218,7 +228,7 @@ public:
      * @param[in] expression    x * y
      */
 
-    DenseVector( const Expression_VV& expression );
+    explicit DenseVector( const Expression_VV& expression );
 
 
     /**
@@ -227,14 +237,14 @@ public:
      * @param[in] expression    alpha * x * y
      */
 
-    DenseVector( const Expression_SVV& expression );
+    explicit DenseVector( const Expression_SVV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x + beta * y.
      *
      * @param[in] expression  is alpha * x + beta * y
      */
-    DenseVector( const Expression_SV_SV& expression );
+    explicit DenseVector( const Expression_SV_SV& expression );
 
     /* --------------------------------------------------------------------- */
 
@@ -243,42 +253,42 @@ public:
      *
      * @param[in] expression     alpha * A * x + beta * y
      */
-    DenseVector( const Expression_SMV_SV& expression );
+    explicit DenseVector( const Expression_SMV_SV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A + beta * y.
      *
      * @param[in] expression     alpha * x * A + beta * y
      */
-    DenseVector( const Expression_SVM_SV& expression );
+    explicit DenseVector( const Expression_SVM_SV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * A * x.
      *
      * @param[in] expression     alpha * A * x
      */
-    DenseVector( const Expression_SMV& expression );
+    explicit DenseVector( const Expression_SMV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    DenseVector( const Expression_SVM& expression );
+    explicit DenseVector( const Expression_SVM& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    DenseVector( const Expression_MV& expression );
+    explicit DenseVector( const Expression_MV& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    DenseVector( const Expression_VM& expression );
+    explicit DenseVector( const Expression_VM& expression );
 
     /**
      * @brief releases all allocated resources.
@@ -297,16 +307,17 @@ public:
 
     virtual void allocate( const IndexType n );
 
-    /** Override the default assignment operator.
-     *
-     *  Note: all other assignment operators are inherited from class Vector.
-     */
+    /** Override the default assignment operator.  */
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
 
     /** Reimplement Vector::operator= as otherwise a constructor of DenseVector might be called */
 
     DenseVector& operator=( const Scalar );
+
+    // All other assignment operators are inherited from class Vector, but using is required
+
+    using Vector::operator=;
 
     /**
      * This method initializes a distributed vector with random numbers. 
