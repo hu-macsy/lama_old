@@ -187,6 +187,11 @@ void BiCG::iterate()
     const Scalar pqProd = p2.dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
+    if( pqProd == Scalar( 0.0 ) )
+    {
+        COMMON_THROWEXCEPTION( "Diverging due to indefinite matrix. You might try another start solution, better an adequate solver." )
+    }
+
     Scalar alpha = pScalar / pqProd;
 
     SCAI_LOG_DEBUG( logger, "alpha = " << alpha << ", is p = " << pScalar << " / pq = " << pqProd )
