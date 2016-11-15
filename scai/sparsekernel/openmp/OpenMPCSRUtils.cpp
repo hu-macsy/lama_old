@@ -1670,10 +1670,10 @@ void OpenMPCSRUtils::matrixMultiply(
         } //end loop over all rows of input matrix a
     }
 
-    SCAI_REGION( "OpenMP.CSR.matrixMultiply2" )
-
     #pragma omp parallel
     {
+        SCAI_REGION( "OpenMP.CSR.matrixMultiply2" )
+
         // temporary array for cRow, allocated by each thread
 
         scoped_array<ValueType> cRow( new ValueType[n] );
@@ -1703,6 +1703,8 @@ void OpenMPCSRUtils::matrixMultiply(
                 }
             }
 
+            // now take all values from the row as needed
+
             for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
             {
                 IndexType j = cJA[jj];
@@ -1719,10 +1721,10 @@ void OpenMPCSRUtils::matrixMultiply(
 
             // just make sure that we really got all non-zero entries
 
-            for ( IndexType j = 0; j < n; j++ )
-            {
-                SCAI_ASSERT_EQ_ERROR( cRow[j], ValueType( 0 ), "serious mismatch" )
-            }
+            // for ( IndexType j = 0; j < n; j++ )
+            // {
+            //     SCAI_ASSERT_EQ_ERROR( cRow[j], ValueType( 0 ), "serious mismatch" )
+            // }
         }
     }
 }
