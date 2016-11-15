@@ -498,16 +498,17 @@ IndexType OpenMPCSRUtils::getValuePos( const IndexType i, const IndexType j, con
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[], 
-                                          const IndexType j, 
-                                          const IndexType csrIA[], const IndexType numRows,
-                                          const IndexType csrJA[], const IndexType )
+IndexType OpenMPCSRUtils::getValuePosCol( IndexType row[], IndexType pos[],
+        const IndexType j,
+        const IndexType csrIA[], const IndexType numRows,
+        const IndexType csrJA[], const IndexType )
 {
     SCAI_REGION( "OpenMP.CSRUtils.getValuePosCol" )
 
     IndexType cnt  = 0;   // counts number of available row entries in column j
 
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < numRows; ++i )
     {
         for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
@@ -1112,7 +1113,7 @@ void OpenMPCSRUtils::decomposition(
     const bool /*isSymmetic*/ )
 {
     if ( common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE ||
-         common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE_COMPLEX )
+            common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE_COMPLEX )
     {
         COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet - not long double or long double complex supported." )
     }
@@ -1562,63 +1563,6 @@ void OpenMPCSRUtils::matrixMultiplyJA(
 }
 
 /* --------------------------------------------------------------------------- */
-/*
- template<typename ValueType>
- void OpenMPCSRUtils::matrixMultiply (
- ValueType cValues[], const IndexType cIA[], const IndexType cJA[],
- const IndexType numRows,
- const ValueType alpha,
- const IndexType aIA[], const IndexType aJA[], const ValueType aValues[],
- const IndexType bIA[], const IndexType bJA[], const ValueType bValues[] )
- {
- // loop over all rows of output matrix c
- // TODO: Test if this loop is faster with OpenMP than the loop mentioned in
- // Sparse Matrix Multiplication Package (SMMP)
- // Randolph E. Bank Craig C. Douglas April 23, 2001
-
- #pragma omp parallel for
- for ( IndexType i = 0; i < numRows; ++i)
- {
- //loop over all none zero elements of row i of output matrix c
- for ( IndexType jj = cIA[i]; jj<cIA[i+1]; ++jj )
- {
- IndexType j = cJA[jj];
- cValues[jj] = 0.0;
-
- if( j == -1 ){
- continue;
- }
-
- for (IndexType kk = aIA[i]; kk < aIA[i+1]; ++kk)
- {
- ValueType b_kj = 0.0;
-
- IndexType k = aJA[kk];
-
- //TODO: See above this loop can be avoided if we choose to work
- //      with a temporarie array like it is done in SMMP.
- //      But we will have less parallelisem in this case
-
- for ( IndexType ll = bIA[k]; ll < bIA[k+1]; ++ll)
- {
- if ( bJA[ll] ==j )
- {
- b_kj = bValues[ll];
- break;
- }
- }
-
- cValues[jj] += aValues[kk] * b_kj;
- }
-
- cValues[jj] *= alpha;
-
- SCAI_LOG_TRACE( logger, "Computed output Element ( "
- << i << ", " << j << " ) = " << cValues[jj] )
- }
- }
- }
- */
 
 template<typename ValueType>
 void OpenMPCSRUtils::matrixMultiply(
@@ -1637,13 +1581,14 @@ void OpenMPCSRUtils::matrixMultiply(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    SCAI_REGION( "OpenMP.CSR.matrixMultiply" )
     //TODO: Rewrite this!
     const IndexType NINIT = n + 1;
     const IndexType END = n + 2;
     // determine the number of entries in output matrix
     #pragma omp parallel
     {
+        SCAI_REGION( "OpenMP.CSR.matrixMultiply1" )
+
         scoped_array<IndexType> indexList( new IndexType[n] );
 
         for ( IndexType j = 0; j < n; j++ )
@@ -1724,44 +1669,60 @@ void OpenMPCSRUtils::matrixMultiply(
             // SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
         } //end loop over all rows of input matrix a
     }
-    #pragma omp parallel for
 
-    for ( IndexType i = 0; i < m; ++i )
+    SCAI_REGION( "OpenMP.CSR.matrixMultiply2" )
+
+    #pragma omp parallel
     {
-        //loop over all none zero elements of row i of output matrix c
-        for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
-        {
-            IndexType j = cJA[jj];
-            cValues[jj] = static_cast<ValueType>( 0.0 );
+        // temporary array for cRow, allocated by each thread
 
-            if ( j == nIndex )
+        scoped_array<ValueType> cRow( new ValueType[n] );
+
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            cRow[j] = static_cast<ValueType>( 0 );
+        }
+
+        #pragma omp for
+
+        for ( IndexType i = 0; i < m; ++i )
+        {
+            // compute row of result matrix C, loop over all non-zero element of row i of A
+
+            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
-                continue;
+                IndexType j = aJA[jj];
+
+                for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
+                {
+                    IndexType k = bJA[kk];
+
+                    // element a(i,j) an b(j,k) will be added to  c(i,k)
+
+                    cRow[k] += aValues[jj] * bValues[kk];
+                }
             }
 
-            for ( IndexType kk = aIA[i]; kk < aIA[i + 1]; ++kk )
+            for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
             {
-                ValueType b_kj = static_cast<ValueType>( 0.0 );
-                IndexType k = aJA[kk];
+                IndexType j = cJA[jj];
 
-                //TODO: See above this loop can be avoided if we choose to work
-                //      with a temporarie array like it is done in SMMP.
-                //      But we will have less parallelisem in this case
-
-                for ( IndexType ll = bIA[k]; ll < bIA[k + 1]; ++ll )
+                if ( j == nIndex )
                 {
-                    if ( bJA[ll] == j )
-                    {
-                        b_kj = bValues[ll];
-                        break;
-                    }
+                    continue;
                 }
 
-                cValues[jj] += aValues[kk] * b_kj;
+                cValues[jj] = alpha * cRow[j];
+
+                cRow[j] = static_cast<ValueType>( 0 );
             }
 
-            cValues[jj] *= alpha;
-            SCAI_LOG_TRACE( logger, "Computed output Element ( " << i << ", " << j << " ) = " << cValues[jj] )
+            // just make sure that we really got all non-zero entries
+
+            for ( IndexType j = 0; j < n; j++ )
+            {
+                SCAI_ASSERT_EQ_ERROR( cRow[j], ValueType( 0 ), "serious mismatch" )
+            }
         }
     }
 }
