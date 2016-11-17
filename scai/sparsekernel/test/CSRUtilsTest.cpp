@@ -40,6 +40,7 @@
 #include <scai/kregistry.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 /*--------------------------------------------------------------------- */
@@ -477,6 +478,15 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types )
 {
+    bool useMKL = true;  // by default: use MKL for CSR utils
+
+    common::Settings::getEnvironment( useMKL, "SCAI_USE_MKL" );
+
+    if ( !useMKL )
+    {
+        return;
+    }
+
     ContextPtr testContext = Context::getContextPtr();
     kregistry::KernelTraitContextFunction<CSRKernelTrait::decomposition<ValueType> > decomposition;
     ContextPtr loc = Context::getContextPtr( decomposition.validContext( testContext->getType() ) );
