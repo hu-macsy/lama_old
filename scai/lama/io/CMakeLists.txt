@@ -44,7 +44,7 @@ scai_project (
         SAMGIO
         MatrixMarketIO
         PETScIO
-        MatlabIO
+        TextIO
         PartitionIO
 
     HEADERS
