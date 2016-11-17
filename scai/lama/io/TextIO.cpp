@@ -1,5 +1,5 @@
 /**
- * @file MatlabIO.cpp
+ * @file TextIO.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,13 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of methods for FileIO class MatlabIO
+ * @brief Implementation of methods for FileIO class TextIO
  * @author Thomas Brandes
  * @date 10.06.2016
  */
 
 
-#include "MatlabIO.hpp"
+#include "TextIO.hpp"
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -63,19 +63,19 @@ namespace lama
 /*    Implementation of Factory methods                                              */
 /* --------------------------------------------------------------------------------- */
 
-FileIO* MatlabIO::create()
+FileIO* TextIO::create()
 {
-    return new MatlabIO();
+    return new TextIO();
 }
 
-std::string MatlabIO::createValue()
+std::string TextIO::createValue()
 {
     return MATLAB_SUFFIX;
 }
 
 /* --------------------------------------------------------------------------------- */
 
-bool MatlabIO::isSupportedMode( const FileMode mode ) const
+bool TextIO::isSupportedMode( const FileMode mode ) const
 {
     // binary is not supported
 
@@ -89,9 +89,9 @@ bool MatlabIO::isSupportedMode( const FileMode mode ) const
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeAt( std::ostream& stream ) const
+void TextIO::writeAt( std::ostream& stream ) const
 {
-    stream << "MatlabIO ( suffix = " << MATLAB_SUFFIX << ", ";
+    stream << "TextIO ( suffix = " << MATLAB_SUFFIX << ", ";
     writeMode( stream );
     stream << ", only formatted )";
 }
@@ -106,7 +106,7 @@ void MatlabIO::writeAt( std::ostream& stream ) const
  *
  *  Note: it might be possible that one line contains less than 'nEntries' entries
  */
-void MatlabIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
+void TextIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName )
 {
     nLines   = 0;
     nEntries = 0;
@@ -141,12 +141,12 @@ void MatlabIO::checkTextFile( IndexType& nLines, IndexType& nEntries, const char
 
 /* --------------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
+SCAI_LOG_DEF_LOGGER( TextIO::logger, "FileIO.TextIO" )
 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeArrayImpl(
+void TextIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
@@ -161,7 +161,7 @@ void MatlabIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readArrayInfo( IndexType& size, const std::string& fileName )
+void TextIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
     IndexType nEntries;   // dummy variable needed for checkTextFile
 
@@ -173,7 +173,7 @@ void MatlabIO::readArrayInfo( IndexType& size, const std::string& fileName )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::readArrayImpl(
+void TextIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName,
     const IndexType first,
@@ -230,7 +230,7 @@ void MatlabIO::readArrayImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeStorageImpl(
+void TextIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
@@ -260,7 +260,7 @@ void MatlabIO::writeStorageImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::readData( 
+void TextIO::readData( 
     HArray<IndexType>& ia, 
     HArray<IndexType>& ja, 
     HArray<ValueType>* values,
@@ -307,7 +307,7 @@ void MatlabIO::readData(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+void TextIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
 {
     IndexType nEntries;
 
@@ -327,7 +327,7 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::readStorageImpl(
+void TextIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName,
     const IndexType firstRow, 

@@ -1,5 +1,5 @@
 /**
- * @file MatlabIO.hpp
+ * @file TextIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Structure that contains IO routines for Matlab text format
+ * @brief Structure that contains IO routines for simple ASCII text files
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -64,10 +64,10 @@ namespace lama
  *   /endcode
  */
 
-class MatlabIO : 
+class TextIO : 
 
-    public CRTPFileIO<MatlabIO>,         // use type conversions
-    public FileIO::Register<MatlabIO>    // register at factory
+    public CRTPFileIO<TextIO>,         // use type conversions
+    public FileIO::Register<TextIO>    // register at factory
 {
 
 public:
