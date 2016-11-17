@@ -36,10 +36,10 @@ include( FindZLIB )
 
 # gives ZLIB_LIBRARY ZLIB_INCLUDE_DIR
 
-set ( EXAMPLE_FILES MATIO.hpp MATIO.cpp convert.cpp matmulT.cpp )
+set ( EXAMPLE_FILES MatlabIO.hpp MatlabIO.cpp convert.cpp matmulT.cpp )
 
-add_executable( convert.exe convert.cpp MATIO.hpp MATIO.cpp )
-add_executable( matmulT.exe matmulT.cpp MATIO.hpp MATIO.cpp )
+add_executable( convert.exe convert.cpp MatlabIO.hpp MatlabIO.cpp )
+add_executable( matmulT.exe matmulT.cpp MatlabIO.hpp MatlabIO.cpp )
 
 target_link_libraries( convert.exe ${PROJECT_NAME} )
 target_link_libraries( convert.exe ${ZLIB_LIBRARY} )

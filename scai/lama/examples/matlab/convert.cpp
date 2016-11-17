@@ -39,6 +39,8 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 
+#include <iomanip>
+
 using namespace std;
 
 using namespace scai;
@@ -97,14 +99,26 @@ int main( int argc, const char* argv[] )
     common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
 
     Matrix& matrix = *matrixPtr;
+  
+    std::cout << "Matrix = " << matrix << std::endl;
 
     std::string inFileName = argv[1];
 
+    utilskernel::LArray<ComplexFloat> array;
+
+    FileIO::read( array, inFileName );
+
+    cout << "read array = " << array << endl;
+
+    ComplexFloat last = array[ array.size() - 1 ];
+
+    cout << "array[" << array.size() - 1 << "] =  " << last << endl;
+
     // use supported file format
 
-    matrix.readFromFile( inFileName );
+    // matrix.readFromFile( inFileName );
 
-    cout << "read CSR matrix : " << matrix << endl;
+    // cout << "read CSR matrix : " << matrix << endl;
 
     std::string outFileName = argv[2];
 
@@ -112,7 +126,9 @@ int main( int argc, const char* argv[] )
 
     cout << ": write LAMA default format" << endl;
 
-    matrix.writeToFile( outFileName );
+    FileIO::write( array, outFileName );
+
+    // writeToFile( outFileName );
 
     cout << "written matrix to file " << outFileName << endl;
 }

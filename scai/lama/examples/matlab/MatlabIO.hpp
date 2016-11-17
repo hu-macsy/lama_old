@@ -1,5 +1,5 @@
 /**
- * @file MATIO.hpp
+ * @file MatlabIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -64,10 +64,10 @@ namespace lama
  *   /endcode
  */
 
-class MATIO : 
+class MatlabIO : 
 
-    public CRTPFileIO<MATIO>,         // use type conversions
-    public FileIO::Register<MATIO>    // register at factory
+    public CRTPFileIO<MatlabIO>,         // use type conversions
+    public FileIO::Register<MatlabIO>    // register at factory
 {
 
 public:
