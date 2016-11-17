@@ -34,6 +34,8 @@
 
 ### Add classes and header files ###
 
+add_subdirectory ( cusparse )
+
 scai_project(
 
     CLASSES      # .cpp, .hpp
@@ -53,7 +55,7 @@ scai_project(
     ADD_PARENT_SCOPE
 )
 
+
 #  cuSPARSE, cuSOLVER come always with CUDA so no additional tests here
 
-add_subdirectory ( cusparse )
 

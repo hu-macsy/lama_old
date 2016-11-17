@@ -37,8 +37,8 @@
 ### Currently CUsparse can only be used if IndexType == int is used
 
 if    ( SCAI_INDEX_TYPE STREQUAL "int" )
-    set ( CLASSES ${CLASSES} CUSolverCSRUtils CUSparseCSRUtils )
-    set ( HEADERS ${HEADERS} CUSPARSETrait CUSPARSEWrapper CUSOLVERTrait CUSOLVERWrapper )
+    set ( CUSPARSE_CLASSES CUSolverCSRUtils CUSparseCSRUtils )
+    set ( CUSPARSE_HEADERS CUSPARSETrait CUSPARSEWrapper CUSOLVERTrait CUSOLVERWrapper )
 endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 
-scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
+scai_project ( CUDA_CLASSES ${CUSPARSE_CLASSES} HEADERS ${CUSPARSE_HEADERS} ADD_PARENT_SCOPE )
