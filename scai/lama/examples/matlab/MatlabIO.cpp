@@ -349,13 +349,6 @@ static void uncompress( char out[], int out_len, const char in[], int len, int f
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::readArrayInfo( IndexType&, const std::string& )
-{
-    COMMON_THROWEXCEPTION( "not available" )
-}
-
-/* --------------------------------------------------------------------------------- */
-
 static void readDataElement( IOStream& inFile, common::scoped_array<char>& dataElement )
 {
     char buffer[8];
@@ -373,7 +366,7 @@ static void readDataElement( IOStream& inFile, common::scoped_array<char>& dataE
 
     readDataElementHeader( dataType, nBytes, wBytes, buffer );
 
-    if ( dataType != 15 )
+    if ( dataType != MAT_COMPRESSED )
     {
         // uncompressed data, copy header and the other data
 
@@ -506,6 +499,38 @@ static void readMATArray( hmemo::HArray<ValueType>& array, const char* data, con
 
         default : COMMON_THROWEXCEPTION( "mxClass = " << mxClass << " is unknown array class in Matlab file." )
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readArrayInfo( IndexType& n, const std::string& arrayFileName )
+{
+    IOStream inFile( arrayFileName, std::ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    readMATFileHeader( version, endian, inFile );
+
+    uint32_t dataType;
+    uint32_t nBytes;
+    uint32_t wBytes;
+
+    common::scoped_array<char> dataElement;
+
+    readDataElement( inFile, dataElement );
+
+    const char* elementPtr = readDataElementHeader( dataType, nBytes, wBytes, dataElement.get() );
+
+    SCAI_ASSERT_EQ_ERROR( dataType, MAT_MATRIX, "can only read array as MATRIX - MATLAB array" )
+
+    uint32_t header[2];
+    int32_t  dims[2];
+
+    uint32_t offset = getData( header, 2, elementPtr );
+    offset += getData( dims, 2, elementPtr + offset );
+
+    n = dims[0] * dims[1];
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -739,42 +764,20 @@ static void writeSparseHeader( IOStream& outFile, const uint32_t n, const uint32
 
     writeDataElementHeader( outFile, dataType, nBytes );
 
-    dataType = 6;
-    uint32_t nBytesFlags = 8;
+    uint32_t header[2];
+    char*    headerBytes = reinterpret_cast<char*>( header );
 
-    writeDataElementHeader( outFile, dataType, nBytesFlags );
+    headerBytes[0] = MAT_SPARSE_CLASS;                // class
+    headerBytes[1] = isComplex ? ( 1 << 3 ) : 0 ;     // array flags
 
-    char header[8];
+    header[1] = nnz;                                  // # non-zero entries
 
-    header[0] = 5;                               // class
-    header[1] = isComplex ? ( 1 << 3 ) : 0 ;     // array flags
-
-    int* nzPtr = reinterpret_cast<int*>( header + 4 );
-    *nzPtr = nnz;
-
-    outFile.write( header, 8 );
+    writeData( outFile, header, 2 );
   
-    dataType = 5;
-    uint32_t nBytesDims = 2 * sizeof( int );
+    int dims[2] = { n, m };
 
-    writeDataElementHeader( outFile, dataType, nBytesDims );
-
-    int dims[2];
-    dims[0] = n;
-    dims[1] = m;
-
-    outFile.write( reinterpret_cast<char*>( dims ), nBytesFlags );
-
-    dataType = 1;                // miINT8 
-    uint32_t nBytesName = 8;
-
-    writeDataElementHeader( outFile, dataType, nBytesName );
-
-    char name[8];
-    memset( name, 0, 8 );
-    sprintf( name, "LAMA" );
-
-    outFile.write( name, nBytesName );
+    writeData( outFile, dims, 2 );
+    writeData( outFile, "LAMA" );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -825,7 +828,7 @@ static void writeArrayHeader( IOStream& outFile, const IndexType n, const common
 
     std::cout << "Array flags, class = " << (int) headerBytes[0] << ", flags = " << (int) headerBytes[1] << std::endl;
 
-    writeData( header, 2 );
+    writeData( outFile, header, 2 );
 
     int dims[2];
 
@@ -833,7 +836,6 @@ static void writeArrayHeader( IOStream& outFile, const IndexType n, const common
     dims[1] = 1;
 
     writeData( outFile, dims, 2 );
-
     writeData( outFile, "LAMA" );
 }
 
@@ -943,11 +945,33 @@ void MatlabIO::readData(
 
 void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
 {
-    numRows    = 0;
-    numColumns = 0;
-    numValues  = 0;
+    IOStream inFile( fileName, std::ios::in );
 
-    COMMON_THROWEXCEPTION( "not read " << fileName )
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+    readMATFileHeader( version, endian, inFile );
+
+    uint32_t dataType;
+    uint32_t nBytes;
+    uint32_t wBytes;
+
+    common::scoped_array<char> dataElement;
+
+    readDataElement( inFile, dataElement );
+
+    const char* dataPtr = readDataElementHeader( dataType, nBytes, wBytes, dataElement.get() );
+
+    SCAI_ASSERT_EQ_ERROR( dataType, MAT_MATRIX, "can only read storage as MATRIX - MATLAB array" )
+
+    uint32_t header[2];
+    int dims[2];
+
+    uint32_t offset = getData( header, 2, dataPtr );
+    offset += getData( dims, 2, dataPtr + offset );
+
+    numValues  = header[1];
+    numRows    = dims[0];
+    numColumns = dims[1];
 }
 
 /* --------------------------------------------------------------------------------- */
