@@ -40,6 +40,8 @@
 
 // internal scai libraries
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS2.hpp>
+#include <scai/blaskernel/openmp/OpenMPLAPACK.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -1103,12 +1105,12 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
 
 template<typename ValueType>
 void OpenMPCSRUtils::decomposition(
-    ValueType* const /*solution*/,
-    const IndexType* /*csrIA*/,
-    const IndexType* /*csrJA*/,
-    const ValueType* /*csrValues*/,
-    const ValueType* /*rhs*/,
-    const IndexType /*numRows*/,
+    ValueType* const solution,
+    const IndexType* csrIA,
+    const IndexType* csrJA,
+    const ValueType* csrValues,
+    const ValueType* rhs,
+    const IndexType numRows,
     const IndexType /*nnz*/,
     const bool /*isSymmetic*/ )
 {
@@ -1121,6 +1123,38 @@ void OpenMPCSRUtils::decomposition(
     {
         COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet." )
     }
+
+    // current workaround: inverse solver of dense matrix
+
+    common::scoped_array<ValueType> denseA( new ValueType[ numRows * numRows ] );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numRows; ++j )
+        {
+            denseA[ i * numRows + j ] = static_cast<ValueType>( 0 );
+        }
+    }
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+        {
+            SCAI_ASSERT_VALID_INDEX_DEBUG( csrJA[jj], numRows, "illegal col index, square matrix assumed" );
+            denseA[ i * numRows + csrJA[jj] ] = csrValues[ jj ];
+        }
+    }
+
+    // now call inverse solver of blas
+
+    blaskernel::OpenMPLAPACK::getinv( numRows, denseA.get(), numRows );
+
+    ValueType one  = 1;
+    IndexType inc1 = 1;
+
+    blaskernel::OpenMPBLAS2::gemv( CblasRowMajor, CblasNoTrans, 
+                                   numRows, numRows, one, denseA.get(), numRows, rhs, inc1, one, solution, inc1 );
+
 }
 
 /* --------------------------------------------------------------------------- */
