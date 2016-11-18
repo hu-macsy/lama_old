@@ -33,10 +33,10 @@
  */
 
 // hpp
-#include <scai/sparsekernel/cuda/CUSolverCSRUtils.hpp>
+#include <scai/sparsekernel/cuda/cusparse/CUSolverCSRUtils.hpp>
 
 // local library
-#include <scai/sparsekernel/cuda/CUSOLVERWrapper.hpp>
+#include <scai/sparsekernel/cuda/cusparse/CUSOLVERWrapper.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
