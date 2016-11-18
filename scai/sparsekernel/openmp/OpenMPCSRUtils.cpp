@@ -1114,17 +1114,7 @@ void OpenMPCSRUtils::decomposition(
     const IndexType /*nnz*/,
     const bool /*isSymmetic*/ )
 {
-    if ( common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE ||
-            common::TypeTraits<ValueType>::stype == common::scalar::LONG_DOUBLE_COMPLEX )
-    {
-        COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet - not long double or long double complex supported." )
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "decomposition only available with MKL linking yet." )
-    }
-
-    // current workaround: inverse solver of dense matrix
+    // current workaround without MKL: inverse solver of dense matrix
 
     common::scoped_array<ValueType> denseA( new ValueType[ numRows * numRows ] );
 
