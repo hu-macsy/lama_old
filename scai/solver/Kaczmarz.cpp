@@ -33,7 +33,7 @@
  */
 
 // hpp
-#include <scai/solver/examples/kaczmarz/Kaczmarz.hpp>
+#include <scai/solver/Kaczmarz.hpp>
 
 // internal scai libraries
 #include <scai/lama/DenseVector.hpp>
