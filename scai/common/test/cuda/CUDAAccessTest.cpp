@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
     {
         SCAI_CUDA_DRV_CALL( cuMemAlloc( &pointer, size ), "cuMemAlloc( size = " << size << " ) failed." )
     },
-    scai::common::Exception )
+    scai::common::Exception );
     {
         // create an access for CUDA calls
         scai::common::CUDAAccess tmpAccess( myCuda );
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( accessTest )
     {
         SCAI_CHECK_CUDA_ACCESS
     },
-    scai::common::Exception )
+    scai::common::Exception );
 }
 
 /* ------------------------------------------------------------------------- */
