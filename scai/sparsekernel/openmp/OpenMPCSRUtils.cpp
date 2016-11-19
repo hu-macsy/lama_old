@@ -285,7 +285,7 @@ void OpenMPCSRUtils::sortRowElements(
         // use bubble sort as sort algorithm
         const IndexType start = csrIA[i];
         IndexType end = csrIA[i + 1] - 1;
-        SCAI_LOG_TRACE( logger, "row " << i << ": sort " << start << " - " << end )
+        SCAI_LOG_DEBUG( logger, "row " << i << ": sort " << start << " - " << end )
         bool sorted = false;
 
         while ( !sorted )
@@ -1135,15 +1135,25 @@ void OpenMPCSRUtils::decomposition(
         }
     }
 
-    // now call inverse solver of blas
+    SCAI_LOG_INFO( logger, "decomposition<" << common::TypeTraits<ValueType>::id() << "> via inverse" )
+
+    // now call inverse solver of lapack 
 
     blaskernel::OpenMPLAPACK::getinv( numRows, denseA.get(), numRows );
 
-    ValueType one  = 1;
+    ValueType alpha = 1;
+    ValueType beta  = 0;
     IndexType inc1 = 1;
 
+    // initialize solution even if beta == 0
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        solution[i] = beta;  
+    }
+
     blaskernel::OpenMPBLAS2::gemv( CblasRowMajor, CblasNoTrans, 
-                                   numRows, numRows, one, denseA.get(), numRows, rhs, inc1, one, solution, inc1 );
+                                   numRows, numRows, alpha, denseA.get(), numRows, rhs, inc1, beta, solution, inc1 );
 
 }
 
