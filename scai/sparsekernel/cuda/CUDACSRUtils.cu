@@ -2628,11 +2628,13 @@ void matrixAddKernel(
     const IndexType* bJA,
     const ValueType* bValues )
 {
-// TODO: Just naive implementation, could be done faster, but works!
-// TODO: Check if diagonal property needs special attention
+    // TODO: Just naive implementation, could be done faster, but works!
+    // TODO: Check if diagonal property needs special attention
+
     __shared__ volatile IndexType sColA[nWarps];
     __shared__ volatile ValueType sValA[nWarps];
     __shared__ volatile IndexType sFoundJa[nWarps];
+
     IndexType localWarpId = threadIdx.x / warpSize;
     IndexType globalWarpId = ( blockIdx.x * blockDim.x + threadIdx.x ) / warpSize;
     IndexType laneId = ( blockIdx.x * blockDim.x + threadIdx.x ) % warpSize;
@@ -2654,7 +2656,8 @@ void matrixAddKernel(
             IndexType bColEnd = bIA[rowIt + 1];
             IndexType cColIt = cIA[rowIt] + laneId;
 
-// Copy values of b to C
+            // Copy values of b to C
+
             for ( IndexType bColOffset = 0; __any( ( bColIt + bColOffset ) < bColEnd ); bColOffset += warpSize )
             {
                 IndexType colB = ( bColIt + bColOffset ) < bColEnd ? bJA[bColIt + bColOffset] : cudaNIndex;
@@ -2667,10 +2670,10 @@ void matrixAddKernel(
                 }
             }
 
-// Offset in c after coping b to c
+            // Offset in c after coping b to c
             IndexType cColOffset = bIA[rowIt + 1] - bIA[rowIt];
 
-// Add values of a to c
+            // Add values of a to c
             for ( IndexType aColItOffset = 0; __any( aColIt < aColEnd ); aColIt += warpSize, aColItOffset += warpSize )
             {
                 IndexType colA = aColIt < aColEnd ? aJA[aColIt] : cudaNIndex;
@@ -2702,7 +2705,7 @@ void matrixAddKernel(
                         if ( sFoundJa[localWarpId] == cudaNIndex )
                         {
                             // Element is new element, add new element
-                            cJA[cColIt + cColOffset] = colA;
+                            cJA[cColIt + cColOffset] = sColA[localWarpId];
                             cValues[cColIt + cColOffset] = sValA[localWarpId] * alpha;
                             cColOffset++;
                         }
