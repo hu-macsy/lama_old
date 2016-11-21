@@ -46,6 +46,7 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/macros/assert.hpp>
 
 // std
@@ -222,7 +223,9 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 
 static int getDefaultDeviceNr()
 {
-    return 0;
+    int device = 0;
+    common::Settings::getEnvironment( device, "SCAI_DEVICE" );
+    return device;
 }
 
 /* ----------------------------------------------------------------------------- */
