@@ -76,126 +76,139 @@ template<> struct UtilsWrapper<common::mepr::NullType>
 template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullType>
 {
     static void setArray( 
-        hmemo::HArray<ValueType>&, 
-        const hmemo::_HArray&, 
+        hmemo::HArray<ValueType>& target, 
+        const hmemo::_HArray& source, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "setArray: source type unsupported, target = " << target << ", source = " << source  )
     }
 
     static void gather( 
-        hmemo::HArray<ValueType>&, 
-        const hmemo::_HArray&, 
+        hmemo::HArray<ValueType>& target, 
+        const hmemo::_HArray& source, 
         const hmemo::HArray<IndexType>&, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr ) 
     {
+        COMMON_THROWEXCEPTION( "gather: source type unsupported, target = " << target << ", source = " << source )
     }
 
     static void scatter( 
-        hmemo::HArray<ValueType>&, 
+        hmemo::HArray<ValueType>& target, 
         const hmemo::HArray<IndexType>&, 
-        const hmemo::_HArray&, 
+        const hmemo::_HArray& source, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "scatter: source type unsupported, target = " << target << ", source = " << source )
     }
 
-    static void setScalar( hmemo::_HArray&, const ValueType, const binary::BinaryOp, const hmemo::ContextPtr )
+    static void setScalar( hmemo::_HArray& target, const ValueType, const binary::BinaryOp, const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "setScalar: target type unsupported, target = " << target )
     }
 
-    static void setValImpl( hmemo::_HArray&, const IndexType, const ValueType ) 
+    static void setValImpl( hmemo::_HArray& target, const IndexType, const ValueType ) 
     {
+        COMMON_THROWEXCEPTION( "setVal: target type unsupported, target = " << target )
     }
 
     static ValueType getValImpl( const hmemo::_HArray&, const IndexType )
     {
-        return ValueType();
+        return ValueType( 0 );
     }
 };
 
 template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
 {
     static void setArray( 
-        hmemo::_HArray&,
-        const hmemo::_HArray&, 
+        hmemo::_HArray& target,
+        const hmemo::_HArray& source, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "setArray: target type unsupported, target = " << target << ", source = " << source )
     }
 
     static void setArraySection(
-        hmemo::_HArray&,
+        hmemo::_HArray& target,
         const IndexType,
         const IndexType,
-        const hmemo::_HArray&,
+        const hmemo::_HArray& source,
         const IndexType,
         const IndexType,
         const IndexType,
         const binary::BinaryOp,
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "setArraySection: target type unsupported, target = " << target << ", source = " << source )
     }
 
     static void gather( 
-        hmemo::_HArray&,
-        const hmemo::_HArray&, 
+        hmemo::_HArray& target,
+        const hmemo::_HArray& source, 
         const hmemo::HArray<IndexType>&, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr ) 
     {
+        COMMON_THROWEXCEPTION( "gather: target type unsupported, target = " << target << ", source = " << source )
     }
 
     static void scatter( 
-        hmemo::_HArray&, 
-        const hmemo::HArray<IndexType>&, 
+        hmemo::_HArray& target, 
+        const hmemo::HArray<IndexType>& source, 
         const hmemo::_HArray&, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "scatter: target type unsupported, target = " << target << ", source = " << source )
     }
 };
 
 template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::NullType>
 {
     static void setArray( 
-        hmemo::HArray<ValueType>&, 
-        const hmemo::_HArray&, 
+        hmemo::HArray<ValueType>& target, 
+        const hmemo::_HArray& source, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "Unsupported assignment, target array = " << target << ", source array = " << source )
     }
 
     static void setArraySection(
-        hmemo::HArray<ValueType>&,
+        hmemo::HArray<ValueType>& target,
         const IndexType,
         const IndexType,
-        const hmemo::_HArray&,
+        const hmemo::_HArray& source,
         const IndexType,
         const IndexType,
         const IndexType,
         const binary::BinaryOp,
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "Unsupported setArraySection, target array = " << target << ", source array = " << source )
     }
 
     static void gather( 
-        hmemo::HArray<ValueType>&, 
-        const hmemo::_HArray&, 
+        hmemo::HArray<ValueType>& target, 
+        const hmemo::_HArray& source, 
         const hmemo::HArray<IndexType>&, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr ) 
     {
+        COMMON_THROWEXCEPTION( "Unsupported gather, target array = " << target << ", source array = " << source )
     }
 
     static void scatter( 
-        hmemo::HArray<ValueType>&, 
+        hmemo::HArray<ValueType>& target, 
         const hmemo::HArray<IndexType>&, 
-        const hmemo::_HArray&, 
+        const hmemo::_HArray& source, 
         const binary::BinaryOp, 
         const hmemo::ContextPtr )
     {
+        COMMON_THROWEXCEPTION( "Unsupported scatter, target array = " << target << ", source array = " << source )
     }
 };
 
