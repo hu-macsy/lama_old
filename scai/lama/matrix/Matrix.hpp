@@ -560,6 +560,22 @@ public:
      */
     virtual Scalar getValue( IndexType i, IndexType j ) const = 0;
 
+    /** 
+     * @brief Update of an (existing ) element in a matrix
+     *
+     * @param[in] i   the global row index
+     * @param[in] j   the global column index
+     * @param[in] val value used for update
+     * @param[in] op  binary operation used to combine new and old value, default is COPY 
+     *
+     * Note: this method will never change the pattern of a sparse matrix.
+     */
+    virtual void setValue( 
+        const IndexType i, 
+        const IndexType j, 
+        const Scalar val, 
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
+
     virtual void writeAt( std::ostream& stream ) const;
 
     /**

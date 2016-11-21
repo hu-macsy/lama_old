@@ -415,6 +415,14 @@ public:
 
     virtual Scalar getValue( IndexType i, IndexType j ) const;
 
+    /** Implementation of pure method Matrix::setValue */
+
+    virtual void setValue(
+        const IndexType i,
+        const IndexType j,
+        const Scalar val,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     /* Implemenation of pure method of class Matrix */
 
     virtual void matrixTimesScalar( const Matrix& other, const Scalar alpha );
