@@ -101,6 +101,10 @@ set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 
+include( FindZLIB )
+
+# sets ZLIB_FOUND ZLIB_LIBRARY ZLIB_INCLUDE_DIR
+
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
 scai_project (
@@ -156,6 +160,10 @@ addInternalAndExternalLinkLibraries()
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
+
+if ( ZLIB_FOUND ) 
+    target_link_libraries ( ${PROJECT_NAME} ${ZLIB_LIBRARY} )
+endif ( ZLIB_FOUND ) 
 
 ### install ###
 

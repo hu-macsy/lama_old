@@ -34,11 +34,10 @@
 
 ### Add classes and header files ###
 
-scai_project (
+set ( IO_CLASSES 
 
-    CLASSES
-        
         IOStream
+        MATIOStream
 
         FileIO
         SAMGIO
@@ -46,6 +45,17 @@ scai_project (
         PETScIO
         TextIO
         PartitionIO
+) 
+
+if ( ZLIB_FOUND )
+    set ( IO_CLASSES ${IO_CLASSES} MatlabIO )
+endif ( ZLIB_FOUND )
+
+scai_project (
+
+    CLASSES
+        
+        ${IO_CLASSES}
 
     HEADERS
 
