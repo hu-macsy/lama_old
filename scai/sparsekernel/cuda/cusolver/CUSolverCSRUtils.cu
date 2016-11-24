@@ -33,7 +33,7 @@
  */
 
 // hpp
-#include <scai/sparsekernel/cuda/cusparse/CUSolverCSRUtils.hpp>
+#include <scai/sparsekernel/cuda/cusolver/CUSolverCSRUtils.hpp>
 
 // local library
 #include <scai/sparsekernel/cuda/cusparse/CUSOLVERWrapper.hpp>
@@ -83,7 +83,7 @@ void CUSolverCSRUtils::decomposition(
     const IndexType nnz,
     const bool isSymmetic )
 {
-    SCAI_LOG_ERROR( logger,
+    SCAI_LOG_DEBUG( logger,
                     "decomposition<" << common::getScalarType<ValueType>() << ", matrix numRows = "
                     << numRows << ", nnz = " << nnz )
 

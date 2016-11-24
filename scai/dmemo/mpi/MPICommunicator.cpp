@@ -185,7 +185,7 @@ void MPICommunicator::initialize( int& argc, char**& argv )
 
         if ( setCUDA )
         {
-            SCAI_LOG_ERROR( logger, "MPI isCUDAAware = " << isCUDAAware )
+            SCAI_LOG_INFO( logger, "MPI isCUDAAware = " << isCUDAAware )
         }
     }
 
