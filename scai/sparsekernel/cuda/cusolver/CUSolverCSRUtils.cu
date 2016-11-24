@@ -36,7 +36,7 @@
 #include <scai/sparsekernel/cuda/cusolver/CUSolverCSRUtils.hpp>
 
 // local library
-#include <scai/sparsekernel/cuda/cusparse/CUSOLVERWrapper.hpp>
+#include <scai/sparsekernel/cuda/cusolver/CUSOLVERWrapper.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
