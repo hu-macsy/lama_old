@@ -64,6 +64,7 @@ heading ( "Optional External Libraries:" )
 include ( Summaries/Modules/Accelerator )
 include ( Summaries/Modules/Distributed )
 include ( Summaries/Modules/Graphpartitioning )
+include ( Summaries/Modules/ZLIB )
 
 heading ( "Optional components:" "" )
 heading3 ( "Java:" "JAVA_FOUND" )
