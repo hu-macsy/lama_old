@@ -870,6 +870,8 @@ void HArrayUtils::binaryOp(
 
     const IndexType n = x.size();
 
+    SCAI_ASSERT_GE_ERROR( y.size(), n, "binaryOp: y has to small size" )
+
     static LAMAKernel<UtilKernelTrait::binaryOp<ValueType> > binaryOp;
 
     ContextPtr loc = prefLoc;
