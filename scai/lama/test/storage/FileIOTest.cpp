@@ -437,7 +437,10 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         for ( IndexType i = 0; i < csrStorage.getNumRows(); ++i )
         {
-            BOOST_CHECK_EQUAL( firstColIndexes1[i], firstColIndexes2[i] );
+            if ( fileSuffix != ".mat" )
+            {
+                BOOST_CHECK_EQUAL( firstColIndexes1[i], firstColIndexes2[i] );
+            }
 
             for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
             {

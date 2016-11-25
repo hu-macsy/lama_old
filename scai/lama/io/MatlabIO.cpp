@@ -341,14 +341,14 @@ void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueT
 
     nBytes = wBytes - 8;  // subtract for the first header
 
-    SCAI_LOG_ERROR( logger, "writeDenseArray, dryrun gives written bytes = " << wBytes << ", now write" )
+    SCAI_LOG_INFO( logger, "writeDenseArray, dryrun gives written bytes = " << wBytes << ", now write" )
 
     dryRun = false;  // now write it with the correct value of nBytes
 
     wBytes  = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
     wBytes += writeArrayData( outFile, array, dryRun );
 
-    SCAI_LOG_ERROR( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1] 
+    SCAI_LOG_INFO( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1] 
                             << ", wBytes = " << wBytes )
 }
 
@@ -389,7 +389,7 @@ void MatlabIO::writeStorageImpl(
     
     if ( numValues * 2 >= numRows * numCols && mScalarTypeData != common::scalar::PATTERN )
     {
-        SCAI_LOG_ERROR( logger, "Write storage as dense matrix to file " << fileName << ": " << storage )
+        SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << fileName << ": " << storage )
   
         DenseStorage<ValueType> denseStorage;
 
@@ -403,13 +403,15 @@ void MatlabIO::writeStorageImpl(
     }
     else
     {
-        SCAI_LOG_ERROR( logger, "Write storage as sparse matrix to file " << fileName << ": " << storage )
+        SCAI_LOG_INFO( logger, "Write storage as sparse matrix to file " << fileName << ": " << storage )
 
-        CSRStorage<ValueType> csrStorage;
+        HArray<IndexType> ia;
+        HArray<IndexType> ja;
+        HArray<ValueType> values;
 
-        csrStorage.assignTranspose( storage );
+        storage.buildCSCData( ja, ia, values );
 
-        IndexType numValues = csrStorage.getNumValues();
+        IndexType numValues = storage.getNumValues();
 
         uint32_t wBytes = 24;   // initial guess for dryrun, avoid short write
 
@@ -420,12 +422,12 @@ void MatlabIO::writeStorageImpl(
             bool dryRun = ( i == 0 );      // first run dry, second run okay
     
             wBytes  = outFile.writeSparseHeader( numRows, numCols, numValues, wBytes, isComplex, dryRun );
-            wBytes += writeArrayData( outFile, csrStorage.getJA(), dryRun );
-            wBytes += writeArrayData( outFile, csrStorage.getIA(), dryRun );
+            wBytes += writeArrayData( outFile, ia, dryRun );
+            wBytes += writeArrayData( outFile, ja, dryRun );
     
             if ( mScalarTypeData != common::scalar::PATTERN )
             {
-                wBytes += writeArrayData( outFile, csrStorage.getValues(), dryRun );
+                wBytes += writeArrayData( outFile, values, dryRun );
             }
     
             wBytes -= 8;  // subtract for the first header
@@ -482,7 +484,7 @@ uint32_t MatlabIO::getArrayData( HArray<ValueType>& array, const char* data, uin
 
     readMATArray( array, arrayDataPtr, dataType, nBytes );
 
-    SCAI_LOG_ERROR( logger, "read array " << array << " from data ( len = " << len << " ), type = " << dataType
+    SCAI_LOG_INFO( logger, "read array " << array << " from data ( len = " << len << " ), type = " << dataType
                             << " is " << MATIOStream::matlabType2ScalarType( dataType )
                             << ", nBytes = " << nBytes << ", wBytes = " << wBytes )
 
@@ -503,7 +505,7 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
-        SCAI_LOG_ERROR( logger, "Get sparse<" << common::TypeTraits<ValueType>::stype << "> matrix " 
+        SCAI_LOG_INFO( logger, "Get sparse<" << common::TypeTraits<ValueType>::stype << "> matrix " 
                                 << dims[0] << " x " << dims[1] << ", nnz = " << nnz )
 
         // read IA, JA, Values of sparse array
@@ -540,7 +542,7 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
     }
     else
     {
-        SCAI_LOG_ERROR( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix " 
+        SCAI_LOG_INFO( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix " 
                                 << dims[0] << " x " << dims[1] )
 
         LArray<ValueType> values;
