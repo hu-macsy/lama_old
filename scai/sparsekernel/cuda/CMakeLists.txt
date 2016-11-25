@@ -34,6 +34,7 @@
 
 ### Add classes and header files ###
 
+add_subdirectory ( cusolver )
 add_subdirectory ( cusparse )
 
 scai_project(

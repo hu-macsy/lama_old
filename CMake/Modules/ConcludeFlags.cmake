@@ -81,6 +81,7 @@ set ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE "${SCAI_CODE_COVERAGE_FLAGS}" CACHE STR
 set ( ADDITIONAL_CXX_FLAGS_DEBUG         "${SCAI_CXX_FLAGS_DEBUG}"     CACHE STRING "Additional CXX compiler flags for Debug version" )
 set ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD    "${MIC_NO_OFFLOAD_FLAG}"      CACHE STRING "MIC no offload flag (only if MIC disabled)" )
 set ( ADDITIONAL_CXX_FLAGS_RELEASE       "${SCAI_CXX_FLAGS_RELEASE}"   CACHE STRING "Additional CXX compiler flags for Release version" )
+set ( ADDITIONAL_CXX_FLAGS_STATIC        "${SCAI_STATIC_FLAGS}"        CACHE STRING "Additional flags for static build, e.g. PIC" )
 set ( ADDITIONAL_LINKER_FLAGS            "${SCAI_LINKER_FLAGS}"        CACHE STRING "Additional linker flags" )
 set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STRING "Compilation flags concerning warnings" )
 
@@ -90,6 +91,10 @@ mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBU
                  )
 
 set ( CONCLUDE_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" )
+
+if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_STATIC}" )
+endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 
 if    ( SCAI_COMMON_FOUND )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${SCAI_COMMON_FLAGS}")

@@ -64,7 +64,9 @@ CUDACtx::CUDACtx( int deviceNr )
     SCAI_CUDA_DRV_CALL( cuCtxCreate( &mCUcontext, CU_CTX_SCHED_SPIN | CU_CTX_MAP_HOST, mCUdevice ),
                         "cuCtxCreate for " << mDeviceNr )
     SCAI_CUBLAS_CALL( cublasCreate( &mcuBLASHandle ), "Initialization of cuBLAS library" );
+
     SCAI_CUSPARSE_CALL( cusparseCreate( &mcuSparseHandle ), "Initialization of cuSparse library" );
+
 #if ( CUDART_VERSION >= 7050 )
     SCAI_CUSOLVER_CALL( cusolverDnCreate( &mcuSolverDnHandle ), "Initialization of cuSolverDn library" )
     SCAI_CUSOLVER_CALL( cusolverSpCreate( &mcuSolverSpHandle ), "Initialization of cuSolverSp library" )
