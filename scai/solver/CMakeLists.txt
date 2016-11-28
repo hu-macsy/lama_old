@@ -120,6 +120,7 @@ scai_project (
         InverseSolver
         IterativeSolver
         Jacobi
+        Kaczmarz
         MINRES
         OmegaSolver
         QMR

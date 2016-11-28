@@ -1,5 +1,5 @@
 ###
- # @file CMake/Modules/Summaries/Modules/Accelerator.cmake
+ # @file CMake/Modules/Summaries/Modules/ZLIB.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,21 +27,12 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Summary concerning Accelerator support.
- # @author Lauretta Schubert
- # @date 08.04.2016
+ # @brief Summary concerning ZLIB data compression
+ # @author Thomas Brandes
+ # @date 25.11.2016
 ###
 
-# OpenMP usage
-heading3 ( "OpenMP" "USE_OPENMP" )
-    found_message ( "OpenMP" "OPENMP_VERSION" "OPTIONAL" "Version ${OPENMP_VERSION}" )
-    found_message ( "compile flag" "OpenMP_CXX_FLAGS" "OPTIONAL" "${OpenMP_CXX_FLAGS}" )
-    found_message ( "schedule type" "SCAI_OMP_SCHEDULE" "OPTIONAL" "set to \"${SCAI_OMP_SCHEDULE}\"" )
+# ZLIB data compression
 
-# LAMA CUDA
-heading3 ( "CUDA" "CUDA_ENABLED" )
-    found_message ( "CUDA" "CUDA_FOUND" "OPTIONAL" "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
-    found_message ( "Compute Capability" "CUDA_COMPUTE_CAPABILITY" "OPTIONAL" "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-heading3 ( "MIC" "USE_MIC" )
+heading3 ( "ZLIB (data compression)" "USE_ZLIB" )
+    found_message ( "zlib" "ZLIB_FOUND" "OPTIONAL" "Version ${ZLIB_VERSION} at ${ZLIB_INCLUDE_DIR}, lib = ${ZLIB_LIBRARY}" )

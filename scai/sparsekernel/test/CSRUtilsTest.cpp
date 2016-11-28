@@ -40,6 +40,7 @@
 #include <scai/kregistry.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 /*--------------------------------------------------------------------- */
@@ -475,7 +476,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
 typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
     kregistry::KernelTraitContextFunction<CSRKernelTrait::decomposition<ValueType> > decomposition;
@@ -489,8 +490,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_ext_test_types
         return;
     }
 
-    const IndexType ia[] = { 0, 4, 8, 12, 15 };
-    const IndexType ja[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3 };
+    //       array ( 4 x 4 )        sol      rhs
+    //
+    //       3    4   -5   6          1      39
+    //       6    5   -6   5          2      43
+    //       9   -4    2   3         -2       6
+    //       -    2   -3   1          3      13
+
+    const IndexType ia[]     = { 0, 4, 8, 12, 15 };
+    const IndexType ja[]     = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 1, 2, 3 };
     const ValueType values[] = { 3.0,  4.0, -5.0,  6.0,
                                  6.0,  5.0, -6.0, 5.0,
                                  9.0, -4.0,  2.0, 3.0,
@@ -617,6 +625,156 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
         for ( IndexType j = 0; j <= n1; ++j )
         {
             BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
+
+    ContextPtr loc = Context::getContextPtr( matrixAdd.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+
+    //       array 1                array 2
+    //    1.0   -   2.0  -         1.0  0.5   -   -
+    //    0.5  0.3   -   0.5        -    -    -   0.5 
+    //     -    -   3.0  -        2.0   -   1.0   0.5
+
+    const IndexType ia1[]     = { 0,        2,             5, 6 };
+    const IndexType ja1[]     = { 0,   2,   0,   1,   3,   2 };
+    const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 0.5, 3.0 };
+
+    const IndexType ia2[]     = { 0,        2,   3,         6 };
+    const IndexType ja2[]     = { 0,   1,   3,   0,   2,  3 };
+    const ValueType values2[] = { 1.0, 0.5, 0.5, 2.0, 1.0, 0.5 };
+
+    //       array3 = array 1 + array 2
+    //
+    //     2.0  0.5  2.0  -
+    //     0.5  0.3   -   1.0  
+    //     2.0   -   4.0  0.5
+
+    const IndexType ia3[]     = { 0,             3,             6,            9 };
+    const IndexType ja3[]     = { 0,   1,   2,   0,   1,   3,   0,   2,   3 };
+    const ValueType values3[] = { 2.0, 0.5, 2.0, 0.5, 0.3, 1.0, 2.0, 4.0, 0.5 };
+
+    const IndexType n1 = 3;
+    const IndexType n2 = 4;
+
+    const IndexType nnz1 = sizeof( ja1 ) / sizeof( IndexType );
+    const IndexType nnz2 = sizeof( ja2 ) / sizeof( IndexType );
+
+    // csr arrays for matrix a
+
+    HArray<IndexType> aIA( n1 + 1, ia1, testContext );
+    HArray<IndexType> aJA( nnz1, ja1, testContext );
+    HArray<ValueType> aValues( nnz1, values1, testContext );
+
+    // csr arrays for matrix b
+
+    HArray<IndexType> bIA( n2 + 1, ia2, testContext );
+    HArray<IndexType> bJA( nnz2, ja2, testContext );
+    HArray<ValueType> bValues( nnz2, values2, testContext );
+
+    bool diagonalProperty = false;
+
+    IndexType nnz3;
+    HArray<IndexType> cSizes;
+
+    SCAI_LOG_INFO( logger, "matrixAddSizes @ " << *loc )
+
+    {
+        ReadAccess<IndexType> rAIA( aIA, loc );
+        ReadAccess<IndexType> rAJA( aJA, loc );
+        ReadAccess<IndexType> rBIA( bIA, loc );
+        ReadAccess<IndexType> rBJA( bJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
+
+        nnz3 = matrixAddSizes[loc->getType()]( wSizes.get(), n1, n2, diagonalProperty, 
+                                               rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
+
+    }
+
+    BOOST_CHECK_EQUAL( ia3[ n1 ], nnz3 );
+
+    // check sizes
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<IndexType> rSizes( cSizes, host );
+
+        for ( IndexType j = 0; j <= n1; ++j )
+        {
+            SCAI_LOG_TRACE( logger, "addSizes, size[" << j << "] = " << rSizes[j] )
+            BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
+        }
+    }
+
+    HArray<IndexType> cJA;
+    HArray<ValueType> cValues;
+
+    {
+        ReadAccess<IndexType> rAIA( aIA, loc );
+        ReadAccess<IndexType> rAJA( aJA, loc );
+        ReadAccess<ValueType> rAValues( aValues, loc );
+
+        ReadAccess<IndexType> rBIA( bIA, loc );
+        ReadAccess<IndexType> rBJA( bJA, loc );
+        ReadAccess<ValueType> rBValues( bValues, loc );
+
+        ReadAccess<IndexType> rCIA( cSizes, loc );
+
+        WriteOnlyAccess<IndexType> wCJA( cJA, loc, nnz3 );
+        WriteOnlyAccess<ValueType> wCValues( cValues, loc, nnz3 );
+
+        ValueType one = 1;
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        matrixAdd[loc->getType()]( wCJA.get(), wCValues.get(), 
+                                   rCIA.get(), n1, n2, diagonalProperty,
+                                   one, rAIA.get(), rAJA.get(), rAValues.get(),
+                                   one, rBIA.get(), rBJA.get(), rBValues.get() );
+
+    }
+
+    // sort the columns, otherwise comparison might fail
+
+    {
+        ReadAccess<IndexType> rCIA( cSizes );
+        WriteAccess<IndexType> wCJA( cJA );
+        WriteAccess<ValueType> wCValues( cValues );
+
+        for ( IndexType k = 0; k < nnz3; ++k )
+        {
+            SCAI_LOG_TRACE( logger, "matrixAdd, ja[" << k << "] = " << wCJA[k] )
+            SCAI_LOG_TRACE( logger, "matrixAdd, values[" << k << "] = " << wCValues[k] )
+        }
+
+        OpenMPCSRUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), n1, false );
+    }
+
+    {
+        ReadAccess<IndexType> rCJA( cJA );
+        ReadAccess<ValueType> rCValues( cValues );
+
+        for ( IndexType k = 0; k < nnz3; ++k )
+        {
+            BOOST_CHECK_EQUAL( rCJA[k], ja3[k] );
+            BOOST_CHECK_EQUAL( rCValues[k], values3[k] );
         }
     }
 }

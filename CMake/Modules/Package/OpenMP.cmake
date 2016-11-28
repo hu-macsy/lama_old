@@ -39,14 +39,12 @@
 ### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag
 ### OPENMP_VERSION         - version id
 
-if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )
-	enable_language ( C )
-endif ( CMAKE_VERSION VERSION_LESS 2.8.7 ) 
-
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
 
 # LAMA irrelevant entries will be removed from cmake GUI completely
-set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
+if ( OpenMP_C_FLAGS )
+	set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
+endif ( OpenMP_C_FLAGS )
 
 ## get OpenMP version
 if    ( OPENMP_FOUND )

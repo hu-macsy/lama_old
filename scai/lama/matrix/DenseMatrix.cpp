@@ -1419,29 +1419,31 @@ Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     ValueType myValue = static_cast<ValueType>( 0.0 );
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
-    const Communicator& comm = rowDist.getCommunicator();
+    const Communicator& commRow = rowDist.getCommunicator();
 
     if ( getRowDistribution().isLocal( i ) )
     {
         const IndexType iLocal = getRowDistribution().global2local( i );
-        PartitionId owner = comm.getRank();
+
+        PartitionId owner = 0;
+        IndexType  jLocal = nIndex;
 
         if ( colDist.getNumPartitions() == 1 )
         {
-            owner = 0;
-        }
-
-        IndexType jLocal = -1;
-
-        if ( colDist.isLocal( j ) )
+            owner  = 0;
+            jLocal = j;
+        } 
+        else if ( colDist.isLocal( j ) )
         {
+            owner  = mOwners[j];
             jLocal = colDist.global2local( j );
         }
         else
         {
-            owner = mOwners[j];
+            owner  = mOwners[j];
+            jLocal = 0;
 
-            for ( PartitionId k = 0; k <= j; ++k )
+            for ( PartitionId k = 0; k < j; ++k )
             {
                 if ( owner == mOwners[k] )
                 {
@@ -1457,7 +1459,57 @@ Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     }
 
     SCAI_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
-    return Scalar( comm.sum( myValue ) );
+    return Scalar( commRow.sum( myValue ) );
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setValue(
+    const IndexType i,
+    const IndexType j,
+    const Scalar val,
+    const utilskernel::binary::BinaryOp op )
+{
+    const Distribution& distributionRow = getRowDistribution();
+
+    const IndexType iLocal = distributionRow.global2local( i );
+
+    if ( iLocal == nIndex )
+    {
+        return; // this processor does not have the value
+    }
+
+    const Distribution& distributionCol = getColDistribution();
+
+    PartitionId owner  = 0;
+    IndexType   jLocal = nIndex;
+
+    if ( distributionCol.getNumPartitions() == 1 )
+    {
+        jLocal = j;
+    }
+    else if ( distributionCol.isLocal( j ) )
+    {
+        owner  = mOwners[j];
+        jLocal = distributionCol.global2local( j );
+    }
+    else
+    {
+        owner = mOwners[j];
+
+        jLocal = 0;
+
+        for ( PartitionId k = 0; k < j; ++k )
+        {
+            if ( owner == mOwners[k] )
+            {
+                ++jLocal;
+            }
+        }
+    }
+
+    SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+
+    mData[owner]->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
 }
 
 template<typename ValueType>

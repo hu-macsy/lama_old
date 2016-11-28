@@ -36,3 +36,6 @@
 set ( BOOST_TEST_MINIMUM_VERSION 1.41 )
 
 set ( OMP_MINIMUM_VERSION 3.0 ) # because of use of collapse
+
+set ( CUDA_MINIMUM_VERSION 4.0 ) # because we explicitly use cublas_v2
+# cusparse since 3.2, cusolver since 7.0

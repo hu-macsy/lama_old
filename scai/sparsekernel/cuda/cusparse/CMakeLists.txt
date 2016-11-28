@@ -32,13 +32,17 @@
  # @date 18.02.2016
 ###
 
+if ( CUDA_cusparse_LIBRARY )
+
 ### Add classes and header files ###
 
 ### Currently CUsparse can only be used if IndexType == int is used
 
 if    ( SCAI_INDEX_TYPE STREQUAL "int" )
-    set ( CLASSES ${CLASSES} CUSolverCSRUtils CUSparseCSRUtils )
-    set ( HEADERS ${HEADERS} CUSPARSETrait CUSPARSEWrapper CUSOLVERTrait CUSOLVERWrapper )
+    set ( CUSPARSE_CLASSES CUSparseCSRUtils )
+    set ( CUSPARSE_HEADERS CUSPARSETrait CUSPARSEWrapper )
 endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 
-scai_project ( CLASSES ${CLASSES} HEADERS ${HEADERS} ADD_PARENT_SCOPE )
+scai_project ( CUDA_CLASSES ${CUSPARSE_CLASSES} HEADERS ${CUSPARSE_HEADERS} ADD_PARENT_SCOPE )
+
+endif ()

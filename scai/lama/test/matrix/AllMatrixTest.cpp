@@ -602,7 +602,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 // the final matrix should be zero
 
-                BOOST_ASSERT( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
             }
         }
     }
@@ -660,7 +660,129 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
                 // the final matrix should be zero
 
-                BOOST_ASSERT( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( getTest )
+{
+    const IndexType nRows = 10;
+    const IndexType nCols = 8;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    CSRSparseMatrix<double> csr( nRows, nCols );
+    MatrixCreator::fillRandom( csr, 0.1f );
+
+    TestDistributions rowDistributions( nRows );
+    TestDistributions colDistributions( nCols );
+
+    for ( size_t rd = 0; rd < rowDistributions.size(); ++rd )
+    {
+        DistributionPtr rowDist = rowDistributions[rd];
+
+        for ( size_t cd = 0; cd < colDistributions.size(); ++cd )
+        {
+            DistributionPtr colDist = colDistributions[cd];
+
+            Matrices allMatrices( context );    // is created by factory
+
+            for ( size_t s = 0; s < allMatrices.size(); ++s )
+            {
+                Matrix& matrix = *allMatrices[s];
+
+                matrix = csr;
+
+                matrix.redistribute( rowDist, colDist );
+ 
+                SCAI_LOG_DEBUG( logger, "getTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
+
+                // get each element and subract it
+
+                for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
+                {
+                    for ( IndexType jCol = 0; jCol < matrix.getNumColumns(); ++jCol )
+                    {
+                        Scalar s1 = matrix.getValue( iRow, jCol );
+                        Scalar s2 = csr.getValue( iRow, jCol );
+
+                        Scalar diff = abs( s1 - s2 );
+  
+                        BOOST_CHECK( diff < Scalar( 0.001 ) );
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( getSetTest )
+{
+    const IndexType nRows = 10;
+    const IndexType nCols = 8;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    CSRSparseMatrix<double> csr( nRows, nCols );
+    MatrixCreator::fillRandom( csr, 0.1f );
+
+    TestDistributions rowDistributions( nRows );
+    TestDistributions colDistributions( nCols );
+
+    for ( size_t rd = 0; rd < rowDistributions.size(); ++rd )
+    {
+        DistributionPtr rowDist = rowDistributions[rd];
+
+        for ( size_t cd = 0; cd < colDistributions.size(); ++cd )
+        {
+            DistributionPtr colDist = colDistributions[cd];
+
+            Matrices allMatrices( context );    // is created by factory
+
+            for ( size_t s = 0; s < allMatrices.size(); ++s )
+            {
+                Matrix& matrix = *allMatrices[s];
+
+                matrix = csr;
+
+                if ( matrix.getMatrixKind() == Matrix::SPARSE )
+                {
+                    continue;
+                }
+
+                if ( matrix.getValueType() != common::scalar::FLOAT )
+                {
+                    continue;
+                }
+
+                matrix.redistribute( rowDist, colDist );
+ 
+                SCAI_LOG_DEBUG( logger, "getSetTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
+
+                // get each element and subract it
+
+                for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
+                {
+                    for ( IndexType jCol = 0; jCol < matrix.getNumColumns(); ++jCol )
+                    {
+                        Scalar s = matrix.getValue( iRow, jCol );
+
+                        if ( s != Scalar( 0 ) )
+                        {
+                            matrix.setValue( iRow, jCol, s, utilskernel::binary::SUB );
+                        }
+                    }
+                }
+
+                // the final matrix should be zero
+
+                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
             }
         }
     }

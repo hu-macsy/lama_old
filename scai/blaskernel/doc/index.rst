@@ -68,7 +68,7 @@ How to extend the supported blas functions:
 Environment-Variables
 *********************
 
-- SCAI_USE_BLAS=[0|1|2|3]
+- SCAI_USE_BLAS=[0|1|2|3] (default=0)
 
   - usage of external blas library on host
    
@@ -82,7 +82,7 @@ Environment-Variables
       
     - *3* --> use level 3 from external library (matrix-matrix multiplication)
       
-- SCAI_USE_LAPACK=[0|1]
+- SCAI_USE_LAPACK=[0|1] (default=0)
 
   - usage of external lapack library on host
 

@@ -60,6 +60,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
     set ( SCAI_CXX_FLAGS_DEBUG     "" )
     set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math -msse4a " )
     set ( SCAI_CODE_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
+    set ( SCAI_STATIC_FLAGS        "-fPIC" )
 
     ###  Code coverage with gcov/lcov
 
@@ -78,7 +79,7 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     # -fPIC should always be enabled so static libraries can be linked with shared libraries
 
-    set ( SCAI_CXX_FLAGS "-fPIC -shared-intel " ) 
+    set ( SCAI_STATIC_FLAGS "-fPIC -shared-intel " ) 
 
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)

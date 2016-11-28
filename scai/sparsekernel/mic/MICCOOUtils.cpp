@@ -93,7 +93,7 @@ void MICCOOUtils::getCSRValuesP(
     const IndexType cooJA[],
     const COOValueType cooValues[] )
 {
-    SCAI_LOG_ERROR( logger,
+    SCAI_LOG_DEBUG( logger,
                     "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
                     << ", #rows = " << numRows << ", #values = " << numValues )
     void* csrJAPtr = csrJA;
@@ -155,7 +155,7 @@ void MICCOOUtils::getCSRValuesS(
     const IndexType cooJA[],
     const COOValueType cooValues[] )
 {
-    SCAI_LOG_ERROR( logger,
+    SCAI_LOG_DEBUG( logger,
                     "get CSRValues<" << TypeTraits<COOValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
                     << ", #rows = " << numRows << ", #values = " << numValues )
     void* csrJAPtr = csrJA;

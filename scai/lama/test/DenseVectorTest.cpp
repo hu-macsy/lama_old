@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
         utilskernel::LArray<ValueType> data1( n );
 
         dmemo::DistributionPtr dist = dists[i];
-  
+
         DenseVector<ValueType> distV( dist, 0 );
- 
+
         // set each value in the distributed vector
 
         for ( IndexType k = 0; k < n; ++k )
@@ -148,13 +148,13 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
     for ( size_t i = 0; i < dists.size(); ++i )
     {
         dmemo::DistributionPtr dist = dists[i];
-  
+
         // distV = repV, but distributed
 
         DenseVector<ValueType> distV( repV, dist );
-        
+
         DenseVector<ValueType> newV( dist );
- 
+
         hmemo::HArray<ValueType> tmp;
 
         distV.buildValues( tmp );
@@ -191,11 +191,11 @@ BOOST_AUTO_TEST_CASE( SequenceTest )
     for ( size_t i = 0; i < dists.size(); ++i )
     {
         dmemo::DistributionPtr dist = dists[i];
-  
+
         // distV = repV, but distributed
 
         DenseVector<ValueType> distV( repV, dist );
-        
+
         BOOST_CHECK_EQUAL( distV.min() , 0 );
         BOOST_CHECK_EQUAL( distV.max() , n - 1 );
 
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test_types )
 {
-    // Note: here we only test constructor DenseVector( "fileName" ) 
+    // Note: here we only test constructor DenseVector( "fileName" )
     //       as readFromFile is already tested in PartitionIO
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
 
         DenseVector<ValueType> b( dist , 3 );
         DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a * b ); 
+        DenseVector<ValueType> c( a * b );
         DenseVector<ValueType> r( dist , 9 );
 
         // prove same distribution, same values of r and c
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
 BOOST_AUTO_TEST_CASE( matExpConstructorTest )
 {
     // Note: it is sufficient to consider one matrix type and one value type
- 
+
     typedef RealType ValueType;
 
     IndexType nCols = 4;
@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
             DenseVector<ValueType> x( colDist, 3 );
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
             DenseVector<ValueType> y( 2 * mat * x );
-            
+
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
         }
     }
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
         DenseVector<ValueType> y( 2 + x );
         DenseVector<ValueType> z( x + 2 );
         DenseVector<ValueType> r( dist, 5 );
-            
+
         // prove same distribution, same values of r and y/z
 
         BOOST_CHECK( r.getLocalValues().maxDiffNorm( y.getLocalValues() ) == 0 );
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
         for ( size_t j = 0; j < colDists.size(); ++j )
         {
             dmemo::DistributionPtr colDist = colDists[j];
-            
+
             Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
-                
+
                 BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
             }
         }
@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         for ( size_t j = 0; j < colDists.size(); ++j )
         {
             dmemo::DistributionPtr colDist = colDists[j];
-            
+
             Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
-                
+
                 BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
             }
         }
@@ -607,7 +607,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     DenseVector<ValueType> res2( 2 * At * x - y );
 
     const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
-    const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues(); 
+    const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues();
 
     BOOST_CHECK_EQUAL( 0, v1.maxDiffNorm( v2 ) );
 }
@@ -616,32 +616,32 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
 BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
 {
-     typedef float ValueType;
+    typedef float ValueType;
 
-     const IndexType n = 4;
-     ValueType sourceVals[] = { 3, 1, 4, 2 };
-     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+    const IndexType n = 4;
+    ValueType sourceVals[] = { 3, 1, 4, 2 };
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-     DenseVector<ValueType> x( n, sourceVals, ctx );
+    DenseVector<ValueType> x( n, sourceVals, ctx );
 
-     ValueType alpha = 34.7;
-     ValueType beta  = 5.2;
+    ValueType alpha = 34.7;
+    ValueType beta  = 5.2;
 
-     // test expression
-     DenseVector<ValueType> res1;
-     res1 = alpha * x + beta; 
-     // test constructor with expression
-     DenseVector<ValueType> res2( alpha * x + beta );
-     // test alias
-     x = alpha * x + beta;
+    // test expression
+    DenseVector<ValueType> res1;
+    res1 = alpha * x + beta;
+    // test constructor with expression
+    DenseVector<ValueType> res2( alpha * x + beta );
+    // test alias
+    x = alpha * x + beta;
 
-     for( IndexType i = 0; i < n; ++i )
-     {
+    for ( IndexType i = 0; i < n; ++i )
+    {
         ValueType erg = alpha * sourceVals[i] + beta;
-        BOOST_CHECK_EQUAL( erg, res1.getValue(i).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg, res2.getValue(i).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg,    x.getValue(i).getValue<ValueType>() );
-     }
+        BOOST_CHECK_EQUAL( erg, res1.getValue( i ).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg, res2.getValue( i ).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg,    x.getValue( i ).getValue<ValueType>() );
+    }
 }
 
 /* --------------------------------------------------------------------- */
@@ -673,7 +673,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
     DenseVector<IndexType> perm;
 
-    sortVector.sort( perm, ascending );    // parallel sorting with global permutation 
+    sortVector.sort( perm, ascending );    // parallel sorting with global permutation
 
     BOOST_REQUIRE_EQUAL( n, perm.size() );
 
@@ -686,7 +686,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
     hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
     hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );
-    
+
     BOOST_REQUIRE_EQUAL( n, rSorted.size() );
     BOOST_REQUIRE_EQUAL( n, rPerm.size() );
 
@@ -723,33 +723,45 @@ BOOST_AUTO_TEST_CASE( gatherTest )
     hmemo::HArray<ValueType> indexArray( n, indexValues );
     index.assign( indexArray );
 
+    dmemo::TestDistributions sourceDistributions( m );
+    dmemo::TestDistributions indexDistributions( n );
+
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
 
-    dmemo::DistributionPtr sourceDist( new dmemo::BlockDistribution( m, comm ) );
-    dmemo::DistributionPtr indexDist( new dmemo::BlockDistribution( n, comm ) );
-
-    source.redistribute( sourceDist );
-    index.redistribute( indexDist );
- 
-    DenseVector<ValueType> target;
-
-    target.gather( source, index );
-
-    BOOST_CHECK_EQUAL( target.size(), index.size() );
-    BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
-    BOOST_CHECK_EQUAL( target.getDistribution().getLocalSize(), target.getLocalValues().size() );
-
-    hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
-
-    for ( IndexType i = 0; i < n; ++i )
+    for ( size_t sd = 0; sd < sourceDistributions.size(); ++sd )
     {
-        IndexType localIndex = target.getDistribution().global2local( i );
-
-        if ( localIndex != nIndex )
+        for ( size_t id = 0; id < indexDistributions.size(); ++id )
         {
-            BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i], 
-                                 *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
-                                 << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+            dmemo::DistributionPtr sourceDist = sourceDistributions[sd];
+            dmemo::DistributionPtr indexDist = indexDistributions[id];
+
+            source.redistribute( sourceDist );
+            index.redistribute( indexDist );
+
+            DenseVector<ValueType> target( indexDist );
+            target = 0;
+
+            SCAI_LOG_INFO( logger, "gather source[index] with source = " << source << ", index = " << index )
+
+            target.gather( source, index, utilskernel::binary::ADD );
+
+            BOOST_CHECK_EQUAL( target.size(), index.size() );
+            BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
+            BOOST_CHECK_EQUAL( target.getDistribution().getLocalSize(), target.getLocalValues().size() );
+
+            hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                IndexType localIndex = target.getDistribution().global2local( i );
+
+                if ( localIndex != nIndex )
+                {
+                    BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
+                                         *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
+                                         << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+                }
+            }
         }
     }
 }
@@ -783,24 +795,49 @@ BOOST_AUTO_TEST_CASE( scatterTest )
     dmemo::DistributionPtr targetDist( new dmemo::BlockDistribution( m, comm ) );
     dmemo::DistributionPtr indexDist( new dmemo::BlockDistribution( n, comm ) );
 
-    source.redistribute( indexDist );
-    index.redistribute( indexDist );
- 
-    DenseVector<ValueType> target( targetDist );
+    dmemo::TestDistributions targetDistributions( m );
+    dmemo::TestDistributions indexDistributions( n );
 
-    target.scatter( index, source );
-
-    hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
-
-    for ( IndexType i = 0; i < n; ++i )
+    for ( size_t sd = 0; sd < targetDistributions.size(); ++sd )
     {
-        IndexType localIndex = target.getDistribution().global2local( i );
-
-        if ( localIndex != nIndex )
+        for ( size_t id = 0; id < indexDistributions.size(); ++id )
         {
-            BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i], 
-                                 *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
-                                 << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+            dmemo::DistributionPtr targetDist = targetDistributions[sd];
+            dmemo::DistributionPtr indexDist = indexDistributions[id];
+
+            source.redistribute( indexDist );
+            index.redistribute( indexDist );
+
+            DenseVector<ValueType> target( targetDist );
+            target = 0;
+
+            if ( targetDist->isReplicated() != indexDist->isReplicated() )
+            {
+                // either both are replicated or both distributed
+
+                BOOST_CHECK_THROW(
+                {
+                    target.scatter( index, source, utilskernel::binary::ADD );
+                }, common::Exception );
+               
+                continue;
+            }
+
+            target.scatter( index, source, utilskernel::binary::ADD );
+
+            hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                IndexType localIndex = target.getDistribution().global2local( i );
+
+                if ( localIndex != nIndex )
+                {
+                    BOOST_CHECK_MESSAGE( rTarget[localIndex] == targetValues[i],
+                                         *comm << ": targetLocal[" << localIndex << "] = " << rTarget[localIndex]
+                                         << " must be equal to targetValues[" << i << "] = " << targetValues[i] );
+                }
+            }
         }
     }
 }

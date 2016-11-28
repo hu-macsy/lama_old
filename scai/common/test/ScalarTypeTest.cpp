@@ -36,6 +36,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/mepr/ScalarTypeHelper.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <sstream>
 
@@ -75,5 +76,10 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
     {
         typeSize( scalar::INTERNAL );
     }, common::Exception );
-}
 
+    bool contains1 = mepr::ScalarTypeHelper<SCAI_TYPELIST(char, int)>::contains( scalar::INT );
+    BOOST_CHECK( contains1 );
+
+    bool contains2 = mepr::ScalarTypeHelper<SCAI_TYPELIST(char, int)>::contains( scalar::FLOAT );
+    BOOST_CHECK( !contains2 );
+}

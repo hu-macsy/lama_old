@@ -40,13 +40,12 @@ if    ( NOT CXX_SUPPORTS_C11 )
     include_directories ( ${BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
-if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
-    # example of a library module ( will be used by executable UseModule )
-    add_library( Module SHARED Module.cpp )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} Module.cpp )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} DynRoutine.hpp )
-    target_link_libraries( Module ${PROJECT_NAME} )
-endif ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
+# example of a library module ( will be used by executable UseModule )
+# must be build SHARED regardless the SCAI_LIBRARY_TYPE is SHARED or STATIC
+add_library( Module SHARED Module.cpp )
+set ( EXAMPLE_FILES ${EXAMPLE_FILES} Module.cpp )
+set ( EXAMPLE_FILES ${EXAMPLE_FILES} DynRoutine.hpp )
+target_link_libraries( Module ${PROJECT_NAME} )
 
 # example of a library module ( no use of other LAMA stuff )
 add_library( DummyModule SHARED DummyModule.cpp )
@@ -54,11 +53,24 @@ set ( EXAMPLE_FILES ${EXAMPLE_FILES} DummyModule.cpp )
 
 set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
 
-set ( EXECUTABLE_FILES ExceptionDemo CriticalRegion Barrier 
-          DemoFactory DemoFactory1 DemoPointer UseModule TimePrecision 
-          DemoTypeTrait DemoSettings DemoMath DemoFunction 
+set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} 
+          Barrier 
+          BenchMath
+          BenchPointers
+          CriticalRegion
+          DemoFactory
+          DemoFactory1
+          DemoFunction 
           DemoLoopMacro
-          DemoMetaProgramming BenchPointers BenchMath )
+          DemoMath
+          DemoMetaProgramming
+          DemoPointer
+          DemoSettings
+          DemoTypeTrait
+          ExceptionDemo
+          TimePrecision
+          UseModule
+    )
 
 if    ( ${USE_COMPLEX} )
     set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} DemoComplex )

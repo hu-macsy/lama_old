@@ -33,10 +33,10 @@
  */
 
 // hpp
-#include <scai/sparsekernel/cuda/CUSparseCSRUtils.hpp>
+#include <scai/sparsekernel/cuda/cusparse/CUSparseCSRUtils.hpp>
 
 // local library
-#include <scai/sparsekernel/cuda/CUSPARSEWrapper.hpp>
+#include <scai/sparsekernel/cuda/cusparse/CUSPARSEWrapper.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 
 // internal scai libraries
@@ -176,7 +176,7 @@ IndexType CUSparseCSRUtils::matrixAddSizes(
     const IndexType bIA[],
     const IndexType bJA[] )
 {
-    SCAI_REGION( "CUDA.CSR.matrixAddSizes" )
+    SCAI_REGION( "CUDA.cuCSR.matrixAddSizes" )
     SCAI_LOG_INFO(
         logger,
         "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
@@ -273,7 +273,7 @@ void CUSparseCSRUtils::matrixAdd(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    SCAI_REGION( "CUDA.CSR.matrixAdd" )
+    SCAI_REGION( "CUDA.cuCSR.matrixAdd" )
     SCAI_LOG_INFO( logger, "matrixAdd for " << numRows << "x" << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
     cusparseMatDescr_t descrCSR;

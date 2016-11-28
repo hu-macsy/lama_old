@@ -1,5 +1,5 @@
 ###
- # @file CMake/Modules/Summaries/Modules/Accelerator.cmake
+ # @file CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,21 +27,22 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Summary concerning Accelerator support.
- # @author Lauretta Schubert
- # @date 08.04.2016
+ # @brief sparsekernel/cuda/cusparse/CMakeLists.txt
+ # @author Eric Schricker
+ # @date 18.02.2016
 ###
 
-# OpenMP usage
-heading3 ( "OpenMP" "USE_OPENMP" )
-    found_message ( "OpenMP" "OPENMP_VERSION" "OPTIONAL" "Version ${OPENMP_VERSION}" )
-    found_message ( "compile flag" "OpenMP_CXX_FLAGS" "OPTIONAL" "${OpenMP_CXX_FLAGS}" )
-    found_message ( "schedule type" "SCAI_OMP_SCHEDULE" "OPTIONAL" "set to \"${SCAI_OMP_SCHEDULE}\"" )
+### Add classes and header files ###
 
-# LAMA CUDA
-heading3 ( "CUDA" "CUDA_ENABLED" )
-    found_message ( "CUDA" "CUDA_FOUND" "OPTIONAL" "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
-    found_message ( "Compute Capability" "CUDA_COMPUTE_CAPABILITY" "OPTIONAL" "${CUDA_COMPUTE_CAPABILITY}" )
-                           
-# LAMA MIC
-heading3 ( "MIC" "USE_MIC" )
+if ( CUDA_cusolver_LIBRARY )
+
+### Currently CUsparse can only be used if IndexType == int is used
+
+if    ( SCAI_INDEX_TYPE STREQUAL "int" )
+    set ( CUSOLVER_CLASSES CUSolverCSRUtils )
+    set ( CUSOLVER_HEADERS CUSOLVERTrait CUSOLVERWrapper )
+endif ( SCAI_INDEX_TYPE STREQUAL "int" )
+
+scai_project ( CUDA_CLASSES ${CUSOLVER_CLASSES} HEADERS ${CUSOLVER_HEADERS} ADD_PARENT_SCOPE )
+
+endif ()

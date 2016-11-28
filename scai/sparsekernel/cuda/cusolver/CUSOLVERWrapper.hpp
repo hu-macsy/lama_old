@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include <scai/sparsekernel/cuda/CUSOLVERTrait.hpp>
+#include <scai/sparsekernel/cuda/cusolver/CUSOLVERTrait.hpp>
 
 #include <scai/common/cuda/CUDAError.hpp>
 

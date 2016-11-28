@@ -157,6 +157,10 @@ if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
+if ( USE_ZLIB AND ZLIB_FOUND ) 
+    target_link_libraries ( ${PROJECT_NAME} ${ZLIB_LIBRARY} )
+endif ( USE_ZLIB AND ZLIB_FOUND ) 
+
 ### install ###
 
 ## install lib

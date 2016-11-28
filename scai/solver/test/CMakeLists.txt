@@ -57,6 +57,7 @@ scai_project (
         IterationCountTest
         IterativeSolverTest
         JacobiTest
+        KaczmarzTest
         MINRESTest
         QMRTest
         ResidualStagnationTest

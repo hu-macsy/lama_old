@@ -86,6 +86,11 @@ struct ScalarTypeHelper<NullType>
     {
         return false;
     }
+
+    static bool contains( const scalar::ScalarType )
+    {
+        return false;
+    }
 };
 
 /*
@@ -159,6 +164,19 @@ struct ScalarTypeHelper< TypeList<H, T> >
             return ScalarTypeHelper<T>::isNumeric( stype );
         }
     }
+
+    static bool contains( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            return true;
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::contains( stype );
+        }
+    }
+
 };
 
 } /* end namespace mepr */

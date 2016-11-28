@@ -47,6 +47,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/mepr/ScalarTypeHelper.hpp>
 
 #include <typeinfo>
 
@@ -68,7 +69,9 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayUtilsTest" )
 BOOST_AUTO_TEST_CASE( factoryTest )
 {
     HArrays allArrays;    // is created by factory
-    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ARRAY_TYPES_HOST );
+
+    size_t nTypes = SCAI_COMMON_COUNT_NARG( SCAI_ALL_TYPES );
+
     SCAI_LOG_INFO( logger, "Test all arrys of factory to be zero, #arrays = " << allArrays.size() )
     BOOST_CHECK_EQUAL( nTypes, allArrays.size() );
 
@@ -96,11 +99,37 @@ BOOST_AUTO_TEST_CASE( untypedTest )
     for ( size_t i1 = 0; i1 < allArrays1.size(); ++i1 )
     {
         _HArray& array1 = *allArrays1[i1];
-        HArrayUtils::assign( array1, order );
+
+        // Note: HArrayUtils are only available for SCAI_ARRAY_TYPES_HOST
+
+        if ( !common::mepr::ScalarTypeHelper<SCAI_ARRAY_TYPES_HOST_LIST>::contains( array1.getValueType() ) )
+        {
+            BOOST_CHECK_THROW(
+            {
+                HArrayUtils::assign( array1, order );
+            }, common::Exception );
+
+            continue;
+        }
+        else
+        {
+            HArrayUtils::assign( array1, order );
+        }
 
         for ( size_t i2 = 0; i2 < allArrays2.size(); ++i2 )
         {
             _HArray& array2 = *allArrays2[i2];
+
+            if ( !common::mepr::ScalarTypeHelper<SCAI_ARRAY_TYPES_HOST_LIST>::contains( array2.getValueType() ) )
+            {
+                BOOST_CHECK_THROW(
+                {
+                    HArrayUtils::gather( array2, array1, perm, binary::COPY, ctx );
+                }, common::Exception );
+
+                continue;
+            }
+
             // create array with same type, context
             common::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
@@ -824,6 +853,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
     {
         ValueType elem = x[ ofs_x + i * inc_x];
         BOOST_CHECK_EQUAL( yVals[ ofs_y + i * inc_y ], elem );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+typedef boost::mpl::list<SCAI_ALL_TYPES> all_types;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType xVals[] = { 3, 1, 4, 2, 2, 1, 4 };
+
+    const IndexType nx = sizeof( xVals ) / sizeof( ValueType );
+
+    HArray<ValueType> x( nx, xVals, loc );
+    HArray<ValueType> y;
+
+    // verify that unsupported array types throw an exception
+
+    if ( common::mepr::TypeListUtilsV<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::contains )
+    {
+        SCAI_LOG_INFO( logger, "supported value type " << TypeTraits<ValueType>::id() << " can be used in HArray utilities" )
+
+        HArrayUtils::setArray( y, x, binary::COPY, loc );
+
+        BOOST_REQUIRE_EQUAL( y.size(), x.size() );
+   
+        {
+            ReadAccess<ValueType> rY( y );
+            for ( IndexType i = 0; i < nx; ++i )
+            {
+                BOOST_CHECK_EQUAL( rY[i], xVals[i] );
+            }
+        }
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "unsupported value type " << TypeTraits<ValueType>::id() << " cannot be used in HArray utilities" )
+
+        BOOST_CHECK_THROW(
+        {
+            HArrayUtils::setArray( y, x, binary::COPY, loc );
+        },
+        common::Exception );
     }
 }
 

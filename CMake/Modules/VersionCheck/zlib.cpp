@@ -1,5 +1,5 @@
 /**
- * @file HArrays.hpp
+ * @file zlib.cpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,46 +27,15 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Vector with all HArray one for each supported type
+ * @brief Checking the ZLIB version
  * @author Thomas Brandes
- * @date 31.08.2012
+ * @date 25.11.201
  */
 
-#include <scai/hmemo/_HArray.hpp>
+#include <stdio.h>
+#include <zlib.h>
 
-#include <vector>
-
-typedef scai::common::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
-
-/** Class for a list of arrays, one for each supported array type.
- */
-
-class HArrays : public std::vector<ArrayPtr>
+int main()
 {
-
-public:
-
-    /** Constructor creates already the list with all storage pointers. */
-
-    HArrays( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
-    {
-        using namespace scai::common;
-        using namespace scai::hmemo;
-        std::vector<scalar::ScalarType> values;  //  all create values
-        _HArray::getCreateValues( values );
-
-        for ( size_t i = 0; i < values.size(); ++i )
-        {
-            ArrayPtr arrayPtr( _HArray::create( values[i] ) );
-
-            if ( ctx )
-            {
-                arrayPtr->prefetch( ctx );
-            }
-
-            push_back( arrayPtr );
-        }
-    }
-
-    // Destructor will free all arrays due to use of shared pointers
-};
+    printf("%s", ZLIB_VERSION );
+}

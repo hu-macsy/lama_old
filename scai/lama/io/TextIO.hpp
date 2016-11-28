@@ -1,5 +1,5 @@
 /**
- * @file MatlabIO.hpp
+ * @file TextIO.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Structure that contains IO routines for MAT-File Format   
+ * @brief Structure that contains IO routines for simple ASCII text files
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -42,40 +42,32 @@ namespace scai
 namespace lama
 {
 
-/** This file I/O class supports the Level 5 MAT-File Format of MATLAB.
+/** This file format stores just the COO data of a matrix. 
  *
- *  It allows to exchange data between MATLAB and LAMA applications.
+ *   - there is not header at all
+ *   - number of non-zero matrix entries is given by number of lines
+ *   - size of matrix is given by maximal values for row and for column indexes
+ *   - size of vector is just given by number of lines
+ *
+ *   It is very useful to read dumped matrices of Matlab.
  *
  *   /code
- *   save example.mat matrix
- *   load example.mat
+ *   data_mat = [ia ja,real(val),imag(val)];
+ *   save -ascii dataMatrix.txt data_mat;
+ *   
+ *   data_rhs = [real(b),imag(b)];
+ *   save -ascii datRHS.txt data_rhs;
  *   /endcode
  *
  *   /code
- *   CSRStorge<ValueType> storage;
- *   storage.readFromFile( "example.mat" );
- *   storage.writeToFile( "example.mat" );
+ *   solver.exe dataMatrix.txt datRHS.txt
  *   /endcode
- *
- *  The following topics should be observed:
- *
- *  - LAMA can only read and write one single data element from a MATLAB file.
- *  - The name of the data element is is ignored when reading the element and 
- *    each written element gets the name "LAMA".
- *  - As the data type is stored for each element in the file, the SCAI_IO_TYPE
- *    is ignored, i.e. each array/storage is written exactly in the format it is
- *    and there might be an implicit type conversion during the read.
- *  - Only the SCAI_IO_TYPE=PATTERN will be handled and in this case no sparse matrix
- *    values are written, only the row and column indexes
- *  - The data types LongDouble and ComplexLongDouble are not really supported
- *    by the Level 5 MAT-File format but are full supported here by using a reserved
- *    value of the MAT-File Data Types.
  */
 
-class MatlabIO : 
+class TextIO : 
 
-    public CRTPFileIO<MatlabIO>,         // use type conversions
-    public FileIO::Register<MatlabIO>    // register at factory
+    public CRTPFileIO<TextIO>,         // use type conversions
+    public FileIO::Register<TextIO>    // register at factory
 {
 
 public:
@@ -138,40 +130,25 @@ public:
 
 private:
 
-    /** Help routine to read storage data, uses IO types */
+    /** Help routine to read storage data */
 
-    template <typename ValueType>
-    void getStorage( MatrixStorage<ValueType>& storage, const char* dataElementPtr, uint32_t nBytes );
+    template<typename ValueType>
+    void readData(
+        hmemo::HArray<IndexType>& ia,
+        hmemo::HArray<IndexType>& ja,
+        hmemo::HArray<ValueType>* vals,
+        const IndexType nnz,
+        const std::string& fileName );
 
-    /** Help routine to read a heterogeneous array from input data 
+    /** Method to count number of lines of a text file and the maximal number of entries in one line 
      *
-     *  @param[in] data is the input data with header info about size and type
-     *  @param[in] len  is the size of the input data, used for checks to avoid out-of-range 
-     *  @param[out] array will contain the read data, might be converted to ValueType
-     */
-    template<typename ValueType>
-    static uint32_t getArrayData( hmemo::HArray<ValueType>& array, const char* data, uint32_t len );
-
-    template<typename ValueType>
-    static void readMATArray( hmemo::HArray<ValueType>& array, const char* data, const uint32_t mxType, const uint32_t nbytes );
-
-    /** Help routine to read a heterogeneous array 
+     *  @param[out]  nLines will will contain the number of lines the file has
+     *  @param[out]  nEntries is maximal number of entries in one line
+     *  @param[in]   fileName is the name of the file
      *
-     *  @tparam ArrayType is the value type of the heterogeneous array
-     *  @tparam DataType is the type of data from the file
+     *  Note: it might be possible that one line contains less than 'nEntries' entries
      */
-    template<typename ArrayType, typename DataType>
-    static void readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* data, IndexType nBytes );
-
-    /** Write a heterogeneous array as MAT format into output file. */
-
-    template<typename ValueType>
-    static uint32_t writeArrayData( class MATIOStream& outFile, const hmemo::HArray<ValueType>& array, bool dryRun );
-
-    /** Write dense array or matrix as complete element in a Matlab file. */
-
-    template<typename ValueType>
-    void writeDenseArray( class MATIOStream& outFile, const hmemo::HArray<ValueType>& array, IndexType dims[] );
+    void checkTextFile( IndexType& nLines, IndexType& nEntries, const char* fileName );
 };
 
 }

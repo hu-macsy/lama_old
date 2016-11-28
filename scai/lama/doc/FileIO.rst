@@ -99,8 +99,10 @@ with a single argument for the file name and provide methods for the IO.
 The rules for implicit type conversions are exactly the same as for heterogeneous arrays.
 
 How the storage data is written into the file, is dependent on the chosen file type. Usually
-a CSR ( SAMG, PETSc ) or a COO format (MatrixMarket, Matlab Text file) is used where the type conversion routines of the matrix
-storage classes might be exploited by the corresponding FileIO classes.
+a CSR ( SAMG, PETSc ) or a COO format (MatrixMarket, Text file) is used, but also the full 
+dense data might be written.
+The derived class from FileIO exploit type conversion routines of the matrix storage classes 
+to convert between the different storage formats.
 
 Environment Variables
 ---------------------
@@ -159,7 +161,9 @@ Currently, the following file types are supported
 
  - PETSC format (binary format), for suffix ".psc"
 
- - MATLAB format (pure ASCII format), for suffix ".txt"
+ - Text format (pure ASCII format), for suffix ".txt"
+
+ - Level 5 MAT-File format of Matlab, for suffix ".mat" 
 
 .. |MM| raw:: html
 
@@ -223,6 +227,66 @@ Vector header: *.frv*
    
 Vector data: *.vec*
    nv lines with values (one value per line)
+
+Level 5 MAT-File Format
+-----------------------
+
+This file format can be used to exchange data between LAMA and MATLAB applications.
+
+The following examples shows a MATLAB code that generates a random matrix that is written to a file.
+
+.. code-block:: c++
+
+   >> mat = sprand( 6, 4, 0.3 )
+
+   mat =
+
+      (2,1)       0.7952
+      (3,1)       0.4898
+      (1,2)       0.3816
+      (5,2)       0.6463
+      (2,3)       0.1869
+      (1,4)       0.7655
+      (4,4)       0.4456
+
+   >> save /home/brandes/MAT/sp6x4.mat mat
+
+This matrix can be read in LAMA as follows:
+
+.. code-block:: c++
+
+   scai::lama::CSRSparseMatrix<double> mat( "/home/brandes/MAT/sp6x4.mat" );
+   mat = 2 * mat;
+   mat.writeToFile( "/home/brandes/MAT/sq6x4.mat" );
+
+.. code-block:: c++
+
+   >> load /home/brandes/MAT/sq6x4.mat
+   >> LAMA
+
+   LAMA =
+
+      (2,1)       1.5904
+      (3,1)       0.9795
+      (1,2)       0.7631
+      (5,2)       1.2926
+      (2,3)       0.3737
+      (4,4)       0.8912
+      (1,4)       1.5310
+
+When using this file format the following issues should be considered:
+
+ - LAMA can only read and write one single data element from a MATLAB file.
+ - The name of the data element is is ignored when reading the element and 
+   each written element gets the name "LAMA".
+ - As the data type is stored for each element in the file, the SCAI_IO_TYPE
+   is ignored, i.e. each array/storage is written exactly in the format it is
+   and there might be an implicit type conversion during the read.
+ - Only the SCAI_IO_TYPE=PATTERN will be handled and in this case no sparse matrix
+   values are written, only the row and column indexes
+ - The data types LongDouble and ComplexLongDouble are not really supported
+   by the Level 5 MAT-File format but are full supported here by using a reserved
+   value of the MAT-File Data Types.
 
 Extension for Other I/O Formats
 -------------------------------

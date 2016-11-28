@@ -1636,6 +1636,47 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::setValue(
+    const IndexType i,
+    const IndexType j,
+    const Scalar val,
+    const utilskernel::binary::BinaryOp op )
+{
+    const Distribution& distributionRow = getRowDistribution();
+
+    const IndexType iLocal = distributionRow.global2local( i );
+
+    if ( iLocal == nIndex )
+    {
+        return; // this processor does not have the value
+    }
+
+    const Distribution& distributionCol = getColDistribution();
+
+    IndexType jLocal = distributionCol.global2local( j );
+
+    if ( nIndex != jLocal )
+    {
+        mLocalData->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+    }
+    else
+    {
+        jLocal = mHalo.global2halo( j );
+
+        if ( nIndex != jLocal )
+        {
+            mHaloData->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+        }
+        else
+        {
+            SCAI_LOG_WARN( logger, "set a non-existing element in sparse matrix ignored" )
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 const Halo& SparseMatrix<ValueType>::getHalo() const
 {
     return mHalo;
