@@ -37,7 +37,6 @@
 set ( IO_CLASSES 
 
         IOStream
-        MATIOStream
 
         FileIO
         SAMGIO
@@ -48,7 +47,7 @@ set ( IO_CLASSES
 ) 
 
 if ( ZLIB_FOUND )
-    set ( IO_CLASSES ${IO_CLASSES} MatlabIO )
+    set ( IO_CLASSES ${IO_CLASSES} MatlabIO MATIOStream )
 endif ( ZLIB_FOUND )
 
 scai_project (
