@@ -140,7 +140,7 @@ private:
 
     template <typename ValueType>
     uint32_t getSparseStorage( MatrixStorage<ValueType>& storage,
-                               const int dims[2], const int nnz,
+                               const IndexType dims[2], const IndexType nnz,
                                bool isComplex,
                                const char* dataElementPtr, uint32_t nBytes );
 
