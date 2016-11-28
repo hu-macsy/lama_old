@@ -54,6 +54,9 @@ heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
     found_message ( "SCAI tracing"      "SCAI_TRACING_FOUND"      "REQUIRED" "Version ${SCAI_TRACING_VERSION}"      )
 
+heading ( "Optional External Libraries" )
+include ( Summaries/Modules/Accelerator )
+
 include ( Summaries/Modules/Build )
 
 include ( Summaries/Modules/Configuration )

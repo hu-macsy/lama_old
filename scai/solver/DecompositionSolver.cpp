@@ -164,7 +164,7 @@ void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& c
     else
     {
         tmpCSRStorage.reset( new lama::CSRStorage<ValueType>( coefficients.getLocalStorage() ) );
-        SCAI_LOG_ERROR( logger, "new tmp csr storage = " << *tmpCSRStorage )
+        SCAI_LOG_WARN( logger, "new tmp csr storage = " << *tmpCSRStorage )
         csrStorage = tmpCSRStorage.get();
     }
 
