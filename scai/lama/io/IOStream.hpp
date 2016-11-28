@@ -152,6 +152,12 @@ public:
 
     const std::string& getFileName();
     
+protected:
+
+    /** Logger for this class */
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
 
     /** Write binary array without conversion */
@@ -176,10 +182,6 @@ private:
     inline void readBinConverted(  hmemo::HArray<DataType>& data, const IndexType size );
 
     Endian mUsedEndian;
-
-    /** Logger for this class */
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static Endian mMachineEndian;
 

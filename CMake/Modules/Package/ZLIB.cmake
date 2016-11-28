@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file Package/ZLIB.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,39 +27,36 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief lama/io/CMakeLists.txt
- # @author Jan Ecker
- # @date 02.04.2013
+ # @brief find ZLIB include path and library
+ # @author Thomas Brandes
+ # @date 25.11.2016
 ###
 
-### Add classes and header files ###
+find_package( ZLIB ${SCAI_FIND_PACKAGE_FLAGS} )
 
-set ( IO_CLASSES 
+# returns ZLIB_FOUND, ZLIB_INCLUDE_DIR (cache), ZLIB_LIBRARY
 
-        IOStream
-        MATIOStream
+setAndCheckCache ( ZLIB )
+set ( USE_ZLIB ${USE_ZLIB} CACHE BOOL "Enable / Disable use of ZLIB (data compression)" )
 
-        FileIO
-        SAMGIO
-        MatrixMarketIO
-        PETScIO
-        TextIO
-        PartitionIO
-) 
+# set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
 if ( ZLIB_FOUND )
-    set ( IO_CLASSES ${IO_CLASSES} MatlabIO )
-endif ( ZLIB_FOUND )
+	set ( SCAI_ZLIB_LIBRARIES ${ZLIB_LIBRARY} CACHE PATH "ZLIB library" )
+    set ( SCAI_ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIR} CACHE PATH "ZLIB include directory" )
 
-scai_project (
+    ## get ZLIB version
+    try_run ( ZLIB_RUN_RESULT_VAR ZLIB_COMPILE_RESULT_VAR
+        ${CMAKE_BINARY_DIR}/VersionCheck
+        ${CMAKE_MODULE_PATH}/VersionCheck/zlib.cpp
+        CMAKE_FLAGS 
+        -DINCLUDE_DIRECTORIES:STRING=${ZLIB_INCLUDE_DIR}
+        COMPILE_OUTPUT_VARIABLE ZLIB_COMPILE_OUTPUT_VAR
+        RUN_OUTPUT_VARIABLE ZLIB_RUN_OUTPUT_VAR )
 
-    CLASSES
-        
-        ${IO_CLASSES}
+    set ( ZLIB_VERSION ${ZLIB_RUN_OUTPUT_VAR} )
 
-    HEADERS
+endif  ( ZLIB_FOUND )
 
-        CRTPFileIO
-
-    ADD_PARENT_SCOPE
-)
+mark_as_advanced( SCAI_ZLIB_LIBRARIES )
+mark_as_advanced( SCAI_ZLIB_INCLUDE_DIR )

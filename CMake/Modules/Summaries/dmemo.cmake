@@ -57,6 +57,13 @@ heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI hmemo"     "SCAI_HMEMO_FOUND"     "REQUIRED" "Version ${SCAI_HMEMO_VERSION}"     )
 
 heading ( "Optional External Libraries:" )
+
+# OpenMP usage
+heading3 ( "OpenMP" "USE_OPENMP" )
+    found_message ( "OpenMP" "OPENMP_VERSION" "OPTIONAL" "Version ${OPENMP_VERSION}" )
+    found_message ( "compile flag" "OpenMP_CXX_FLAGS" "OPTIONAL" "${OpenMP_CXX_FLAGS}" )
+    found_message ( "schedule type" "SCAI_OMP_SCHEDULE" "OPTIONAL" "set to \"${SCAI_OMP_SCHEDULE}\"" )
+
 include ( Summaries/Modules/Distributed )
 include ( Summaries/Modules/Graphpartitioning )
 

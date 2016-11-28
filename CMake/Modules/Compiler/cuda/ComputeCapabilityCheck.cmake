@@ -32,7 +32,7 @@
  # @date 10.01.2014
 ###
 
-if    ( CUDA_FOUND )
+if    ( CUDA_FOUND AND NOT CUDA_COMPUTE_CAPABILITY )
 
     try_run ( CUDA_RUN_RESULT_VAR CUDA_COMPILE_RESULT_VAR
               ${CMAKE_BINARY_DIR}/Compiler/cuda
@@ -60,4 +60,4 @@ if    ( CUDA_FOUND )
         
     mark_as_advanced ( CUDA_HAVE_GPU CUDA_COMPUTE_CAPABILITY )
    
-endif ( CUDA_FOUND )
+endif ( CUDA_FOUND AND NOT CUDA_COMPUTE_CAPABILITY )

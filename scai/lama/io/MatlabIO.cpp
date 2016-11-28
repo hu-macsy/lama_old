@@ -1,0 +1,607 @@
+/**
+ * @file MatlabIO.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2016
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Implementation of methods for FileIO class MatlabIO
+ * @author Thomas Brandes
+ * @date 10.06.2016
+ */
+
+#include "MatlabIO.hpp"
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/sparsekernel/COOKernelTrait.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/lama/storage/COOStorage.hpp>
+#include <scai/lama/io/MATIOStream.hpp>
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/Settings.hpp>
+#include <scai/common/unique_ptr.hpp>
+#include <scai/common/exception/IOException.hpp>
+
+#include <sstream>
+
+#define MAT_SUFFIX ".mat"
+
+using namespace std;
+
+namespace scai
+{
+
+using namespace hmemo;
+using namespace utilskernel;
+
+namespace lama
+{
+
+/* --------------------------------------------------------------------------------- */
+/*    Implementation of Factory methods                                              */
+/* --------------------------------------------------------------------------------- */
+
+FileIO* MatlabIO::create()
+{
+    return new MatlabIO();
+}
+
+string MatlabIO::createValue()
+{
+    return MAT_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool MatlabIO::isSupportedMode( const FileMode mode ) const
+{
+    // only binary is supported
+
+    if ( mode == FORMATTED )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeAt( ostream& stream ) const
+{
+    stream << "MatlabIO ( suffix = " << MAT_SUFFIX << ", ";
+    writeMode( stream );
+    stream << ", only formatted )";
+}
+
+/* --------------------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ArrayType, typename DataType>
+void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* data, IndexType nBytes )
+{
+    IndexType elemSize  = sizeof( DataType );
+    IndexType arraySize = nBytes / elemSize;
+
+    SCAI_ASSERT_EQ_ERROR( elemSize * arraySize, nBytes, "Size mismatch, elemSize = " << elemSize << ", arraySize = " << arraySize )
+
+    if ( typeid( ArrayType ) == typeid( DataType ) )
+    {
+        SCAI_LOG_INFO( logger, "readMATArrayImpl, in place, type = " << common::TypeTraits<ArrayType>::id() 
+                               << ", arraySize = " << arraySize << ", #bytes = " << nBytes )
+
+        // no temporary array required
+
+        hmemo::WriteOnlyAccess<ArrayType> wData( array, arraySize );
+        ::memcpy( wData.get(), data, nBytes );
+
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "readMATArrayImpl, in place, type = " << common::TypeTraits<ArrayType>::id() 
+                               << ", arraySize = " << arraySize << ", #bytes = " << nBytes )
+
+        // temporary array and conversion required
+
+        hmemo::HArray<DataType> tmp;
+
+        {
+            hmemo::WriteOnlyAccess<DataType> wData( tmp, arraySize );
+            ::memcpy( wData.get(), data, nBytes );
+        }
+
+        HArrayUtils::assign( array, tmp );  
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::readMATArray( hmemo::HArray<ValueType>& array, const char* data, const uint32_t mxType, const uint32_t nBytes )
+{
+    switch ( mxType )
+    {
+        case MATIOStream::MAT_DOUBLE  : readMATArrayImpl<ValueType, double>( array, data, nBytes ); break;
+        case MATIOStream::MAT_FLOAT   : readMATArrayImpl<ValueType, float>( array, data, nBytes ); break;
+        case MATIOStream::MAT_LDOUBLE : readMATArrayImpl<ValueType, long double>( array, data, nBytes ); break;
+        case MATIOStream::MAT_INT8    : readMATArrayImpl<ValueType, int8_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_UINT8   : readMATArrayImpl<ValueType, uint8_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_INT16   : readMATArrayImpl<ValueType, int16_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_UINT16  : readMATArrayImpl<ValueType, uint16_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_INT32   : readMATArrayImpl<ValueType, int32_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_UINT32  : readMATArrayImpl<ValueType, uint32_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_INT64   : readMATArrayImpl<ValueType, int64_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_UINT64  : readMATArrayImpl<ValueType, uint64_t>( array, data, nBytes ); break;
+
+        default : COMMON_THROWEXCEPTION( "mxType = " << mxType << " is unknown data type in Matlab file." )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
+{
+    MATIOStream inFile( arrayFileName, ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    inFile.readMATFileHeader( version, endian );
+
+    common::scoped_array<char> dataElement;
+
+    inFile.readDataElement( dataElement );
+
+    IndexType dims[2];
+    IndexType nnz;
+    bool      isComplex;
+    uint8_t   matClass;
+
+    MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElement.get() );
+ 
+    n = dims[0] * dims[1];
+
+    if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
+    {
+        COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains sparse matrix, but not array" )
+    }
+
+    if ( dims[1] != 1 || dims[0] != 1 )
+    {
+        SCAI_LOG_WARN( logger, "File " << arrayFileName << ": matrix " << dims[0] << " x " << dims[1] << " considered as array of size " << n )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
+{
+    if ( !common::isComplex( array.getValueType() ) ) 
+    {
+        // SCAI_LOG_WARN( logger, "imaginary values are ignored" )
+        return;
+    }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+    // array = array + i * imagValues
+
+    ValueType i = static_cast<ValueType>( ComplexDouble( 0, 1 ) );
+    utilskernel::HArrayUtils::binaryOpScalar2( imagValues, imagValues, i, utilskernel::binary::MULT );
+    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, utilskernel::binary::ADD );
+
+#endif
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::readArrayImpl(
+    hmemo::HArray<ValueType>& array,
+    const string& arrayFileName,
+    const IndexType ,
+    const IndexType )
+{
+    MATIOStream inFile( arrayFileName, ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    inFile.readMATFileHeader( version, endian );
+
+    common::scoped_array<char> dataElement;
+
+    uint32_t nBytes = inFile.readDataElement( dataElement );
+
+    SCAI_LOG_INFO( logger, "Read full data element from input file, #bytes = " << nBytes )
+
+    const char* elementPtr = dataElement.get();
+
+    IndexType dims[2];
+    IndexType nnz;
+    bool      isComplex;
+    uint8_t   matClass;
+
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, elementPtr );
+
+    SCAI_ASSERT_LE_ERROR( offset, nBytes, "data element insufficient to read matrix info" )
+
+    // now read the data
+
+    offset += getArrayData( array, elementPtr + offset, nBytes - offset );
+
+    SCAI_ASSERT_EQ_ERROR( array.size(), dims[0] * dims[1], "serious mismatch" )
+
+    if ( isComplex )
+    {
+        utilskernel::LArray<ValueType> imagValues;
+
+        offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
+
+        buildComplex( array, imagValues );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>& array, bool dryRun )
+{
+    uint32_t wBytes = 0;
+
+    if ( isComplex ( array.getValueType() ) )
+    {
+        typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+        HArray<AbsType> real;
+
+        utilskernel::HArrayUtils::setArray( real, array );
+
+        wBytes += writeArrayData( outFile, real, dryRun );
+
+        HArray<ValueType> tmp;  
+        ValueType minusi = ComplexDouble( 0, -1 );
+        utilskernel::HArrayUtils::binaryOpScalar2( tmp, array, minusi, utilskernel::binary::MULT );
+        utilskernel::HArrayUtils::setArray( real, tmp );
+
+        wBytes += writeArrayData( outFile, real, dryRun );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "writeArrayData, array = " << array << ", size = " << array.size() )
+
+        uint32_t arraySize = array.size();
+
+        {
+            ReadAccess<ValueType> rArray( array );
+            wBytes = outFile.writeData( rArray.get(), arraySize, dryRun );
+        }
+    }
+
+    return wBytes;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, IndexType dims[] )
+{
+    SCAI_ASSERT_EQ_ERROR( array.size(), dims[0] * dims[1], "array size / dims mismatch" )
+
+    common::scalar::ScalarType stype = array.getValueType();
+
+    if ( mScalarTypeData == common::scalar::PATTERN )
+    {
+        COMMON_THROWEXCEPTION( "Cannot write dense data as pattern" )
+    }
+
+    if ( mScalarTypeData != common::scalar::INTERNAL )
+    {
+        if ( stype != mScalarTypeData )
+        {
+            SCAI_LOG_WARN( logger, "write HArray<" << stype << "> as it is, IO_TYPE=" << mScalarTypeData << " ignored" )
+        }
+    }
+
+    uint32_t nBytes = 16;  // initial guess used for the dry run
+ 
+    bool dryRun = true;   // make a dryRun at first to determine the size of written bytes
+
+    uint32_t wBytes = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
+    wBytes += writeArrayData( outFile, array, dryRun );
+
+    nBytes = wBytes - 8;  // subtract for the first header
+
+    SCAI_LOG_INFO( logger, "writeDenseArray, dryrun gives written bytes = " << wBytes << ", now write" )
+
+    dryRun = false;  // now write it with the correct value of nBytes
+
+    wBytes  = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
+    wBytes += writeArrayData( outFile, array, dryRun );
+
+    SCAI_LOG_INFO( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1] 
+                            << ", wBytes = " << wBytes )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeArrayImpl(
+    const hmemo::HArray<ValueType>& array,
+    const string& fileName )
+{
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
+
+    MATIOStream outFile( fileName, ios::out );
+
+    outFile.writeMATFileHeader();
+
+    IndexType dims[2] = { array.size(), 1 };
+
+    writeDenseArray( outFile, array, dims );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeStorageImpl(
+    const MatrixStorage<ValueType>& storage,
+    const string& fileName )
+{
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
+
+    IndexType numRows = storage.getNumRows();
+    IndexType numCols = storage.getNumColumns();
+    IndexType numValues = storage.getNumValues();
+
+    MATIOStream outFile( fileName, ios::out );
+
+    outFile.writeMATFileHeader();
+    
+    if ( numValues * 2 >= numRows * numCols && mScalarTypeData != common::scalar::PATTERN )
+    {
+        SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << fileName << ": " << storage )
+  
+        DenseStorage<ValueType> denseStorage;
+
+        denseStorage.assignTranspose( storage );   // MATLAB stores it column-wise
+
+        HArray<ValueType>& array = denseStorage.getData();
+    
+        IndexType dims[2] = { numRows, numCols };
+
+        writeDenseArray( outFile, array, dims );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "Write storage as sparse matrix to file " << fileName << ": " << storage )
+
+        HArray<IndexType> ia;
+        HArray<IndexType> ja;
+        HArray<ValueType> values;
+
+        storage.buildCSCData( ja, ia, values );
+
+        IndexType numValues = storage.getNumValues();
+
+        uint32_t wBytes = 24;   // initial guess for dryrun, avoid short write
+
+        bool isComplex = common::isComplex( storage.getValueType() );
+
+        for ( int i = 0; i < 2; ++i )
+        {
+            bool dryRun = ( i == 0 );      // first run dry, second run okay
+    
+            wBytes  = outFile.writeSparseHeader( numRows, numCols, numValues, wBytes, isComplex, dryRun );
+            wBytes += writeArrayData( outFile, ia, dryRun );
+            wBytes += writeArrayData( outFile, ja, dryRun );
+    
+            if ( mScalarTypeData != common::scalar::PATTERN )
+            {
+                wBytes += writeArrayData( outFile, values, dryRun );
+            }
+    
+            wBytes -= 8;  // subtract for the first header
+    
+            SCAI_LOG_INFO( logger, "writeStorage, dryRun = " << dryRun << ", wBytes = " << wBytes )
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const string& fileName )
+{
+    MATIOStream inFile( fileName, ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    inFile.readMATFileHeader( version, endian );
+
+    common::scoped_array<char> dataElement;
+
+    inFile.readDataElement( dataElement );
+
+    IndexType dims[2];
+    bool      isComplex;
+    uint8_t   matClass;
+
+    MATIOStream::getMatrixInfo( matClass, dims, numValues, isComplex, dataElement.get() );
+ 
+    numRows    = dims[0];
+    numColumns = dims[1];
+
+    if ( matClass != MATIOStream::MAT_SPARSE_CLASS )
+    {
+        numValues  = dims[0] * dims[1];
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+uint32_t MatlabIO::getArrayData( HArray<ValueType>& array, const char* data, uint32_t len )
+{
+    SCAI_ASSERT_LE_ERROR( 8, len, "data insufficient to read element header" )
+
+    uint32_t wBytes;
+    uint32_t nBytes;
+    uint32_t dataType;
+
+    const char* arrayDataPtr = MATIOStream::readDataElementHeader( dataType, nBytes, wBytes, data );
+
+    SCAI_ASSERT_LE_ERROR( wBytes, len, "data insufficient to read array" )
+
+    readMATArray( array, arrayDataPtr, dataType, nBytes );
+
+    SCAI_LOG_INFO( logger, "read array " << array << " from data ( len = " << len << " ), type = " << dataType
+                            << " is " << MATIOStream::matlabType2ScalarType( dataType )
+                            << ", nBytes = " << nBytes << ", wBytes = " << wBytes )
+
+    return wBytes;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template <typename ValueType>
+void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataElementPtr, uint32_t nBytes )
+{
+    IndexType dims[2];
+    IndexType nnz;
+    bool      isComplex;
+    uint8_t   matClass;
+
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr );
+
+    if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
+    {
+        SCAI_LOG_INFO( logger, "Get sparse<" << common::TypeTraits<ValueType>::stype << "> matrix " 
+                                << dims[0] << " x " << dims[1] << ", nnz = " << nnz )
+
+        // read IA, JA, Values of sparse array
+
+        HArray<IndexType> ia;
+        HArray<IndexType> ja;
+        HArray<ValueType> values;
+
+        offset += getArrayData( ia, dataElementPtr + offset, nBytes - offset );
+        offset += getArrayData( ja, dataElementPtr + offset, nBytes - offset );
+
+        if ( mScalarTypeData == common::scalar::PATTERN )
+        {
+            values.init( ValueType( 1 ), nnz );   // set values with default value
+        }
+        else
+        {
+            offset += getArrayData( values, dataElementPtr + offset, nBytes - offset );
+
+            if ( isComplex )
+            {
+                HArray<ValueType> imagValues;
+                offset += getArrayData( imagValues, dataElementPtr + offset, nBytes - offset );
+                buildComplex( values, imagValues );
+            }
+        }
+
+        CSRStorage<ValueType> csrStorage;
+        csrStorage.allocate( dims[1], dims[0] );  // will be transposed
+        csrStorage.swap( ja, ia, values );
+        csrStorage.assignTranspose( csrStorage );
+        csrStorage.sortRows( dims[0] == dims[1] );
+        storage = csrStorage;
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix " 
+                                << dims[0] << " x " << dims[1] )
+
+        LArray<ValueType> values;
+
+        offset += getArrayData( values, dataElementPtr + offset, nBytes - offset );
+
+        if ( isComplex )
+        {
+            HArray<ValueType> imagValues;
+            offset += getArrayData( imagValues, dataElementPtr + offset, nBytes - offset );
+            buildComplex( values, imagValues );
+        }
+
+        // MATLAB stores it columnwise, so we transpose the data
+
+        storage.setDenseData( dims[1], dims[0], values );
+        storage.assignTranspose( storage );
+    }
+
+    SCAI_ASSERT_EQ_ERROR( offset, nBytes, "mismatch read bytes and size bytes, maybe COMPLEX" )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::readStorageImpl(
+    MatrixStorage<ValueType>& storage,
+    const string& matrixFileName,
+    const IndexType firstRow,
+    const IndexType nRows )
+{
+    MATIOStream inFile( matrixFileName, ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    inFile.readMATFileHeader( version, endian );
+
+    common::scoped_array<char> dataElement;
+
+    uint32_t nBytes = inFile.readDataElement( dataElement );
+
+    if ( firstRow == 0 && nRows == nIndex )
+    {
+        getStorage( storage, dataElement.get(), nBytes );
+        SCAI_LOG_INFO( logger, "readStorage: " << storage )
+    }
+    else
+    {
+        COOStorage<ValueType> tmpStorage;
+        getStorage( tmpStorage, dataElement.get(), nBytes );
+        SCAI_LOG_INFO( logger, "readStorage: " << tmpStorage )
+        tmpStorage.copyBlockTo( storage, firstRow, nRows );
+        SCAI_LOG_INFO( logger, "extracted: first = " << firstRow << ", #rows = " << nRows << ": " << storage )
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+}  // lama
+
+}  // scai
