@@ -434,8 +434,8 @@ uint32_t MATIOStream::writeSparseHeader(
     uint32_t header[2]   = { 0, static_cast<uint32_t>( nnz ) };
     char*    headerBytes = reinterpret_cast<char*>( header );
 
-    headerBytes[0] = MAT_SPARSE_CLASS;                // class
-    headerBytes[1] = isComplex ? ( 1 << 3 ) : 0 ;     // array flags
+    headerBytes[0] = static_cast<char>( MAT_SPARSE_CLASS );              // class
+    headerBytes[1] = static_cast<char>( isComplex ? ( 1 << 3 ) : 0 ) ;   // array flags
 
     wBytes += writeData( header, 2, dryRun );
 
@@ -469,8 +469,8 @@ uint32_t MATIOStream::writeDenseHeader(
 
     memset( headerBytes, 0, 8 );
 
-    headerBytes[0] = matClass;                        // class
-    headerBytes[1] = isComplex ? ( 1 << 3 ) : 0 ;     // array flags
+    headerBytes[0] = static_cast<char>( matClass );                      // class
+    headerBytes[1] = static_cast<char>( isComplex ? ( 1 << 3 ) : 0 ) ;   // array flags
 
     SCAI_LOG_INFO( logger, "Array flags, class = " << ( int ) headerBytes[0] 
                             << ", flags = " << ( int ) headerBytes[1] )
