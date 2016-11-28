@@ -108,7 +108,7 @@ public:
         MAT_UTF32      = 18
     };
 
-    enum {
+    typedef enum {
         MAT_CELL_CLASS     = 1,
         MAT_STRUCT_CLASS   = 2,
         MAT_OBJECT_CLASS   = 3,
@@ -124,7 +124,7 @@ public:
         MAT_UINT32_CLASS   = 13,
         MAT_INT64_CLASS    = 14,
         MAT_UINT64_CLASS   = 15
-    };
+    } MATClass;
 
     static common::scalar::ScalarType matlabType2ScalarType( uint32_t dataType );
 
@@ -132,7 +132,7 @@ public:
 
     static common::scalar::ScalarType class2ScalarType( uint32_t dataType );
 
-    static uint8_t scalarType2Class( common::scalar::ScalarType stype );
+    static MATClass scalarType2Class( common::scalar::ScalarType stype );
 
     template<typename ValueType>
     uint32_t writeData( const ValueType* data, uint32_t size, bool dryRun );
@@ -159,7 +159,7 @@ public:
         common::scalar::ScalarType stype,
         bool dryRun );
 
-    static uint32_t getMatrixInfo( uint8_t& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data );
+    static uint32_t getMatrixInfo( MATClass& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data, bool isCell = false );
 
 private:
 
