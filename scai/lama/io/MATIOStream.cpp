@@ -456,7 +456,7 @@ uint32_t MATIOStream::writeDenseHeader(
     common::scalar::ScalarType stype,
     bool dryRun )
 {
-    uint8_t matClass  = MATIOStream::scalarType2Class( stype );
+    MATClass matClass = MATIOStream::scalarType2Class( stype );
     bool    isComplex = common::isComplex( stype );
 
     SCAI_LOG_INFO( logger, "writeDenseHeader, nBytes = " << nBytes << ", complex = " << isComplex )

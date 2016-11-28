@@ -508,7 +508,7 @@ uint32_t MatlabIO::getArrayData( HArray<ValueType>& array, const char* data, uin
 
 template <typename ValueType>
 uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage, 
-                                     const int dims[2], const int nnz,
+                                     const IndexType dims[2], const IndexType nnz,
                                      bool isComplex,
                                      const char* dataElementPtr, uint32_t nBytes )
 {
@@ -585,7 +585,7 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
 
         MATIOStream::readDataElementHeader( dataType, nBytesField, wBytes, dataElementPtr + offset );
 
-        int dims[2];
+        IndexType dims[2];
 
         IndexType nnz;
         bool      isComplex;
