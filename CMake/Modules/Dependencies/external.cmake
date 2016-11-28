@@ -62,7 +62,7 @@ set ( SCAI_LAMA_EXTERNAL_DEPS                                   ZLIB            
 set ( SCAI_SOLVER_EXTERNAL_DEPS                                                           ) # 12
 
 set ( LAMA_ALL_EXTERNAL_DEPS
-		${SCAI_COMMON_EXTERNAL_DEPS}       #1
+		${SCAI_COMMON_EXTERNAL_DEPS}       # 1
 		${SCAI_LOGGING_EXTERNAL_DEPS}      # 2
 		${SCAI_TRACING_EXTERNAL_DEPS}      # 3
 		${SCAI_TASKING_EXTERNAL_DEPS}      # 4
