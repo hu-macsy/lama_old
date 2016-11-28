@@ -73,6 +73,17 @@ public:
         const ValueType zero,
         const binary::BinaryOp op );
 
+    /** MIC implementation for UtilKernelTrait::reduce2 */
+
+    template<typename ValueType>
+    static ValueType reduce2(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const binary::BinaryOp binOp,
+        const ValueType zero,
+        const binary::BinaryOp redOp );
+
     /** MIC implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>

@@ -128,6 +128,63 @@ ValueType MICUtils::reduce(
 
 /* --------------------------------------------------------------------------- */
 
+template <typename ValueType>
+ValueType MICUtils::reduce2(
+    const ValueType array1[],
+    const ValueType array2[],
+    const IndexType n,
+    const binary::BinaryOp binOp,
+    const ValueType zero,
+    const binary::BinaryOp redOp )
+{
+    if ( binOp == binary::SUB && redOp == binary::ABS_MAX )
+    {
+        return absMaxDiffVal( array1, array2, n );
+    }
+
+    SCAI_LOG_DEBUG( logger, "reduce2<" << TypeTraits<ValueType>::id() << ">: " << "arr1,2[" << n << "]" )
+
+    ValueType val = zero;
+
+    const void* array1Ptr = array1;
+    const void* array2Ptr = array2;
+
+    ValueType* valPtr  = &val;
+    const ValueType* zeroPtr = &zero;
+
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ) in( array1Ptr, array2Ptr, n, zeroPtr[0:1] ), out( valPtr[0:1] )
+    {
+        *valPtr = *zeroPtr;
+
+        const ValueType* array1 = reinterpret_cast<const ValueType*>( array1Ptr );
+        const ValueType* array2 = reinterpret_cast<const ValueType*>( array2Ptr );
+
+        #pragma omp parallel
+        {
+            ValueType threadVal = *zeroPtr;
+
+            #pragma omp for 
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                ValueType elem = applyBinary( array1[i], binOp, array2[i] );
+                threadVal = applyBinary( threadVal, redOp, elem );
+            }
+
+            #pragma omp critical
+            {
+                *valPtr = applyBinary( *valPtr, redOp, threadVal );
+            }
+        }
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op )
 {
@@ -1385,10 +1442,10 @@ void MICUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
                             << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::absMaxDiffVal<ValueType> >( absMaxDiffVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::isSorted<ValueType> >( isSorted, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
