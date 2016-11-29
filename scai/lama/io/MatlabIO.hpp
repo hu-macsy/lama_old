@@ -138,6 +138,16 @@ public:
 
 private:
 
+    template <typename ValueType>
+    uint32_t getSparseStorage( MatrixStorage<ValueType>& storage,
+                               const IndexType dims[2], const IndexType nnz,
+                               bool isComplex,
+                               const char* dataElementPtr, uint32_t nBytes );
+
+
+    template <typename ValueType>
+    uint32_t getStructStorage( MatrixStorage<ValueType>& storage, const char* dataElementPtr, uint32_t nBytes );
+
     /** Help routine to read storage data, uses IO types */
 
     template <typename ValueType>
