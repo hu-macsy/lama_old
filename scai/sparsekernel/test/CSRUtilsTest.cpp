@@ -541,8 +541,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( matMulTest )
 {
+    typedef float ValueType;
+
     ContextPtr testContext = Context::getContextPtr();
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
@@ -551,7 +554,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+    SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test" )
 
     //       array 1             array 2
     //    1.0   -   2.0       1.0  0.5   -    4.0
@@ -570,11 +573,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     //       array3 ( 4 x 4 )
     //
     //     5.0  0.5  6.0  4.0 
-    //     0.5  0.34  -   2.95
+    //     0.5  0.34  -   2.45
     //     6.0   -    9.0   - 
-    //     4.0  2.95   -   18.25
+    //     4.0  2.45   -   18.25
 
     const IndexType ia3[] = { 0, 4, 7, 9, 12 };
+    const IndexType ja3[] = { 0, 1, 2, 3, 0, 1, 3, 0, 2, 0, 1, 3 };
+    const ValueType values3[] = { 5.0, 0.5, 6.0, 4.0, 0.5, 0.34, 2.45, 6.0, 9.0, 4.0, 2.45, 18.25 };
 
     const IndexType n1 = 4;
     const IndexType n2 = 3;
@@ -596,6 +601,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     HArray<ValueType> bValues( nnz2, values2, testContext );
 
     bool diagonalProperty = false;
+
+    SCAI_LOG_INFO( logger, "matrixMultiplySizes< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
 
     IndexType nnz3;
     HArray<IndexType> cSizes;
@@ -625,6 +632,74 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
         for ( IndexType j = 0; j <= n1; ++j )
         {
             BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
+        }
+    }
+
+    SCAI_LOG_INFO( logger, "matrixMultiply< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
+
+    loc = Context::getContextPtr( matrixMultiply.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    ValueType alpha = 1.0;
+
+    HArray<IndexType> cJa;
+    HArray<ValueType> cValues;
+    {
+        ReadAccess<IndexType> rAIA( aIA, loc );
+        ReadAccess<IndexType> rAJA( aJA, loc );
+        ReadAccess<ValueType> rAValues( aValues, loc );
+
+        ReadAccess<IndexType> rBIA( bIA, loc );
+        ReadAccess<IndexType> rBJA( bJA, loc );
+        ReadAccess<ValueType> rBValues( bValues, loc );
+
+        ReadAccess<IndexType> rIa( cSizes, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteOnlyAccess<IndexType> wJa( cJa, loc, nnz3 );
+        WriteOnlyAccess<ValueType> wValues( cValues, loc, nnz3 );
+
+        matrixMultiply[loc->getType()]( rIa.get(), wJa.get(), wValues.get(), n1, n3, n2, alpha, diagonalProperty,
+                                        rAIA.get(), rAJA.get(), rAValues.get(), rBIA.get(), rBJA.get(), rBValues.get() );
+    }
+
+    // sort the columns, otherwise comparison might fail
+
+    {
+        ReadAccess<IndexType> rCIA( cSizes );
+        WriteAccess<IndexType> wCJA( cJa );
+        WriteAccess<ValueType> wCValues( cValues );
+
+        OpenMPCSRUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), n1, false );
+    }
+
+    // check ja
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<IndexType> rJA( cJa, host );
+
+        for ( IndexType j = 0; j < nnz3; ++j )
+        {
+            BOOST_CHECK_EQUAL( rJA[j], ja3[j] );
+        }
+    }
+
+    // check values
+    {
+        ContextPtr host = Context::getHostPtr();
+
+        ReadAccess<ValueType> rValues( cValues, host );
+
+        for ( IndexType j = 0; j < nnz3; ++j )
+        {
+            ValueType x = rValues[j] - values3[j];
+            BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
+            BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
     }
 }
