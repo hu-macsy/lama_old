@@ -541,11 +541,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
 
 /* ------------------------------------------------------------------------------------- */
 
-// BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
-BOOST_AUTO_TEST_CASE( matMulTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 {
-    typedef float ValueType;
-
     ContextPtr testContext = Context::getContextPtr();
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
