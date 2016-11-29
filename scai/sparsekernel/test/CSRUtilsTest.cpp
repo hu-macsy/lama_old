@@ -553,30 +553,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
     SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test" )
 
+    // REMARK: test with explicit zeros because cusparse often has problem with it 
     //       array 1             array 2
-    //    1.0   -   2.0       1.0  0.5   -    4.0
-    //    0.5  0.3   -         -   0.3   -    1.5
-    //     -    -   3.0       2.0   -   3.0    -
+    //    1.0   -   2.0       1.0  0.5  0.0  4.0
+    //    0.5  0.3   -         -   0.3  0.0  1.5
+    //     -    -   3.0       2.0   -   3.0   -
     //    4.0  1.5   -
 
     const IndexType ia1[] = { 0, 2, 4, 5, 7 };
     const IndexType ja1[] = { 0, 2, 0, 1, 2, 0, 1 };
     const ValueType values1[] = { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
 
-    const IndexType ia2[] = { 0, 3, 5, 7 };
-    const IndexType ja2[] = { 0, 1, 3, 1, 3, 0, 2 };
-    const ValueType values2[] = { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
+    const IndexType ia2[] = { 0, 4, 7, 9 };
+    const IndexType ja2[] = { 0, 1, 2, 3, 1, 2, 3, 0, 2 };
+    const ValueType values2[] = { 1.0, 0.5, 0.0, 4.0, 0.3, 0.0, 1.5, 2.0, 3.0 };
 
+    // REMARK: explicit zeros are also in result, when no compress is called
     //       array3 ( 4 x 4 )
     //
-    //     5.0  0.5  6.0  4.0 
-    //     0.5  0.34  -   2.45
+    //     5.0  0.5   6.0  4.0 
+    //     0.5  0.34  0.0  2.45
     //     6.0   -    9.0   - 
-    //     4.0  2.45   -   18.25
+    //     4.0  2.45  0.0  18.25
 
-    const IndexType ia3[] = { 0, 4, 7, 9, 12 };
-    const IndexType ja3[] = { 0, 1, 2, 3, 0, 1, 3, 0, 2, 0, 1, 3 };
-    const ValueType values3[] = { 5.0, 0.5, 6.0, 4.0, 0.5, 0.34, 2.45, 6.0, 9.0, 4.0, 2.45, 18.25 };
+    const IndexType ia3[] = { 0, 4, 8, 10, 14 };
+    const IndexType ja3[] = { 0, 1, 2, 3, 0, 1, 2, 3, 0, 2, 0, 1, 2, 3 };
+    const ValueType values3[] = { 5.0, 0.5, 6.0, 4.0, 0.5, 0.34, 0.0, 2.45, 6.0, 9.0, 4.0, 2.45, 0.0, 18.25 };
 
     const IndexType n1 = 4;
     const IndexType n2 = 3;
