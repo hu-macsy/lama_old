@@ -127,6 +127,7 @@ public:
      *  @param[out] numRows    number of rows for the storage in the file
      *  @param[out] numColumns number of columns for the storage in the file
      *  @param[out] numValues  number of non-zero values for the storage in the file
+     *  @param[in]  fileName   number of non-zero values for the storage in the file
      */
     virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName ) = 0;
 
@@ -253,17 +254,18 @@ public:
      *  @param[in] fileName  is the name of output file, suffix decides about Handler
      *  @param[in] dataType  specifies the type to be used for representation in output file
      *
-     *  If the optional argument dataType is not default, array.getValueType() is used.
+     *  If the optional argument dataType is not set, array.getValueType() is used.
      */
     static void write( 
         const hmemo::_HArray& array, 
         const std::string& fileName,
-        const common::scalar::ScalarType valueType = common::scalar::INTERNAL );
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
 
     /** Static method to read an array or a contiguous section of an array from a file.
      *
      *  @param[out] array will contain the array data
      *  @param[in]  fileName is the name of the input file where the array is saved
+     *  @param[in]  dataType specifies the type that has been used for the values in the input file
      *  @param[in]  first index of the first element to read, defaults to 0
      *  @param[in]  n     number of elements, default is nIndex that stands for up to the end
      *
@@ -277,7 +279,7 @@ public:
     static void read( 
         hmemo::_HArray& array, 
         const std::string& fileName,
-        const common::scalar::ScalarType valueType = common::scalar::INTERNAL,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const IndexType first = 0,
         const IndexType n = nIndex );
 
