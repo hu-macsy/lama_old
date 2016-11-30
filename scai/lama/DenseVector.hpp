@@ -430,7 +430,7 @@ public:
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
-    void setValue( const IndexType globalIndex, const Scalar value );
+    virtual void setValue( const IndexType globalIndex, const Scalar value );
 
     virtual Scalar min() const;
 

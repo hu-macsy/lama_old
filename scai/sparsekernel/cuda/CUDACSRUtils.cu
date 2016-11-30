@@ -2515,26 +2515,29 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     const IndexType bJa[] )
 {
     SCAI_REGION( "CUDA.CSR.matrixMultiplySizes" )
-    SCAI_LOG_INFO(
-        logger,
-        "matrixMutliplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+    SCAI_LOG_INFO( logger, "matrixMultiplySizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
     SCAI_CHECK_CUDA_ACCESS
+
     // Reset cIa
     thrust::device_ptr<IndexType> cIaPtr( cIa );
     thrust::fill( cIaPtr, cIaPtr + numRows, 0 );
+
     ContextPtr loc = Context::getContextPtr( context::CUDA );
     MemoryPtr mem = loc->getMemoryPtr();
+
     bool hashErrorHost = false;
     bool* hashError = ( bool* ) mem->allocate( sizeof( bool ) );
-    cudaMemcpy( hashError, &hashErrorHost, sizeof( bool ), cudaMemcpyHostToDevice );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( hashError, &hashErrorHost, sizeof( bool ), cudaMemcpyHostToDevice ), "memcpy of hashError" );
+
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
     SCAI_LOG_DEBUG( logger, "free = " << free << ", total = " << total )
+
     IndexType nnz_a;
     IndexType nnz_b;
-    cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnz_b, &bIa[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_a" );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_b, &bIa[k], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_b" );
 
     IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
     IndexType numChunks;
@@ -2571,7 +2574,8 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
 
-    matrixMultiplySizesKernel <<< NUM_BLOCKS, NUM_THREADS>>>( aIa,
+    matrixMultiplySizesKernel <<< NUM_BLOCKS, NUM_THREADS>>>( 
+            aIa,
             aJa,
             bIa,
             bJa,
@@ -2586,11 +2590,11 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "snyc after matrixMultiplySizesKernel" );
 
-    cudaMemcpy( &hashErrorHost, hashError, sizeof( bool ), cudaMemcpyDeviceToHost );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &hashErrorHost, hashError, sizeof( bool ), cudaMemcpyDeviceToHost ), "memcpy hashError" );
 
     if ( hashErrorHost )
     {
-        COMMON_THROWEXCEPTION( "Multiplication failed!" );
+        COMMON_THROWEXCEPTION( "Multiplication for Sizes failed!" );
     }
 
     // Free hashTable and hashError
@@ -2603,6 +2607,9 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
     thrust::exclusive_scan( cIaPtr, cIaPtr + numRows + 1, cIaPtr );
     IndexType numValues;
     cudaMemcpy( &numValues, &cIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+
+    SCAI_CHECK_CUDA_ERROR
+
     return numValues;
 }
 
@@ -3031,7 +3038,7 @@ void CUDACSRUtils::matrixMultiply(
     ValueType cValues[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType /* k */,
+    const IndexType k,
     const ValueType alpha,
     bool diagonalProperty,
     const IndexType aIa[],
@@ -3044,18 +3051,23 @@ void CUDACSRUtils::matrixMultiply(
     SCAI_REGION( "CUDA.CSRUtils.matrixMultiply" )
     SCAI_LOG_INFO( logger, "matrixMultiply for " << numRows << "x" << numColumns << " matrix" )
     SCAI_CHECK_CUDA_ACCESS
+
     ContextPtr loc = Context::getContextPtr( context::CUDA );
     MemoryPtr mem = loc->getMemoryPtr();
+    
     bool hashErrorHost = false;
     bool* hashError = ( bool* ) mem->allocate( sizeof( bool ) );
-    cudaMemcpy( hashError, &hashErrorHost, sizeof( bool ), cudaMemcpyHostToDevice );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( hashError, &hashErrorHost, sizeof( bool ), cudaMemcpyHostToDevice ), "memcpy of hashError" );
+    
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
+
     IndexType nnz_a;
     IndexType nnz_b;
-    cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost );
-    cudaMemcpy( &nnz_b, &bIa[numColumns], sizeof( IndexType ), cudaMemcpyDeviceToHost );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_a");
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_b, &bIa[k], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_b" );
+
     IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
     IndexType numChunks;
     IndexType maxNumChunks = ( free - ( 100 * 1024 * 1024 ) ) / ( NUM_ELEMENTS_PER_CHUNK * sizeof ( IndexType ) * 2 );
@@ -3070,20 +3082,30 @@ void CUDACSRUtils::matrixMultiply(
         numChunks = chunksPerWarp;
     }
 
-    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * ( sizeof( IndexType ) + sizeof( ValueType ) );
+    SCAI_LOG_DEBUG( logger, "numChunks = " << numChunks << ", max = " << maxNumChunks << ", per warp = " << chunksPerWarp )
+
+    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * 
+                                           ( sizeof( IndexType ) + sizeof( ValueType ) );
+
+    SCAI_LOG_DEBUG( logger, "hashTableAllcoatedBytes= " << hashTableAllocatedBytes )
+
     void* chunks = ( void* ) mem->allocate( hashTableAllocatedBytes );
     IndexType* indexChunks = ( IndexType* ) chunks;
     ValueType* valueChunks = ( ValueType* ) ( indexChunks + numChunks * NUM_ELEMENTS_PER_CHUNK );
+
     // chunkList table needs one integers per chunk plus 1 start pointer
     unsigned int chunkListAllocatedBytes = numChunks * sizeof( IndexType ) + sizeof( IndexType );
+
     IndexType* chunkList = ( IndexType* ) mem->allocate( chunkListAllocatedBytes );
+
     thrust::device_ptr<IndexType> chunkListPtr( chunkList );
-    IndexType zero = 0;
-    thrust::transform( thrust::make_counting_iterator( zero ),
+    thrust::transform( thrust::make_counting_iterator( IndexType( 0 ) ),
                        thrust::make_counting_iterator( numChunks + 1 ),
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
-    matrixMultiplyKernel <<< NUM_BLOCKS, NUM_THREADS>>>( aIa,
+
+    matrixMultiplyKernel <<< NUM_BLOCKS, NUM_THREADS>>>( 
+            aIa,
             aJa,
             aValues,
             bIa,
@@ -3104,7 +3126,7 @@ void CUDACSRUtils::matrixMultiply(
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixMultiply kernel" )
 
-    cudaMemcpy( &hashErrorHost, hashError, sizeof( bool ), cudaMemcpyDeviceToHost );
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &hashErrorHost, hashError, sizeof( bool ), cudaMemcpyDeviceToHost ), "memcpy hashError" );
 
     if ( hashErrorHost )
     {
@@ -3115,7 +3137,7 @@ void CUDACSRUtils::matrixMultiply(
     mem->free( ( void* ) hashError, sizeof( bool ) );
     mem->free( ( void* ) chunks, hashTableAllocatedBytes );
     mem->free( ( void* ) chunkList, chunkListAllocatedBytes );
-    cudaStreamSynchronize( 0 );
+    
     SCAI_CHECK_CUDA_ERROR
 }
 

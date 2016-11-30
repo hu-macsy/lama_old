@@ -174,16 +174,16 @@ COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
     }
 #endif
 
-#define SCAI_CHECK_CUDA_ACCESS                                                          \
-    {                                                                                   \
-        CUcontext pctx;                                                                 \
-        SCAI_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                             \
-        SCAI_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )    \
+#define SCAI_CHECK_CUDA_ACCESS                                                      \
+    {                                                                               \
+        CUcontext pctx;                                                             \
+        SCAI_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                         \
+        SCAI_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )  \
     }
 
-#define SCAI_CHECK_CUDA_ERROR                                                         \
-    {                                                                                 \
-        SCAI_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                    \
+#define SCAI_CHECK_CUDA_ERROR                                                       \
+    {                                                                               \
+        SCAI_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                  \
     }
 
 //    #define SCAI_CHECK_CUDA_ERROR
