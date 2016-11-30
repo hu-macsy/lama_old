@@ -269,6 +269,141 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( countNonZeroTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
+
+    ContextPtr loc = Context::getContextPtr( countNonZeros.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    //    1.0   -   2.0  1.1 
+    //    0.5  0.0   -    -
+    //     -    -   3.0   -
+    //     -    -   4.0  0.0
+
+    const IndexType ia_raw[]     = {   0,             3,        5,   6,       8 };
+    const IndexType ja_raw[]     = {   3,   2,   0,   0,   1,   2,   3,   2 };
+    const ValueType values_raw[] = { 1.1, 2.0, 1.0, 0.5, 0.0, 3.0, 0.0, 4.0 };
+
+    const IndexType compress_sizes[]  = {  3, 1, 1, 1 };
+
+    const IndexType numRows = 4;
+    const IndexType numValues = 8;
+
+    HArray<IndexType> ia( numRows + 1, ia_raw, testContext );
+    HArray<IndexType> ja( numValues, ja_raw, testContext );
+    HArray<ValueType> values( numValues, values_raw, testContext );
+
+    HArray<IndexType> sizes;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( ia, loc );
+        ReadAccess<IndexType> rJA( ja, loc );
+        ReadAccess<ValueType> rValues( values, loc );
+
+        WriteOnlyAccess<IndexType> wSizes( sizes, loc, numRows );
+
+        bool diagonalFlag = false;
+        double eps = 0.000001;
+
+        countNonZeros[loc->getType()]( wSizes.get(), rIA.get(), rJA.get(), rValues.get(),
+                                       numRows, eps, diagonalFlag );
+    }
+
+    // now check the values of sizes
+    {
+        ReadAccess<IndexType> rSizes( sizes );
+
+        for ( IndexType k = 0; k < numRows; ++k )
+        {
+            BOOST_CHECK_EQUAL( rSizes[k], compress_sizes[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{
+    typedef double ValueType;
+
+    ContextPtr testContext = Context::getContextPtr();
+
+    kregistry::KernelTraitContextFunction<CSRKernelTrait::compress<ValueType> > compress;
+
+    ContextPtr loc = Context::getContextPtr( compress.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
+    //    1.0   -   2.0  1.1 
+    //    0.5  0.0   -    -
+    //     -    -   3.0   -
+    //     -    -   4.0  0.0
+
+    const IndexType ia_original[]     = {   0,             3,        5,   6,       8 };
+    const IndexType ja_original[]     = {   3,   2,   0,   0,   1,   2,   3,   2 };
+    const ValueType values_original[] = { 1.1, 2.0, 1.0, 0.5, 0.0, 3.0, 0.0, 4.0 };
+
+    const IndexType ia_compress[]     = {   0,             3,   4,   5,   6 };
+    const IndexType ja_compress[]     = {   3,   2,   0,   0,   2,   2 };
+    const ValueType values_compress[] = { 1.1, 2.0, 1.0, 0.5, 3.0, 4.0 };
+
+    const IndexType numRows = 4;
+    const IndexType oldNumValues = 8;
+    const IndexType newNumValues = 6;
+
+    HArray<IndexType> oldIA( numRows + 1, ia_original, testContext );
+    HArray<IndexType> oldJA( oldNumValues, ja_original, testContext );
+    HArray<double>    oldValues( oldNumValues, values_original, testContext );
+
+    HArray<IndexType> newIA( numRows + 1, ia_compress, testContext );
+    HArray<IndexType> newJA;
+    HArray<double>    newValues;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( newIA, loc );
+
+        WriteOnlyAccess<IndexType> wJA( newJA, loc, newNumValues );
+        WriteOnlyAccess<ValueType> wValues( newValues, loc, newNumValues );
+
+        ReadAccess<IndexType> roIA( oldIA, loc );
+        ReadAccess<IndexType> roJA( oldJA, loc );
+        ReadAccess<ValueType> roValues( oldValues, loc );
+
+        bool diagonalFlag = false;
+        double eps = 0.000001;
+
+        compress[loc->getType()]( wJA.get(), wValues.get(), rIA.get(), roIA.get(), roJA.get(), roValues.get(),
+                                  numRows, eps, diagonalFlag );
+    }
+
+    // now check that non-zero values are at the right place
+    {
+        ReadAccess<IndexType> rJA( newJA );
+        ReadAccess<ValueType> rValues( newValues );
+
+        for ( IndexType k = 0; k < newNumValues; ++k )
+        {
+            SCAI_LOG_TRACE( logger, "value " << k << ": " << rJA[k] << ":" << rValues[k] 
+                                    << ", expected " << ja_compress[k] << ":" << values_compress[k] )
+
+            BOOST_CHECK_EQUAL( rJA[k], ja_compress[k] );
+            BOOST_CHECK_EQUAL( rValues[k], values_compress[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
     ContextPtr testContext = Context::getContextPtr();
