@@ -83,6 +83,10 @@ void printUsage( const char* prog_name )
     cout << "         stencilType = 3 (for dim = 1) " << endl;
     cout << "         stencilType = 5, 9 (for dim = 2) " << endl;
     cout << "         stencilType = 7, 19, 27 (for dim = 3) " << endl;
+    cout << "   other options:" << endl;
+    cout << "      --SCAI_IO_TYPE_DATA=float|double|ComplexFloat|ComplexDouble to force output in other format" << endl;
+    cout << "      --SCAI_IO_TYPE_INDEX=int|long to fource output of indexes in other format" << endl;
+    cout << "      --SCAI_IO_BINARY=0|1 to force formatted or binary format" << endl;
 }
 
 struct CommandLineArguments
