@@ -3213,6 +3213,125 @@ void CUDACSRUtils::sortRowElements(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void countNonZerosKernel(
+    IndexType sizes[],
+    const IndexType ia[],
+    const IndexType ja[],
+    const ValueType values[],
+    const IndexType numRows,
+    const ValueType eps,
+    const bool diagonalFlag )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        IndexType cnt = 0;
+
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        {
+            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
+            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+
+            if ( nonZero || isDiagonal )
+            {
+                ++cnt;
+            }
+        }
+
+        sizes[i] = cnt;
+    }
+}
+
+template<typename ValueType>
+void CUDACSRUtils::countNonZeros(
+    IndexType sizes[],
+    const IndexType ia[],
+    const IndexType ja[],
+    const ValueType values[],
+    const IndexType numRows,
+    const ValueType eps,
+    const bool diagonalFlag )
+{
+    SCAI_REGION( "CUDA.CSRUtils.countNonZeros" )
+
+    SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
+                   << "), eps = " << eps << ", diagonal = " << diagonalFlag )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    countNonZerosKernel <<< dimGrid, dimBlock>>>( sizes, ia, ja, values, numRows, eps, diagonalFlag );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void compressKernel(
+    IndexType newJA[],
+    ValueType newValues[],
+    const IndexType newIA[],
+    const IndexType ia[],
+    const IndexType ja[],
+    const ValueType values[],
+    const IndexType numRows,
+    const ValueType eps,
+    const bool diagonalFlag )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        IndexType offs = newIA[i];
+
+        for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
+        {
+            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
+            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+
+            if ( nonZero || isDiagonal )
+            {
+                newJA[ offs ]     = ja[jj];
+                newValues[ offs ] = values[jj];
+                ++offs;
+            }
+        }
+    }
+}
+
+template<typename ValueType>
+void CUDACSRUtils::compress(
+    IndexType newJA[],
+    ValueType newValues[],
+    const IndexType newIA[],
+    const IndexType ia[],
+    const IndexType ja[],
+    const ValueType values[],
+    const IndexType numRows,
+    const ValueType eps,
+    const bool diagonalFlag )
+{
+    SCAI_REGION( "CUDA.CSR.compress" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    compressKernel <<< dimGrid, dimBlock>>>( newJA, newValues, newIA, ia, ja, values, numRows, eps, diagonalFlag );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -3242,6 +3361,8 @@ void CUDACSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::compress<ValueType> >( compress, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
