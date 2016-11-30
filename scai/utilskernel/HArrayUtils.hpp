@@ -489,7 +489,7 @@ public:
      *
      *  @param[in,out] values array to be sorted
      *  @param[in,out] perm array where values reorded in the same way as values
-     *  @param[in]     array with offsets that specify the sorted subarrays 
+     *  @param[in]     offsets array with offsets that specify the sorted subarrays 
      *  @param[in]     ascending true for ascending sort, false for descending
      *  @param[in]     prefLoc context where merging should take place
      *  
@@ -502,14 +502,14 @@ public:
         hmemo::HArray<ValueType>& values,
         hmemo::HArray<IndexType>& perm,
         const hmemo::HArray<IndexType>& offsets,
-        bool acending,
+        bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static void mergeSort(
         hmemo::HArray<ValueType>& values,
         const hmemo::HArray<IndexType>& offsets,
-        bool acending,
+        bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Initialize an array with the sequence 0, .., n-1
@@ -608,7 +608,7 @@ private:
         hmemo::HArray<ValueType>& values,
         hmemo::HArray<IndexType>* perm,
         const hmemo::HArray<IndexType>& offsets,
-        bool acending,
+        bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
