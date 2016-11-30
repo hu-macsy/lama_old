@@ -627,9 +627,12 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
         ReadAccess<IndexType> ia( mIa, loc );
         ReadAccess<IndexType> ja( mJa, loc );
         ReadAccess<ValueType> values( mValues, loc );
-        WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows );
+        WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows + 1 );  // allocate already for offsets
         countNonZeros[loc]( new_ia.get(), ia.get(), ja.get(), values.get(), mNumRows, eps, mDiagonalProperty );
     }
+
+    newIa.resize( mNumRows );  //  reset size for scan operation
+
     // now compute the new offsets from the sizes, gives also new numValues
     IndexType newNumValues = HArrayUtils::scan( newIa, this->getContextPtr() );
     SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements" )
@@ -653,8 +656,8 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
         ReadAccess<IndexType> ia( mIa, loc );
         ReadAccess<IndexType> ja( mJa, loc );
         ReadAccess<ValueType> values( mValues, loc );
-        WriteOnlyAccess<IndexType> new_ja( newJa, newNumValues );
-        WriteOnlyAccess<ValueType> new_values( newValues, newNumValues );
+        WriteOnlyAccess<IndexType> new_ja( newJa, loc, newNumValues );
+        WriteOnlyAccess<ValueType> new_values( newValues, loc, newNumValues );
         compressData[loc]( new_ja.get(), new_values.get(), new_ia.get(),
                            ia.get(), ja.get(), values.get(), mNumRows,
                            eps, mDiagonalProperty );
