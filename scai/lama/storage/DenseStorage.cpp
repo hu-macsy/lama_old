@@ -47,6 +47,9 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/hmemo/ContextAccess.hpp>
+
+#include <scai/tracing.hpp>
+
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
@@ -341,6 +344,8 @@ void DenseStorageView<ValueType>::scaleImpl( const HArray<OtherType>& values )
 template<typename ValueType>
 void DenseStorageView<ValueType>::transposeImpl()
 {
+    SCAI_REGION( "Storage.Dense.transpose" )
+
     // Compute transpostion A^t of A via A^t = A^t * I, where * is implemented by LAPACK
     ContextPtr context = Context::getHostPtr();
     WriteAccess<ValueType> wData( mData, context );

@@ -589,6 +589,8 @@ void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& Mat )
 {
+    SCAI_REGION( "Mat.Dense.assignTranspose" )
+
     const Communicator& comm = Mat.getRowDistribution().getCommunicator();
     IndexType size = comm.getSize();
     DistributionPtr distRow = Mat.getRowDistributionPtr();
