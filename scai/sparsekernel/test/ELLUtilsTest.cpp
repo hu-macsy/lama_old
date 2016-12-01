@@ -463,7 +463,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_numeric_test_ty
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_types )
-
 {
     ContextPtr testContext = Context::getContextPtr();
     KernelTraitContextFunction<ELLKernelTrait::compressIA<ValueType> > compressIA;
@@ -471,17 +470,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_type
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     // Check without epsilon
     {
-        ValueType valuesELLValues[] =
-        { 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1 };
+        ValueType valuesELLValues[] = { 1, 1, 1,
+                                        1, 1, 1,
+                                        0, 0, 0,
+                                        0, 0, 1,
+                                        0, 1, 1 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
+        IndexType valuesELLIa[] = { 5, 5, 5 };
         const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
-        IndexType valuesELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6 };
+        IndexType valuesELLJa[] = { 0, 1, 2,
+                                    3, 3, 3,
+                                    4, 4, 4,
+                                    5, 5, 5,
+                                    6, 6, 6 };
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
-        IndexType expectedELLIa[] =
-        { 2, 3, 4 };
+        IndexType expectedELLIa[] = { 2, 3, 4 };
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
@@ -506,17 +509,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_type
     }
     // Check with epsilon
     {
-        ValueType valuesELLValues[] =
-        { 1, 1, 1, 1, 1, 1, 0.01, 0.01, -0.01, -0.001, 0.001, 0.02, 0.001, 1, 1 };
+        ValueType valuesELLValues[] = { 1,      1,     1,
+                                        1,      1,     1,
+                                        0.01,   0.01, -0.01,
+                                        -0.001, 0.001, 0.02,
+                                        0.001,  1,     1 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
+        IndexType valuesELLIa[] = { 5, 5, 5 };
         const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
-        IndexType valuesELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6 };
+        IndexType valuesELLJa[] = { 0, 1, 2,
+                                    3, 3, 3,
+                                    4, 4, 4,
+                                    5, 5, 5,
+                                    6, 6, 6 };
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
-        IndexType expectedELLIa[] =
-        { 2, 3, 4 };
+        IndexType expectedELLIa[] = { 2, 3, 4 };
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.01;
@@ -541,17 +548,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressIATest, ValueType, scai_numeric_test_type
     }
     // Check if compress destroys diagonal property (it shouldn't!)
     {
-        ValueType valuesELLValues[] =
-        { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        ValueType valuesELLValues[] = { 0, 0, 0,
+                                        1, 1, 1,
+                                        1, 1, 1,
+                                        1, 1, 1,
+                                        1, 1, 1 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
+        IndexType valuesELLIa[] = { 5, 5, 5 };
         const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
-        IndexType valuesELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6 };
+        IndexType valuesELLJa[] = { 0, 1, 2,
+                                    3, 3, 3,
+                                    4, 4, 4,
+                                    5, 5, 5,
+                                    6, 6, 6 };
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
-        IndexType expectedELLIa[] =
-        { 5, 5, 5 };
+        IndexType expectedELLIa[] = { 5, 5, 5 };
+        const IndexType numRows = nELLIa;
+        const IndexType numValuesPerRow = nELLJa / nELLIa;
+        const ValueType eps = 0.0;
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+        HArray<IndexType> newEllIa( testContext ); // output array
+        {
+            ReadAccess<ValueType> rELLValues( ellValues, loc );
+            ReadAccess<IndexType> rELLIa( ellIa, loc );
+            ReadAccess<IndexType> rELLJa( ellJa, loc );
+            WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, nELLIa );
+            SCAI_CONTEXT_ACCESS( loc );
+            compressIA[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
+        }
+        ReadAccess<IndexType> rNewELLIa( newEllIa );
+
+        for ( IndexType i = 0; i < nELLIa; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedELLIa[i], rNewELLIa[i] );
+        }
+    }
+
+    // special case
+    {
+        ValueType valuesELLValues[] = { 1, 0, 0, 0, 0, 
+                                        0, 1, 1, 1, 1 };
+        const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
+        IndexType valuesELLIa[] = { 1, 2, 2, 2, 2 };
+        const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
+        IndexType valuesELLJa[] = { 0, 0, 0, 0, 0, 
+                                    1, 2, 3, 4, 5 };
+        const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
+        IndexType expectedELLIa[] = { 1, 1, 1, 1, 1 };
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
@@ -594,19 +639,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_numeric_test_
                              2  5  8  0        1  3  6  0
                              3  6  7  9        2  3  5  6
         */
-        ValueType valuesELLValues[] =
-        { 1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 7, 0, 8, 9 };
+        ValueType valuesELLValues[] = { 1, 2, 3,
+                                        4, 5, 6,
+                                        0, 0, 0,
+                                        0, 0, 7,
+                                        0, 8, 9 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
+        IndexType valuesELLIa[] = { 5, 5, 5 };
         const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
-        IndexType valuesELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6 };
+        IndexType valuesELLJa[] = { 0, 1, 2,
+                                    3, 3, 3,
+                                    4, 4, 4,
+                                    5, 5, 5,
+                                    6, 6, 6 };
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
-        ValueType expectedELLValues[] =
-        { 1, 2, 3, 4, 5, 6, 0, 8, 7, 0, 0, 9 };
-        IndexType expectedELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 0, 6, 5, 0, 0, 6 };
+        ValueType expectedELLValues[] = { 1, 2, 3,
+                                          4, 5, 6,
+                                          0, 8, 7,
+                                          0, 0, 9 };
+        IndexType expectedELLJa[] = { 0, 1, 2,
+                                      3, 3, 3,
+                                      0, 6, 5,
+                                      0, 0, 6 };
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.0;
@@ -641,19 +695,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_numeric_test_
     }
     // Check with epsilon
     {
-        ValueType valuesELLValues[] =
-        { 0.02, 2, 3, 4, 5, 6, 0.01, -0.01, 0.002, -0.002, 0.01, 7, -0.01, 8, 9 };
+        ValueType valuesELLValues[] = { 0.02,  2,     3,
+                                        4,     5,     6,
+                                        0.01,  -0.01, 0.002,
+                                        -0.002, 0.01, 7,
+                                        -0.01,  8,    9 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
+        IndexType valuesELLIa[] = { 5, 5, 5 };
         const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
-        IndexType valuesELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6 };
+        IndexType valuesELLJa[] = { 0, 1, 2,
+                                    3, 3, 3,
+                                    4, 4, 4,
+                                    5, 5, 5,
+                                    6, 6, 6 };
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
-        ValueType expectedELLValues[] =
-        { 0.02, 2, 3, 4, 5, 6, 0, 8, 7, 0, 0, 9 };
-        IndexType expectedELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 0, 6, 5, 0, 0, 6 };
+        ValueType expectedELLValues[] = { 0.02, 2, 3,
+                                          4,    5, 6,
+                                          0,    8, 7,
+                                          0,    0, 9 };
+        IndexType expectedELLJa[] = { 0, 1, 2,
+                                      3, 3, 3,
+                                      0, 6, 5,
+                                      0, 0, 6 };
         const IndexType numRows = nELLIa;
         const IndexType numValuesPerRow = nELLJa / nELLIa;
         const ValueType eps = 0.01;
@@ -687,19 +750,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_numeric_test_
     }
     // Check if compress destroys diagonal property (it shouldn't!)
     {
-        ValueType valuesELLValues[] =
-        { 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 7, 0, 8, 9 };
+        ValueType valuesELLValues[] = { 0, 0, 0,
+                                        4, 5, 6,
+                                        0, 0, 0,
+                                        0, 0, 7,
+                                        0, 8, 9 };
         const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType );
-        IndexType valuesELLIa[] =
-        { 5, 5, 5 };
+        IndexType valuesELLIa[] = { 5, 5, 5 };
         const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType );
-        IndexType valuesELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6 };
+        IndexType valuesELLJa[] = { 0, 1, 2,
+                                    3, 3, 3,
+                                    4, 4, 4,
+                                    5, 5, 5,
+                                    6, 6, 6 };
         const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType );
-        ValueType expectedELLValues[] =
-        { 0, 0, 0, 4, 5, 6, 0, 8, 7, 0, 0, 9 };
-        IndexType expectedELLJa[] =
-        { 0, 1, 2, 3, 3, 3, 0, 6, 5, 0, 0, 6 };
+        ValueType expectedELLValues[] = { 0, 0, 0,
+                                          4, 5, 6,
+                                          0, 8, 7,
+                                          0, 0, 9 };
+        IndexType expectedELLJa[] = { 0, 1, 2,
+                                      3, 3, 3,
+                                      0, 6, 5,
+                                      0, 0, 6 };
         const IndexType numRows = nELLIa;
         const ValueType eps = 0.01;
         const IndexType numValues = 12;
@@ -724,6 +796,50 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressValuesTest, ValueType, scai_numeric_test_
         ReadAccess<IndexType> rNewELLJa( newEllJa );
 
         for ( IndexType i = 0; i < numValues; i++ )
+        {
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i]
+                            << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
+            BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
+            BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
+        }
+    }
+    // special case
+    {
+        ValueType valuesELLValues[] = { 1, 0, 0, 0, 0,
+                                        0, 1, 1, 1, 1 };
+        const IndexType nELLValues = sizeof( valuesELLValues ) / sizeof( ValueType ); // 10
+        IndexType valuesELLIa[] = { 1, 2, 2, 2, 2 };
+        const IndexType nELLIa = sizeof( valuesELLIa ) / sizeof( IndexType ); // 5
+        IndexType valuesELLJa[] = { 0, 0, 0, 0, 0,
+                                    0, 1, 2, 3, 4 };
+        const IndexType nELLJa = sizeof( valuesELLJa ) / sizeof( IndexType ); // 10
+        ValueType expectedELLValues[] = { 1, 1, 1, 1, 1 };
+        IndexType expectedELLJa[] = { 0, 1, 2, 3, 4 };
+        const IndexType numRows = nELLIa;
+        const ValueType eps = 0.01;
+        const IndexType numValues = 10;
+        const IndexType newNumValues = 5;
+        const IndexType numValuesPerRow    = numValues    / nELLIa;
+        const IndexType newNumValuesPerRow = newNumValues / nELLIa;
+        HArray<ValueType> ellValues( nELLValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( nELLIa, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( nELLJa, valuesELLJa, testContext );
+        HArray<IndexType> newEllJa( testContext );      // output array
+        HArray<ValueType> newEllValues( testContext );  // output array
+        {
+            ReadAccess<ValueType> rELLValues( ellValues, loc );
+            ReadAccess<IndexType> rELLIa( ellIa, loc );
+            ReadAccess<IndexType> rELLJa( ellJa, loc );
+            WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
+            WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
+            SCAI_CONTEXT_ACCESS( loc );
+            compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
+                                            newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+        }
+        ReadAccess<ValueType> rNewELLValues( newEllValues );
+        ReadAccess<IndexType> rNewELLJa( newEllJa );
+
+        for ( IndexType i = 0; i < newNumValues; i++ )
         {
             SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i]
                             << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
