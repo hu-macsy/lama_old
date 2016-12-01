@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
         WriteOnlyAccess<IndexType> wSizes( sizes, loc, numRows );
 
         bool diagonalFlag = false;
-        double eps = 0.000001;
+        ValueType eps = 0.000001;
 
         countNonZeros[loc->getType()]( wSizes.get(), rIA.get(), rJA.get(), rValues.get(),
                                        numRows, eps, diagonalFlag );
