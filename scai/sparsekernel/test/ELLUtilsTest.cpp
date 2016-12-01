@@ -37,6 +37,7 @@
 
 // others
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
+#include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/kregistry.hpp>
 #include <scai/hmemo.hpp>
 
@@ -47,6 +48,7 @@
 using namespace scai;
 using namespace hmemo;
 using namespace sparsekernel;
+using namespace utilskernel;
 using namespace kregistry;
 using common::TypeTraits;
 using common::Exception;
@@ -1448,6 +1450,93 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
             IndexType i = rRow[k];
             BOOST_CHECK_EQUAL( rJA[ p ], columnIndex );
             BOOST_CHECK_EQUAL( p % numRows, i );
+        }
+    }
+}
+
+//BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( compressTest )
+{
+    typedef double ValueType;
+
+    ContextPtr testContext = Context::getContextPtr();
+    KernelTraitContextFunction<ELLKernelTrait::compressIA<ValueType> > compressIA;
+    KernelTraitContextFunction<UtilKernelTrait::reduce<IndexType> > reduce;
+    KernelTraitContextFunction<ELLKernelTrait::compressValues<ValueType> > compressValues;
+    ContextPtr loc = Context::getContextPtr( compressIA.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    // full test (ia and values) for
+    // special case
+    {
+        ValueType valuesELLValues[] = { 1, 0, 0, 0, 0,
+                                        0, 1, 1, 1, 1 };
+        IndexType valuesELLIa[]     = { 1, 2, 2, 2, 2 };
+        IndexType valuesELLJa[]     = { 0, 0, 0, 0, 0,
+                                        0, 1, 2, 3, 4 };
+
+        ValueType expectedELLValues[] = { 1, 1, 1, 1, 1 };
+        IndexType expectedELLJa[]     = { 0, 1, 2, 3, 4 };
+        ValueType expectedELLIa[]     = { 1, 1, 1, 1, 1 };
+
+        const IndexType numRows = sizeof( valuesELLIa ) / sizeof( IndexType ); // 5
+        const ValueType eps = 0.01;
+        const IndexType numValues = sizeof( valuesELLValues ) / sizeof( ValueType ); // 10
+        const IndexType newNumValues = sizeof( expectedELLValues ) / sizeof( ValueType ); // 5
+        const IndexType numValuesPerRow    = numValues    / numRows;
+        const IndexType newNumValuesPerRow = newNumValues / numRows;
+
+        IndexType newNumValuesPerRow_calc = -1;
+        HArray<ValueType> ellValues( numValues, valuesELLValues, testContext );
+        HArray<IndexType> ellIa( numRows, valuesELLIa, testContext );
+        HArray<IndexType> ellJa( numValues, valuesELLJa, testContext );
+        HArray<IndexType> newEllIa( testContext ); // output array
+        {
+            ReadAccess<ValueType> rELLValues( ellValues, loc );
+            ReadAccess<IndexType> rELLIa( ellIa, loc );
+            ReadAccess<IndexType> rELLJa( ellJa, loc );
+            WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, numRows );
+            SCAI_CONTEXT_ACCESS( loc );
+            compressIA[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
+            newNumValuesPerRow_calc = reduce[loc->getType()]( wNewELLIa.get(), numRows, 0, utilskernel::binary::MAX );
+        }
+        ReadAccess<IndexType> rNewELLIa( newEllIa );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedELLIa[i], rNewELLIa[i] );
+        }
+
+        BOOST_CHECK_EQUAL ( newNumValuesPerRow, newNumValuesPerRow_calc );
+
+        HArray<IndexType> newEllJa( testContext );      // output array
+        HArray<ValueType> newEllValues( testContext );  // output array
+        if ( newNumValuesPerRow_calc < numValuesPerRow )
+        {
+            if ( newNumValuesPerRow < numValuesPerRow )
+            {
+                {
+                    ReadAccess<ValueType> rELLValues( ellValues, loc );
+                    ReadAccess<IndexType> rELLIa( ellIa, loc );
+                    ReadAccess<IndexType> rELLJa( ellJa, loc );
+                    WriteOnlyAccess<ValueType> wNewELLValues( newEllValues, loc, numValues );
+                    WriteOnlyAccess<IndexType> wNewELLJa( newEllJa, loc, numValues );
+                    SCAI_CONTEXT_ACCESS( loc );
+                    compressValues[loc->getType()]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps,
+                                                    newNumValuesPerRow, wNewELLJa.get(), wNewELLValues.get() );
+                }
+            }
+        }
+
+        ReadAccess<ValueType> rNewELLValues( newEllValues );
+        ReadAccess<IndexType> rNewELLJa( newEllJa );
+
+        for ( IndexType i = 0; i < newNumValues; i++ )
+        {
+            SCAI_LOG_DEBUG( logger, "Entry " << i << ", exp " << expectedELLJa[i] << ":" << expectedELLValues[i]
+                                << ", is "  <<  rNewELLJa[i] << ":" << rNewELLValues[i] )
+            BOOST_CHECK_EQUAL( expectedELLValues[i], rNewELLValues[i] );
+            BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
     }
 }
