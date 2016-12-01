@@ -1938,6 +1938,139 @@ void CUDAELLUtils::jacobiHalo(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+__global__
+void ell_compressIA_kernel(
+    const IndexType* IA,
+    const IndexType* JA,
+    const ValueType* ellValues,
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const ValueType eps,
+    IndexType* newIA )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < numRows )
+    {
+        IndexType length = IA[i];
+
+        for ( IndexType jj = 0; jj < IA[i]; jj++ )
+        {
+            IndexType pos = jj * numRows + i;
+
+            if ( JA[pos] == i )
+            {
+                continue;
+            }
+
+            if ( common::Math::abs( ellValues[pos] ) <= common::Math::real( eps ) )
+            {
+                length--;
+            }
+        }
+
+        newIA[i] = length;
+    }
+}
+
+template<typename ValueType>
+void CUDAELLUtils::compressIA(
+    const IndexType IA[],
+    const IndexType JA[],
+    const ValueType ellValues[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const ValueType eps,
+    IndexType newIA[] )
+{
+    SCAI_LOG_INFO( logger, "compressIA with eps = " << eps )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    ell_compressIA_kernel <<< dimGrid, dimBlock>>>( IA, JA, ellValues, numRows, numValuesPerRow, eps, newIA );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+__global__
+void ell_compressValues_kernel(
+    const IndexType* IA,
+    const IndexType* JA,
+    const ValueType* values,
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const ValueType eps,
+    const IndexType newNumValuesPerRow,
+    IndexType* newJA,
+    ValueType* newValues )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    IndexType gap = 0;
+
+    for ( IndexType j = 0; j < IA[i]; j++ )
+    {
+        IndexType pos = j * numRows + i;
+
+        if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
+        {
+            gap++;
+            continue;
+        }
+
+        IndexType newpos = (j - gap) * numRows + i;
+        newValues[newpos] = values[pos];
+        newJA[newpos] = JA[pos];
+    }
+
+    // fill up to top
+
+    for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+    {
+        IndexType newpos = j * numRows + i;
+        newValues[newpos] = 0;
+        newJA[newpos] = 0;
+    }
+}
+
+template<typename ValueType>
+void CUDAELLUtils::compressValues(
+    const IndexType IA[],
+    const IndexType JA[],
+    const ValueType values[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const ValueType eps,
+    const IndexType newNumValuesPerRow,
+    IndexType newJA[],
+    ValueType newValues[] )
+{
+    SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
+                   << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
+                   << ") with eps = " << eps )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    const int blockSize = CUDASettings::getBlockSize();
+    dim3 dimBlock( blockSize, 1, 1 );
+    dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
+    ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps,
+                                                        newNumValuesPerRow, newJA, newValues );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                Template instantiations via registration routine                                    */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1965,6 +2098,8 @@ void CUDAELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
