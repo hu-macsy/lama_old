@@ -120,6 +120,8 @@ void CUSparseCSRUtils::normalGEMV(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
+    SCAI_REGION( "CUSparse.CSR.normalGEMV" )
+
     SCAI_LOG_INFO( logger, "normalGEMV<" << common::getScalarType<ValueType>() << ">" <<
                    " result[ " << numRows << "] = " << alpha << " * A(csr) * x + " << beta << " * y " )
     SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
