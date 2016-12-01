@@ -732,59 +732,29 @@ void OpenMPCSRUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = "
                    << alpha << " * x * A + " << beta << " * y " )
-    // ToDo: for efficiency the cases of alpha and beta = 1.0 / 0.0 should be considered
-    // Note: for beta = 0.0, y could be uninitialized.
-    //       0.0 * undefined should deliver 0.0, but valgrind cannot deal with it
+
+    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
+
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+
     #pragma omp parallel
     {
         // Note: region will be entered by each thread
+
         SCAI_REGION( "OpenMP.CSR.normalGEVM" )
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
-        for ( IndexType i = 0; i < numColumns; ++i )
+        #pragma omp for 
+
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType sum = 0;
-            bool diag = false;
-
-            if ( i < numRows && csrIA[i] != csrIA[i + 1] && csrJA[csrIA[i]] == i )
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
-                sum += csrValues[csrIA[i]] * x[i];
-                diag = true;
-            }
-
-            for ( IndexType j = 0; j < numRows; ++j )
-            {
-                for ( IndexType k = csrIA[j]; k < csrIA[j + 1]; ++k )
-                {
-                    if ( !( diag && i == j ) && csrJA[k] == i )
-                    {
-                        sum += csrValues[k] * x[j];
-                        break;
-                    }
-                }
-            }
-
-            if ( beta == common::constants::ZERO )
-            {
-                result[i] = alpha * sum;
-            }
-            else
-            {
-                result[i] = alpha * sum + beta * y[i];
+                IndexType j = csrJA[jj];
+                ValueType v = alpha * csrValues[jj] * x[i];
+            
+                atomicAdd( result[j], v );
             }
         }
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::cout << "NormalGEVM: result = ";
-
-        for ( IndexType i = 0; i < numColumns; ++i )
-        {
-            std::cout << " " << result[i];
-        }
-
-        std::cout << std::endl;
     }
 }
 
@@ -869,31 +839,27 @@ void OpenMPCSRUtils::sparseGEVM(
         SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
+    // While GEMV gathers x values needed for each row, GEVM scatters values in result
+
     #pragma omp parallel
     {
         // Note: region will be entered by each thread
-        SCAI_REGION( "OpenMP.CSR.normalGEVM" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for ( IndexType j = 0; j < numColumns; ++j )
+        SCAI_REGION( "OpenMP.CSR.sparseGEVM" )
+
+        #pragma omp for 
+
+        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
-            ValueType sum = 0;
+            IndexType i = rowIndexes[ii];
 
-            for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
             {
-                IndexType i = rowIndexes[ii];
+                IndexType j = csrJA[jj];
+                ValueType v = alpha * csrValues[jj] * x[i];
 
-                for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
-                {
-                    if ( csrJA[jj] == j )
-                    {
-                        sum += csrValues[jj] * x[i];
-                        break;
-                    }
-                }
+                atomicAdd( result[j], v );
             }
-
-            result[j] += alpha * sum;
         }
     }
 }

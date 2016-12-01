@@ -390,7 +390,8 @@ void OpenMPCOOUtils::normalGEVM(
 
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.COO.normalGEMV" )
+        SCAI_REGION( "OpenMP.COO.normalGEVM" )
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType k = 0; k < numValues; ++k )
