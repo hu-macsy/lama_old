@@ -2076,7 +2076,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     }
     else
     {
-        SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
+        SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix add" )
         tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
@@ -2088,13 +2088,13 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     }
     else
     {
-        SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
+        SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix add" )
         tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
 
-    // compute where target data will be
-    ContextPtr loc = this->getContextPtr();
+    ContextPtr loc = this->getContextPtr(); // preferred location for matrix add
+
     matrixAddMatrixCSR( alpha, *csrA, beta, *csrB, loc );
 }
 

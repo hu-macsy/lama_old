@@ -1724,6 +1724,8 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& c )
 {
+    SCAI_REGION( "Storage.ELL.timesMatrix" )
+
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A * B + " << beta << " * C, with " << "A = " << a << ", B = " << b << ", C = " << c )
     const ELLStorage<ValueType>* ellA = NULL;
