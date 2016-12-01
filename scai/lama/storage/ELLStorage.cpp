@@ -957,15 +957,20 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
     ContextPtr loc = this->getContextPtr();
     reduce.getSupportedContext( loc );
     compressIA.getSupportedContext( loc, compressValues );
-    ReadAccess<IndexType> IA( mIA, loc );
-    ReadAccess<IndexType> JA( mJA, loc );
-    ReadAccess<ValueType> values( mValues, loc );
-    // 1. Step: Check for 0 elements and write new IA array
+
+    IndexType newNumValuesPerRow = -1;
+
     LArray<IndexType> newIAArray;
-    WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
-    compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
-    // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, 0, utilskernel::binary::MAX );
+    {
+        ReadAccess<IndexType> IA( mIA, loc );
+        ReadAccess<IndexType> JA( mJA, loc );
+        ReadAccess<ValueType> values( mValues, loc );
+        // 1. Step: Check for 0 elements and write new IA array
+        WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
+        compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
+        // 2. Step: compute length of longest row
+        newNumValuesPerRow = reduce[ loc ]( newIA.get(), mNumRows, 0, utilskernel::binary::MAX );
+    }
 
     // Do further steps, if new array could be smaller
     if ( newNumValuesPerRow < mNumValuesPerRow )
@@ -973,11 +978,19 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
         // 3. Step: Allocate new JA and Values array
         LArray<ValueType> newValuesArray;
         LArray<IndexType> newJAArray;
-        WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
-        WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
-        // 4. Step: Compute new JA and Values array
-        compressValues[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
-                             newJA.get(), newValues.get() );
+
+        {
+            ReadAccess<IndexType> IA( mIA, loc );
+            ReadAccess<IndexType> JA( mJA, loc );
+            ReadAccess<ValueType> values( mValues, loc );
+            WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
+            WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
+            // 4. Step: Compute new JA and Values array
+            compressValues[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
+                                 newJA.get(), newValues.get() );
+        }
+
+        mIA.swap( newIAArray );
         mJA.swap( newJAArray );
         mValues.swap( newValuesArray );
         mNumValuesPerRow = newNumValuesPerRow;

@@ -487,6 +487,7 @@ void OpenMPELLUtils::compressValues(
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
                    << ") with eps = " << eps )
+
     #pragma omp parallel
     {
         #pragma omp for
