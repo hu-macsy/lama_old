@@ -99,10 +99,12 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = 0;
+
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = 0;
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -355,11 +357,12 @@ void OpenMPDIAUtils::normalGEMV(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.normalGEMV" )
+
         #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = static_cast<ValueType>( 0.0 );
+            ValueType accu = 0;
 
             for ( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
@@ -372,18 +375,6 @@ void OpenMPDIAUtils::normalGEMV(
             }
 
             result[i] += alpha * accu;
-        }
-
-        if ( SCAI_LOG_TRACE_ON( logger ) )
-        {
-            std::cout << "NormalGEMV: result = ";
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                std::cout << " " << result[i];
-            }
-
-            std::cout << std::endl;
         }
     }
 }
@@ -446,39 +437,25 @@ void OpenMPDIAUtils::normalGEVM(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.normalGEVM" )
-        #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
 
-        for ( IndexType k = 0; k < numColumns; ++k )
+        #pragma omp for 
+
+        for ( IndexType j = 0; j < numColumns; j++ )
         {
-            ValueType accu = static_cast<ValueType>( 0.0 );
+            ValueType accu = 0;
 
-            for ( IndexType i = 0; i < numRows; i++ )
+            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
-                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
-                {
-                    const IndexType j = i + diaOffsets[ii];
+                const IndexType i = j - diaOffsets[ii];
 
-                    if ( j == k )
-                    {
-                        accu += diaValues[ii * numRows + i] * x[i];
-                    }
+                if ( common::Utils::validIndex( i, numRows ) )
+                {
+                    accu += diaValues[ii * numRows + i] * x[i];
                 }
             }
 
-            result[k] += alpha * accu;
+            result[j] += alpha * accu;
         }
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::cout << "NormalGEVM: result = ";
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            std::cout << " " << result[i];
-        }
-
-        std::cout << std::endl;
     }
 }
 
@@ -509,6 +486,9 @@ void OpenMPDIAUtils::jacobi(
         SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
+    ValueType omega1 = 1;
+    omega1 -= omega;
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.Jacobi" )
@@ -529,7 +509,7 @@ void OpenMPDIAUtils::jacobi(
                 }
             }
 
-            solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
+            solution[i] = omega * ( temp / diag ) + omega1 * oldSolution[i];
         }
     }
 }

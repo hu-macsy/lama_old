@@ -513,6 +513,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor )
 {
     SCAI_REGION( "Storage.redistributeCSR" )
+
     const dmemo::Distribution& sourceDistribution = *redistributor.getSourceDistributionPtr();
     const dmemo::Distribution& targetDistribution = *redistributor.getTargetDistributionPtr();
     SCAI_LOG_INFO( logger,
@@ -1185,6 +1186,8 @@ void CSRStorage<ValueType>::assign( const _MatrixStorage& other )
 template<typename ValueType>
 void CSRStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& other )
 {
+    SCAI_REGION( "Storage.CSR.assignTranspose" )
+
     SCAI_LOG_INFO( logger, *this << ": (CSR) assign transpose " << other )
 
     // pass HArrays of this storage to build the values in it
