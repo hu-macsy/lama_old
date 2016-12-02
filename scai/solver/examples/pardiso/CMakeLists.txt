@@ -34,7 +34,7 @@
 
 include ( Package/SCAI_BLAS )
 
-if    ( SCAI_BLAS_NAME MATCHES "MKL" )
+if    ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )
 
 	include_directories ( ${SCAI_SCAI_BLAS_INCLUDE_DIR} )
 
@@ -61,4 +61,4 @@ if    ( SCAI_BLAS_NAME MATCHES "MKL" )
 	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
 	          RENAME      Makefile  )
 
-endif ( SCAI_BLAS_NAME MATCHES "MKL" )
+endif ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )
