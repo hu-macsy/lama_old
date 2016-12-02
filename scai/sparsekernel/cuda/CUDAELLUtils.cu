@@ -286,7 +286,7 @@ void CUDAELLUtils::getRow(
     dim3 dimGrid = makeGrid( rowNumColumns[0], dimBlock.x );
     //TODO: find better CUDA / Thrust implementation
     getRowKernel <<< dimGrid, dimBlock>>>( row, i, numRows, numColumns, rowNumColumns[0], ja, values );
-    cudaStreamSynchronize( 0 );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getRowKernel failed" ) ;
     SCAI_CHECK_CUDA_ERROR
 }
 
@@ -343,7 +343,7 @@ ValueType CUDAELLUtils::getValue(
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( rowNumColumns, dimBlock.x );
         getValueKernel <<< dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
-        cudaStreamSynchronize( 0 );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getValueKernel failed" );
         SCAI_CHECK_CUDA_ERROR
         return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
     }
@@ -439,7 +439,7 @@ void CUDAELLUtils::getCSRValues(
     //TODO: find better CUDA / Thrust implementation
     ell2csrKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows,
                                             ellSizes, ellJA, ellValues );
-    cudaStreamSynchronize( 0 );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "ell2csrKernel failed" );
     SCAI_CHECK_CUDA_ERROR
 }
 
@@ -1605,30 +1605,35 @@ void ell_compressValues_kernel(
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    IndexType gap = 0;
-
-    for ( IndexType j = 0; j < IA[i]; j++ )
+    if ( i < numRows )
     {
-        IndexType pos = j * numRows + i;
+        IndexType gap = 0;
 
-        if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
+        for ( IndexType j = 0; j < IA[i]; j++ )
         {
-            gap++;
-            continue;
+            IndexType pos = j * numRows + i;
+
+            // TODO: can we get rid of this if ?!
+            if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
+            {
+                gap++;
+            }
+            else
+            {
+                IndexType newpos = (j - gap) * numRows + i;
+                newValues[newpos] = values[pos];
+                newJA[newpos] = JA[pos];
+            }
         }
 
-        IndexType newpos = (j - gap) * numRows + i;
-        newValues[newpos] = values[pos];
-        newJA[newpos] = JA[pos];
-    }
+        // fill up to top
 
-    // fill up to top
-
-    for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
-    {
-        IndexType newpos = j * numRows + i;
-        newValues[newpos] = 0;
-        newJA[newpos] = 0;
+        for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+        {
+            IndexType newpos = j * numRows + i;
+            newValues[newpos] = 0;
+            newJA[newpos] = 0;
+        }
     }
 }
 
@@ -1645,7 +1650,7 @@ void CUDAELLUtils::compressValues(
     ValueType newValues[] )
 {
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
-                   << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
+                   << ", values per row (old/new) = " << numValuesPerRow << " / " << newNumValuesPerRow
                    << ") with eps = " << eps )
 
     SCAI_CHECK_CUDA_ACCESS
@@ -1658,6 +1663,8 @@ void CUDAELLUtils::compressValues(
                                                         newNumValuesPerRow, newJA, newValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
+
+    std::cout << "after kernel" << std::endl;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
