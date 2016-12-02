@@ -1454,11 +1454,8 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
     }
 }
 
-//BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types )
-BOOST_AUTO_TEST_CASE( compressTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types )
 {
-    typedef double ValueType;
-
     ContextPtr testContext = Context::getContextPtr();
     KernelTraitContextFunction<ELLKernelTrait::compressIA<ValueType> > compressIA;
     KernelTraitContextFunction<UtilKernelTrait::reduce<IndexType> > reduce;
@@ -1466,7 +1463,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
     ContextPtr loc = Context::getContextPtr( compressIA.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    // full test (ia and values) for
+    // full test (ia and ja/values) for
     // special case
     {
         ValueType valuesELLValues[] = { 1, 0, 0, 0, 0,

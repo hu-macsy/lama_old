@@ -2017,33 +2017,49 @@ void ell_compressValues_kernel(
 
     if ( i < numRows )
     {
-        IndexType gap = 0;
+        IndexType* gaps = new IndexType[numValuesPerRow];
+
+        for( IndexType j = 0; j < numValuesPerRow; ++j )
+        {
+            gaps[j] = 0;
+        }
 
         for ( IndexType j = 0; j < IA[i]; j++ )
         {
             IndexType pos = j * numRows + i;
 
-            // TODO: can we get rid of this if ?!
             if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
             {
-                gap++;
+                gaps[j] = 1;
             }
-            else
+        }
+
+        IndexType totalGaps = 0;
+        IndexType lastNewPos = -1;
+        for ( IndexType j = 0; j < IA[i]; j++ )
+        {
+            totalGaps += gaps[j];
+
+            IndexType pos    = j * numRows + i;
+            IndexType newpos = ( j - totalGaps ) * numRows + i;
+
+            if ( newpos != lastNewPos )
             {
-                IndexType newpos = (j - gap) * numRows + i;
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
+            lastNewPos = newpos;
         }
 
         // fill up to top
 
-        for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+        for (  IndexType j = IA[i] - totalGaps; j < newNumValuesPerRow; j++ )
         {
             IndexType newpos = j * numRows + i;
             newValues[newpos] = 0;
             newJA[newpos] = 0;
         }
+        delete gaps;
     }
 }
 
@@ -2073,8 +2089,6 @@ void CUDAELLUtils::compressValues(
                                                         newNumValuesPerRow, newJA, newValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
-
-    std::cout << "after kernel" << std::endl;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
