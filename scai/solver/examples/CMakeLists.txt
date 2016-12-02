@@ -37,12 +37,9 @@ add_subdirectory ( lecture )
 if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
     add_subdirectory ( myJacobi )
 endif ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
+add_subdirectory ( pardiso )
 add_subdirectory ( solver )
 add_subdirectory ( spy )
-
-## Pardiso example not stable enough but might be switched on by adding subdirectory
-
-# add_subdirectory ( pardiso )
 
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 

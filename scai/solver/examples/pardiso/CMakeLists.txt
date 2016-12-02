@@ -32,26 +32,33 @@
  # @date 02.12.2015
 ###
 
-foreach ( executable directSolver )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+include ( Package/SCAI_BLAS )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+if    ( SCAI_BLAS_NAME MATCHES "MKL" )
 
-## install examples
+	include_directories ( ${SCAI_SCAI_BLAS_INCLUDE_DIR} )
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/solver" )
+	foreach ( executable directSolver )
+	    add_executable( ${executable}.exe ${executable}.cpp )
+	    target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )
+	    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+	    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+	endforeach ( executable )
 
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
+	# configure make.inc for examples
+	include ( Functions/prepareExamplesMakeInc )
+	prepareExamplesMakeInc()
+	configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
+	configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
 
+	## install examples
+
+	set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/solver" )
+
+	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
+	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
+	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
+	          RENAME      Makefile  )
+
+endif ( SCAI_BLAS_NAME MATCHES "MKL" )
