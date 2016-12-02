@@ -53,7 +53,7 @@ if    ( SCAI_BLAS_NAME MATCHES "MKL" )
 
 	## install examples
 
-	set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/solver" )
+	set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/pardiso" )
 
 	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
 	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
