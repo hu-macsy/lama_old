@@ -951,17 +951,18 @@ template<typename ValueType>
 void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
 {
     SCAI_LOG_INFO( logger, "compress: eps = " << eps )
-    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
-    static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+
     ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    compressIA.getSupportedContext( loc, compressValues );
+    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+    compressIA.getSupportedContext( loc, reduce );
 
     IndexType newNumValuesPerRow = -1;
 
     LArray<IndexType> newIAArray;
     {
+        SCAI_CONTEXT_ACCESS( loc )
+
         ReadAccess<IndexType> IA( mIA, loc );
         ReadAccess<IndexType> JA( mJA, loc );
         ReadAccess<ValueType> values( mValues, loc );
@@ -975,6 +976,11 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
     // Do further steps, if new array could be smaller
     if ( newNumValuesPerRow < mNumValuesPerRow )
     {
+        static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
+        compressValues.getSupportedContext( loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
         // 3. Step: Allocate new JA and Values array
         LArray<ValueType> newValuesArray;
         LArray<IndexType> newJAArray;

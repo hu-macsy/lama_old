@@ -2023,6 +2023,7 @@ void ell_compressValues_kernel(
         {
             IndexType pos = j * numRows + i;
 
+            // TODO: can we get rid of this if ?!
             if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
             {
                 gap++;
