@@ -285,7 +285,7 @@ void CUDAELLUtils::getRow(
     dim3 dimGrid = makeGrid( rowNumColumns[0], dimBlock.x );
     //TODO: find better CUDA / Thrust implementation
     getRowKernel <<< dimGrid, dimBlock>>>( row, i, numRows, numColumns, rowNumColumns[0], ja, values );
-    cudaStreamSynchronize( 0 );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getRowKernel failed" ) ;
     SCAI_CHECK_CUDA_ERROR
 }
 
@@ -342,7 +342,7 @@ ValueType CUDAELLUtils::getValue(
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( rowNumColumns, dimBlock.x );
         getValueKernel <<< dimGrid, dimBlock>>>( i, j, numRows, rowNumColumns, ja, values, resultRawPtr );
-        cudaStreamSynchronize( 0 );
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "getValueKernel failed" );
         SCAI_CHECK_CUDA_ERROR
         return thrust::reduce( resultPtr, resultPtr + rowNumColumns );
     }
@@ -438,7 +438,7 @@ void CUDAELLUtils::getCSRValues(
     //TODO: find better CUDA / Thrust implementation
     ell2csrKernel <<< dimGrid, dimBlock>>>( csrJA, csrValues, csrIA, numRows,
                                             ellSizes, ellJA, ellValues );
-    cudaStreamSynchronize( 0 );
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "ell2csrKernel failed" );
     SCAI_CHECK_CUDA_ERROR
 }
 
