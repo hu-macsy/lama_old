@@ -183,10 +183,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
         const IndexType numColumns = 3;
         const IndexType numValuesPerRow = 2;
         const IndexType numValues = numRows * numValuesPerRow;
-        const IndexType ia[] =
-        { 1, 1, 2 };
-        const IndexType ja[] =
-        { 0, 1, 2, 0, 0, 2 };
+        const IndexType ia[] = { 1, 1, 2 };
+        const IndexType ja[] = { 0, 1, 2, 0, 0, 2 };
         // just make sure that ia and ja have correct sizes
         BOOST_REQUIRE_EQUAL( numRows, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
@@ -240,6 +238,68 @@ BOOST_AUTO_TEST_CASE( ELLCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
     copyStorageTest<ELLStorage<ValueType> >();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numValuesPerRow = 2;
+    const IndexType realValues = 4;
+    const IndexType storedValues = numRows * numValuesPerRow;
+
+    /*   matrix:       saved values   saved columns   ia
+
+          1  -   -     1 0            0 0             1
+          -  1   -     1 0            1 0             1
+          -  0   1     0 1            1 2             2
+     */
+
+    const IndexType ia[]     = { 1, 1, 2 };
+    const IndexType ja[]     = { 0, 1, 1, 0, 0, 2 };
+    const ValueType values[] = { 1, 1, 0, 0, 0, 1 };
+
+    LArray<IndexType> ellIA( numRows, ia );
+    LArray<IndexType> ellJA( storedValues, ja );
+    LArray<ValueType> ellValues( storedValues, values );
+
+    ELLStorage<ValueType> ell( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+    ell.setContextPtr( context );
+
+    BOOST_CHECK_EQUAL( realValues, ell.getNumValues() );
+
+    ell.compress();
+    // one zero element (not diagonal) is removed by compress
+    BOOST_CHECK_EQUAL( realValues - 1, ell.getNumValues() );
+
+    const IndexType expected_ia[]     = { 1, 1, 1 };
+    const IndexType expected_ja[]     = { 0, 1, 2 };
+    const IndexType expected_values[] = { 1, 1, 1 };
+
+    LArray<IndexType> compressedIA     = ell.getIA();
+    LArray<IndexType> compressedJA     = ell.getJA();
+    LArray<ValueType> compressedValues = ell.getValues();
+
+    ReadAccess<IndexType> rIA ( compressedIA );
+    ReadAccess<IndexType> rJA ( compressedJA );
+    ReadAccess<ValueType> rValues ( compressedValues );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        BOOST_CHECK_EQUAL( rIA[i], expected_ia[i] );
+    }
+
+    for( IndexType i = 0; i < realValues - 1; ++i )
+    {
+        BOOST_CHECK_EQUAL( rJA[i], expected_ja[i] );
+        BOOST_CHECK_EQUAL( rValues[i], expected_values[i] );
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
