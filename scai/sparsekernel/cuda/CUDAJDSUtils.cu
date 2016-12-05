@@ -49,6 +49,7 @@
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
@@ -1711,399 +1712,38 @@ void CUDAJDSUtils::normalGEMV(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, bool useTexture, bool useSharedMem>
+template<typename ValueType>
 __global__
-void normal_gevm_kernel(
-    ValueType* const result_d,
-    const ValueType* x_d,
-    const ValueType* y_d,
+void gevm_kernel(
+    ValueType result[],
+    const ValueType x[],
     const ValueType alpha,
-    const ValueType beta,
-    const ValueType* const jdsValues,
-    const IndexType* const jdsDLG,
-    const IndexType* const jdsILG,
-    const IndexType* jdsJA,
-    const IndexType* jdsPerm,
-    IndexType numColumns,
+    const ValueType jdsValues[],
+    const IndexType jdsDLG[],
+    const IndexType jdsILG[],
+    const IndexType jdsJA[],
+    const IndexType jdsPerm[],
+    const IndexType numRows,
     const IndexType ndlg )
 {
-    extern __shared__ IndexType dlg[];
-    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
+    const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( useSharedMem )
+    if ( ii < numRows )
     {
-        int k = threadIdx.x;
+        IndexType i  = jdsPerm[ii];  // original row in matrix
+        ValueType xi = x[i];         // same value used for all updates
 
-        while ( k < ndlg )
+        IndexType pos = ii;               // position in jdsJA, jdsValues
+        IndexType ni  = jdsILG[ii];        // number entries in row
+
+        for ( IndexType jj = 0; jj < ni; ++jj )
         {
-            dlg[k] = jdsDLG[k];
-            k += blockDim.x;
-        }
+            IndexType j = jdsJA[pos];
+            ValueType v = alpha * jdsValues[pos] * xi;
 
-        __syncthreads();
-    }
+            common::CUDAUtils::atomicAdd( &result[j], v );
 
-    if ( k < numColumns )
-    {
-        if ( ndlg > 0 )
-        {
-            ValueType value = 0.0;
-            ValueType summand = 0.0;
-
-            if ( beta != 0.0 )
-            {
-                summand = beta * y_d[k];
-            }
-
-            int nonEmptyRows = jdsDLG[0];
-
-            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
-            {
-                IndexType i = jdsPerm[ii]; // row in matrix
-                int off = ii;// position in jdsJA, jdsValues
-                int ni = jdsILG[ii];// number entries in row
-
-                for ( int jj = 0; jj < ni; ++jj )
-                {
-                    IndexType j = jdsJA[off];
-
-                    if ( j == k )
-                    {
-                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                    }
-
-                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-                }
-            }
-
-            result_d[k] = alpha * value + summand;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__
-void normal_gevm_kernel_alpha_one_beta_one(
-    ValueType* const result_d,
-    const ValueType* x_d,
-    const ValueType* y_d,
-    const ValueType* const jdsValues,
-    const IndexType* const jdsDLG,
-    const IndexType* const jdsILG,
-    const IndexType* jdsJA,
-    const IndexType* jdsPerm,
-    IndexType numColumns,
-    const IndexType ndlg )
-{
-    extern __shared__ IndexType dlg[];
-    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( useSharedMem )
-    {
-        int k = threadIdx.x;
-
-        while ( k < ndlg )
-        {
-            dlg[k] = jdsDLG[k];
-            k += blockDim.x;
-        }
-
-        __syncthreads();
-    }
-
-    if ( k < numColumns )
-    {
-        if ( ndlg > 0 )
-        {
-            ValueType value = 0.0;
-            ValueType summand = y_d[k];
-            int nonEmptyRows = jdsDLG[0];
-
-            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
-            {
-                IndexType i = jdsPerm[ii]; // row in matrix
-                int off = ii;// position in jdsJA, jdsValues
-                int ni = jdsILG[ii];// number entries in row
-
-                for ( int jj = 0; jj < ni; ++jj )
-                {
-                    IndexType j = jdsJA[off];
-
-                    if ( j == k )
-                    {
-                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                    }
-
-                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-                }
-            }
-
-            result_d[k] = value + summand;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__
-void normal_gevm_kernel_alpha_one_beta_zero(
-    ValueType* const result_d,
-    const ValueType* x_d,
-    const ValueType* y_d,
-    const ValueType* const jdsValues,
-    const IndexType* const jdsDLG,
-    const IndexType* const jdsILG,
-    const IndexType* jdsJA,
-    const IndexType* jdsPerm,
-    IndexType numColumns,
-    const IndexType ndlg )
-{
-    extern __shared__ IndexType dlg[];
-    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( useSharedMem )
-    {
-        int k = threadIdx.x;
-
-        while ( k < ndlg )
-        {
-            dlg[k] = jdsDLG[k];
-            k += blockDim.x;
-        }
-
-        __syncthreads();
-    }
-
-    if ( k < numColumns )
-    {
-        if ( ndlg > 0 )
-        {
-            ValueType value = 0.0;
-            int nonEmptyRows = jdsDLG[0];
-
-            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
-            {
-                IndexType i = jdsPerm[ii]; // row in matrix
-                int off = ii;// position in jdsJA, jdsValues
-                int ni = jdsILG[ii];// number entries in row
-
-                for ( int jj = 0; jj < ni; ++jj )
-                {
-                    IndexType j = jdsJA[off];
-
-                    if ( j == k )
-                    {
-                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                    }
-
-                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-                }
-            }
-
-            result_d[k] = value;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__
-void normal_gevm_kernel_alpha_one(
-    ValueType* const result_d,
-    const ValueType* x_d,
-    const ValueType* y_d,
-    const ValueType beta,
-    const ValueType* const jdsValues,
-    const IndexType* const jdsDLG,
-    const IndexType* const jdsILG,
-    const IndexType* jdsJA,
-    const IndexType* jdsPerm,
-    IndexType numColumns,
-    const IndexType ndlg )
-{
-    extern __shared__ IndexType dlg[];
-    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( useSharedMem )
-    {
-        int k = threadIdx.x;
-
-        while ( k < ndlg )
-        {
-            dlg[k] = jdsDLG[k];
-            k += blockDim.x;
-        }
-
-        __syncthreads();
-    }
-
-    if ( k < numColumns )
-    {
-        if ( ndlg > 0 )
-        {
-            ValueType value = 0.0;
-            ValueType summand = 0.0;
-
-            if ( beta != 0.0 )
-            {
-                summand = beta * y_d[k];
-            }
-
-            int nonEmptyRows = jdsDLG[0];
-
-            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
-            {
-                IndexType i = jdsPerm[ii]; // row in matrix
-                int off = ii;// position in jdsJA, jdsValues
-                int ni = jdsILG[ii];// number entries in row
-
-                for ( int jj = 0; jj < ni; ++jj )
-                {
-                    IndexType j = jdsJA[off];
-
-                    if ( j == k )
-                    {
-                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                    }
-
-                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-                }
-            }
-
-            result_d[k] = value + summand;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__
-void normal_gevm_kernel_beta_one(
-    ValueType* const result_d,
-    const ValueType* x_d,
-    const ValueType* y_d,
-    const ValueType alpha,
-    const ValueType* const jdsValues,
-    const IndexType* const jdsDLG,
-    const IndexType* const jdsILG,
-    const IndexType* jdsJA,
-    const IndexType* jdsPerm,
-    IndexType numColumns,
-    const IndexType ndlg )
-{
-    extern __shared__ IndexType dlg[];
-    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( useSharedMem )
-    {
-        int k = threadIdx.x;
-
-        while ( k < ndlg )
-        {
-            dlg[k] = jdsDLG[k];
-            k += blockDim.x;
-        }
-
-        __syncthreads();
-    }
-
-    if ( k < numColumns )
-    {
-        if ( ndlg > 0 )
-        {
-            ValueType value = 0.0;
-            ValueType summand = y_d[k];
-            int nonEmptyRows = jdsDLG[0];
-
-            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
-            {
-                IndexType i = jdsPerm[ii]; // row in matrix
-                int off = ii;// position in jdsJA, jdsValues
-                int ni = jdsILG[ii];// number entries in row
-
-                for ( int jj = 0; jj < ni; ++jj )
-                {
-                    IndexType j = jdsJA[off];
-
-                    if ( j == k )
-                    {
-                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                    }
-
-                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-                }
-            }
-
-            result_d[k] = alpha * value + summand;
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType, bool useTexture, bool useSharedMem>
-__global__
-void normal_gevm_kernel_beta_zero(
-    ValueType* const result_d,
-    const ValueType* x_d,
-    const ValueType* y_d,
-    const ValueType alpha,
-    const ValueType* const jdsValues,
-    const IndexType* const jdsDLG,
-    const IndexType* const jdsILG,
-    const IndexType* jdsJA,
-    const IndexType* jdsPerm,
-    IndexType numColumns,
-    const IndexType ndlg )
-{
-    extern __shared__ IndexType dlg[];
-    const IndexType k = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( useSharedMem )
-    {
-        int k = threadIdx.x;
-
-        while ( k < ndlg )
-        {
-            dlg[k] = jdsDLG[k];
-            k += blockDim.x;
-        }
-
-        __syncthreads();
-    }
-
-    if ( k < numColumns )
-    {
-        if ( ndlg > 0 )
-        {
-            ValueType value = 0.0;
-            int nonEmptyRows = jdsDLG[0];
-
-            for ( int ii = 0; ii < nonEmptyRows; ++ii ) // through the rows of the first diagonal
-            {
-                IndexType i = jdsPerm[ii]; // row in matrix
-                int off = ii;// position in jdsJA, jdsValues
-                int ni = jdsILG[ii];// number entries in row
-
-                for ( int jj = 0; jj < ni; ++jj )
-                {
-                    IndexType j = jdsJA[off];
-
-                    if ( j == k )
-                    {
-                        value += jdsValues[off] * fetchVectorX<ValueType, useTexture>( x_d, i );
-                    }
-
-                    off += fetch_JDSdlg<useTexture, useSharedMem>( jdsDLG, dlg, jj );
-                }
-            }
-
-            result_d[k] = alpha * value;
+            pos += jdsDLG[jj];
         }
     }
 }
@@ -2125,257 +1765,53 @@ void CUDAJDSUtils::normalGEVM(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
-    /* ToDo: This optimization calls a wrong kernel, so do not do it
+    SCAI_REGION( "CUDA.JDS.normalGEVM" )
 
-    if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
+    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
+                   << " result[ " << numColumns << "] = " << alpha
+                   << " * x [ " << " - " << "]"
+                   << " * A(jds)[" << " - " << " x " << numColumns << ", #ndiags = " << ndlg << "]"
+                   << " + " << beta << " * y [" << numColumns << "]" )
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    cudaStream_t stream = 0; // default stream if no SyncToken is available
+
+    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+
+    // result = alpha * x * A + beta * y -> result = beta * y; result += alpha * x * A
+
+    CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+
+    if ( ndlg == 0 )
     {
-        // result = alpha * A * x + beta * y ->  result += alpha * A * x
-
-        sparseGEVM( result, alpha, x, numColumns, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues );
-
         return;
     }
 
-    */
-    SCAI_REGION( "CUDA.JDS.normalGEVM" )
-    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
-                   << " result[ " << numColumns << "] = " << alpha
-                   << " * A( #jds_diags = " << ndlg << " ) * x + " << beta << " * y " )
-    SCAI_LOG_DEBUG( logger, "x = " << x << ", y = " << y << ", result = " << result )
-    const bool useTexture = CUDASettings::useTexture();
-    const bool useSharedMem = CUDASettings::useSharedMem();
-    const int blockSize = CUDASettings::getBlockSize( numColumns );
+    IndexType nonEmptyRows = 0;
+
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &nonEmptyRows, &jdsDLG[0], sizeof( IndexType ), cudaMemcpyDeviceToHost ) ,
+                       "dlg[0] for number of non-empty rows" )
+
+    const int blockSize = CUDASettings::getBlockSize( nonEmptyRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( numColumns, dimBlock.x );
-    SCAI_CHECK_CUDA_ACCESS
-    cudaStream_t stream = 0; // default stream if no SyncToken is available
-    SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
-                   << "> <<< blockSize = " << blockSize << ", stream = " << stream
-                   << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
-    CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
+    dim3 dimGrid = makeGrid( nonEmptyRows, dimBlock.x );
 
     if ( syncToken )
     {
         stream = syncToken->getCUDAStream();
     }
 
-    int sharedMemSize = 0;
+    SCAI_LOG_INFO( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id()
+                   << "> <<< blockSize = " << blockSize << ", stream = " << stream << ">>>" );
 
-    if ( useSharedMem )
+    gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>>
+            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, nonEmptyRows, ndlg );
+
+    if ( !syncToken )
     {
-        sharedMemSize = ndlg * sizeof( int );
-    }
-
-    if ( useTexture )
-    {
-        vectorBindTexture( x );
-
-        if ( useSharedMem )
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one_beta_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, jdsPerm, numColumns );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                scale_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, beta, jdsPerm, numColumns );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_beta_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_beta_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else
-            {
-                normal_gevm_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-        }
-        else // no sharedMem
-        {
-            vectorBindTexture( jdsDLG );
-
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one_beta_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_alpha_one_beta_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, jdsPerm, numColumns );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                scale_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, beta, jdsPerm, numColumns );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_beta_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_beta_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else
-            {
-                normal_gevm_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-        }
-
-        if ( !syncToken )
-        {
-            // synchronize here and unbind texture
-            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevmKernel FAILED" )
-            vectorUnbindTexture( x );
-
-            if ( !useSharedMem )
-            {
-                vectorUnbindTexture( jdsDLG );
-            }
-        }
-        else
-        {
-            // synchronize by syncToken, delay unbind texture
-            void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
-            void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
-
-            if ( !useSharedMem )
-            {
-                syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
-            }
-        }
-    }
-    else // no Texture cache
-    {
-        if ( useSharedMem )
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one_beta_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, jdsPerm, numColumns );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                scale_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, beta, jdsPerm, numColumns );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_beta_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_beta_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else
-            {
-                normal_gevm_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-        }
-        else // no sharedMem
-        {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one_beta_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_alpha_one_beta_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
-            {
-                assign_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, jdsPerm, numColumns );
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_alpha_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( alpha == scai::common::constants::ZERO )
-            {
-                scale_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, y, beta, jdsPerm, numColumns );
-            }
-            else if ( beta == scai::common::constants::ONE )
-            {
-                normal_gevm_kernel_beta_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else if ( beta == scai::common::constants::ZERO )
-            {
-                normal_gevm_kernel_beta_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-            else
-            {
-                normal_gevm_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
-                ( result, x, y, alpha, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numColumns, ndlg );
-            }
-        }
-
-        if ( !syncToken )
-        {
-            SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: normal_gevm_kernel FAILED" )
-        }
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "JDS: gevm_kernel FAILED" )
     }
 }
 

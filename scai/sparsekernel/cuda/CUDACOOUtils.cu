@@ -52,6 +52,7 @@
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -76,63 +77,6 @@ SCAI_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-__device__ inline void cooAtomicAdd( double* address, double val )
-{
-    unsigned long long int* address_as_ull =
-        ( unsigned long long int* ) address;
-    unsigned long long int old = *address_as_ull, assumed;
-
-    do
-    {
-        assumed = old;
-        old = atomicCAS( address_as_ull, assumed,
-                         __double_as_longlong( val +
-                                               __longlong_as_double( assumed ) ) );
-    }
-    while ( assumed != old );
-}
-
-__device__ inline void cooAtomicAdd( float* address, float val )
-
-{
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
-    // CUDA runtime offers faster solution for capability >= 2.0
-    atomicAdd( address, val );
-#else
-    // old slow solution
-    int i_val = __float_as_int( val );
-    int tmp0 = 0;
-    int tmp1;
-
-    while ( ( tmp1 = atomicCAS( ( int* ) address, tmp0, i_val ) ) != tmp0 )
-    {
-        tmp0 = tmp1;
-        i_val = __float_as_int( val + __int_as_float( tmp1 ) );
-    }
-
-#endif
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-__device__ inline void cooAtomicAdd( ComplexFloat* address, ComplexFloat val )
-{
-    float* faddress = ( float* ) address;
-    cooAtomicAdd( &faddress[0], val.real() );
-    cooAtomicAdd( &faddress[1], val.imag() );
-}
-
-__device__ inline void cooAtomicAdd( ComplexDouble* address, ComplexDouble val )
-{
-    double* daddress = ( double* ) address;
-    cooAtomicAdd( &daddress[0], val.real() );
-    cooAtomicAdd( &daddress[1], val.imag() );
-}
-
-#endif
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType, bool useTexture>
 __global__ void cooGemvKernel(
     ValueType* result,
@@ -152,7 +96,7 @@ __global__ void cooGemvKernel(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
         // atomic add required, solution above
-        cooAtomicAdd( &result[i], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
     }
 }
 
@@ -176,7 +120,7 @@ __global__ void cooGemvKernel_alpha_one(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
         // atomic add required, solution above
-        cooAtomicAdd( &result[i], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
     }
 }
 
@@ -201,7 +145,7 @@ __global__ void cooGevmKernel(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
         // atomic add required, solution above
-        cooAtomicAdd( &result[j], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[j], resultUpdate );
     }
 }
 
@@ -225,7 +169,7 @@ __global__ void cooGevmKernel_alpha_one(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
         // atomic add required, solution above
-        cooAtomicAdd( &result[j], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[j], resultUpdate );
     }
 }
 

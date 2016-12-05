@@ -58,15 +58,28 @@ namespace common
 
 struct CUDAUtils
 {
+    // atomic compare and swap
+
     static __inline__ __device__ int atomicCAS( int* address, int compare, int val );
     static __inline__ __device__ unsigned int atomicCAS( unsigned int* address, unsigned int compare, unsigned int val );
     static __inline__ __device__ long atomicCAS( long* address, long compare, long val );
     static __inline__ __device__ unsigned long atomicCAS( unsigned long* address, unsigned long compare, unsigned long val );
 
+    // atomic add
+
     static __inline__ __device__ int atomicAdd( int* address, int val );
     static __inline__ __device__ unsigned int atomicAdd( unsigned int* address, unsigned int val );
     static __inline__ __device__ long atomicAdd( long* address, long val );
     static __inline__ __device__ unsigned long atomicAdd( unsigned long* address, unsigned long val );
+
+    static __inline__ __device__ void atomicAdd( float* address, float val );
+    static __inline__ __device__ void atomicAdd( double* address, double val );
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+    static __inline__ __device__ void atomicAdd( ComplexFloat* address, ComplexFloat val );
+    static __inline__ __device__ void atomicAdd( ComplexDouble* address, ComplexDouble val );
+#endif
+
 };
 
 // -------------------------------- atomicCAS --------------------------------------
@@ -136,6 +149,62 @@ __device__ long CUDAUtils::atomicAdd( long* address, long val )
 
     return __ullAtomicAdd( t_address, *ptrVal );
 }
+
+__device__ void CUDAUtils::atomicAdd( double* address, double val )
+{
+    unsigned long long int* address_as_ull =
+                              (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = __ullAtomicCAS( address_as_ull, 
+                              assumed,
+                              __double_as_longlong(val + __longlong_as_double( assumed ) ) );
+
+        // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+
+    } while ( assumed != old );
+}
+
+__device__ void CUDAUtils::atomicAdd( float* address, float val )
+
+{
+#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
+    // CUDA runtime offers faster solution for capability >= 2.0
+    ::atomicAdd( address, val );
+#else
+    // old slow solution
+    int i_val = __float_as_int( val );
+    int tmp0 = 0;
+    int tmp1;
+
+    while ( ( tmp1 = atomicCAS( ( int* ) address, tmp0, i_val ) ) != tmp0 )
+    {
+        tmp0 = tmp1;
+        i_val = __float_as_int( val + __int_as_float( tmp1 ) );
+    }
+
+#endif
+}
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+__device__ void CUDAUtils::atomicAdd( ComplexFloat* address, ComplexFloat val )
+{
+    float* faddress = ( float* ) address;
+    atomicAdd( &faddress[0], val.real() );
+    atomicAdd( &faddress[1], val.imag() );
+}
+
+__device__ void CUDAUtils::atomicAdd( ComplexDouble* address, ComplexDouble val )
+{
+    double* daddress = ( double* ) address;
+    atomicAdd( &daddress[0], val.real() );
+    atomicAdd( &daddress[1], val.imag() );
+}
+
+#endif
 
 } /* end namespace common */
 
