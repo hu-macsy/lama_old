@@ -1474,7 +1474,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types 
 
         ValueType expectedELLValues[] = { 1, 1, 1, 1, 1 };
         IndexType expectedELLJa[]     = { 0, 1, 2, 3, 4 };
-        ValueType expectedELLIa[]     = { 1, 1, 1, 1, 1 };
+        IndexType expectedELLIa[]     = { 1, 1, 1, 1, 1 };
 
         const IndexType numRows = sizeof( valuesELLIa ) / sizeof( IndexType ); // 5
         const ValueType eps = 0.01;
