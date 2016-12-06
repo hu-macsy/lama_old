@@ -37,6 +37,7 @@
 
 // others
 #include <scai/sparsekernel/ELLKernelTrait.hpp>
+#include <scai/sparsekernel/openmp/OpenMPELLUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/kregistry.hpp>
 #include <scai/hmemo.hpp>
@@ -1221,8 +1222,9 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( matrixAddTest )
 {
+    typedef double ValueType;
     ContextPtr testContext = ContextFix::testContext;
     KernelTraitContextFunction<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
     ContextPtr loc = Context::getContextPtr( matrixAdd.validContext( testContext->getType() ) );
@@ -1287,7 +1289,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_numeric_test_types
             matrixAdd[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
                                        alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
                                        rBValues.get(), bNumValuesPerRow );
+
         }
+
+        // sort the columns, otherwise comparison might fail
+    
+        {
+            ReadAccess<IndexType> rCIA( CIa );
+            WriteAccess<IndexType> wCJA( CJa );
+            WriteAccess<ValueType> wCValues( CValues );
+    
+            OpenMPELLUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), cNumRows, cNumValuesPerRow, false );
+        }
+
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
 
@@ -1360,7 +1374,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixAddTest, ValueType, scai_numeric_test_types
             matrixAdd[loc->getType()]( wCJa.get(), wCValues.get(), rCIa.get(), cNumValuesPerRow, aNumRows, numColumns, diagonalProperty,
                                        alpha, rAIa.get(), rAJa.get(), rAValues.get(), aNumValuesPerRow, beta, rBIa.get(), rBJa.get(),
                                        rBValues.get(), bNumValuesPerRow );
+
         }
+        // sort the columns, otherwise comparison might fail
+    
+        {
+            ReadAccess<IndexType> rCIA( CIa );
+            WriteAccess<IndexType> wCJA( CJa );
+            WriteAccess<ValueType> wCValues( CValues );
+    
+            OpenMPELLUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), cNumRows, cNumValuesPerRow, false );
+        }
+
         ReadAccess<ValueType> rCValues( CValues );
         ReadAccess<IndexType> rCJa( CJa );
 
