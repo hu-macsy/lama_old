@@ -1736,6 +1736,53 @@ ValueType ELLStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void ELLStorage<ValueType>::matrixPlusMatrix(
+    const ValueType alpha,
+    const MatrixStorage<ValueType>& a,
+    const ValueType beta,
+    const MatrixStorage<ValueType>& b )
+{
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", with A = " << a << ", B = " << b )
+    SCAI_REGION( "Storage.ELL.plusMatrix" )
+    // a and b have to be ELL storages, otherwise create temporaries.
+    const ELLStorage<ValueType>* ellA = NULL;
+    const ELLStorage<ValueType>* ellB = NULL;
+    // Define shared pointers in case we need temporaries
+    common::shared_ptr<ELLStorage<ValueType> > tmpA;
+    common::shared_ptr<ELLStorage<ValueType> > tmpB;
+
+    if ( a.getFormat() == Format::ELL )
+    {
+        ellA = dynamic_cast<const ELLStorage<ValueType>*>( &a );
+        SCAI_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( a << ": will be converted to ELL for matrix add" )
+        tmpA = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( a ) );
+        ellA = tmpA.get();
+    }
+
+    if ( b.getFormat() == Format::ELL )
+    {
+        ellB = dynamic_cast<const ELLStorage<ValueType>*>( &b );
+        SCAI_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( b << ": will be converted to ELL for matrix add" )
+        tmpB = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( b ) );
+        ellB = tmpB.get();
+    }
+
+    ContextPtr loc = this->getContextPtr(); // preferred location for matrix add
+
+    matrixAddMatrixELL( alpha, *ellA, beta, *ellB );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesMatrix(
     const ValueType alpha,
     const MatrixStorage<ValueType>& a,
@@ -1750,8 +1797,8 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     const ELLStorage<ValueType>* ellA = NULL;
     const ELLStorage<ValueType>* ellB = NULL;
     const ELLStorage<ValueType>* ellC = NULL;
-    //    common::shared_ptr<CSRStorage<ValueType> > tmpA;
-    //    common::shared_ptr<CSRStorage<ValueType> > tmpB;
+    //    common::shared_ptr<ELLStorage<ValueType> > tmpA;
+    //    common::shared_ptr<ELLStorage<ValueType> > tmpB;
     common::shared_ptr<ELLStorage<ValueType> > tmpC;
 
     if ( a.getFormat() == Format::ELL )
@@ -1776,7 +1823,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
 
     if ( ellA == NULL || ellB == NULL )
     {
-        // input matrices not ELL format, so try via CSR
+        // input matrices not ELL format, so try via ELL
         MatrixStorage<ValueType>::matrixTimesMatrix( alpha, a, b, beta, c );
         return;
     }
