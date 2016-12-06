@@ -1,6 +1,6 @@
 # Note: Java_FOUND not set by some versions, so ask for JAVAC executable
 
-if ( Java_JAVAC_EXECUTABLE )
+if ( Java_JAVAC_EXECUTABLE AND USE_JAVA )
 
 	include( UseJava )
 	
@@ -40,4 +40,4 @@ if ( Java_JAVAC_EXECUTABLE )
 	         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ
 	         DESTINATION bin )
 
-endif ( Java_JAVAC_EXECUTABLE )
+endif ( Java_JAVAC_EXECUTABLE AND USE_JAVA )
