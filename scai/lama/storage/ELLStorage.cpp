@@ -1868,10 +1868,23 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
 {
     SCAI_LOG_INFO( logger,
                    *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+
+        ELLStorage<ValueType> tmp;
+        tmp.matrixTimesMatrixELL( alpha, a, b );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
     static LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
+
     ContextPtr loc = Context::getHostPtr();  // not yet available on other devices
+  
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
     SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
@@ -1913,6 +1926,17 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 {
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+        ELLStorage<ValueType> tmp;
+        tmp.setContextPtr( this->getContextPtr() );
+        tmp.matrixAddMatrixELL( alpha, a, beta, b );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
     static LAMAKernel<ELLKernelTrait::matrixAddSizes> matrixAddSizes;
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
