@@ -1290,16 +1290,22 @@ void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, c
 
     // find the owner and local column index of col
 
+    PartitionId owner         = 0;
+    IndexType   localColIndex = colIndex;
+
     const Distribution& colDist = getColDistribution();
 
-    ReadAccess<IndexType> rOwners( mOwners );
+    if ( !colDist.isReplicated() )
+    {
+        ReadAccess<IndexType> rOwners( mOwners );
+        owner = rOwners[ colIndex ];
+        localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+    }
 
-    PartitionId owner = rOwners[ colIndex ];
-
-    IndexType localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+    SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
 
     SCAI_LOG_INFO( logger, "getLocalColumn( " << colIndex << " ) : owner = " << owner 
-                           << ", local col = " << localColIndex  << ", mData = " << *mData[owner] )
+                           << ", local col = " << localColIndex << ", mData = " << *mData[owner] )
 
     mData[owner]->getColumnImpl( column, localColIndex );
 }
@@ -1316,13 +1322,19 @@ void DenseMatrix<ValueType>::setLocalColumn(
 
     // find the owner and local column index of col
     
+    PartitionId owner         = 0;
+    IndexType   localColIndex = colIndex;
+
     const Distribution& colDist = getColDistribution();
-    
-    ReadAccess<IndexType> rOwners( mOwners );
 
-    PartitionId owner = rOwners[ colIndex ];
+    if ( !colDist.isReplicated() )
+    {
+        ReadAccess<IndexType> rOwners( mOwners );
+        owner = rOwners[ colIndex ];
+        localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+    }
 
-    IndexType localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+    SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
 
     SCAI_LOG_INFO( logger, "setLocalColumn( " << colIndex << " ) : owner = " << owner 
                            << ", local col = " << localColIndex  << ", mData = " << *mData[owner] )
