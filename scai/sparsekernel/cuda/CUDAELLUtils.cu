@@ -1027,12 +1027,13 @@ void sparse_gevm_kernel(
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[],
+    const IndexType numRows,
     const IndexType rowIndexes[],
-    IndexType numRows )
+    IndexType numNonZeroRows )
 {
     const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
-    if ( ii < numRows )
+    if ( ii < numNonZeroRows )
     {
         IndexType i   = rowIndexes[ii];
         ValueType xi  = x[i];
@@ -1064,7 +1065,7 @@ void CUDAELLUtils::normalGEVM(
     const IndexType ellJA[],
     const ValueType ellValues[] )
 {
-    SCAI_REGION( "CUDA.ELLUtils.normalGEMV" )
+    SCAI_REGION( "CUDA.ELL.normalGEVM" )
 
     SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numColumns << "] = " << alpha
@@ -1290,6 +1291,8 @@ void CUDAELLUtils::sparseGEVM(
     const IndexType ellJA[],
     const ValueType ellValues[] )
 {
+    SCAI_REGION( "CUDA.ELL.sparseGEVM" )
+
     SCAI_LOG_INFO( logger,
                    "sparseGEVM<" << TypeTraits<ValueType>::id() << ">" << ", #non-zero rows = " << numNonZeroRows )
     SCAI_CHECK_CUDA_ACCESS
@@ -1306,7 +1309,7 @@ void CUDAELLUtils::sparseGEVM(
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     sparse_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
-        ( result, x, alpha, ellSizes, ellJA, ellValues, rowIndexes, numNonZeroRows );
+        ( result, x, alpha, ellSizes, ellJA, ellValues, numRows, rowIndexes, numNonZeroRows );
 
     if ( !syncToken )
     {
