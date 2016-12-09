@@ -2163,22 +2163,16 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         }
     }
 
-    // now we have in any case all arguments as CSR Storage
-    ContextPtr loc = Context::getHostPtr();
+    ContextPtr loc = this->getContextPtr();
 
-    if ( a.getContextPtr()->getType() == b.getContextPtr()->getType() )
-    {
-        loc = a.getContextPtr();
-    }
-
-    ContextPtr saveContext = getContextPtr();
     CSRStorage<ValueType> tmp1;
-    tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
     tmp1.setContextPtr( loc );
+    tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
 
     if ( beta != common::constants::ZERO )
     {
         CSRStorage<ValueType> tmp2;
+        tmp2.setContextPtr( loc );
         tmp2.matrixAddMatrixCSR( static_cast<ValueType>( 1.0 ), tmp1, beta, *csrC, loc );
         swap( tmp2 );
     }
@@ -2186,8 +2180,6 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     {
         swap( tmp1 );
     }
-
-    this->setContextPtr( saveContext );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2202,21 +2194,23 @@ void CSRStorage<ValueType>::matrixAddMatrixCSR(
 {
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are CSR" )
-//    // TODO: just temporary, MAKE loc const again!
-//    loc = Context::getContextPtr( Context::Host );
-    static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
-    static LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
-    ContextPtr loc = preferedLoc;
-    matrixAdd.getSupportedContext( loc, matrixAddSizes );
 
     if ( &a == this || &b == this )
     {
         // due to alias we would get problems with Write/Read access, so use a temporary
         CSRStorage<ValueType> tmp;
-        tmp.matrixAddMatrixCSR( alpha, a, beta, b, loc );
+        tmp.setContextPtr( preferedLoc );
+        tmp.matrixAddMatrixCSR( alpha, a, beta, b, preferedLoc );
         swap( tmp ); // safe as tmp will be destroyed afterwards
         return;
     }
+
+    static LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
+    static LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
+
+    ContextPtr loc = preferedLoc;
+
+    matrixAdd.getSupportedContext( loc, matrixAddSizes );
 
     SCAI_REGION( "Storage.CSR.addMatrixCSR" )
     allocate( a.getNumRows(), a.getNumColumns() );
@@ -2265,8 +2259,10 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     const CSRStorage<ValueType>& b,
     const ContextPtr preferedLoc )
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are CSR" << ", Context = " << preferedLoc->getType() )
+    SCAI_LOG_INFO( logger, *this << ": = " << alpha << " * A * B"
+                           << ", with A = " << a << ", B = " << b 
+                           << ", all are CSR" << ", Context = " << *preferedLoc )
+
     // get availabe implementations of needed kernel routines
     static LAMAKernel<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
     static LAMAKernel<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
