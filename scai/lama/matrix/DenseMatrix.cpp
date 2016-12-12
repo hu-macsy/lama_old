@@ -90,17 +90,26 @@ void DenseMatrix<ValueType>::computeOwners()
 
     const Distribution& colDist = getColDistribution();
 
-    SCAI_LOG_DEBUG( logger, "computerOwners for col dist = " << colDist )
+    SCAI_LOG_INFO( logger, "computerOwners for col dist = " << colDist )
 
     // Note: colDist.globalSize() == mNumColumns 
 
-    HArray<IndexType> indexes;   // will contain all column indexes to get all owners
+    if ( colDist.isReplicated() )
+    {
+        IndexType owner = 0;
+        mOwners.resize( mNumColumns );
+        mOwners = owner;
+    }
+    else
+    {
+        HArray<IndexType> indexes;   // will contain all column indexes to get all owners
 
-    utilskernel::HArrayUtils::setOrder( indexes, mNumColumns );
+        utilskernel::HArrayUtils::setOrder( indexes, mNumColumns );
 
-    colDist.computeOwners( mOwners, indexes );
+        colDist.computeOwners( mOwners, indexes );
 
-    SCAI_ASSERT_EQ_DEBUG( mNumColumns, mOwners.size(), "Serious mismatch, probably due to wrong distribution" );
+        SCAI_ASSERT_EQ_DEBUG( mNumColumns, mOwners.size(), "Serious mismatch, probably due to wrong distribution" );
+    }
 }
 
 /* ========================================================================= */
@@ -110,28 +119,28 @@ void DenseMatrix<ValueType>::computeOwners()
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix()
 {
-    mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( 0, 0 ) );
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns )
-
-    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
-{
-    mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );
     computeOwners();
+    allocateData();      // will initialize it with zero
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
-    :
+DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns ) : 
+
+    CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
+
+{
+    computeOwners();
+    allocateData();      // will initialize it with zero
+}
+
+template<typename ValueType>
+DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist ) :
 
     CRTPMatrix<DenseMatrix<ValueType>, ValueType>( rowDist, colDist )
+
 {
     computeOwners();
-    allocateData();   // will initialize it with zero
+    allocateData();      // will initialize it with zero
 }
 
 template<typename ValueType>
@@ -516,47 +525,22 @@ void DenseMatrix<ValueType>::purge()
 template<typename ValueType>
 void DenseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType numColumns )
 {
-    Matrix::setReplicatedMatrix( numRows, numColumns );
-    mData.resize( 1 ); // all other storages will be freed
-    SCAI_ASSERT_ERROR( mData[0], "no local data available" )
-    mData[0]->allocate( mNumRows, mNumColumns );
+    DistributionPtr rowDist( new NoDistribution( numRows ) );
+    DistributionPtr colDist( new NoDistribution( numColumns ) );
+
+    allocate( rowDist, colDist );
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    SCAI_LOG_DEBUG( logger,
+    SCAI_LOG_INFO( logger,
                     *this << " with mData[" << mData.size() << "]" << ", owners[" << mOwners.size() << "] " << " allocate row dist = " << *rowDistribution << ", col dist = " << *colDistribution )
 
-    if ( colDistribution->isReplicated() )
-    {
-        mData.resize( 1 ); // all other storages will be freed
+    Matrix::setDistributedMatrix( rowDistribution, colDistribution );
 
-        if ( mData[0] )
-        {
-            // just reallocate the storage
-            mData[0]->allocate( rowDistribution->getLocalSize(), colDistribution->getGlobalSize() );
-        }
-        else
-        {
-            // first time allocation
-            mData[0].reset( new DenseStorage<ValueType>( rowDistribution->getLocalSize(),
-                            colDistribution->getGlobalSize() ) );
-        }
-
-        if ( *colDistribution != getColDistribution() )
-        {
-            computeOwners();
-        }
-
-        Matrix::setDistributedMatrix( rowDistribution, colDistribution );
-    }
-    else
-    {
-        Matrix::setDistributedMatrix( rowDistribution, colDistribution );
-        computeOwners();
-        allocateData();
-    }
+    computeOwners();
+    allocateData();
 
     SCAI_LOG_DEBUG( logger, *this << ": now allocated" )
 }
@@ -889,20 +873,32 @@ void DenseMatrix<ValueType>::joinColumnData(
 template<typename ValueType>
 void DenseMatrix<ValueType>::allocateData()
 {
-// mOwners are already computed, now we count them
-    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, ( IndexType ) mOwners.size() )
+    // mOwners are already computed, now we count them
+
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, mOwners.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, getColDistribution().getGlobalSize() )
+
     const PartitionId numChunks = getColDistribution().getCommunicator().getSize();
-    mData.clear();
+
     mData.resize( numChunks );
-    const IndexType numRows = getRowDistribution().getLocalSize();
-    SCAI_LOG_INFO( logger, "build " << numChunks << " data arrays for numRows = " << numRows );
+
+    const IndexType numLocalRows = getRowDistribution().getLocalSize();
+
+    SCAI_LOG_INFO( logger, "build " << numChunks << " data arrays for numLocalRows = " << numLocalRows );
 
     if ( numChunks == 1 )
     {
-        // simple case, no need to count owners for each partition
+        if ( mData[0] )
+        {
+            // just reallocate the storage
+            mData[0]->allocate( numLocalRows, mNumColumns );
+        }
+        else
+        {
+            // first time allocation
+            mData[0].reset( new DenseStorage<ValueType>( numLocalRows, mNumColumns ) );
+        }
 
-        mData[0].reset( new DenseStorage<ValueType>( numRows, mNumColumns ) );
         return;
     }
 
@@ -914,12 +910,12 @@ void DenseMatrix<ValueType>::allocateData()
 
     ReadAccess<IndexType> rSizes( numColsPartition, ctx );
 
-    IndexType count = 0; // sum up the sizes, verify correct sum
+    IndexType count = 0;   // sum up the sizes, verify correct sum
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
         count += rSizes[p];
-        mData[p].reset( new DenseStorage<ValueType>( numRows, rSizes[p] ) );
+        mData[p].reset( new DenseStorage<ValueType>( numLocalRows, rSizes[p] ) );
     }
 
     SCAI_ASSERT_EQ_ERROR( count, mNumColumns, "Illegal owners." )
@@ -1297,6 +1293,8 @@ void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, c
 
     if ( !colDist.isReplicated() )
     {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mOwners.size(), "column index out of range" )
+
         ReadAccess<IndexType> rOwners( mOwners );
         owner = rOwners[ colIndex ];
         localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
@@ -1304,7 +1302,7 @@ void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, c
 
     SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
 
-    SCAI_LOG_INFO( logger, "getLocalColumn( " << colIndex << " ) : owner = " << owner 
+    SCAI_LOG_INFO( logger, "getLocalColumn( " << colIndex << " ) : owner = " << owner
                            << ", local col = " << localColIndex << ", mData = " << *mData[owner] )
 
     mData[owner]->getColumnImpl( column, localColIndex );
@@ -1321,7 +1319,7 @@ void DenseMatrix<ValueType>::setLocalColumn(
     SCAI_REGION( "Mat.Dense.setLocalColumn" )
 
     // find the owner and local column index of col
-    
+
     PartitionId owner         = 0;
     IndexType   localColIndex = colIndex;
 
@@ -1331,12 +1329,13 @@ void DenseMatrix<ValueType>::setLocalColumn(
     {
         ReadAccess<IndexType> rOwners( mOwners );
         owner = rOwners[ colIndex ];
+
         localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
     }
 
     SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
 
-    SCAI_LOG_INFO( logger, "setLocalColumn( " << colIndex << " ) : owner = " << owner 
+    SCAI_LOG_INFO( logger, "setLocalColumn( " << colIndex << " ) : owner = " << owner
                            << ", local col = " << localColIndex  << ", mData = " << *mData[owner] )
 
     mData[owner]->setColumnImpl( column, localColIndex, op );
@@ -2128,7 +2127,7 @@ void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
     common::scalar::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << mNumRows << " x " << mNumColumns << ", rowdist = "
-           << getRowDistribution() << ", coldist = " << getColDistribution() << ")";
+           << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
 }
 
 template<typename ValueType>
