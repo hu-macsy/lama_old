@@ -92,7 +92,7 @@ struct CTTEntry
     }
 };
 
-#define CALL_CACHE_SIZE 16
+#define CALL_CACHE_SIZE 1024
 
 /** A CallTreeTable does not directly write all info records in the file but keeps
  *  them for a certain time in a cache.
