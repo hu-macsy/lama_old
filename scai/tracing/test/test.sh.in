@@ -51,8 +51,8 @@ errors=0
 # common regex pattern which matches the end of timing lins in .time files
 genericTimePattern=", inclusive = "[0-9]{1,5}\.[0-9]{4,6}", exclusive = "[0-9]{1,5}\.[0-9]{4,6}$
 
-# TODO: if the test is executed without OpenMP numThreads should be set to 1
-numThreads=4
+# will be configured: if the test is executed without OpenMP numThreads should be set to 1
+numThreads=@NUM_THREADS_TEST@
 
 # we should use 4 threads for all tests
 export OMP_NUM_THREADS=$numThreads

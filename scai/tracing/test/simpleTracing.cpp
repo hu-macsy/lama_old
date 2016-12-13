@@ -35,7 +35,7 @@
 #include <scai/tracing.hpp>
 #include <scai/logging.hpp>
 #include <cstdio>
-#include <omp.h>
+#include <scai/common/OpenMP.hpp>
 
 void subA( int& X )
 {

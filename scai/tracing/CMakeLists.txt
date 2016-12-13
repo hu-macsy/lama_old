@@ -140,7 +140,15 @@ endif ( USE_CODE_COVERAGE )
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
 
-set ( TEST_FILES Makefile README simpleTracing.cpp test.sh )
+if ( USE_OPENMP )
+   set ( NUM_THREADS_TEST 4 )
+else ( USE_OPENMP )
+   set ( NUM_THREADS_TEST 1 )
+endif ( USE_OPENMP )
+
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/test.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/test/test.sh" @ONLY )
+
+set ( TEST_FILES Makefile README simpleTracing.cpp )
 foreach    ( TEST_FILE ${TEST_FILES} )
     file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE}
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
