@@ -308,12 +308,12 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 {
     // not used here: HArrayUtils::scale( mData, value, this->getContextPtr() )
     // reasoning:     workload distribution would not fit to distribution of rows
-    static LAMAKernel<DenseKernelTrait::scaleValue<ValueType> > scaleValue;
+    static LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
     ContextPtr loc = this->getContextPtr();
-    scaleValue.getSupportedContext( loc );
+    setValue.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
     WriteAccess<ValueType> wData( mData, loc );
-    scaleValue[loc]( wData.get(), mNumRows, mNumColumns, value );
+    setValue[loc]( wData.get(), mNumRows, mNumColumns, value, utilskernel::binary::MULT );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -457,7 +457,7 @@ void DenseStorageView<ValueType>::setZero()
     setValue.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
-    setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ) );
+    setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ), utilskernel::binary::MULT );
     SCAI_LOG_INFO( logger, *this << " has been set to zero" )
 }
 
@@ -1105,14 +1105,14 @@ void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView
 {
     // actualize member variables of base class
     _MatrixStorage::_assign( other ); // copy sizes, flags
-    LAMAKernel<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> > copyDenseValues;
+    LAMAKernel<DenseKernelTrait::set<ValueType, OtherValueType> > set;
     ContextPtr loc = this->getContextPtr();
-    copyDenseValues.getSupportedContext( loc );
+    set.getSupportedContext( loc );
     {
         SCAI_CONTEXT_ACCESS( loc )
         WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
         ReadAccess<OtherValueType> otherData( other.getData(), loc );
-        copyDenseValues[loc]( data.get(), mNumRows, mNumColumns, otherData.get() );
+        set[loc]( data.get(), mNumRows, mNumColumns, otherData.get(), utilskernel::binary::COPY );
     }
     SCAI_LOG_INFO( logger, *this << ": assigned dense storage " << other )
     mDiagonalProperty = checkDiagonalProperty();

@@ -34,7 +34,9 @@
 #pragma once
 
 // for dll_import
+
 #include <scai/common/config.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 namespace scai
 {
@@ -150,18 +152,22 @@ struct DenseKernelTrait
     };
 
     template<typename DenseValueType1, typename DenseValueType2>
-    struct copyDenseValues
+    struct set
     {
-        /** Copy values of dense matrix; supports also conversion. */
-
-        typedef void ( *FuncType ) ( DenseValueType1 newValues[],
+        /** Set values of dense matrix with other matrix; supports also conversion. 
+         *
+         *  This routine is exactly the same as UtilskernelTrait::set with n = numRows * numColumns. 
+         *  The only difference is that OpenMP parallelization is only for rows and not the whole vector.
+         */
+        typedef void ( *FuncType ) ( DenseValueType1 out[],
                                      const IndexType numRows,
                                      const IndexType numColumns,
-                                     const DenseValueType2 oldValues[] );
+                                     const DenseValueType2 in[],
+                                     const utilskernel::binary::BinaryOp op );
 
         static const char* getId()
         {
-            return "Dense.copyDenseValues";
+            return "Dense.set";
         }
     };
 
@@ -174,28 +180,12 @@ struct DenseKernelTrait
             DenseValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const DenseValueType val );
+            const DenseValueType val,
+            const utilskernel::binary::BinaryOp op );
 
         static const char* getId()
         {
             return "Dense.setValue";
-        }
-    };
-
-    template<typename DenseValueType>
-    struct scaleValue
-    {
-        /** Scale all elements of the dense matrix with a value */
-
-        typedef void ( *FuncType ) (
-            DenseValueType denseValues[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const DenseValueType val );
-
-        static const char* getId()
-        {
-            return "Dense.scaleValue";
         }
     };
 
