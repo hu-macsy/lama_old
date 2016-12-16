@@ -457,7 +457,7 @@ void DenseStorageView<ValueType>::setZero()
     setValue.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
     WriteOnlyAccess<ValueType> data( mData, loc, mNumRows * mNumColumns );
-    setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ), utilskernel::binary::MULT );
+    setValue[loc]( data.get(), mNumRows, mNumColumns, static_cast<ValueType>( 0 ), utilskernel::binary::COPY );
     SCAI_LOG_INFO( logger, *this << " has been set to zero" )
 }
 
