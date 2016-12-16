@@ -90,7 +90,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
                                    x  0  0  0  0  x  x  x  x  x 
                                       0  1  0  2  x  x  x  x  x  x  */
 
-    const IndexType diag_offsets[] = { 0, -5, -4, -3, -2, -1, 1, 3 };
+    const IndexType diag_offsets[] = { 0, 
+                                       static_cast<IndexType>( -5 ), 
+                                       static_cast<IndexType>( -4 ), 
+                                       static_cast<IndexType>( -3 ),
+                                       static_cast<IndexType>( -2 ), 
+                                       static_cast<IndexType>( -1 ), 
+                                       1, 3 };
 
     const ValueType x = 0;
 
