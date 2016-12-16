@@ -249,7 +249,7 @@ void OpenMPDenseUtils::set(
                 for ( IndexType j = 0; j < numColumns; ++j )
                 {
                     IndexType k = denseindex( i, j, numRows, numColumns );
-                    out[k] = in[k];
+                    out[k] = static_cast<DenseValueType1>( in[k] );
                 }
             }
 
