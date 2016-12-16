@@ -1173,6 +1173,8 @@ private    :
 
     void setDefaultKind(); // set default values for communication and compute kind
 
+    static SyncKind getDefaultSyncKind();  // get default kind as set by environment
+
     SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
 
     void writeToSingleFile(
