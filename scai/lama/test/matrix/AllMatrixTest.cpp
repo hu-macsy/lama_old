@@ -188,6 +188,7 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
         Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
+        SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
         Scalar l1Norm = matrix.l1Norm();
         SCAI_CHECK_CLOSE( expectedNorm, l1Norm, 0.001 );
     }
@@ -209,6 +210,7 @@ BOOST_AUTO_TEST_CASE( l2NormTest )
         Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
+        SCAI_LOG_DEBUG( logger, "Test l2Norm for this matrix: " << matrix )
         Scalar l2Norm = matrix.l2Norm();
         SCAI_CHECK_CLOSE( expectedNorm, l2Norm, 0.001 );
     }
@@ -230,6 +232,7 @@ BOOST_AUTO_TEST_CASE( maxNormTest )
         Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
+        SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
         Scalar maxNorm = matrix.maxNorm();
         SCAI_CHECK_CLOSE( expectedNorm, maxNorm, 0.001 );
     }
