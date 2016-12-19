@@ -63,6 +63,57 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
+template<typename ValueType> 
+static void getDIATestData( 
+    IndexType& numRows, 
+    IndexType& numColumns, 
+    IndexType& numDiagonals,
+    HArray<IndexType>& diaOffsets,
+    HArray<ValueType>& diaValues )
+{
+    /*                -5 -4 -3 -2 -1  0  1  2  3 
+
+        Matrix:     x  x  x  x  x  x  6  0  0  4 
+                       x  x  x  x  x  7  0  0  0  x  
+                          x  x  x  x  0  0  9  4  x  x  
+                             x  x  x  2  5  0  3  x  x  x 
+                                x  x  2  0  0  1  x  x  x  x 
+                                   x  0  0  0  0  x  x  x  x  x 
+                                      0  1  0  2  x  x  x  x  x  x  */
+
+    const IndexType diag_offsets[] = { 0, 
+                                       static_cast<IndexType>( -5 ), 
+                                       static_cast<IndexType>( -4 ), 
+                                       static_cast<IndexType>( -3 ),
+                                       static_cast<IndexType>( -2 ), 
+                                       static_cast<IndexType>( -1 ), 
+                                       1, 3 };
+
+    const ValueType x = 0;  // just a stupid value as these entries should never be used
+
+    const ValueType diag_values[]  = { 6, 0, 9, 3, x, x, x,
+                                       x, x, x, x, x, 0, 1,
+                                       x, x, x, x, 2, 0, 0,
+                                       x, x, x, 2, 0, 0, 2,
+                                       x, x, 0, 5, 0, 0, x,
+                                       x, 7, 0, 0, 1, x, x,
+                                       0, 0, 4, x, x, x, x,
+                                       4, x, x, x, x, x, x };
+
+    numRows      = 7;
+    numColumns   = 4;
+    numDiagonals = sizeof( diag_offsets ) / sizeof( IndexType );
+
+    const IndexType diag_nvalues = sizeof( diag_values ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( diag_nvalues, numRows * numDiagonals );
+
+    diaOffsets.init( diag_offsets, numDiagonals );
+    diaValues.init( diag_values, diag_nvalues );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -184,6 +235,72 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
         {
             BOOST_CHECK_EQUAL( rJA[i], ja_values[i] );
             BOOST_CHECK_EQUAL( rValues[i], csr_values[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<DIAKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = testContext;
+
+    normalGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "normalGEMV test for " << *testContext << " on " << *loc )
+
+    HArray<ValueType> diaValues( testContext );
+    HArray<IndexType> diaOffsets( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+
+    ValueType alpha = 1;
+    ValueType beta  = -1;
+
+    const ValueType y_values[]  = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]  = { 3, -3, 2, -2, 3, 1, 2 };
+    const ValueType res_values[]  = { 9, 22, 8, -13, 3, -1, -6 };
+
+    HArray<ValueType> x( numRows, x_values, testContext );
+    HArray<ValueType> y( numRows, y_values, testContext );
+
+    HArray<ValueType> res( testContext );
+
+    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x + " << beta << " * y " 
+                            << ", with x = " << x << ", y = " << y )
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
+        ReadAccess<ValueType> rValues( diaValues, loc );
+
+        ReadAccess<ValueType> rX( x, loc );
+        ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+
+        normalGEMV[loc]( wResult.get(), 
+                         alpha, rX.get(), beta, rY.get(), 
+                         numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get() );
+
+    }
+
+    {
+        ReadAccess<ValueType> rResult( res, hostContext );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
         }
     }
 }
