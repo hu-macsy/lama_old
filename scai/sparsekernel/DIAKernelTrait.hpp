@@ -148,7 +148,7 @@ struct DIAKernelTrait
     template<typename ValueType>
     struct normalGEMV
     {
-        /** result = alpha * CSR-Matrix * x + b * y.
+        /** result = alpha * DIA-Matrix * x + b * y.
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -181,7 +181,7 @@ struct DIAKernelTrait
     template<typename ValueType>
     struct normalGEVM
     {
-        /** result = alpha * x * CSR-Matrix + b * y.
+        /** result = alpha * x * DIA-Matrix + b * y.
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -246,7 +246,7 @@ struct DIAKernelTrait
     {
         /** This method returns the maximal absolute value of a DIA storage. */
 
-        typedef ValueType (  *FuncType ) (
+        typedef ValueType ( *FuncType ) (
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,
