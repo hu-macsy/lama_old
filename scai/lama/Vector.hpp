@@ -411,6 +411,8 @@ public:
      */
     virtual Scalar getValue( IndexType globalIndex ) const = 0;
 
+    virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
+
     /**
      * @brief Returns the global minimum value of this.
      *

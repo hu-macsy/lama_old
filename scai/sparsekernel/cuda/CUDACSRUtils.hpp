@@ -281,6 +281,32 @@ public:
         const IndexType numRows,
         const bool diagonalFlag );
 
+    /** CUDA Implementation for CSRKernelTrait::countNonZeros */
+
+    template<typename ValueType>
+    static void countNonZeros(
+        IndexType sizes[],
+        const IndexType ia[],
+        const IndexType ja[],
+        const ValueType values[],
+        const IndexType numRows,
+        const ValueType eps,
+        const bool diagonalFlag );
+
+    /** CUDA Implementation for CSRKernelTrait::compress */
+
+    template<typename ValueType>
+    static void compress(
+        IndexType newJA[],
+        ValueType newValues[],
+        const IndexType newIA[],
+        const IndexType ia[],
+        const IndexType ja[],
+        const ValueType values[],
+        const IndexType numRows,
+        const ValueType eps,
+        const bool diagonalFlag );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

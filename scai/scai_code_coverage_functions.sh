@@ -125,8 +125,11 @@ function do_coverage
 	#Running lcov and creating data
 	count_error lcov --base-directory $2 --directory $2 --capture --output-file=data.info
 
-	#Extracting just Sourcefiles
-	count_error lcov --extract data.info "$3/*" --output-file=data.info
+	#Extracting just Sourcefiles of this project ( + subdirs )
+	count_error lcov --extract data.info "$3/*" "$3/*/*" --output-file=data.info
+
+	#Remove test files
+	count_error lcov --remove data.info "$3/test/*" --output-file=data.info
 
 	# Generating html-structure
 	count_error genhtml data.info

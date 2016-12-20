@@ -664,44 +664,9 @@ void OpenMPJDSUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if ( beta == scai::common::constants::ZERO )
-    {
-        SCAI_LOG_DEBUG( logger, "set result = 0.0" )
-        #pragma omp parallel for
+    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-        for ( IndexType i = 0; i < numColumns; ++i )
-        {
-            result[i] = static_cast<ValueType>( 0.0 );
-        }
-    }
-    else if ( result == y )
-    {
-        // result = result * beta
-        if ( beta != scai::common::constants::ONE )
-        {
-            SCAI_LOG_DEBUG( logger, "set result *= beta" )
-            #pragma omp parallel for
-
-            for ( IndexType i = 0; i < numColumns; ++i )
-            {
-                result[i] *= beta;
-            }
-        }
-        else
-        {
-            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
-        }
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "set result = beta * y" )
-        #pragma omp parallel for
-
-        for ( IndexType i = 0; i < numColumns; ++i )
-        {
-            result[i] = beta * y[i];
-        }
-    }
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
 
     if ( ndlg == 0 )
     {
@@ -709,37 +674,30 @@ void OpenMPJDSUtils::normalGEVM(
     }
 
     // dlg[0] stands exactly for number of non-empty rows
+
     IndexType nonEmptyRows = jdsDLG[0];
+
     SCAI_LOG_DEBUG( logger, "y += alpha * x * A, #non-empty row = " << nonEmptyRows )
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.normalGEVM" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for ( IndexType k = 0; k < numColumns; ++k )
+        #pragma omp for 
+
+        for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = static_cast<ValueType>( 0.0 ); // sums up final value
+            IndexType offset = ii;
 
-            for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
+            const ValueType tmpX   = x[perm[ii]];
+
+            for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
             {
-                IndexType offset = ii;
-
-                for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
-                {
-                    IndexType j = jdsJA[offset];
-
-                    if ( j == k )
-                    {
-                        SCAI_LOG_TRACE( logger,
-                                        "compute entry i = " << perm[ii] << ", j = " << j << ", matrix val = " << jdsValues[offset] << ", vector val = " << x[ perm[ii] ] )
-                        value += jdsValues[offset] * x[perm[ii]];
-                    }
-
-                    offset += jdsDLG[jj]; // there is next value for this row
-                }
+                IndexType j = jdsJA[offset];
+                ValueType v = alpha * jdsValues[offset] * tmpX;
+                atomicAdd( result[j], v );
+                offset += jdsDLG[jj];      // jump to next value for this row
             }
-
-            result[k] += alpha * value;
         }
     }
 }

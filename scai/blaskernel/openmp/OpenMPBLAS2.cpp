@@ -39,6 +39,7 @@
 
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/macros/unused.hpp>
@@ -73,6 +74,8 @@ void OpenMPBLAS2::gemv(
     ValueType* Y,
     const IndexType incY )
 {
+    SCAI_REGION( "OpenMP.BLAS2.gemv" )
+
     SCAI_LOG_INFO( logger,
                    "gemv<" << common::TypeTraits<ValueType>::id() << ">: M = " << M << ", N = " << N
                    << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY

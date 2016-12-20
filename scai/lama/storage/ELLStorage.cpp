@@ -951,33 +951,52 @@ template<typename ValueType>
 void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
 {
     SCAI_LOG_INFO( logger, "compress: eps = " << eps )
-    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
-    static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+
     ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    compressIA.getSupportedContext( loc, compressValues );
-    ReadAccess<IndexType> IA( mIA, loc );
-    ReadAccess<IndexType> JA( mJA, loc );
-    ReadAccess<ValueType> values( mValues, loc );
-    // 1. Step: Check for 0 elements and write new IA array
+    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+    compressIA.getSupportedContext( loc, reduce );
+
+    IndexType newNumValuesPerRow = -1;
+
     LArray<IndexType> newIAArray;
-    WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
-    compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
-    // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, 0, utilskernel::binary::MAX );
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<IndexType> IA( mIA, loc );
+        ReadAccess<IndexType> JA( mJA, loc );
+        ReadAccess<ValueType> values( mValues, loc );
+        // 1. Step: Check for 0 elements and write new IA array
+        WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
+        compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
+        // 2. Step: compute length of longest row
+        newNumValuesPerRow = reduce[ loc ]( newIA.get(), mNumRows, 0, utilskernel::binary::MAX );
+    }
 
     // Do further steps, if new array could be smaller
     if ( newNumValuesPerRow < mNumValuesPerRow )
     {
+        static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
+        compressValues.getSupportedContext( loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
         // 3. Step: Allocate new JA and Values array
         LArray<ValueType> newValuesArray;
         LArray<IndexType> newJAArray;
-        WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
-        WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
-        // 4. Step: Compute new JA and Values array
-        compressValues[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
-                             newJA.get(), newValues.get() );
+
+        {
+            ReadAccess<IndexType> IA( mIA, loc );
+            ReadAccess<IndexType> JA( mJA, loc );
+            ReadAccess<ValueType> values( mValues, loc );
+            WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
+            WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
+            // 4. Step: Compute new JA and Values array
+            compressValues[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
+                                 newJA.get(), newValues.get() );
+        }
+
+        mIA.swap( newIAArray );
         mJA.swap( newJAArray );
         mValues.swap( newValuesArray );
         mNumValuesPerRow = newNumValuesPerRow;
@@ -1717,6 +1736,53 @@ ValueType ELLStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void ELLStorage<ValueType>::matrixPlusMatrix(
+    const ValueType alpha,
+    const MatrixStorage<ValueType>& a,
+    const ValueType beta,
+    const MatrixStorage<ValueType>& b )
+{
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", with A = " << a << ", B = " << b )
+    SCAI_REGION( "Storage.ELL.plusMatrix" )
+    // a and b have to be ELL storages, otherwise create temporaries.
+    const ELLStorage<ValueType>* ellA = NULL;
+    const ELLStorage<ValueType>* ellB = NULL;
+    // Define shared pointers in case we need temporaries
+    common::shared_ptr<ELLStorage<ValueType> > tmpA;
+    common::shared_ptr<ELLStorage<ValueType> > tmpB;
+
+    if ( a.getFormat() == Format::ELL )
+    {
+        ellA = dynamic_cast<const ELLStorage<ValueType>*>( &a );
+        SCAI_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( a << ": will be converted to ELL for matrix add" )
+        tmpA = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( a ) );
+        ellA = tmpA.get();
+    }
+
+    if ( b.getFormat() == Format::ELL )
+    {
+        ellB = dynamic_cast<const ELLStorage<ValueType>*>( &b );
+        SCAI_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( b << ": will be converted to ELL for matrix add" )
+        tmpB = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( b ) );
+        ellB = tmpB.get();
+    }
+
+    ContextPtr loc = this->getContextPtr(); // preferred location for matrix add
+
+    matrixAddMatrixELL( alpha, *ellA, beta, *ellB );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesMatrix(
     const ValueType alpha,
     const MatrixStorage<ValueType>& a,
@@ -1724,13 +1790,15 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& c )
 {
+    SCAI_REGION( "Storage.ELL.timesMatrix" )
+
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A * B + " << beta << " * C, with " << "A = " << a << ", B = " << b << ", C = " << c )
     const ELLStorage<ValueType>* ellA = NULL;
     const ELLStorage<ValueType>* ellB = NULL;
     const ELLStorage<ValueType>* ellC = NULL;
-    //    common::shared_ptr<CSRStorage<ValueType> > tmpA;
-    //    common::shared_ptr<CSRStorage<ValueType> > tmpB;
+    //    common::shared_ptr<ELLStorage<ValueType> > tmpA;
+    //    common::shared_ptr<ELLStorage<ValueType> > tmpB;
     common::shared_ptr<ELLStorage<ValueType> > tmpC;
 
     if ( a.getFormat() == Format::ELL )
@@ -1755,7 +1823,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
 
     if ( ellA == NULL || ellB == NULL )
     {
-        // input matrices not ELL format, so try via CSR
+        // input matrices not ELL format, so try via ELL
         MatrixStorage<ValueType>::matrixTimesMatrix( alpha, a, b, beta, c );
         return;
     }
@@ -1800,10 +1868,23 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
 {
     SCAI_LOG_INFO( logger,
                    *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+
+        ELLStorage<ValueType> tmp;
+        tmp.matrixTimesMatrixELL( alpha, a, b );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
     static LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
+
     ContextPtr loc = Context::getHostPtr();  // not yet available on other devices
+  
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
     SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
@@ -1845,6 +1926,17 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 {
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+        ELLStorage<ValueType> tmp;
+        tmp.setContextPtr( this->getContextPtr() );
+        tmp.matrixAddMatrixELL( alpha, a, beta, b );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
     static LAMAKernel<ELLKernelTrait::matrixAddSizes> matrixAddSizes;
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;

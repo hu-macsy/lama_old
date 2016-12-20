@@ -555,7 +555,7 @@ public:
      *
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
      * @param[in] firstRow is the first row to read 
-     * @param[in] nRows    specifies the number of rows to read, defaults to #rows of full storage - firstRow
+     * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
      *
      * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
      */

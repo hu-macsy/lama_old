@@ -60,6 +60,20 @@ namespace sparsekernel
 
 class COMMON_DLL_IMPORTEXPORT OpenMPELLUtils
 {
+
+public:
+
+    /** Sort the entries of one row in ascending order */
+
+    template<typename ValueType>
+    static void sortRowElements(
+        IndexType ellJA[],
+        ValueType ellValues[],
+        const IndexType ellIA[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const bool diagonalFlag );
+
 private:
 
     /** Addressing function for the arrays ellJA[numRows*numValuesPerRow] and ellValues: column-major order */

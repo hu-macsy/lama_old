@@ -183,7 +183,8 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
     IndexType dims[2];
     IndexType nnz;
     bool      isComplex;
-    uint8_t   matClass;
+    
+    MATIOStream::MATClass matClass;
 
     MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElement.get() );
  
@@ -192,6 +193,11 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
         COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains sparse matrix, but not array" )
+    }
+
+    if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    {
+        COMMON_THROWEXCEPTION( "File " << arrayFileName << " contains unsupported matrix class = " << matClass )
     }
 
     if ( dims[1] != 1 || dims[0] != 1 )
@@ -249,7 +255,8 @@ void MatlabIO::readArrayImpl(
     IndexType dims[2];
     IndexType nnz;
     bool      isComplex;
-    uint8_t   matClass;
+
+    MATIOStream::MATClass matClass;
 
     uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, elementPtr );
 
@@ -454,7 +461,8 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
 
     IndexType dims[2];
     bool      isComplex;
-    uint8_t   matClass;
+
+    MATIOStream::MATClass matClass;
 
     MATIOStream::getMatrixInfo( matClass, dims, numValues, isComplex, dataElement.get() );
  
@@ -463,6 +471,11 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
 
     if ( matClass != MATIOStream::MAT_SPARSE_CLASS )
     {
+        if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+        {
+            COMMON_THROWEXCEPTION( "File " << fileName << " contains unsupported matrix class = " << matClass )
+        }
+
         numValues  = dims[0] * dims[1];
     }
 }
@@ -494,51 +507,151 @@ uint32_t MatlabIO::getArrayData( HArray<ValueType>& array, const char* data, uin
 /* --------------------------------------------------------------------------------- */
 
 template <typename ValueType>
+uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage, 
+                                     const IndexType dims[2], const IndexType nnz,
+                                     bool isComplex,
+                                     const char* dataElementPtr, uint32_t nBytes )
+{
+    SCAI_LOG_INFO( logger, "Get sparse<" << common::TypeTraits<ValueType>::stype << "> matrix "
+                        << dims[0] << " x " << dims[1] << ", nnz = " << nnz )
+
+    uint32_t offset = 0;
+
+    // read IA, JA, Values of sparse array
+
+    HArray<IndexType> ia;
+    HArray<IndexType> ja;
+    HArray<ValueType> values;
+
+    offset += getArrayData( ia, dataElementPtr + offset, nBytes - offset );
+    offset += getArrayData( ja, dataElementPtr + offset, nBytes - offset );
+
+    if ( mScalarTypeData == common::scalar::PATTERN )
+    {
+        values.init( ValueType( 1 ), nnz );   // set values with default value
+    }
+    else
+    {
+        offset += getArrayData( values, dataElementPtr + offset, nBytes - offset );
+
+        if ( isComplex )
+        {
+            HArray<ValueType> imagValues;
+            offset += getArrayData( imagValues, dataElementPtr + offset, nBytes - offset );
+            buildComplex( values, imagValues );
+        }
+    }
+
+    CSRStorage<ValueType> csrStorage;
+    csrStorage.allocate( dims[1], dims[0] );  // will be transposed
+    csrStorage.swap( ja, ia, values );
+    csrStorage.assignTranspose( csrStorage );
+    csrStorage.sortRows( dims[0] == dims[1] );
+    storage = csrStorage;
+
+    return offset;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template <typename ValueType>
+uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const char* dataElementPtr, uint32_t nBytes )
+{
+    int len;
+    char names[1024];
+
+    uint32_t offset = MATIOStream::getData( &len, 1, dataElementPtr );
+    uint32_t size   = MATIOStream::getString( names, 1024, dataElementPtr + offset );
+
+    offset += size;
+
+    int nFields = ( size - 8 ) / len; 
+
+    SCAI_LOG_INFO( logger, "parse structure with " << nFields << " fields, name len = " << len )
+  
+    bool readStorage = false;    // set it to true if any sparse array is found
+
+    for ( int i = 0; i < nFields; ++i )
+    {
+        SCAI_ASSERT_LT_ERROR( offset, nBytes, "no more data for fields" )
+
+        char* ptr = names + i * len;
+
+        SCAI_LOG_INFO( logger, "parse field " << i << " of " << nFields << ": name = " << i << " = " << ptr )
+
+        uint32_t dataType;
+        uint32_t nBytesField;
+        uint32_t wBytes;
+
+        MATIOStream::readDataElementHeader( dataType, nBytesField, wBytes, dataElementPtr + offset );
+
+        IndexType dims[2];
+
+        IndexType nnz;
+        bool      isComplex;
+        MATIOStream::MATClass matClass;
+
+        SCAI_LOG_INFO( logger, "read structure field[" << i << "], name = " << ptr << ", dataType = " << dataType 
+                                << ", nBytes = " << nBytesField << " / " << wBytes )
+
+        uint32_t offset1 = 0; 
+
+        nBytesField = wBytes; // reset it
+
+        offset1 += MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr + offset + offset1, false );
+
+        SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1]
+                            << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
+
+        if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
+        {
+            SCAI_ASSERT_ERROR( !readStorage, "more than one sparse array identified in struct" )
+            getSparseStorage( storage, dims, nnz, isComplex, dataElementPtr + offset + offset1, nBytesField - offset1 );
+            SCAI_LOG_INFO( logger, "read sparse storage = " << storage )
+            readStorage = true;  
+            // continue loop to parse all further elements
+        }
+    
+        offset += wBytes;
+    }
+
+    SCAI_ASSERT_ERROR( readStorage, "no storage found in struct with " << nFields << " fields" )
+
+    return offset;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template <typename ValueType>
 void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataElementPtr, uint32_t nBytes )
 {
     IndexType dims[2];
     IndexType nnz;
     bool      isComplex;
-    uint8_t   matClass;
+    MATIOStream::MATClass matClass;
 
     uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr );
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
-        SCAI_LOG_INFO( logger, "Get sparse<" << common::TypeTraits<ValueType>::stype << "> matrix " 
-                                << dims[0] << " x " << dims[1] << ", nnz = " << nnz )
-
-        // read IA, JA, Values of sparse array
-
-        HArray<IndexType> ia;
-        HArray<IndexType> ja;
-        HArray<ValueType> values;
-
-        offset += getArrayData( ia, dataElementPtr + offset, nBytes - offset );
-        offset += getArrayData( ja, dataElementPtr + offset, nBytes - offset );
-
-        if ( mScalarTypeData == common::scalar::PATTERN )
-        {
-            values.init( ValueType( 1 ), nnz );   // set values with default value
-        }
-        else
-        {
-            offset += getArrayData( values, dataElementPtr + offset, nBytes - offset );
-
-            if ( isComplex )
-            {
-                HArray<ValueType> imagValues;
-                offset += getArrayData( imagValues, dataElementPtr + offset, nBytes - offset );
-                buildComplex( values, imagValues );
-            }
-        }
-
-        CSRStorage<ValueType> csrStorage;
-        csrStorage.allocate( dims[1], dims[0] );  // will be transposed
-        csrStorage.swap( ja, ia, values );
-        csrStorage.assignTranspose( csrStorage );
-        csrStorage.sortRows( dims[0] == dims[1] );
-        storage = csrStorage;
+        offset += getSparseStorage( storage, dims, nnz, isComplex, dataElementPtr + offset, nBytes - offset );
+    }
+    else if ( matClass == MATIOStream::MAT_STRUCT_CLASS )
+    {
+        // dims = [1, 1] 
+        offset += getStructStorage( storage, dataElementPtr + offset, nBytes - offset );
+    }
+    else if ( matClass == MATIOStream::MAT_CELL_CLASS )
+    {
+        COMMON_THROWEXCEPTION( "Cell Array Data Element Format not supported yet" )
+    }
+    else if ( matClass == MATIOStream::MAT_OBJECT_CLASS )
+    {
+        COMMON_THROWEXCEPTION( "Object MAT-File Data Element Format not supported yet" )
+    }
+    else if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    {
+        COMMON_THROWEXCEPTION( "File contains unsupported matrix class = " << matClass )
     }
     else
     {

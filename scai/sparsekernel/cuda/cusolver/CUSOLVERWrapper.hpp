@@ -1,5 +1,5 @@
 /**
- * @file sparsekernel/cuda/CUSOLVERWrapper.hpp
+ * @file sparsekernel/cuda/cusolver/CUSOLVERWrapper.hpp
  *
  * @license
  * Copyright (c) 2009-2016

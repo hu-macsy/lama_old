@@ -288,6 +288,53 @@ When using this file format the following issues should be considered:
    by the Level 5 MAT-File format but are full supported here by using a reserved
    value of the MAT-File Data Types.
 
+Text Format
+-----------
+
+When using the text format a (sparse) matrix is saved in the COO format where
+each line contains the row index, column index and value of the non-zero entry.
+
+.. code-block:: c++
+
+      1 0  1.5904
+      2 0  0.9795
+      0 1  0.7631
+      4 1  1.2926
+      1 2  0.3737
+      3 3  0.8912
+      0 3  1.5310
+
+When using this file format the following issues should be considered:
+
+ - The number of non-zero entries is given by the number of lines of the file
+ - The number of rows and columns of the matrix is not stored explicitly but is
+   determined by the maximal row and column index when reading the file.
+
+A (dense) vector is saved in a text file by one entry for each value of the vector.
+
+.. code-block:: c++
+
+     0.51 
+     0.43
+     0.31 
+
+Using the text format is not recommended for efficient I/O but might be very useful
+for testing and developping. Furthermore, it might be a convenient way to exchange
+data with other applications. Here is an example of how to use this format to
+exchange data with MATLAB applications.
+
+.. code-block:: c++
+
+ [i,j,val] = find( matrix )          [i,j,val] = find(matrix)
+ data_dump = [i, j, val] A           fid = fopen( 'data.txt', 'w' )
+ save -ascii data.txt data_dump      fprintf( fid, "%d %d %f\n", [i,j,val] )
+                                     flose( fid )
+
+.. code-block:: c++
+
+  data_dump = importdata( 'data.txt' )      load data.txt
+  matrix = spconvert( data_dump )           matrix = spconvert( data )
+
 Extension for Other I/O Formats
 -------------------------------
 

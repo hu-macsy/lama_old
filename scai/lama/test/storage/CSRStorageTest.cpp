@@ -126,15 +126,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE( compressTest )
 {
-    return; // TODO: fails
+    typedef SCAI_TEST_TYPE ValueType;
+
     ContextPtr context = Context::getContextPtr();
+
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-    const IndexType ia[] = { 0, 1, 2, 4 };
-    const IndexType ja[] = { 0, 1, 1, 2 };
+
+    /*   matrix:
+
+          1  -   -
+          -  1   - 
+          -  0   1  
+     */
+
+    const IndexType ia[]     = { 0, 1, 2,    4 };
+    const IndexType ja[]     = { 0, 1, 1, 2 };
     const ValueType values[] = { 1, 1, 0, 1 };
+
     const IndexType numValues = ia[numRows];
     const IndexType sizeJA     = sizeof( ja ) / sizeof( IndexType );
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );

@@ -44,6 +44,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 
 // std
@@ -94,14 +95,15 @@ public:
         const DenseValueType denseValues[],
         const DenseValueType eps );
 
-    /** OpenMP implementation for DenseKernelTrait::copyDenseValues */
+    /** OpenMP implementation for DenseKernelTrait::set */
 
     template<typename DenseValueType1, typename DenseValueType2>
-    static void copyDenseValues(
+    static void set(
         DenseValueType1 newValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType2 oldValues[] );
+        const DenseValueType2 oldValues[],
+        const utilskernel::binary::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
@@ -121,16 +123,8 @@ public:
         DenseValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType val );
-
-    /** OpenMP implementation for DenseKernelTrait::scaleValue */
-
-    template<typename DenseValueType>
-    static void scaleValue(
-        DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DenseValueType val );
+        const DenseValueType val,
+        const utilskernel::binary::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
 

@@ -188,6 +188,7 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
         Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
+        SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
         Scalar l1Norm = matrix.l1Norm();
         SCAI_CHECK_CLOSE( expectedNorm, l1Norm, 0.001 );
     }
@@ -209,6 +210,7 @@ BOOST_AUTO_TEST_CASE( l2NormTest )
         Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
+        SCAI_LOG_DEBUG( logger, "Test l2Norm for this matrix: " << matrix )
         Scalar l2Norm = matrix.l2Norm();
         SCAI_CHECK_CLOSE( expectedNorm, l2Norm, 0.001 );
     }
@@ -230,6 +232,7 @@ BOOST_AUTO_TEST_CASE( maxNormTest )
         Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
+        SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
         Scalar maxNorm = matrix.maxNorm();
         SCAI_CHECK_CLOSE( expectedNorm, maxNorm, 0.001 );
     }
@@ -318,6 +321,8 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 
 BOOST_AUTO_TEST_CASE( assignAddTest )
 {
+    // ToDo: test fails due to alias for ELLStorage;
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
     common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;

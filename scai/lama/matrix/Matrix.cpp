@@ -47,6 +47,7 @@
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 
 namespace scai
@@ -207,9 +208,30 @@ Matrix::~Matrix()
     SCAI_LOG_DEBUG( logger, "~Matrix" )
 }
 
+Matrix::SyncKind Matrix::getDefaultSyncKind()
+{
+    static bool computed = false;
+
+    static SyncKind syncKind = ASYNCHRONOUS;
+   
+    if ( !computed )
+    {
+        bool isAsync = true;
+
+        common::Settings::getEnvironment( isAsync, "SCAI_ASYNCHRONOUS" );
+       
+        if ( !isAsync )
+        {
+            syncKind = SYNCHRONOUS;
+        }
+    } 
+
+    return syncKind;
+}
+
 void Matrix::setDefaultKind()
 {
-    mCommunicationKind = ASYNCHRONOUS;
+    mCommunicationKind = getDefaultSyncKind();
 }
 
 /* ---------------------------------------------------------------------------------*/

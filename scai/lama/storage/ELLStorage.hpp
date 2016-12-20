@@ -427,6 +427,14 @@ public:
         const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
+    /** Implementation of MatrixStorage::matrixPlusMatrix for ELL */
+
+    virtual void matrixPlusMatrix(
+        const ValueType alpha,
+        const MatrixStorage<ValueType>& a,
+        const ValueType beta,
+        const MatrixStorage<ValueType>& b );
+
     /** Implementation of MatrixStorage::matrixTimesMatrix for ELL */
 
     virtual void matrixTimesMatrix(

@@ -113,6 +113,32 @@ public:
         ValueType ellValues[],
         const OtherValueType values[] );
 
+    /** Implementation for ELLKernelTrait::compressIA */
+
+    template<typename ValueType>
+    static void compressIA(
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const ValueType eps,
+        IndexType newIA[] );
+
+    /** Implementation for ELLKernelTrait::compressValues */
+
+    template<typename ValueType>
+    static void compressValues(
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const ValueType eps,
+        const IndexType newNumValuesPerRow,
+        IndexType newJA[],
+        ValueType newValues[] );
+
     /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 
     template<typename ELLValueType, typename CSRValueType>

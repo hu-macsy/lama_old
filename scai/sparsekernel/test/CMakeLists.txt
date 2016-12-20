@@ -36,6 +36,8 @@ set ( CXX_SOURCES
       sparsekernelTest
       COOUtilsTest
       CSRUtilsTest
+      DenseUtilsTest
+      DIAUtilsTest
       ELLUtilsTest
       JDSUtilsTest
 ) 

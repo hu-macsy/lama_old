@@ -1,5 +1,5 @@
 /**
- * @file sparsekernel/cuda/CUSOLVERTrait.hpp
+ * @file cuda/cusolver/CUSOLVERTrait.hpp
  *
  * @license
  * Copyright (c) 2009-2016

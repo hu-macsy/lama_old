@@ -505,6 +505,33 @@ struct ELLKernelTrait
         }
     };
 
+    template<typename ValueType>
+    struct sortRowElements
+    {
+        /** This method sorts the elements of a row by increasing column indexes.
+         *
+         *  @param[in,out] ellJA, ellValues  the CSR matrix data and their column indexes
+         *  @param[in]     ellIA             row offsets
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     numValuesPerRow   maximal number of non-zero values per row
+         *  @param[in]     diagonalFlag      if true first entry of each row will be the diagonal element if available
+         *
+         *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
+         */
+        typedef void ( *FuncType )(
+            IndexType ellJA[],
+            ValueType ellValues[],
+            const IndexType ellIA[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const bool diagonalFlag );
+
+        static const char* getId()
+        {
+            return "ELL.sortRowElements";
+        }
+    };
+
     struct matrixMultiplySizes
     {
         /** @brief Compute the row sizes of result matrix C for matrix multiplication A x B

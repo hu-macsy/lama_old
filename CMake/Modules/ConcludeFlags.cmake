@@ -88,6 +88,7 @@ set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STR
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBUG  ADDITIONAL_CXX_FLAGS_RELEASE
                    ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG   ADDITIONAL_CXX_FLAGS_OPENMP
                    ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS    ADDITIONAL_CXX_FLAGS
+                   ADDITIONAL_CXX_FLAGS_STATIC
                  )
 
 set ( CONCLUDE_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" )
@@ -142,6 +143,11 @@ string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
 if ( CUDA_FOUND AND USE_CUDA )
     
+    if    ( USE_CODE_COVERAGE )
+            string ( REGEX REPLACE " " "," CUDA_CC_FLAG ${ADDITIONAL_CXX_FLAGS_CODE_COVERAGE})
+            list ( APPEND SCAI_NVCC_FLAGS "-Xcompiler ${CUDA_CC_FLAG}" )
+    endif ( USE_CODE_COVERAGE )
+
     # TODO: determine cuda compute capability and use highest
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
     # We need at least compute capability 1.3, so if no architecture is specified set it here

@@ -1,5 +1,5 @@
 /**
- * @file sparsekernel/cuda/CUSPARSETrait.hpp
+ * @file CUSPARSETrait.hpp
  *
  * @license
  * Copyright (c) 2009-2016

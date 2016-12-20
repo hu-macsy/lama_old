@@ -1,5 +1,5 @@
 /**
- * @file sparsekernel/cuda/CUSPARSEWrapper.hpp
+ * @file CUSPARSEWrapper.hpp
  *
  * @license
  * Copyright (c) 2009-2016

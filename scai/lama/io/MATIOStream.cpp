@@ -146,7 +146,7 @@ common::scalar::ScalarType MATIOStream::class2ScalarType( uint32_t dataType )
 
 /* --------------------------------------------------------------------------------- */
 
-uint8_t MATIOStream::scalarType2Class( common::scalar::ScalarType stype )
+MATIOStream::MATClass MATIOStream::scalarType2Class( common::scalar::ScalarType stype )
 {
     switch ( stype )
     {
@@ -177,7 +177,7 @@ uint8_t MATIOStream::scalarType2Class( common::scalar::ScalarType stype )
             COMMON_THROWEXCEPTION( "no Matlab class for " << stype )
     }
 
-    return 0;
+    return MAT_CELL_CLASS;  // just dummy
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -434,8 +434,8 @@ uint32_t MATIOStream::writeSparseHeader(
     uint32_t header[2]   = { 0, static_cast<uint32_t>( nnz ) };
     char*    headerBytes = reinterpret_cast<char*>( header );
 
-    headerBytes[0] = MAT_SPARSE_CLASS;                // class
-    headerBytes[1] = isComplex ? ( 1 << 3 ) : 0 ;     // array flags
+    headerBytes[0] = static_cast<char>( MAT_SPARSE_CLASS );              // class
+    headerBytes[1] = static_cast<char>( isComplex ? ( 1 << 3 ) : 0 ) ;   // array flags
 
     wBytes += writeData( header, 2, dryRun );
 
@@ -456,7 +456,7 @@ uint32_t MATIOStream::writeDenseHeader(
     common::scalar::ScalarType stype,
     bool dryRun )
 {
-    uint8_t matClass  = MATIOStream::scalarType2Class( stype );
+    MATClass matClass = MATIOStream::scalarType2Class( stype );
     bool    isComplex = common::isComplex( stype );
 
     SCAI_LOG_INFO( logger, "writeDenseHeader, nBytes = " << nBytes << ", complex = " << isComplex )
@@ -469,8 +469,8 @@ uint32_t MATIOStream::writeDenseHeader(
 
     memset( headerBytes, 0, 8 );
 
-    headerBytes[0] = matClass;                        // class
-    headerBytes[1] = isComplex ? ( 1 << 3 ) : 0 ;     // array flags
+    headerBytes[0] = static_cast<char>( matClass );                      // class
+    headerBytes[1] = static_cast<char>( isComplex ? ( 1 << 3 ) : 0 ) ;   // array flags
 
     SCAI_LOG_INFO( logger, "Array flags, class = " << ( int ) headerBytes[0] 
                             << ", flags = " << ( int ) headerBytes[1] )
@@ -487,7 +487,7 @@ uint32_t MATIOStream::writeDenseHeader(
 
 /* --------------------------------------------------------------------------------- */
 
-uint32_t MATIOStream::getMatrixInfo( uint8_t& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data )
+uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data, bool isCell )
 {
     uint32_t dataType;
     uint32_t nBytes;
@@ -508,16 +508,25 @@ uint32_t MATIOStream::getMatrixInfo( uint8_t& matClass, IndexType dims[2], Index
     dims[0] = static_cast<IndexType>( mdims[0] );
     dims[1] = static_cast<IndexType>( mdims[1] );
 
-    matClass  = headerFlags[0];
+    matClass  = MATClass( headerFlags[0] );
     isComplex = headerFlags[1] & ( 1 << 3 );
 
     nnz = header[1];
 
     char nameData[128];
-    elementPtr += getString( nameData, 128, elementPtr );
 
-    SCAI_LOG_INFO( logger, "read info of matrix " << nameData << ", " << dims[0] << " x " << dims[1] 
-                            << ", nnz = " << nnz << ", isComplex = " << isComplex )
+    if ( isCell )
+    {
+        SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1] 
+                                << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
+    }
+    else
+    {
+        elementPtr += getString( nameData, 128, elementPtr );
+
+        SCAI_LOG_INFO( logger, "read info of matrix " << nameData << ", " << dims[0] << " x " << dims[1] 
+                                << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
+    }
 
     return elementPtr - data;      // read bytes
 }
