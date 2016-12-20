@@ -1670,7 +1670,7 @@ SyncToken* CSRStorage<ValueType>::normalGEVM(
     ReadAccess<ValueType> rY( y, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
     normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, rY.get(),
-                     mNumRows, mNumColumns,
+                     mNumRows, mNumColumns, mNumValues,
                      csrIA.get(), csrJA.get(), csrValues.get() );
 
     if ( async )
@@ -1757,7 +1757,7 @@ SyncToken* CSRStorage<ValueType>::normalGEVM(
     WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
     ValueType beta = 0;
     normalGEVM[loc]( wResult.get(), alpha, rX.get(), beta, NULL,
-                     mNumRows, mNumColumns,
+                     mNumRows, mNumColumns, mNumValues,
                      csrIA.get(), csrJA.get(), csrValues.get() );
 
     if ( async )
