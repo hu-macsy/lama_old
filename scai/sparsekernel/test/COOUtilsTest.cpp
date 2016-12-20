@@ -40,7 +40,9 @@
 #include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
+
 #include <scai/sparsekernel/test/TestMacros.hpp>
+#include <scai/sparsekernel/test/TestData1.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -332,39 +334,6 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
             BOOST_CHECK( rJA[p] == j );
         }
     }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-static void getCOOTestData(
-    IndexType& numRows,
-    IndexType& numColumns,
-    IndexType& numValues,
-    HArray<IndexType>& cooIA,
-    HArray<IndexType>& cooJA,
-    HArray<ValueType>& cooValues )
-{
-   /*   Matrix:       6  0  0  4 
-                      7  0  0  0
-                      0  0  9  4 
-                      2  5  0  3  
-                      2  0  0  1  
-                      0  0  0  0  
-                      0  1  0  2  
-    */
-
-    const IndexType ia_values[]  = { 0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 6, 6 };
-    const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
-    const ValueType nz_values[]  = { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1, 1, 2 };
-
-    numRows     = 7;
-    numColumns  = 4;
-    numValues   = sizeof( nz_values ) / sizeof( ValueType );
-
-    cooIA.init( ia_values, numValues );
-    cooJA.init( ja_values, numValues );
-    cooValues.init( nz_values, numValues );
 }
 
 /* ------------------------------------------------------------------------------------- */

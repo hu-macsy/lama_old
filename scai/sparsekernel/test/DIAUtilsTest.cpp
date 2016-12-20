@@ -42,6 +42,7 @@
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
+#include <scai/sparsekernel/test/TestData1.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -60,57 +61,6 @@ BOOST_AUTO_TEST_SUITE( DIAUtilsTest )
 /* --------------------------------------------------------------------- */
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.DIAUtilsTest" )
-
-/* ------------------------------------------------------------------------------------- */
-
-template<typename ValueType> 
-static void getDIATestData( 
-    IndexType& numRows, 
-    IndexType& numColumns, 
-    IndexType& numDiagonals,
-    HArray<IndexType>& diaOffsets,
-    HArray<ValueType>& diaValues )
-{
-    /*                -5 -4 -3 -2 -1  0  1  2  3 
-
-        Matrix:     x  x  x  x  x  x  6  0  0  4 
-                       x  x  x  x  x  7  0  0  0  x  
-                          x  x  x  x  0  0  9  4  x  x  
-                             x  x  x  2  5  0  3  x  x  x 
-                                x  x  2  0  0  1  x  x  x  x 
-                                   x  0  0  0  0  x  x  x  x  x 
-                                      0  1  0  2  x  x  x  x  x  x  */
-
-    const IndexType diag_offsets[] = { 0, 
-                                       static_cast<IndexType>( -5 ), 
-                                       static_cast<IndexType>( -4 ), 
-                                       static_cast<IndexType>( -3 ),
-                                       static_cast<IndexType>( -2 ), 
-                                       static_cast<IndexType>( -1 ), 
-                                       1, 3 };
-
-    const ValueType x = 0;  // just a stupid value as these entries should never be used
-
-    const ValueType diag_values[]  = { 6, 0, 9, 3, x, x, x,
-                                       x, x, x, x, x, 0, 1,
-                                       x, x, x, x, 2, 0, 0,
-                                       x, x, x, 2, 0, 0, 2,
-                                       x, x, 0, 5, 0, 0, x,
-                                       x, 7, 0, 0, 1, x, x,
-                                       0, 0, 4, x, x, x, x,
-                                       4, x, x, x, x, x, x };
-
-    numRows      = 7;
-    numColumns   = 4;
-    numDiagonals = sizeof( diag_offsets ) / sizeof( IndexType );
-
-    const IndexType diag_nvalues = sizeof( diag_values ) / sizeof( ValueType );
-
-    BOOST_REQUIRE_EQUAL( diag_nvalues, numRows * numDiagonals );
-
-    diaOffsets.init( diag_offsets, numDiagonals );
-    diaValues.init( diag_values, diag_nvalues );
-}
 
 /* ------------------------------------------------------------------------------------- */
 

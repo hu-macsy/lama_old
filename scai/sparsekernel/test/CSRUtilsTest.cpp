@@ -44,6 +44,8 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/sparsekernel/test/TestData1.hpp>
+
 /*--------------------------------------------------------------------- */
 
 using namespace scai;
@@ -987,41 +989,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
             BOOST_CHECK_EQUAL( rCValues[k], values3[k] );
         }
     }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-static void getCSRTestData(
-    IndexType& numRows,
-    IndexType& numColumns,
-    IndexType& numValues,
-    HArray<IndexType>& csrIA,
-    HArray<IndexType>& csrJA,
-    HArray<ValueType>& csrValues )
-{
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
-    */
-
-    const IndexType ia_values[]  = { 0,    2, 3,    5,       8,    10, 10,   12 };
-    const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 };
-    const ValueType nz_values[]  = { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 };
-
-    numRows    = sizeof( ia_values) / sizeof( IndexType ) - 1;
-    numColumns = 4;
-    numValues  = sizeof( ja_values ) / sizeof( IndexType );
-
-    SCAI_ASSERT_EQ_ERROR( numValues, ia_values[numRows], "size mismatch" )
-
-    csrIA.init( ia_values, numRows + 1 );
-    csrJA.init( ja_values, numValues );
-    csrValues.init( nz_values, numValues );
 }
 
 /* ------------------------------------------------------------------------------------- */

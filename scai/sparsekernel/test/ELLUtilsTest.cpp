@@ -44,6 +44,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
+#include <scai/sparsekernel/test/TestData1.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -1562,47 +1563,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types 
             BOOST_CHECK_EQUAL( expectedELLJa[i], rNewELLJa[i] );
         }
     }
-}
-
-/* ------------------------------------------------------------------------------------- */
-
-template<typename ValueType>
-static void getELLTestData(
-    IndexType& numRows,
-    IndexType& numColumns,
-    IndexType& numValuesPerRow,
-    HArray<IndexType>& ellIA,
-    HArray<IndexType>& ellJA,
-    HArray<ValueType>& ellValues )
-{
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
-    */
-
-    const IndexType x = 0;
-    const ValueType v = 0;
-
-    const IndexType ia_sizes[]   = { 2, 1, 2, 3, 2, 0, 2 };
-    const IndexType ja_values[]  = { 0, 0, 2, 0, 0, x, 1, 3, x, 3, 1, 3, x, 3, x, x, x, 3, x, x, x };
-    const ValueType nz_values[]  = { 6, 7, 9, 2, 2, v, 1, 4, v, 4, 5, 1, v, 2, v, v, v, 3, v, v, v };
-
-    numRows         = sizeof( ia_sizes) / sizeof( IndexType );
-    numColumns      = 4;
-
-    IndexType numValues  = sizeof( ja_values ) / sizeof( IndexType );
-
-    numValuesPerRow = numValues / numRows;
-
-    SCAI_ASSERT_EQ_ERROR( numValues, numValuesPerRow * numRows, "size mismatch" )
-
-    ellIA.init( ia_sizes, numRows );
-    ellJA.init( ja_values, numValues );
-    ellValues.init( nz_values, numValues );
 }
 
 /* ------------------------------------------------------------------------------------- */
