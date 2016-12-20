@@ -38,6 +38,7 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/kregistry.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/common/Settings.hpp>
@@ -48,6 +49,7 @@
 using namespace scai;
 using namespace hmemo;
 using namespace sparsekernel;
+using namespace utilskernel;
 using common::TypeTraits;
 
 /* --------------------------------------------------------------------- */
@@ -840,7 +842,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------- */
 
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
@@ -984,6 +985,195 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
         {
             BOOST_CHECK_EQUAL( rCJA[k], ja3[k] );
             BOOST_CHECK_EQUAL( rCValues[k], values3[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static void getCSRTestData(
+    IndexType& numRows,
+    IndexType& numColumns,
+    IndexType& numValues,
+    HArray<IndexType>& csrIA,
+    HArray<IndexType>& csrJA,
+    HArray<ValueType>& csrValues )
+{
+   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                      7  0  0  0         0  -  -    7  -  -
+                      0  0  9  4         2  3  -    9  4  -
+                      2  5  0  3         0  1  3    2  5  3
+                      2  0  0  1         0  3  -    2  1  -
+                      0  0  0  0         -  -  -    -  -  -
+                      0  1  0  2         1  3  -    1  2  -
+    */
+
+    const IndexType ia_values[]  = { 0,    2, 3,    5,       8,    10, 10,   12 };
+    const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 };
+    const ValueType nz_values[]  = { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 };
+
+    numRows    = sizeof( ia_values) / sizeof( IndexType ) - 1;
+    numColumns = 4;
+    numValues  = sizeof( ja_values ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( numValues, ia_values[numRows], "size mismatch" )
+
+    csrIA.init( ia_values, numRows + 1 );
+    csrJA.init( ja_values, numValues );
+    csrValues.init( nz_values, numValues );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = testContext;
+
+    normalGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+    getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
+
+    ValueType alpha = 1;
+    ValueType beta  = -1;
+
+    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]   = { 3, -3, 2, -2 };
+    const ValueType res_values[] = { 9, 22, 8, -13, 3, -1, -6 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numColumns, x_values, testContext );
+    HArray<ValueType> y( numRows, y_values, testContext );
+
+    HArray<ValueType> res( testContext );
+
+    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * CSR * x + " << beta << " * y "
+                            << ", with x = " << x << ", y = " << y
+                            << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rJA( csrJA, loc );
+        ReadAccess<ValueType> rValues( csrValues, loc );
+
+        ReadAccess<ValueType> rX( x, loc );
+        ReadAccess<ValueType> rY( y, loc ); 
+        WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+
+        normalGEMV[loc]( wResult.get(),
+                         alpha, rX.get(), beta, rY.get(),
+                         numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+    }
+
+    {
+        ReadAccess<ValueType> rResult( res, hostContext );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = testContext;
+
+    normalGEVM.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
+
+    ValueType alpha = 1;
+    ValueType beta  = 1;
+
+    const ValueType y_values[]   = { 1, -1, 2, -2 };
+    const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
+    const ValueType res_values[] = { 13, 15, -16, 14 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_y, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numRows, x_values, testContext );
+    HArray<ValueType> y( numColumns, y_values, testContext );
+    HArray<ValueType> res( testContext );
+
+    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * CSR + " << beta << " * y "
+                            << ", with x = " << x << ", y = " << y
+                            << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rJA( csrJA, loc );
+        ReadAccess<ValueType> rValues( csrValues, loc );
+
+        ReadAccess<ValueType> rX( x, loc );
+        ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
+
+        normalGEVM[loc]( wResult.get(),
+                         alpha, rX.get(), beta, rY.get(),
+                         numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+    }
+
+    {
+        ReadAccess<ValueType> rResult( res, hostContext );
+
+        for ( IndexType i = 0; i < numColumns; ++i )
+        {
+            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
         }
     }
 }

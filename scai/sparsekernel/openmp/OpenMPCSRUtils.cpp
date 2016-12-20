@@ -698,7 +698,7 @@ void OpenMPCSRUtils::normalGEVM_s(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
-    normalGEVM( result, ax.first, ax.second, by.first, by.second, numRows, numColumns, csrIA, csrJA, csrValues );
+    normalGEVM( result, ax.first, ax.second, by.first, by.second, numRows, numColumns, csrIA[numRows], csrIA, csrJA, csrValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -712,6 +712,7 @@ void OpenMPCSRUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[] )

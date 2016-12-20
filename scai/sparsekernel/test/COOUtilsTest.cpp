@@ -369,6 +369,84 @@ static void getCOOTestData(
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = testContext;
+
+    normalGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( cooValues.size(), numValues, "size mismatch" )
+
+    ValueType alpha = 1;
+    ValueType beta  = -1;
+
+    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]   = { 3, -3, 2, -2 };
+    const ValueType res_values[] = { 9, 22, 8, -13, 3, -1, -6 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numColumns, x_values, testContext );
+    HArray<ValueType> y( numRows, y_values, testContext );
+
+    HArray<ValueType> res( testContext );
+
+    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
+                            << ", with x = " << x << ", y = " << y
+                            << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<IndexType> rJA( cooJA, loc );
+        ReadAccess<ValueType> rValues( cooValues, loc );
+
+        ReadAccess<ValueType> rX( x, loc );
+        ReadAccess<ValueType> rY( y, loc );
+        WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+
+        normalGEMV[loc]( wResult.get(),
+                         alpha, rX.get(), beta, rY.get(),
+                         numRows, numValues, rIA.get(), rJA.get(), rValues.get() );
+    }
+
+    {
+        ReadAccess<ValueType> rResult( res, hostContext );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+        }
+    }
+} 
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -432,7 +510,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         normalGEVM[loc]( wResult.get(),
                          alpha, rX.get(), beta, rY.get(),
                          numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
-
     }
 
     {

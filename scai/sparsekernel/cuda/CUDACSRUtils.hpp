@@ -133,6 +133,7 @@ public:
         const ValueType y[],
         const IndexType numRows,
         const IndexType numColumns,
+        const IndexType numValues,
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[] );

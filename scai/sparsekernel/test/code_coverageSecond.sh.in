@@ -48,7 +48,10 @@ if [ -d ../cuda ];
 then
     #Running common CUDA tests
     echo "Running sparsekernel tests with CUDA context"
-    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1
 fi
 
 if [ -d ../mic ]
