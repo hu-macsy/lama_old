@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Contains tests for the class CUDAJDSUtils and OpenMPJDSUtils
- * @author Jan Ecker
+ * @author Thomas Brandes
  * @date 16.10.2012
  */
 
@@ -45,6 +45,8 @@
 
 #include <scai/sparsekernel/test/TestData1.hpp>
 #include <scai/sparsekernel/test/TestData2.hpp>
+
+#include <scai/hmemo/test/ContextFix.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -69,10 +71,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.JDSUtilsTest" )
 BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
-    ContextPtr testContext = Context::getContextPtr();
-    KernelTraitContextFunction<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
-    ContextPtr loc = Context::getContextPtr( getRow.validContext( testContext->getType() ) );
+
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr loc         = testContext;
+
+    LAMAKernel<JDSKernelTrait::getRow<ValueType, OtherValueType> > getRow;
+    getRow.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
     ValueType valuesValues[] =
     { 1, 7, 12, 2, 8, 13, 3, 9, 14, 4, 10, 15, 5, 11, 6 };
     const IndexType nValues = sizeof( valuesValues ) / sizeof( ValueType );
@@ -107,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
     {
         WriteOnlyAccess<OtherValueType> wRow( row, loc, numColumns );
         SCAI_CONTEXT_ACCESS( loc );
-        getRow[loc->getType()]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
+        getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), rValues.get() );
     }
     ReadAccess<OtherValueType> rRow( row );
 
@@ -119,9 +126,123 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<JDSKernelTrait::setRow<ValueType, ValueType> > setRow;
+    LAMAKernel<JDSKernelTrait::getRow<ValueType, ValueType> > getRow;
+
+    ContextPtr loc = testContext;
+
+    getRow.getSupportedContext( loc, setRow );
+
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    HArray<ValueType> row;
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        WriteAccess<ValueType> wValues( jdsValues, loc );
+        ReadAccess<IndexType> rJa( jdsJA, loc );
+        ReadAccess<IndexType> rDlg( jdsDLG, loc );
+        ReadAccess<IndexType> rIlg( jdsILG, loc );
+        ReadAccess<IndexType> rPerm( jdsPerm, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+    
+        WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
+ 
+        binary::BinaryOp op = binary::SUB;
+
+        getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wValues.get() );
+        setRow[loc]( wValues.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wRow.get(), op );
+    }
+
+    // Now all values should be zero
+
+    {
+        const IndexType numValues = jdsValues.size();
+
+        ReadAccess<ValueType> rValues( jdsValues, loc );
+
+        for ( IndexType i = 0; i < numValues; ++i )
+        {
+            BOOST_CHECK_EQUAL( ValueType( 0 ), rValues[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( getValuePosColTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = testContext;
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    IndexType nTotal = 0;
+
+    for ( IndexType j = 0; j < numColumns; ++j )
+    {
+        HArray<IndexType> row;
+        HArray<IndexType> pos;
+        
+        IndexType n = 0;
+
+        {
+            ReadAccess<IndexType> rJa( jdsJA, loc );
+            ReadAccess<IndexType> rDlg( jdsDLG, loc );
+            ReadAccess<IndexType> rIlg( jdsILG, loc );
+            ReadAccess<IndexType> rPerm( jdsPerm, loc );
+
+            SCAI_CONTEXT_ACCESS( loc );
+    
+            WriteOnlyAccess<IndexType> wRow( row, loc, numColumns );
+            WriteOnlyAccess<IndexType> wPos( pos, loc, numColumns );
+ 
+            n = getValuePosCol[loc]( wRow.get(), wPos.get(), j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
+
+        }
+
+        nTotal += n;
+    }
+
+    BOOST_CHECK_EQUAL( nTotal, jdsJA.size() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::getValuePos> getValuePos;
     ContextPtr loc = Context::getContextPtr( getValuePos.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -189,7 +310,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
-    ContextPtr testContext = Context::getContextPtr();
+
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::scaleRows<ValueType, OtherValueType> > scaleRows;
     ContextPtr loc = Context::getContextPtr( scaleRows.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -233,7 +356,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
 BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::checkDiagonalProperty> checkDiagonalProperty;
     ContextPtr loc = Context::getContextPtr( checkDiagonalProperty.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -319,7 +443,8 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
 
 BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::ilg2dlg> ilg2dlg;
     ContextPtr loc = Context::getContextPtr( ilg2dlg.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -353,7 +478,9 @@ BOOST_AUTO_TEST_CASE( ilg2dlgTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
-    ContextPtr testContext = Context::getContextPtr();
+
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
     ContextPtr loc = Context::getContextPtr( setCSRValues.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -426,7 +553,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRValuesTest, ValueType, scai_numeric_test_ty
 BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRValuesTest, ValueType, scai_numeric_test_types )
 {
     typedef float OtherValueType;
-    ContextPtr testContext = Context::getContextPtr();
+
+    ContextPtr testContext = ContextFix::testContext;
+
     KernelTraitContextFunction<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
     ContextPtr loc = Context::getContextPtr( getCSRValues.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );

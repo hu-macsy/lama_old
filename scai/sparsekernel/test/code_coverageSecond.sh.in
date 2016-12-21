@@ -26,7 +26,7 @@
  #
  # @brief This file is a shellscript, which contains all necessary steps to 
  #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
+ # @author Lauretta Schubert, Thomas Brandes
  # @date 15.08.2012
 ###
 
@@ -35,23 +35,25 @@ source scai_code_coverage_functions.sh
 # Check requirements for codecoverage
 requirements_coverage
 
-export SCAI_LOG=TRACE
+export SCAI_LOG=WARN
 export SCAI_TRACE=time
 
 error_count=0
 
 # Running tests serial
 echo "Running sparsekernel tests on Host"
-count_error ./sparsekernelTest --SCAI_CONTEXT=Host
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host --SCAI_USE_MKL=0
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host --SCAI_USE_MKL=1
 
 if [ -d ../cuda ];
 then
     #Running common CUDA tests
     echo "Running sparsekernel tests with CUDA context"
-    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0
-    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1
-    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0
-    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0 --SCAI_CUDA_USE_CUSPARSE=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1 --SCAI_CUDA_USE_CUSPARSE=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0 --SCAI_CUDA_USE_CUSPARSE=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1 --SCAI_CUDA_USE_CUSPARSE=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_CUSPARSE=1
 fi
 
 if [ -d ../mic ]
