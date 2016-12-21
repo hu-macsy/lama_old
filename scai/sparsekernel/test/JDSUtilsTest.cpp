@@ -38,11 +38,13 @@
 // others
 #include <scai/kregistry.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/JDSKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
 #include <scai/sparsekernel/test/TestData1.hpp>
+#include <scai/sparsekernel/test/TestData2.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -518,7 +520,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     IndexType numColumns;
     IndexType numDiagonals;
 
-    getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
 
     SCAI_ASSERT_EQ_ERROR( jdsPerm.size(), numRows, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( jdsILG.size(), numRows, "size mismatch" )
@@ -603,7 +605,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     IndexType numColumns;
     IndexType numDiagonals;
 
-    getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
 
     SCAI_ASSERT_EQ_ERROR( jdsPerm.size(), numRows, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( jdsILG.size(), numRows, "size mismatch" )
@@ -656,6 +658,93 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         for ( IndexType i = 0; i < numColumns; ++i )
         {
             BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<JDSKernelTrait::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = testContext;
+
+    jacobi.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data2::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    const ValueType rhs_values[]   = { 1, -1, 2, -2 };
+    const ValueType old_values[]   = { 3, -2, -2, 3 };
+
+    HArray<ValueType> rhs( numRows, rhs_values, testContext );
+    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+
+    const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> res( testContext );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rPerm( jdsPerm, loc );
+            ReadAccess<IndexType> rDLG( jdsDLG, loc );
+            ReadAccess<IndexType> rILG( jdsILG, loc );
+            ReadAccess<IndexType> rJA( jdsJA, loc );
+            ReadAccess<ValueType> rValues( jdsValues, loc );
+
+            ReadAccess<ValueType> rOld( oldSolution, loc );
+            ReadAccess<ValueType> rRhs( rhs, loc );
+            WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
+
+            jacobi[loc]( wSolution.get(), numRows,
+                         rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get(),
+                         rOld.get(), rRhs.get(), omega );
+
+        }
+
+        LArray<ValueType> expectedRes( testContext );
+
+        data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
+
+        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+
+        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+
+        bool mustBeIdentical = false;
+
+        if ( mustBeIdentical )
+        {
+            ReadAccess<ValueType> rExpected( expectedRes );
+            ReadAccess<ValueType> rComputed( res );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
         }
     }
 }

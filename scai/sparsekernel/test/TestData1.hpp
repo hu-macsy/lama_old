@@ -33,8 +33,48 @@
  */
 
 #include <scai/hmemo/HArray.hpp>
+#include <scai/hmemo/ReadAccess.hpp>
+#include <scai/hmemo/WriteAccess.hpp>
 
 using scai::hmemo::HArray;
+
+namespace data1
+{
+
+/* ------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static void getDenseTestData(
+    IndexType& numRows,
+    IndexType& numColumns,
+    HArray<ValueType>& denseValues )
+{
+   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                      7  0  0  0         0  -  -    7  -  -
+                      0  0  9  4         2  3  -    9  4  -
+                      2  5  0  3         0  1  3    2  5  3
+                      2  0  0  1         0  3  -    2  1  -
+                      0  0  0  0         -  -  -    -  -  -
+                      0  1  0  2         1  3  -    1  2  -
+    */
+
+    const ValueType values[]  = { 6, 0, 0, 4, 
+                                  7, 0, 0, 0, 
+                                  0, 0, 9, 4, 
+                                  2, 5, 0, 3, 
+                                  2, 0, 0, 1, 
+                                  0, 0, 0, 0, 
+                                  0, 1, 0, 2 };
+
+    numRows    = 7;
+    numColumns = 4;
+
+    IndexType numValues  = sizeof( values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numValues, numRows * numColumns, "size mismatch" )
+
+    denseValues.init( values, numValues );
+}
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -251,3 +291,102 @@ static void getCOOTestData(
     cooValues.init( nz_values, numValues );
 }
 
+/* ------------------------------------------------------------------------------------- */
+
+/** This method computes the result of a matrix-vector multiplication via dense data by hand */
+
+template<typename ValueType>
+static void getGEMVResult( HArray<ValueType>& res,
+                           const ValueType alpha,
+                           const HArray<ValueType>& x,
+                           const ValueType beta,
+                           const HArray<ValueType>& y )
+{
+    IndexType numRows;
+    IndexType numColumns;
+
+    HArray<ValueType> denseValues;
+
+    getDenseTestData( numRows, numColumns, denseValues );
+
+    SCAI_ASSERT_EQ_ERROR( x.size(), numColumns, "size mismatch for x" )
+    SCAI_ASSERT_EQ_ERROR( y.size(), numRows, "size mismatch for y" )
+
+    {
+        using scai::hmemo::ReadAccess;
+        using scai::hmemo::WriteOnlyAccess;
+        
+        ReadAccess<ValueType> rX( x );
+        ReadAccess<ValueType> rY( y );
+        WriteOnlyAccess<ValueType> wRes( res, numRows );
+        ReadAccess<ValueType> rDense( denseValues );
+
+        for ( IndexType i = 0; i < numRows; ++i ) 
+        {
+            ValueType v = 0;
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                v += rDense[ i * numColumns + j ] * rX[j];
+            }
+
+            wRes[i] = alpha * v + beta * rY[i];
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+/** This method computes the result of a vector-matrix multiplication via dense data by hand */
+
+template<typename ValueType>
+static void getGEVMResult( HArray<ValueType>& res,
+                           const ValueType alpha,
+                           const HArray<ValueType>& x,
+                           const ValueType beta,
+                           const HArray<ValueType>& y )
+{
+    IndexType numRows;
+    IndexType numColumns;
+
+    HArray<ValueType> denseValues;
+
+    getDenseTestData( numRows, numColumns, denseValues );
+
+    SCAI_ASSERT_EQ_ERROR( x.size(), numRows, "size mismatch for x" )
+    SCAI_ASSERT_EQ_ERROR( y.size(), numColumns, "size mismatch for y" )
+
+    {
+        using scai::hmemo::ReadAccess;
+        using scai::hmemo::WriteOnlyAccess;
+        
+        ReadAccess<ValueType> rX( x );
+        ReadAccess<ValueType> rY( y );
+        WriteOnlyAccess<ValueType> wRes( res, numColumns );
+        ReadAccess<ValueType> rDense( denseValues );
+
+        for ( IndexType j = 0; j < numColumns; ++j ) 
+        {
+            ValueType v = 0;
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                v += rX[i] * rDense[ i * numColumns + j ];
+            }
+
+            wRes[j] = alpha * v + beta * rY[j];
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static ValueType getMaxVal()
+{
+    return ValueType( 9 );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+}

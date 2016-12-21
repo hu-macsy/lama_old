@@ -39,12 +39,16 @@
 #include <scai/hmemo.hpp>
 #include <scai/kregistry.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
+#include <scai/hmemo/test/ContextFix.hpp>
+
 #include <scai/sparsekernel/test/TestData1.hpp>
+#include <scai/sparsekernel/test/TestData2.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -66,7 +70,8 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     kregistry::KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
     ContextPtr loc = Context::getContextPtr( absMaxDiffVal.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -118,7 +123,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
@@ -190,7 +196,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 {
     typedef double ValueType;
 
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
 
@@ -277,7 +283,7 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
 
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
 
@@ -338,7 +344,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 {
     typedef double ValueType;
 
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::compress<ValueType> > compress;
 
@@ -410,7 +416,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
 BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::getValuePosCol> getValuePosCol;
 
@@ -492,7 +498,8 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
     ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
@@ -617,7 +624,8 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
+
     kregistry::KernelTraitContextFunction<CSRKernelTrait::decomposition<ValueType> > decomposition;
     ContextPtr loc = Context::getContextPtr( decomposition.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
@@ -682,7 +690,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
 
@@ -846,7 +854,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
     kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
     kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
@@ -995,7 +1003,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
     static LAMAKernel<CSRKernelTrait::normalGEMV<ValueType> > normalGEMV;
@@ -1013,7 +1021,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     IndexType numRows;
     IndexType numColumns;
     IndexType numValues;
-    getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 
     SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
@@ -1072,7 +1080,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
 
     static LAMAKernel<CSRKernelTrait::normalGEVM<ValueType> > normalGEVM;
@@ -1091,7 +1099,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     IndexType numColumns;
     IndexType numValues;
 
-    getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 
     SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
@@ -1141,6 +1149,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         for ( IndexType i = 0; i < numColumns; ++i )
         {
             BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = testContext;
+
+    jacobi.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data2::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    const ValueType rhs_values[]   = { 1, -1, 2, -2 };
+    const ValueType old_values[]   = { 3, -2, -2, 3 };
+
+    HArray<ValueType> rhs( numRows, rhs_values, testContext );
+    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+
+    const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> res( testContext );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+
+            ReadAccess<ValueType> rOld( oldSolution, loc );
+            ReadAccess<ValueType> rRhs( rhs, loc );
+            WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
+
+            jacobi[loc]( wSolution.get(), 
+                         rIA.get(), rJA.get(), rValues.get(),
+                         rOld.get(), rRhs.get(), omega, numRows );
+        }
+
+        LArray<ValueType> expectedRes( testContext );
+
+        data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
+
+        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+
+        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+
+        bool mustBeIdentical = false;
+
+        if ( mustBeIdentical )
+        {
+            ReadAccess<ValueType> rExpected( expectedRes );
+            ReadAccess<ValueType> rComputed( res );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
         }
     }
 }

@@ -81,18 +81,17 @@ static void getCSRTestData(
     HArray<IndexType>& csrJA,
     HArray<ValueType>& csrValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
+   /*   Matrix:       6  1  0  4        0  1  3    6  1  4
+                     -2  8  3  0        1  0  2    8 -2  3
+                      0  1  9  4        2  1  3    9  1  4
+                     -1  0  1  3        3  0  2    3 -1  1  
+
+        Note: diagonals are always the first entry
     */
 
-    const IndexType ia_values[]  = { 0,    2, 3,    5,       8,    10, 10,   12 };
-    const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 };
-    const ValueType nz_values[]  = { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 };
+    const IndexType ia_values[]  = { 0,          3,          6,       9,       12 };
+    const IndexType ja_values[]  = { 0,  1,  3,  1,  0,  2,  2, 1, 3, 3,  0, 2 };
+    const ValueType nz_values[]  = { 6,  1,  4,  8, -2,  3,  9, 1, 4, 3, -1, 1 };
 
     numRows    = sizeof( ia_values) / sizeof( IndexType ) - 1;
     numColumns = 4;
@@ -116,21 +115,15 @@ static void getELLTestData(
     HArray<IndexType>& ellJA,
     HArray<ValueType>& ellValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
+   /*   Matrix:       6  1  0  4        0  1  3    6  1  4
+                     -2  8  3  0        1  0  2    8 -2  3
+                      0  1  9  4        2  1  3    9  1  4
+                     -1  0  1  3        3  0  2    3 -1  1  
     */
 
-    const IndexType x = 0;
-    const ValueType v = 0;
-
-    const IndexType ia_sizes[]   = { 2, 1, 2, 3, 2, 0, 2 };
-    const IndexType ja_values[]  = { 0, 0, 2, 0, 0, x, 1, 3, x, 3, 1, 3, x, 3, x, x, x, 3, x, x, x };
-    const ValueType nz_values[]  = { 6, 7, 9, 2, 2, v, 1, 4, v, 4, 5, 1, v, 2, v, v, v, 3, v, v, v };
+    const IndexType ia_sizes[]   = { 3, 3, 3, 3 };
+    const IndexType ja_values[]  = { 0, 1, 2, 3, 1,  0, 1,  0, 3, 2, 3, 2 };
+    const ValueType nz_values[]  = { 6, 8, 9, 3, 1, -2, 1, -1, 4, 3, 4, 1 };
 
     numRows         = sizeof( ia_sizes) / sizeof( IndexType );
     numColumns      = 4;
@@ -159,28 +152,17 @@ static void getJDSTestData(
     HArray<IndexType>& jdsJA,
     HArray<ValueType>& jdsValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
-
-                                  3      0  1  3    2  5  3
-                                  0      0  3  -    6  4  -
-                                  2      2  3  -    9  4  -
-                                  4      0  3  -    2  1  -
-                                  6      1  3  -    1  2  -
-                                  1      0  -  -    7  -  -
-                                  5      -  -  -    -  -  -
+   /*   Matrix:       6  1  0  4        0  1  3    6  1  4
+                     -2  8  3  0        1  0  2    8 -2  3
+                      0  1  9  4        2  1  3    9  1  4
+                     -1  0  1  3        3  0  2    3 -1  1  
     */
 
-    const IndexType perm_values[]  = { 3, 0, 2, 4, 6, 1, 5 };
-    const IndexType ilg_values[]   = { 3, 2, 2, 2, 2, 1, 0 };
-    const IndexType dlg_values[]   = { 6, 5, 1 };
-    const IndexType ja_values[]    = { 0, 0, 2, 0, 1, 0, 1, 3, 3, 3, 3, 3 };
-    const ValueType nz_values[]    = { 2, 6, 9, 2, 1, 7, 5, 4, 4, 1, 2, 3 };
+    const IndexType perm_values[] = { 0, 1, 2, 3 };
+    const IndexType ilg_values[]  = { 3, 3, 3, 3 };
+    const IndexType dlg_values[]  = { 4, 4, 4 };
+    const IndexType ja_values[]   = { 0, 1, 2, 3, 1,  0, 1,  0, 3, 2, 3, 2 };
+    const ValueType nz_values[]   = { 6, 8, 9, 3, 1, -2, 1, -1, 4, 3, 4, 1 };
 
     numRows         = sizeof( perm_values) / sizeof( IndexType );
     numColumns      = 4;
@@ -255,20 +237,17 @@ static void getCOOTestData(
     HArray<IndexType>& cooJA,
     HArray<ValueType>& cooValues )
 {
-   /*   Matrix:       6  0  0  4 
-                      7  0  0  0
-                      0  0  9  4 
-                      2  5  0  3  
-                      2  0  0  1  
-                      0  0  0  0  
-                      0  1  0  2  
+   /*   Matrix:       6  1  -  4  
+                     -2  8  3  - 
+                      -  1  9  4
+                     -1  -  1  3 
     */
 
-    const IndexType ia_values[]  = { 0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 6, 6 };
-    const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
-    const ValueType nz_values[]  = { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1, 1, 2 };
+    const IndexType ia_values[]  = { 0, 1, 2, 3, 0, 0,  1, 1, 2,  2, 3, 3 };
+    const IndexType ja_values[]  = { 0, 1, 2, 3, 1, 3,  0, 2, 1,  3, 0, 2 };
+    const ValueType nz_values[]  = { 6, 8, 9, 3, 1, 4, -2, 3, 1,  4, -1, 1 };
 
-    numRows     = 7;
+    numRows     = 4;
     numColumns  = 4;
     numValues   = sizeof( nz_values ) / sizeof( ValueType );
 
@@ -279,10 +258,10 @@ static void getCOOTestData(
 
 /* ------------------------------------------------------------------------------------- */
 
-/** This method computes the result of a vector-matrix multiplication via dense data by hand */
+/** This method computes the result of a jacobi step by hand */
 
 template<typename ValueType>
-static void getJacobiResult( HArray<ValueType>& solution
+static void getJacobiResult( HArray<ValueType>& solution,
                              const HArray<ValueType>& oldSolution,
                              const ValueType omega,
                              const HArray<ValueType>& rhs )
@@ -301,9 +280,9 @@ static void getJacobiResult( HArray<ValueType>& solution
         using scai::hmemo::ReadAccess;
         using scai::hmemo::WriteOnlyAccess;
         
-        ReadAccess<ValueType> rOld( x );
-        ReadAccess<ValueType> rRhs( y );
-        WriteOnlyAccess<ValueType> wSol( res, numRows );
+        ReadAccess<ValueType> rOld( oldSolution );
+        ReadAccess<ValueType> rRhs( rhs );
+        WriteOnlyAccess<ValueType> wSol( solution, numRows );
         ReadAccess<ValueType> rDense( denseValues );
 
         ValueType one = 1;
@@ -311,21 +290,21 @@ static void getJacobiResult( HArray<ValueType>& solution
         for ( IndexType i = 0; i < numRows; ++i )
         {
             ValueType v    = 0;
-            ValueType dinv = 0;
+            ValueType diag = one;
 
-            for ( IndexType i = 0; i < numRows; ++i )
+            for ( IndexType j = 0; j < numColumns; ++j )
             {
                 if ( i == j )
                 {
-                    dinv = one / rDense[ i * numColumns + j ];
+                    diag = rDense[ i * numColumns + j ];
                 }
                 else
                 {
-                    v += rOld[i] * rDense[ i * numColumns + j ];
+                    v += rDense[ i * numColumns + j ] * rOld[j];
                 }
             }
 
-            wRes[i] = omega * ( rhs[i] + v ) * dinv - ( one - omega ) * rOld[i];
+            wSol[i] = omega * ( rRhs[i] - v ) / diag + ( one - omega ) * rOld[i];
         }
     }
 }
