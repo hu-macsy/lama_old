@@ -324,19 +324,6 @@ public:
         const IndexType bIA[],
         const IndexType bJA[] );
 
-    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplyJA  */
-
-    static void matrixMultiplyJA(
-        IndexType cJA[],
-        const IndexType cIA[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        bool diagonalProperty,
-        const IndexType aIA[],
-        const IndexType aJA[],
-        const IndexType bIA[],
-        const IndexType bJA[] );
-
     /** Implementation for CSRKernelTrait::Mult::matrixAdd */
 
     template<typename ValueType>

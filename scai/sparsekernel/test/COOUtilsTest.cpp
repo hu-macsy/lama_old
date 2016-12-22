@@ -69,9 +69,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 BOOST_AUTO_TEST_CASE( offsets2iaTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-    KernelTraitContextFunction<COOKernelTrait::offsets2ia > offsets2ia;
-    ContextPtr loc = Context::getContextPtr( offsets2ia.validContext( testContext->getType() ) );
+
+    LAMAKernel<COOKernelTrait::offsets2ia > offsets2ia;
+
+    ContextPtr loc = testContext;
+    offsets2ia.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
     SCAI_LOG_INFO( logger, "offsets2ia test for " << *testContext << " on " << *loc )
     // Test without diagonal property
     {
@@ -91,7 +96,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc->getType()]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -120,7 +125,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc->getType()]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -137,11 +142,18 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_types )
 {
     typedef float CSRValueType;
+
     ContextPtr testContext = ContextFix::testContext;
-    KernelTraitContextFunction<COOKernelTrait::setCSRData<ValueType, CSRValueType> > setCSRData;
-    ContextPtr loc = Context::getContextPtr( setCSRData.validContext( testContext->getType() ) );
+
+    LAMAKernel<COOKernelTrait::setCSRData<ValueType, CSRValueType> > setCSRData;
+
+    ContextPtr loc = testContext;
+    setCSRData.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
     SCAI_LOG_INFO( logger, "setCSRData< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
     // here we test only for csrJA
@@ -164,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_type
         {
             WriteOnlyAccess<ValueType> wCOOJA( cooJA, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            setCSRData[loc->getType()]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            setCSRData[loc]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<ValueType> rCOOJA( cooJA );
 
@@ -175,16 +187,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_type
     }
 } // setCSRData
 
-
 /* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<COOKernelTrait::getValuePosCol> getValuePosCol;
+    LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
 
-    ContextPtr loc = Context::getContextPtr( getValuePosCol.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    getValuePosCol.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -215,7 +227,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
+        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
@@ -236,7 +248,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
+        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
@@ -261,11 +273,12 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 
 BOOST_AUTO_TEST_CASE( getValuePosRowTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<COOKernelTrait::getValuePosRow> getValuePosRow;
+    LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
 
-    ContextPtr loc = Context::getContextPtr( getValuePosRow.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    getValuePosRow.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -296,7 +309,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wCol( col, loc, numCols );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numCols );
-        cnt = getValuePosRow[loc->getType()]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
+        cnt = getValuePosRow[loc]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
@@ -317,7 +330,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wCol( col, loc, numCols );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numCols );
-        cnt = getValuePosRow[loc->getType()]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
+        cnt = getValuePosRow[loc]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for row 2, order might be arbitrary

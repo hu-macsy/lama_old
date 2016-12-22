@@ -72,9 +72,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
-    ContextPtr loc = Context::getContextPtr( absMaxDiffVal.validContext( testContext->getType() ) );
+    LAMAKernel<CSRKernelTrait::absMaxDiffVal<ValueType> > absMaxDiffVal;
+
+    ContextPtr loc = testContext;
+    absMaxDiffVal.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
     SCAI_LOG_INFO( logger, "absMaxDiffVal< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
     // input arrays
     //    Array1             Array2
@@ -110,12 +114,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
     ReadAccess<IndexType> rCSRJA2( csrJA2, loc );
     ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
     SCAI_CONTEXT_ACCESS( loc );
-    ValueType maxVal = absMaxDiffVal[loc->getType()]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+    ValueType maxVal = absMaxDiffVal[loc]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
                        rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
     // rows are sorted, so we can also apply sortFlag = true
-    maxVal = absMaxDiffVal[loc->getType()]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                                            rCSRJA2.get(), rCSRValues2.get() );
+    maxVal = absMaxDiffVal[loc]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
+                                 rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
 }
 
@@ -125,8 +129,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
+    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+
+    ContextPtr loc = testContext;
+    convertCSR2CSC.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
     SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
     //    1.0   -   2.0       1.0  0.5   -
@@ -161,8 +168,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test
         WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                                        numColumns, numValues );
+        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                             numColumns, numValues );
     }
     {
         ReadAccess<IndexType> rCSCIA( cscIA );
@@ -198,9 +205,10 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
+    LAMAKernel<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
 
-    ContextPtr loc = Context::getContextPtr( sortRowElements.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    sortRowElements.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -236,7 +244,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
         bool diagonalFlag = false;
 
-        sortRowElements[loc->getType()]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
+        sortRowElements[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
     }
 
     // now check that values are sorted
@@ -261,7 +269,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
         bool diagonalFlag = true;
 
-        sortRowElements[loc->getType()]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
+        sortRowElements[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, diagonalFlag );
     }
 
     // now check that values are sorted
@@ -285,9 +293,10 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
 
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
+    LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
 
-    ContextPtr loc = Context::getContextPtr( countNonZeros.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    countNonZeros.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -323,8 +332,8 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
         bool diagonalFlag = false;
         ValueType eps = 0.000001;
 
-        countNonZeros[loc->getType()]( wSizes.get(), rIA.get(), rJA.get(), rValues.get(),
-                                       numRows, eps, diagonalFlag );
+        countNonZeros[loc]( wSizes.get(), rIA.get(), rJA.get(), rValues.get(),
+                            numRows, eps, diagonalFlag );
     }
 
     // now check the values of sizes
@@ -346,9 +355,10 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::compress<ValueType> > compress;
+    LAMAKernel<CSRKernelTrait::compress<ValueType> > compress;
 
-    ContextPtr loc = Context::getContextPtr( compress.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    compress.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -392,8 +402,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
         bool diagonalFlag = false;
         double eps = 0.000001;
 
-        compress[loc->getType()]( wJA.get(), wValues.get(), rIA.get(), roIA.get(), roJA.get(), roValues.get(),
-                                  numRows, eps, diagonalFlag );
+        compress[loc]( wJA.get(), wValues.get(), rIA.get(), roIA.get(), roJA.get(), roValues.get(), numRows, eps, diagonalFlag );
     }
 
     // now check that non-zero values are at the right place
@@ -418,9 +427,10 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::getValuePosCol> getValuePosCol;
+    LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
 
-    ContextPtr loc = Context::getContextPtr( getValuePosCol.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    getValuePosCol.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -451,7 +461,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
+        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
@@ -472,7 +482,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
+        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rCSRIA.get(), numRows, rCSRJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
@@ -500,53 +510,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
-    ContextPtr loc = Context::getContextPtr( convertCSR2CSC.validContext( testContext->getType() ) );
+    LAMAKernel<CSRKernelTrait::convertCSR2CSC<ValueType> > convertCSR2CSC;
+
+    ContextPtr loc = testContext;
+    convertCSR2CSC.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
+
     SCAI_LOG_INFO( logger, "transpose< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
 
-    //      input array           transpose
-    //  0     1.0   -   2.0       1.0  0.5   -    4.0
-    //  1     0.5  0.3   -         -   0.3   -    1.5
-    //  2      -    -   3.0       2.0   -   3.0    -
-    //  3     4.0  1.5   -
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
 
-    const IndexType ia1[] = { 0, 2, 4, 5, 7 };
-    const IndexType ja1[] = { 0, 2, 0, 1, 2, 0, 1 };
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
 
-    const IndexType ia2[] = { 0, 3, 5, 7 };
-    const IndexType ja2[] = { 0, 1, 3, 1, 3, 0, 2 };
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 
-    const ValueType values1[] =  { 1.0, 2.0, 0.5, 0.3, 3.0, 4.0, 1.5 };
-    const ValueType values2[] =  { 1.0, 0.5, 4.0, 0.3, 1.5, 2.0, 3.0 };
-
-    const IndexType numRows = 4;
-    const IndexType numColumns = 3;
-    const IndexType numValues = 7;
-
-    const IndexType ia1_size = sizeof( ia1 ) / sizeof( IndexType );
-    const IndexType ia2_size = sizeof( ia2 ) / sizeof( IndexType );
-
-    BOOST_CHECK_EQUAL( numRows + 1, ia1_size );
-    BOOST_CHECK_EQUAL( numColumns + 1, ia2_size );
-
-    const size_t sizeArray = numValues;
-
-    BOOST_CHECK_EQUAL( sizeArray, sizeof( ja1 ) / sizeof( IndexType ) );
-    BOOST_CHECK_EQUAL( sizeArray, sizeof( ja2 ) / sizeof( IndexType ) );
-
-    BOOST_CHECK_EQUAL( sizeArray, sizeof( values1 ) / sizeof( ValueType ) );
-    BOOST_CHECK_EQUAL( sizeArray, sizeof( values2 ) / sizeof( ValueType ) );
-
-    HArray<IndexType> csrIA( numRows + 1, ia1, testContext );
-    HArray<IndexType> csrJA( numValues, ja1, testContext );
-    HArray<ValueType> csrValues( numValues, values1, testContext );
+    SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
 
     HArray<IndexType> cscIA;
     HArray<IndexType> cscJA;
     HArray<ValueType> cscValues;
 
     // CSC <- transpose CSR
+
     {
         ReadAccess<IndexType> rCSRIA( csrIA, loc );
         ReadAccess<IndexType> rCSRJA( csrJA, loc );
@@ -555,31 +547,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
         WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc->getType()]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), 
-                                        rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
-                                        numColumns, numValues );
+        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), 
+                             rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
+                             numColumns, numValues );
     }
-
-    BOOST_REQUIRE_EQUAL( numColumns + 1, cscIA.size() );
-    {
-        ContextPtr host = Context::getHostPtr();
-
-        ReadAccess<IndexType> rCSCIA( cscIA, host );
-
-        for ( IndexType j = 0; j <= numColumns; ++j )
-        {
-            BOOST_REQUIRE_EQUAL( rCSCIA[j], ia2[j] );
-        }
-    }
-
-    BOOST_REQUIRE_EQUAL( numValues, cscJA.size() );
-    BOOST_REQUIRE_EQUAL( numValues, cscValues.size() );
 
     //  For comparison later we sort cscJA and cscValue
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
+    LAMAKernel<CSRKernelTrait::sortRowElements<ValueType> > sortRowElements;
 
-    loc = Context::getContextPtr( sortRowElements.validContext( testContext->getType() ) );
+    loc = testContext;
+    sortRowElements.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -596,26 +574,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
         // For comparison of cscJA and cscValue we need to sort it
 
-        sortRowElements[loc->getType()]( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
+        sortRowElements[loc]( wCSCJA.get(), wCSCValues.get(), rCSCIA.get(), numColumns, diagonalFlag );
     }
 
-    // check CSC for correctness, done on host
-    {
-        ContextPtr host = Context::getHostPtr();
+    //  compare with the CSC test data
 
-        ReadAccess<IndexType> rCSCJA( cscJA, host );
-        ReadAccess<ValueType> rCSCValues( cscValues, host );
+    IndexType numRows1;
+    IndexType numColumns1;
+    IndexType numValues1;
 
-        for ( IndexType j = 0; j < numValues; ++j )
-        {
-            BOOST_CHECK_EQUAL( rCSCJA[j], ja2[j] );
-        }
+    LArray<IndexType> expIA( testContext );
+    LArray<IndexType> expJA( testContext );
+    LArray<ValueType> expValues( testContext );
 
-        for ( IndexType j = 0; j < numValues; ++j )
-        {
-            BOOST_CHECK_EQUAL( rCSCValues[j], values2[j] );
-        }
-    }
+    data1::getCSCTestData( numRows1, numColumns1, numValues1, expIA, expJA, expValues );
+
+    // test cscIA = expJA, cscJA = expIA, cscValues = expValues 
+
+    BOOST_REQUIRE_EQUAL( expJA.size(), cscIA.size() );
+    BOOST_CHECK_EQUAL( 0, expJA.maxDiffNorm( cscIA ) );
+
+    BOOST_REQUIRE_EQUAL( expIA.size(), cscJA.size() );
+    BOOST_CHECK_EQUAL( 0, expIA.maxDiffNorm( cscJA ) );
+
+    BOOST_REQUIRE_EQUAL( expValues.size(), cscValues.size() );
+    BOOST_CHECK_EQUAL( 0, expValues.maxDiffNorm( cscValues ) );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -626,8 +609,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::decomposition<ValueType> > decomposition;
-    ContextPtr loc = Context::getContextPtr( decomposition.validContext( testContext->getType() ) );
+    LAMAKernel<CSRKernelTrait::decomposition<ValueType> > decomposition;
+
+    ContextPtr loc = testContext;
+    decomposition.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
     SCAI_LOG_INFO( logger, "decomposition< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
@@ -669,7 +655,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
         ReadAccess<ValueType> rRHS( rhs, loc );
         WriteOnlyAccess<ValueType> wSol( solution, loc, numRows );
         SCAI_CONTEXT_ACCESS( loc );
-        decomposition[loc->getType()]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
+        decomposition[loc]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
             rRHS.get(), numRows, nnz, false );
     }
 
@@ -692,9 +678,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
+    LAMAKernel<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
 
-    ContextPtr loc = Context::getContextPtr( matrixMultiplySizes.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    matrixMultiplySizes.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -763,8 +750,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
         WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
 
-        nnz3 = matrixMultiplySizes[loc->getType()]( wSizes.get(), n1, n3, n2, diagonalProperty, 
-                                                    rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
+        nnz3 = matrixMultiplySizes[loc]( wSizes.get(), n1, n3, n2, diagonalProperty, 
+                                         rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
     }
 
     BOOST_CHECK_EQUAL( ia3[ n1 ], nnz3 );
@@ -783,9 +770,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
     SCAI_LOG_INFO( logger, "matrixMultiply< " << TypeTraits<ValueType>::id() << "> non-square test for " << *testContext << " on " << *loc )
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
+    LAMAKernel<CSRKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
 
-    loc = Context::getContextPtr( matrixMultiply.validContext( testContext->getType() ) );
+    loc = testContext;
+    matrixMultiply.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -809,8 +797,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
         WriteOnlyAccess<IndexType> wJa( cJa, loc, nnz3 );
         WriteOnlyAccess<ValueType> wValues( cValues, loc, nnz3 );
 
-        matrixMultiply[loc->getType()]( rIa.get(), wJa.get(), wValues.get(), n1, n3, n2, alpha, diagonalProperty,
-                                        rAIA.get(), rAJA.get(), rAValues.get(), rBIA.get(), rBJA.get(), rBValues.get() );
+        matrixMultiply[loc]( rIa.get(), wJa.get(), wValues.get(), n1, n3, n2, alpha, diagonalProperty,
+                             rAIA.get(), rAJA.get(), rAValues.get(), rBIA.get(), rBJA.get(), rBValues.get() );
     }
 
     // sort the columns, otherwise comparison might fail
@@ -856,10 +844,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
-    kregistry::KernelTraitContextFunction<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
+    LAMAKernel<CSRKernelTrait::matrixAddSizes> matrixAddSizes;
+    LAMAKernel<CSRKernelTrait::matrixAdd<ValueType> > matrixAdd;
 
-    ContextPtr loc = Context::getContextPtr( matrixAdd.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    matrixAdd.getSupportedContext( loc, matrixAddSizes );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -923,8 +912,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
         WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
 
-        nnz3 = matrixAddSizes[loc->getType()]( wSizes.get(), n1, n2, diagonalProperty, 
-                                               rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
+        nnz3 = matrixAddSizes[loc]( wSizes.get(), n1, n2, diagonalProperty, 
+                                    rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
 
     }
 
@@ -964,10 +953,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
         SCAI_CONTEXT_ACCESS( loc );
 
-        matrixAdd[loc->getType()]( wCJA.get(), wCValues.get(), 
-                                   rCIA.get(), n1, n2, diagonalProperty,
-                                   one, rAIA.get(), rAJA.get(), rAValues.get(),
-                                   one, rBIA.get(), rBJA.get(), rBValues.get() );
+        matrixAdd[loc]( wCJA.get(), wCValues.get(), 
+                        rCIA.get(), n1, n2, diagonalProperty,
+                        one, rAIA.get(), rAJA.get(), rAValues.get(),
+                        one, rBIA.get(), rBJA.get(), rBValues.get() );
 
     }
 
@@ -1226,6 +1215,96 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
         {
             ReadAccess<ValueType> rExpected( expectedRes );
             ReadAccess<ValueType> rComputed( res );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::jacobiHaloWithDiag<ValueType> > jacobiHaloWithDiag;
+
+    ContextPtr loc = testContext;
+
+    jacobiHaloWithDiag.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc, testContext );
+
+    SCAI_LOG_INFO( logger, "jacobiHaloWithDiag test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+    HArray<IndexType> rowIndexes( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+    IndexType numNonEmptyRows;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    const ValueType old_values[]   = { 3, -2, -2, 3, 1, 0, 2 };
+    const ValueType diag_values[]  = { 9,  8,  7, 6, 7, 8, 9 };
+
+    const IndexType n_old_values = sizeof( old_values ) / sizeof( ValueType );
+    SCAI_ASSERT_EQ_ERROR( n_old_values, numRows, "size mismatch" );
+
+    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+    HArray<ValueType> diag( numRows, diag_values, testContext );
+
+    const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> solution( numRows, ValueType( 0 ), testContext );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
+
+            ReadAccess<ValueType> rOld( oldSolution, loc );
+            ReadAccess<ValueType> rDiag( diag, loc );
+            WriteAccess<ValueType> wSolution( solution, loc, numColumns ); 
+
+            jacobiHaloWithDiag[loc]( wSolution.get(), 
+                                     rDiag.get(),
+                                     rIA.get(), rJA.get(), rValues.get(), rIndexes.get(),
+                                     rOld.get(), omega, numNonEmptyRows );
+        }
+
+        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+
+        data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
+
+        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+
+        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+
+        bool mustBeIdentical = false;
+
+        if ( mustBeIdentical )
+        {
+            ReadAccess<ValueType> rExpected( expectedSol );
+            ReadAccess<ValueType> rComputed( solution );
 
             for ( IndexType i = 0; i < numRows; ++i )
             {

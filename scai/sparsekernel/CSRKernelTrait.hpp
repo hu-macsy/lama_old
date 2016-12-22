@@ -366,36 +366,6 @@ struct CSRKernelTrait
         }
     };
 
-    struct matrixMultiplyJA
-    {
-        /** This method computes the column indexes for result matrix C of matrix multiplication A x B
-         *
-         *  @param[out] cJA array will contain the column indexes, size is cIA[numRows]
-         *  @param[in]  CIA array with row offsets as computed by matrixMultiplySizes + sizes2offsets
-         *  @param[in]  numRows number of rows for matrix C and A
-         *  @param[in]  numColumns number of columns for matrix C and B
-         *  @param[in]  diagonalProperty if true, diagonal elements will filled in at begin of each row
-         *  @param[in]  aIA, aJA are the index arrays of matrix A
-         *  @param[in]  bIA, bJA are the index arrays of matrix B
-         */
-
-        typedef void ( *FuncType ) (
-            IndexType cJA[],
-            const IndexType cIA[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            bool diagonalProperty,
-            const IndexType aIA[],
-            const IndexType aJA[],
-            const IndexType bIA[],
-            const IndexType bJA[] );
-
-        static const char* getId()
-        {
-            return "CSR.matrixMultiplyJA";
-        }
-    };
-
     struct hasDiagonalProperty
     {
         /** This method checks whether the CSR structure data has the diagonal property.

@@ -34,6 +34,7 @@
 
 set ( CXX_SOURCES
       sparsekernelTest
+      BuildSparseTest
       COOUtilsTest
       CSRUtilsTest
       DenseUtilsTest

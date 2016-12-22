@@ -42,7 +42,11 @@ namespace scai
 namespace sparsekernel
 {
 
-/** Kernel traits for functions to be used in COO storage. */
+/** Kernel traits for functions to be used in COO storage. 
+ *
+ *  Note: routines to build CSR data from COO data are not required any more
+ *        as this is done by bucket sort
+ */
 
 struct COOKernelTrait
 {
