@@ -39,10 +39,12 @@
 #include <scai/hmemo.hpp>
 #include <scai/kregistry/KernelContextFunction.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
 #include <scai/sparsekernel/test/TestData1.hpp>
+#include <scai/sparsekernel/test/TestData2.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -359,7 +361,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     IndexType numColumns;
     IndexType numValues;
 
-    getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
 
     SCAI_ASSERT_EQ_ERROR( cooIA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
@@ -437,7 +439,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     IndexType numColumns;
     IndexType numValues;
 
-    getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
 
     SCAI_ASSERT_EQ_ERROR( cooIA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
@@ -490,6 +492,91 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         }
     }
 } 
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = testContext;
+
+    jacobi.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data2::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    const ValueType rhs_values[]   = { 1, -1, 2, -2 };
+    const ValueType old_values[]   = { 3, -2, -2, 3 };
+
+    HArray<ValueType> rhs( numRows, rhs_values, testContext );
+    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+
+    // const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const ValueType omega_values[] = { 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> res( testContext );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( cooIA, loc );
+            ReadAccess<IndexType> rJA( cooJA, loc );
+            ReadAccess<ValueType> rValues( cooValues, loc );
+
+            ReadAccess<ValueType> rOld( oldSolution, loc );
+            ReadAccess<ValueType> rRhs( rhs, loc );
+            WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
+
+            jacobi[loc]( wSolution.get(), 
+                         numValues, rIA.get(), rJA.get(), rValues.get(),
+                         rOld.get(), rRhs.get(), omega, numRows );
+
+        }
+
+        LArray<ValueType> expectedRes( testContext );
+
+        data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
+
+        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+
+        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+
+        bool mustBeIdentical = false;
+
+        if ( mustBeIdentical )
+        {
+            ReadAccess<ValueType> rExpected( expectedRes );
+            ReadAccess<ValueType> rComputed( res );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
 
 /* ------------------------------------------------------------------------------------- */
 
