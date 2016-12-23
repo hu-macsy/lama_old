@@ -305,6 +305,47 @@ struct CSRKernelTrait
         }
     };
 
+    struct countNonEmptyRowsByOffsets
+    {
+        /** This method computes the total number of non-zero rows by the offset array
+         *
+         *  @param[in] offsets is the array with offsets
+         *  @param[in] n s number of rows, offset has n + 1 entries
+         *  @return    number of rows with at least one element
+         *
+         *  Note: the number of rows is needed to allocate the array with indexes of non-empty rows
+         */
+
+        typedef IndexType ( *FuncType ) ( const IndexType offsets[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "CSR.countNonEmptyRowsByOffsets";
+        }
+    };
+
+    struct setNonEmptyRowsByOffsets
+    {
+        /** Bild a vector of indexes for non-empty rows.
+         *
+         *  @param[out] rowIndexes
+         *  @param[in]  numNonEmptyRows is allocated size of rowIndexes
+         *  @param[in]  offsets is the offset array
+         *  @param[in]  n is the number of rows, offsets has size n + 1
+         */
+
+        typedef void ( *FuncType ) (
+            IndexType rowIndexes[],
+            const IndexType numNonEmptyRows,
+            const IndexType offsets[],
+            const IndexType numRows );
+
+        static const char* getId()
+        {
+            return "CSR.setNonEmptyRowsByOffsets";
+        }
+    };
+
     struct matrixAddSizes
     {
         /** This method computes the row sizes for result matrix C of matrix add A + B
@@ -549,7 +590,7 @@ struct CSRKernelTrait
     template<typename ValueType>
     struct sparseGEMV
     {
-        /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
+        /** result += alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -594,7 +635,7 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.sparseGEMV";
+            return "CSR.sparseGEVM";
         }
     };
 

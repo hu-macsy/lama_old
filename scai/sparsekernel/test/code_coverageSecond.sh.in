@@ -42,23 +42,28 @@ error_count=0
 
 # Running tests serial
 echo "Running sparsekernel tests on Host"
-count_error SCAI_USE_MKL=0 ./sparsekernelTest --SCAI_CONTEXT=Host
-count_error SCAI_USE_MKL=1 ./sparsekernelTest --SCAI_CONTEXT=Host 
+export SCAI_USE_MKL=0
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host
+export SCAI_USE_MKL=1
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host 
 
 if [ -d ../cuda ];
 then
-    #Running common CUDA tests
+    # Running sparekernel CUDA tests, without and with using CUsparse library
+    # Note: SCAI_CUDA_USE_CUSPARSE is used during static initialization, passing as command line arg is too late
     echo "Running sparsekernel tests with CUDA context"
-    count_error SCAI_CUDA_USE_CUSPARSE=0 ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0
-    count_error SCAI_CUDA_USE_CUSPARSE=0 ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1
-    count_error SCAI_CUDA_USE_CUSPARSE=0 ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0 
-    count_error SCAI_CUDA_USE_CUSPARSE=0 ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1 
-    count_error SCAI_CUDA_USE_CUSPARSE=1 ./sparsekernelTest --SCAI_CONTEXT=CUDA 
+    export SCAI_CUDA_USE_CUSPARSE=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0 
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1 
+    export SCAI_CUDA_USE_CUSPARSE=1
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA 
 fi
 
 if [ -d ../mic ]
 then
-    #Running common MIC tests
+    #Running sparsekernel MIC tests
     echo "Running sparsekernel tests with MIC context"
     count_error ./sparsekernelTest --SCAI_CONTEXT=MIC
 fi

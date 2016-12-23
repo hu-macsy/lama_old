@@ -1705,6 +1705,8 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::countNonEmptyRowsByOffsets>( countNonEmptyRowsByOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setNonEmptyRowsByOffsets>( setNonEmptyRowsByOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );

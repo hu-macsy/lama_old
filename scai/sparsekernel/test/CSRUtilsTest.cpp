@@ -68,6 +68,109 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( validOffsetsTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
+
+    ContextPtr loc = testContext;
+
+    validOffsets.getSupportedContext( loc );
+
+    const IndexType ia[]   = { 0, 2, 5, 7 };
+    const IndexType ia_f[] = { 0, 5, 2, 7 };
+
+    IndexType numRows = sizeof( ia ) / sizeof( IndexType ) - 1;
+    IndexType total   = ia[numRows];
+
+    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+
+    bool okay = false;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        okay = validOffsets[loc]( rIA.get(), numRows, total );
+    }
+ 
+    BOOST_CHECK( okay );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        okay = validOffsets[loc]( rIA.get(), numRows - 1, total );
+    }
+
+    BOOST_CHECK( !okay );
+
+    csrIA.init( ia_f, numRows + 1 );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        okay = validOffsets[loc]( rIA.get(), numRows, total );
+    }
+
+    BOOST_CHECK( !okay );
+}
+ 
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<CSRKernelTrait::countNonEmptyRowsByOffsets> countNonEmptyRowsByOffsets;
+
+    ContextPtr loc = testContext;
+    countNonEmptyRowsByOffsets.getSupportedContext( loc );
+
+    const IndexType ia[]   = { 0, 2, 2, 5, 5, 7, 7, 9 };
+    const IndexType rows[] = { 0,    2,    4,    6  };
+
+    IndexType numRows = sizeof( ia ) / sizeof( IndexType ) - 1;
+
+    HArray<IndexType> csrIA( numRows + 1, ia, testContext );
+
+    IndexType nonEmptyRows = 0;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        nonEmptyRows = countNonEmptyRowsByOffsets[loc]( rIA.get(), numRows );
+    }
+ 
+    const IndexType expectedNonEmptyRows = sizeof( rows ) / sizeof( IndexType );
+
+    BOOST_REQUIRE_EQUAL( expectedNonEmptyRows, nonEmptyRows );
+
+    HArray<IndexType> rowIndexes( testContext );
+
+    LAMAKernel<CSRKernelTrait::setNonEmptyRowsByOffsets> setNonEmptyRowsByOffsets;
+
+    loc = testContext;
+    setNonEmptyRowsByOffsets.getSupportedContext( loc );
+
+    {   
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        WriteOnlyAccess<IndexType> wIndexes( rowIndexes, loc, nonEmptyRows );
+        setNonEmptyRowsByOffsets[loc]( wIndexes.get(), nonEmptyRows, rIA.get(), numRows );
+    }
+
+    {
+        ReadAccess<IndexType> rIndexes( rowIndexes );
+
+        for ( IndexType i = 0; i < nonEmptyRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( rows[i], rIndexes[i] );
+        }
+    }
+}
+ 
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -1016,51 +1119,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
 
-    ValueType alpha = 1;
-    ValueType beta  = -1;
-
     const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
     const ValueType x_values[]   = { 3, -3, 2, -2 };
-    const ValueType res_values[] = { 9, 22, 8, -13, 3, -1, -6 };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
 
     SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
     SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
 
     HArray<ValueType> x( numColumns, x_values, testContext );
     HArray<ValueType> y( numRows, y_values, testContext );
 
-    HArray<ValueType> res( testContext );
+    // use different alpha and beta values as kernels might be optimized for it
 
-    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * CSR * x + " << beta << " * y "
-                            << ", with x = " << x << ", y = " << y
-                            << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
-        SCAI_CONTEXT_ACCESS( loc );
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
 
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<IndexType> rJA( csrJA, loc );
-        ReadAccess<ValueType> rValues( csrValues, loc );
+        HArray<ValueType> res( testContext );
 
-        ReadAccess<ValueType> rX( x, loc );
-        ReadAccess<ValueType> rY( y, loc ); 
-        WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-
-        normalGEMV[loc]( wResult.get(),
-                         alpha, rX.get(), beta, rY.get(),
-                         numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rResult( res, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * CSR * x + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
-            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+    
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc ); 
+            WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+    
+            normalGEMV[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+        }
+    
+        HArray<ValueType> expectedRes;
+
+        data1::getGEMVResult( expectedRes, alpha, x, beta, y );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
         }
     }
 }
@@ -1094,50 +1210,250 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
 
-    ValueType alpha = 1;
-    ValueType beta  = 1;
-
     const ValueType y_values[]   = { 1, -1, 2, -2 };
     const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
-    const ValueType res_values[] = { 13, 15, -16, 14 };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
 
     SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
     SCAI_ASSERT_EQ_ERROR( numColumns, n_y, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_res, "size mismatch" );
 
     HArray<ValueType> x( numRows, x_values, testContext );
     HArray<ValueType> y( numColumns, y_values, testContext );
-    HArray<ValueType> res( testContext );
 
-    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * CSR + " << beta << " * y "
-                            << ", with x = " << x << ", y = " << y
-                            << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
-        SCAI_CONTEXT_ACCESS( loc );
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
 
-        ReadAccess<IndexType> rIA( csrIA, loc );
-        ReadAccess<IndexType> rJA( csrJA, loc );
-        ReadAccess<ValueType> rValues( csrValues, loc );
+        HArray<ValueType> res( testContext );
 
-        ReadAccess<ValueType> rX( x, loc );
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
-
-        normalGEVM[loc]( wResult.get(),
-                         alpha, rX.get(), beta, rY.get(),
-                         numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rResult( res, hostContext );
-
-        for ( IndexType i = 0; i < numColumns; ++i )
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * CSR + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
-            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
+
+            normalGEVM[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes;
+
+        data1::getGEVMResult( expectedRes, alpha, x, beta, y );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                BOOST_CHECK_EQUAL( rExpected[j], rComputed[j] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
+
+    ContextPtr loc = testContext;
+
+    sparseGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+    HArray<IndexType> rowIndexes( testContext );
+
+    IndexType numRows;
+    IndexType numNonEmptyRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
+
+    const ValueType res_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]     = { 3, -3, 2, -2 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numColumns, x_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha; ++icase )
+    {
+        ValueType alpha = alpha_values[icase % n_alpha ];
+
+        HArray<ValueType> res( numRows, res_values, testContext );
+
+        SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
+                                << ", with x = " << x
+                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
+    
+            ReadAccess<ValueType> rX( x, loc );
+            WriteAccess<ValueType> wResult( res, loc );
+    
+            sparseGEMV[loc]( wResult.get(),
+                             alpha, rX.get(),
+                             numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get() );
+
+        }
+    
+        HArray<ValueType> expectedRes( numRows, res_values );
+
+        ValueType beta = 1;  // res = alpha * A * x + 1 * res <-> res += alpha * A * x
+
+        data1::getGEMVResult( expectedRes, alpha, x, beta, expectedRes );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+
+    ContextPtr loc = testContext;
+
+    sparseGEVM.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+    HArray<IndexType> rowIndexes( testContext );
+
+    IndexType numRows;
+    IndexType numNonEmptyRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
+
+    const ValueType res_values[] = { 1, -1, 2, -2 };
+    const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numRows, x_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha; ++icase )
+    {
+        ValueType alpha = alpha_values[icase % n_alpha ];
+
+        HArray<ValueType> res( numColumns, res_values, testContext );
+
+        SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
+                                << ", with x = " << x
+                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
+    
+            ReadAccess<ValueType> rX( x, loc );
+            WriteAccess<ValueType> wResult( res, loc );
+    
+            sparseGEVM[loc]( wResult.get(),
+                             alpha, rX.get(),
+                             numColumns, numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get() );
+
+        }
+    
+        HArray<ValueType> expectedRes( numColumns, res_values );
+
+        ValueType beta = 1;  // res = alpha * x * A + 1 * res <-> res += alpha * x * A
+
+        data1::getGEVMResult( expectedRes, alpha, x, beta, expectedRes );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numColumns; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
         }
     }
 }
