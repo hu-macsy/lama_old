@@ -114,6 +114,71 @@ BOOST_AUTO_TEST_CASE( validOffsetsTest )
 
     BOOST_CHECK( !okay );
 }
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( offsets2sizesTest )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<CSRKernelTrait::offsets2sizes> offsets2sizes;
+
+    ContextPtr loc = testContext;
+    offsets2sizes.getSupportedContext( loc );
+
+    const IndexType offsets[] = { 0, 5, 11, 16, 19, 19, 21, 23 };
+    const IndexType sizes[]   = { 5, 6,  5,  3,  0,  2,  2 };
+
+    IndexType numRows = sizeof( offsets ) / sizeof( IndexType ) - 1;
+
+    HArray<IndexType> csrIA( numRows + 1, offsets, testContext );
+
+    HArray<IndexType> csrSizes( testContext );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        WriteOnlyAccess<IndexType> wSizes( csrSizes, loc, numRows );
+        offsets2sizes[loc]( wSizes.get(), rIA.get(), numRows );
+    }
+
+    {
+        ReadAccess<IndexType> rSizes( csrSizes );
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( sizes[i], rSizes[i] );
+        }
+    }
+ 
+    LAMAKernel<CSRKernelTrait::offsets2sizesGather> offsets2sizesGather;
+
+    loc = testContext;
+    offsets2sizesGather.getSupportedContext( loc );
+
+    const IndexType row_indexes[] = { 0, 2, 4, 6 };
+
+    IndexType n = sizeof( row_indexes ) / sizeof( IndexType );
+
+    HArray<IndexType> rows( n, row_indexes, testContext );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rRows( rows, loc );
+        WriteOnlyAccess<IndexType> wSizes( csrSizes, loc, n );
+        offsets2sizesGather[loc]( wSizes.get(), rIA.get(), rRows.get(), n );
+    }
+
+    {
+        ReadAccess<IndexType> rSizes( csrSizes );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            BOOST_CHECK_EQUAL( sizes[row_indexes[i]], rSizes[i] );
+        }
+    }
+}
+ 
  
 /* ------------------------------------------------------------------------------------- */
 
@@ -169,6 +234,64 @@ BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
     }
 }
  
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    LAMAKernel<CSRKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+    ContextPtr loc = testContext;
+
+    hasDiagonalProperty.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    LArray<IndexType> csrIA( testContext );
+    LArray<IndexType> csrJA( testContext );
+    LArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    bool okay;
+
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    {
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rJA( csrJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        okay = hasDiagonalProperty[loc]( numDiagonals, rIA.get(), rJA.get() );
+    }
+
+    BOOST_CHECK( !okay );
+
+    // data set 2 has a square matrix with diagonal entries first
+
+    data2::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    BOOST_REQUIRE_EQUAL( numRows, numColumns );
+
+    {
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<IndexType> rJA( csrJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        okay = hasDiagonalProperty[loc]( numRows, rIA.get(), rJA.get() );
+    }
+
+    BOOST_CHECK( okay );
+}
+
 /* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_types )
@@ -587,6 +710,69 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
             BOOST_CHECK_EQUAL( rJA[k], ja_compress[k] );
             BOOST_CHECK_EQUAL( rValues[k], values_compress[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = testContext;
+
+    getValuePos.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    LArray<IndexType> csrIA( testContext );
+    LArray<IndexType> csrJA( testContext );
+    LArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    HArray<ValueType> denseValues( testContext );
+
+    data1::getDenseTestData( numRows, numColumns, denseValues );
+
+    ValueType zero = 0;
+
+    {
+        ReadAccess<IndexType> rIa( csrIA, loc );
+        ReadAccess<IndexType> rJa( csrJA, loc );
+
+        // comparison is done via accesses on the host
+
+        ReadAccess<ValueType> rValues( csrValues, hostContext );
+        ReadAccess<ValueType> rDense( denseValues, hostContext );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get() );
+
+                IndexType k   = i * numColumns + j;
+
+                if ( pos == nIndex )
+                {
+                    BOOST_CHECK_EQUAL( rDense[ k ], zero );
+                }
+                else
+                {
+                    BOOST_CHECK_EQUAL( rDense[ k], rValues[pos] );
+                }
+            }
         }
     }
 }
@@ -1520,6 +1706,124 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
             for ( IndexType i = 0; i < numColumns; ++i )
             {
                 BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+// BOOST_AUTO_TEST_CASE_TEMPLATE( gemmTest, ValueType, scai_numeric_test_types )
+
+BOOST_AUTO_TEST_CASE( gemmTest )
+{
+    typedef float ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::gemm<ValueType> > gemm;
+
+    ContextPtr loc = testContext;
+
+    gemm.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( csrValues.size(), numValues, "size mismatch" )
+
+    // we compare gemm with two individual gemv operations
+
+    const IndexType nVectors = 2;  // gemm is optimized for nVectors * gemv
+
+    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 ,
+                                     2, -3, 4,  1, 5, 3,  2 };
+    const ValueType x_values[]   = { 3, -3, 2, -2,
+                                     2, -1, 1,  2 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns * nVectors, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows * nVectors, n_y, "size mismatch" );
+
+    HArray<ValueType> x( n_x, x_values, testContext );
+    HArray<ValueType> y( n_y, y_values, testContext );
+
+    // x and y are two vectors, but for verification we need the single ones
+
+    HArray<ValueType> x1( numColumns );  // becomes x[ :, 0 ]
+    HArray<ValueType> x2( numColumns );  // becomes x[ :, 1
+    HArray<ValueType> y1( numRows ) ;    // becomes y[ :, 0 ]
+    HArray<ValueType> y2( numRows );     // becomes y[ :, 1 ]
+
+    HArrayUtils::setArraySection( y1, 0, 1, y, 0, nVectors, numRows );
+    HArrayUtils::setArraySection( y2, 0, 1, y, 1, nVectors, numRows );
+    HArrayUtils::setArraySection( x1, 0, 1, x, 0, nVectors, numColumns );
+    HArrayUtils::setArraySection( x2, 0, 1, x, 1, nVectors, numColumns );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
+    {
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
+
+        HArray<ValueType> res( testContext );
+
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * CSR * x + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+    
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc ); 
+
+            WriteOnlyAccess<ValueType> wResult( res, loc, nVectors * numRows );
+    
+            gemm[loc]( wResult.get(),
+                       alpha, rX.get(), beta, rY.get(),
+                       numRows, nVectors, numColumns, rIA.get(), rJA.get(), rValues.get() );
+        }
+    
+        HArray<ValueType> expectedRes1;
+        HArray<ValueType> expectedRes2;
+
+        data1::getGEMVResult( expectedRes1, alpha, x1, beta, y1 );
+        data1::getGEMVResult( expectedRes2, alpha, x2, beta, y2 );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected1( expectedRes1, hostContext );
+            ReadAccess<ValueType> rExpected2( expectedRes2, hostContext );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected1[i], rComputed[ nVectors * i + 0 ] );
+                BOOST_CHECK_EQUAL( rExpected2[i], rComputed[ nVectors * i + 1 ] );
             }
         }
     }

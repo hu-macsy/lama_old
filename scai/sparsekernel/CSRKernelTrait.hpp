@@ -285,6 +285,30 @@ struct CSRKernelTrait
         }
     };
 
+    struct offsets2sizesGather
+    {
+        /** This method computes size array from an offset array.
+         *
+         *  @param[out] sizes will contain the sizes (e.g. for each row ), has numRows entries
+         *  @param[in] offsets contains the offsets, has numRows + 1 entries
+         *  @param[in] rows only sizes of these rows are needed              
+         *  @param[in] n is size of array sizes and pos
+         *
+         *  \code
+         *           offsets :   0   5  11   16  19  19  21  23
+         *           pos     :   0   2  4   6
+         *           sizes   :   5   5  0   2   
+         *  \endcode
+         *
+         */
+        typedef void ( *FuncType ) ( IndexType sizes[], const IndexType offsets[], const IndexType pos[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "CSR.offsets2sizesGather";
+        }
+    };
+
     struct validOffsets
     {
         /** Check for a legal offset array.
