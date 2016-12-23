@@ -228,6 +228,73 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::scaleRows<ValueType, ValueType> > scaleRows;
+
+    ContextPtr loc = testContext;
+
+    scaleRows.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    HArray<ValueType> savedValues( csrValues );  // keep a copy for comparison later
+
+    const ValueType row_factors[]   = { 2, 3, 4, 5, 1, 3, 2 };
+
+    const IndexType n_factors = sizeof( row_factors ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( numRows, n_factors );
+
+    HArray<ValueType> rows( n_factors, row_factors, testContext );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteAccess<ValueType> wValues( csrValues, loc );
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<ValueType> rRows( rows, loc );
+
+        scaleRows[loc]( wValues.get(), rIA.get(), numRows, rRows.get() );
+    }
+
+    // prove by hand
+
+    {
+        ReadAccess<IndexType> rIA( csrIA );
+        ReadAccess<IndexType> rJA( csrJA );
+
+        ReadAccess<ValueType> rRows( rows );
+        ReadAccess<ValueType> rSavedValues( savedValues );
+        ReadAccess<ValueType> rValues( csrValues );
+
+        for ( IndexType i = 0; i < numRows; ++ i )
+        {
+            for ( IndexType jj = rIA[i]; jj < rIA[i+1]; ++jj )
+            {
+                BOOST_CHECK_EQUAL( rRows[i] * rSavedValues[jj], rValues[jj] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( transposeSquareTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
