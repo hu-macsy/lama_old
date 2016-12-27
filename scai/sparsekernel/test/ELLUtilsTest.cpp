@@ -143,6 +143,7 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( fillELlValuesTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
 
     LAMAKernel<ELLKernelTrait::fillELLValues<ValueType> > fillELLValues;
 
@@ -171,15 +172,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillELlValuesTest, ValueType, scai_numeric_test_t
         fillELLValues[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, numValuesPerRow );
     }
 
-    // test by hand on host
-
     HArray<ValueType> xDummy( numColumns, ValueType( 1 ) );
 
     {
-        ReadAccess<IndexType> rIA( ellIA, loc );
-        ReadAccess<IndexType> rJA( ellJA, loc );
-        ReadAccess<ValueType> rValues( ellValues, loc );
-        ReadAccess<ValueType> rX( xDummy, loc );
+        ReadAccess<IndexType> rIA( ellIA, hostContext );
+        ReadAccess<IndexType> rJA( ellJA, hostContext );
+        ReadAccess<ValueType> rValues( ellValues, hostContext );
+        ReadAccess<ValueType> rX( xDummy, hostContext );
 
         ValueType testVal = 0;
 
