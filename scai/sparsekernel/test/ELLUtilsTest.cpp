@@ -138,6 +138,66 @@ BOOST_AUTO_TEST_CASE( hasDiagonalPropertyTest )
         BOOST_CHECK( !diagonalProperty );
     }
 }
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fillELlValuesTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<ELLKernelTrait::fillELLValues<ValueType> > fillELLValues;
+
+    ContextPtr loc = testContext;
+    fillELLValues.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc, testContext );
+
+    HArray<IndexType> ellIA( testContext );
+    HArray<IndexType> ellJA( testContext );
+    HArray<ValueType> ellValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValuesPerRow;
+
+    data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+
+    {
+        WriteAccess<IndexType> wJA( ellJA, loc );
+        WriteAccess<ValueType> wValues( ellValues, loc );
+        ReadAccess<IndexType> rIA( ellIA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        fillELLValues[loc]( wJA.get(), wValues.get(), rIA.get(), numRows, numValuesPerRow );
+    }
+
+    // test by hand on host
+
+    HArray<ValueType> xDummy( numColumns, ValueType( 1 ) );
+
+    {
+        ReadAccess<IndexType> rIA( ellIA, loc );
+        ReadAccess<IndexType> rJA( ellJA, loc );
+        ReadAccess<ValueType> rValues( ellValues, loc );
+        ReadAccess<ValueType> rX( xDummy, loc );
+
+        ValueType testVal = 0;
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType jj = rIA[i]; jj < numValuesPerRow; ++jj )
+            {
+                IndexType pos = jj * numRows + i;
+                IndexType j   = rJA[ pos ];
+                SCAI_ASSERT_VALID_INDEX( j, numColumns, "illegal col pos" )
+                testVal += rValues[ pos ] * rX[ j ];
+            }
+        }
+ 
+        BOOST_CHECK_EQUAL( ValueType( 0 ), testVal );
+    }
+}
+
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1858,6 +1918,193 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<ELLKernelTrait::sparseGEMV<ValueType> > sparseGEMV;
+
+    ContextPtr loc = testContext;
+
+    sparseGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> ellIA( testContext );
+    HArray<IndexType> ellJA( testContext );
+    HArray<ValueType> ellValues( testContext );
+    HArray<IndexType> rowIndexes( testContext );
+
+    IndexType numRows;
+    IndexType numNonEmptyRows;
+    IndexType numColumns;
+    IndexType numValuesPerRow;
+
+    data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    SCAI_ASSERT_EQ_ERROR( numRows, ellIA.size(), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellJA.size(), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( ellJA.size(), ellValues.size(), "size mismatch" )
+
+    const ValueType res_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]     = { 3, -3, 2, -2 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numColumns, x_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha; ++icase )
+    {
+        ValueType alpha = alpha_values[icase];
+
+        HArray<ValueType> res( numRows, res_values, testContext );
+
+        SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
+                                << ", with x = " << x
+                                << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( ellIA, loc );
+            ReadAccess<IndexType> rJA( ellJA, loc );
+            ReadAccess<ValueType> rValues( ellValues, loc );
+            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            WriteAccess<ValueType> wResult( res, loc );
+
+            sparseGEMV[loc]( wResult.get(),
+                             alpha, rX.get(),
+                             numRows, numValuesPerRow, 
+                             numNonEmptyRows, rIndexes.get(), 
+                             rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes( numRows, res_values );
+
+        ValueType beta = 1;  // res = alpha * A * x + 1 * res <-> res += alpha * A * x
+
+        data1::getGEMVResult( expectedRes, alpha, x, beta, expectedRes );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<ELLKernelTrait::sparseGEVM<ValueType> > sparseGEVM;
+
+    ContextPtr loc = testContext;
+
+    sparseGEVM.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> ellIA( testContext );
+    HArray<IndexType> ellJA( testContext );
+    HArray<ValueType> ellValues( testContext );
+    HArray<IndexType> rowIndexes( testContext );
+
+    IndexType numRows;
+    IndexType numNonEmptyRows;
+    IndexType numColumns;
+    IndexType numValuesPerRow;
+
+    data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    SCAI_ASSERT_EQ_ERROR( ellIA.size(), numRows, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( ellJA.size(), numRows * numValuesPerRow, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( ellValues.size(), ellJA.size(), "size mismatch" )
+
+    const ValueType res_values[] = { 1, -1, 2, -2 };
+    const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_res, "size mismatch" );
+
+    HArray<ValueType> x( numRows, x_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha; ++icase )
+    {
+        ValueType alpha = alpha_values[icase];
+
+        HArray<ValueType> res( numColumns, res_values, testContext );
+
+        SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
+                                << ", with x = " << x
+                                << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( ellIA, loc );
+            ReadAccess<IndexType> rJA( ellJA, loc );
+            ReadAccess<ValueType> rValues( ellValues, loc );
+            ReadAccess<IndexType> rIndexes( rowIndexes, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            WriteAccess<ValueType> wResult( res, loc );
+
+            sparseGEVM[loc]( wResult.get(), alpha, rX.get(),
+                             numRows, numColumns, numValuesPerRow, 
+                             numNonEmptyRows, rIndexes.get(), 
+                             rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes( numColumns, res_values );
+
+        ValueType beta = 1;  // res = alpha * x * A + 1 * res <-> res += alpha * x * A
+
+        data1::getGEVMResult( expectedRes, alpha, x, beta, expectedRes );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numColumns; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -2027,6 +2274,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
             }
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxValTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;
+
+    ContextPtr loc = testContext;
+    absMaxVal.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> ellIA( testContext );
+    HArray<IndexType> ellJA( testContext );
+    HArray<ValueType> ellValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValuesPerRow;
+
+    data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+
+    ValueType maxVal = 0;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+        ReadAccess<IndexType> rIA( ellIA, loc );
+        ReadAccess<ValueType> rValues( ellValues, loc );
+
+        maxVal = absMaxVal[loc]( numRows, numValuesPerRow, rIA.get(), rValues.get() );
+    }
+
+    ValueType expectedMaxVal = data1::getMaxVal<ValueType>();
+
+    BOOST_CHECK_EQUAL( expectedMaxVal, maxVal );
 }
 
 /* ------------------------------------------------------------------------------------- */

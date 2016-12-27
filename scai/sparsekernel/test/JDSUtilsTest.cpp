@@ -903,4 +903,97 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<JDSKernelTrait::jacobiHalo<ValueType> > jacobiHalo;
+
+    ContextPtr loc = testContext;
+
+    jacobiHalo.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc, testContext );
+
+    SCAI_LOG_INFO( logger, "jacobiHalo test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    // Note: for jds we do not need the number of non empty rows, as this comes for free
+
+    const ValueType old_values[]   = { 3, -2, -2, 3, 1, 0, 2 };
+    const ValueType diag_values[]  = { 9,  8,  7, 6, 7, 8, 9 };
+
+    const IndexType n_old_values = sizeof( old_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( n_old_values, numRows, "size mismatch" );
+
+    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+    HArray<ValueType> diag( numRows, diag_values, testContext );
+
+    const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> solution( numRows, ValueType( 0 ), testContext );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rPerm( jdsPerm, loc );
+            ReadAccess<IndexType> rILG( jdsILG, loc );
+            ReadAccess<IndexType> rDLG( jdsDLG, loc );
+            ReadAccess<IndexType> rJA( jdsJA, loc );
+            ReadAccess<ValueType> rValues( jdsValues, loc );
+
+            ReadAccess<ValueType> rOld( oldSolution, loc );
+            ReadAccess<ValueType> rDiag( diag, loc );
+            WriteAccess<ValueType> wSolution( solution, loc );
+
+            jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(), 
+                             numDiagonals, rPerm.get(), rILG.get(), rDLG.get(),
+                             rJA.get(), rValues.get(),
+                             rOld.get(), omega );
+        }
+
+        LArray<ValueType> expectedSol( numRows, ValueType( 0 ), testContext );
+
+        data1::getJacobiHaloResult( expectedSol, oldSolution, diag, omega );
+
+        ValueType maxDiff = expectedSol.maxDiffNorm( solution );
+
+        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+
+        bool mustBeIdentical = false;
+
+        if ( mustBeIdentical )
+        {
+            ReadAccess<ValueType> rExpected( expectedSol );
+            ReadAccess<ValueType> rComputed( solution );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_SUITE_END()

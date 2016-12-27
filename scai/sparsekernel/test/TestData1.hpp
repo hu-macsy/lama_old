@@ -189,6 +189,10 @@ static void getELLTestData(
     numRows         = sizeof( ia_sizes) / sizeof( IndexType );
     numColumns      = 4;
 
+    SCAI_ASSERT_EQ_ERROR( sizeof( ja_values ) / sizeof( IndexType ), 
+                          sizeof( nz_values ) / sizeof( ValueType ),
+                          "ja and values of ELL format must have same number of entries" )
+
     IndexType numValues  = sizeof( ja_values ) / sizeof( IndexType );
 
     numValuesPerRow = numValues / numRows;

@@ -476,8 +476,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxValTest, ValueType, scai_numeric_test_types
 
     data1::getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
 
-    LArray<ValueType> dense( numRows * numColumns, 0, testContext );
-
     ValueType maxVal = 0;
 
     {

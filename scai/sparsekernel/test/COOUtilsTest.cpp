@@ -189,6 +189,69 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_type
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = testContext;
+
+    getValuePos.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    LArray<IndexType> cooIA( testContext );
+    LArray<IndexType> cooJA( testContext );
+    LArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    HArray<ValueType> denseValues( testContext );
+
+    data1::getDenseTestData( numRows, numColumns, denseValues );
+
+    ValueType zero = 0;
+
+    {
+        ReadAccess<IndexType> rIa( cooIA, loc );
+        ReadAccess<IndexType> rJa( cooJA, loc );
+
+        // comparison is done via accesses on the host
+
+        ReadAccess<ValueType> rValues( cooValues, hostContext );
+        ReadAccess<ValueType> rDense( denseValues, hostContext );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), numValues );
+
+                IndexType k   = i * numColumns + j;
+
+                if ( pos == nIndex )
+                {   
+                    BOOST_CHECK_EQUAL( rDense[ k ], zero );
+                }
+                else
+                {   
+                    BOOST_CHECK_EQUAL( rDense[ k], rValues[pos] );
+                }
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -347,6 +410,141 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
             IndexType j = rCol[k];
             BOOST_CHECK_EQUAL( rIA[ p ], rowIndex );
             BOOST_CHECK( rJA[p] == j );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+    ContextPtr loc = testContext;
+
+    hasDiagonalProperty.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    LArray<IndexType> cooIA( testContext );
+    LArray<IndexType> cooJA( testContext );
+    LArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    bool okay;
+
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    {
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<IndexType> rJA( cooJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        if ( numValues < numDiagonals )
+        { 
+            okay = false;
+        }
+        else
+        {
+            okay = hasDiagonalProperty[loc]( rIA.get(), rJA.get(), numDiagonals );
+        }
+    }
+
+    BOOST_CHECK( !okay );
+
+    // data set 2 has a square matrix with diagonal entries first
+
+    data2::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    BOOST_REQUIRE_EQUAL( numRows, numColumns );
+
+    {
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<IndexType> rJA( cooJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        if ( numValues < numRows )
+        {
+            okay = false;
+        }
+        else
+        {
+            okay = hasDiagonalProperty[loc]( rIA.get(), rJA.get(), numRows );
+        }
+    }
+
+    BOOST_CHECK( okay );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, ValueType> > scaleRows;
+
+    ContextPtr loc = testContext;
+
+    scaleRows.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    HArray<ValueType> savedValues( cooValues );  // keep a copy for comparison later
+
+    const ValueType row_factors[]   = { 2, 3, 4, 5, 1, 3, 2 };
+
+    const IndexType n_factors = sizeof( row_factors ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( numRows, n_factors );
+
+    HArray<ValueType> rows( n_factors, row_factors, testContext );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteAccess<ValueType> wValues( cooValues, loc );
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<ValueType> rRows( rows, loc );
+
+        scaleRows[loc]( wValues.get(), rRows.get(), rIA.get(), numValues );
+    }
+
+    // prove by hand on host
+
+    {
+        ReadAccess<IndexType> rIA( cooIA, hostContext );
+        ReadAccess<ValueType> rRows( rows, hostContext );
+        ReadAccess<ValueType> rSavedValues( savedValues, hostContext );
+        ReadAccess<ValueType> rValues( cooValues, hostContext );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            ValueType f = rRows[ rIA[k] ];
+            BOOST_CHECK_EQUAL( f * rSavedValues[k], rValues[k] );
         }
     }
 }

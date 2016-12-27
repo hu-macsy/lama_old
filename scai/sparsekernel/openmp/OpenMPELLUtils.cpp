@@ -402,9 +402,12 @@ void OpenMPELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() )
+    SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() << ">" )
+
     #pragma omp parallel
     {
+        SCAI_REGION( "OpenMP.ELL.fillELLValues" )
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -424,7 +427,7 @@ void OpenMPELLUtils::fillELLValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = static_cast<ValueType>( 0.0 ); // zero entry
+                ellValues[pos] = static_cast<ValueType>( 0 ); // zero entry
             }
         }
     }

@@ -142,6 +142,9 @@ struct COOKernelTrait
          *  @param[in] cooJA column indexes
          *  @param[in] n number of diagonal elements
          *  @return true if first n entries stand for the diagonal elements
+         *
+         *  Attention: do not call this routine if n > numValues (size of cooIA, cooJA) where
+         *             diagonal property is already false
          */
 
         typedef bool ( *FuncType )(
