@@ -578,51 +578,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( cooValues.size(), numValues, "size mismatch" )
 
-    ValueType alpha = 1;
-    ValueType beta  = -1;
-
     const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
     const ValueType x_values[]   = { 3, -3, 2, -2 };
-    const ValueType res_values[] = { 9, 22, 8, -13, 3, -1, -6 };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
 
     SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
     SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
 
     HArray<ValueType> x( numColumns, x_values, testContext );
     HArray<ValueType> y( numRows, y_values, testContext );
 
-    HArray<ValueType> res( testContext );
+    // use different alpha and beta values as kernels might be optimized for it
 
-    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
-                            << ", with x = " << x << ", y = " << y
-                            << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
-        SCAI_CONTEXT_ACCESS( loc );
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
 
-        ReadAccess<IndexType> rIA( cooIA, loc );
-        ReadAccess<IndexType> rJA( cooJA, loc );
-        ReadAccess<ValueType> rValues( cooValues, loc );
+        HArray<ValueType> res( testContext );
 
-        ReadAccess<ValueType> rX( x, loc );
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-
-        normalGEMV[loc]( wResult.get(),
-                         alpha, rX.get(), beta, rY.get(),
-                         numRows, numValues, rIA.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rResult( res, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
         {
-            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( cooIA, loc );
+            ReadAccess<IndexType> rJA( cooJA, loc );
+            ReadAccess<ValueType> rValues( cooValues, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+
+            normalGEMV[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numRows, numValues, rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes;
+
+        data1::getGEMVResult( expectedRes, alpha, x, beta, y );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
         }
     }
 } 
@@ -656,50 +669,64 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( cooValues.size(), numValues, "size mismatch" )
 
-    ValueType alpha = 1;
-    ValueType beta  = 1;
-
     const ValueType y_values[]   = { 1, -1, 2, -2 };
     const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
-    const ValueType res_values[] = { 13, 15, -16, 14 };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
 
     SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
     SCAI_ASSERT_EQ_ERROR( numColumns, n_y, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_res, "size mismatch" );
 
     HArray<ValueType> x( numRows, x_values, testContext );
     HArray<ValueType> y( numColumns, y_values, testContext );
-    HArray<ValueType> res( testContext );
 
-    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * COO + " << beta << " * y "
-                            << ", with x = " << x << ", y = " << y
-                            << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
-        SCAI_CONTEXT_ACCESS( loc );
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
 
-        ReadAccess<IndexType> rIA( cooIA, loc );
-        ReadAccess<IndexType> rJA( cooJA, loc );
-        ReadAccess<ValueType> rValues( cooValues, loc );
+        HArray<ValueType> res( testContext );
 
-        ReadAccess<ValueType> rX( x, loc );
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
-
-        normalGEVM[loc]( wResult.get(),
-                         alpha, rX.get(), beta, rY.get(),
-                         numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rResult( res, hostContext );
-
-        for ( IndexType i = 0; i < numColumns; ++i )
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * COO + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
         {
-            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+            SCAI_CONTEXT_ACCESS( loc );
+    
+            ReadAccess<IndexType> rIA( cooIA, loc );
+            ReadAccess<IndexType> rJA( cooJA, loc );
+            ReadAccess<ValueType> rValues( cooValues, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
+
+            normalGEVM[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes;
+
+        data1::getGEVMResult( expectedRes, alpha, x, beta, y );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                BOOST_CHECK_EQUAL( rExpected[j], rComputed[j] );
+            }
         }
     }
 } 

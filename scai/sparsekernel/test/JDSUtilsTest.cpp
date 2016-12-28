@@ -45,8 +45,10 @@
 
 #include <scai/sparsekernel/test/TestData1.hpp>
 #include <scai/sparsekernel/test/TestData2.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/hmemo/test/ContextFix.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 /*--------------------------------------------------------------------- */
 
@@ -136,11 +138,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
     ContextPtr loc = testContext;
     getRow.getSupportedContext( loc, setRow );
 
-    HArray<IndexType> jdsPerm( testContext );
-    HArray<IndexType> jdsILG( testContext );
-    HArray<IndexType> jdsDLG( testContext );
-    HArray<IndexType> jdsJA( testContext );
-    HArray<ValueType> jdsValues( testContext );
+    LArray<IndexType> jdsPerm( testContext );
+    LArray<IndexType> jdsILG( testContext );
+    LArray<IndexType> jdsDLG( testContext );
+    LArray<IndexType> jdsJA( testContext );
+    LArray<ValueType> jdsValues( testContext );
 
     IndexType numRows;
     IndexType numColumns;
@@ -170,16 +172,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
     // Now all values should be zero
 
-    {
-        const IndexType numValues = jdsValues.size();
-
-        ReadAccess<ValueType> rValues( jdsValues, loc );
-
-        for ( IndexType i = 0; i < numValues; ++i )
-        {
-            BOOST_CHECK_EQUAL( ValueType( 0 ), rValues[i] );
-        }
-    }
+    BOOST_CHECK_EQUAL( ValueType( 0 ), common::Math::real( jdsValues.maxNorm() ) );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -679,56 +672,150 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( jdsDLG.size(), numDiagonals, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( jdsJA.size(), jdsValues.size(), "size mismatch" )
 
-    ValueType alpha = 1;
-    ValueType beta  = -1;
-
     const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
     const ValueType x_values[]   = { 3, -3, 2, -2 };
-    const ValueType res_values[] = { 9, 22, 8, -13, 3, -1, -6 };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
 
     SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
     SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numRows, n_res, "size mismatch" );
 
     HArray<ValueType> x( numColumns, x_values, testContext );
     HArray<ValueType> y( numRows, y_values, testContext );
 
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
     HArray<ValueType> res( testContext );
+    LArray<ValueType> expectedRes( testContext );
 
-    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
-                            << ", with x = " << x << ", y = " << y
-                            << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
-
-
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
-        SCAI_CONTEXT_ACCESS( loc );
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
 
-        ReadAccess<IndexType> rPerm( jdsPerm, loc );
-        ReadAccess<IndexType> rDLG( jdsDLG, loc );
-        ReadAccess<IndexType> rILG( jdsILG, loc );
-        ReadAccess<IndexType> rJA( jdsJA, loc );
-        ReadAccess<ValueType> rValues( jdsValues, loc );
-
-        ReadAccess<ValueType> rX( x, loc );
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-
-        normalGEMV[loc]( wResult.get(),
-                         alpha, rX.get(), beta, rY.get(),
-                         numRows, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rResult( res, hostContext );
-
-        for ( IndexType i = 0; i < numRows; ++i )
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
-            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+
+            SCAI_ASYNCHRONOUS( syncToken.get() );
+
+            SCAI_CONTEXT_ACCESS( loc );
+    
+            ReadAccess<IndexType> rPerm( jdsPerm, loc );
+            ReadAccess<IndexType> rDLG( jdsDLG, loc );
+            ReadAccess<IndexType> rILG( jdsILG, loc );
+            ReadAccess<IndexType> rJA( jdsJA, loc );
+            ReadAccess<ValueType> rValues( jdsValues, loc );
+    
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+    
+            normalGEMV[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numRows, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
         }
+
+        // compare against mv product of dense matrix
+
+        data1::getGEMVResult( expectedRes, alpha, x, beta, y );
+        BOOST_CHECK( common::Math::real( expectedRes.maxDiffNorm( res ) ) < 0.001 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
+{
+    // JDS has no own sparse routine, also done with normalGEMV, beta = 1, y = res
+
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = testContext;
+
+    normalGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> jdsPerm( testContext );
+    HArray<IndexType> jdsILG( testContext );
+    HArray<IndexType> jdsDLG( testContext );
+    HArray<IndexType> jdsJA( testContext );
+    HArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    SCAI_ASSERT_EQ_ERROR( jdsPerm.size(), numRows, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( jdsILG.size(), numRows, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( jdsDLG.size(), numDiagonals, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( jdsJA.size(), jdsValues.size(), "size mismatch" )
+
+    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]   = { 3, -3, 2, -2 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
+
+    HArray<ValueType> x( numColumns, x_values, testContext );
+    HArray<ValueType> y( numRows, y_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha; ++icase )
+    {
+        HArray<ValueType> res( numRows, y_values, testContext );
+
+        ValueType alpha = alpha_values[icase];
+        ValueType beta  = 1;
+
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+    
+            ReadAccess<IndexType> rPerm( jdsPerm, loc );
+            ReadAccess<IndexType> rDLG( jdsDLG, loc );
+            ReadAccess<IndexType> rILG( jdsILG, loc );
+            ReadAccess<IndexType> rJA( jdsJA, loc );
+            ReadAccess<ValueType> rValues( jdsValues, loc );
+    
+            ReadAccess<ValueType> rX( x, loc );
+            WriteAccess<ValueType> wResult( res, loc, numRows );
+    
+            normalGEMV[loc]( wResult.get(),
+                             alpha, rX.get(), beta, wResult.get(),
+                             numRows, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
+        }
+
+        // compare against mv product of dense matrix
+
+        LArray<ValueType> expectedRes( numRows, y_values, testContext );
+        data1::getGEMVResult( expectedRes, alpha, x, beta, y );
+        BOOST_CHECK( common::Math::real( expectedRes.maxDiffNorm( res ) ) < 0.001 );
     }
 }
 
@@ -764,53 +851,62 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
     SCAI_ASSERT_EQ_ERROR( jdsDLG.size(), numDiagonals, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( jdsJA.size(), jdsValues.size(), "size mismatch" )
 
-    ValueType alpha = 1;
-    ValueType beta  = 1;
-
     const ValueType y_values[]   = { 1, -1, 2, -2 };
     const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
-    const ValueType res_values[] = { 13, 15, -16, 14 };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
-    const IndexType n_res = sizeof( res_values ) / sizeof( ValueType );
 
     SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
     SCAI_ASSERT_EQ_ERROR( numColumns, n_y, "size mismatch" );
-    SCAI_ASSERT_EQ_ERROR( numColumns, n_res, "size mismatch" );
 
     HArray<ValueType> x( numRows, x_values, testContext );
     HArray<ValueType> y( numColumns, y_values, testContext );
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
     HArray<ValueType> res( testContext );
+    LArray<ValueType> expectedRes( testContext );
 
-    SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * JDS + " << beta << " * y "
-                            << ", with x = " << x << ", y = " << y
-                            << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
     {
-        SCAI_CONTEXT_ACCESS( loc );
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
 
-        ReadAccess<IndexType> rPerm( jdsPerm, loc );
-        ReadAccess<IndexType> rDLG( jdsDLG, loc );
-        ReadAccess<IndexType> rILG( jdsILG, loc );
-        ReadAccess<IndexType> rJA( jdsJA, loc );
-        ReadAccess<ValueType> rValues( jdsValues, loc );
-
-        ReadAccess<ValueType> rX( x, loc );
-        ReadAccess<ValueType> rY( y, loc );
-        WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
-
-        normalGEVM[loc]( wResult.get(),
-                         alpha, rX.get(), beta, rY.get(),
-                         numColumns, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
-    }
-
-    {
-        ReadAccess<ValueType> rResult( res, hostContext );
-
-        for ( IndexType i = 0; i < numColumns; ++i )
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * JDS + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
-            BOOST_CHECK_EQUAL( rResult[i], res_values[i] );
+            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            SCAI_ASYNCHRONOUS( syncToken.get() );
+
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rPerm( jdsPerm, loc );
+            ReadAccess<IndexType> rDLG( jdsDLG, loc );
+            ReadAccess<IndexType> rILG( jdsILG, loc );
+            ReadAccess<IndexType> rJA( jdsJA, loc );
+            ReadAccess<ValueType> rValues( jdsValues, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
+
+            normalGEVM[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numColumns, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
+
+            // implicit synchronizsation at end of this scope
         }
+
+        // compare against gevm product of dense matrix
+
+        data1::getGEVMResult( expectedRes, alpha, x, beta, y );
+        BOOST_CHECK( common::Math::real( expectedRes.maxDiffNorm( res ) ) < 0.001 );
     }
 }
 
