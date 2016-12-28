@@ -69,6 +69,10 @@ public:
 
     static UnsupportedType getUnsupportedSetting();
 
+    /** only for test purpose this routine can be used to re-read the environment variable */
+
+    static void resetSetting();
+
 protected:
 
     std::string mMessage;

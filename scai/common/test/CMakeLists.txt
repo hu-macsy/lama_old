@@ -38,6 +38,7 @@ set ( CXX_SOURCES
       commonTest
       ConstantsTest
       ContextTypeTest
+      ExceptionTest  
       FactoryTest  
       Factory1Test  
       FactoryTest
