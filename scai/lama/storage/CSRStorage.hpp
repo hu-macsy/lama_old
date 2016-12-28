@@ -629,7 +629,7 @@ protected:
 
 private:
 
-    bool mSortedRows; //!< if true, all rows are sorted by column indexes
+    bool mSortedRows; //!< if true, the column indexes in each row are sorted
     /**
      * @brief checks if in each row the diagonal element is stored first.
      *
