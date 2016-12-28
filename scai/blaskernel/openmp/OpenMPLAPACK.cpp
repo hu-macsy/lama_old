@@ -454,52 +454,6 @@ void OpenMPLAPACK::tptrs(
 }
 
 /* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPLAPACK::laswp(
-    const CBLAS_ORDER order,
-    const IndexType N,
-    ValueType* A,
-    const IndexType LDA,
-    const IndexType K1,
-    const IndexType K2,
-    const IndexType* ipiv,
-    const IndexType INCX )
-{
-    SCAI_REGION( "OpenMP.LAPACK.laswp" )
-    IndexType i = K1;
-
-    if ( order == CblasRowMajor )
-    {
-        for ( i = K1; i < K2; ++i )
-        {
-            if ( ipiv[i * INCX] == i )
-            {
-                continue;
-            }
-
-            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX );
-        }
-    }
-    else if ( order == CblasColMajor )
-    {
-        for ( i = K1; i < K2; ++i )
-        {
-            if ( ipiv[i * INCX] == i )
-            {
-                continue;
-            }
-
-            OpenMPBLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX, &A[i * LDA], INCX );
-        }
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "illegal order setting " << order )
-    }
-}
-
-/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -513,7 +467,6 @@ void OpenMPLAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( OpenMPLAPACK::getri, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( OpenMPLAPACK::getinv, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( OpenMPLAPACK::tptrs, ctx, flag );
-    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( OpenMPLAPACK::laswp, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

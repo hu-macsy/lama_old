@@ -274,52 +274,6 @@ void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
 }
 
 /* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void LAPACK_LAPACK::laswp( const CBLAS_ORDER order, const IndexType N,
-                           ValueType* A, const IndexType LDA, const IndexType K1,
-                           const IndexType K2, const IndexType* ipiv, const IndexType INCX )
-{
-    SCAI_REGION( "LAPACK.LAPACK.laswp<float>" )
-    typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
-
-    if ( common::TypeTraits<IndexType>::stype
-            != common::TypeTraits<LAPACKIndexType>::stype )
-    {
-        // ToDo: convert ipiv array
-        COMMON_THROWEXCEPTION( "indextype mismatch" );
-    }
-
-    if ( order == CblasRowMajor )
-    {
-        for ( IndexType i = K1; i < K2; ++i )
-        {
-            if ( ipiv[i * INCX] == i )
-            {
-                continue;
-            }
-
-            BLAS_BLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX,
-                                         &A[i * LDA], INCX );
-        }
-    }
-    else if ( order == CblasColMajor )
-    {
-        typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
-        LAPACKWrapper<ValueType>::laswp( static_cast<LAPACKIndexType>( N ), A,
-                                         static_cast<LAPACKIndexType>( LDA ),
-                                         static_cast<LAPACKIndexType>( K1 ),
-                                         static_cast<LAPACKIndexType>( K2 ),
-                                         reinterpret_cast<const LAPACKIndexType*>( ipiv ),
-                                         static_cast<LAPACKIndexType>( INCX ) );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "cblas_laswp Illegal order setting" )
-    }
-}
-
-/* --------------------------------------------------------------------------- */
 /*    Static registration of the LAPACK routines                               */
 /* --------------------------------------------------------------------------- */
 
@@ -332,8 +286,8 @@ void LAPACK_LAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelR
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACK_LAPACK::getri, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACK_LAPACK::getinv, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACK_LAPACK::tptrs, ctx, flag );
-    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( LAPACK_LAPACK::laswp, ctx, flag );
 }
+
 /* --------------------------------------------------------------------------- */
 /*    Static initialiazion at program start                                    */
 /* --------------------------------------------------------------------------- */
