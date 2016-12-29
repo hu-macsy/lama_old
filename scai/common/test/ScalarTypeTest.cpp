@@ -86,10 +86,22 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
 
 BOOST_AUTO_TEST_CASE( precisionTest )
 {
-    for ( int type = scalar::ScalarType( 0 ); type <= scalar::UNKNOWN; ++type )
+    for ( int type = scalar::ScalarType( 0 ); type < scalar::UNKNOWN; ++type )
     {
         scalar::ScalarType stype = scalar::ScalarType( type );
 
+        if ( stype == scalar::INTERNAL )
+        {
+            // should throw an exception to make sure that call is replaced with correct type
+
+            BOOST_CHECK_THROW(
+            {
+                precision( stype );
+            }, common::Exception );
+ 
+            continue;
+        }
+        
         int n = precision( stype );
 
         if ( isNumeric( stype ) )
