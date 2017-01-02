@@ -99,6 +99,95 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( inverseTest, ValueType, blas_test_types )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getrif2Test )
+{
+    typedef float ValueType;    // this routine checks correct pivoting and use of border
+
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getrf<ValueType> > getrf;
+    static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getri<ValueType> > getri;
+
+    SCAI_LOG_INFO( logger, "getrif<" << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << "host" )
+
+    //  matrices a, b used with a * b = identity
+    //
+    //        x   x   x  x  x  x  x        x   x   x  x   x   x   x
+    //        x   0   1  0  0  0  x        x   0   0  0   0   1   x
+    //        x   0   0  0  1  0  x        x   1   0  0   0   0   x
+    //        x   0   0  0  0  1  x        x   0   0  0   1   0   x
+    //        x   0   0  1  0  0  x        x   0   1  0   0   0   x
+    //        x   1   0  0  0  0  x        x   0   0  1   0   0   x
+    //        x   x   x  x  x  x  x        x   x   x  x   x   x   x
+
+    static IndexType iperm[] = {  1, 3, 4, 2, 0 };  // used to set up a permutation matrix
+
+    const IndexType n = sizeof( iperm ) / sizeof( IndexType );
+
+    const IndexType border = 1;
+    const IndexType lda = n + 2 * border;
+    const ValueType x   = 19;
+
+    for ( IndexType iorder = 0; iorder < 2; ++iorder )
+    {
+        const CBLAS_ORDER order = iorder == 0 ? CblasRowMajor : CblasColMajor;
+
+        // matrices get a border to check for working lda 
+
+        HArray<ValueType> a( lda * lda, x, testContext );
+        HArray<ValueType> b( lda * lda, x, testContext );
+
+        {
+            WriteAccess<ValueType> wA( a, hostContext );
+            WriteAccess<ValueType> wB( b, hostContext );
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                for ( IndexType j = 0; j < n; ++j )
+                {
+                    wA[ lda * ( i + border ) + j + border ] = ValueType( 0 );
+                    wB[ lda * ( j + border ) + i + border ] = ValueType( 0 );
+                }
+            }
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                wA[ lda * ( i + border ) + iperm[i] + border ] = ValueType( 1 );
+                wB[ lda * ( iperm[i] + border ) + i + border ] = ValueType( 1 );
+            }
+        }
+
+        SCAI_LOG_INFO( logger, "Compute inverse of a permutation matrix, size = " << n  )
+
+        // now compute the inverse of the permutation matrix as a submatrix
+
+        HArray<IndexType> permutation( n );
+        ContextPtr loc = hostContext;
+        {
+            WriteAccess<ValueType> wA( a, loc );
+            WriteAccess<IndexType> wPermutation( permutation, loc );
+            ValueType* aData = wA.get() + border * lda + border; 
+            getrf[loc->getType()]( order, n, n, aData, lda, wPermutation.get() );
+            getri[loc->getType()]( order, n, aData, lda, wPermutation.get() );
+        }
+    
+        // now check for correct results
+    
+        {
+            ReadAccess<ValueType> rA( a, hostContext );
+            ReadAccess<ValueType> rB( b, hostContext );
+    
+            for ( IndexType k = 0; k <  lda * lda; ++k )
+            {
+                BOOST_CHECK_EQUAL( rA[k], rB[k] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -106,9 +195,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
     static kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::getri<ValueType> > getri;
     SCAI_LOG_INFO( logger, "getrif<" << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << "host" )
     const IndexType n = 3;
-// set up values for A and B with A * B = identiy
+
+    //  matrices a, b used with a * b = identity
+    //
+    //        2   0  -1       2   1   0
+    //       -3   0   2      -4  -2  -1
+    //       -2  -1   0       3   2   0
+
     {
-        //CblasRowMajor
+        // CblasRowMajor
         static ValueType avalues[] = { 2.0, 0.0, -1.0, -3.0, 0.0, 2.0, -2.0, -1.0, 0.0};
         static ValueType bvalues[] = { 2.0, 1.0, 0.0, -4.0, -2.0, -1.0, 3.0, 2.0, 0.0};
         HArray<ValueType> a( n * n, avalues, testContext );
@@ -130,19 +225,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         }
     }
     {
-        //CblasColumnMajor
-        static ValueType avalues[] =
-        {   2.0, -3.0, -2.0, 0.0, 0.0, -1.0, -1.0, 2.0, 0.0};
-        static ValueType bvalues[] =
-        {   2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0};
+        // CblasColumnMajor
+
+        static ValueType avalues[] = { 2.0, -3.0, -2.0, 0.0, 0.0, -1.0, -1.0, 2.0, 0.0 };
+        static ValueType bvalues[] = { 2.0, -4.0, 3.0, 1.0, -2.0, 2.0, 0.0, -1.0, 0.0 };
+
+        static IndexType n_a = sizeof( avalues ) / sizeof( ValueType );
+        static IndexType n_b = sizeof( bvalues ) / sizeof( ValueType );
+
+        SCAI_ASSERT_EQ_ERROR( n_a, n_b, "avalues and bvalues must have same number of entries" )
+        SCAI_ASSERT_EQ_ERROR( n_a, n * n, "number of a_values does not match matrix size n = " << n )
+
         HArray<ValueType> a( n * n, avalues, testContext );
         HArray<IndexType> permutation( n );
+
         ContextPtr loc = Context::getHostPtr();
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            getrf[loc->getType()]( CblasRowMajor, n, n, wA.get(), n, wPermutation.get() );
-            getri[loc->getType()]( CblasRowMajor, n, wA.get(), n, wPermutation.get() );
+            getrf[loc->getType()]( CblasColMajor, n, n, wA.get(), n, wPermutation.get() );
+            getri[loc->getType()]( CblasColMajor, n, wA.get(), n, wPermutation.get() );
         }
         {
             ReadAccess<ValueType> rA( a );
@@ -210,28 +312,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
         //Bigger Matrix with a different kind of elements, testing upper/lower for column major
         const IndexType n = 4;
         const IndexType ntri = n * ( n + 1 ) / 2;
-// set up values for A, X and B with A * X = B
+
+        // set up values for A, X and B with A * X = B
+
         //Matrix A -- lower non-unit column major
-        static ValueType avalues1[] =
-        {   1.0, 2.0, 4.0, 7.0, 3.0, 5.0, 8.0, 6.0, 9.0, 10.0};
+
+        static ValueType avalues1[] =  { 1.0, 2.0, 4.0, 7.0, 3.0, 5.0, 8.0, 6.0, 9.0, 10.0 };
         //Matrix A -- upper non-unit column major
-        static ValueType avalues2[] =
-        {   1.0, 2.0, 5.0, 3.0, 6.0, 8.0, 4.0, 7.0, 9.0, 10.0};
+        static ValueType avalues2[] =  { 1.0, 2.0, 5.0, 3.0, 6.0, 8.0, 4.0, 7.0, 9.0, 10.0 };
         //Vector B -- lower non-unit column major
-        static ValueType bvalues1[] =
-        {   1.0, 11.0, 49.0, 146.0};
+        static ValueType bvalues1[] =  { 1.0, 11.0, 49.0, 146.0 };
         //Vector B -- upper non-unit column major
-        static ValueType bvalues2[] =
-        {   50.0, 94.0, 103.0, 70.0};
+        static ValueType bvalues2[] =  { 50.0, 94.0, 103.0, 70.0 };
         //Vector X -- for all the same
-        static ValueType xvalues[] =
-        {   1.0, 3.0, 5.0, 7.0};
+        static ValueType xvalues[] =   { 1.0, 3.0, 5.0, 7.0 };
+
         HArray<ValueType> a1( ntri, avalues1, testContext );
         HArray<ValueType> a2( ntri, avalues2, testContext );
         HArray<ValueType> b1( n, bvalues1, testContext );
         HArray<ValueType> b2( n, bvalues2, testContext );
         ContextPtr loc = Context::getHostPtr();
         {
+            const IndexType ldb = n;
+            const IndexType nrhs = 1;
             ReadAccess<ValueType> rA1( a1, loc );
             WriteAccess<ValueType> wB1( b1, loc );
             ReadAccess<ValueType> rA2( a2, loc );
@@ -242,14 +345,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  4  5  6  0   5    49
             //  7  8  9  10  7    146
             tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                   n, 1, rA1.get(), wB1.get(), n );
+                                   n, nrhs, rA1.get(), wB1.get(), ldb );
             //  A            X    B
             //  1  2  3  4   1    50
             //  0  5  6  7   3    94
             //  0  0  8  9   5    103
             //  0  0  0  10  7    70
             tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                   n, 1, rA2.get(), wB2.get(), n );
+                                   n, nrhs, rA2.get(), wB2.get(), ldb );
         }
         {
             ReadAccess<ValueType> rX1( b1 );
@@ -262,91 +365,30 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             }
         }
     }
-//Test not working for MKL
-    /*{ //Bigger Matrix with a different kind of elements, testing upper/lower for row major
-        const IndexType n = 4;
-        const IndexType ntri = n * ( n + 1 ) / 2;
 
-    // set up values for A, X and B with A * X = B
-
-        //Matrix A -- lower/upper non-unit row major
-        static ValueType avalues3[] =
-        {   1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
-        //Vector B -- lower non-unit row major
-        static ValueType bvalues3[] =
-        {   1.0, 11.0, 49.0, 146.0};
-        //Vector B -- upper non-unit row major
-        static ValueType bvalues4[] =
-        {   50.0, 94.0, 103.0, 70.0};
-        //Vector X -- for all the same
-        static ValueType xvalues[] =
-        {   1.0, 3.0, 5.0, 7.0};
-        printf("######Test1\n");
-        LArray<ValueType> a3( ntri, avalues3 );
-        LArray<ValueType> b3( n, bvalues3 );
-        LArray<ValueType> b4( n, bvalues4 );
-
-        ContextPtr loc = Context::getContextPtr( context::Host );
-
-        {
-            ReadAccess<ValueType> rA3( a3, loc );
-            WriteAccess<ValueType> wB3( b3, loc );
-            WriteAccess<ValueType> wB4( b4, loc );
-
-            LAMA_INTERFACE_FN_T( tptrs, loc, BLAS, LAPACK, ValueType )
-
-            //  A            X    B
-            //  1  0  0  0   1    1
-            //  2  3  0  0   3    11
-            //  4  5  6  0   5    49
-            //  7  8  9  10  7    146
-
-            int error3 = tptrs( CblasRowMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                            n, 1, rA3.get(), wB3.get(), n );
-            printf("######Test2\n");
-            //  A            X    B
-            //  1  2  3  4   1    50
-            //  0  5  6  7   3    94
-            //  0  0  8  9   5    103
-            //  0  0  0  10  7    70
-
-            int error4 = tptrs( CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                            n, 1, rA3.get(), wB4.get(), n );
-            printf("######Test3\n");
-            BOOST_CHECK_EQUAL( 0, error3 );
-            BOOST_CHECK_EQUAL( 0, error4 );
-            printf("######Test4\n");
-        }
-
-        {
-            ReadAccess<ValueType> rX3( b3 );
-            ReadAccess<ValueType> rX4( b4 );
-
-            for ( int i = 0; i < n; ++i )
-            {
-                BOOST_CHECK_CLOSE( rX3[i], xvalues[i], 1 );
-                BOOST_CHECK_CLOSE( rX4[i], xvalues[i], 1 );
-            }
-        }
-    }*/
     {
-        //Test with decimal marked numbers
+        // Test with decimal marked numbers and row-major
+
         const IndexType n = 3;
         const IndexType ntri = n * ( n + 1 ) / 2;
-// set up values for A, X and B with A * X = B
-        static ValueType avalues[] =
-        {   1.2, 2.3, 6.7, 4.5, 8.11, 10.13};
-        static ValueType bvalues1[] =
-        {   2.4, 18.1, 88.38};
-        static ValueType bvalues2[] =
-        {   31.8, 60.65, 50.65};
-        static ValueType xvalues[] =
-        {   2.0, 3.0, 5.0};
+
+        // set up values for A, X and B with A * X = B
+        //  1.2
+        //  2.3  4.5
+        //  6.7  8.11  10.13
+
+        static ValueType avalues[]  =  { 1.2, 2.3, 4.5, 6.7, 8.11, 10.13 };
+        static ValueType bvalues1[] =  { 2.4, 18.1, 88.38 };
+        static ValueType bvalues2[] =  { 31.8, 60.65, 50.65 };
+        static ValueType xvalues[]  =  { 2.0, 3.0, 5.0};
+
         HArray<ValueType> a( ntri, avalues, testContext );
         HArray<ValueType> b1( n, bvalues1, testContext );
         HArray<ValueType> b2( n, bvalues2, testContext );
+
         ContextPtr loc = Context::getHostPtr();
         {
+            IndexType ldb = 1;
             ReadAccess<ValueType> rA( a, loc );
             WriteAccess<ValueType> wB1( b1, loc );
             WriteAccess<ValueType> wB2( b2, loc );
@@ -354,15 +396,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
             //  1.2  0      0      2    2.4
             //  2.3  4.5    0      3    18.1
             //  6.7  8.11   10.13  5    88.38
-            tptrs[loc->getType()]( CblasColMajor, CblasLower, CblasNoTrans, CblasNonUnit,
-                                   n, 1, rA.get(), wB1.get(), n );
+            tptrs[loc->getType()]( CblasRowMajor, CblasLower, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA.get(), wB1.get(), ldb );
 
             //  A                  X    B
             //  1.2  2.3   4.5     2    31.8
             //  0    6.7   8.11    3    60.65
             //  0    0     10.13   5    50.65
-            tptrs[loc->getType()]( CblasColMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                                   n, 1, rA.get(), wB2.get(), n );
+            tptrs[loc->getType()]( CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                                   n, 1, rA.get(), wB2.get(), ldb );
         }
         {
             ReadAccess<ValueType> rX1( b1 );
@@ -370,11 +412,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( tptrsTest, ValueType, test_types )
 
             for ( IndexType i = 0; i < n; ++i )
             {
-//            printf("Lower:");
                 BOOST_CHECK_CLOSE( rX1[i], xvalues[i], 1 );
-//            printf("\nUpper:");
                 BOOST_CHECK_CLOSE( rX2[i], xvalues[i], 1 );
-//            printf("\n");
             }
         }
     }
