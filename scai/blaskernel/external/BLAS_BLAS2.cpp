@@ -38,6 +38,7 @@
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/external/BLASWrapper.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS2.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
@@ -144,10 +145,24 @@ void BLAS_BLAS2::gemv(
 
         if ( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
         {
-            COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
-        }
+            // this case is not handled by Fortran BLAS, so we call own implementation
 
-        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ) );
+            OpenMPBLAS2::gemv( order, transA, m, n, alpha, a, lda, x, incX, beta, y, incY );
+        }
+        else
+        {
+            BLASWrapper<ValueType>::gemv( ta, 
+                                          static_cast<BLASTrait::BLASIndexType>( n ), 
+                                          static_cast<BLASTrait::BLASIndexType>( m ), 
+                                          alpha, 
+                                          a, 
+                                          static_cast<BLASTrait::BLASIndexType>( lda ), 
+                                          x, 
+                                          static_cast<BLASTrait::BLASIndexType>( incX ), 
+                                          beta, 
+                                          y, 
+                                          static_cast<BLASTrait::BLASIndexType>( incY ) );
+        }
     }
 
     return;
