@@ -46,6 +46,7 @@
 
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
+#include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 
@@ -81,78 +82,80 @@ void OpenMPLAPACK::getrf(
     SCAI_LOG_INFO( logger, "getrf<" << TypeTraits<ValueType>::id() << "> for A of size " << m << " x " << n )
     IndexType index = 0;
 
-    if ( m != n || n != lda )
-    {
-        COMMON_THROWEXCEPTION( "OpenMPLAPACK:getrf only supported for square matrices" );
-    }
+    SCAI_ASSERT_EQ_ERROR( m, n, "getrf only for square matrices" )
+    SCAI_ASSERT_GE_ERROR( lda, m, "lda too small" )
 
-    for ( IndexType i = 0; i < lda; i++ )
+    for ( IndexType i = 0; i < m; i++ )
     {
         ipiv[i] = i;
     }
 
     if ( order == CblasColMajor )
     {
-        for ( IndexType i = 0; i < lda; i++ )
+        // a( i, j ) -> a ( j * lda + i  )
+
+        for ( IndexType i = 0; i < m; i++ )
         {
-            //pivoting
+            // pivoting
+
             index = i;
 
-            for ( IndexType j = i; j < lda; j++ )
+            for ( IndexType k = i + 1; k < m; k++ )
             {
-                if ( common::Math::abs( a[lda * ipiv[i] + j] ) > common::Math::abs( a[lda * ipiv[i] + index] ) )
+                if ( common::Math::abs( a[lda * i + ipiv[k]] ) > common::Math::abs( a[lda * i + ipiv[index] ] ) )
                 {
-                    index = j;
+                    index = k;
                 }
             }
 
-            IndexType temp = ipiv[index];
-            ipiv[index] = ipiv[i];
-            ipiv[i] = temp;
-        }
+            std::swap( ipiv[index], ipiv[i] );
 
-        for ( IndexType i = 0; i < lda; i++ )
-        {
-            for ( IndexType j = i + 1; j < lda; j++ )
+            for ( IndexType k = i + 1; k < m; k++ )
             {
-                a[lda * ipiv[i] + j] /= a[lda * ipiv[i] + i];
+                a[lda * i + ipiv[k]] /= a[lda * i + ipiv[i]];
 
-                for ( IndexType k = i + 1; k < lda; k++ )
+                for ( IndexType j = i + 1; j < n; j++ )
                 {
-                    a[lda * ipiv[k] + j] -= a[lda * ipiv[i] + j] * a[lda * ipiv[k] + i];
+                    a[lda * j + ipiv[k]] -= a[lda * i + ipiv[k]] * a[lda * j + ipiv[i]];
                 }
             }
         }
     }
     else if ( order == CblasRowMajor )
     {
-        for ( IndexType i = 0; i < lda; i++ )
+        // a( i, j ) -> a ( i * lda + j )
+
+        for ( IndexType i = 0; i < m; i++ )
         {
-            //pivoting
+            // pivoting over ( i:n, i ) 
+
             index = i;
 
-            for ( IndexType j = i; j < lda; j++ )
+            for ( IndexType k = i + 1; k < m; k++ )
             {
-                if ( common::Math::abs( a[lda * ipiv[j] + i] ) > common::Math::abs( a[lda * ipiv[index] + i] ) )
+                if ( common::Math::abs( a[lda * ipiv[k] + i] ) > common::Math::abs( a[lda * ipiv[index] + i] ) )
                 {
-                    index = j;
+                    index = k;
                 }
             }
 
-            IndexType temp = ipiv[index];
-            ipiv[index] = ipiv[i];
-            ipiv[i] = temp;
-        }
+            SCAI_LOG_TRACE( logger, "Step i = " << i << ", pivot is row " << index << ", val = " << a[lda * ipiv[index] + i ] )
 
-        for ( IndexType i = 0; i < lda; i++ )
-        {
-            for ( IndexType j = i + 1; j < lda; j++ )
+            std::swap( ipiv[index], ipiv[i] );
+
+            for ( IndexType k = i + 1; k < m; k++ )
             {
-                a[lda * ipiv[j] + i] /= a[lda * ipiv[i] + i];
+                // a( k, i ) = a( k, i ) / a( i, i )
 
-                for ( IndexType k = i + 1; k < lda; k++ )
+                a[lda * ipiv[k] + i] /= a[lda * ipiv[i] + i];
+
+                for ( IndexType j = i + 1; j < n; j++ )
                 {
-                    a[lda * ipiv[j] + k] -= a[lda * ipiv[j] + i] * a[lda * ipiv[i] + k];
+                    // a( k, j ) = a( k , j ) - a( k, i ) * a( i, j )
+
+                    a[lda * ipiv[k] + j] -= a[lda * ipiv[k] + i] * a[lda * ipiv[i] + j];
+
+                    SCAI_LOG_TRACE( logger, "a[" << k << ", " << j << "] = " << a[lda * ipiv[k] + j ] )
                 }
             }
         }
@@ -183,12 +186,18 @@ template<typename ValueType>
 void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType* const A, const IndexType lda, IndexType* const ipiv )
 {
     SCAI_REGION( "OpenMP.LAPACK.getri<ValueType>" )
-    SCAI_LOG_INFO( logger, "getri<" << TypeTraits<ValueType>::id() << "> for A of size " << n << " x " << n )
-    ValueType* A_inv = new ValueType[n * n];
+
+    SCAI_LOG_INFO( logger, "getri<" << TypeTraits<ValueType>::id() << "> for A of size " << n << " x " << n << ", lda = " << lda )
+
+    const ValueType ZERO = 0;
+
+    SCAI_ASSERT_GE_ERROR( lda, n, "lda too small" )
+
+    common::scoped_array<ValueType> A_inv( new ValueType[n * n] );
 
     for ( IndexType i = 0; i < n * n; i++ )
     {
-        A_inv[i] = static_cast<ValueType>( 0.0 );
+        A_inv[i] = ZERO;
     }
 
     if ( order == CblasRowMajor )
@@ -198,7 +207,7 @@ void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType*
             //Emulation of an identity matrix
             for ( IndexType h = 0; h < n; h++ )
             {
-                A_inv[n * ipiv[h] + i] = 0;
+                A_inv[n * ipiv[h] + i] = ZERO;
             }
 
             A_inv[n * i + i] = 1;
@@ -220,16 +229,17 @@ void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType*
                     A_inv[n * ipiv[j] + i] -= A[lda * ipiv[j] + k] * A_inv[n * ipiv[k] + i];
                 }
 
-                A_inv[n * ipiv[j] + i] /= A[n * ipiv[j] + j];
+                A_inv[n * ipiv[j] + i] /= A[lda * ipiv[j] + j];
             }
         }
 
+        // copy A_inv back to A
+
         for ( IndexType i = 0; i < n; i++ )
         {
-            //Emulation of an identity matrix
             for ( IndexType j = 0; j < n; j++ )
             {
-                A[n * j + i] = A_inv[n * ipiv[j] + i];
+                A[lda * j + i] = A_inv[n * ipiv[j] + i];
             }
         }
     }
@@ -237,10 +247,10 @@ void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType*
     {
         for ( IndexType i = 0; i < n; i++ )
         {
-            //Columns of Matrix A^-1
+            // Columns of Matrix A^-1
             for ( IndexType h = 0; h < n; h++ )
             {
-                A_inv[n * ipiv[i] + h] = static_cast<ValueType>( 0.0 );
+                A_inv[n * ipiv[h] + i] = ZERO;
             }
 
             A_inv[n * i + i] = 1;
@@ -250,7 +260,7 @@ void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType*
             {
                 for ( IndexType k = 0; k < j; k++ )
                 {
-                    A_inv[n * ipiv[i] + j] -= A[lda * ipiv[k] + j] * A_inv[n * ipiv[i] + k];
+                    A_inv[n * ipiv[j] + i] -= A[lda * k + ipiv[j]] * A_inv[n * ipiv[k] + i];
                 }
             }
 
@@ -259,24 +269,23 @@ void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType*
             {
                 for ( IndexType k = j + 1; k < n; k++ )
                 {
-                    A_inv[n * ipiv[i] + j] -= A[lda * ipiv[k] + j] * A_inv[n * ipiv[i] + k];
+                    A_inv[n * ipiv[j] + i] -= A[lda * k + ipiv[j]] * A_inv[n * ipiv[k] + i];
                 }
 
-                A_inv[n * ipiv[i] + j] /= A[n * ipiv[j] + j];
+                A_inv[n * ipiv[j] + i] /= A[lda * j + ipiv[j]];
             }
         }
+
+        // copy A_inv back to A
 
         for ( IndexType i = 0; i < n; i++ )
         {
-            //Copy from A_inv to A
             for ( IndexType j = 0; j < n; j++ )
             {
-                A[n * i + j] = A_inv[n * ipiv[i] + j];
+                A[lda * i + j] = A_inv[n * ipiv[j] + i];
             }
         }
     }
-
-    delete[] A_inv;
 }
 
 /* --------------------------------------------------------------------------- */
