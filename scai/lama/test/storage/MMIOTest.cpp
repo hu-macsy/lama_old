@@ -1,0 +1,201 @@
+/**
+ * @file MMIOTest.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2016
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Individual tests for the matrix market format
+ * @author Thomas Brandes
+ * @date 03.01.2017
+ */
+
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
+
+#include <scai/lama/io/MatrixMarketIO.hpp>
+#include <scai/lama/io/IOStream.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
+#include <scai/common/test/TestMacros.hpp>
+#include <scai/common/macros/assert.hpp>
+
+using namespace scai;
+using namespace common;
+using namespace lama;
+using namespace hmemo;
+
+/** Output files should be deleted unless for debugging it might be useful to check them. */
+
+#undef DELETE_OUTPUT_FILES
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE( MMIOTest )
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.MMIOTest" );
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_test_types )
+{
+    const IndexType m   = 3;
+    const IndexType n   = 4;
+
+    ValueType vals[]  = { 1, 2, 3, 0, 1, -1, 2, 0, 1, 5, 2, 7 };
+
+    const IndexType n_vals = sizeof( vals ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( n_vals, m * n, "number of values must fit to matrix " << m << " x " << n );
+
+    const char header[] = "%%MatrixMarket matrix array real general";
+
+    std::string fileName = "mm_array_gen.mtx";
+
+    {
+        using namespace std;
+    
+        fstream myFile;
+
+        myFile.open( fileName.c_str(), ios::out );
+        myFile << header << endl;
+        myFile << m << " " << n << endl;
+    
+        for ( IndexType i = 0; i < m * n; ++i )
+        {
+            myFile << vals[i] << endl;
+        }
+    }
+
+    DenseStorage<ValueType> denseStorage;
+
+    MatrixMarketIO reader;
+    FileIO& freader = reader;
+
+    freader.readStorage( denseStorage, fileName );
+
+    BOOST_CHECK_EQUAL( m, denseStorage.getNumRows() );
+    BOOST_CHECK_EQUAL( n, denseStorage.getNumColumns() );
+
+    {
+        const HArray<ValueType>& data = denseStorage.getData();
+        ReadAccess<ValueType> rVals( data );
+        for ( IndexType i = 0; i < m; ++i )
+        {
+            for ( IndexType j = 0; j < n; ++j )
+            {
+                // Note: denseStorage stores row-wise, file was column-wise
+                // std::cout << "Array [ " << i << ", " << j << " ] = " << rVals[ i * n + j ] << std::endl;
+
+                BOOST_CHECK_EQUAL( rVals[i * n + j ], vals[ j * m + i ] );
+            }
+        }
+    }
+
+    int rc = FileIO::removeFile( fileName );
+
+    BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_test_types )
+{
+    const IndexType n   = 4;
+
+    /*    DenseMatrix    1  -  -  -
+                         2  1  -  -
+                         3 -1  5  -
+                         0 -2  7  6
+    */
+
+    ValueType vals[]  = { 1, 2, 3, 0, 1, -1, -2, 5, 7, 6 };
+
+    const IndexType n_vals = sizeof( vals ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( n_vals, n * ( n + 1 ) / 2 , "number of symmentric values must fit to matrix " << n << " x " << n );
+
+    const char header[] = "%%MatrixMarket matrix array real symmetric";
+
+    std::string fileName = "mm_array_symm.mtx";
+
+    {
+        using namespace std;
+    
+        fstream myFile;
+
+        myFile.open( fileName.c_str(), ios::out );
+        myFile << header << endl;
+        myFile << n << " " << n << endl;
+    
+        for ( IndexType i = 0; i < n_vals; ++i )
+        {
+            myFile << vals[i] << endl;
+        }
+    }
+  
+    DenseStorage<ValueType> denseStorage;
+
+    MatrixMarketIO reader;
+    FileIO& freader = reader;
+
+    freader.readStorage( denseStorage, fileName );
+
+    BOOST_CHECK_EQUAL( n, denseStorage.getNumRows() );
+    BOOST_CHECK_EQUAL( n, denseStorage.getNumColumns() );
+
+    {
+        const HArray<ValueType>& data = denseStorage.getData();
+        ReadAccess<ValueType> rVals( data );
+
+        IndexType k = 0;
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            for ( IndexType j = i; j < n; ++j )
+            {
+                //  upper and lower must be same 
+
+                BOOST_CHECK_EQUAL( rVals[i * n + j ], vals[ k ] );
+                BOOST_CHECK_EQUAL( rVals[j * n + i ], vals[ k ] );
+
+                k++;
+            }
+        }
+
+        SCAI_ASSERT_EQ_ERROR( k, n_vals, "mismatch for number of values traversing triangular matrix" )
+    }
+
+    int rc = FileIO::removeFile( fileName );
+
+    BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END();
+
+/* ------------------------------------------------------------------------- */

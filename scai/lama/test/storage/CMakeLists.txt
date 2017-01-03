@@ -57,6 +57,7 @@ scai_project (
 
         IOStreamTest
         FileIOTest
+        MMIOTest
 
         lamaStorageTest
     )
