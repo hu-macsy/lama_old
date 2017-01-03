@@ -161,6 +161,13 @@ private:
         const hmemo::HArray<IndexType>& cooJA, 
         const hmemo::HArray<ValueType>& cooValues );
 
+    template<typename ValueType>
+    void readMMArray(
+        class IOStream& inFile,
+        hmemo::HArray<ValueType>& data,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const Symmetry symmetry );
 };
 
 }

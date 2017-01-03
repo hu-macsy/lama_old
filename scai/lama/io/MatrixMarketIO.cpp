@@ -39,6 +39,7 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/io/IOStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -235,10 +236,22 @@ void MatrixMarketIO::readMMHeader(
     std::getline( inFile, buffer, ' ' );
     std::transform( buffer.begin(), buffer.end(), buffer.begin(), ::tolower );
 
-    // checkif file type is valid in general
-    if ( buffer != "coordinate" && buffer != "array" )
+    bool isCoordinate = false;
+
+    // check if file type is valid in general
+
+    if ( buffer == "coordinate" )
     {
-        COMMON_THROWEXCEPTION( "Format type in the given matrix market file is invalid, should be coordinate or array" )
+        isCoordinate = true;
+    }
+    else if ( buffer == "array" ) 
+    {
+        isCoordinate = false;
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Format type " << buffer << " in the given matrix market file is invalid"
+                                << ", should be coordinate or array" )
     }
 
     // read data type
@@ -328,15 +341,19 @@ void MatrixMarketIO::readMMHeader(
     std::stringstream bufferSS( buffer );
     bufferSS >> numRows;
     bufferSS >> numColumns;
-    // TODO: vector correct here? should it be dense vs sparse?
-    if ( !isVector )
+
+    if ( isCoordinate )
     {
         bufferSS >> numValues;
     }
     else
     {
-        numValues = numRows * numColumns;
+        numValues = nIndex;   // stands for array
     }
+
+    SCAI_LOG_INFO( logger, "read MM header: size = " << numRows << " x " << numColumns 
+                           << ", #nnz = " << numValues << ", type = " << dataType
+                           << ", symmetry = " << symmetry )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -446,17 +463,20 @@ void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
 
+    IndexType numRows;
     IndexType numColumns;
     IndexType numValues;
 
     IOStream inFile( fileName, std::ios::in );
 
-    readMMHeader( size, numColumns, numValues, mmType, symmetry, inFile );
+    readMMHeader( numRows, numColumns, numValues, mmType, symmetry, inFile );
 
     if ( numColumns != 1 )
     {
         SCAI_LOG_WARN( logger, "reading vector from mtx file, #columns = " << numColumns << ", ignored" )
     }
+
+    size = numRows * numColumns;
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -479,6 +499,13 @@ void MatrixMarketIO::readArrayImpl(
     std::string line;
     IOStream inFile( fileName, std::ios::in );
     readMMHeader( numRows, numColumns, size, mmType, symmetry, inFile );
+
+    if ( size != nIndex )
+    {
+        COMMON_THROWEXCEPTION( "coordinate format for vector not supported" )
+    }
+
+    size = numRows * numColumns;
 
     if ( numColumns != 1 )
     {
@@ -827,6 +854,80 @@ void MatrixMarketIO::readStorageInfo( IndexType& numRows, IndexType& numColumns,
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixMarketIO::readMMArray( 
+    IOStream& inFile,
+    HArray<ValueType>& data,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const Symmetry symmetry )
+{
+    const std::string& fileName = inFile.getFileName();
+
+    if ( symmetry != GENERAL )
+    {
+        SCAI_ASSERT_EQ_ERROR( numRows, numColumns, "symmetric data only for square matrices" )
+    }
+
+    if ( symmetry == SKEW_SYMMETRIC )
+    {
+        COMMON_THROWEXCEPTION( "skew symmentric not supported yet" )
+    }
+
+    WriteOnlyAccess<ValueType> wData( data, numRows * numColumns );
+
+    // values in input file are column-major order
+
+    std::string line;   // used for reading lines of file
+
+    for ( IndexType j = 0; j < numColumns; ++j )
+    {
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            // symmemtric data has no upper triangular, i < j 
+
+            if ( symmetry == SYMMETRIC && i < j )
+            {
+                wData[i * numColumns + j] = wData[ j * numRows + i];
+                continue;
+            }
+            if ( symmetry == HERMITIAN && i < j )
+            {
+                wData[i * numColumns + j] = common::Math::conj( wData[ j * numRows + i] );
+                continue;
+            }
+
+            if ( inFile.eof() )
+            {
+                COMMON_THROWEXCEPTION( "failed to read further entry" )
+            }
+
+            std::getline( inFile, line );
+            std::istringstream reader( line );
+
+            ValueType val;
+
+            reader >> val;
+            wData[i * numColumns + j] = val;
+        }
+    }
+
+    if ( inFile.eof() )
+    {
+         COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
+    }
+
+    // check if there is more data in the file tht should not be there
+    std::getline( inFile, line );
+
+    if ( !inFile.eof() )
+    {
+        COMMON_THROWEXCEPTION( "'" << fileName << "': invalid file, contains to many elements." )
+    }
+}
+   
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixMarketIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName,
@@ -853,6 +954,26 @@ void MatrixMarketIO::readStorageImpl(
     {
         SCAI_LOG_WARN( logger, "Read matrix from Matrix Market file " << fileName 
                                << ": contains complex data but read in non-complex storage " << storage )
+    }
+
+    if ( numValuesFile == nIndex )
+    {
+        DenseStorage<ValueType> denseStorage( numRows, numColumns );
+ 
+        HArray<ValueType>& data = denseStorage.getData();
+
+        readMMArray( inFile, data, numRows, numColumns, symmetry );
+
+        if ( firstRow == 0 && nRows == nIndex )
+        {
+            storage = denseStorage;
+        }
+        else
+        {
+            denseStorage.copyBlockTo( storage, firstRow, nRows );
+        }
+
+        return;
     }
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
