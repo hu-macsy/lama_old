@@ -35,6 +35,7 @@
 #pragma once
 
 #include <scai/lama/io/CRTPFileIO.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
 
 namespace scai
 {
@@ -138,12 +139,13 @@ private:
         const common::scalar::ScalarType dataType );
 
     void readMMHeader(
+        class IOStream& inFile,
         IndexType& numRows,
         IndexType& numColumns,
         IndexType& numValues,
         common::scalar::ScalarType& dataType,
-        Symmetry& symmetry,
-        class IOStream& inFile );
+        bool& isVector,
+        Symmetry& symmetry );
 
     /** Extend COO data by adding all symmetric data */
 
@@ -168,6 +170,12 @@ private:
         const IndexType numRows,
         const IndexType numColumns,
         const Symmetry symmetry );
+
+    template<typename ValueType>
+    void writeDenseMatrix(
+        const DenseStorage<ValueType>& storage,
+        const std::string& fileName );
+
 };
 
 }
