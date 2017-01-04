@@ -295,9 +295,8 @@ void StorageMethods<ValueType>::splitCSR(
 
     IndexType numRows = csrIA.size() - 1;
 
-    SCAI_LOG_ERROR( logger,
-                   "splitCSR( #rows = " << numRows << ", #values = " << csrJA.size() 
-                    << ", colDist = " << colDist << " ) on " << *ctx )
+    SCAI_LOG_INFO( logger, "splitCSR( #rows = " << numRows << ", #values = " << csrJA.size() 
+                            << ", colDist = " << colDist << " ) on " << *ctx )
 
     if ( rowDist )
     {
