@@ -121,6 +121,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( ReadErrorTest )
+{
+    using namespace std;
+
+    const char header_wrong1[] = "%%MatMarket matrix array real general";
+    const char header_wrong2[] = "%%MatrixMarket mat array real general";
+    const char header_wrong3[] = "%%MatrixMarket vector coordinat real symmetric";
+    const char header_wrong4[] = "%%MatrixMarket matrix coordinate double general";
+    const char header_wrong5[] = "%%MatrixMarket matrix coordinate real hermitan";
+
+    const char* header[] = { header_wrong1, header_wrong2, header_wrong3, header_wrong4, header_wrong5 };
+
+    const IndexType ncases = sizeof( header ) / sizeof( char* );
+
+    std::string fileName = "mm_wrong.mtx";
+
+    for ( IndexType icase = 0; icase < ncases; ++icase )
+    {
+        {
+            fstream myFile;
+            IndexType zero = 0;    // used to write sizes
+
+		    myFile.open( fileName.c_str(), ios::out );
+            myFile << header[icase] << endl;
+            myFile << zero << " " << zero << endl;
+        }
+
+        MatrixMarketIO reader;
+     
+        BOOST_CHECK_THROW(
+        {
+            IndexType N = 0;
+            reader.readArrayInfo( N, fileName );
+        }, common::IOException );
+    }
+
+    int rc = FileIO::removeFile( fileName );
+
+    BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n   = 4;

@@ -48,6 +48,12 @@ using namespace utilskernel;
 
 /* ------------------------------------------------------------------------- */
 
+/** Define a filename used for the tests here. */
+
+static const char testFileName[] = "IOStream.tmp.data";
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE( IOStreamTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.IOStreamTest" );
@@ -56,25 +62,21 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.IOStreamTest" );
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_types )
 {
-    const IndexType n = 5;
+    const ValueType values[] = { 1, 2, 3, -1, 2 };
 
-    LArray<ValueType> data( n );
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    data[0] = 1.0;
-    data[1] = 2.0;
-    data[2] = 3.0;
-    data[3] = -1.0;
-    data[4] = 1;
+    LArray<ValueType> data( n, values );
 
     int precision = 3;
 
-    IOStream outFile( "tmp.data", std::ios::out );
+    IOStream outFile( testFileName, std::ios::out );
     outFile.writeFormatted( data, precision );
     outFile.close();
 
     LArray<ValueType> data1;
 
-    IOStream inFile( "tmp.data", std::ios::in );
+    IOStream inFile( testFileName, std::ios::in );
     inFile.readFormatted( data1, n );
     inFile.close();
 
@@ -84,6 +86,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
     AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
 
     BOOST_CHECK( diff < 1e-3 );
+
+    int rc = std::remove( testFileName );
+    BOOST_CHECK_EQUAL( 0, rc );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -99,7 +104,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
 
     // scalar::ScalarType type = TypeTraits<ValueType>::stype;
 
-    IOStream outFile( "tmp.data", std::ios::out | std::ios::binary );
+    IOStream outFile( testFileName, std::ios::out | std::ios::binary );
 
     scalar::ScalarType stype = scalar::PATTERN;   // that should throw an exception
 
@@ -115,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
 
     LArray<ValueType> data1;
 
-    IOStream inFile( "tmp.data", std::ios::in | std::ios::binary );
+    IOStream inFile( testFileName, std::ios::in | std::ios::binary );
 
     inFile.seekg( 0, std::ios::end );
     size_t realSize = inFile.tellg();
@@ -132,6 +137,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
 
     BOOST_CHECK_EQUAL( diff, 0 );
+
+    int rc = std::remove( testFileName );
+    BOOST_CHECK_EQUAL( 0, rc );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -149,13 +157,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
 
     scalar::ScalarType stype = TypeTraits<ScalarRepType>::stype;
 
-    IOStream outFile( "tmp.data", std::ios::out | std::ios::binary );
+    IOStream outFile( testFileName, std::ios::out | std::ios::binary );
     outFile.writeBinary( data, stype );
     outFile.close();
 
     LArray<ValueType> data1;
 
-    IOStream inFile( "tmp.data", std::ios::in | std::ios::binary );
+    IOStream inFile( testFileName, std::ios::in | std::ios::binary );
 
     inFile.seekg( 0, std::ios::end );
     size_t realSize = inFile.tellg();
@@ -172,6 +180,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
     AbsType diff = common::Math::real( data.maxDiffNorm( data1 ) );
 
     BOOST_CHECK_EQUAL( diff, 0 );
+
+    int rc = std::remove( testFileName );
+    BOOST_CHECK_EQUAL( 0, rc );
 }
 
 /* ------------------------------------------------------------------------- */
