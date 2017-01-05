@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class Jacobi.
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Specific tests for the solver class Jacobi.
+ * @author Matthias Makulla
  * @date 27.02.2012
  */
 

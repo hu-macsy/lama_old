@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class FileLoggerTest
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Test routines for the class FileLogger.
+ * @author Matthias Makulla
  * @date 02.02.2012
  */
 

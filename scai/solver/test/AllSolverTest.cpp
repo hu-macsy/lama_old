@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief This test runs test for each solver provided by the solver factory.
+ * @brief Generic tests applied for each solver class provided by the solver factory.
  * @author Thomas Brandes
  * @date 09.03.2016
  */

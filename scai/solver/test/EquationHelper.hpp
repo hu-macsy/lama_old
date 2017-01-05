@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief EquationHelper.hpp
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Definition of class that provides some equation systems for tests.
+ * @author Matthias Makulla
  * @date 09.02.2012
  */
 

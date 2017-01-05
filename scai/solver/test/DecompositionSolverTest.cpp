@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class DecompositionSolverTest.
- * @author Alexander Büchel, Robin Rehrmann
+ * @brief Specific test routines for the class DecompositionSolver.
+ * @author Lauretta Schubert
  * @date 22.02.2012
  */
 
@@ -153,47 +153,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
         }
     }
 }
-
-// ---------------------------------------------------------------------------------------------------------------
-
-// copied and adapted from IterativeSolverTest
-
-// BOOST_AUTO_TEST_CASE( SolveTest )
-// {
-//     typedef SCAI_TEST_TYPE ValueType;
-//     ContextPtr context = Context::getContextPtr();
-//     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-//     const IndexType N1 = 10;
-//     const IndexType N2 = 10;
-//     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
-//     CSRSparseMatrix<ValueType> coefficients;
-//     coefficients.setContextPtr( context );
-//     MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
-//     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
-//     SCAI_LOG_INFO( logger, "InverseTest uses context = " << context->getType() );
-//     DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );
-//     DistributionPtr colDist( new BlockDistribution( coefficients.getNumColumns(), comm ) );
-//     coefficients.redistribute( rowDist, colDist );
-//     const ValueType solutionInitValue = 1.0;
-//     DenseVector<ValueType> solution( coefficients.getColDistributionPtr(), solutionInitValue );
-//     // TODO: use constructor to set context
-//     solution.setContextPtr( context );
-//     DenseVector<ValueType> exactSolution( coefficients.getColDistributionPtr(), solutionInitValue + 1.0 );
-//     // TODO: use constructor to set context
-//     exactSolution.setContextPtr( context );
-//     DenseVector<ValueType> rhs( coefficients * exactSolution );
-//     IndexType maxExpectedIterations = 3000;
-//     CriterionPtr criterion( new IterationCount( maxExpectedIterations ) );
-//     SolverPtr solver ( Solver::create( "InverseSolver", "" ) );
-//     solver->initialize( coefficients );
-//     solver->solve( solution, rhs );
-//     DenseVector<ValueType> diff( solution - exactSolution );
-//     Scalar s                  = maxNorm( diff );
-//     ValueType realMaxNorm     = s.getValue<ValueType>();
-//     ValueType expectedMaxNorm = 1E-4;
-//     SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
-//     BOOST_CHECK( realMaxNorm < expectedMaxNorm );
-// }
 
 // ---------------------------------------------------------------------------------------------------------------
 

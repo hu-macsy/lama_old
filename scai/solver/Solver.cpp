@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Solver.cpp
+ * @brief Implementation of methods for the base class Solver.
  * @author Jiri Kraus
  * @date 08.06.2011
  */

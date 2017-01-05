@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CGSTest.cpp
- * @author Jan Ecker
+ * @brief Specific tests for the solver class CGS.
+ * @author David Schissler
  * @date 09.03.2016
  */
 

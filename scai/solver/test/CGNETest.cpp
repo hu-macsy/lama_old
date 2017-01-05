@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CGNETest.cpp
- * @author Jan Ecker
+ * @brief Specific tests for the solver class CGNE.
+ * @author David Schissler
  * @date 09.03.2016
  */
 

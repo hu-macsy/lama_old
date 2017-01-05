@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Kaczmarz.cpp
- * @author Jiri Kraus
+ * @brief Implementation of methods for the Kaczmarz solver.
+ * @author Thomas Brandes
  * @date 24.08.2011
  */
 

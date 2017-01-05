@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief TFQMR.hpp
+ * @brief Definion of solver class TFQMR( Transpose Free Quasi Minimal Residual)
  * @author David Schissler
  * @date 13.05.2015
  */

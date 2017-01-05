@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief CriterionTest.hpp
- * @author Alexander Büchel, Kai Buschulte
+ * @author Kai Buschulte
  * @date 02.02.2012
  */
 

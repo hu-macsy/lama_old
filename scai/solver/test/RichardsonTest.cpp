@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class RichardsonTest.
- * @author
+ * @brief Test routines for the solver class Richardson.
+ * @author David Schissler
  * @date 17.04.2015
  */
 #include <boost/test/unit_test.hpp>

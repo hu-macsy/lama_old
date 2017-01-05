@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class InverseSolverTest.
- * @author Alexander Büchel, Robin Rehrmann
+ * @brief Specific tests for the solver class InverseSolver.
+ * @author Thomas Brandes, Robin Rehrmann
  * @date 22.02.2012
  */
 

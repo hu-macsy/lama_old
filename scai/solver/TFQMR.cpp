@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief TFQMR.cpp
- * @author David schissler
+ * @brief Implementation of methods for the TFQMR solver.
+ * @author David Schissler
  * @date 13.05.2015
  */
 

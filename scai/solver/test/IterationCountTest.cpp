@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Contains the implementation of the class IterationCountTest.
- * @author Alexander Büchel, Matthias Makulla
+ * @author Matthias Makulla, Thomas Brandes
  * @date 14.02.2012
  */
 

@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief BiCGstabTest.cpp
- * @author lschubert
+ * @brief Specific test routines for the solver class BiCGstab.
+ * @author David Schissler
  * @date 07.08.2013
  */
 

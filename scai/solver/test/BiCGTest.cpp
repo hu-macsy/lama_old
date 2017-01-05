@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief BiCGTest.cpp
+ * @brief Speficic tests for the solver class BiCG.
  * @author Lauretta Schubert
  * @date 04.07.2013
  */
