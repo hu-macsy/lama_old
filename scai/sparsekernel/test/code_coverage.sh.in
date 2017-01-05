@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###
- # @file sparsekernel/test/code_coverageSecond.sh
+ # @file sparsekernel/test/code_coverage.sh
  #
  # @license
  # Copyright (c) 2009-2016
@@ -25,7 +25,7 @@
  # @endlicense
  #
  # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
+ #        measure code coverage of LAMA subproject sparsekernel.
  # @author Lauretta Schubert, Thomas Brandes
  # @date 15.08.2012
 ###
@@ -35,28 +35,38 @@ source scai_code_coverage_functions.sh
 # Check requirements for codecoverage
 requirements_coverage
 
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
+
+prepare_coverage $dirname ../..
+
 export SCAI_LOG=WARN
 export SCAI_TRACE=time
 
 error_count=0
 
 # Running tests serial
-echo "Running sparsekernel tests on Host"
+
+# Note: SCAI_USE_MKL is used during static initialization, passing as command line arg is too late
+
+echo "Running sparsekernel tests on Host using own OpenMP implementations"
 export SCAI_USE_MKL=0
 count_error ./sparsekernelTest --SCAI_CONTEXT=Host
+echo "Running sparsekernel tests on Host using MKL sparse library routines"
 export SCAI_USE_MKL=1
 count_error ./sparsekernelTest --SCAI_CONTEXT=Host 
 
 if [ -d ../cuda ];
 then
-    # Running sparekernel CUDA tests, without and with using CUsparse library
+    # Running sparsekernel CUDA tests, without and with using CUsparse library
     # Note: SCAI_CUDA_USE_CUSPARSE is used during static initialization, passing as command line arg is too late
-    echo "Running sparsekernel tests with CUDA context"
+    echo "Running sparsekernel tests on CUDA device using own implementations( with/without Texture/SharedMem )"
     export SCAI_CUDA_USE_CUSPARSE=0
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0 
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1 
+    echo "Running sparsekernel tests on CUDA device using CUsparse library routines"
     export SCAI_CUDA_USE_CUSPARSE=1
     count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA 
 fi
@@ -68,4 +78,10 @@ then
     count_error ./sparsekernelTest --SCAI_CONTEXT=MIC
 fi
 
-exit ${error_count}
+exit_on_failure ${error_count}
+
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+
+exit_on_failure $?
+
+zip -qr ../sparsekernel_coverage.zip *
