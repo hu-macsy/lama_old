@@ -258,7 +258,7 @@ bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVa
 
 /* ----------------------------------------------------------------------------- */
 
-void Settings::printEnvironment()
+void Settings::printEnvironment( std::ostream& out )
 {
     int i = 0;
     char* s = *environ;
@@ -267,7 +267,7 @@ void Settings::printEnvironment()
     {
         if ( strncmp( s, "SCAI_", 5 ) == 0 )
         {
-            std::cout << s << std::endl;
+            out << s << std::endl;
         }
 
         s = *( environ + i );
