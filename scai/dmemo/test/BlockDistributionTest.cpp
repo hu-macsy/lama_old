@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Contains the implementation of the class BlockDistributionTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @author Thomas Brandes
  * @date 30.07.2012
  */
 

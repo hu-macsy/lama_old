@@ -263,6 +263,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
             BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
         }
 
+        BOOST_REQUIRE_EQUAL( csrStorage.getNumRows(), FileIO::getStorageSize( fileName ) );
+
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
 

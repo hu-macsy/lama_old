@@ -24,9 +24,8 @@
  # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
  # @endlicense
  #
- # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
+ # @brief Shell-script to run tests for code coverage of blaskernel project.
+ # @author Lauretta Schubert, Thomas Brandes
  # @date 15.08.2012
 ###
 
