@@ -66,7 +66,7 @@ typedef common::shared_ptr<const class Distribution> DistributionPtr;
 
 class Distributed;
 
-/** Structure that keeps all kind of arguments used to create a distribution. 
+/** Structure that keeps all kind of arguments used to create a distribution.
  *
  *  An element of this struct is used as an argument of the create method of the factory.
  */
@@ -207,13 +207,13 @@ public:
      */
     virtual IndexType getLocalSize() const = 0;
 
-    /** 
+    /**
      * @brief This method returns the maximal number of local elements on any processor.
      *
      * This method can be used to allocate data with the right size for any communication
      * that uses circular shifting for partition data.
      *
-     * Default implementation: getCommunicator().max( getLocalSize() ) 
+     * Default implementation: getCommunicator().max( getLocalSize() )
      */
     virtual IndexType getMaxLocalSize() const;
 
@@ -237,26 +237,26 @@ public:
      */
     virtual IndexType global2local( const IndexType globalIndex ) const = 0;
 
-    /** Get the owners for a set of (global) indexes 
+    /** Get the owners for a set of (global) indexes
      *
      * The default solution is to communicate required indexes around
      * all partitions and each partition marks indexes with its id
      * if it is local. If ownership can be computed without communication,
      * this routine might be implemented more efficiently.
      *
-     * @param[in] indexes is an array with global indexes, 0 <= indexes[i] < getGlobalSize() 
-     * @param[out] owners are the corresponing processors that own the indexes 
+     * @param[in] indexes is an array with global indexes, 0 <= indexes[i] < getGlobalSize()
+     * @param[out] owners are the corresponing processors that own the indexes
      */
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
-    /** Get the owners of all global indexes. 
+    /** Get the owners of all global indexes.
      *
-     *  @param[out] owners owners[i] is owner of element i, 0 <= i < globalSize 
+     *  @param[out] owners owners[i] is owner of element i, 0 <= i < globalSize
      *  @param[in]  root   is the processor where the values are needed
      */
     virtual void allOwners( hmemo::HArray<PartitionId>& owners, const PartitionId root ) const;
 
-    /** This method returns the owned indexes by this processor. 
+    /** This method returns the owned indexes by this processor.
      *
      *  @param[out] myGlobalIndexes array with localSize 'global' indexes that are owned by this processor
      */
@@ -264,7 +264,7 @@ public:
 
     /** The following function verifies if the distribution is nothing else than a block
      *  or general block distribution.
-     * 
+     *
      *  @returns the local size of the block distribution if it is one, nIndex if it is not
      *
      *  Note: The call of this function might involve communication. It returns nIndex on all processors if it is nIndex on one.
@@ -390,7 +390,7 @@ protected:
      *        the same global size and the same communicator
      */
 
-     bool proveEquality( bool& isSame, const Distribution& other ) const;
+    bool proveEquality( bool& isSame, const Distribution& other ) const;
 
 private:
 

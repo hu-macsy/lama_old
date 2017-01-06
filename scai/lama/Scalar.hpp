@@ -341,30 +341,30 @@ inline bool operator!=( const Scalar& a, const Scalar& b )
 
 inline bool operator<( const Scalar& a, const Scalar& b )
 {
-	if( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO && 
-        common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
-	{
-		// no complex number
-		return common::Math::real( a.getValue<ScalarRepType>() ) < common::Math::real( b.getValue<ScalarRepType>() );
-	}
-	else
-	{
-	    return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
-	}
+    if ( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO &&
+            common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+    {
+        // no complex number
+        return common::Math::real( a.getValue<ScalarRepType>() ) < common::Math::real( b.getValue<ScalarRepType>() );
+    }
+    else
+    {
+        return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
+    }
 }
 
 inline bool operator>( const Scalar& a, const Scalar& b )
 {
-	if( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO && 
-        common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
-	{
-		// no complex number
-		return common::Math::real( a.getValue<ScalarRepType>() ) > common::Math::real( b.getValue<ScalarRepType>() );
-	}
-	else
-	{
-	    return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
-	}
+    if ( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO &&
+            common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+    {
+        // no complex number
+        return common::Math::real( a.getValue<ScalarRepType>() ) > common::Math::real( b.getValue<ScalarRepType>() );
+    }
+    else
+    {
+        return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
+    }
 }
 
 //inline bool operator<=( const Scalar& a, const Scalar& b )
@@ -440,7 +440,7 @@ struct TypeTraitAccess<common::mepr::NullType>
     {
         return Scalar( 0 );
     }
- 
+
     static Scalar eps0( const common::scalar::ScalarType& )
     {
         return Scalar( 0 );

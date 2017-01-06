@@ -72,20 +72,20 @@ typedef RealType ValueType;
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
-                         ELLSparseMatrix<ValueType>,
-                         JDSSparseMatrix<ValueType>,
-                         DIASparseMatrix<ValueType>,
-                         COOSparseMatrix<ValueType>,
-                         DenseMatrix<ValueType>
-                        > SparseMatrixTypes;
+typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
+        ELLSparseMatrix<ValueType>,
+        JDSSparseMatrix<ValueType>,
+        DIASparseMatrix<ValueType>,
+        COOSparseMatrix<ValueType>,
+        DenseMatrix<ValueType>
+        > SparseMatrixTypes;
 
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes )
 {
     // Test vector = Matrix * vector, where vector stands for multiple vectors
-    // i.e. vector is a dense matrix 
+    // i.e. vector is a dense matrix
     // Note: not yet available for distributed matrix
 
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();

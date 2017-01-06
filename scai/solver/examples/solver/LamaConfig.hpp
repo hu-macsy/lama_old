@@ -69,7 +69,7 @@
  *      LamaConfig lamaconf;    // WRONG: constructur might fail
  *
  *      int main( int argc, const char* argv[] )
- *      { 
+ *      {
  *           common::Settings::parseArgs( argc, argv );
  *           LamaConfig lamaconf;                        // must be defined after parseArgs
  *           ....
@@ -214,13 +214,13 @@ private:
 /* ---------------------------------------------------------------------------- */
 
 #define CONFIG_ERROR( msg )                                    \
-{                                                              \
-    std::ostringstream errorStr;                               \
-    errorStr << msg;                                           \
-    std::cout << "ERROR: " << errorStr.str()  <<  std::endl;   \
-    LamaConfig::printHelp( "<solver>" );                       \
-    exit( 1 );                                                 \
-}
+    {                                                              \
+        std::ostringstream errorStr;                               \
+        errorStr << msg;                                           \
+        std::cout << "ERROR: " << errorStr.str()  <<  std::endl;   \
+        LamaConfig::printHelp( "<solver>" );                       \
+        exit( 1 );                                                 \
+    }
 
 /* ---------------------------------------------------------------------------- */
 
@@ -261,13 +261,13 @@ static void getTolerance( double& tolerance, const char* name )
 LamaConfig::LamaConfig()
 {
     using scai::common::Settings;
- 
+
     // take default communicator, can be set by SCAI_COMMUNICATOR
 
     mComm = scai::dmemo::Communicator::getCommunicatorPtr();
 
     // allow settings specified for each process
-    // Be careful: can cause problems, e.g. MAX_ITER, xxx_TOL 
+    // Be careful: can cause problems, e.g. MAX_ITER, xxx_TOL
 
     scai::common::Settings::setRank( mComm->getRank() );
 
@@ -396,7 +396,7 @@ LamaConfig::LamaConfig()
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
-  
+
     // solver log level, default is convergence History
 
     mLogLevel = scai::solver::LogLevel::convergenceHistory;
@@ -528,14 +528,17 @@ static std::string getLoggers()
 
     std::vector<std::string> vals;
     scai::solver::Solver::getCreateValues( vals );
-    for ( size_t i = 0; i< vals.size(); ++i )
+
+    for ( size_t i = 0; i < vals.size(); ++i )
     {
-       if ( i > 0 )
-       {
-           loggerNames << "|";
-       }
-       loggerNames << vals[i];
+        if ( i > 0 )
+        {
+            loggerNames << "|";
+        }
+
+        loggerNames << vals[i];
     }
+
     return loggerNames.str();
 }
 
@@ -545,12 +548,14 @@ static std::string getLogLevels()
 
     for ( int i = 0; i < scai::solver::LogLevel::UNKNOWN; ++i )
     {
-       if ( i > 0 )
-       {
-           levelNames << "|";
-       }
-       levelNames << scai::solver::LogLevel::LogLevel( i );
+        if ( i > 0 )
+        {
+            levelNames << "|";
+        }
+
+        levelNames << scai::solver::LogLevel::LogLevel( i );
     }
+
     return levelNames.str();
 }
 

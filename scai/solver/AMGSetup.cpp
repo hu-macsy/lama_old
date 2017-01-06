@@ -43,7 +43,7 @@ namespace solver
 
 AMGSetup::AMGSetup()
     : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-          std::numeric_limits<IndexType>::max() )
+        std::numeric_limits<IndexType>::max() )
 {
 }
 

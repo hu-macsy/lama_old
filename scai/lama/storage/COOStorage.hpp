@@ -428,7 +428,7 @@ public:
     /**
      * @brief Swap the COO arrays with new arrays.
      *
-     * This routine is helpful to get temporay write access to COO arrays. 
+     * This routine is helpful to get temporay write access to COO arrays.
      *
      * This routine can be used to build a COO storage with new values. Other member variables
      * will be defined correctly.

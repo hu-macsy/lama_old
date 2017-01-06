@@ -51,21 +51,21 @@ namespace lama
 
 class _MatrixStorage;
 
-/** This abstract base class specifies the methods that have to be 
+/** This abstract base class specifies the methods that have to be
  *  implemented for read/write of matrix storage and vector arrays.
  *
  *  Each file format will derive from this class and provide the
  *  corresponding methods.
  *
- *  Note: For read and write operations the value type is required to 
- *        make the correct output. But pure virtual methods can not 
+ *  Note: For read and write operations the value type is required to
+ *        make the correct output. But pure virtual methods can not
  *        have a template argument.
  *
- *        The class CRTPFileIO is a helper class that provides this 
+ *        The class CRTPFileIO is a helper class that provides this
  *        funtionality.
  */
 
-class FileIO : 
+class FileIO :
 
     public common::Factory<std::string, FileIO*>,
     public common::Printable
@@ -100,10 +100,10 @@ public:
      *  @param[in] storage is the (local) matrix data that is written
      *  @param[in] fileName is the name of the output file
      *
-     *  By default all data is written in exactly the same format as it 
-     *  is used in the storage. So for a storage with double values 8 bytes 
+     *  By default all data is written in exactly the same format as it
+     *  is used in the storage. So for a storage with double values 8 bytes
      *  are needed for each entry, for a storage with float values 4 bytes.
-     * 
+     *
      *  - mBinary if true data is written binary
      *  - mScalarTypeIndex representation type used for row/column indexes (e.g. INT, LONG, ... ) within file
      *  - mScalarTypeData  representation type used for data within file
@@ -122,7 +122,7 @@ public:
 
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName ) = 0;
 
-    /** Get info about the storage stored in a file. 
+    /** Get info about the storage stored in a file.
      *
      *  @param[out] numRows    number of rows for the storage in the file
      *  @param[out] numColumns number of columns for the storage in the file
@@ -137,7 +137,7 @@ public:
      *   - for binary files the type must match the type of storage
      */
 
-    /** Read in a matrix from a file but only a contiguous section of rows. 
+    /** Read in a matrix from a file but only a contiguous section of rows.
      *
      *  @param[out] storage  is the submatrix from the full matrix stored in the file
      *  @param[in]  fileName is the name of the input file containing the matrix.
@@ -150,24 +150,24 @@ public:
      *  This routine can also be used by a single processor that reads in the corresponding blocks and
      *  writes them to separate files.
      *
-     *  The default implementation of the base class reads in the full storage and extracts the local 
+     *  The default implementation of the base class reads in the full storage and extracts the local
      *  part of it. Derived classes should implement solutions where it is not necessary to allocate memory
      *  for the full matrix but only for the corresponding block. In case of binary data, direct file access
      *  might be exploited to extract the needed data from the input file.
      */
-    virtual void readStorage( 
-        _MatrixStorage& storage, 
+    virtual void readStorage(
+        _MatrixStorage& storage,
         const std::string& fileName,
         const IndexType offsetRow = 0,
         const IndexType nRows = nIndex ) = 0;
 
-    /** Read in the size of an array saved in a file 
+    /** Read in the size of an array saved in a file
      *
-     *  @param[out] size     number of entries for the array saved in the file           
+     *  @param[out] size     number of entries for the array saved in the file
      *  @param[in]  fileName C++ string containing the name of the file where the array is saved
      *  @throws common::Exception if file cannot be opened or if it does not contain an array
      */
-    virtual void readArrayInfo( IndexType& size, const std::string& fileName ) = 0; 
+    virtual void readArrayInfo( IndexType& size, const std::string& fileName ) = 0;
 
     /** Read in an array from a file in the corresponding format.
      *
@@ -178,21 +178,21 @@ public:
      *  If the value type of the array does not match the data stored in the file, an implicit
      *  type conversion is done.
      *
-     *  If the file contains binary data, it is assumed that its type is the same as the value 
+     *  If the file contains binary data, it is assumed that its type is the same as the value
      *  type of the array argument unless the environment variable ``SCAI_IO_TYPE`` has been set.
      */
 
-    /** Read in an array block from a file in the corresponding format. 
-     *  
+    /** Read in an array block from a file in the corresponding format.
+     *
      *  @param[out] array    will contain the corresponding array values
      *  @param[in]  fileName name of the input file with array data
      *  @param[in]  offset   first entry to read
      *  @param[in]  n        number of entries to read, nIndex stands for all remaining entries
-     *  
+     *
      *  This method has exactly the same behavior as readArray but with the difference that only
      *  a part of the array is read.
      */
-    virtual void readArray( 
+    virtual void readArray(
         hmemo::_HArray& array,
         const std::string& fileName,
         const IndexType offset = 0,
@@ -204,7 +204,7 @@ public:
 
     virtual std::string getVectorFileSuffix() const = 0;
 
-    /** Help routine to delete file and maybe joint files 
+    /** Help routine to delete file and maybe joint files
      *
      *  @param[in] fileName file to delete
      *  @returns   0 on success
@@ -241,7 +241,7 @@ public:
 
     static std::string getSuffix( const std::string& fileName );
 
-    /** Help routine to remove file and maybe joint files 
+    /** Help routine to remove file and maybe joint files
      *
      *  @param[in] fileName file to delete
      *  @returns   0 on success
@@ -256,8 +256,8 @@ public:
      *
      *  If the optional argument dataType is not set, array.getValueType() is used.
      */
-    static void write( 
-        const hmemo::_HArray& array, 
+    static void write(
+        const hmemo::_HArray& array,
         const std::string& fileName,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
 
@@ -276,8 +276,8 @@ public:
      *      FileIO::read( data, "myData.txt", 50, 10 )   // reads for pos 50 next 10 elements
      *  \endcode
      */
-    static void read( 
-        hmemo::_HArray& array, 
+    static void read(
+        hmemo::_HArray& array,
         const std::string& fileName,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const IndexType first = 0,

@@ -61,10 +61,10 @@ int main()
     HArray<ValueType> hostA( N, 5, host );
     HArray<ValueType> gpuA( N, 2, gpu );
 
-    for ( IndexType i = 0; i < N; i+=2 )
+    for ( IndexType i = 0; i < N; i += 2 )
     {
-        ReadAccess<ValueType> readA( hostA, host ); 
-        WriteAccess<ValueType> writeA( gpuA, gpu ); 
+        ReadAccess<ValueType> readA( hostA, host );
+        WriteAccess<ValueType> writeA( gpuA, gpu );
         ValueType elem = readA[i];
         writeA.setValue( elem, i );
     }
@@ -73,12 +73,13 @@ int main()
 
     {
         ReadAccess<double> readA( gpuA, host );
+
         for ( IndexType i = 0; i < N; ++i )
         {
             sum += readA[i];
         }
     }
- 
+
     cout << "Sum = " << sum << " should be " << 2 * Nh + 5 * Nh  << endl;
 
     {
@@ -87,7 +88,7 @@ int main()
         WriteAccess<ValueType> write( gpuA, gpu );
     }
 
-    for ( IndexType i = 1; i < N; i+=2 )
+    for ( IndexType i = 1; i < N; i += 2 )
     {
         ReadAccess<ValueType> readA( gpuA, gpu );
         WriteAccess<ValueType> writeA( hostA, host );
@@ -101,6 +102,7 @@ int main()
 
     {
         ReadAccess<double> readA( hostA, host );
+
         for ( IndexType i = 0; i < N; ++i )
         {
             sum += readA[i];

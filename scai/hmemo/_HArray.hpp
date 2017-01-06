@@ -207,7 +207,7 @@ public:
 
     void clear();
 
-    /** Swap data with other array to avoid additional memory allocation. 
+    /** Swap data with other array to avoid additional memory allocation.
      *
      *  @param[in,out] other array for swapping, must have same value type.
      *

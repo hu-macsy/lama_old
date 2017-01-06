@@ -210,6 +210,7 @@ void MICDIAUtils::getCSRValues(
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
+
                 bool nonZero = std::abs( value ) > eps;
 
                 if ( nonZero )

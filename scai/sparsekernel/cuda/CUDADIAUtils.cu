@@ -496,10 +496,13 @@ void CUDADIAUtils::normalGEMV(
     }
 
     const bool useSharedMem = CUDASettings::useSharedMem();
+
     const bool useTexture = CUDASettings::useTexture();
+
     SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
+
     int sharedMemSize = 0;
 
     if ( useSharedMem )
@@ -814,10 +817,13 @@ void CUDADIAUtils::normalGEVM(
     }
 
     const bool useSharedMem = CUDASettings::useSharedMem();
+
     const bool useTexture = CUDASettings::useTexture();
+
     SCAI_LOG_INFO( logger, "Start normal_gevm_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ", useSharedMem = " << useSharedMem << ">>>" );
+
     int sharedMemSize = 0;
 
     if ( useSharedMem )

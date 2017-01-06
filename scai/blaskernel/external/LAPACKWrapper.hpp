@@ -57,7 +57,7 @@ class COMMON_DLL_IMPORTEXPORT LAPACKWrapper;
     public:                                                                                                 \
         typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;                                               \
         typedef LAPACKTrait::LAPACKFlag LAPACKFlag;                                                         \
-                                                                                                            \
+        \
         static LAPACKIndexType getrf(                                                                       \
                 const LAPACKIndexType m,                                                                    \
                 const LAPACKIndexType n, ValueType* a,                                                      \
@@ -68,7 +68,7 @@ class COMMON_DLL_IMPORTEXPORT LAPACKWrapper;
             FORTRAN_LAPACK_NAME( getrf, prefix )(&m, &n, a, &lda, ipivot, &info);                           \
             return info;                                                                                    \
         }                                                                                                   \
-                                                                                                            \
+        \
         static LAPACKIndexType getri(                                                                       \
                 const LAPACKIndexType n, ValueType* a,                                                      \
                 const LAPACKIndexType lda,                                                                  \
@@ -79,7 +79,7 @@ class COMMON_DLL_IMPORTEXPORT LAPACKWrapper;
             FORTRAN_LAPACK_NAME( getri, prefix )(&n, a, &lda, ipivot, work, &ldwork, &info);                \
             return info;                                                                                    \
         }                                                                                                   \
-                                                                                                            \
+        \
         static LAPACKIndexType tptrs(LAPACKFlag uplo,                                                       \
                                      LAPACKFlag transa, LAPACKFlag diag,                                    \
                                      const LAPACKIndexType n,                                               \

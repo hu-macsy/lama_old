@@ -96,13 +96,13 @@ MICContext::MICContext( int deviceNr )
 
     if ( common::Settings::getEnvironment( numCores, "SCAI_MIC_NUM_THREADS" ) )
     {
-        #pragma offload target( mic: mDeviceNr ) in( numCores )
+#pragma offload target( mic: mDeviceNr ) in( numCores )
         {
             omp_set_num_threads( numCores );
         }
     }
 
-    #pragma offload target( mic: mDeviceNr ) out( numCores )
+#pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel
         {

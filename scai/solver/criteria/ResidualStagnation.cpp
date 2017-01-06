@@ -56,14 +56,14 @@ ResidualStagnation::ResidualStagnation( lama::NormPtr norm )
 
 ResidualStagnation::ResidualStagnation( lama::NormPtr norm, IndexType lookback, lama::Scalar precision )
     : Criterion(), mNorm( norm ), mLookback( lookback ), mLastResidualNorms( lookback ), mNextEntry( 0 ), mEntriesReady(
-          false ), mPrecision( precision )
+        false ), mPrecision( precision )
 {
 }
 
 ResidualStagnation::ResidualStagnation( const ResidualStagnation& other )
     : Criterion(), mNorm( other.mNorm ), mLookback( other.mLookback ), mLastResidualNorms(
-          other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
-          other.mEntriesReady ), mPrecision( other.mPrecision )
+        other.mLastResidualNorms ), mNextEntry( other.mNextEntry ), mEntriesReady(
+            other.mEntriesReady ), mPrecision( other.mPrecision )
 {
 }
 

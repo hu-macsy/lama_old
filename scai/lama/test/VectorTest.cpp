@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
         v->redistribute( dist );
         BOOST_CHECK_EQUAL( ( *v )( n - 1 ), Scalar( 1 ) );
 
-        BOOST_CHECK_THROW( 
+        BOOST_CHECK_THROW(
         {
-           v->redistribute( dist1 );
+            v->redistribute( dist1 );
         }, common::Exception );
 
         v->allocate( dist1 );
@@ -126,19 +126,19 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( InvertTest )
-{   
+{
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
-    
+
     const IndexType n = 13;
-    
+
     TestVectors vectors;
-    
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) ); 
-    
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
     for ( size_t i = 0; i < vectors.size(); ++i )
-    {   
+    {
         VectorPtr v = vectors[i];
-        
+
         if ( ! common::isNumeric( v->getValueType() ) )
         {
             continue;   // this test does not work for int, uint, ....
@@ -147,14 +147,14 @@ BOOST_AUTO_TEST_CASE( InvertTest )
         v->allocate( dist );
 
         *v = 4;
- 
+
         v->invert();
- 
+
         Scalar s = ( *v )( n / 2 );
 
         // s should be 2, but might not be exact
 
-        BOOST_CHECK( ( s - Scalar( 0.25) ) < 0.00001 );
+        BOOST_CHECK( ( s - Scalar( 0.25 ) ) < 0.00001 );
     }
 }
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 
     TestVectors vectors;
 
-    dmemo::TestDistributions dists(n);
+    dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
             *v3 = *v1 * *v2;
             *v4 = 3 * *v1 * *v2;
             *v4 -= 2 * *v3;
- 
+
             // Now v3 and v4 must be equal
 
             *v3 -= *v4;
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
     TestVectors vectors;
 
-    dmemo::TestDistributions dists(n);
+    dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -225,11 +225,11 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
             v1->setSequence( 3, 1, dist );
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ));
+            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
 
             VectorPtr v2( v1->newVector() );
- 
+
             *v2 = *m * *v1;
 
             // Now v1 and v2 must be equal
@@ -247,11 +247,11 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = *m * *v1 - *v1;
-            
+
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *m * *v1 - 2 * *v1;
-            
+
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
         }
     }
@@ -261,17 +261,17 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
 BOOST_AUTO_TEST_CASE( assign_VM_Test )
 {
-    return;  
+    return;
 
     // This test fails sometimes with 5 or 6 processors
     // valgrind shows memory problems during MPI gather
-    // TODO: Lauretta  
+    // TODO: Lauretta
 
     const IndexType n = 13;
 
     TestVectors vectors;
 
-    dmemo::TestDistributions dists(n);
+    dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -283,16 +283,16 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
         }
 
         for ( size_t j = 0; j < dists.size(); ++j )
-        {   
+        {
             dmemo::DistributionPtr dist = dists[j];
-            
+
             v1->allocate( dist );
             *v1 = 3;
-            
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ));
+
+            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
             m->setCommunicationKind( Matrix::ASYNCHRONOUS );
-            
+
             // SCAI_LOG_ERROR( logger, "vectorMultMatrix, v = " << *v1 << ", m = " << *m )
 
             VectorPtr v2( v1->newVector() );
@@ -302,25 +302,25 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
             // Now v1 and v2 must be equal
 
             *v2 -= *v1;
-            
+
             Scalar s = v2->maxNorm();
 
             BOOST_CHECK( s < Scalar( 1e-4 ) );
 
             *v2 = 2 * *v1 * *m;
-            
+
             // Now 2 * v1 and v2 must be equal
-            
+
             *v2 -= 2 * *v1;
-            
+
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
-            
+
             *v2 = *v1 * *m - *v1;
-            
+
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
-            
+
             *v2 = 2 * *v1 * *m - 2 * *v1;
-            
+
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
         }
     }
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
     BOOST_CHECK_EQUAL( "DENSE", format );
     BOOST_CHECK_EQUAL( Vector::str2Kind( "DENSE" ), v->getVectorKind() );
-    
+
     DenseVector<ValueType>* denseV = dynamic_cast<DenseVector<ValueType>* >( v.get() );
 
     BOOST_REQUIRE( denseV != NULL );
@@ -356,22 +356,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( dotProductTest )
-{   
+{
     // This test does not verify the correctness of the dot product
     // but that it is the same, either computed replicated or distributed.
 
     using namespace hmemo;
 
     const IndexType n = 13;
-    
+
     TestVectors vectors;
-    
-    dmemo::TestDistributions dists(n);
-    
+
+    dmemo::TestDistributions dists( n );
+
     std::srand( 1311 );   // same random numbers on all processors
 
     for ( size_t i = 0; i < vectors.size(); ++i )
-    {   
+    {
         VectorPtr v1 = vectors[i];
 
         if ( ! common::isNumeric( v1->getValueType() ) )
@@ -393,16 +393,16 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
         v2->assign( *data2 );
 
         Scalar dotp = v1->dotProduct( *v2 );  // replicated computation
- 
+
         for ( size_t j = 0; j < dists.size(); ++j )
-        {   
+        {
             // now compute the dot product with distributed vectors
 
             dmemo::DistributionPtr dist = dists[j];
-            
+
             v1->redistribute( dist );
             v2->redistribute( dist );
-            
+
             Scalar distDotp = v1->dotProduct( *v2 );
 
             // we cannot check for equality due to different rounding errors
@@ -415,19 +415,19 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( scaleTest )
-{   
+{
     using namespace hmemo;
 
     const IndexType n = 13;
-    
+
     TestVectors vectors;
-    
-    dmemo::TestDistributions dists(n);
-    
+
+    dmemo::TestDistributions dists( n );
+
     std::srand( 1311 );   // same random numbers on all processors
 
     for ( size_t i = 0; i < vectors.size(); ++i )
-    {   
+    {
         VectorPtr v1 = vectors[i];
 
         if ( ! common::isNumeric( v1->getValueType() ) )
@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE( scaleTest )
         {
             v1->redistribute( dists[j] );
 
-            // CSRSparseMatrix<ValueType> m;  
+            // CSRSparseMatrix<ValueType> m;
 
             MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
 
@@ -464,8 +464,8 @@ BOOST_AUTO_TEST_CASE( scaleTest )
             VectorPtr v3( v1->newVector() );
 
             *v3 = 2 * ( *m ) * ( *v1 ) - ( *v2 );   // is v1 * v1
- 
-            // ToDO: Lauretta: v3 -= v1 * m  
+
+            // ToDO: Lauretta: v3 -= v1 * m
 
             *v3 -= *v2;
 

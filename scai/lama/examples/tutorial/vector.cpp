@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief vector.cpp
- * @author 
+ * @author
  * @date 17.05.2013
  */
 

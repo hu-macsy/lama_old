@@ -76,7 +76,7 @@ static void printUsage( const char* prog_name )
 /** Get the value type used for this application.
  *
  *  Default value type is RealType( double ) but can be overwritten by
- * 
+ *
  *   - environment variable SCAI_TYPE=float|double|LongDouble|ComplexFloat|ComplexDouble| ...
  *   - or command line argument --SCAI_TYPE=...
  */
@@ -159,7 +159,7 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType stype = getType();
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype) );
+    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
 
     Matrix& m = *matrixPtr;
 
@@ -169,7 +169,7 @@ int main( int argc, const char* argv[] )
 
         DistributionPtr rowDist( new NoDistribution( nrows ) );
         DistributionPtr colDist( new NoDistribution( ncols ) );
-        
+
         common::unique_ptr<_HArray> denseValues( _HArray::create( stype ) );
 
         HArrayUtils::setRandom( *denseValues, nrows * ncols, fillRate );
@@ -197,7 +197,7 @@ int main( int argc, const char* argv[] )
     string vectorXFileName = matrixFileName;
     string vectorBFileName = matrixFileName;
 
- 
+
     if ( FileIO::canCreate( suffix ) )
     {
         // known suffix so we can use it directly
@@ -214,7 +214,7 @@ int main( int argc, const char* argv[] )
             vectorBFileName.replace( vectorBFileName.length() - 1, 1, "v" );
         }
     }
-    else 
+    else
     {
         if ( suffix.length() > 0 )
         {

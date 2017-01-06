@@ -491,7 +491,7 @@ void ELLStorage<ValueType>::setELLData(
     ContextPtr loc = getContextPtr();
     HArrayUtils::setArrayImpl( mIA, ia, utilskernel::binary::COPY, loc );
     HArrayUtils::setArrayImpl( mJA, ja, utilskernel::binary::COPY, loc );
-    // setArray must be used here instead of setArrayImpl as values is untyped 
+    // setArray must be used here instead of setArrayImpl as values is untyped
     HArrayUtils::setArray( mValues, values, utilskernel::binary::COPY, loc );  // also type conversion
     // fill up my arrays ja and values to make matrix-multiplication fast
     {
@@ -645,7 +645,7 @@ void ELLStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void ELLStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-                                           const utilskernel::binary::BinaryOp op )
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
@@ -850,11 +850,11 @@ void ELLStorage<ValueType>::setValue( const IndexType i,
     SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
 
     static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
-    
+
     ContextPtr loc = this->getContextPtr();
     getValuePos.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
-    
+
     ReadAccess<IndexType> rIa( mIA, loc );
     ReadAccess<IndexType> rJa( mJA, loc );
 
@@ -1549,7 +1549,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
             const HArray<ValueType>&,
             const HArray<ValueType>&,
             const ValueType omega ) const
-            = &ELLStorage<ValueType>::jacobiIterate;
+        = &ELLStorage<ValueType>::jacobiIterate;
         using scai::common::bind;
         using scai::common::cref;
         using scai::common::ref;
@@ -1884,7 +1884,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
     static LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
 
     ContextPtr loc = Context::getHostPtr();  // not yet available on other devices
-  
+
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
     SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
@@ -2037,10 +2037,10 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void ELLStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-                                                     const utilskernel::binary::BinaryOp );                          \
+            const utilskernel::binary::BinaryOp );                          \
     template void ELLStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void ELLStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-                                                        const utilskernel::binary::BinaryOp );                       \
+            const utilskernel::binary::BinaryOp );                       \
     template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void ELLStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void ELLStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
@@ -2052,11 +2052,11 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
 #define ELL_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef ELL_STORAGE_INST_LVL2
 #undef ELL_STORAGE_INST_LVL1
 
-    } /* end namespace lama */
+} /* end namespace lama */
 
-    } /* end namespace scai */
+} /* end namespace scai */

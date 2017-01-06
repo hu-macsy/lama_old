@@ -204,7 +204,7 @@ void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::sc
 
 bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType, common::scalar::ScalarType ) const
 {
-    return true;  
+    return true;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -286,7 +286,7 @@ void NoCommunicator::getProcessorName( char* name ) const
 
     memset( name, 0, len * sizeof( char ) );
 
-    gethostname( name,len );
+    gethostname( name, len );
 }
 
 size_t NoCommunicator::maxProcessorName() const

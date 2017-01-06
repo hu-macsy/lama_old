@@ -353,8 +353,8 @@ void OpenMPDenseUtils::setValue(
                     DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
                     elem = applyBinary( elem, op, val );
                 }
-           }
-       }
+            }
+        }
     }
 }
 

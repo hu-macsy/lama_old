@@ -550,6 +550,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
     // initialization of column counters with 0
 
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < numColumns; ++i )
     {
         cscIA[i] = 0;
@@ -558,6 +559,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
     // loop over all rows of the row matrix to count columns, not yet OpenMP parallelized
 
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < numRows; ++i )
     {
         // loop over all none zero elements of row i
@@ -578,6 +580,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
     std::vector<IndexType> cscIA1( numColumns );
 
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < numColumns; ++i )
     {
         cscIA1[i] = cscIA[i];
@@ -586,6 +589,7 @@ void OpenMPCSRUtils::convertCSR2CSC(
     // fill in the array cscJA and cscValues
 
     #pragma omp parallel for
+
     for ( IndexType i = 0; i < numRows; ++i )
     {
         for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
@@ -748,7 +752,7 @@ void OpenMPCSRUtils::normalGEVM(
 
         SCAI_REGION( "OpenMP.CSR.normalGEVM" )
 
-        #pragma omp for 
+        #pragma omp for
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -756,7 +760,7 @@ void OpenMPCSRUtils::normalGEVM(
             {
                 IndexType j = csrJA[jj];
                 ValueType v = alpha * csrValues[jj] * x[i];
-            
+
                 atomicAdd( result[j], v );
             }
         }
@@ -852,7 +856,7 @@ void OpenMPCSRUtils::sparseGEVM(
 
         SCAI_REGION( "OpenMP.CSR.sparseGEVM" )
 
-        #pragma omp for 
+        #pragma omp for
 
         for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
@@ -1099,7 +1103,7 @@ void OpenMPCSRUtils::decomposition(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i + 1]; ++jj )
         {
             SCAI_ASSERT_VALID_INDEX_DEBUG( csrJA[jj], numRows, "illegal col index, square matrix assumed" );
             denseA[ i * numRows + csrJA[jj] ] = csrValues[ jj ];
@@ -1108,7 +1112,7 @@ void OpenMPCSRUtils::decomposition(
 
     SCAI_LOG_INFO( logger, "decomposition<" << common::TypeTraits<ValueType>::id() << "> via inverse" )
 
-    // now call inverse solver of lapack 
+    // now call inverse solver of lapack
 
     blaskernel::OpenMPLAPACK::getinv( numRows, denseA.get(), numRows );
 
@@ -1120,10 +1124,10 @@ void OpenMPCSRUtils::decomposition(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        solution[i] = beta;  
+        solution[i] = beta;
     }
 
-    blaskernel::OpenMPBLAS2::gemv( CblasRowMajor, CblasNoTrans, 
+    blaskernel::OpenMPBLAS2::gemv( CblasRowMajor, CblasNoTrans,
                                    numRows, numRows, alpha, denseA.get(), numRows, rhs, inc1, beta, solution, inc1 );
 
 }
@@ -1221,7 +1225,7 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
     #pragma omp parallel
     {
-        BuildSparseIndexes indexList( n );  // Each thread has its own build object, is reused 
+        BuildSparseIndexes indexList( n );  // Each thread has its own build object, is reused
 
         #pragma omp for
 
@@ -1341,7 +1345,7 @@ void OpenMPCSRUtils::matrixAdd(
 
                 SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
-                cValues[offset] = static_cast<ValueType>( 0.0 ); 
+                cValues[offset] = static_cast<ValueType>( 0.0 );
                 ++offset;
             }
 

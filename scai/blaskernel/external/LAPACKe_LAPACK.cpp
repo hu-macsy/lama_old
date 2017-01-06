@@ -84,7 +84,7 @@ void LAPACKe_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
     {
         // ToDo: convert ipiv array
 
-        COMMON_THROWEXCEPTION( "indextype mismatch, LAMA uses " << TypeTraits<IndexType>::id() 
+        COMMON_THROWEXCEPTION( "indextype mismatch, LAMA uses " << TypeTraits<IndexType>::id()
                                << ", LAPACK uses " << TypeTraits<LAPACKIndexType>::id()  );
     }
 
@@ -129,11 +129,11 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
         SCAI_REGION( "LAPACKe.getrf" )
 
         info = LAPACKeWrapper<ValueType>::getrf( LAPACK_COL_MAJOR,
-                                                 static_cast<LAPACKIndexType>( n ),
-                                                 static_cast<LAPACKIndexType>( n ),
-                                                 a,
-                                                 static_cast<LAPACKIndexType>( lda ),
-                                                 ipiv.get() );
+                static_cast<LAPACKIndexType>( n ),
+                static_cast<LAPACKIndexType>( n ),
+                a,
+                static_cast<LAPACKIndexType>( lda ),
+                ipiv.get() );
     }
 
     // throw exception if factorization did not work
@@ -147,10 +147,10 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
         SCAI_REGION( "LAPACKe.getri" )
 
         info = LAPACKeWrapper<ValueType>::getri( LAPACK_COL_MAJOR,
-                                                 static_cast<LAPACKIndexType>( n ), 
-                                                 a,
-                                                 static_cast<LAPACKIndexType>( lda ), 
-                                                 ipiv.get() );
+                static_cast<LAPACKIndexType>( n ),
+                a,
+                static_cast<LAPACKIndexType>( lda ),
+                ipiv.get() );
     }
 
     if ( info )
@@ -218,9 +218,9 @@ void LAPACKe_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
         COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
 
-    SCAI_LOG_INFO( logger, "tptrs<" << TypeTraits<ValueType>::id() << ">" 
-                           << ", n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order 
-                           << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
+    SCAI_LOG_INFO( logger, "tptrs<" << TypeTraits<ValueType>::id() << ">"
+                   << ", n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order
+                   << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     IndexType one = 1;
 

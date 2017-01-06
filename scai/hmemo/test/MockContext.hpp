@@ -95,8 +95,10 @@ public:
         }
 
         const MockMemory* mockMemory = dynamic_cast<const MockMemory*>( &memory );
+
         SCAI_ASSERT( mockMemory, "NULL mock memory" )
         return mockMemory->getDeviceNr() == mDeviceNr;
+
         // return &memory == getMemory().get();
     }
 

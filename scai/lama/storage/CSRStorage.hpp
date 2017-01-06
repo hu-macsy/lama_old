@@ -289,7 +289,7 @@ public:
      */
     void sortRows( bool diagonalProperty );
 
-    /** This method overrides _MatrixStorage::setDiagonalProperty 
+    /** This method overrides _MatrixStorage::setDiagonalProperty
      *
      *  This routine only moves the diagonal elements at the beginning of each rows.
      *  It throws an exception if there is no entry for the diagonal element.
@@ -315,7 +315,7 @@ public:
     /** Template version of setColumn */
 
     template<typename OtherType>
-    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j, 
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
                         const utilskernel::binary::BinaryOp op );
 
     /** Typed version of getDiagonal
@@ -365,7 +365,7 @@ public:
 
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for CSR storage */
 
-    void setValue( const IndexType i, const IndexType j, const ValueType val,  
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
                    const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */

@@ -61,7 +61,7 @@ using namespace dmemo;
 
 /* ------------------------------------------------------------------------- */
 
-/** This function removes for a parallel execution all replicated distributions. 
+/** This function removes for a parallel execution all replicated distributions.
  *
  *  Read/write of replicated data should be done more carefully.
  */
@@ -281,15 +281,15 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         }
 
         vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
-        
+
         DenseVector<ValueType> readVector;
 
         if ( withDist )
         {
             readVector.readFromFile( vectorFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName 
-                                    << " ) with dist ( " << distFileName << " ): " << readVector )
+            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
+                           << " ) with dist ( " << distFileName << " ): " << readVector )
         }
         else
         {
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 
         matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *rowDist, distFileName );
-        
+
         CSRSparseMatrix<ValueType> readMatrix;
 
         // read matrix and reconstruct its old distribution
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
         {
             PartitionIO::write( *rowDist, distFileName );
         }
-        
+
         SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file " << distFileName )
 
         CSRSparseMatrix<ValueType> readMatrix;
@@ -434,8 +434,8 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
         {
             readMatrix.readFromFile( matrixFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName 
-                                    << " ) with dist ( " << distFileName << " ): " << readMatrix )
+            SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName
+                           << " ) with dist ( " << distFileName << " ): " << readMatrix )
         }
         else
         {
@@ -509,7 +509,7 @@ BOOST_AUTO_TEST_CASE( MatrixColPartitionIO )
 
         CSRSparseMatrix<ValueType> readMatrix;
 
-        // read partitioned matrix and its distribution from first column indexes 
+        // read partitioned matrix and its distribution from first column indexes
 
         readMatrix.readFromFile( matrixFileName, "" );
 

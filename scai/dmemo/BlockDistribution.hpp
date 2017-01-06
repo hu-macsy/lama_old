@@ -130,7 +130,7 @@ public:
 
     static const char* getId()
     {
-        return "BLOCK";    
+        return "BLOCK";
     }
 
 protected:

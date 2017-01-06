@@ -173,7 +173,7 @@ public:
         if ( getColDistribution().getCommunicator().getSize() == 1 )
         {
             // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
-            // use routine provided by this CRTP 
+            // use routine provided by this CRTP
 
             vectorTimesMatrixRepCols( *denseResult, alpha.getValue<ValueType>(), *denseX,
                                       beta.getValue<ValueType>(), *denseY );
@@ -312,12 +312,12 @@ public:
         }
     }
 
-    /** Implementation of Matrix::setRow for all typed matrices 
+    /** Implementation of Matrix::setRow for all typed matrices
      *
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
      */
     void setRow( const Vector& row, const IndexType globalRowIndex,
-                 const utilskernel::binary::BinaryOp op ) 
+                 const utilskernel::binary::BinaryOp op )
     {
         using namespace scai::hmemo;
 
@@ -341,25 +341,25 @@ public:
         SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
 
         SCAI_ASSERT_EQ_ERROR( typedRow->size(), this->getNumColumns(), "row to set has wrong size" )
-  
+
         // owner sets the row, maybe each processor for replicated row distribution
 
         IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
 
         if ( localRowIndex != nIndex )
         {
-             static_cast<Derived*>( this )->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
+            static_cast<Derived*>( this )->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
         }
     }
 
-    /** Implementation of Matrix::setColumn for all typed matrices 
+    /** Implementation of Matrix::setColumn for all typed matrices
      *
      *  The method is implemented by setting the local part of the column on each partition.
      *  All derived classes must provide setLocalColum( colArray, colIndex, op )
      */
-    void setColumn( const Vector& column, 
+    void setColumn( const Vector& column,
                     const IndexType colIndex,
-                    const utilskernel::binary::BinaryOp op ) 
+                    const utilskernel::binary::BinaryOp op )
     {
         using namespace scai::hmemo;
 
@@ -404,10 +404,10 @@ public:
         // this routine is only for non-replicated columns, i.e. mHaloData is empty
 
         SCAI_ASSERT( 1, colDist.getNumPartitions() );
-    
+
         const dmemo::Distribution& rowDist = getRowDistribution();
         const dmemo::Communicator& comm = rowDist.getCommunicator();
-    
+
         const MatrixStorage<ValueType>& localData = static_cast<const Derived*>( this )->getLocalStorage();
 
         if ( comm.getRank() == 0 )
@@ -419,11 +419,11 @@ public:
         {
             localData.vectorTimesMatrix( localResult, alphaValue, localX, ValueType( 0 ), localY );
         }
-    
+
         if ( comm.getSize() >  1 )
         {
-            // Sum up all incarnations of localResult 
-    
+            // Sum up all incarnations of localResult
+
             comm.sumArray( localResult );
         }
     }

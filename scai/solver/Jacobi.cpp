@@ -244,18 +244,26 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
         }
 
         const ValueType omega = mOmega.getValue<ValueType>();
+
         // from rhs and solution we need only the local parts as LAMA arrays
         const HArray<ValueType>& localRhs = denseRhs.getLocalValues();
+
         HArray<ValueType>& localSolution = denseSolution.getLocalValues();
+
         const HArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
+
         HArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
+
         const HArray<ValueType>* diagonal = dynamic_cast<const HArray<ValueType>*>( getRuntime().mDiagonal.get() );
+
         using namespace scai::common;  // placeholders are also needed
+
         void ( scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo )(
             HArray<ValueType>& localSolution,
             const HArray<ValueType>& localDiagonal,
             const HArray<ValueType>& oldHaloSolution,
             const ValueType omega ) const = &lama::MatrixStorage<ValueType>::jacobiIterateHalo;
+
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
         function <
         void(

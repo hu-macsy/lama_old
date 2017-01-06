@@ -184,7 +184,7 @@ private:
     const GPICommunicator* mComm;
 
     common::scalar::ScalarType mScalarType;
- 
+
     IndexType mTypeSize;
 
     gaspi_pointer_t    mPtr;    // pointer to the allocated segment data

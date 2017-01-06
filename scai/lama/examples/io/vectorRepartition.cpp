@@ -52,21 +52,21 @@ using namespace hmemo;
 using namespace utilskernel;
 using namespace lama;
 
-static common::scalar::ScalarType getType() 
+static common::scalar::ScalarType getType()
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-    
+
     string val;
-    
+
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {   
+    {
         scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-        
+
         if ( env_type == scai::common::scalar::UNKNOWN )
-        {   
+        {
             cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << endl;
         }
-        
+
         type = env_type;
     }
 
@@ -90,16 +90,18 @@ void printHelp( const char* cmd )
     cout << "   Supported types: ";
     vector<common::scalar::ScalarType> dataTypes;
     hmemo::_HArray::getCreateValues( dataTypes );
+
     for ( size_t i = 0; i < dataTypes.size(); ++i )
-    { 
+    {
         cout << dataTypes[i] << " ";
     }
+
     cout << endl;
 }
 
 /** The following method is a special case where the input file contains the full vector and
- *  where the vector should be saved into multiple partions 
- * 
+ *  where the vector should be saved into multiple partions
+ *
  *  Important: this algorithm does not require memory for the full array
  */
 void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
@@ -117,7 +119,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
     for ( PartitionId ip = 0; ip < np_out; ++ip )
     {
         string outFileNameBlock = outFileName;
-  
+
         bool isPartitioned;
 
         PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np_out );
@@ -127,7 +129,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 
         dmemo::BlockDistribution::getLocalRange( lb, ub, size, ip, np_out );
 
-        cout << "Vector block " << ip << " has range " << lb << " - " << ub 
+        cout << "Vector block " << ip << " has range " << lb << " - " << ub
              << ", write to file " << outFileNameBlock << endl;
 
         inputIO->readArray( *array, inFileName, lb, ub - lb );
@@ -153,15 +155,15 @@ void readArrayBlocked( _HArray& array, const string& inFileName, const IndexType
         bool isPartitioned;
 
         PartitionIO::getPartitionFileName( inFileNameBlock, isPartitioned, ip, np_in );
-   
-        SCAI_ASSERT( FileIO::fileExists( inFileNameBlock ), 
-                     "Input file for block " << ip << " of " << np_in << " = " 
+
+        SCAI_ASSERT( FileIO::fileExists( inFileNameBlock ),
+                     "Input file for block " << ip << " of " << np_in << " = "
                      << inFileNameBlock << " could not be opened" )
 
         ArrayPtr blockArray( _HArray::create( array.getValueType() ) );
 
         FileIO::read( *blockArray, inFileNameBlock );
-  
+
         blockVector.push_back( blockArray );
     }
 
@@ -204,7 +206,7 @@ void readArrayBlocked( _HArray& array, const string& inFileName, const IndexType
 
 void writeArrayBlocked( const _HArray& array, const string& outFileName, const IndexType np )
 {
-    // create temporary array for each block of same type 
+    // create temporary array for each block of same type
 
     common::unique_ptr<_HArray> blockArray( _HArray::create( array.getValueType() ) );
 
@@ -224,7 +226,7 @@ void writeArrayBlocked( const _HArray& array, const string& outFileName, const I
         dmemo::BlockDistribution::getLocalRange( lb, ub, size, ip, np );
 
         cout << "Matrix block " << ip << " has range " << lb << " - " << ub
-                  << ", write to file " << outFileNameBlock << endl;
+             << ", write to file " << outFileNameBlock << endl;
 
         if ( np == 1 )
         {
@@ -258,7 +260,7 @@ int main( int argc, const char* argv[] )
     // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
     // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
 
-    // take double as default 
+    // take double as default
 
     string inFileName  = argv[1];
     string outFileName = argv[3];
@@ -275,7 +277,7 @@ int main( int argc, const char* argv[] )
     istringstream input2( argv[4] );
 
     input2 >> np_out;
- 
+
     SCAI_ASSERT( !input2.fail(), "illegal: np_out=" << argv[4] << " in argument list" )
 
     if ( np_in < 1 && np_out > 1 )
@@ -286,7 +288,7 @@ int main( int argc, const char* argv[] )
         {
             directPartitioning( inFileName, outFileName, np_out );
             return 0;
-        } 
+        }
         catch ( common::Exception& ex )
         {
             cout << "Direct partitioning failed, error: " << ex.what() << endl;
@@ -295,7 +297,7 @@ int main( int argc, const char* argv[] )
     }
 
     common::unique_ptr<_HArray> fullVector( _HArray::create( type ) );
- 
+
     // read in one or all partitions in the memory
 
     if ( inFileName.find( "%r" ) == string::npos )

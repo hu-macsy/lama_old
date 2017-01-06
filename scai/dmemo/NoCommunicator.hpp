@@ -129,7 +129,7 @@ public:
     void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 
     /** Implementation of Communicator::supportsLocReduction */
- 
+
     virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
 
     void swapImpl( void* val, const IndexType n, const PartitionId partner, common::scalar::ScalarType stype ) const;

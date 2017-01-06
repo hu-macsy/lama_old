@@ -311,7 +311,7 @@ IndexType MICELLUtils::getValuePos(
         for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
         {
             IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
-    
+
             if ( ellJA[pos] == j )
             {
                 vPos = pos;
@@ -325,13 +325,13 @@ IndexType MICELLUtils::getValuePos(
 
 /* --------------------------------------------------------------------------- */
 
-IndexType MICELLUtils::getValuePosCol( 
-    IndexType row[], 
+IndexType MICELLUtils::getValuePosCol(
+    IndexType row[],
     IndexType pos[],
     const IndexType j,
-    const IndexType ellSizes[], 
+    const IndexType ellSizes[],
     const IndexType numRows,
-    const IndexType ellJA[], 
+    const IndexType ellJA[],
     const IndexType numValuesPerRow )
 {
     IndexType cnt  = 0;   // counts number of available row entries in column j
@@ -345,7 +345,7 @@ IndexType MICELLUtils::getValuePosCol(
 
 #pragma offload target( mic : device ), in( posPtr, rowPtr, ellSizesPtr, ellJAPtr, j, numRows, numValuesPerRow ), out( cnt )
     {
-        cnt  = 0;  
+        cnt  = 0;
 
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
@@ -360,7 +360,7 @@ IndexType MICELLUtils::getValuePosCol(
             for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType p = ellindex( i, jj, numRows, numValuesPerRow );
-    
+
                 if ( ellJA[p] == j )
                 {
                     // workaround: IndexType k = atomicInc( cnt );
@@ -965,6 +965,7 @@ void MICELLUtils::jacobiHalo(
             }
 
             const ValueType diag = diagonal[i];
+
             solution[i] -= temp * ( omegaRef / diag );
         }
     }
@@ -1161,7 +1162,7 @@ void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kre
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
-                             common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+                    common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );

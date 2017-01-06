@@ -66,16 +66,16 @@ public:
     /** OpenMP implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( 
-        const ValueType array[], 
-        const IndexType n, 
+    static ValueType reduce(
+        const ValueType array[],
+        const IndexType n,
         const ValueType zero,
         const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::reduce2 */
 
     template<typename ValueType>
-    static ValueType reduce2( 
+    static ValueType reduce2(
         const ValueType array1[],
         const ValueType array2[],
         const IndexType n,
@@ -121,10 +121,10 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType1, typename ValueType2>
-    static void setSection( 
-        ValueType1 out[], 
+    static void setSection(
+        ValueType1 out[],
         const IndexType inc1,
-        const ValueType2 in[], 
+        const ValueType2 in[],
         const IndexType inc2,
         const IndexType n,
         const binary::BinaryOp op );
@@ -152,10 +152,10 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType1, typename ValueType2>
-    static void setGather( 
-        ValueType1 out[], 
-        const ValueType2 in[], 
-        const IndexType indexes[], 
+    static void setGather(
+        ValueType1 out[],
+        const ValueType2 in[],
+        const IndexType indexes[],
         const binary::BinaryOp op,
         const IndexType n );
 
@@ -167,10 +167,10 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], 
-                            const IndexType indexes[], 
-                            const ValueType2 in[], 
-                            const binary::BinaryOp op, 
+    static void setScatter( ValueType1 out[],
+                            const IndexType indexes[],
+                            const ValueType2 in[],
+                            const binary::BinaryOp op,
                             const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scan */
@@ -186,11 +186,11 @@ public:
     /** OpenMP implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void sort( 
-        IndexType perm[], 
-        ValueType outValues[], 
-        const ValueType inValues[], 
-        const IndexType n, 
+    static void sort(
+        IndexType perm[],
+        ValueType outValues[],
+        const ValueType inValues[],
+        const IndexType n,
         const bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
@@ -206,7 +206,7 @@ public:
 
     template<typename BucketType>
     static void sortInBuckets( IndexType sortedIndexes[],
-                               IndexType offsets[],         
+                               IndexType offsets[],
                                const BucketType nBuckets,
                                const BucketType bucketMap[],
                                const IndexType n );
@@ -229,9 +229,9 @@ private:
     /** The following method is the same as reduce but will not switch for optimized routines any more. */
 
     template<typename ValueType>
-    static ValueType reduceBinOp( 
-        const ValueType array[], 
-        const IndexType n, 
+    static ValueType reduceBinOp(
+        const ValueType array[],
+        const IndexType n,
         const ValueType zero,
         const binary::BinaryOp op );
 
@@ -268,25 +268,25 @@ private:
 
     struct BaseKernels
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType>
     struct NumericKernels
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType>
     struct ArrayKernels
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType, typename OtherValueType>
     struct BinOpKernels
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Constructor for registration. */

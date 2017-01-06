@@ -111,12 +111,12 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
     IndexType elemSize  = sizeof( DataType );
     IndexType arraySize = nBytes / elemSize;
 
-    SCAI_ASSERT_EQ_ERROR( elemSize * arraySize, nBytes, "Size mismatch, elemSize = " << elemSize << ", arraySize = " << arraySize )
+    SCAI_ASSERT_EQ_ERROR( elemSize* arraySize, nBytes, "Size mismatch, elemSize = " << elemSize << ", arraySize = " << arraySize )
 
     if ( typeid( ArrayType ) == typeid( DataType ) )
     {
-        SCAI_LOG_INFO( logger, "readMATArrayImpl, in place, type = " << common::TypeTraits<ArrayType>::id() 
-                               << ", arraySize = " << arraySize << ", #bytes = " << nBytes )
+        SCAI_LOG_INFO( logger, "readMATArrayImpl, in place, type = " << common::TypeTraits<ArrayType>::id()
+                       << ", arraySize = " << arraySize << ", #bytes = " << nBytes )
 
         // no temporary array required
 
@@ -126,8 +126,8 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
     }
     else
     {
-        SCAI_LOG_INFO( logger, "readMATArrayImpl, in place, type = " << common::TypeTraits<ArrayType>::id() 
-                               << ", arraySize = " << arraySize << ", #bytes = " << nBytes )
+        SCAI_LOG_INFO( logger, "readMATArrayImpl, in place, type = " << common::TypeTraits<ArrayType>::id()
+                       << ", arraySize = " << arraySize << ", #bytes = " << nBytes )
 
         // temporary array and conversion required
 
@@ -138,7 +138,7 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
             ::memcpy( wData.get(), data, nBytes );
         }
 
-        HArrayUtils::assign( array, tmp );  
+        HArrayUtils::assign( array, tmp );
     }
 }
 
@@ -149,19 +149,42 @@ void MatlabIO::readMATArray( hmemo::HArray<ValueType>& array, const char* data, 
 {
     switch ( mxType )
     {
-        case MATIOStream::MAT_DOUBLE  : readMATArrayImpl<ValueType, double>( array, data, nBytes ); break;
-        case MATIOStream::MAT_FLOAT   : readMATArrayImpl<ValueType, float>( array, data, nBytes ); break;
-        case MATIOStream::MAT_LDOUBLE : readMATArrayImpl<ValueType, long double>( array, data, nBytes ); break;
-        case MATIOStream::MAT_INT8    : readMATArrayImpl<ValueType, int8_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_UINT8   : readMATArrayImpl<ValueType, uint8_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_INT16   : readMATArrayImpl<ValueType, int16_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_UINT16  : readMATArrayImpl<ValueType, uint16_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_INT32   : readMATArrayImpl<ValueType, int32_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_UINT32  : readMATArrayImpl<ValueType, uint32_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_INT64   : readMATArrayImpl<ValueType, int64_t>( array, data, nBytes ); break;
-        case MATIOStream::MAT_UINT64  : readMATArrayImpl<ValueType, uint64_t>( array, data, nBytes ); break;
+        case MATIOStream::MAT_DOUBLE  :
+            readMATArrayImpl<ValueType, double>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_FLOAT   :
+            readMATArrayImpl<ValueType, float>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_LDOUBLE :
+            readMATArrayImpl<ValueType, long double>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_INT8    :
+            readMATArrayImpl<ValueType, int8_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_UINT8   :
+            readMATArrayImpl<ValueType, uint8_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_INT16   :
+            readMATArrayImpl<ValueType, int16_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_UINT16  :
+            readMATArrayImpl<ValueType, uint16_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_INT32   :
+            readMATArrayImpl<ValueType, int32_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_UINT32  :
+            readMATArrayImpl<ValueType, uint32_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_INT64   :
+            readMATArrayImpl<ValueType, int64_t>( array, data, nBytes );
+            break;
+        case MATIOStream::MAT_UINT64  :
+            readMATArrayImpl<ValueType, uint64_t>( array, data, nBytes );
+            break;
 
-        default : COMMON_THROWEXCEPTION( "mxType = " << mxType << " is unknown data type in Matlab file." )
+        default :
+            COMMON_THROWEXCEPTION( "mxType = " << mxType << " is unknown data type in Matlab file." )
     }
 }
 
@@ -183,11 +206,11 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
     IndexType dims[2];
     IndexType nnz;
     bool      isComplex;
-    
+
     MATIOStream::MATClass matClass;
 
     MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElement.get() );
- 
+
     n = dims[0] * dims[1];
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
@@ -211,7 +234,7 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
 template<typename ValueType>
 void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
 {
-    if ( !common::isComplex( array.getValueType() ) ) 
+    if ( !common::isComplex( array.getValueType() ) )
     {
         // SCAI_LOG_WARN( logger, "imaginary values are ignored" )
         return;
@@ -295,7 +318,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
         wBytes += writeArrayData( outFile, real, dryRun );
 
-        HArray<ValueType> tmp;  
+        HArray<ValueType> tmp;
         ValueType minusi = ComplexDouble( 0, -1 );
         utilskernel::HArrayUtils::binaryOpScalar2( tmp, array, minusi, utilskernel::binary::MULT );
         utilskernel::HArrayUtils::setArray( real, tmp );
@@ -340,7 +363,7 @@ void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueT
     }
 
     uint32_t nBytes = 16;  // initial guess used for the dry run
- 
+
     bool dryRun = true;   // make a dryRun at first to determine the size of written bytes
 
     uint32_t wBytes = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
@@ -355,8 +378,8 @@ void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueT
     wBytes  = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
     wBytes += writeArrayData( outFile, array, dryRun );
 
-    SCAI_LOG_INFO( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1] 
-                            << ", wBytes = " << wBytes )
+    SCAI_LOG_INFO( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1]
+                   << ", wBytes = " << wBytes )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -393,17 +416,17 @@ void MatlabIO::writeStorageImpl(
     MATIOStream outFile( fileName, ios::out );
 
     outFile.writeMATFileHeader();
-    
-    if ( numValues * 2 >= numRows * numCols && mScalarTypeData != common::scalar::PATTERN )
+
+    if ( numValues * 2 >= numRows* numCols && mScalarTypeData != common::scalar::PATTERN )
     {
         SCAI_LOG_INFO( logger, "Write storage as dense matrix to file " << fileName << ": " << storage )
-  
+
         DenseStorage<ValueType> denseStorage;
 
         denseStorage.assignTranspose( storage );   // MATLAB stores it column-wise
 
         HArray<ValueType>& array = denseStorage.getData();
-    
+
         IndexType dims[2] = { numRows, numCols };
 
         writeDenseArray( outFile, array, dims );
@@ -427,18 +450,18 @@ void MatlabIO::writeStorageImpl(
         for ( int i = 0; i < 2; ++i )
         {
             bool dryRun = ( i == 0 );      // first run dry, second run okay
-    
+
             wBytes  = outFile.writeSparseHeader( numRows, numCols, numValues, wBytes, isComplex, dryRun );
             wBytes += writeArrayData( outFile, ia, dryRun );
             wBytes += writeArrayData( outFile, ja, dryRun );
-    
+
             if ( mScalarTypeData != common::scalar::PATTERN )
             {
                 wBytes += writeArrayData( outFile, values, dryRun );
             }
-    
+
             wBytes -= 8;  // subtract for the first header
-    
+
             SCAI_LOG_INFO( logger, "writeStorage, dryRun = " << dryRun << ", wBytes = " << wBytes )
         }
     }
@@ -465,7 +488,7 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
     MATIOStream::MATClass matClass;
 
     MATIOStream::getMatrixInfo( matClass, dims, numValues, isComplex, dataElement.get() );
- 
+
     numRows    = dims[0];
     numColumns = dims[1];
 
@@ -498,8 +521,8 @@ uint32_t MatlabIO::getArrayData( HArray<ValueType>& array, const char* data, uin
     readMATArray( array, arrayDataPtr, dataType, nBytes );
 
     SCAI_LOG_INFO( logger, "read array " << array << " from data ( len = " << len << " ), type = " << dataType
-                            << " is " << MATIOStream::matlabType2ScalarType( dataType )
-                            << ", nBytes = " << nBytes << ", wBytes = " << wBytes )
+                   << " is " << MATIOStream::matlabType2ScalarType( dataType )
+                   << ", nBytes = " << nBytes << ", wBytes = " << wBytes )
 
     return wBytes;
 }
@@ -507,13 +530,13 @@ uint32_t MatlabIO::getArrayData( HArray<ValueType>& array, const char* data, uin
 /* --------------------------------------------------------------------------------- */
 
 template <typename ValueType>
-uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage, 
+uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage,
                                      const IndexType dims[2], const IndexType nnz,
                                      bool isComplex,
                                      const char* dataElementPtr, uint32_t nBytes )
 {
     SCAI_LOG_INFO( logger, "Get sparse<" << common::TypeTraits<ValueType>::stype << "> matrix "
-                        << dims[0] << " x " << dims[1] << ", nnz = " << nnz )
+                   << dims[0] << " x " << dims[1] << ", nnz = " << nnz )
 
     uint32_t offset = 0;
 
@@ -565,10 +588,10 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
 
     offset += size;
 
-    int nFields = ( size - 8 ) / len; 
+    int nFields = ( size - 8 ) / len;
 
     SCAI_LOG_INFO( logger, "parse structure with " << nFields << " fields, name len = " << len )
-  
+
     bool readStorage = false;    // set it to true if any sparse array is found
 
     for ( int i = 0; i < nFields; ++i )
@@ -591,27 +614,27 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
         bool      isComplex;
         MATIOStream::MATClass matClass;
 
-        SCAI_LOG_INFO( logger, "read structure field[" << i << "], name = " << ptr << ", dataType = " << dataType 
-                                << ", nBytes = " << nBytesField << " / " << wBytes )
+        SCAI_LOG_INFO( logger, "read structure field[" << i << "], name = " << ptr << ", dataType = " << dataType
+                       << ", nBytes = " << nBytesField << " / " << wBytes )
 
-        uint32_t offset1 = 0; 
+        uint32_t offset1 = 0;
 
         nBytesField = wBytes; // reset it
 
         offset1 += MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr + offset + offset1, false );
 
         SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1]
-                            << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
+                       << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
 
         if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
         {
             SCAI_ASSERT_ERROR( !readStorage, "more than one sparse array identified in struct" )
             getSparseStorage( storage, dims, nnz, isComplex, dataElementPtr + offset + offset1, nBytesField - offset1 );
             SCAI_LOG_INFO( logger, "read sparse storage = " << storage )
-            readStorage = true;  
+            readStorage = true;
             // continue loop to parse all further elements
         }
-    
+
         offset += wBytes;
     }
 
@@ -638,7 +661,7 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
     }
     else if ( matClass == MATIOStream::MAT_STRUCT_CLASS )
     {
-        // dims = [1, 1] 
+        // dims = [1, 1]
         offset += getStructStorage( storage, dataElementPtr + offset, nBytes - offset );
     }
     else if ( matClass == MATIOStream::MAT_CELL_CLASS )
@@ -655,8 +678,8 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
     }
     else
     {
-        SCAI_LOG_INFO( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix " 
-                                << dims[0] << " x " << dims[1] )
+        SCAI_LOG_INFO( logger, "Get dense<" << common::TypeTraits<ValueType>::stype << "> matrix "
+                       << dims[0] << " x " << dims[1] )
 
         LArray<ValueType> values;
 

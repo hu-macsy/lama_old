@@ -170,7 +170,7 @@ void SegmentData::release()
 
 void SegmentData::writeAt( std::ostream& stream ) const
 {
-    stream << "Segment<" << mScalarType<< ">( id = " << static_cast<int>( mId )
+    stream << "Segment<" << mScalarType << ">( id = " << static_cast<int>( mId )
            << ", offs = " << mOffsetBytes << ", ptr = " << mPtr << " )";
 }
 

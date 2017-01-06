@@ -75,7 +75,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.Create" );
 
 BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     typedef SCAI_TEST_TYPE ValueType;
 
@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
     MatrixCreator::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
-                           << " from rep = " << repN << " x " << storage )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix
+                   << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
     const IndexType nCols = storage.getNumColumns();
@@ -118,15 +118,15 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
                     Scalar s = matrix.getValue( i, j );
                     ValueType v = s.getValue<ValueType>();
-    
+
                     SCAI_LOG_TRACE( logger, "i = " << i << " ( " << i1 << " * " << nRows << " + " << i2 << " )"
-                                           << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
-                                           << ", v = " << v )
+                                    << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
+                                    << ", v = " << v )
 
                     if ( i1 != j1 )
                     {
                         // not a diagonal block, so it must be all 0
-        
+
                         BOOST_CHECK_EQUAL( v, 0.0 );
                     }
                     else
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
 BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     typedef SCAI_TEST_TYPE ValueType;
 
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 
                     Scalar s = matrix.getValue( i, j );
                     ValueType v = s.getValue<ValueType>();
-    
+
                     BOOST_CHECK_EQUAL( v, storage.getValue( i2, j2 ) );
                 }
             }

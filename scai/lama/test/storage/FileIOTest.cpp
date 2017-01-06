@@ -72,7 +72,7 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     // values: take numRows x numColums random numbers of required type
 
     LArray<ValueType> values;
-    float fillRate = 0.2;    
+    float fillRate = 0.2;
     values.setRandom( numRows * numColumns, fillRate );
 
     ValueType eps = static_cast<ValueType>( 1E-5 );
@@ -87,14 +87,14 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 template<typename ValueType>
 static void setNonSquareData( MatrixStorage<ValueType>& storage )
 {
-    const IndexType numRows = 4; 
+    const IndexType numRows = 4;
     const IndexType numColumns = 10;
     const IndexType ia[] = { 0,    2,       5, 6,    8 };
     const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
     const IndexType numValues = ia[numRows];
 
     LArray<IndexType> csrIA( numRows + 1, ia );
-    LArray<IndexType> csrJA( numValues, ja ); 
+    LArray<IndexType> csrJA( numValues, ja );
     LArray<ValueType> csrValues( numValues, ValueType( 1 ) );
 
     storage.setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
@@ -189,9 +189,9 @@ BOOST_AUTO_TEST_CASE( WriteAtTest )
     // loop over all supported suffixes, got them from FileIO factory
 
     for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
-    {   
+    {
         const std::string& fileSuffix = supportedSuffixes[i];
-        
+
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
 
         SCAI_LOG_INFO( logger, "Suffix " << fileSuffix << ": " << *fileIO )
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( !fileIO->isSupportedMode( FileIO::FORMATTED ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support FORMATTED mode" )
@@ -236,19 +236,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
         if ( fileSuffix != fileIO->getMatrixFileSuffix() )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
-            continue;   
+            continue;
         }
 
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
-     
+
         BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outStorageFormatted_" + typeName + fileSuffix;
 
         SCAI_LOG_INFO( logger, "FileIOFormatted: write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
-    
+
         csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::FORMATTED );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( !fileIO->isSupportedMode( FileIO::BINARY ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support BINARY mode" )
@@ -338,19 +338,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
         if ( fileSuffix != fileIO->getMatrixFileSuffix() )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
-            continue;   
+            continue;
         }
 
         CSRStorage<ValueType> csrStorage;
         setDenseData( csrStorage );
-     
+
         BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outStorageBinary" + typeName + fileSuffix;
 
         SCAI_LOG_INFO( logger, "FileIO(binary): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
-    
+
         csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::BINARY );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -402,11 +402,11 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( fileSuffix != fileIO->getMatrixFileSuffix() )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
-            continue;   
+            continue;
         }
 
         CSRStorage<ValueType> csrStorage;
@@ -414,12 +414,12 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         LArray<IndexType> firstColIndexes1;
         csrStorage.getFirstColumnIndexes( firstColIndexes1 );
-     
+
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outStorageNonSquare" + typeName + fileSuffix;
 
         SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
-    
+
         csrStorage.writeToFile( fileName );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
 
-        // The storage read can have less columns 
+        // The storage read can have less columns
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE( readStorage.getNumColumns() <= csrStorage.getNumColumns() );
@@ -452,7 +452,7 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -477,11 +477,11 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( fileSuffix != fileIO->getMatrixFileSuffix() )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
-            continue;   
+            continue;
         }
 
         CSRStorage<ValueType> csrStorage;
@@ -491,12 +491,12 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
 
         LArray<IndexType> firstColIndexes1;
         csrStorage.getFirstColumnIndexes( firstColIndexes1 );
-     
+
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outStorageSymmetric" + typeName + fileSuffix;
 
         SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
-    
+
         csrStorage.writeToFile( fileName );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
@@ -504,7 +504,7 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );
 
-        // The storage read can have less columns 
+        // The storage read can have less columns
 
         BOOST_REQUIRE_EQUAL( readStorage.getNumRows(), csrStorage.getNumRows() );
         BOOST_REQUIRE( readStorage.getNumColumns() <= csrStorage.getNumColumns() );
@@ -518,15 +518,15 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
             for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
             {
                 BOOST_CHECK_MESSAGE( csrStorage.getValue( i, j ) == readStorage.getValue( i, j ),
-                                     "matrix[" << i << ", " << j << "] of " << fileName 
-                                      << ", written " << csrStorage.getValue( i, j ) 
-                                      << ", read " << readStorage.getValue( i, j ) );
+                                     "matrix[" << i << ", " << j << "] of " << fileName
+                                     << ", written " << csrStorage.getValue( i, j )
+                                     << ", read " << readStorage.getValue( i, j ) );
             }
         }
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -553,11 +553,11 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( fileSuffix != fileIO->getMatrixFileSuffix() )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
-            continue;   
+            continue;
         }
 
         TypedStorages<ValueType> storages;
@@ -578,14 +578,14 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
 
             m.readFromFile( fileName );
 
-            // The storage read can have less columns 
+            // The storage read can have less columns
 
             BOOST_CHECK_EQUAL( IndexType( 0 ), m.getNumColumns() );
             BOOST_CHECK_EQUAL( IndexType( 0 ), m.getNumRows() );
 
 #ifdef DELETE_OUTPUT_FILES
             int rc = FileIO::removeFile( fileName );
-    
+
             BOOST_CHECK_EQUAL( rc, 0 );
             BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -610,7 +610,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( !fileIO->isSupportedMode( FileIO::FORMATTED ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support FORMATTED mode" )
@@ -619,9 +619,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         if ( fileSuffix != fileIO->getVectorFileSuffix() )
         {
-            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix 
-                                   << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
-            continue;   
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix
+                           << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
+            continue;
         }
 
         fileIO->setMode( FileIO::FORMATTED );
@@ -629,17 +629,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
         LArray<ValueType> array;
 
         array.setRandom( N );
-     
+
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outArrayFormatted" + typeName + fileSuffix;
 
         SCAI_LOG_DEBUG( logger, "FileIO(formatted): write this array: " << array << " via " << *fileIO << " to " << fileName )
-    
+
         fileIO->writeArray( array, fileName );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
-        // Test the method readArrayInfo for 
+        // Test the method readArrayInfo for
         {
             IndexType size;
             fileIO->readArrayInfo( size, fileName );
@@ -650,7 +650,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
         }
 
         // Test the method readArray
- 
+
         {
             LArray<ValueType> inArray;
 
@@ -666,10 +666,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
                 ValueType readVal = inArray[i];
 
                 // Due to the formatted output there might be a loss of precision
- 
+
                 SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
             }
-       }
+        }
 
         // Test the method readArray with first, n arguments
 
@@ -677,12 +677,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
             LArray<ValueType> inArray;
 
             BOOST_CHECK_THROW(
-            { 
-                fileIO->readArray( inArray, fileName, 0, 5 * N ); 
+            {
+                fileIO->readArray( inArray, fileName, 0, 5 * N );
             }, common::Exception );
 
             fileIO->readArray( inArray, fileName, 1, N - 2 );
-           
+
             SCAI_LOG_DEBUG( logger, "Read block from file: " << inArray )
 
             BOOST_REQUIRE_EQUAL( inArray.size(), N - 2 );
@@ -696,11 +696,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
                 SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
             }
-       }
+        }
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -725,7 +725,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( !fileIO->isSupportedMode( FileIO::BINARY ) )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped, does not support BINARY mode" )
@@ -734,9 +734,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         if ( fileSuffix != fileIO->getVectorFileSuffix() )
         {
-            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix 
-                                   << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
-            continue;   
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix
+                           << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
+            continue;
         }
 
         fileIO->setMode( FileIO::BINARY );
@@ -744,12 +744,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
         LArray<ValueType> array;
 
         array.setRandom( N );
-     
+
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outArrayBinary_" + typeName  + fileSuffix;
 
         SCAI_LOG_INFO( logger, "FileIO(binary): write this array: " << array << " via " << *fileIO << " to " << fileName )
-    
+
         fileIO->writeArray( array, fileName );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
@@ -766,7 +766,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -789,12 +789,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( fileSuffix != fileIO->getVectorFileSuffix() )
         {
-            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix 
-                                   << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
-            continue;   
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix
+                           << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
+            continue;
         }
 
         LArray<ValueType> array;
@@ -803,7 +803,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
         std::string fileName = "outEmptyArray_" + typeName  + fileSuffix;
 
         SCAI_LOG_INFO( logger, "FileIO: write this empty array: " << array << " via " << *fileIO << " to " << fileName )
-    
+
         fileIO->writeArray( array, fileName );
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
@@ -824,7 +824,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif
@@ -851,11 +851,11 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
         const std::string& fileSuffix = supportedSuffixes[i];
 
         unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
- 
+
         if ( fileSuffix != fileIO->getMatrixFileSuffix() )
         {
             SCAI_LOG_INFO( logger, *fileIO << " skipped for matrix, is not default matrix suffix" )
-            continue;   
+            continue;
         }
 
         fileIO->setDataType( common::scalar::PATTERN );
@@ -865,8 +865,8 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
         CSRStorage<ValueType> csrStorage;
         setNonSquareData( csrStorage );
 
-        SCAI_LOG_INFO( logger, *fileIO << ": write matrix pattern -> " << fileName 
-                               << ", matrix = " << csrStorage );
+        SCAI_LOG_INFO( logger, *fileIO << ": write matrix pattern -> " << fileName
+                       << ", matrix = " << csrStorage );
 
         fileIO->writeStorage( csrStorage, fileName );
 
@@ -878,11 +878,11 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
         BOOST_REQUIRE_EQUAL( readStorage.getNumValues(), csrStorage.getNumValues() );
 
         for ( IndexType i = 0; i < readStorage.getNumRows(); ++i )
-        {   
-            // be careful: readStorage.getNumColumns() <= csrStorage.getnumColumns() 
+        {
+            // be careful: readStorage.getNumColumns() <= csrStorage.getnumColumns()
 
             for ( IndexType j = 0; j < readStorage.getNumColumns(); ++j )
-            {   
+            {
                 if ( csrStorage.getValue( i, j ) != 0 )
                 {
                     BOOST_CHECK( readStorage.getValue( i, j ) == ValueType( 1 ) );
@@ -898,8 +898,8 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
         fileIO->setDataType( common::scalar::INTERNAL );
 
-        SCAI_LOG_INFO( logger, *fileIO << ": read matrix pattern -> " << fileName 
-                               << ", matrix = " << csrStorage );
+        SCAI_LOG_INFO( logger, *fileIO << ": read matrix pattern -> " << fileName
+                       << ", matrix = " << csrStorage );
 
         BOOST_CHECK_THROW(
         {
@@ -908,7 +908,7 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );
-    
+
         BOOST_CHECK_EQUAL( rc, 0 );
         BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 #endif

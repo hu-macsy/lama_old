@@ -55,16 +55,16 @@ MaxNorm::~MaxNorm()
 
 std::string MaxNorm::createValue()
 {
-   return "Max";
+    return "Max";
 }
 
 Norm* MaxNorm::create()
 {
-   return new MaxNorm();
+    return new MaxNorm();
 }
 
 void MaxNorm::writeAt( std::ostream& stream ) const
-{   
+{
     stream << "MaxNorm";
 }
 

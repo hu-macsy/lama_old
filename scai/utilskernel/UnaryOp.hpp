@@ -84,11 +84,11 @@ struct unary
     } UnaryOp;
 };
 
-/** This method provides a general routine for applying an unary operator. 
+/** This method provides a general routine for applying an unary operator.
  *
  *  @param[in] op specifies the operator
  *  @param[in] x  is the input value
- *  @returns   op( x ) 
+ *  @returns   op( x )
  *
  *  Due to inlining this method can also be used within loops where op
  *  is loop invariant without losing performance. But therefore good
@@ -100,19 +100,32 @@ inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
 {
     switch ( op )
     {
-        case unary::CONJ:   return common::Math::conj( x );
-        case unary::ABS:    return common::Math::abs( x );
-        case unary::MINUS:  return -x;
-        case unary::EXP:    return common::Math::exp( x );
-        case unary::SQRT:   return common::Math::sqrt( x );
-        case unary::SIN:    return common::Math::sin( x );
-        case unary::COS:    return common::Math::cos( x );
-        case unary::TAN:    return common::Math::tan( x );
-        case unary::ATAN:   return common::Math::atan( x );
-        case unary::LOG:    return common::Math::log( x );
-        case unary::FLOOR:  return common::Math::floor( x );
-        case unary::CEIL:   return common::Math::ceil( x );
-        default:            return ValueType( 0 );
+        case unary::CONJ:
+            return common::Math::conj( x );
+        case unary::ABS:
+            return common::Math::abs( x );
+        case unary::MINUS:
+            return -x;
+        case unary::EXP:
+            return common::Math::exp( x );
+        case unary::SQRT:
+            return common::Math::sqrt( x );
+        case unary::SIN:
+            return common::Math::sin( x );
+        case unary::COS:
+            return common::Math::cos( x );
+        case unary::TAN:
+            return common::Math::tan( x );
+        case unary::ATAN:
+            return common::Math::atan( x );
+        case unary::LOG:
+            return common::Math::log( x );
+        case unary::FLOOR:
+            return common::Math::floor( x );
+        case unary::CEIL:
+            return common::Math::ceil( x );
+        default:
+            return ValueType( 0 );
     }
 }
 
@@ -121,10 +134,14 @@ inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
 {
     switch ( op )
     {
-        case unary::CONJ:   return x;
-        case unary::ABS:    return common::Math::abs( x );
-        case unary::MINUS:  return -x;
-        default:            return IndexType( 0 );
+        case unary::CONJ:
+            return x;
+        case unary::ABS:
+            return common::Math::abs( x );
+        case unary::MINUS:
+            return -x;
+        default:
+            return IndexType( 0 );
     }
 }
 

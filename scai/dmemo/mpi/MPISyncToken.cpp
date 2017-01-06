@@ -53,7 +53,7 @@ namespace dmemo
 
 MPISyncToken::MPISyncToken( PartitionId nRequests )
     : mNRequests( nRequests ), mUsedRequests( 0 ), mRequests( new MPI_Request[mNRequests] ), mStatuses(
-          new MPI_Status[mNRequests] )
+        new MPI_Status[mNRequests] )
 {
     SCAI_LOG_INFO( logger, "MPISyncToken for " << mNRequests << " requests constructed" )
 }

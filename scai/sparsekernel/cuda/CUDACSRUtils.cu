@@ -597,7 +597,7 @@ void normal_gevm_kernel(
     IndexType numRows )
 {
     // Note: atomicAdd dominates performance
-    // result += alpha * x_d * A 
+    // result += alpha * x_d * A
     // result[j] += alpha * x_d[i] * A[i,j] for all (i,j) non-zero entries
 
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -632,7 +632,7 @@ void sparse_gevm_kernel(
     IndexType numRows )
 {
     // Note: atomicAdd dominates performance
-    // result += alpha * x_d * A 
+    // result += alpha * x_d * A
     // result[j] += alpha * x_d[i] * A[i,j] for all (i,j) non-zero entries
 
     const IndexType ii = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -968,15 +968,15 @@ void CUDACSRUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType, 
+    const IndexType,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
     SCAI_REGION( "CUDA.CSRUtils.normalGEMV" )
 
-    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">" 
-                   << " result[ " << numColumns << "] = " << alpha 
+    SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
+                   << " result[ " << numColumns << "] = " << alpha
                    << " * x[ " << numRows << "]"
                    << " * A(csr)[" << numRows << " x " << numColumns << "]"
                    << " * x[ " << numRows << " + " << beta << " * y [" << numColumns << "]" )
@@ -1003,10 +1003,10 @@ void CUDACSRUtils::normalGEVM(
 
     CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
 
-    SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">");
+    SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 
     normal_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
-               ( result, x, alpha, csrValues, csrIA, csrJA, numRows );
+    ( result, x, alpha, csrValues, csrIA, csrJA, numRows );
 
     if ( !syncToken )
     {
@@ -1136,7 +1136,7 @@ void CUDACSRUtils::sparseGEVM(
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     sparse_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
-        ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
+    ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
 
     if ( !syncToken )
     {
@@ -2206,19 +2206,19 @@ IndexType CUDACSRUtils::matrixMultiplySizes(
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
 
-    matrixMultiplySizesKernel <<< NUM_BLOCKS, NUM_THREADS>>>( 
-            aIa,
-            aJa,
-            bIa,
-            bJa,
-            cIa,
-            numRows,
-            numColumns,
-            hashTable,
-            chunkList,
-            numChunks,
-            hashError,
-            diagonalProperty );
+    matrixMultiplySizesKernel <<< NUM_BLOCKS, NUM_THREADS>>>(
+        aIa,
+        aJa,
+        bIa,
+        bJa,
+        cIa,
+        numRows,
+        numColumns,
+        hashTable,
+        chunkList,
+        numChunks,
+        hashError,
+        diagonalProperty );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "snyc after matrixMultiplySizesKernel" );
 
@@ -2686,18 +2686,18 @@ void CUDACSRUtils::matrixMultiply(
 
     ContextPtr loc = Context::getContextPtr( context::CUDA );
     MemoryPtr mem = loc->getMemoryPtr();
-    
+
     bool hashErrorHost = false;
     bool* hashError = ( bool* ) mem->allocate( sizeof( bool ) );
     SCAI_CUDA_RT_CALL( cudaMemcpy( hashError, &hashErrorHost, sizeof( bool ), cudaMemcpyHostToDevice ), "memcpy of hashError" );
-    
+
     size_t free;
     size_t total;
     cuMemGetInfo( &free, &total );
 
     IndexType nnz_a;
     IndexType nnz_b;
-    SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_a");
+    SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_a, &aIa[numRows], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_a" );
     SCAI_CUDA_RT_CALL( cudaMemcpy( &nnz_b, &bIa[k], sizeof( IndexType ), cudaMemcpyDeviceToHost ), "memcpy of nnz_b" );
 
     IndexType avgDensity = ( nnz_a / numRows + nnz_b / numColumns ) / 2;
@@ -2716,7 +2716,7 @@ void CUDACSRUtils::matrixMultiply(
 
     SCAI_LOG_DEBUG( logger, "numChunks = " << numChunks << ", max = " << maxNumChunks << ", per warp = " << chunksPerWarp )
 
-    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK * 
+    unsigned int hashTableAllocatedBytes = numChunks * NUM_ELEMENTS_PER_CHUNK *
                                            ( sizeof( IndexType ) + sizeof( ValueType ) );
 
     SCAI_LOG_DEBUG( logger, "hashTableAllcoatedBytes= " << hashTableAllocatedBytes )
@@ -2736,25 +2736,25 @@ void CUDACSRUtils::matrixMultiply(
                        chunkListPtr,
                        multHlp_chunkFill( numChunks + 1 ) );
 
-    matrixMultiplyKernel <<< NUM_BLOCKS, NUM_THREADS>>>( 
-            aIa,
-            aJa,
-            aValues,
-            bIa,
-            bJa,
-            bValues,
-            cIa,
-            alpha,
-            cJa,
-            cValues,
-            numRows,
-            numColumns,
-            indexChunks,
-            valueChunks,
-            chunkList,
-            numChunks,
-            hashError,
-            diagonalProperty );
+    matrixMultiplyKernel <<< NUM_BLOCKS, NUM_THREADS>>>(
+        aIa,
+        aJa,
+        aValues,
+        bIa,
+        bJa,
+        bValues,
+        cIa,
+        alpha,
+        cJa,
+        cValues,
+        numRows,
+        numColumns,
+        indexChunks,
+        valueChunks,
+        chunkList,
+        numChunks,
+        hashError,
+        diagonalProperty );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "sync after matrixMultiply kernel" )
 
@@ -2769,7 +2769,7 @@ void CUDACSRUtils::matrixMultiply(
     mem->free( ( void* ) hashError, sizeof( bool ) );
     mem->free( ( void* ) chunks, hashTableAllocatedBytes );
     mem->free( ( void* ) chunkList, chunkListAllocatedBytes );
-    
+
     SCAI_CHECK_CUDA_ERROR
 }
 
@@ -2777,13 +2777,13 @@ void CUDACSRUtils::matrixMultiply(
 
 namespace gpu
 {
-    template <class T> 
-    __device__ void swap ( T& a, T& b )
-    { 
-        T c(a); 
-        a = b; 
-        b = c;
-    }
+template <class T>
+__device__ void swap ( T& a, T& b )
+{
+    T c( a );
+    a = b;
+    b = c;
+}
 }
 
 template<typename ValueType>

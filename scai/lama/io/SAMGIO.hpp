@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Dervied FileIO class that implements IO routines for the SAMG file format. 
+ * @brief Dervied FileIO class that implements IO routines for the SAMG file format.
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -49,7 +49,7 @@ namespace lama
  *  read/write operations.
  */
 
-class SAMGIO : 
+class SAMGIO :
 
     public CRTPFileIO<SAMGIO>,         // use type conversions
     public FileIO::Register<SAMGIO>    // register at factory
@@ -96,7 +96,7 @@ public:
     virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
- 
+
     /** Typed version of writeStorage
      *
      *  This method must be available for implementation of

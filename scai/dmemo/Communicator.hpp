@@ -291,7 +291,7 @@ public:
      *  The size of sendData must be sendPlan.totalQuantity().
      */
     template<typename ValueType>
-    void exchangeByPlan( 
+    void exchangeByPlan(
         ValueType recvVals[],
         const CommunicationPlan& recvPlan,
         const ValueType sendVals[],
@@ -349,7 +349,7 @@ public:
 
     /** Non-template version with coded ValueType is pure routine to be implemented by derived classes. */
 
-    virtual void scatterImpl( void* myVals, const IndexType n, const PartitionId root, 
+    virtual void scatterImpl( void* myVals, const IndexType n, const PartitionId root,
                               const void* allVals, common::scalar::ScalarType stype ) const = 0;
 
     /* @brief Scatter of an array of values from root to all other processors.
@@ -372,7 +372,7 @@ public:
      *  @param[in]    n      number of elements in vector val
      *  @param[in]    root   processor with values for all processors
      *  @param[in]    myVals values that this processor contributes
-     *  @param[in]    stype  specifies the data type used              
+     *  @param[in]    stype  specifies the data type used
      */
     template<typename ValueType>
     void gather( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[] ) const;
@@ -412,10 +412,10 @@ public:
     template<typename ValueType>
     void swap( ValueType val[], const IndexType n, const PartitionId partner ) const;
 
-    virtual void swapImpl( 
-        void* val, 
-        const IndexType n, 
-        PartitionId partner, 
+    virtual void swapImpl(
+        void* val,
+        const IndexType n,
+        PartitionId partner,
         common::scalar::ScalarType stype ) const = 0;
 
     /* @brief This routine shifts data between neighbored processors.
@@ -460,10 +460,10 @@ public:
      */
 
     template<typename ValueType>
-    tasking::SyncToken* shiftAsync( 
-        ValueType recvVals[], 
-        const ValueType sendVals[], 
-        const IndexType size, 
+    tasking::SyncToken* shiftAsync(
+        ValueType recvVals[],
+        const ValueType sendVals[],
+        const IndexType size,
         const int direction ) const;
 
     /** Pure method that provides the wanted functionality for each communicator */
@@ -491,10 +491,10 @@ public:
                    ValueType* sendVal[], IndexType sendCount[] ) const;
 
     /** Same routine but uses void pointers and codes the ValueType so it can
-     *  become a virtual method that is provided by all derived communicator classes. 
+     *  become a virtual method that is provided by all derived communicator classes.
      */
 
-    virtual void all2allvImpl( 
+    virtual void all2allvImpl(
         void* recvBuffer[], IndexType recvCount[],
         void* sendBuffer[], IndexType sendCount[],
         common::scalar::ScalarType stype ) const = 0;
@@ -504,7 +504,7 @@ public:
      *  @param[in,out] values  in on root, out on all other processors
      *  @param[in]     n    number of elements in vector val
      *  @param[in]     root processor with correct values of val
-     *  @param[in]     stype codes the used data type of values     
+     *  @param[in]     stype codes the used data type of values
      */
     virtual void bcastImpl( void* values, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const = 0;
 
@@ -562,12 +562,12 @@ public:
     template<typename ValueType>
     inline ValueType max( const ValueType localValue ) const;
 
-    /**  Sum values from all processes and distributes the result back to all processes. 
-     * 
+    /**  Sum values from all processes and distributes the result back to all processes.
+     *
      *   @param[out] outValues array with the result values, same on all processes
      *   @param[in]  inValues individual contributions on each process
      *   @param[in]  n is the number of values in arrays inValues and outValues
-     *   @param[in]  stype specifies the data type of the data 
+     *   @param[in]  stype specifies the data type of the data
      */
     virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
 
@@ -601,7 +601,7 @@ public:
     virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
 
     /**
-     *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a 
+     *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a
      *  given value type.
      *
      *  @param[in] vType specifies the type of the reduction array values
@@ -790,7 +790,7 @@ protected:
 
     /** Get the processor name.
      *
-     *  @param[out] name is the processor name, allocated with at least maxProcessorName 
+     *  @param[out] name is the processor name, allocated with at least maxProcessorName
      */
     virtual void getProcessorName( char* name ) const = 0;
 
@@ -809,7 +809,7 @@ protected:
 private:
     CommunicatorKind mCommunicatorType; //!< type of this communicator
 
-    PartitionId mRank; //!< rank of this processor 
+    PartitionId mRank; //!< rank of this processor
 
     PartitionId mSize; //!< number of processors in this communicator
 
@@ -852,11 +852,11 @@ PartitionId Communicator::getNodeRank() const
 
 /* -------------------------------------------------------------------------- */
 
-template<typename ValueType> 
+template<typename ValueType>
 ValueType Communicator::sum( ValueType localValue ) const
 {
     ValueType globalValue;
-  
+
     // general routine uses typeless pointers void*, type is coded via ScalarType
 
     sumImpl( &globalValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
@@ -964,7 +964,7 @@ void Communicator::swap( ValueType val[], const IndexType n, const PartitionId p
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void Communicator::exchangeByPlan( 
+void Communicator::exchangeByPlan(
     ValueType recvVals[],
     const CommunicationPlan& recvPlan,
     const ValueType sendVals[],
@@ -976,7 +976,7 @@ void Communicator::exchangeByPlan(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType Communicator::shift( 
+IndexType Communicator::shift(
     ValueType newVals[], const IndexType newSize,
     const ValueType oldVals[], const IndexType oldSize,
     const int direction ) const
@@ -997,10 +997,10 @@ IndexType Communicator::shift(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-tasking::SyncToken* Communicator::shiftAsync( 
-    ValueType recvVals[], 
-    const ValueType sendVals[], 
-    const IndexType size, 
+tasking::SyncToken* Communicator::shiftAsync(
+    ValueType recvVals[],
+    const ValueType sendVals[],
+    const IndexType size,
     const int direction ) const
 {
     if ( direction % getSize() == 0 )

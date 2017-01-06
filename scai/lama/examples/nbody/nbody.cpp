@@ -83,7 +83,7 @@ DenseVector<ValueType> x( nBodies, 0.0 );
 DenseVector<ValueType> y( nBodies, 0.0 );
 
 DenseVector<ValueType> vx( nBodies, 0.0 );
-DenseVector<ValueType> vy( nBodies, 0.0 ); 
+DenseVector<ValueType> vy( nBodies, 0.0 );
 
 DenseVector<ValueType> fx( nBodies, 0.0 );
 DenseVector<ValueType> fy( nBodies, 0.0 );
@@ -94,60 +94,60 @@ DenseVector<ValueType> inversemass( nBodies, 0.0 );
 
 void randomBodies( )
 {
-        // Random Positions (relative to the radius of the universe at the beginning)     
-        x.setRandom( x.getDistributionPtr() );
-        x *= radius * (ValueType)Math::exp(-1.8) ;
+    // Random Positions (relative to the radius of the universe at the beginning)
+    x.setRandom( x.getDistributionPtr() );
+    x *= radius * ( ValueType )Math::exp( -1.8 ) ;
 
-        y.setRandom( y.getDistributionPtr() );
-        y *= radius * (ValueType)Math::exp(-1.8) ;
-        
+    y.setRandom( y.getDistributionPtr() );
+    y *= radius * ( ValueType )Math::exp( -1.8 ) ;
 
-        // circular velocities for each particle depenent on particle position
-        for( IndexType i = 0; i < nBodies; i++ )
-        {
-            ValueType px = x.getValue(i).getValue<ValueType>();
-            ValueType py = y.getValue(i).getValue<ValueType>();
 
-            ValueType denum = Math::sqrt( px * px + py * py );
-            ValueType num = (6.67e-11) * 1e6 * maxMass;
-            ValueType magv = Math::sqrt( num / denum );
+    // circular velocities for each particle depenent on particle position
+    for ( IndexType i = 0; i < nBodies; i++ )
+    {
+        ValueType px = x.getValue( i ).getValue<ValueType>();
+        ValueType py = y.getValue( i ).getValue<ValueType>();
 
-            ValueType thetav = (ValueType)M_PI / 2.0 - (ValueType)atan( Math::abs(py/px) );
+        ValueType denum = Math::sqrt( px * px + py * py );
+        ValueType num = ( 6.67e-11 ) * 1e6 * maxMass;
+        ValueType magv = Math::sqrt( num / denum );
 
-            vx.setValue( i, -1.0 * copysign(1.0, py) * (ValueType)cos(thetav) * magv );
-            vy.setValue( i, copysign(1.0,px) * (ValueType)sin(thetav) * magv );
-        }
-        
+        ValueType thetav = ( ValueType )M_PI / 2.0 - ( ValueType )atan( Math::abs( py / px ) );
 
-        // Random mass of Particles
-        mass.setRandom( mass.getDistributionPtr() );
-        // project random numbers between -1 and 1 to random numbers between 0 and 1
-        DenseVector<ValueType> eye(nBodies, 1.0);
-        mass += eye;
-        mass *= 0.5;
-        mass *= maxMass ;
+        vx.setValue( i, -1.0 * copysign( 1.0, py ) * ( ValueType )cos( thetav ) * magv );
+        vy.setValue( i, copysign( 1.0, px ) * ( ValueType )sin( thetav ) * magv );
+    }
 
-        // put a heavy body in the center
-        x.setValue( 0, 0.0 );
-        y.setValue( 0, 0.0 );
-        vx.setValue( 0, 0.0 );
-        vy.setValue( 0, 0.0 );
-        mass.setValue( 0, maxMass );
 
-        inversemass = mass;
-        inversemass.invert( );
+    // Random mass of Particles
+    mass.setRandom( mass.getDistributionPtr() );
+    // project random numbers between -1 and 1 to random numbers between 0 and 1
+    DenseVector<ValueType> eye( nBodies, 1.0 );
+    mass += eye;
+    mass *= 0.5;
+    mass *= maxMass ;
+
+    // put a heavy body in the center
+    x.setValue( 0, 0.0 );
+    y.setValue( 0, 0.0 );
+    vx.setValue( 0, 0.0 );
+    vy.setValue( 0, 0.0 );
+    mass.setValue( 0, maxMass );
+
+    inversemass = mass;
+    inversemass.invert( );
 
 }
 
 void updateParticles( )
 {
     DenseVector<ValueType> help( nBodies, 0.0 );
-    
+
     // update velocities  v  = v + (dt * fx)/mass
     help = dt * fx;
     help *= inversemass;
     vx += help;
-    
+
     help = 0.0;
 
     help = dt * fy;
@@ -167,66 +167,74 @@ void resetForce( )
 
 void computeForce( IndexType i, IndexType j )
 {
-    ValueType dx = x.getValue(j).getValue<ValueType>() - x.getValue(i).getValue<ValueType>();
-    ValueType dy = y.getValue(j).getValue<ValueType>() - y.getValue(i).getValue<ValueType>();
+    ValueType dx = x.getValue( j ).getValue<ValueType>() - x.getValue( i ).getValue<ValueType>();
+    ValueType dy = y.getValue( j ).getValue<ValueType>() - y.getValue( i ).getValue<ValueType>();
 
     // distance between the bodies
     ValueType dist = Math::sqrt( dx * dx + dy * dy );
-   
+
     // force between the bodies = ( gravity * mass(a) * mass(b) ) / ( distance^2 + softening^2)         -> softening used to avoid infinities
-    ValueType force = ( G * mass.getValue(i).getValue<ValueType>() * mass.getValue(j).getValue<ValueType>() )/ ( dist * dist + softening * softening );
-    
+    ValueType force = ( G * mass.getValue( i ).getValue<ValueType>() * mass.getValue( j ).getValue<ValueType>() ) / ( dist * dist + softening * softening );
+
     // force update for bodie a : force(a) = sum of the forces between a and all other bodies
-        // force(a) += dx * force between a and b / distance between a and b
-    ValueType f1 = fx.getValue(i).getValue<ValueType>() + dx * force / dist;
-    ValueType f2 = fy.getValue(i).getValue<ValueType>() + dy * force / dist; 
- 
+    // force(a) += dx * force between a and b / distance between a and b
+    ValueType f1 = fx.getValue( i ).getValue<ValueType>() + dx * force / dist;
+    ValueType f2 = fy.getValue( i ).getValue<ValueType>() + dy * force / dist;
+
     // update global Force
-    fx.setValue(i, f1);
-    fy.setValue(i, f2);
+    fx.setValue( i, f1 );
+    fy.setValue( i, f2 );
 
 }
 
 void Nbody()
-{   
-    for( IndexType i = 0; i < nBodies; i++ )
-    {                       
-        for( IndexType j = 0; j < nBodies; j++ )
-        {                  
-            if( i != j)
+{
+    for ( IndexType i = 0; i < nBodies; i++ )
+    {
+        for ( IndexType j = 0; j < nBodies; j++ )
+        {
+            if ( i != j )
                 // compute new force between particle i and j
+            {
                 computeForce( i, j );
+            }
         }
     }
 
     // update global particles coordinates and velocities with respect to new interacting forces
     updateParticles( );
-   
+
 }
 
 
 //draw particles
 void onDisplay()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
- 
-    for( IndexType i = 0; i < nBodies; i++ )
+    glClear( GL_COLOR_BUFFER_BIT );
+
+    for ( IndexType i = 0; i < nBodies; i++ )
     {
         // get position and mass of each body
-        ValueType xpos = x.getValue(i).getValue<ValueType>() * ( DIMx - 5.0 ) / radius ;
-        ValueType ypos = y.getValue(i).getValue<ValueType>() * ( DIMy - 5.0 ) / radius;
-        ValueType m = mass.getValue(i).getValue<ValueType>();
-        m *= 1.0/((ValueType)maxMass);
+        ValueType xpos = x.getValue( i ).getValue<ValueType>() * ( DIMx - 5.0 ) / radius ;
+        ValueType ypos = y.getValue( i ).getValue<ValueType>() * ( DIMy - 5.0 ) / radius;
+        ValueType m = mass.getValue( i ).getValue<ValueType>();
+        m *= 1.0 / ( ( ValueType )maxMass );
 
-        glColor3f(0.90, 0.91, 0.98);
+        glColor3f( 0.90, 0.91, 0.98 );
 
-        if( i == 0 )    // large body in the middle is colored red
-            glColor3f( 1.0 , 0.0, 0.0);
-        
-        glBegin(GL_POLYGON);
-        for(float a = 0; a < 2*M_PI; a+=0.1)
-            glVertex2f((GLfloat)(5.0*m*cos(a) + xpos),(GLfloat)(5.0*m*sin(a) + ypos));
-        glEnd();       
+        if ( i == 0 )   // large body in the middle is colored red
+        {
+            glColor3f( 1.0 , 0.0, 0.0 );
+        }
+
+        glBegin( GL_POLYGON );
+
+        for ( float a = 0; a < 2 * M_PI; a += 0.1 )
+        {
+            glVertex2f( ( GLfloat )( 5.0 * m * cos( a ) + xpos ), ( GLfloat )( 5.0 * m * sin( a ) + ypos ) );
+        }
+
+        glEnd();
     }
 
     glFlush();
@@ -236,7 +244,7 @@ void onDisplay()
 
 
 // timer function to redisplay changes
-void timer(int /*t*/)
+void timer( int /*t*/ )
 {
     onDisplay();
 
@@ -246,37 +254,40 @@ void timer(int /*t*/)
     // calculate new placement of the bodies -> movement because of own velocity and force directet
     Nbody();
 
-    // cout iteration recompute until max iteraion 
+    // cout iteration recompute until max iteraion
     iter++;
-    if( iter <= maxIteration )
-        glutTimerFunc(1, timer, 0);
+
+    if ( iter <= maxIteration )
+    {
+        glutTimerFunc( 1, timer, 0 );
+    }
 }
 
 
 
-int main(int argc, char** argv)
+int main( int argc, char** argv )
 {
     // Here basic Opengl initialization.
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(DIMx, DIMy);
-    glutInitWindowPosition(50, 50);
-    glutCreateWindow("N-Body Simmulation");
- 
-    glClearColor(0, 0, 0, 1);
-    glMatrixMode(GL_PROJECTION);
+    glutInit( &argc, argv );
+    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB );
+    glutInitWindowSize( DIMx, DIMy );
+    glutInitWindowPosition( 50, 50 );
+    glutCreateWindow( "N-Body Simmulation" );
+
+    glClearColor( 0, 0, 0, 1 );
+    glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
-    glOrtho(-DIMx, DIMx, DIMy, -DIMy, 0, 1);
-       
-    // create Random Bodies' placement and velocities 
+    glOrtho( -DIMx, DIMx, DIMy, -DIMy, 0, 1 );
+
+    // create Random Bodies' placement and velocities
     randomBodies( );
 
-    glutDisplayFunc(onDisplay);  
-    
-    timer(0);
-       
+    glutDisplayFunc( onDisplay );
+
+    timer( 0 );
+
     glutMainLoop();
-    
+
     return 0;
 }
 

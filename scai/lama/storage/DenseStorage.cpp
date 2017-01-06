@@ -151,7 +151,7 @@ void DenseStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexTyp
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
 
-    row.clear();                    // make all data invalid 
+    row.clear();                    // make all data invalid
     row.resize( mNumColumns );      // resize it
 
     // inc = denseindex( i, j + 1, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
@@ -160,7 +160,7 @@ void DenseStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexTyp
     const IndexType inc   = 1;
     const IndexType first = rowIndex * mNumColumns;
 
-    HArrayUtils::setArraySection( row, 0, 1,             // row (:) 
+    HArrayUtils::setArraySection( row, 0, 1,             // row (:)
                                   mData, first, inc,
                                   mNumColumns, utilskernel::binary::COPY, this->getContextPtr() );
 }
@@ -170,7 +170,7 @@ void DenseStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexTyp
 template<typename ValueType>
 template<typename OtherType>
 void DenseStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType rowIndex,
-                                              const utilskernel::binary::BinaryOp op )
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
 
@@ -180,10 +180,10 @@ void DenseStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const In
     const IndexType inc   = 1;
     const IndexType first = rowIndex * mNumColumns;
 
-    HArrayUtils::setArraySection( mData, first, inc, 
+    HArrayUtils::setArraySection( mData, first, inc,
                                   row, 0, 1,
-                                  mNumColumns, 
-                                  op, 
+                                  mNumColumns,
+                                  op,
                                   this->getContextPtr() );
 }
 
@@ -195,7 +195,7 @@ void DenseStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const In
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    column.clear();                 // make all data invalid 
+    column.clear();                 // make all data invalid
     column.resize( mNumRows );      // resize it
 
     // inc = denseindex( i + 1, j, numRows, numColumns ) - denseindex( i, j, numRows, numColumns )
@@ -205,9 +205,9 @@ void DenseStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const In
     const IndexType first = j;
 
     HArrayUtils::setArraySection( column, 0, 1,
-                                  mData, first, inc, 
-                                  mNumRows,    
-                                  utilskernel::binary::COPY, 
+                                  mData, first, inc,
+                                  mNumRows,
+                                  utilskernel::binary::COPY,
                                   this->getContextPtr() );
 }
 
@@ -216,7 +216,7 @@ void DenseStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const In
 template<typename ValueType>
 template<typename OtherType>
 void DenseStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType colIndex,
-                                                 const utilskernel::binary::BinaryOp op ) 
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mNumColumns, "column index out of range" )
 
@@ -228,8 +228,8 @@ void DenseStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, co
 
     HArrayUtils::setArraySection( mData, first, inc ,
                                   column, 0, 1,
-                                  mNumRows, 
-                                  op, 
+                                  mNumRows,
+                                  op,
                                   this->getContextPtr() );
 }
 
@@ -241,7 +241,7 @@ void DenseStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) con
 {
     IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
 
-    diagonal.clear();                       // make all data invalid 
+    diagonal.clear();                       // make all data invalid
     diagonal.resize( numDiagonalValues );   // resize it
 
     // inc = denseindex( i + 1, i + 1, numRows, numColumns ) - denseindex( i, i, numRows, numColumns )
@@ -250,7 +250,7 @@ void DenseStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) con
     const IndexType inc   = mNumRows + 1;
     const IndexType first = 0;
 
-    HArrayUtils::setArraySection( diagonal, 0, 1,  
+    HArrayUtils::setArraySection( diagonal, 0, 1,
                                   mData, first, inc,
                                   numDiagonalValues,
                                   utilskernel::binary::COPY,
@@ -274,7 +274,7 @@ void DenseStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal
     const IndexType first = 0;
 
     HArrayUtils::setArraySection( mData, first, inc,
-                                  diagonal, 0, 1,  
+                                  diagonal, 0, 1,
                                   numDiagonalValues,
                                   utilskernel::binary::COPY,
                                   mData.getValidContext() );
@@ -704,8 +704,8 @@ void DenseStorage<ValueType>::vectorTimesMatrix(
     const ValueType beta,
     const HArray<ValueType>& y ) const
 {
-    SCAI_LOG_INFO( logger, "Computing z = " << alpha << " * x * A + " << beta << " * y" 
-                           << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
+    SCAI_LOG_INFO( logger, "Computing z = " << alpha << " * x * A + " << beta << " * y"
+                   << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
@@ -1160,9 +1160,9 @@ ValueType DenseStorage<ValueType>::getValue( const IndexType i, const IndexType 
 
 template<typename ValueType>
 void DenseStorage<ValueType>::setValue( const IndexType i,
-                                            const IndexType j,
-                                            const ValueType val,
-                                            const utilskernel::binary::BinaryOp op )
+                                        const IndexType j,
+                                        const ValueType val,
+                                        const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1203,7 +1203,7 @@ DenseStorage<ValueType>::DenseStorage() :
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType numColumns ) : 
+DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType numColumns ) :
 
     CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>( numRows, numColumns )
 
@@ -1218,7 +1218,7 @@ template<typename ValueType>
 DenseStorage<ValueType>::DenseStorage(
     const HArray<ValueType>& data,
     const IndexType numRows,
-    const IndexType numColumns ) : 
+    const IndexType numColumns ) :
 
     CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>( numRows, numColumns )
 
@@ -1312,7 +1312,7 @@ void DenseStorage<ValueType>::swapImpl( DenseStorage<ValueType>& other )
 template<typename ValueType>
 void DenseStorage<ValueType>::swap( HArray<ValueType>& other, const IndexType numRows, const IndexType numColumns )
 {
-    SCAI_ASSERT_EQ_ERROR( other.size(), numRows * numColumns, 
+    SCAI_ASSERT_EQ_ERROR( other.size(), numRows * numColumns,
                           "array of dense storage has not size " << numRows << " x " << numColumns )
 
     mNumRows    = numRows;
@@ -1399,24 +1399,24 @@ SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );            \
     template void DenseStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;      \
     template void DenseStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,        \
-                                                           const utilskernel::binary::BinaryOp );                  \
+            const utilskernel::binary::BinaryOp );                  \
     template void DenseStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;   \
     template void DenseStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,     \
-                                                              const utilskernel::binary::BinaryOp );               \
+            const utilskernel::binary::BinaryOp );               \
     template void DenseStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                  \
     template void DenseStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                  \
     template void DenseStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                        \
     template void DenseStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,           \
             hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
-
+     
 #define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, DENSE_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_LOOP( DENSE_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef DENSE_STORAGE_INST_LVL2
 #undef DENSE_STORAGE_INST_LVL1
 
-    } /* end namespace lama */
+} /* end namespace lama */
 
-    } /* end namespace scai */
+} /* end namespace scai */

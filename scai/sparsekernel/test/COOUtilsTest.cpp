@@ -238,11 +238,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
                 IndexType k   = i * numColumns + j;
 
                 if ( pos == nIndex )
-                {   
+                {
                     BOOST_CHECK_EQUAL( rDense[ k ], zero );
                 }
                 else
-                {   
+                {
                     BOOST_CHECK_EQUAL( rDense[ k], rValues[pos] );
                 }
             }
@@ -263,9 +263,9 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    //    1.0   -   2.0      
-    //    0.5  0.3   -       
-    //     -    -   3.0      
+    //    1.0   -   2.0
+    //    0.5  0.3   -
+    //     -    -   3.0
 
     const IndexType ia[] = { 0, 0, 1, 1, 2 };
     const IndexType ja[] = { 0, 2, 0, 1, 2 };
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
     HArray<IndexType> cooIA( numValues, ia, testContext );
     HArray<IndexType> cooJA( numValues, ja, testContext );
 
-    HArray<IndexType> row;   // result for rowIndexes 
+    HArray<IndexType> row;   // result for rowIndexes
     HArray<IndexType> pos;   // result for positions
 
     IndexType cnt;
@@ -345,9 +345,9 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    //    1.0   -   2.0      
-    //    0.5  0.3   -       
-    //     -    -   3.0      
+    //    1.0   -   2.0
+    //    0.5  0.3   -
+    //     -    -   3.0
 
     const IndexType ia[] = { 0, 0, 1, 1, 2 };
     const IndexType ja[] = { 0, 2, 0, 1, 2 };
@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
     HArray<IndexType> cooIA( numValues, ia, testContext );
     HArray<IndexType> cooJA( numValues, ja, testContext );
 
-    HArray<IndexType> col;   // result for colIndexes 
+    HArray<IndexType> col;   // result for colIndexes
     HArray<IndexType> pos;   // result for positions
 
     IndexType cnt;
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_
         SCAI_CONTEXT_ACCESS( loc );
 
         if ( numValues < numDiagonals )
-        { 
+        {
             okay = false;
         }
         else
@@ -606,8 +606,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( testContext );
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -638,7 +638,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
             }
         }
     }
-} 
+}
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -697,11 +697,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( testContext );
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * COO + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
-    
+
             ReadAccess<IndexType> rIA( cooIA, loc );
             ReadAccess<IndexType> rJA( cooJA, loc );
             ReadAccess<ValueType> rValues( cooValues, loc );
@@ -729,7 +729,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
             }
         }
     }
-} 
+}
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -787,7 +787,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
             ReadAccess<ValueType> rRhs( rhs, loc );
             WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
 
-            jacobi[loc]( wSolution.get(), 
+            jacobi[loc]( wSolution.get(),
                          numValues, rIA.get(), rJA.get(), rValues.get(),
                          rOld.get(), rRhs.get(), omega, numRows );
 

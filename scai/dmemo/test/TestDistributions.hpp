@@ -49,11 +49,11 @@ namespace dmemo
 /** Class that is a vector of different distribution pointers.
  *
  */
-class TestDistributions : public std::vector<DistributionPtr> 
+class TestDistributions : public std::vector<DistributionPtr>
 {
 public:
- 
-    /** Constructor of different test distributions. 
+
+    /** Constructor of different test distributions.
      *
      *  @param[in] globalSize is same global size for all distributions
      */
@@ -75,23 +75,23 @@ public:
 
             if ( values[i] == "METIS" )
             {
-                 // METIS prints a lot of warnings with a single processor, so skip it
+                // METIS prints a lot of warnings with a single processor, so skip it
 
-                 if ( comm->getSize() == 1 )
-                 {
-                     continue;
-                 }
+                if ( comm->getSize() == 1 )
+                {
+                    continue;
+                }
 
-                 // METIS prints warnings if number of elements is less than global size
+                // METIS prints warnings if number of elements is less than global size
 
-                 if ( static_cast<IndexType>( comm->getSize() ) > globalSize )
-                 {
-                     continue;
-                 }
+                if ( static_cast<IndexType>( comm->getSize() ) > globalSize )
+                {
+                    continue;
+                }
             }
 
             push_back( dist );
-        } 
+        }
 
         // Create a random general distribution, must be same on all processors
 

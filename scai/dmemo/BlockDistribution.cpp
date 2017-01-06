@@ -196,7 +196,7 @@ bool BlockDistribution::isEqual( const Distribution& other ) const
         isSame = true;
     }
 
-    // we know already that global size and communicator are equal 
+    // we know already that global size and communicator are equal
 
     return isSame;
 }

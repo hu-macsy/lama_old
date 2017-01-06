@@ -65,7 +65,7 @@ bool GenLogger::sFlush = false;
 
 std::vector<std::string> GenLogger::formatTokens;
 
-void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void ( * ) ( const char* format, ... ) )& printf ;
+void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (* ) ( const char* format, ... ) )& printf ;
 
 /********************************************************************
  *  Static variable: rootLogger for generic logging                  *

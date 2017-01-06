@@ -42,7 +42,7 @@ namespace scai
 namespace sparsekernel
 {
 
-/** Kernel traits for functions to be used in COO storage. 
+/** Kernel traits for functions to be used in COO storage.
  *
  *  Note: routines to build CSR data from COO data are not required any more
  *        as this is done by bucket sort
@@ -111,7 +111,7 @@ struct COOKernelTrait
          *  in the cooIA/cooJA/cooValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in cooJA, 
+         *  @param[out] pos positions of entries with col = j in cooJA,
          *  @param[in] j is the column of which positions are required
          *  @param[in] cooIA is the COO array with row indexes
          *  @param[in] numRows is the number of rows

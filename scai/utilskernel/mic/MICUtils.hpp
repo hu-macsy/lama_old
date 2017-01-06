@@ -67,9 +67,9 @@ public:
     /** MIC implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( 
-        const ValueType array[], 
-        const IndexType n, 
+    static ValueType reduce(
+        const ValueType array[],
+        const IndexType n,
         const ValueType zero,
         const binary::BinaryOp op );
 

@@ -43,7 +43,7 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-#include "utility.hpp" 
+#include "utility.hpp"
 
 using namespace std;
 
@@ -66,15 +66,17 @@ int main( int argc, const char* argv[] )
         cout << "   Supported types: ";
         vector<common::scalar::ScalarType> dataTypes;
         hmemo::_HArray::getCreateValues( dataTypes );
+
         for ( size_t i = 0; i < dataTypes.size(); ++i )
-        { 
+        {
             cout << dataTypes[i] << " ";
         }
+
         cout << endl;
         return -1;
     }
 
-    // take double as default 
+    // take double as default
 
     common::scalar::ScalarType type = getType();
 
@@ -107,7 +109,7 @@ int main( int argc, const char* argv[] )
         std::string distFileName = argv[3];
 
         PartitionIO::write( matrix.getRowDistribution(), distFileName );
- 
+
         cout << *comm << "written " << matrix.getRowDistribution() << " to file " << distFileName << endl;
     }
 }

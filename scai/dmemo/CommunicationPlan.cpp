@@ -226,8 +226,8 @@ void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const Part
     for ( PartitionId i = 0; i < noPartitions; ++i )
     {
         Entry& entry = mEntries[i];
-        SCAI_ASSERT_LE_ERROR( offsets[i], offsets[i+1], "illegal offsets for i = " << i )
-        entry.quantity = offsets[i+1] - offsets[i];
+        SCAI_ASSERT_LE_ERROR( offsets[i], offsets[i + 1], "illegal offsets for i = " << i )
+        entry.quantity = offsets[i + 1] - offsets[i];
         entry.offset = offsets[i];
         entry.partitionId = i;
         SCAI_LOG_TRACE( logger, "Entries[" << i << "].quantity = " << mEntries[i].quantity )

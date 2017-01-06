@@ -97,9 +97,9 @@ ValueType MICUtils::reduceSum( const ValueType array[], const IndexType n )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType MICUtils::reduce( 
-    const ValueType array[], 
-    const IndexType n, 
+ValueType MICUtils::reduce(
+    const ValueType array[],
+    const IndexType n,
     const ValueType zero,
     const binary::BinaryOp op )
 {
@@ -165,7 +165,7 @@ ValueType MICUtils::reduce2(
         {
             ValueType threadVal = *zeroPtr;
 
-            #pragma omp for 
+            #pragma omp for
 
             for ( IndexType i = 0; i < n; ++i )
             {
@@ -302,7 +302,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             }
             else
             {
-                #pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
+#pragma offload target( mic : device ), in( arrayPtr, n, valPtr[0:1], op )
                 {
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
@@ -353,8 +353,8 @@ template<typename ValueType>
 void MICUtils::setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n )
 {
     SCAI_LOG_DEBUG( logger, "setSequence<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = " << startValue
-                            << "..., " << ( startValue + (n-1) * inc ) )
-    
+                    << "..., " << ( startValue + ( n - 1 ) * inc ) )
+
     void* arrayPtr = array;
     const ValueType* sPtr = &startValue;
     const ValueType* iPtr = &inc;
@@ -366,6 +366,7 @@ void MICUtils::setSequence( ValueType array[], const ValueType startValue, const
         const ValueType& startValue = *sPtr;
         const ValueType& inc = *iPtr;
         #pragma omp parallel for
+
         for ( IndexType i = 0; i < n; ++i )
         {
             array[i] = static_cast<ValueType>( startValue + i * inc );
@@ -406,9 +407,13 @@ ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
     }
 
     const void* arrayPtr = array;
+
     ValueType* valPtr = &val;
+
     const ValueType* zeroPtr = &zero;
+
     int device = MICContext::getCurrentDevice();
+
 #pragma offload target( mic : device ) in( arrayPtr, n, zeroPtr[0:1] ), out( valPtr[0:1] )
     {
         *valPtr = *zeroPtr;
@@ -435,6 +440,7 @@ ValueType MICUtils::reduceMaxVal( const ValueType array[], const IndexType n )
             }
         }
     }
+
     return val;
 }
 
@@ -453,9 +459,13 @@ ValueType MICUtils::reduceMinVal( const ValueType array[], const IndexType n )
     }
 
     const void* arrayPtr = array;
+
     ValueType* zeroPtr = &zero;
+
     ValueType* valPtr = &val;
+
     int device = MICContext::getCurrentDevice();
+
 #pragma offload target( mic : device ) in( arrayPtr, n, zeroPtr[0:1] ), out( valPtr[0:1] )
     {
         *valPtr = *zeroPtr;
@@ -482,6 +492,7 @@ ValueType MICUtils::reduceMinVal( const ValueType array[], const IndexType n )
             }
         }
     }
+
     return val;
 }
 
@@ -623,12 +634,13 @@ void MICUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], 
     // Parallel execution is safe as perm does not contain a value twice
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( permPtr, inversePermPtr, n )
+#pragma offload target( mic : device ) in( permPtr, inversePermPtr, n )
     {
         IndexType* inversePerm = reinterpret_cast<IndexType*>( inversePermPtr );
         const IndexType* perm = reinterpret_cast<const IndexType*>( permPtr );
 
         #pragma omp parallel for
+
         for ( IndexType ii = 0; ii < n; ii++ )
         {
             IndexType i = perm[ii];
@@ -745,10 +757,10 @@ bool MICUtils::validIndexes( const IndexType array[], const IndexType n, const I
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void MICUtils::setGather( 
-    ValueType1 out[], 
-    const ValueType2 in[], 
-    const IndexType indexes[], 
+void MICUtils::setGather(
+    ValueType1 out[],
+    const ValueType2 in[],
+    const IndexType indexes[],
     const utilskernel::binary::BinaryOp op,
     const IndexType n )
 {
@@ -764,22 +776,22 @@ void MICUtils::setGather(
         const ValueType2* in = static_cast<const ValueType2*>( inPtr );
         const IndexType* indexes = static_cast<const IndexType*>( indexesPtr );
 
-        switch( op )
+        switch ( op )
         {
             case binary::COPY :
             {
-                 #pragma omp parallel for
+                #pragma omp parallel for
 
-                 for ( IndexType i = 0; i < n; i++ )
-                 {
-                     out[i] = static_cast<ValueType1>( in[indexes[i]] );
-                 }
+                for ( IndexType i = 0; i < n; i++ )
+                {
+                    out[i] = static_cast<ValueType1>( in[indexes[i]] );
+                }
             }
 
             default:
             {
-                #pragma omp parallel for 
-    
+                #pragma omp parallel for
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = applyBinary( out[i], op, static_cast<ValueType1>( in[indexes[i]] ) );
@@ -800,10 +812,10 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
     const void* indexesPtr = indexes;
     const void* inPtr = in;
     int device = MICContext::getCurrentDevice();
-    
+
     bool done;
 
-    #pragma offload target( mic : device ) in( outPtr, indexesPtr, inPtr, n, op ), out( done )
+#pragma offload target( mic : device ) in( outPtr, indexesPtr, inPtr, n, op ), out( done )
     {
         ValueType1* out = static_cast<ValueType1*>( outPtr );
         const ValueType2* in = static_cast<const ValueType2*>( inPtr );
@@ -863,11 +875,11 @@ void MICUtils::scatterVal( ValueType out[], const IndexType indexes[], const Val
     const ValueType* vPtr = &value;
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic : device ) in( outPtr, indexesPtr, n, vPtr[0:1] )
+#pragma offload target( mic : device ) in( outPtr, indexesPtr, n, vPtr[0:1] )
     {
         ValueType* out = static_cast<ValueType*>( outPtr );
         const IndexType* indexes = static_cast<const IndexType*>( indexesPtr );
-        const ValueType& value = *vPtr; 
+        const ValueType& value = *vPtr;
         #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; i++ )
@@ -894,7 +906,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
 
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( MIC : device ), in ( n, out_ptr, in_ptr, op )
+#pragma offload target( MIC : device ), in ( n, out_ptr, in_ptr, op )
     {
         ValueType* out = static_cast<ValueType*>( out_ptr );
         const ValueType* in  = static_cast<const ValueType*>( in_ptr );
@@ -909,6 +921,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::conj( in[i] );
                 }
+
                 break;
             }
 
@@ -920,7 +933,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = -in[i];
                 }
-                
+
 
                 break;
             }
@@ -928,12 +941,12 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
             case unary::ABS :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-   
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = common::Math::abs( in[i] );
                 }
-    
+
                 break;
             }
 
@@ -945,6 +958,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::exp( in[i] );
                 }
+
                 break;
             }
 
@@ -956,6 +970,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::sqrt( in[i] );
                 }
+
                 break;
             }
 
@@ -967,6 +982,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::sin( in[i] );
                 }
+
                 break;
             }
 
@@ -978,6 +994,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::cos( in[i] );
                 }
+
                 break;
             }
 
@@ -989,6 +1006,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::tan( in[i] );
                 }
+
                 break;
             }
 
@@ -1000,6 +1018,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::atan( in[i] );
                 }
+
                 break;
             }
 
@@ -1011,6 +1030,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::log( in[i] );
                 }
+
                 break;
             }
 
@@ -1022,6 +1042,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::floor( in[i] );
                 }
+
                 break;
             }
 
@@ -1033,12 +1054,13 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
                 {
                     out[i] = common::Math::ceil( in[i] );
                 }
+
                 break;
             }
 
             default:
             {
-                #pragma omp parallel for 
+                #pragma omp parallel for
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1083,6 +1105,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 {
                     out[i] = in1[i] + in2[i];
                 }
+
                 break;
             }
 
@@ -1094,6 +1117,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 {
                     out[i] = in1[i] - in2[i];
                 }
+
                 break;
             }
 
@@ -1105,6 +1129,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 {
                     out[i] = in1[i] * in2[i];
                 }
+
                 break;
             }
 
@@ -1116,6 +1141,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 {
                     out[i] = in1[i] / in2[i];
                 }
+
                 break;
             }
 
@@ -1127,6 +1153,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 {
                     out[i] = common::Math::pow( in1[i], in2[i] );
                 }
+
                 break;
             }
 
@@ -1138,15 +1165,16 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
                 {
                     out[i] = common::Math::copysign( in1[i], in2[i] );
                 }
+
                 break;
             }
 
             case binary::MIN :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-    
+
                 for ( IndexType i = 0; i < n; i++ )
-                {   
+                {
                     out[i] = common::Math::min( in1[i], in2[i] );
                 }
 
@@ -1168,7 +1196,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
             case binary::ABS_MAX :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-    
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = common::Math::max( common::Math::abs( in1[i] ),
@@ -1194,11 +1222,11 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::binaryOpScalar1( 
-    ValueType out[], 
-    const ValueType value, 
-    const ValueType in[], 
-    const IndexType n, 
+void MICUtils::binaryOpScalar1(
+    ValueType out[],
+    const ValueType value,
+    const ValueType in[],
+    const IndexType n,
     const binary::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "binaryOpScalar1<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
@@ -1218,7 +1246,7 @@ void MICUtils::binaryOpScalar1(
     {
         ValueType* out = static_cast<ValueType*>( out_ptr );
         const ValueType* in = static_cast<const ValueType*>( in_ptr );
-        const ValueType& value = *vPtr; 
+        const ValueType& value = *vPtr;
 
         switch ( op )
         {
@@ -1237,12 +1265,12 @@ void MICUtils::binaryOpScalar1(
             case binary::SUB :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-    
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = value - in[i];
                 }
-    
+
                 break;
             }
 
@@ -1268,6 +1296,7 @@ void MICUtils::binaryOpScalar1(
                         out[i] = value * in[i];
                     }
                 }
+
                 break;
             }
 
@@ -1279,14 +1308,14 @@ void MICUtils::binaryOpScalar1(
                 {
                     out[i] = common::Math::min( value, in[i] );
                 }
-    
+
                 break;
             }
 
             case binary::MAX :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-    
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = common::Math::max( value, in[i] );
@@ -1311,11 +1340,11 @@ void MICUtils::binaryOpScalar1(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICUtils::binaryOpScalar2( 
-    ValueType out[], 
-    const ValueType in[], 
-    const ValueType value, 
-    const IndexType n, 
+void MICUtils::binaryOpScalar2(
+    ValueType out[],
+    const ValueType in[],
+    const ValueType value,
+    const IndexType n,
     const binary::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "binaryOpScalar2<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
@@ -1335,7 +1364,7 @@ void MICUtils::binaryOpScalar2(
     {
         ValueType*       out   = static_cast<ValueType*>( out_ptr );
         const ValueType* in    = static_cast<const ValueType*>( in_ptr );
-        const ValueType& value = *vPtr; 
+        const ValueType& value = *vPtr;
 
         switch ( op )
         {
@@ -1359,7 +1388,7 @@ void MICUtils::binaryOpScalar2(
                 {
                     out[i] = in[i] - value;
                 }
-    
+
                 break;
             }
 
@@ -1371,6 +1400,7 @@ void MICUtils::binaryOpScalar2(
                 {
                     out[i] = in[i] * value;
                 }
+
                 break;
             }
 
@@ -1379,7 +1409,7 @@ void MICUtils::binaryOpScalar2(
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
                 for ( IndexType i = 0; i < n; i++ )
-                {   
+                {
                     out[i] = in[i] / value;
                 }
 
@@ -1389,6 +1419,7 @@ void MICUtils::binaryOpScalar2(
             case binary::POW :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = common::Math::pow( in[i], value );
@@ -1400,7 +1431,7 @@ void MICUtils::binaryOpScalar2(
             case binary::MIN :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-    
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = common::Math::min( in[i], value );
@@ -1412,7 +1443,7 @@ void MICUtils::binaryOpScalar2(
             case binary::MAX :
             {
                 #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
-    
+
                 for ( IndexType i = 0; i < n; i++ )
                 {
                     out[i] = common::Math::max( in[i], value );
@@ -1454,7 +1485,7 @@ void MICUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-                            << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
@@ -1472,7 +1503,7 @@ void MICUtils::RegNumericKernels<ValueType>::registerKernels( kregistry::KernelR
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-                            << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar1<ValueType> >( binaryOpScalar1, ctx, flag );
@@ -1485,7 +1516,7 @@ void MICUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregis
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for MIC at kernel registry [" << flag
-                             << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );

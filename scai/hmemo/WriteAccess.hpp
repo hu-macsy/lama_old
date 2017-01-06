@@ -167,7 +167,7 @@ public:
     const Memory& getMemory() const;
 
     /**
-     * @brief This method writes just one value at a certain position 
+     * @brief This method writes just one value at a certain position
      *
      * @param[in] val is the value to write
      * @param[in] pos is the position where to write 0 <= pos < capacity()

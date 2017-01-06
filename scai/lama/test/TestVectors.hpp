@@ -47,10 +47,10 @@ namespace lama
 
 /** Class for a list of vectors, one for each supported
  *  vector storage format and each supported arithmetic type.
- *  
- *  Note: Currently only DENSE vectors are supported, but SPARSE might be 
+ *
+ *  Note: Currently only DENSE vectors are supported, but SPARSE might be
  *        supported in future releases.
- *  
+ *
  */
 
 class TestVectors : public std::vector<scai::lama::VectorPtr>

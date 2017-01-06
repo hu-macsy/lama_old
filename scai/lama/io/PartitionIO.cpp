@@ -111,7 +111,7 @@ void PartitionIO::getPartitionFileName( string& fileName, bool& isPartitioned, c
 bool PartitionIO::isPartitionFileName( const string& fileName )
 {
     size_t pos = fileName.find( "%r" );
-    
+
     if ( pos == string::npos )
     {
         return false;
@@ -210,12 +210,13 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
     utilskernel::LArray<IndexType> owners;
     utilskernel::LArray<IndexType> localSizes( 1, 0 );  // at least one entry
 
-    typedef enum {
-       FAIL,    //!< read was not successul, all processes will throw an exception
-       BLOCKED, //!< owners are ascending, a general block distribution is constructed
-       GENERAL  //!< owners are arbitrary, a general distribution is construcuted
+    typedef enum
+    {
+        FAIL,    //!< read was not successul, all processes will throw an exception
+        BLOCKED, //!< owners are ascending, a general block distribution is constructed
+        GENERAL  //!< owners are arbitrary, a general distribution is construcuted
     } Status;
-       
+
     Status status = FAIL;
 
     if ( comm->getRank() == MASTER )
@@ -226,20 +227,20 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
 
             // Bucketsort of owners gives info about illegal values
 
-            utilskernel::HArrayUtils::bucketCount( localSizes, owners, comm->getSize() ); 
+            utilskernel::HArrayUtils::bucketCount( localSizes, owners, comm->getSize() );
 
             IndexType nLegalValues = localSizes.sum();
 
             SCAI_LOG_INFO( logger, *comm << ": read owners = " << owners << ", #legal values = " << nLegalValues )
 
-            SCAI_ASSERT_EQ_ERROR( nLegalValues, owners.size(), 
+            SCAI_ASSERT_EQ_ERROR( nLegalValues, owners.size(),
                                   *comm << ": mapping file " << inFileName << " contains illegal owners" )
         }
         catch ( common::Exception& e )
         {
             SCAI_LOG_ERROR( logger, "Reading distribution from file " << inFileName << " failed: " << e.what() )
         }
- 
+
         bool isAscending = utilskernel::HArrayUtils::isSorted( owners, true );
 
         if ( isAscending )
@@ -252,7 +253,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
         }
     }
 
-    // now broadcast status 
+    // now broadcast status
 
     comm->bcast( reinterpret_cast<int*>( &status ), 1, MASTER );
 
@@ -298,7 +299,7 @@ DistributionPtr PartitionIO::readPDistribution( const string& inFileName, Commun
 
     bool errorFlag = false;
 
-    try 
+    try
     {
         FileIO::read( myIndexes, inFileName );
     }
@@ -330,13 +331,13 @@ DistributionPtr PartitionIO::readDistribution( const string& inFileName, Communi
     string mapFileName = inFileName;
 
     getPartitionFileName( mapFileName, isPartitioned, *comm );
- 
+
     if ( isPartitioned )
-    {   
+    {
         return readPDistribution( mapFileName, comm );
     }
     else
-    {   
+    {
         return readSDistribution( mapFileName, comm );
     }
 }
@@ -370,7 +371,7 @@ void PartitionIO::writeSDistribution( const Distribution& distribution, const st
     using namespace hmemo;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
- 
+
     PartitionId rank = comm->getRank();
 
     SCAI_LOG_INFO( logger, "write distribution to single file " << fileName )
@@ -436,7 +437,7 @@ void PartitionIO::writePDistribution( const Distribution& distribution, const st
 
     bool errorFlag = false;
 
-    try 
+    try
     {
         FileIO::write( myGlobalIndexes, fileName );
     }
@@ -445,7 +446,7 @@ void PartitionIO::writePDistribution( const Distribution& distribution, const st
         errorFlag = true;
     }
 
-    // in case of error: all processors should throw an exception 
+    // in case of error: all processors should throw an exception
 
     const Communicator& comm = distribution.getCommunicator();
 

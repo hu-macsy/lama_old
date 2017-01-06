@@ -95,7 +95,7 @@ public:
     /** Constructor creates vector of all available solvers. */
 
     IterativeSolvers()
-    {   
+    {
         std::vector<std::string> values;
         Solver::getCreateValues( values );
 
@@ -104,7 +104,7 @@ public:
             SolverPtr solver( Solver::create( values[i], "" ) );
 
             IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver.get() );
-  
+
             if ( iterativeSolver == NULL )
             {
                 continue;
@@ -113,7 +113,7 @@ public:
             push_back( solver );
         }
     }
-    
+
     // Destructor will free all matrix storages due to use of shared pointers
 
     IterativeSolver& get( const size_t i )

@@ -170,7 +170,7 @@ void GPICommunicator::getProcessorName( char* name ) const
 
     memset( name, 0, len * sizeof( char ) );
 
-    gethostname( name,len );
+    gethostname( name, len );
 }
 
 /* --------------------------------------------------------------- */
@@ -221,14 +221,18 @@ gaspi_datatype_t GPICommunicator::getGPIType( common::scalar::ScalarType stype )
 {
     switch ( stype )
     {
-        case common::scalar::INT                 : return GASPI_TYPE_INT;
-        case common::scalar::FLOAT               : return GASPI_TYPE_FLOAT;
-        case common::scalar::DOUBLE              : return GASPI_TYPE_DOUBLE;
-        case common::scalar::UNSIGNED_LONG       : return GASPI_TYPE_ULONG;
+        case common::scalar::INT                 :
+            return GASPI_TYPE_INT;
+        case common::scalar::FLOAT               :
+            return GASPI_TYPE_FLOAT;
+        case common::scalar::DOUBLE              :
+            return GASPI_TYPE_DOUBLE;
+        case common::scalar::UNSIGNED_LONG       :
+            return GASPI_TYPE_ULONG;
 
         default:
-             COMMON_THROWEXCEPTION( "No GPI Type specified for " << stype )
-             return GASPI_TYPE_DOUBLE;
+            COMMON_THROWEXCEPTION( "No GPI Type specified for " << stype )
+            return GASPI_TYPE_DOUBLE;
     }
 }
 
@@ -270,6 +274,7 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
         }
 
         const IndexType recvOffset = fromP + recvSegment.getOffset();
+
         notify( recvSegment.getID(), fromP, getRank(), recvOffset );
     }
 
@@ -310,6 +315,7 @@ void GPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
         }
 
         const IndexType quantity = notifyWait( recvSegment.getID(), fromP + getSize() );
+
         // notifiaction value is written size that we match against what is expected
         SCAI_ASSERT_EQ_ERROR( 1, quantity, "serious mismatch" );
     }
@@ -545,8 +551,8 @@ IndexType GPICommunicator::shiftImpl(
     SCAI_ASSERT_ERROR( sendSize <= recvSize, "too large send" )
 
     SCAI_LOG_INFO( logger,
-                   *this << ": shift<" << stype << ">" << 
-                   ", recv from " << source << " max " << recvSize << " values " << 
+                   *this << ": shift<" << stype << ">" <<
+                   ", recv from " << source << " max " << recvSize << " values " <<
                    ", send to " << dest << " " << sendSize << " values." )
 
     SegmentData srcDataSegment( stype, this, recvSize, const_cast<void*>( sendVals ) );
@@ -635,11 +641,11 @@ tasking::SyncToken* GPICommunicator::shiftAsyncImpl(
 
 /** Common method for a call of gaspi_allreduce_user */
 
-void GPICommunicator::reduce( 
-    void* outValues, 
-    const void* inValues, 
-    const IndexType n, 
-    gaspi_reduce_operation_t op, 
+void GPICommunicator::reduce(
+    void* outValues,
+    const void* inValues,
+    const IndexType n,
+    gaspi_reduce_operation_t op,
     gaspi_size_t elem_size ) const
 {
     gaspi_state_t state = NULL;
@@ -648,7 +654,7 @@ void GPICommunicator::reduce(
 
     if ( inValues == outValues )
     {
-        // unclear whether IN_PLACE is supported, for safety we allocate a copy of inValues 
+        // unclear whether IN_PLACE is supported, for safety we allocate a copy of inValues
 
         size_t tmpSize = n * elem_size;
 
@@ -673,25 +679,25 @@ void GPICommunicator::reduce(
 template<typename ValueType>
 static gaspi_return_t
 reduce_sum( gaspi_pointer_t op1,
-           gaspi_pointer_t op2,
-           gaspi_pointer_t result,
-           gaspi_state_t,
-           const gaspi_number_t numValues,
-           const gaspi_size_t elemSize,
-           gaspi_timeout_t )
+            gaspi_pointer_t op2,
+            gaspi_pointer_t result,
+            gaspi_state_t,
+            const gaspi_number_t numValues,
+            const gaspi_size_t elemSize,
+            gaspi_timeout_t )
 {
-   SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
+    SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
 
-   ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
-   ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
-   ValueType* t_res = reinterpret_cast<ValueType*>( result );
+    ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
+    ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
+    ValueType* t_res = reinterpret_cast<ValueType*>( result );
 
-   for ( gaspi_number_t i = 0; i< numValues; ++i )
-   {
-       t_res[i] = t_op1[i] + t_op2[i];
-   }
+    for ( gaspi_number_t i = 0; i < numValues; ++i )
+    {
+        t_res[i] = t_op1[i] + t_op2[i];
+    }
 
-   return GASPI_SUCCESS;
+    return GASPI_SUCCESS;
 }
 
 void GPICommunicator::sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
@@ -704,22 +710,42 @@ void GPICommunicator::sumImpl( void* outValues, const void* inValues, const Inde
 
     gaspi_reduce_operation_t op;
 
-    switch( stype )
+    switch ( stype )
     {
-        case common::scalar::INT           : op = reduce_sum<int>; break;
-        case common::scalar::UNSIGNED_INT  : op = reduce_sum<unsigned int>; break;
-        case common::scalar::LONG          : op = reduce_sum<long>; break;
-        case common::scalar::UNSIGNED_LONG : op = reduce_sum<unsigned long>; break;
-        case common::scalar::FLOAT         : op = reduce_sum<float>; break;
-        case common::scalar::DOUBLE        : op = reduce_sum<double>; break;
-        case common::scalar::LONG_DOUBLE   : op = reduce_sum<long double>; break;
+        case common::scalar::INT           :
+            op = reduce_sum<int>;
+            break;
+        case common::scalar::UNSIGNED_INT  :
+            op = reduce_sum<unsigned int>;
+            break;
+        case common::scalar::LONG          :
+            op = reduce_sum<long>;
+            break;
+        case common::scalar::UNSIGNED_LONG :
+            op = reduce_sum<unsigned long>;
+            break;
+        case common::scalar::FLOAT         :
+            op = reduce_sum<float>;
+            break;
+        case common::scalar::DOUBLE        :
+            op = reduce_sum<double>;
+            break;
+        case common::scalar::LONG_DOUBLE   :
+            op = reduce_sum<long double>;
+            break;
 #ifdef SCAI_COMPLEX_SUPPORTED
-        case common::scalar::COMPLEX             : op = reduce_sum<ComplexFloat>; break;
-        case common::scalar::DOUBLE_COMPLEX      : op = reduce_sum<ComplexDouble>; break;
-        case common::scalar::LONG_DOUBLE_COMPLEX : op = reduce_sum<ComplexLongDouble>; break;
+        case common::scalar::COMPLEX             :
+            op = reduce_sum<ComplexFloat>;
+            break;
+        case common::scalar::DOUBLE_COMPLEX      :
+            op = reduce_sum<ComplexDouble>;
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            op = reduce_sum<ComplexLongDouble>;
+            break;
 #endif
         default:
-           COMMON_THROWEXCEPTION( "Unsupported reduction type for sum: " << stype );
+            COMMON_THROWEXCEPTION( "Unsupported reduction type for sum: " << stype );
     }
 
     reduce( outValues, inValues, n, op, elem_size );
@@ -739,18 +765,18 @@ reduce_min( gaspi_pointer_t op1,
             const gaspi_size_t elemSize,
             gaspi_timeout_t )
 {
-   SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
+    SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
 
-   ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
-   ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
-   ValueType* t_res = reinterpret_cast<ValueType*>( result );
+    ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
+    ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
+    ValueType* t_res = reinterpret_cast<ValueType*>( result );
 
-   for ( gaspi_number_t i = 0; i< numValues; ++i )
-   {
-       t_res[i] = t_op2[i] < t_op1[i] ? t_op2[i] : t_op1[i];
-   }
+    for ( gaspi_number_t i = 0; i < numValues; ++i )
+    {
+        t_res[i] = t_op2[i] < t_op1[i] ? t_op2[i] : t_op1[i];
+    }
 
-   return GASPI_SUCCESS;
+    return GASPI_SUCCESS;
 }
 
 void GPICommunicator::minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
@@ -763,22 +789,42 @@ void GPICommunicator::minImpl( void* outValues, const void* inValues, const Inde
 
     gaspi_reduce_operation_t op;
 
-    switch( stype )
+    switch ( stype )
     {
-        case common::scalar::INT           : op = reduce_min<int>; break;
-        case common::scalar::UNSIGNED_INT  : op = reduce_min<unsigned int>; break;
-        case common::scalar::LONG          : op = reduce_min<long>; break;
-        case common::scalar::UNSIGNED_LONG : op = reduce_min<unsigned long>; break;
-        case common::scalar::FLOAT         : op = reduce_min<float>; break;
-        case common::scalar::DOUBLE        : op = reduce_min<double>; break;
-        case common::scalar::LONG_DOUBLE   : op = reduce_min<long double>; break;
+        case common::scalar::INT           :
+            op = reduce_min<int>;
+            break;
+        case common::scalar::UNSIGNED_INT  :
+            op = reduce_min<unsigned int>;
+            break;
+        case common::scalar::LONG          :
+            op = reduce_min<long>;
+            break;
+        case common::scalar::UNSIGNED_LONG :
+            op = reduce_min<unsigned long>;
+            break;
+        case common::scalar::FLOAT         :
+            op = reduce_min<float>;
+            break;
+        case common::scalar::DOUBLE        :
+            op = reduce_min<double>;
+            break;
+        case common::scalar::LONG_DOUBLE   :
+            op = reduce_min<long double>;
+            break;
 #ifdef SCAI_COMPLEX_SUPPORTED
-        case common::scalar::COMPLEX             : op = reduce_min<ComplexFloat>; break;
-        case common::scalar::DOUBLE_COMPLEX      : op = reduce_min<ComplexDouble>; break;
-        case common::scalar::LONG_DOUBLE_COMPLEX : op = reduce_min<ComplexLongDouble>; break;
+        case common::scalar::COMPLEX             :
+            op = reduce_min<ComplexFloat>;
+            break;
+        case common::scalar::DOUBLE_COMPLEX      :
+            op = reduce_min<ComplexDouble>;
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            op = reduce_min<ComplexLongDouble>;
+            break;
 #endif
         default:
-           COMMON_THROWEXCEPTION( "Unsupported reduction type for min: " << stype );
+            COMMON_THROWEXCEPTION( "Unsupported reduction type for min: " << stype );
     }
 
     reduce( outValues, inValues, n, op, elem_size );
@@ -798,18 +844,18 @@ reduce_max( gaspi_pointer_t op1,
             const gaspi_size_t elemSize,
             gaspi_timeout_t )
 {
-   SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
+    SCAI_ASSERT_EQ_ERROR( elemSize, sizeof( ValueType ), "serious type mismatch" )
 
-   ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
-   ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
-   ValueType* t_res = reinterpret_cast<ValueType*>( result );
+    ValueType* t_op1 = reinterpret_cast<ValueType*>( op1 );
+    ValueType* t_op2 = reinterpret_cast<ValueType*>( op2 );
+    ValueType* t_res = reinterpret_cast<ValueType*>( result );
 
-   for ( gaspi_number_t i = 0; i< numValues; ++i )
-   {
-       t_res[i] = t_op2[i] > t_op1[i] ? t_op2[i] : t_op1[i];
-   }
+    for ( gaspi_number_t i = 0; i < numValues; ++i )
+    {
+        t_res[i] = t_op2[i] > t_op1[i] ? t_op2[i] : t_op1[i];
+    }
 
-   return GASPI_SUCCESS;
+    return GASPI_SUCCESS;
 }
 
 void GPICommunicator::maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
@@ -822,22 +868,42 @@ void GPICommunicator::maxImpl( void* outValues, const void* inValues, const Inde
 
     gaspi_reduce_operation_t op;
 
-    switch( stype )
+    switch ( stype )
     {
-        case common::scalar::INT           : op = reduce_max<int>; break;
-        case common::scalar::UNSIGNED_INT  : op = reduce_max<unsigned int>; break;
-        case common::scalar::LONG          : op = reduce_max<long>; break;
-        case common::scalar::UNSIGNED_LONG : op = reduce_max<unsigned long>; break;
-        case common::scalar::FLOAT         : op = reduce_max<float>; break;
-        case common::scalar::DOUBLE        : op = reduce_max<double>; break;
-        case common::scalar::LONG_DOUBLE   : op = reduce_max<long double>; break;
+        case common::scalar::INT           :
+            op = reduce_max<int>;
+            break;
+        case common::scalar::UNSIGNED_INT  :
+            op = reduce_max<unsigned int>;
+            break;
+        case common::scalar::LONG          :
+            op = reduce_max<long>;
+            break;
+        case common::scalar::UNSIGNED_LONG :
+            op = reduce_max<unsigned long>;
+            break;
+        case common::scalar::FLOAT         :
+            op = reduce_max<float>;
+            break;
+        case common::scalar::DOUBLE        :
+            op = reduce_max<double>;
+            break;
+        case common::scalar::LONG_DOUBLE   :
+            op = reduce_max<long double>;
+            break;
 #ifdef SCAI_COMPLEX_SUPPORTED
-        case common::scalar::COMPLEX             : op = reduce_max<ComplexFloat>; break;
-        case common::scalar::DOUBLE_COMPLEX      : op = reduce_max<ComplexDouble>; break;
-        case common::scalar::LONG_DOUBLE_COMPLEX : op = reduce_max<ComplexLongDouble>; break;
+        case common::scalar::COMPLEX             :
+            op = reduce_max<ComplexFloat>;
+            break;
+        case common::scalar::DOUBLE_COMPLEX      :
+            op = reduce_max<ComplexDouble>;
+            break;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            op = reduce_max<ComplexLongDouble>;
+            break;
 #endif
         default:
-           COMMON_THROWEXCEPTION( "Unsupported reduction type for max: " << stype );
+            COMMON_THROWEXCEPTION( "Unsupported reduction type for max: " << stype );
     }
 
     reduce( outValues, inValues, n, op, elem_size );
@@ -1180,7 +1246,7 @@ void GPICommunicator::localWrite( const SegmentData& srcSegment, const IndexType
 void GPICommunicator::remoteRead( SegmentData& localSegment, const IndexType localOffset, const PartitionId remP,
                                   const SegmentData& remSegment, const IndexType remoteOffset, const IndexType size ) const
 {
-    SCAI_LOG_DEBUG( logger, *this << ": remoteRead<" << remSegment.scalarType() 
+    SCAI_LOG_DEBUG( logger, *this << ": remoteRead<" << remSegment.scalarType()
                     << ">, local " << localSegment << ":" << localOffset
                     << " = remote " << remSegment  << ":" << remoteOffset
                     << " @ p = " << remP << ", size = " << size )
@@ -1388,7 +1454,7 @@ void GPICommunicator::gatherVImpl(
 
 bool GPICommunicator::supportsLocReduction( common::scalar::ScalarType, common::scalar::ScalarType ) const
 {
-    // GPI does not support minloc/maxloc, so use default implementation via gather 
+    // GPI does not support minloc/maxloc, so use default implementation via gather
 
     return false;
 }

@@ -87,14 +87,14 @@ GeneralDistribution::GeneralDistribution(
         mGlobal2Local[ globalIndex ] = localIndex;
     }
 
-    // Note: the constructor is completely local, but make some consistency check now 
+    // Note: the constructor is completely local, but make some consistency check now
 
     SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
 
 GeneralDistribution::GeneralDistribution(
     const HArray<PartitionId>& owners,
-    const CommunicatorPtr communicator ) : 
+    const CommunicatorPtr communicator ) :
 
     Distribution( 0, communicator )
 
@@ -129,12 +129,12 @@ GeneralDistribution::GeneralDistribution(
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
     }
     else
-    { 
+    {
         // all other procs intialize localSizes with a dummy value to avoid read access of uninitialized array
         utilskernel::HArrayUtils::setOrder( localSizes, 1 );
     }
 
-    IndexType localSize;  
+    IndexType localSize;
 
     // scatter partition sizes
 
@@ -176,7 +176,7 @@ GeneralDistribution::GeneralDistribution(
         sortInBuckets[loc]( wIndexes, wOffsets, size, rOwners, mGlobalSize );
     }
     else
-    { 
+    {
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": initialize sortedIndexes " )
 
         // all other procs intialize sortedIndexes with a dummy value to avoid read access of uninitialized array
@@ -203,7 +203,7 @@ GeneralDistribution::GeneralDistribution(
 
 /* ---------------------------------------------------------------------- */
 
-GeneralDistribution::GeneralDistribution( const Distribution& other ) : 
+GeneralDistribution::GeneralDistribution( const Distribution& other ) :
 
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
 
@@ -234,7 +234,7 @@ GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
 
 /* ---------------------------------------------------------------------- */
 
-GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator ) : 
+GeneralDistribution::GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator ) :
 
     Distribution( globalSize, communicator )
 {
@@ -279,7 +279,7 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 IndexType GeneralDistribution::getBlockDistributionSize() const
 {
     // Note: we assume that the local indexes are descending and do not contain doubles
- 
+
     IndexType localSize = mLocal2Global.size();
 
     bool isBlocked = true;
@@ -350,11 +350,12 @@ bool GeneralDistribution::isEqual( const Distribution& other ) const
     const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
 
     bool localSameSize = otherGen.getLocalSize() == getLocalSize();
+
     bool allSameSize = mCommunicator->all( localSameSize );
 
     SCAI_LOG_DEBUG( logger, *this << ": localSameSize = " << localSameSize << ", allSameSize = " << allSameSize )
- 
-    if ( !allSameSize ) 
+
+    if ( !allSameSize )
     {
         return false;
     }
@@ -432,8 +433,8 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
     // gather global indices of local rows
 
     HArray<IndexType> allIndexes( rank == root ? mGlobalSize : 2 );
-   
-    {   
+
+    {
         WriteAccess<IndexType> wAllIndexes( allIndexes );
         ReadAccess<IndexType> rLocalSizes( localSizes );
         ReadAccess<IndexType> rIndexes( mLocal2Global );

@@ -1766,8 +1766,8 @@ void MICCSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kre
 
     const common::context::ContextType ctx = common::context::MIC;
 
-    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " << 
-                            common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
+                    common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }

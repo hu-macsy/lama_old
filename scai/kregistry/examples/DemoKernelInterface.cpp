@@ -167,8 +167,8 @@ static void example4()
     std::cout << std::endl;
     std::cout << "Example 4:" << std::endl;
     std::cout << "==========" << std::endl;
-    static KernelContextFunction< bool ( * ) ( const double*, int, bool ) > isSorted( "Utils.isSorted" );
-    static KernelContextFunction< void ( * ) ( double*, double, int ) > scale( "Utils.scale" );
+    static KernelContextFunction< bool (* ) ( const double*, int, bool ) > isSorted( "Utils.isSorted" );
+    static KernelContextFunction< void (* ) ( double*, double, int ) > scale( "Utils.scale" );
     std::cout << "isSorted: valid context = " << isSorted.validContext( context::CUDA ) << std::endl;
     std::cout << "scale: valid context = " << scale.validContext( context::CUDA ) << std::endl;
     std::cout << "scale, isSorted: valid context = " << scale.validContext( isSorted, context::CUDA ) << std::endl;

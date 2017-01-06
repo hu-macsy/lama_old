@@ -95,20 +95,20 @@ int main( int argc, const char* argv[] )
         -4.0, 2.0, 7.0,
         8.0, -5.0 };
 
-    // RHS and solution vectors. 
+    // RHS and solution vectors.
 
     double b[5], x[5];
 
     */
 
-    MKL_INT mtype = 11; // Real unsymmetric matrix 
+    MKL_INT mtype = 11; // Real unsymmetric matrix
     MKL_INT nrhs  = 1;  // Number of right hand sides
 
     /* Internal solver memory pointer pt, */
     /* 32-bit: int pt[64]; 64-bit: long int pt[64] */
     /* or void *pt[64] should be OK on both architectures */
 
-    void *pt[64];
+    void* pt[64];
 
     MKL_INT iparm[64];  // control parameters
 
@@ -117,12 +117,15 @@ int main( int argc, const char* argv[] )
     MKL_INT i;
     double ddum; /* Double dummy */
     MKL_INT idum; /* Integer dummy. */
-/* -------------------------------------------------------------------- */
-/* .. Setup Pardiso control parameters. */
-/* -------------------------------------------------------------------- */
-    for (i = 0; i < 64; i++) {
+
+    /* -------------------------------------------------------------------- */
+    /* .. Setup Pardiso control parameters. */
+    /* -------------------------------------------------------------------- */
+    for ( i = 0; i < 64; i++ )
+    {
         iparm[i] = 0;
     }
+
     iparm[0] = 1; /* No solver default */
     iparm[1] = 2; /* Fill-in reordering from METIS */
     /* Numbers of processors, value of OMP_NUM_THREADS */
@@ -149,71 +152,89 @@ int main( int argc, const char* argv[] )
     mnum = 1; /* Which factorization to use. */
     msglvl = 1; /* Print statistical information in file */
     error = 0; /* Initialize error flag */
-/* -------------------------------------------------------------------- */
-/* .. Initialize the internal solver memory pointer. This is only */
-/* necessary for the FIRST call of the PARDISO solver. */
-/* -------------------------------------------------------------------- */
-    for (i = 0; i < 64; i++) {
+
+    /* -------------------------------------------------------------------- */
+    /* .. Initialize the internal solver memory pointer. This is only */
+    /* necessary for the FIRST call of the PARDISO solver. */
+    /* -------------------------------------------------------------------- */
+    for ( i = 0; i < 64; i++ )
+    {
         pt[i] = 0;
     }
-/* -------------------------------------------------------------------- */
-/* .. Reordering and Symbolic Factorization. This step also allocates */
-/* all memory that is necessary for the factorization. */
-/* -------------------------------------------------------------------- */
+
+    /* -------------------------------------------------------------------- */
+    /* .. Reordering and Symbolic Factorization. This step also allocates */
+    /* all memory that is necessary for the factorization. */
+    /* -------------------------------------------------------------------- */
     phase = 11;
 
     printf( "call PARDISO phase11\n" );
 
-    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-        &n, a, ia, ja, &idum, &nrhs,
-        iparm, &msglvl, &ddum, &ddum, &error);
-    if (error != 0) {
-        printf("\nERROR during symbolic factorization: %d", error);
-        exit(1);
+    PARDISO ( pt, &maxfct, &mnum, &mtype, &phase,
+              &n, a, ia, ja, &idum, &nrhs,
+              iparm, &msglvl, &ddum, &ddum, &error );
+
+    if ( error != 0 )
+    {
+        printf( "\nERROR during symbolic factorization: %d", error );
+        exit( 1 );
     }
-    printf("\nReordering completed ... ");
-    printf("\nNumber of nonzeros in factors = %d", iparm[17]);
-/* -------------------------------------------------------------------- */
-/* .. Numerical factorization. */
-/* -------------------------------------------------------------------- */
+
+    printf( "\nReordering completed ... " );
+    printf( "\nNumber of nonzeros in factors = %d", iparm[17] );
+    /* -------------------------------------------------------------------- */
+    /* .. Numerical factorization. */
+    /* -------------------------------------------------------------------- */
     phase = 22;
-    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-        &n, a, ia, ja, &idum, &nrhs,
-        iparm, &msglvl, &ddum, &ddum, &error);
-    if (error != 0) {
-        printf("\nERROR during numerical factorization: %d", error);
-        exit(2);
+    PARDISO ( pt, &maxfct, &mnum, &mtype, &phase,
+              &n, a, ia, ja, &idum, &nrhs,
+              iparm, &msglvl, &ddum, &ddum, &error );
+
+    if ( error != 0 )
+    {
+        printf( "\nERROR during numerical factorization: %d", error );
+        exit( 2 );
     }
-    printf("\nFactorization completed ... ");
-/* -------------------------------------------------------------------- */
-/* .. Back substitution and iterative refinement. */
-/* -------------------------------------------------------------------- */
+
+    printf( "\nFactorization completed ... " );
+    /* -------------------------------------------------------------------- */
+    /* .. Back substitution and iterative refinement. */
+    /* -------------------------------------------------------------------- */
     phase = 33;
     iparm[7] = 2; /* Max numbers of iterative refinement steps. */
+
     /* Set right hand side to one. */
-    for (i = 0; i < n; i++) {
+    for ( i = 0; i < n; i++ )
+    {
         b[i] = 1;
     }
-    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-        &n, a, ia, ja, &idum, &nrhs,
-        iparm, &msglvl, b, x, &error);
-    if (error != 0) {
-        printf("\nERROR during solution: %d", error);
-        exit(3);
+
+    PARDISO ( pt, &maxfct, &mnum, &mtype, &phase,
+              &n, a, ia, ja, &idum, &nrhs,
+              iparm, &msglvl, b, x, &error );
+
+    if ( error != 0 )
+    {
+        printf( "\nERROR during solution: %d", error );
+        exit( 3 );
     }
-    printf("\nSolve completed ... ");
-    printf("\nThe solution of the system is: ");
-    for (i = 0; i < n; i++) {
-        printf("\n x [%d] = % f", i, x[i] );
+
+    printf( "\nSolve completed ... " );
+    printf( "\nThe solution of the system is: " );
+
+    for ( i = 0; i < n; i++ )
+    {
+        printf( "\n x [%d] = % f", i, x[i] );
     }
-    printf ("\n");
-/* -------------------------------------------------------------------- */
-/* .. Termination and release of memory. */
-/* -------------------------------------------------------------------- */
+
+    printf ( "\n" );
+    /* -------------------------------------------------------------------- */
+    /* .. Termination and release of memory. */
+    /* -------------------------------------------------------------------- */
     phase = -1; /* Release internal memory. */
-    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
-        &n, &ddum, ia, ja, &idum, &nrhs,
-        iparm, &msglvl, &ddum, &ddum, &error);
+    PARDISO ( pt, &maxfct, &mnum, &mtype, &phase,
+              &n, &ddum, ia, ja, &idum, &nrhs,
+              iparm, &msglvl, &ddum, &ddum, &error );
     return 0;
 
 }

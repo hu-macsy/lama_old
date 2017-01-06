@@ -380,7 +380,7 @@ void MICCOOUtils::jacobi(
     const void* rhsPtr = rhs;
     int device = MICContext::getCurrentDevice();
 
-    #pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
+#pragma offload target( mic ), in( numRows, cooNumValues, solutionPtr, cooIAPtr, cooJAPtr, cooValuesPtr, \
                                        rhsPtr, oldSolutionPtr, omega )
     {
         ValueType* solution = static_cast<ValueType*>( solutionPtr );
@@ -391,12 +391,14 @@ void MICCOOUtils::jacobi(
         const ValueType* cooValues = static_cast<const ValueType*>( cooValuesPtr );
 
         #pragma omp parallel for
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             solution[i] = omega * rhs[i] / cooValues[i] + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
         }
 
         #pragma omp parallel for
+
         for ( IndexType k = numRows; k < cooNumValues; ++k )
         {
             IndexType i = cooIA[k];
@@ -442,7 +444,7 @@ void MICCOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kre
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
-                            common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+                    common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( setCSRData, ctx, flag );
 

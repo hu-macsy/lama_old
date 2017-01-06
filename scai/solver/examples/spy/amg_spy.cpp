@@ -89,7 +89,7 @@ int main( int argc, char** argv )
     }
 
     matrix.readFromFile( filename.c_str() );
- 
+
     // amg solver uses Jacobi solver so we force diagonal property
 
     matrix.setDiagonalProperty();

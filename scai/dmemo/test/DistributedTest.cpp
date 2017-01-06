@@ -58,7 +58,7 @@ class MockDistributed : public Distributed
 public:
 
     MockDistributed( DistributionPtr dist ) : Distributed( dist )
-    { 
+    {
     }
 
     void redistribute( DistributionPtr newDist )
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     // default copy constructor of MockDistributedcalls copy constructor of Distributed
 
-    MockDistributed mock2( mock1 ); 
+    MockDistributed mock2( mock1 );
 
     BOOST_CHECK_EQUAL( mock1.getDistribution(), mock2.getDistribution() );
 }

@@ -100,7 +100,7 @@ public:
 
 private:
 
-    MPICommunicator( int& argc, char**& argv );
+    MPICommunicator( int& argc, char** & argv );
 
     /** Implementation of Communicator::sumImpl */
 
@@ -134,7 +134,7 @@ private:
 
     /** MPI Implementation for pure method Communciator::all2allvImpl */
 
-    void all2allvImpl( void* recvBuffer[], IndexType recvCount[], 
+    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
                        void* sendBuffer[], IndexType sendCount[],
                        common::scalar::ScalarType stype ) const;
 
@@ -148,7 +148,7 @@ private:
 
     /** Implementation of pure method Communicator::scatterVImpl */
 
-    void scatterVImpl( void* myVals, const IndexType n, const PartitionId root, 
+    void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
                        const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const;
 
     /** Implementation of pure method Communicator::gatherImpl */
@@ -224,7 +224,7 @@ private:
 
     virtual size_t maxProcessorName() const;
 
-    void initialize( int& argc, char**& argv );
+    void initialize( int& argc, char** & argv );
 
     const common::Thread::Id mMainThread;  // id of thread that calls constructor
 
@@ -236,7 +236,7 @@ private:
 
 protected:
 
-    MPICommunicator( int& argc, char**& argv, const CommunicatorKind& type );
+    MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
 
     MPICommunicator();
 
@@ -309,21 +309,32 @@ inline MPI_Datatype MPICommunicator::getMPIType( common::scalar::ScalarType styp
 {
     switch ( stype )
     {
-        case common::scalar::INT                 : return MPI_INT;
-        case common::scalar::LONG                : return MPI_LONG;
-        case common::scalar::FLOAT               : return MPI_FLOAT;
-        case common::scalar::DOUBLE              : return MPI_DOUBLE;
-        case common::scalar::LONG_DOUBLE         : return MPI_LONG_DOUBLE;
-        case common::scalar::COMPLEX             : return MPI_COMPLEX;
-        case common::scalar::DOUBLE_COMPLEX      : return MPI_DOUBLE_COMPLEX;
-        case common::scalar::LONG_DOUBLE_COMPLEX : return mComplexLongDoubleType;
-        case common::scalar::CHAR                : return MPI_CHAR;
-        case common::scalar::UNSIGNED_INT        : return MPI_UNSIGNED;
-        case common::scalar::UNSIGNED_LONG       : return MPI_UNSIGNED_LONG;
+        case common::scalar::INT                 :
+            return MPI_INT;
+        case common::scalar::LONG                :
+            return MPI_LONG;
+        case common::scalar::FLOAT               :
+            return MPI_FLOAT;
+        case common::scalar::DOUBLE              :
+            return MPI_DOUBLE;
+        case common::scalar::LONG_DOUBLE         :
+            return MPI_LONG_DOUBLE;
+        case common::scalar::COMPLEX             :
+            return MPI_COMPLEX;
+        case common::scalar::DOUBLE_COMPLEX      :
+            return MPI_DOUBLE_COMPLEX;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            return mComplexLongDoubleType;
+        case common::scalar::CHAR                :
+            return MPI_CHAR;
+        case common::scalar::UNSIGNED_INT        :
+            return MPI_UNSIGNED;
+        case common::scalar::UNSIGNED_LONG       :
+            return MPI_UNSIGNED_LONG;
 
-        default: 
-             COMMON_THROWEXCEPTION( "No MPI Type specified for " << stype )
-             return MPI_INT;
+        default:
+            COMMON_THROWEXCEPTION( "No MPI Type specified for " << stype )
+            return MPI_INT;
     }
 }
 
@@ -332,7 +343,7 @@ inline MPI_Datatype MPICommunicator::getMPIType( common::scalar::ScalarType styp
 /* ---------------------------------------------------------------------------------- */
 
 inline MPI_Datatype MPICommunicator::getMPI2Type( common::scalar::ScalarType stype1,
-                                                  common::scalar::ScalarType stype2 )
+        common::scalar::ScalarType stype2 )
 {
     if ( stype2 != common::scalar::INT )
     {
@@ -341,13 +352,16 @@ inline MPI_Datatype MPICommunicator::getMPI2Type( common::scalar::ScalarType sty
 
     switch ( stype1 )
     {
-        case common::scalar::INT                 : return MPI_2INT;
-        case common::scalar::FLOAT               : return MPI_FLOAT_INT;
-        case common::scalar::DOUBLE              : return MPI_DOUBLE_INT;
+        case common::scalar::INT                 :
+            return MPI_2INT;
+        case common::scalar::FLOAT               :
+            return MPI_FLOAT_INT;
+        case common::scalar::DOUBLE              :
+            return MPI_DOUBLE_INT;
 
-        default: 
-             COMMON_THROWEXCEPTION( "No MPI2 Type for " << stype1 )
-             return MPI_2INT;
+        default:
+            COMMON_THROWEXCEPTION( "No MPI2 Type for " << stype1 )
+            return MPI_2INT;
     }
 }
 
@@ -359,10 +373,12 @@ inline MPI_Op MPICommunicator::getMPISum( common::scalar::ScalarType stype )
 {
 
 #ifdef SCAI_COMPLEX_SUPPORTED
+
     if ( stype == common::scalar::LONG_DOUBLE_COMPLEX )
     {
         return mSumComplexLongDouble;
     }
+
 #endif
 
     return MPI_SUM;
@@ -377,11 +393,15 @@ inline MPI_Op MPICommunicator::getMPIMax( common::scalar::ScalarType stype )
     switch ( stype )
     {
 #ifdef SCAI_COMPLEX_SUPPORTED
-        case common::scalar::COMPLEX             : return mMaxComplexFloat;
-        case common::scalar::DOUBLE_COMPLEX      : return mMaxComplexDouble;
-        case common::scalar::LONG_DOUBLE_COMPLEX : return mMaxComplexLongDouble;
+        case common::scalar::COMPLEX             :
+            return mMaxComplexFloat;
+        case common::scalar::DOUBLE_COMPLEX      :
+            return mMaxComplexDouble;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            return mMaxComplexLongDouble;
 #endif
-        default: return MPI_MAX;
+        default:
+            return MPI_MAX;
     }
 }
 
@@ -394,11 +414,15 @@ inline MPI_Op MPICommunicator::getMPIMin( common::scalar::ScalarType stype )
     switch ( stype )
     {
 #ifdef SCAI_COMPLEX_SUPPORTED
-        case common::scalar::COMPLEX             : return mMinComplexFloat;
-        case common::scalar::DOUBLE_COMPLEX      : return mMinComplexDouble;
-        case common::scalar::LONG_DOUBLE_COMPLEX : return mMinComplexLongDouble;
+        case common::scalar::COMPLEX             :
+            return mMinComplexFloat;
+        case common::scalar::DOUBLE_COMPLEX      :
+            return mMinComplexDouble;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            return mMinComplexLongDouble;
 #endif
-        default: return MPI_MIN;
+        default:
+            return MPI_MIN;
     }
 }
 

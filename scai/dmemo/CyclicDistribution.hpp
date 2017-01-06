@@ -135,7 +135,7 @@ public:
 
     /** Implementation of pure function Distribution::getBlockDistributionSize.
      *
-     *  A cyclic distribution Cyclic( globalSize, chunkSize ) is a block distribution 
+     *  A cyclic distribution Cyclic( globalSize, chunkSize ) is a block distribution
      *  iff chunkSize * nPartitions <= globalSize, i.e. each processor has maximal one chunk
      */
     virtual IndexType getBlockDistributionSize() const;
@@ -163,7 +163,7 @@ public:
         return getId();
     }
 
-    static const char* getId() 
+    static const char* getId()
     {
         return "CYCLIC";
     }

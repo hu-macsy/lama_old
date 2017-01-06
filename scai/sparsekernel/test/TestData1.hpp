@@ -49,22 +49,23 @@ static void getDenseTestData(
     IndexType& numColumns,
     HArray<ValueType>& denseValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
-    */
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
 
-    const ValueType values[]  = { 6, 0, 0, 4, 
-                                  7, 0, 0, 0, 
-                                  0, 0, 9, 4, 
-                                  2, 5, 0, 3, 
-                                  2, 0, 0, 1, 
-                                  0, 0, 0, 0, 
-                                  0, 1, 0, 2 };
+    const ValueType values[]  = { 6, 0, 0, 4,
+                                  7, 0, 0, 0,
+                                  0, 0, 9, 4,
+                                  2, 5, 0, 3,
+                                  2, 0, 0, 1,
+                                  0, 0, 0, 0,
+                                  0, 1, 0, 2
+                                };
 
     numRows    = 7;
     numColumns = 4;
@@ -100,20 +101,20 @@ static void getCSRTestData(
     HArray<IndexType>& csrJA,
     HArray<ValueType>& csrValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
-    */
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
 
     const IndexType ia_values[]  = { 0,    2, 3,    5,       8,    10, 10,   12 };
     const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3,     1, 3 };
     const ValueType nz_values[]  = { 6, 4, 7, 9, 4, 2, 5, 3, 2, 1,     1, 2 };
 
-    numRows    = sizeof( ia_values) / sizeof( IndexType ) - 1;
+    numRows    = sizeof( ia_values ) / sizeof( IndexType ) - 1;
     numColumns = 4;
     numValues  = sizeof( ja_values ) / sizeof( IndexType );
 
@@ -135,21 +136,21 @@ static void getCSCTestData(
     HArray<IndexType>& cscJA,
     HArray<ValueType>& cscValues )
 {
-   /*   Matrix:       6  0  0  4         0    3   2   0        6  5  9  4
-                      7  0  0  0         1    6       2        7  1     4
-                      0  0  9  4         3            3        2        3
-                      2  5  0  3         4            4        2        1
-                      2  0  0  1                      6                 2
-                      0  0  0  0                      
-                      0  1  0  2         
-    */
+    /*   Matrix:       6  0  0  4         0    3   2   0        6  5  9  4
+                       7  0  0  0         1    6       2        7  1     4
+                       0  0  9  4         3            3        2        3
+                       2  5  0  3         4            4        2        1
+                       2  0  0  1                      6                 2
+                       0  0  0  0
+                       0  1  0  2
+     */
 
     const IndexType ja_values[]  = { 0,          4,    6, 7,             12 };
     const IndexType ia_values[]  = { 0, 1, 3, 4, 3, 6, 2, 0, 2, 3, 4, 6 };
     const ValueType nz_values[]  = { 6, 7, 2, 2, 5, 1, 9, 4, 4, 3, 1, 2 };
 
     numRows    = 7;
-    numColumns = sizeof( ja_values) / sizeof( IndexType ) - 1;
+    numColumns = sizeof( ja_values ) / sizeof( IndexType ) - 1;
     numValues  = sizeof( ia_values ) / sizeof( IndexType );
 
     SCAI_ASSERT_EQ_ERROR( numValues, ja_values[numColumns], "size mismatch" )
@@ -170,14 +171,14 @@ static void getELLTestData(
     HArray<IndexType>& ellJA,
     HArray<ValueType>& ellValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
-    */
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
+     */
 
     const IndexType x = 0;
     const ValueType v = 0;
@@ -186,10 +187,10 @@ static void getELLTestData(
     const IndexType ja_values[]  = { 0, 0, 2, 0, 0, x, 1, 3, x, 3, 1, 3, x, 3, x, x, x, 3, x, x, x };
     const ValueType nz_values[]  = { 6, 7, 9, 2, 2, v, 1, 4, v, 4, 5, 1, v, 2, v, v, v, 3, v, v, v };
 
-    numRows         = sizeof( ia_sizes) / sizeof( IndexType );
+    numRows         = sizeof( ia_sizes ) / sizeof( IndexType );
     numColumns      = 4;
 
-    SCAI_ASSERT_EQ_ERROR( sizeof( ja_values ) / sizeof( IndexType ), 
+    SCAI_ASSERT_EQ_ERROR( sizeof( ja_values ) / sizeof( IndexType ),
                           sizeof( nz_values ) / sizeof( ValueType ),
                           "ja and values of ELL format must have same number of entries" )
 
@@ -217,22 +218,22 @@ static void getJDSTestData(
     HArray<IndexType>& jdsJA,
     HArray<ValueType>& jdsValues )
 {
-   /*   Matrix:       6  0  0  4         0  3  -    6  4  -
-                      7  0  0  0         0  -  -    7  -  -
-                      0  0  9  4         2  3  -    9  4  -
-                      2  5  0  3         0  1  3    2  5  3
-                      2  0  0  1         0  3  -    2  1  -
-                      0  0  0  0         -  -  -    -  -  -
-                      0  1  0  2         1  3  -    1  2  -
+    /*   Matrix:       6  0  0  4         0  3  -    6  4  -
+                       7  0  0  0         0  -  -    7  -  -
+                       0  0  9  4         2  3  -    9  4  -
+                       2  5  0  3         0  1  3    2  5  3
+                       2  0  0  1         0  3  -    2  1  -
+                       0  0  0  0         -  -  -    -  -  -
+                       0  1  0  2         1  3  -    1  2  -
 
-                                  3      0  1  3    2  5  3
-                                  0      0  3  -    6  4  -
-                                  2      2  3  -    9  4  -
-                                  4      0  3  -    2  1  -
-                                  6      1  3  -    1  2  -
-                                  1      0  -  -    7  -  -
-                                  5      -  -  -    -  -  -
-    */
+                                   3      0  1  3    2  5  3
+                                   0      0  3  -    6  4  -
+                                   2      2  3  -    9  4  -
+                                   4      0  3  -    2  1  -
+                                   6      1  3  -    1  2  -
+                                   1      0  -  -    7  -  -
+                                   5      -  -  -    -  -  -
+     */
 
     const IndexType perm_values[]  = { 3, 0, 2, 4, 6, 1, 5 };
     const IndexType ilg_values[]   = { 3, 2, 2, 2, 2, 1, 0 };
@@ -240,7 +241,7 @@ static void getJDSTestData(
     const IndexType ja_values[]    = { 0, 0, 2, 0, 1, 0, 1, 3, 3, 3, 3, 3 };
     const ValueType nz_values[]    = { 2, 6, 9, 2, 1, 7, 5, 4, 4, 1, 2, 3 };
 
-    numRows         = sizeof( perm_values) / sizeof( IndexType );
+    numRows         = sizeof( perm_values ) / sizeof( IndexType );
     numColumns      = 4;
     numDiagonals    = sizeof( dlg_values ) / sizeof( IndexType );
 
@@ -269,14 +270,14 @@ static void getDIATestData(
     HArray<IndexType>& diaOffsets,
     HArray<ValueType>& diaValues )
 {
-    /*                -5 -4 -3 -2 -1  0  1  2  3 
+    /*                -5 -4 -3 -2 -1  0  1  2  3
 
-        Matrix:     x  x  x  x  x  x  6  0  0  4 
-                       x  x  x  x  x  7  0  0  0  x  
-                          x  x  x  x  0  0  9  4  x  x  
-                             x  x  x  2  5  0  3  x  x  x 
-                                x  x  2  0  0  1  x  x  x  x 
-                                   x  0  0  0  0  x  x  x  x  x 
+        Matrix:     x  x  x  x  x  x  6  0  0  4
+                       x  x  x  x  x  7  0  0  0  x
+                          x  x  x  x  0  0  9  4  x  x
+                             x  x  x  2  5  0  3  x  x  x
+                                x  x  2  0  0  1  x  x  x  x
+                                   x  0  0  0  0  x  x  x  x  x
                                       0  1  0  2  x  x  x  x  x  x  */
 
     const IndexType diag_offsets[] = { 0,
@@ -285,7 +286,8 @@ static void getDIATestData(
                                        static_cast<IndexType>( -3 ),
                                        static_cast<IndexType>( -2 ),
                                        static_cast<IndexType>( -1 ),
-                                       1, 3 };
+                                       1, 3
+                                     };
 
     const ValueType x = 0;  // just a stupid value as these entries should never be used
 
@@ -296,7 +298,8 @@ static void getDIATestData(
                                        x, x, 0, 5, 0, 0, x,
                                        x, 7, 0, 0, 1, x, x,
                                        0, 0, 4, x, x, x, x,
-                                       4, x, x, x, x, x, x };
+                                       4, x, x, x, x, x, x
+                                     };
 
     numRows      = 7;
     numColumns   = 4;
@@ -321,14 +324,14 @@ static void getCOOTestData(
     HArray<IndexType>& cooJA,
     HArray<ValueType>& cooValues )
 {
-   /*   Matrix:       6  0  0  4 
-                      7  0  0  0
-                      0  0  9  4 
-                      2  5  0  3  
-                      2  0  0  1  
-                      0  0  0  0  
-                      0  1  0  2  
-    */
+    /*   Matrix:       6  0  0  4
+                       7  0  0  0
+                       0  0  9  4
+                       2  5  0  3
+                       2  0  0  1
+                       0  0  0  0
+                       0  1  0  2
+     */
 
     const IndexType ia_values[]  = { 0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 6, 6 };
     const IndexType ja_values[]  = { 0, 3, 0, 2, 3, 0, 1, 3, 0, 3, 1, 3 };
@@ -367,13 +370,13 @@ static void getGEMVResult( HArray<ValueType>& res,
     {
         using scai::hmemo::ReadAccess;
         using scai::hmemo::WriteOnlyAccess;
-        
+
         ReadAccess<ValueType> rX( x );
         ReadAccess<ValueType> rY( y );
         WriteOnlyAccess<ValueType> wRes( res, numRows );
         ReadAccess<ValueType> rDense( denseValues );
 
-        for ( IndexType i = 0; i < numRows; ++i ) 
+        for ( IndexType i = 0; i < numRows; ++i )
         {
             ValueType v = 0;
 
@@ -411,13 +414,13 @@ static void getGEVMResult( HArray<ValueType>& res,
     {
         using scai::hmemo::ReadAccess;
         using scai::hmemo::WriteOnlyAccess;
-        
+
         ReadAccess<ValueType> rX( x );
         ReadAccess<ValueType> rY( y );
         WriteOnlyAccess<ValueType> wRes( res, numColumns );
         ReadAccess<ValueType> rDense( denseValues );
 
-        for ( IndexType j = 0; j < numColumns; ++j ) 
+        for ( IndexType j = 0; j < numColumns; ++j )
         {
             ValueType v = 0;
 

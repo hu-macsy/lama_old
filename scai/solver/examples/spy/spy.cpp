@@ -54,6 +54,7 @@ int main( int argc, char** argv )
     }
 
     const char* filename = argv[1];
+
     int nRows = 800;
 
     if ( argc > 2 )

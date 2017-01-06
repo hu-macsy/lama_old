@@ -261,8 +261,8 @@ public:
 
     virtual void setIdentity( const IndexType n ) = 0;
 
-    /** This method resorts column indexes in such a way that the diagonal element is always the 
-     *  first one in a row. 
+    /** This method resorts column indexes in such a way that the diagonal element is always the
+     *  first one in a row.
      *
      *  This method throws an exception if the matrix storage is not square. Furthermore
      *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
@@ -280,7 +280,7 @@ public:
 
     virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::binary::BinaryOp op ) = 0;
 
-    virtual void setColumn( const hmemo::_HArray& column, const IndexType j, 
+    virtual void setColumn( const hmemo::_HArray& column, const IndexType j,
                             utilskernel::binary::BinaryOp op            ) = 0;
 
     /** This method returns the j-th column of the matrix
@@ -465,11 +465,11 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const = 0;
 
-    /** 
+    /**
      *  Extract a contiguous block of n rows in a new storage
      *
      *  @param[out] other  will contain the corresponding storage of n x mNumColumns
-     *  @param[in]  first  index of first row to extract                            
+     *  @param[in]  first  index of first row to extract
      *  @param[in]  n      number of rows to extract
      */
     virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const = 0;
@@ -554,14 +554,14 @@ public:
      * @brief read the matrix storage from an input file
      *
      * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
-     * @param[in] firstRow is the first row to read 
+     * @param[in] firstRow is the first row to read
      * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
      *
      * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
      */
-    virtual void readFromFile( 
-        const std::string& fileName, 
-        const IndexType firstRow = 0, 
+    virtual void readFromFile(
+        const std::string& fileName,
+        const IndexType firstRow = 0,
         const IndexType nRows = nIndex ) = 0;
 
     /**
@@ -587,7 +587,7 @@ public:
 
     virtual bool checkSymmetry() const = 0;
 
-    /** Swap data with other storage to avoid additional memory allocation. 
+    /** Swap data with other storage to avoid additional memory allocation.
      *
      *  @param[in,out] other storage for swapping, must have same value type and same format
      *
@@ -838,19 +838,19 @@ public:
 
     virtual ValueType getValue( const IndexType i, const IndexType j ) const = 0;
 
-    /** Set/update an existing value of the matrix. 
+    /** Set/update an existing value of the matrix.
      *
-     *  @param[in] i is the row index, 0 <= i < mNumRows 
+     *  @param[in] i is the row index, 0 <= i < mNumRows
      *  @param[in] j is the col index, 0 <= j < mNumColumns
      *  @param[in] val is the value to be set
      *  @param[in] op specifies how to combine old and new value
      *
      *  @throw Exception if value is non-zero and sparse pattern does not contain element
      */
-    virtual void setValue( const IndexType i, 
-        const IndexType j, 
-        const ValueType val, 
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
+    virtual void setValue( const IndexType i,
+                           const IndexType j,
+                           const ValueType val,
+                           const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.
@@ -876,8 +876,8 @@ public:
 
     virtual void rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others );
 
-    /** 
-     *  Implementation of _MatrixStorage::copyBlockTo 
+    /**
+     *  Implementation of _MatrixStorage::copyBlockTo
      */
     virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const;
 

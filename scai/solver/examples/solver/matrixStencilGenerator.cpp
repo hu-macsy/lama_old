@@ -98,7 +98,7 @@ struct CommandLineArguments
     IndexType dimX;
     IndexType dimY;
     IndexType dimZ;
- 
+
     CommandLineArguments()
     {
         dimension = 1;

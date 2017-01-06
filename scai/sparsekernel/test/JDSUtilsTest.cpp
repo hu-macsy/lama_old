@@ -161,9 +161,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
         ReadAccess<IndexType> rPerm( jdsPerm, loc );
 
         SCAI_CONTEXT_ACCESS( loc );
-    
+
         WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
- 
+
         binary::BinaryOp op = binary::SUB;
 
         getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wValues.get() );
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValuePosColTest, ValueType, scai_numeric_test_
     {
         HArray<IndexType> row;
         HArray<IndexType> pos;
-        
+
         IndexType n = 0;
 
         {
@@ -215,10 +215,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValuePosColTest, ValueType, scai_numeric_test_
             ReadAccess<IndexType> rPerm( jdsPerm, loc );
 
             SCAI_CONTEXT_ACCESS( loc );
-    
+
             WriteOnlyAccess<IndexType> wRow( row, loc, numColumns );
             WriteOnlyAccess<IndexType> wPos( pos, loc, numColumns );
- 
+
             n = getValuePosCol[loc]( wRow.get(), wPos.get(), j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
 
         }
@@ -285,6 +285,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types 
         {
             SCAI_CONTEXT_ACCESS( loc );
             IndexType pos = getValuePos[loc]( i, j, numRows, rDlg.get(), rIlg.get(), rPerm.get(), rJa.get() );
+
             if ( pos == nIndex )
             {
                 BOOST_CHECK_EQUAL( expectedValues[i][j], 0 );
@@ -387,7 +388,7 @@ BOOST_AUTO_TEST_CASE( checkDiagonalPropertyTest )
         SCAI_CONTEXT_ACCESS( loc );
         bool diagonalProperty =
             checkDiagonalProperty[loc]( numDiagonals, numRows, numColumns,
-                    rPerm.get(), rJa.get(), rDlg.get() );
+                                        rPerm.get(), rJa.get(), rDlg.get() );
         BOOST_CHECK_EQUAL( false, diagonalProperty );
     }
     // check with matrix with diagonal property
@@ -701,25 +702,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
         ValueType beta  = beta_values[icase / n_alpha ];
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
             common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
             SCAI_ASYNCHRONOUS( syncToken.get() );
 
             SCAI_CONTEXT_ACCESS( loc );
-    
+
             ReadAccess<IndexType> rPerm( jdsPerm, loc );
             ReadAccess<IndexType> rDLG( jdsDLG, loc );
             ReadAccess<IndexType> rILG( jdsILG, loc );
             ReadAccess<IndexType> rJA( jdsJA, loc );
             ReadAccess<ValueType> rValues( jdsValues, loc );
-    
+
             ReadAccess<ValueType> rX( x, loc );
             ReadAccess<ValueType> rY( y, loc );
             WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-    
+
             normalGEMV[loc]( wResult.get(),
                              alpha, rX.get(), beta, rY.get(),
                              numRows, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
@@ -792,20 +793,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
         ValueType beta  = 1;
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * JDS * x + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
-    
+
             ReadAccess<IndexType> rPerm( jdsPerm, loc );
             ReadAccess<IndexType> rDLG( jdsDLG, loc );
             ReadAccess<IndexType> rILG( jdsILG, loc );
             ReadAccess<IndexType> rJA( jdsJA, loc );
             ReadAccess<ValueType> rValues( jdsValues, loc );
-    
+
             ReadAccess<ValueType> rX( x, loc );
             WriteAccess<ValueType> wResult( res, loc, numRows );
-    
+
             normalGEMV[loc]( wResult.get(),
                              alpha, rX.get(), beta, wResult.get(),
                              numRows, rPerm.get(), rILG.get(), numDiagonals, rDLG.get(), rJA.get(), rValues.get() );
@@ -878,8 +879,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         ValueType beta  = beta_values[icase / n_alpha ];
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * JDS + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
             common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
             SCAI_ASYNCHRONOUS( syncToken.get() );
@@ -1061,7 +1062,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
             ReadAccess<ValueType> rDiag( diag, loc );
             WriteAccess<ValueType> wSolution( solution, loc );
 
-            jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(), 
+            jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(),
                              numDiagonals, rPerm.get(), rILG.get(), rDLG.get(),
                              rJA.get(), rValues.get(),
                              rOld.get(), omega );

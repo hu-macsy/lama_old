@@ -253,9 +253,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 
             if ( diff != AbsType( 0 ) )
             {
-                BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx 
-                                    << " is different from expected result " << res 
-                                    << " = " << op << " " << values[i] 
+                BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx
+                                    << " is different from expected result " << res
+                                    << " = " << op << " " << values[i]
                                     << ", diff = " << diff );
             }
 
@@ -320,7 +320,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
         {
             ValueType x1  = values1[i];
 
-            if ( op == binary::POW ) x1 = common::Math::abs( x1 );
+            if ( op == binary::POW )
+            {
+                x1 = common::Math::abs( x1 );
+            }
 
             ValueType res = applyBinary( x1, op, values2[i] );
 
@@ -332,8 +335,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
             if ( diff <= TypeTraits<AbsType>::small() )
             {
-                BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx 
-                                    << " is different from expected result " << res 
+                BOOST_TEST_MESSAGE( "Result " << read[i] << " on " << *ctx
+                                    << " is different from expected result " << res
                                     << " = " << x1 << " " << op << " " << values2[i]
                                     << ", diff = " << diff );
             }
@@ -460,9 +463,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types 
         ReadAccess<ValueType> readMag( magArray, host );
         ReadAccess<ValueType> readSign( signArray, host );
         ReadAccess<ValueType> readResult( resultArray, host );
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType x = readResult[i] - common::Math::copysign(readMag[i], readSign[i]);
+            ValueType x = readResult[i] - common::Math::copysign( readMag[i], readSign[i] );
             BOOST_CHECK_SMALL( common::Math::real( x ), common::TypeTraits<ValueType>::small() );
             BOOST_CHECK_SMALL( common::Math::imag( x ), common::TypeTraits<ValueType>::small() );
         }
@@ -572,7 +576,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
     scoped_array<ValueType> unscans( new ValueType[n - 1] );
     unscans[0] = 0;
-    for ( IndexType i = 0; i < n- 1; ++i )
+
+    for ( IndexType i = 0; i < n - 1; ++i )
     {
         unscans[i] = vals[i + 1] - vals[i];
     }
@@ -601,7 +606,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     ValueType sum = array.sum();
 
     SCAI_LOG_INFO( logger, "Draw " << n << " random values of type " << common::TypeTraits<ValueType>::id()
-                            << ", sum up to " << sum )
+                   << ", sum up to " << sum )
 
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
@@ -633,7 +638,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
     BOOST_REQUIRE_EQUAL( perm.size(), n );
     BOOST_REQUIRE_EQUAL( array1.size(), n );
 
-    LArray<ValueType> array2;   // = array[perm] 
+    LArray<ValueType> array2;   // = array[perm]
     HArrayUtils::gatherImpl( array2, array, perm, binary::COPY );
 
     BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
@@ -674,7 +679,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     LArray<IndexType> perm;
     LArray<IndexType> offsets;
- 
+
     IndexType numBuckets = 5;
 
     HArrayUtils::bucketSort( offsets, perm, emptyArray, numBuckets, loc );
@@ -749,7 +754,7 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
     // Note: one empty subarray
 
     const IndexType n  = sizeof( vals ) / sizeof( ValueType );        // number values to sort
-    const IndexType nb = sizeof( offsets) / sizeof( IndexType ) - 1;  // number of sorted subarray
+    const IndexType nb = sizeof( offsets ) / sizeof( IndexType ) - 1; // number of sorted subarray
 
     BOOST_REQUIRE_EQUAL( IndexType( 0 ), offsets[0] );
     BOOST_REQUIRE_EQUAL( IndexType( n ), offsets[nb] );
@@ -768,7 +773,7 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
     array.init( vals, n );
 
     LArray<IndexType> perm;                   // will contain the sort permutation
-    HArrayUtils::setOrder( perm, n, loc );   
+    HArrayUtils::setOrder( perm, n, loc );
 
     HArrayUtils::mergeSort( array, perm, sortOffsets, ascending );
 
@@ -778,9 +783,9 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        SCAI_LOG_DEBUG( logger, "array_sorted[" << i << "] = " << array[i] 
-                                << ", perm[" << i << "] = " << perm[i] 
-                                << ", array_unsorted[" << i << "] = " << arrayUnsorted[i] )
+        SCAI_LOG_DEBUG( logger, "array_sorted[" << i << "] = " << array[i]
+                        << ", perm[" << i << "] = " << perm[i]
+                        << ", array_unsorted[" << i << "] = " << arrayUnsorted[i] )
     }
 
     // check that array_sorted  ==  array_unsorted[perm]
@@ -840,7 +845,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
 
     LArray<ValueType> x( nx, xVals, loc );
     LArray<ValueType> y( ny, yVals, loc );
-    
+
     const IndexType n = 3;
     const IndexType ofs_x = 1;
     const IndexType inc_x = 2;
@@ -880,9 +885,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
         HArrayUtils::setArray( y, x, binary::COPY, loc );
 
         BOOST_REQUIRE_EQUAL( y.size(), x.size() );
-   
+
         {
             ReadAccess<ValueType> rY( y );
+
             for ( IndexType i = 0; i < nx; ++i )
             {
                 BOOST_CHECK_EQUAL( rY[i], xVals[i] );
@@ -1053,6 +1059,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test
     {
         BOOST_CHECK_EQUAL( NCASE, target.size() );
         ReadAccess<ValueType> rTarget( target, host );
+
         for ( IndexType i = 0; i < NCASE; ++i )
         {
             BOOST_CHECK_EQUAL( factors[i], rTarget[i] );
@@ -1064,6 +1071,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayTimesArrayTest, ValueType, scai_numeric_test
     {
         BOOST_CHECK_EQUAL( NCASE, target.size() );
         ReadAccess<ValueType> rTarget( target, host );
+
         for ( IndexType i = 0; i < NCASE; ++i )
         {
             BOOST_CHECK_EQUAL( beta * factors[i], rTarget[i] );

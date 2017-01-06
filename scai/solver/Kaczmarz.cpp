@@ -108,8 +108,11 @@ void Kaczmarz::iterate()
     }
 
     const Matrix& A = *runtime.mCoefficients;
+
     const Vector& b = *runtime.mRhs;
+
     Vector& x = *runtime.mSolution;
+
     Vector& z = *runtime.mRow;
 
     SCAI_LOG_INFO( logger, "Iteration " << iter )

@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Structure that contains IO routines for MAT-File Format   
+ * @brief Structure that contains IO routines for MAT-File Format
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -60,7 +60,7 @@ namespace lama
  *  The following topics should be observed:
  *
  *  - LAMA can only read and write one single data element from a MATLAB file.
- *  - The name of the data element is is ignored when reading the element and 
+ *  - The name of the data element is is ignored when reading the element and
  *    each written element gets the name "LAMA".
  *  - As the data type is stored for each element in the file, the SCAI_IO_TYPE
  *    is ignored, i.e. each array/storage is written exactly in the format it is
@@ -72,7 +72,7 @@ namespace lama
  *    value of the MAT-File Data Types.
  */
 
-class MatlabIO : 
+class MatlabIO :
 
     public CRTPFileIO<MatlabIO>,         // use type conversions
     public FileIO::Register<MatlabIO>    // register at factory
@@ -105,7 +105,7 @@ public:
     virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
- 
+
     /** Typed version of writeStorage
      *
      *  This method must be available for implementation of
@@ -153,10 +153,10 @@ private:
     template <typename ValueType>
     void getStorage( MatrixStorage<ValueType>& storage, const char* dataElementPtr, uint32_t nBytes );
 
-    /** Help routine to read a heterogeneous array from input data 
+    /** Help routine to read a heterogeneous array from input data
      *
      *  @param[in] data is the input data with header info about size and type
-     *  @param[in] len  is the size of the input data, used for checks to avoid out-of-range 
+     *  @param[in] len  is the size of the input data, used for checks to avoid out-of-range
      *  @param[out] array will contain the read data, might be converted to ValueType
      */
     template<typename ValueType>
@@ -165,7 +165,7 @@ private:
     template<typename ValueType>
     static void readMATArray( hmemo::HArray<ValueType>& array, const char* data, const uint32_t mxType, const uint32_t nbytes );
 
-    /** Help routine to read a heterogeneous array 
+    /** Help routine to read a heterogeneous array
      *
      *  @tparam ArrayType is the value type of the heterogeneous array
      *  @tparam DataType is the type of data from the file

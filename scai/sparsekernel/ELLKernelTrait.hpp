@@ -302,7 +302,7 @@ struct ELLKernelTrait
          *  in the ellJA/ellValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[out] pos positions of entries with col = j in csrJA,
          *  @param[in] j is the column of which positions are required
          *  @param[in] ellIA is the ELL sizes array
          *  @param[in] numRows is the number of rows

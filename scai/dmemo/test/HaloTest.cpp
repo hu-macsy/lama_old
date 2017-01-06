@@ -60,7 +60,7 @@ struct HaloTestConfig
 
         rank = comm->getRank();
         size = comm->getSize();
-  
+
         dist.reset( new BlockDistribution( size, comm ) );
 
         leftNeighbor = comm->getNeighbor( -1 );
@@ -90,14 +90,14 @@ struct HaloTestConfig
     void buildRequiredIndexes()
     {
         // Each processor requires values from left and right neighbor
-    
+
         if ( !dist->isLocal( leftNeighbor ) )
-        {   
+        {
             requiredIndexes.push_back( leftNeighbor );
         }
-    
+
         if ( rightNeighbor != leftNeighbor && !dist->isLocal( rightNeighbor ) )
-        {   
+        {
             requiredIndexes.push_back( rightNeighbor );
         }
     }

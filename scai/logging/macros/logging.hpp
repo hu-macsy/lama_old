@@ -252,7 +252,7 @@
 #define SCAI_LOG_TRACE( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-                                                            \
+        \
         if ( cLogger.isTraceEnabled() )                     \
         {                                                   \
             std::ostringstream omsg;                        \

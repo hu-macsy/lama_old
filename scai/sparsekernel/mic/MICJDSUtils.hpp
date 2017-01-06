@@ -215,7 +215,7 @@ private:
 
     /** Struct for registration of methods with one template argument.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for each supported type
      */
 
@@ -227,7 +227,7 @@ private:
 
     /** Struct for registration of methods with two template arguments.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for all supported types.
      */
 

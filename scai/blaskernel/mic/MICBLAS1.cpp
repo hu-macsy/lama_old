@@ -129,8 +129,11 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
     }
 
     const void* xPtr = x;
+
     int device = MICContext::getCurrentDevice();
+
     ValueType* asumPtr = &asum;
+
 #pragma offload target( MIC : device ) in( xPtr, n, incX ), out( asumPtr[0:1] )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -149,6 +152,7 @@ ValueType MICBLAS1::asum( const IndexType n, const ValueType* x, const IndexType
             *asumPtr += local_asum;
         }
     }
+
     return asum;
 }
 
@@ -174,7 +178,9 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
     }
 
     const void* xPtr = x;
+
     int device = MICContext::getCurrentDevice();
+
 #pragma offload target( MIC : device ) in( xPtr, n, incX ), out( maxIndex )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -213,6 +219,7 @@ IndexType MICBLAS1::iamax( const IndexType n, const ValueType* x, const IndexTyp
             }
         }
     }
+
     return maxIndex;
 }
 
@@ -271,6 +278,7 @@ ValueType MICBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexType
     }
 
     const void* xPtr = x;
+
     ValueType sum = static_cast<ValueType>( 0.0 );
 
     if ( n < 1 || incX < 1 )
@@ -330,8 +338,11 @@ void MICBLAS1::copy(
     }
 
     const void* xPtr = x;
+
     void* yPtr = y;
+
     int device = MICContext::getCurrentDevice();
+
 #pragma offload target( mic : device ), in( xPtr, yPtr, n, incX, incY )
     {
         const ValueType* x = ( ValueType* ) xPtr;
@@ -374,9 +385,13 @@ void MICBLAS1::axpy(
     }
 
     const void* xPtr = x;
+
     void* yPtr = y;
+
     int device = MICContext::getCurrentDevice();
+
     const ValueType* alphaPtr = &alpha;
+
 #pragma offload target( mic : device ), in( xPtr, yPtr, n, alphaPtr[0:1], incX, incY )
     {
         const ValueType* x = static_cast<const ValueType*>( xPtr );
@@ -461,8 +476,8 @@ void MICBLAS1::sum(
     ValueType* z )
 {
     SCAI_LOG_INFO( logger,
-                    "sum<" << common::TypeTraits<ValueType>::id() << ">, z[" << n << "] = " << alpha << " * x + " << beta << " * y "
-                    ", x = " << x << ", y = " << y << ", z = " << z )
+                   "sum<" << common::TypeTraits<ValueType>::id() << ">, z[" << n << "] = " << alpha << " * x + " << beta << " * y "
+                   ", x = " << x << ", y = " << y << ", z = " << z )
     MICSyncToken* syncToken = MICSyncToken::getCurrentSyncToken();
 
     if ( syncToken )
@@ -484,6 +499,7 @@ void MICBLAS1::sum(
         ValueType* z = reinterpret_cast<ValueType*>( zPtr );
 
         #pragma omp parallel for
+
         for ( int i = 0; i < n; i++ )
         {
             z[i] = *alphaPtr * x[i] + *betaPtr * y[i];

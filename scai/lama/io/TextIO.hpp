@@ -42,7 +42,7 @@ namespace scai
 namespace lama
 {
 
-/** This file format stores just the COO data of a matrix. 
+/** This file format stores just the COO data of a matrix.
  *
  *   - there is not header at all
  *   - number of non-zero matrix entries is given by number of lines
@@ -54,7 +54,7 @@ namespace lama
  *   /code
  *   data_mat = [ia ja,real(val),imag(val)];
  *   save -ascii dataMatrix.txt data_mat;
- *   
+ *
  *   data_rhs = [real(b),imag(b)];
  *   save -ascii datRHS.txt data_rhs;
  *   /endcode
@@ -64,7 +64,7 @@ namespace lama
  *   /endcode
  */
 
-class TextIO : 
+class TextIO :
 
     public CRTPFileIO<TextIO>,         // use type conversions
     public FileIO::Register<TextIO>    // register at factory
@@ -97,7 +97,7 @@ public:
     virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
- 
+
     /** Typed version of writeStorage
      *
      *  This method must be available for implementation of
@@ -140,7 +140,7 @@ private:
         const IndexType nnz,
         const std::string& fileName );
 
-    /** Method to count number of lines of a text file and the maximal number of entries in one line 
+    /** Method to count number of lines of a text file and the maximal number of entries in one line
      *
      *  @param[out]  nLines will will contain the number of lines the file has
      *  @param[out]  nEntries is maximal number of entries in one line

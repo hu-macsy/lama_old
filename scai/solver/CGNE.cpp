@@ -69,16 +69,16 @@ CGNE::CGNE( const std::string& id, LoggerPtr logger )
 }
 
 CGNE::CGNE( const CGNE& other )
-    : IterativeSolver( other ) 
+    : IterativeSolver( other )
 {
 }
 
 CGNE::CGNERuntime::CGNERuntime()
-    : IterativeSolverRuntime() 
+    : IterativeSolverRuntime()
 {
 }
 
-CGNE::~CGNE() 
+CGNE::~CGNE()
 {
 }
 
@@ -155,8 +155,8 @@ void CGNE::iterate()
     {
         alpha = scalarProductZR / scalarProductP;
 
-        SCAI_LOG_INFO( logger, "alpha ( = " << alpha << " ) = scalarProductZR ( = " << scalarProductZR 
-                               << " scalarProductP ( = " << scalarProductP << " )" )
+        SCAI_LOG_INFO( logger, "alpha ( = " << alpha << " ) = scalarProductZR ( = " << scalarProductZR
+                       << " scalarProductP ( = " << scalarProductP << " )" )
     }
 
     solution = solution + alpha * vecP;

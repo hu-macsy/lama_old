@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
         BOOST_CHECK_EQUAL( rIA[i], expected_ia[i] );
     }
 
-    for( IndexType i = 0; i < realValues - 1; ++i )
+    for ( IndexType i = 0; i < realValues - 1; ++i )
     {
         BOOST_CHECK_EQUAL( rJA[i], expected_ja[i] );
         BOOST_CHECK_EQUAL( rValues[i], expected_values[i] );

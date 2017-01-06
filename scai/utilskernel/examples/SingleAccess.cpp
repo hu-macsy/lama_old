@@ -60,7 +60,7 @@ int main()
     LArray<ValueType> hostA( N, 5, host );
     LArray<ValueType> gpuA( N, 2, gpu );
 
-    for ( IndexType i = 0; i < N; i+=2 )
+    for ( IndexType i = 0; i < N; i += 2 )
     {
         gpuA[i] = hostA[i];
     }
@@ -75,7 +75,7 @@ int main()
         WriteAccess<ValueType> write( gpuA, gpu );
     }
 
-    for ( IndexType i = 1; i < N; i+=2 )
+    for ( IndexType i = 1; i < N; i += 2 )
     {
         hostA[i] = gpuA[i];
     }

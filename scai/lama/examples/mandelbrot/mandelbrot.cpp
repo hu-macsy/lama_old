@@ -74,7 +74,7 @@ struct Type_rgb
 * pixel variable contain the value of the color pixel in
 * the picture.
 */
-struct Type_rgb pixels[DIMy * DIMx];
+struct Type_rgb pixels[DIMy* DIMx];
 
 /*
 * function mandelbrotset find where the number is in

@@ -82,7 +82,7 @@ public:
     virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
- 
+
     /** Typed version of writeStorage
      *
      *  This method must be available for implementation of
@@ -112,7 +112,7 @@ public:
     __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
- 
+
 private:
 
     /** Enumeration type for the different symmetry flags in the Matrix Market file */
@@ -153,14 +153,14 @@ private:
     void addSymmetricEntries(
         hmemo::HArray<IndexType>& ia,
         hmemo::HArray<IndexType>& ja,
-        hmemo::HArray<ValueType>& vals, 
+        hmemo::HArray<ValueType>& vals,
         bool conjFlag );
 
     /** Check for symmetry */
     template<typename ValueType>
-    Symmetry checkSymmetry( 
-        const hmemo::HArray<IndexType>& cooIA, 
-        const hmemo::HArray<IndexType>& cooJA, 
+    Symmetry checkSymmetry(
+        const hmemo::HArray<IndexType>& cooIA,
+        const hmemo::HArray<IndexType>& cooJA,
         const hmemo::HArray<ValueType>& cooValues );
 
     template<typename ValueType>

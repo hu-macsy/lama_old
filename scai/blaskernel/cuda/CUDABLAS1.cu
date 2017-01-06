@@ -111,8 +111,11 @@ void CUDABLAS1::sum(
     }
 
     const int blockSize = 256;
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( n, dimBlock.x );
+
     sum_kernel <<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
 
     if ( !syncToken )

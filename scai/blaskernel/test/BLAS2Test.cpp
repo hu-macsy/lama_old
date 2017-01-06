@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cgevmTest, ValueType, blas_test_types )
 {
     // ToDo: do this tes with complex values
 
-    const CBLAS_TRANSPOSE trans = CblasConjTrans;  
+    const CBLAS_TRANSPOSE trans = CblasConjTrans;
 
     ContextPtr testContext = ContextFix::testContext;
     kregistry::KernelTraitContextFunction<blaskernel::BLASKernelTrait::gemv<ValueType> > gemv;

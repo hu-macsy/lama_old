@@ -327,8 +327,8 @@ void BLAS_BLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegi
         return;
     }
 
-    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 wrapper routines for Host at kernel registry: " << 
-                            "T = " << common::TypeTraits<ValueType>::id() )
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 wrapper routines for Host at kernel registry: " <<
+                    "T = " << common::TypeTraits<ValueType>::id() )
 
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( BLAS_BLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( BLAS_BLAS1::nrm2, ctx, flag );

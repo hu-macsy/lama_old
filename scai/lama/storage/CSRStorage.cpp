@@ -95,9 +95,9 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRStorage<ValueType
 
 template<typename ValueType>
 CSRStorage<ValueType>::CSRStorage() :
-    
-    CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>( 0, 0 ), 
-    mNumValues( 0 ), 
+
+    CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>( 0, 0 ),
+    mNumValues( 0 ),
     mSortedRows( false )
 {
     allocate( 0, 0 ); // creates at least mIa
@@ -112,7 +112,7 @@ CSRStorage<ValueType>::CSRStorage(
     const IndexType numValues,
     const HArray<IndexType>& ia,
     const HArray<IndexType>& ja,
-    const _HArray& values ) : 
+    const _HArray& values ) :
 
     CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>()
 {
@@ -743,7 +743,7 @@ void CSRStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "CSRStorage<" << common::getScalarType<ValueType>() << ">("
            << " size = " << mNumRows << " x " << mNumColumns
-           << ", nnz = " << mNumValues << ", diag = " << mDiagonalProperty 
+           << ", nnz = " << mNumValues << ", diag = " << mDiagonalProperty
            << ", sorted = " << mSortedRows << ", ctx = " << *getContextPtr() << " )";
 }
 
@@ -783,9 +783,9 @@ ValueType CSRStorage<ValueType>::getValue( const IndexType i, const IndexType j 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::setValue( const IndexType i, 
-                                      const IndexType j, 
-                                      const ValueType val, 
+void CSRStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
                                       const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
@@ -794,12 +794,12 @@ void CSRStorage<ValueType>::setValue( const IndexType i,
     SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
 
     static LAMAKernel<CSRKernelTrait::getValuePos> getValuePos;
-    
+
     ContextPtr loc = this->getContextPtr();
     getValuePos.getSupportedContext( loc );
 
-    SCAI_CONTEXT_ACCESS( loc ) 
-    
+    SCAI_CONTEXT_ACCESS( loc )
+
     ReadAccess<IndexType> rIa( mIa, loc );
     ReadAccess<IndexType> rJa( mJa, loc );
 
@@ -935,11 +935,11 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     SCAI_REGION( "Storage.CSR.getRow" )
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-    
+
     row.init( OtherType( 0 ), mNumColumns );
 
     IndexType n1    = mIa[i];
-    IndexType nrow  = mIa[i+1] - n1;
+    IndexType nrow  = mIa[i + 1] - n1;
 
     // row [ mJa[n1:] ] = mValues[n1:],
 
@@ -970,9 +970,9 @@ void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
     SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
 
     IndexType n1    = mIa[i];
-    IndexType nrow  = mIa[i+1] - n1;
+    IndexType nrow  = mIa[i + 1] - n1;
 
-    // mValues[n1:] op= row [ mJa[n1:] ] 
+    // mValues[n1:] op= row [ mJa[n1:] ]
 
     HArray<OtherType> gatheredRow;  // temporary required as gather does not support op
 
@@ -1024,7 +1024,7 @@ void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
         ReadAccess<IndexType> rIA( mIa, loc );
         ReadAccess<IndexType> rJA( mJa, loc );
 
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j, 
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
                                              rIA.get(), mNumRows, rJA.get(), mNumValues );
 
         wRowIndexes.resize( cnt );
@@ -1044,7 +1044,7 @@ void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-                                           const utilskernel::binary::BinaryOp op )
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "Storage.CSR.setCol" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1059,7 +1059,7 @@ void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
     HArray<IndexType> valuePos;     // positions in the values array
     HArray<ValueType> colValues;    // contains the values of entries belonging to column j
-    
+
     {
         SCAI_CONTEXT_ACCESS( loc )
 
@@ -1070,15 +1070,15 @@ void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
         ReadAccess<IndexType> rIA( mIa, loc );
         ReadAccess<IndexType> rJA( mJa, loc );
 
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j, 
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
                                              rIA.get(), mNumRows, rJA.get(), mNumValues );
-        
+
         wRowIndexes.resize( cnt );
         wValuePos.resize( cnt );
     }
 
     //  mValues[ pos ] op= column[row]
-    
+
     HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::binary::COPY, loc );
     HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
 }
@@ -1244,7 +1244,7 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
 
     SCAI_LOG_INFO( logger, "copyBlockTo : first = " << first << ", n = " << n << ", from this : " << *this )
 
-    // copy out the corresponding sections, ia needs a shifting to zero 
+    // copy out the corresponding sections, ia needs a shifting to zero
 
     LArray<IndexType> blockIA( n + 1 );
     HArrayUtils::setArraySection( blockIA, 0, 1, mIa, first, 1, n +  1, binary::COPY, loc );
@@ -2260,8 +2260,8 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
     const ContextPtr preferedLoc )
 {
     SCAI_LOG_INFO( logger, *this << ": = " << alpha << " * A * B"
-                           << ", with A = " << a << ", B = " << b 
-                           << ", all are CSR" << ", Context = " << *preferedLoc )
+                   << ", with A = " << a << ", B = " << b
+                   << ", all are CSR" << ", Context = " << *preferedLoc )
 
     // get availabe implementations of needed kernel routines
     static LAMAKernel<CSRKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
@@ -2476,10 +2476,10 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
             hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                                     \
     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void CSRStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-                                                     const utilskernel::binary::BinaryOp );                          \
+            const utilskernel::binary::BinaryOp );                          \
     template void CSRStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void CSRStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-                                                        const utilskernel::binary::BinaryOp );                       \
+            const utilskernel::binary::BinaryOp );                       \
     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void CSRStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void CSRStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
@@ -2491,7 +2491,7 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
 #define CSR_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, CSR_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_LOOP( CSR_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef CSR_STORAGE_INST_LVL2
 #undef CSR_STORAGE_INST_LVL1

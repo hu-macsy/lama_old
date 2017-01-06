@@ -110,11 +110,11 @@ void MICMKLCSRUtils::normalGEMV(
 
     // General, - triangular, Non-Unit, C for zero-indexing
 
-    const void *iaPtr = csrIA;
-    const void *jaPtr = csrJA;
-    const void *valPtr = csrValues;
-    const void *xPtr = x;
-    void *resultPtr = result;
+    const void* iaPtr = csrIA;
+    const void* jaPtr = csrJA;
+    const void* valPtr = csrValues;
+    const void* xPtr = x;
+    void* resultPtr = result;
     const ValueType* alphaPtr = &alpha;
     const ValueType* betaPtr = &beta;
 
@@ -155,7 +155,7 @@ void MICMKLCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     using kregistry::KernelRegistry;
 
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "] CSRUtils MKL-routines for MIC at kernel registry: "
-                            << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
 }

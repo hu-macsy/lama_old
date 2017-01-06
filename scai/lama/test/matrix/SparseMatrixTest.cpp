@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
         dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( storage->getNumRows(), comm ) );
 
-        SparseMatrix<ValueType> matrix( storage, rowDist );  // local constructor 
+        SparseMatrix<ValueType> matrix( storage, rowDist );  // local constructor
 
         BOOST_CHECK_EQUAL( matrix.getContextPtr(), storage->getContextPtr() );
 
@@ -93,9 +93,9 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
         if ( rowDist->getLocalSize() > 0 )
         {
-             BOOST_CHECK( matrix.getMemoryUsage() > 0 );
+            BOOST_CHECK( matrix.getMemoryUsage() > 0 );
         }
-                           
+
         BOOST_CHECK_EQUAL( matrix.getNumRows(), rowDist->getGlobalSize() );
         BOOST_CHECK_EQUAL( matrix.getNumColumns(), storage->getNumColumns() );
         BOOST_CHECK_EQUAL( matrix.getMatrixKind(), Matrix::SPARSE );
@@ -108,12 +108,12 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
-                         ELLSparseMatrix<ValueType>,
-                         DIASparseMatrix<ValueType>,
-                         JDSSparseMatrix<ValueType>,
-                         COOSparseMatrix<ValueType>
-                        > SparseMatrixTypes;
+typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
+        ELLSparseMatrix<ValueType>,
+        DIASparseMatrix<ValueType>,
+        JDSSparseMatrix<ValueType>,
+        COOSparseMatrix<ValueType>
+        > SparseMatrixTypes;
 
 /* ------------------------------------------------------------------------- */
 

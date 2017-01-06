@@ -99,7 +99,7 @@ inline Expression_VV operator*( const Vector& x, const Vector& y )
 }
 
 /**
- * @brief The times operator creates an expression that represents scaling a elementwise vector times 
+ * @brief The times operator creates an expression that represents scaling a elementwise vector times
  *        vector expression.
  *
  * @param[in] alpha The scalar.
@@ -112,29 +112,29 @@ inline Expression_SVV operator*( const Scalar& alpha, const Expression_VV& exp )
 }
 
 /**
- * @brief The times operator creates an expression that represents scaling a elementwise vector times 
+ * @brief The times operator creates an expression that represents scaling a elementwise vector times
  *        vector expression.
  *
  * @param[in] exp   an existing expression scalar * vector
- * @param[in] v     the second multiplicator               
+ * @param[in] v     the second multiplicator
  * @return          The expression representing this SVV.
  */
 inline Expression_SVV operator*( const Expression_SV exp, const Vector& v )
 {
-    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( exp.getArg2(), v) );
+    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( exp.getArg2(), v ) );
 }
 
 /**
- * @brief The times operator creates an expression that represents scaling a elementwise vector times 
+ * @brief The times operator creates an expression that represents scaling a elementwise vector times
  *        vector expression.
  *
- * @param[in] v     the first multiplicator               
+ * @param[in] v     the first multiplicator
  * @param[in] exp   an existing expression scalar * vector
  * @return          The expression representing this SVV.
  */
 inline Expression_SVV operator*( const Vector& v, const Expression_SV exp )
 {
-    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( v, exp.getArg2()) );
+    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( v, exp.getArg2() ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -153,7 +153,7 @@ inline Expression_SVV operator*( const Vector& v, const Expression_SV exp )
 inline Expression_SV_S operator+( const Scalar& alpha, const Vector& x )
 {
     // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x), alpha );
+    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
 }
 
 /**
@@ -168,7 +168,7 @@ inline Expression_SV_S operator+( const Scalar& alpha, const Vector& x )
 inline Expression_SV_S operator+( const Vector& x, const Scalar& alpha )
 {
     // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x), alpha );
+    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
 }
 
 /* ------------------------------------------------------------------------- */

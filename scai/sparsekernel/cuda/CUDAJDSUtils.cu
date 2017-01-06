@@ -674,10 +674,15 @@ void CUDAJDSUtils::jacobi(
     }
 
     const bool useTexture = CUDASettings::useTexture();
+
     const bool useSharedMem = CUDASettings::useSharedMem();
+
     const int blockSize = CUDASettings::getBlockSize( numRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
     SCAI_LOG_DEBUG( logger, "useTexture = " << useTexture << ", useSharedMem = " << useSharedMem )
 
     if ( useTexture )
@@ -827,6 +832,7 @@ void jds_jacobi_halo_kernel(
         }
 
         const T aDiag = diagonal[perm];
+
         solutionLocal[perm] -= temp * omega / aDiag;
     }
 }
@@ -1807,7 +1813,7 @@ void CUDAJDSUtils::normalGEVM(
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream << ">>>" );
 
     gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>>
-            ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, nonEmptyRows, ndlg );
+    ( result, x, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, nonEmptyRows, ndlg );
 
     if ( !syncToken )
     {
@@ -2058,7 +2064,7 @@ void CUDAJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-                     << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
@@ -2071,7 +2077,7 @@ void CUDAJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register JDSUtils CUDA-routines for CUDA at kernel registry [" << flag
-                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );

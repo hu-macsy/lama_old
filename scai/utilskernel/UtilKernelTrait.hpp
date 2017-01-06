@@ -49,8 +49,8 @@ namespace utilskernel
 
 /** Structure just to group traits for all Utils kernels.
  *
- *  This struct does not contain any data at all. 
- *  Therefore it could also be a namespace but it is more convenient as 
+ *  This struct does not contain any data at all.
+ *  Therefore it could also be a namespace but it is more convenient as
  *  each trait must always be used qualified: UtilKernelTrait::utiliy
  */
 
@@ -86,13 +86,13 @@ struct UtilKernelTrait
          *
          *  @param[in] array is an array of values
          *  @param[in] n is the size of array
-         *  @param[in] zero  is the zero element used for reduction 
+         *  @param[in] zero  is the zero element used for reduction
          *  @param[in] op is the binary reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
          *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array[], 
-                                          const IndexType n, 
+        typedef ValueType ( *FuncType ) ( const ValueType array[],
+                                          const IndexType n,
                                           const ValueType zero,
                                           const binary::BinaryOp op );
         static const char* getId()
@@ -114,14 +114,14 @@ struct UtilKernelTrait
          *  @param[in] array2 is second array of values
          *  @param[in] n is the size of arrays
          *  @param[in] binop is the binary operator applied elementwise on array1 and array2
-         *  @param[in] zero  is the zero element used for reduction 
+         *  @param[in] zero  is the zero element used for reduction
          *  @param[in] redop is the binary reduction operator ( ADD for sum, MIN for minval, MAX for maxval, ...)
          *  @return reduced value corresponding to the reduction operator
          */
 
-        typedef ValueType ( *FuncType ) ( const ValueType array1[], 
+        typedef ValueType ( *FuncType ) ( const ValueType array1[],
                                           const ValueType array2[],
-                                          const IndexType n, 
+                                          const IndexType n,
                                           const binary::BinaryOp binop,
                                           const ValueType zero,
                                           const binary::BinaryOp redop );
@@ -247,10 +247,10 @@ struct UtilKernelTrait
          *  This routine can also be used for aliased arrays, i.e. in == out
          *  This method can only be used for numeric types, not for IndexType
          */
-        typedef void ( *FuncType ) ( 
-            ValueType out[], 
-            const ValueType in[], 
-            const IndexType n, 
+        typedef void ( *FuncType ) (
+            ValueType out[],
+            const ValueType in[],
+            const IndexType n,
             const unary::UnaryOp op );
 
         static const char* getId()
@@ -262,7 +262,7 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct binaryOp
     {
-        /** Apply binary op ADD, MULT, POW, COPY_SIGN, ... on array with one given numeric type. 
+        /** Apply binary op ADD, MULT, POW, COPY_SIGN, ... on array with one given numeric type.
          *  This routine can also be used for aliased arrays, i.e. in1 == out or in2 == out
          *  This method can only be used for numeric types, not for IndexType
          *
@@ -272,15 +272,15 @@ struct UtilKernelTrait
          *  @param[in]  n   number of elements
          *  @param[in]  op  binary operation to be applied
          */
-        typedef void ( *FuncType ) ( 
-            ValueType out[], 
-            const ValueType in1[], 
-            const ValueType in2[], 
-            const IndexType n, 
+        typedef void ( *FuncType ) (
+            ValueType out[],
+            const ValueType in1[],
+            const ValueType in2[],
+            const IndexType n,
             const binary::BinaryOp op );
 
         static const char* getId()
-        {   
+        {
             return "Util.binaryOp";
         }
     };
@@ -314,7 +314,7 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct binaryOpScalar2
     {
-        /** Same as binaryOp but 2nd arg of the input arrays is just a scalar value 
+        /** Same as binaryOp but 2nd arg of the input arrays is just a scalar value
          *
          *  This operation is only available for numeric types, not for IndexType
          */
@@ -445,7 +445,7 @@ struct UtilKernelTrait
          *  @returns       0
          *
          *  \code
-         *    array  :    0   3  10  18  22  24  
+         *    array  :    0   3  10  18  22  24
          *    array  :    3   7   8   4   2  x   -> returns 0
          *  \endcode
          *
@@ -464,7 +464,7 @@ struct UtilKernelTrait
     template<typename ValueType>
     struct sort
     {
-        /** Stable sorting of values 
+        /** Stable sorting of values
          *
          *  @param[out]  perm      contains the positions of the sorted values in the input array inValues, optional
          *  @param[out]  outValues array with sorted values, optional
@@ -486,14 +486,14 @@ struct UtilKernelTrait
          *  - at least perm or outValues must be available
          *  - inValues == outValues is supported, this alias implies sorting in-place
          *
-         *  Note: if the values to be sorted are int values in a certain range like 0, ..., nb - 1, 
+         *  Note: if the values to be sorted are int values in a certain range like 0, ..., nb - 1,
          *        sorting might be more efficient with countBuckets, sortInBuckets
          */
-        typedef void ( *FuncType ) ( 
-            IndexType perm[], 
-            ValueType outValues[], 
-            const ValueType inValues[], 
-            const IndexType n, 
+        typedef void ( *FuncType ) (
+            IndexType perm[],
+            ValueType outValues[],
+            const ValueType inValues[],
+            const IndexType n,
             const bool ascending );
 
         static const char* getId()
@@ -505,7 +505,7 @@ struct UtilKernelTrait
     template<typename BucketType>
     struct countBuckets
     {
-        /** Count bucket sizes for values mapped to buckets 
+        /** Count bucket sizes for values mapped to buckets
          *
          *  @param[in] nBuckets  number of buckets
          *  @param[in] n number of values to sort in buckets
@@ -531,12 +531,12 @@ struct UtilKernelTrait
     template<typename BucketType>
     struct sortInBuckets
     {
-        /** Resort indexes 0, ..., n-1 according to their mapping to buckets 
+        /** Resort indexes 0, ..., n-1 according to their mapping to buckets
          *
          *  @param[in] nBuckets  number of buckets
          *  @param[in] n number of values to sort in buckets
          *  @param[in] bucketMap array with n entries, bucketMap[i] is bucket for entry i
-         *  @param[in] offsets array with nBuckets + 1 entries, is running sum 
+         *  @param[in] offsets array with nBuckets + 1 entries, is running sum
          *
          *  \code
          *           bucketMap [n=10]               =  {  0  1  2  0  1  2  1  2  0  0 }

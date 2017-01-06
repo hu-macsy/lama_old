@@ -68,28 +68,28 @@ using lama::Scalar;
 
 SimpleAMG::SimpleAMG( const std::string& id )
     : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-          Context::getHostPtr() )
+        Context::getHostPtr() )
 {
     SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
 SimpleAMG::SimpleAMG( const std::string& id, LoggerPtr logger )
     : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-          Context::getHostPtr() )
+        Context::getHostPtr() )
 {
     SCAI_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
 
 SimpleAMG::SimpleAMG( const SimpleAMG& other )
     : IterativeSolver( other ), mMaxLevels( other.mMaxLevels ), mMinVarsCoarseLevel(
-          other.mMinVarsCoarseLevel ), mSmootherContext( other.mSmootherContext )
+        other.mMinVarsCoarseLevel ), mSmootherContext( other.mSmootherContext )
 {
 }
 
 SimpleAMG::SimpleAMGRuntime::SimpleAMGRuntime()
     : IterativeSolverRuntime(), mSetup(), mCurrentLevel( 0 ), mLibHandle( 0 ), mHostOnlyLevel(
-          std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-          std::numeric_limits<IndexType>::max() )
+        std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
+            std::numeric_limits<IndexType>::max() )
 {
 }
 

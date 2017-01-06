@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
     utilskernel::LArray<IndexType> indexes;
     utilskernel::LArray<PartitionId> owners;
-  
+
     utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
     dist->computeOwners( owners, indexes );

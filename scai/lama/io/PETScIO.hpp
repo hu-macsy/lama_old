@@ -42,14 +42,14 @@ namespace scai
 namespace lama
 {
 
-/** This file format supports the binary format used by PetSC. 
+/** This file format supports the binary format used by PetSC.
  *
  *   - header information is just at the beginning of the file
  *   - uses CSR format, but the sizes array and not the offsets
  *   - stores data always in BIG endian (x86 has LITTLE endian)
  */
 
-class PETScIO : 
+class PETScIO :
 
     public CRTPFileIO<PETScIO>,         // use type conversions
     public FileIO::Register<PETScIO>    // register at factory
@@ -87,7 +87,7 @@ public:
     virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
 public:
- 
+
     /** Typed version of writeStorage
      *
      *  This method must be available for implementation of

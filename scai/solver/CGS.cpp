@@ -160,8 +160,8 @@ void CGS::iterate()
         alpha = innerProdRes / innerProduct;
     }
 
-    SCAI_LOG_INFO( logger, "vecQ = vecU - " << alpha << " vecT, normRes = " << normRes 
-                           << ", innerProdRes = " << innerProdRes << ", innerProduct = " << innerProduct )
+    SCAI_LOG_INFO( logger, "vecQ = vecU - " << alpha << " vecT, normRes = " << normRes
+                   << ", innerProdRes = " << innerProdRes << ", innerProduct = " << innerProduct )
 
     vecQ = vecU - alpha * vecT;
 

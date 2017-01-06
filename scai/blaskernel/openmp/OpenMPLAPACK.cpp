@@ -127,7 +127,7 @@ void OpenMPLAPACK::getrf(
 
         for ( IndexType i = 0; i < m; i++ )
         {
-            // pivoting over ( i:n, i ) 
+            // pivoting over ( i:n, i )
 
             index = i;
 

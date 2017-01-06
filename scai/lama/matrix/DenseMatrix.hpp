@@ -104,7 +104,7 @@ public:
      * @param[in] rowDist   size and distribution of rows
      * @param[in] colDist   size and distribution of columns
      *
-     * For consistency with the constructors of sparse matrices the values 
+     * For consistency with the constructors of sparse matrices the values
      * of the dense matrix are initialized with 0 here.
      */
     DenseMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
@@ -593,13 +593,13 @@ public:
 
     void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType iLocal ) const;
 
-    void setLocalRow( const hmemo::HArray<ValueType>& row, 
+    void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
                       const utilskernel::binary::BinaryOp op  );
 
     void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
 
-    void setLocalColumn( const hmemo::HArray<ValueType>& column, 
+    void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
                          const utilskernel::binary::BinaryOp op  );
 

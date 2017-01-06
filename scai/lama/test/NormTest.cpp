@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
     scai::lama::DenseVector<ValueType> x( 4, 1.0 );
     scai::lama::Scalar s = 3.0;
 
-    scai::lama::DenseVector<ValueType> tmp( s* x );
+    scai::lama::DenseVector<ValueType> tmp( s * x );
 
     Norms allNorms;
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
         Norm& norm = *allNorms[i];
 
         // Homogeneity test
- 
+
         BOOST_CHECK_EQUAL( norm.apply ( tmp ), s * norm.apply( x ) );
     }
 }
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE( triangleInequalityTest )
         Norm& norm = *allNorms[i];
 
         // Inequality test
- 
+
         Scalar nz = norm.apply( z );
         Scalar nxy = norm.apply( x ) + norm.apply( y );
 

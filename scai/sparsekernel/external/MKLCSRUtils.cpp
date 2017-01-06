@@ -173,7 +173,7 @@ void MKLCSRUtils::decomposition(
     SCAI_REGION( "MKL.decomposition" )
 
     SCAI_LOG_INFO( logger, "decomposition<" << common::TypeTraits<ValueType>::id() << "> of matrix,"
-                           << " numRows = " << numRows << ", nnz = " << nnz << ", isSymmetric = " << isSymmetric )
+                   << " numRows = " << numRows << ", nnz = " << nnz << ", isSymmetric = " << isSymmetric )
 
     // dummy variables
 
@@ -185,6 +185,7 @@ void MKLCSRUtils::decomposition(
     /* necessary for the FIRST call of the PARDISO solver.                  */
     /* -------------------------------------------------------------------- */
     void* pt[64];
+
     for ( int i = 0; i < 64; ++i )
     {
         pt[i] = 0;
@@ -202,9 +203,10 @@ void MKLCSRUtils::decomposition(
     // 11: Real unsymmetric matrix
     // 13: Complex unsymmetric matrix
     MKL_INT mtype;
-    if( common::isComplex( common::TypeTraits<ValueType>::stype ) ) // Complex
+
+    if ( common::isComplex( common::TypeTraits<ValueType>::stype ) ) // Complex
     {
-        if( isSymmetric )
+        if ( isSymmetric )
         {
             mtype = 6;
             // also may be: 3, 4, -4
@@ -223,13 +225,13 @@ void MKLCSRUtils::decomposition(
         }
         else
         {
-            mtype = 11;   
+            mtype = 11;
         }
     }
 
     MKL_INT iparm[64];   /* control parameters */
 
-    for ( int i = 0; i < 64; ++i ) 
+    for ( int i = 0; i < 64; ++i )
     {
         iparm[i] = 0;
     }
@@ -238,7 +240,7 @@ void MKLCSRUtils::decomposition(
 
     pardisoinit( pt, &mtype, iparm );
 
-    for ( int i =0; i < 64; ++i )
+    for ( int i = 0; i < 64; ++i )
     {
         if ( iparm[i] != 0 )
         {
@@ -249,12 +251,12 @@ void MKLCSRUtils::decomposition(
     // iparm has now default values but some changes are required
 
     if ( ( common::TypeTraits<ValueType>::stype == common::scalar::FLOAT ) ||
-         ( common::TypeTraits<ValueType>::stype == common::scalar::COMPLEX ) ) 
+            ( common::TypeTraits<ValueType>::stype == common::scalar::COMPLEX ) )
     {
         iparm[27] = 1;  /* float */
     }
-    else if( ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE ) ||
-             ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE_COMPLEX ) )
+    else if ( ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE ) ||
+              ( common::TypeTraits<ValueType>::stype == common::scalar::DOUBLE_COMPLEX ) )
     {
         iparm[27] = 2;  /* double */
     }
@@ -281,9 +283,9 @@ void MKLCSRUtils::decomposition(
 
     phase = 11;
 
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
-             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
-             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> ( &numRows ),
+             const_cast<ValueType*> ( csrValues ), const_cast<IndexType*> ( csrIA ),
+             const_cast<IndexType*> ( csrJA ), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
 
     SCAI_LOG_INFO( logger, "pardiso completed, error = " << error )
 
@@ -297,9 +299,9 @@ void MKLCSRUtils::decomposition(
 
     phase = 22;
 
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
-             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
-             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> ( &numRows ),
+             const_cast<ValueType*> ( csrValues ), const_cast<IndexType*> ( csrIA ),
+             const_cast<IndexType*> ( csrJA ), &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
 
     SCAI_PARDISO_ERROR_CHECK( error, "ERROR during numerical factorization" )
     SCAI_LOG_INFO( logger, "Factorization completed ... " )
@@ -308,18 +310,18 @@ void MKLCSRUtils::decomposition(
     /* .. Back substitution and iterative refinement.                       */
     /* -------------------------------------------------------------------- */
     phase = 33;
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
-             const_cast<ValueType*> (csrValues), const_cast<IndexType*> (csrIA),
-             const_cast<IndexType*> (csrJA), &iDum, &nrhs, iparm, &msglvl,
-             const_cast<ValueType*> (rhs), solution, &error );
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> ( &numRows ),
+             const_cast<ValueType*> ( csrValues ), const_cast<IndexType*> ( csrIA ),
+             const_cast<IndexType*> ( csrJA ), &iDum, &nrhs, iparm, &msglvl,
+             const_cast<ValueType*> ( rhs ), solution, &error );
 
     SCAI_LOG_INFO( logger, "pardiso 33 completed, error = " << error )
     SCAI_PARDISO_ERROR_CHECK( error, "ERROR during back substitution" )
     SCAI_LOG_INFO( logger, "Solve completed ... " )
 
     phase = -1; /* Release internal memory. */
-    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> (&numRows),
-             &vDum, const_cast<IndexType*> (csrIA), const_cast<IndexType*> (csrJA),
+    pardiso( pt, &maxfct, &mnum, &mtype, &phase, const_cast<IndexType*> ( &numRows ),
+             &vDum, const_cast<IndexType*> ( csrIA ), const_cast<IndexType*> ( csrJA ),
              &iDum, &nrhs, iparm, &msglvl, &vDum, &vDum, &error );
 
     SCAI_LOG_INFO( logger, "decomposition completed" )
@@ -356,7 +358,7 @@ MKLCSRUtils::MKLCSRUtils()
         return;
     }
 
-    // replace internal OpenMP kernels  
+    // replace internal OpenMP kernels
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_REPLACE;
 

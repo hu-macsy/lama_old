@@ -53,7 +53,7 @@
 #include <iostream>
 
 #define _USE_MATH_DEFINES
-#include <cmath> 
+#include <cmath>
 
 #include "Configuration.hpp"
 
@@ -62,13 +62,13 @@ using namespace scai;
 #define MASTER 0
 
 #define HOST_PRINT( comm, msg )             \
-{                                           \
-    PartitionId myRank = comm->getRank();   \
-    if ( myRank == MASTER )                 \
-    {                                       \
-        std::cout << msg;                   \
-    }                                       \
-}
+    {                                           \
+        PartitionId myRank = comm->getRank();   \
+        if ( myRank == MASTER )                 \
+        {                                       \
+            std::cout << msg;                   \
+        }                                       \
+    }
 
 /*
  *  routine for initializing derivative matrices (needed for velocity Updates vz, vx, vy)
@@ -99,7 +99,7 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     std::vector<ValueType> csrValues;
 
     // create matrix A
-    numValues = NZ + (NZ - 1); // diagonal element (NZ) + secondary diagonal elements (NZ - 1)
+    numValues = NZ + ( NZ - 1 ); // diagonal element (NZ) + secondary diagonal elements (NZ - 1)
     csrIA.reserve( NZ + 1 );
     csrJA.reserve( numValues );
     csrValues.reserve( numValues );
@@ -107,24 +107,26 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     IndexType count = 0;
     IndexType size = NZ;
     csrIA.push_back( 0 );
-    for( IndexType i = 0; i < size; ++i )
+
+    for ( IndexType i = 0; i < size; ++i )
     {
-        for( IndexType j = 0; j < size; ++j )
+        for ( IndexType j = 0; j < size; ++j )
         {
             if ( i == j )
             {
                 ++count;
-                csrJA.push_back(j);
+                csrJA.push_back( j );
                 csrValues.push_back( -1.0 );
             }
 
             if ( j - 1 == i )
             {
                 ++count;
-                csrJA.push_back(j);
+                csrJA.push_back( j );
                 csrValues.push_back( 1.0 );
             }
         }
+
         csrIA.push_back( count );
     }
 
@@ -139,7 +141,7 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     csrValues.clear();
 
     // create matrix B
-    numValues = NZ*NX + (NZ*NX - (NZ+1) + 1); // diagonal element (NZ*NX) + secondary diagonal elements (NZ*NX - (NZ+1) + 1)
+    numValues = NZ * NX + ( NZ * NX - ( NZ + 1 ) + 1 ); // diagonal element (NZ*NX) + secondary diagonal elements (NZ*NX - (NZ+1) + 1)
     csrIA.reserve( NZ + 1 );
     csrJA.reserve( numValues );
     csrValues.reserve( numValues );
@@ -147,24 +149,26 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     count = 0;
     size = NZ * NX;
     csrIA.push_back( 0 );
-    for( IndexType i = 0; i < size; ++i )
+
+    for ( IndexType i = 0; i < size; ++i )
     {
-        for( IndexType j = 0; j < size; ++j )
+        for ( IndexType j = 0; j < size; ++j )
         {
             if ( i == j )
             {
                 ++count;
-                csrJA.push_back(j);
+                csrJA.push_back( j );
                 csrValues.push_back( -1.0 );
             }
 
             if ( j - NZ == i )
             {
                 ++count;
-                csrJA.push_back(j);
+                csrJA.push_back( j );
                 csrValues.push_back( 1.0 );
             }
         }
+
         csrIA.push_back( count );
     }
 
@@ -235,7 +239,7 @@ void initializeMatrices( lama::SparseMatrix<ValueType>& A, lama::SparseMatrix<Va
     D.setContextPtr( ctx );
     E.setContextPtr( ctx );
     F.setContextPtr( ctx );
-    
+
     D.assignTranspose( A );
     D.scale( -1.0 );
     HOST_PRINT( comm, "Matrix D finished\n" );
@@ -278,7 +282,7 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
     tau = -1.0 * help;
     tau.exp();
     help = one - 2.0 * help;
-    source = lama::Scalar(AMP) * help * tau;
+    source = lama::Scalar( AMP ) * help * tau;
 }
 
 /*
@@ -289,7 +293,7 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
 template <typename ValueType>
 void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<ValueType>& source, lama::DenseVector<ValueType>& p,
                 lama::Vector& vX, lama::Vector& vY, lama::Vector& vZ,
-                lama::Matrix& A, lama::Matrix& B, lama::Matrix& C, lama::Matrix& D, lama::Matrix& E, lama::Matrix& F, 
+                lama::Matrix& A, lama::Matrix& B, lama::Matrix& C, lama::Matrix& D, lama::Matrix& E, lama::Matrix& F,
                 lama::Scalar v_factor, lama::Scalar p_factor,
                 IndexType NT, lama::Scalar DH_INV, IndexType source_index, IndexType seismogram_index,
                 dmemo::CommunicatorPtr comm, dmemo::DistributionPtr /*dist*/ )
@@ -298,7 +302,7 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
 
     for ( IndexType t = 0; t < NT; t++ )
     {
-        if( t % 100 == 0 && t != 0)
+        if ( t % 100 == 0 && t != 0 )
         {
             HOST_PRINT( comm, "Calculating time step " << t << " from " << NT << "\n" );
         }
@@ -368,18 +372,19 @@ int main( int /*argc*/, char** /*argv[]*/ )
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( config.getN(), comm ) );
 
     HOST_PRINT( comm, "Acoustic 3-D FD-Algorithm\n\n" );
-    if( comm->getRank() == MASTER )
+
+    if ( comm->getRank() == MASTER )
     {
         config.print();
     }
 
     // for timing
     double start_t, end_t;
-   
+
     start_t = common::Walltime::get();
     // get source signal
     // init vector with a sequence of values (MATLAB t=0:DT:(NT*DT-DT);)
-    lama::DenseVector<ValueType> source( config.getNT(), ValueType(0), config.getDT(), ctx );
+    lama::DenseVector<ValueType> source( config.getNT(), ValueType( 0 ), config.getDT(), ctx );
     sourceFunction( source, config.getFC(), config.getAMP(), comm );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished calculating source in " << end_t - start_t << " sec.\n\n" );
@@ -411,7 +416,7 @@ int main( int /*argc*/, char** /*argv[]*/ )
 
     start_t = common::Walltime::get();
     timesteps( seismogram, source, p, vX, vY, vZ, A, B, C, D, E, F,
-               config.getVfactor(), config.getPfactor(), config.getNT(), lama::Scalar( 1.0/config.getDH() ),
+               config.getVfactor(), config.getPfactor(), config.getNT(), lama::Scalar( 1.0 / config.getDH() ),
                config.getSourceIndex(), config.getSeismogramIndex(), comm, dist );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished time stepping in " << end_t - start_t << " sec.\n\n" );

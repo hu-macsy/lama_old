@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
         {
             storage.getColumn( col1, j );
             denseStorage.getColumn( col2, j );
- 
+
             BOOST_CHECK( col1.maxDiffNorm( col2 ) < ValueType( 0.0001 ) );
         }
     }

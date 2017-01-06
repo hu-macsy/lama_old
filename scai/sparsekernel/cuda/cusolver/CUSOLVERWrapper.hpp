@@ -44,7 +44,7 @@
 #endif
 
 #ifndef CUDART_VERSION
-    #error CUDART_VERSION Undefined!
+#error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
 
 #include <cusolverSp.h>
@@ -66,7 +66,7 @@ class COMMON_DLL_IMPORTEXPORT CUSOLVERWrapper;
         typedef CUSOLVERTrait::SOLVERDnHandle SOLVERDnHandle;                                                                   \
         typedef CUSOLVERTrait::SOLVERSpHandle SOLVERSpHandle;                                                                   \
         typedef CUSOLVERTrait::BLASMatrix BLASMatrix;                                                                           \
-                                                                                                                                \
+        \
         static void csrQR(                                                                                                      \
                 SOLVERSpHandle handle,                                                                                          \
                 IndexType n,                                                                                                    \
@@ -91,7 +91,7 @@ class COMMON_DLL_IMPORTEXPORT CUSOLVERWrapper;
                             singularity ),                                                                                      \
                     "CUSOLVERWrapper::csrlsvlu" )                                                                               \
         }                                                                                                                       \
-                                                                                                                                \
+        \
     };
 
 CUSOLVERWRAPPER_DEF( float, float, S )

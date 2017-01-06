@@ -114,7 +114,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     }
 
     const IndexType myVals[N] = { 1, 5, 9, 4, 6, 3, 7, 8, 0, 2 };
+
     LArray<IndexType> array1( N, myVals, testContext );
+
     BOOST_CHECK( array.isValid( testContext ) );
 
     for ( IndexType i = 0; i < N; ++i )
@@ -305,7 +307,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remoteTest, ValueType, ArithmeticRedTypes )
     LArray<ValueType> hostA( N, 5, host );
     LArray<ValueType> remA( N, 2, testContext );
 
-    for ( IndexType i = 0; i < N; i+=2 )
+    for ( IndexType i = 0; i < N; i += 2 )
     {
         remA[i] = hostA[i];
     }
@@ -320,7 +322,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remoteTest, ValueType, ArithmeticRedTypes )
         WriteAccess<ValueType> write( remA, testContext );
     }
 
-    for ( IndexType i = 1; i < N; i+=2 )
+    for ( IndexType i = 1; i < N; i += 2 )
     {
         hostA[i] = remA[i];
     }

@@ -151,9 +151,9 @@ BOOST_AUTO_TEST_CASE( init1Test )
 
     HArray<IndexType> array;
 
-    array.init( val, 0 );  
+    array.init( val, 0 );
     array.init( val, N );
-    
+
     BOOST_REQUIRE_EQUAL( array.size(), N );
 
     ContextPtr hostContext = Context::getHostPtr();
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( init1Test )
             BOOST_CHECK_EQUAL( val, read[i] );
         }
     }
-    
+
     IndexType N2 = N / 2;
     array.init( val + 1, N2 );
 
@@ -382,10 +382,10 @@ BOOST_AUTO_TEST_CASE( remoteTest )
 
     // put single values on remote context
 
-    for ( IndexType i = 0; i < N; i+=2 )
+    for ( IndexType i = 0; i < N; i += 2 )
     {
-        ReadAccess<ValueType> readA( hostA, hostContext ); 
-        WriteAccess<ValueType> writeA( remA, remoteContext ); 
+        ReadAccess<ValueType> readA( hostA, hostContext );
+        WriteAccess<ValueType> writeA( remA, remoteContext );
         ValueType elem = readA[i];
         writeA.setValue( elem, i );
     }
@@ -394,6 +394,7 @@ BOOST_AUTO_TEST_CASE( remoteTest )
 
     {
         ReadAccess<double> readA( remA, hostContext );
+
         for ( IndexType i = 0; i < N; ++i )
         {
             sum += readA[i];
@@ -404,12 +405,12 @@ BOOST_AUTO_TEST_CASE( remoteTest )
         // make incarnation of remA invalid
         WriteAccess<ValueType> write( remA, remoteContext );
     }
- 
+
     BOOST_CHECK_EQUAL( 2 * Nh + 5 * Nh, sum );
 
     // now we read value from remote context
 
-    for ( IndexType i = 1; i < N; i+=2 )
+    for ( IndexType i = 1; i < N; i += 2 )
     {
         ReadAccess<ValueType> readA( remA, remoteContext );
         WriteAccess<ValueType> writeA( hostA, hostContext );
@@ -422,6 +423,7 @@ BOOST_AUTO_TEST_CASE( remoteTest )
 
     {
         ReadAccess<double> readA( hostA, hostContext );
+
         for ( IndexType i = 0; i < N; ++i )
         {
             sum += readA[i];

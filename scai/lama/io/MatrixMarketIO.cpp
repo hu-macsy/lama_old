@@ -92,7 +92,7 @@ std::string MatrixMarketIO::createValue()
 /* --------------------------------------------------------------------------------- */
 
 bool MatrixMarketIO::isSupportedMode( const FileMode mode ) const
-{   
+{
     // binary is not supported
 
     if ( mode == BINARY )
@@ -116,15 +116,15 @@ void MatrixMarketIO::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------------- */
 
 const char* MatrixMarketIO::symmetry2str( const Symmetry symmetry )
-{   
+{
     switch ( symmetry )
-    {   
+    {
         case GENERAL:
             return "general";
-        
+
         case SYMMETRIC:
             return "symmetric";
-        
+
         case HERMITIAN:
             return "hermitian";
 
@@ -220,8 +220,8 @@ void MatrixMarketIO::readMMHeader(
     if ( buffer != "%%matrixmarket" )
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "File " << fileName << " is no valid matrix market file" 
-                                     << ", expected file to begin with %%MatrixMarket" )
+                             "File " << fileName << " is no valid matrix market file"
+                             << ", expected file to begin with %%MatrixMarket" )
     }
 
     // read object type matrix | vector
@@ -242,8 +242,8 @@ void MatrixMarketIO::readMMHeader(
     else
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading Matrix Market file " << fileName << ": object type " << buffer 
-                              << " illegal, must be matrix or vector" )
+                             "Reading Matrix Market file " << fileName << ": object type " << buffer
+                             << " illegal, must be matrix or vector" )
     }
 
     // read file type coordinate | array
@@ -259,14 +259,14 @@ void MatrixMarketIO::readMMHeader(
     {
         isCoordinate = true;
     }
-    else if ( buffer == "array" ) 
+    else if ( buffer == "array" )
     {
         isCoordinate = false;
     }
     else
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading Matrix Market file " << fileName << ": format type " << buffer 
+                             "Reading Matrix Market file " << fileName << ": format type " << buffer
                              << " illegal, must be array or coordinate" )
     }
 
@@ -279,27 +279,27 @@ void MatrixMarketIO::readMMHeader(
     {
         dataType = common::scalar::FLOAT;
     }
-    else if ( buffer == "double" ) 
+    else if ( buffer == "double" )
     {
         dataType = common::scalar::DOUBLE;
     }
-    else if ( buffer == "integer" ) 
+    else if ( buffer == "integer" )
     {
         dataType = common::scalar::INDEX_TYPE;
     }
-    else if ( buffer == "complex" ) 
+    else if ( buffer == "complex" )
     {
         dataType = common::scalar::COMPLEX;
     }
-    else if ( buffer == "pattern" ) 
+    else if ( buffer == "pattern" )
     {
         dataType = common::scalar::PATTERN;
     }
-    else 
+    else
     {
         SCAI_THROWEXCEPTION( common::IOException,
                              "Reading Matrix Market fille " << fileName
-                             << ": data type field = " << buffer << " is illegal" 
+                             << ": data type field = " << buffer << " is illegal"
                              << ", should be real, double, integer, complex, pattern" )
     }
 
@@ -328,7 +328,7 @@ void MatrixMarketIO::readMMHeader(
     {
         SCAI_THROWEXCEPTION( common::IOException,
                              "Reading Matrix Market fille " << inFile.getFileName()
-                             << ": symmetry = " << buffer << " is illegal" 
+                             << ": symmetry = " << buffer << " is illegal"
                              << ", should be general, symmetric, skew-symmetric or hermitian" )
     }
 
@@ -373,9 +373,9 @@ void MatrixMarketIO::readMMHeader(
         SCAI_LOG_WARN( logger, "MatrixMarket file " << fileName << ": vector, but ncol = " << numColumns )
     }
 
-    SCAI_LOG_INFO( logger, "read MM header: size = " << numRows << " x " << numColumns 
-                           << ", #nnz = " << numValues << ", type = " << dataType
-                           << ", symmetry = " << symmetry )
+    SCAI_LOG_INFO( logger, "read MM header: size = " << numRows << " x " << numColumns
+                   << ", #nnz = " << numValues << ", type = " << dataType
+                   << ", symmetry = " << symmetry )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -486,7 +486,7 @@ void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName
     IndexType numRows;
     IndexType numColumns;
     IndexType numValues;
-    bool      isVector; 
+    bool      isVector;
 
     IOStream inFile( fileName, std::ios::in );
 
@@ -512,8 +512,8 @@ template<typename ValueType>
 void MatrixMarketIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName,
-    const IndexType first, 
-    const IndexType n ) 
+    const IndexType first,
+    const IndexType n )
 {
     SCAI_REGION( "IO.MM.readArray" )
 
@@ -542,7 +542,7 @@ void MatrixMarketIO::readArrayImpl(
     {
         SCAI_LOG_WARN( logger, "reading vector from mtx file, #columns = " << numColumns << ", ignored" )
     }
- 
+
     if ( ! common::Utils::validIndex( first, size ) )
     {
         array.clear();
@@ -584,11 +584,11 @@ void MatrixMarketIO::readArrayImpl(
                 reader >> val;
                 i = l;
             }
-    
+
             vPtr[i] = val;
         }
     }
- 
+
     if ( inFile.eof() )
     {
         COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
@@ -620,17 +620,18 @@ void MatrixMarketIO::readArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-struct indexLess {
+struct indexLess
+{
 
     const IndexType* ia;
     const IndexType* ja;
 
     bool operator()( int pos1, int pos2 )
-    {   
+    {
         return    ( ia[pos1] < ia[pos2] )
-               || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
+                  || ( ia[pos1] == ia[pos2] && ja[pos1] < ja[pos2] );
     }
-}; 
+};
 
 static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[], IndexType N )
 {
@@ -648,7 +649,7 @@ static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[]
 
     std::sort( perm, perm + N, cmp );
 }
- 
+
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -672,7 +673,7 @@ MatrixMarketIO::Symmetry MatrixMarketIO::checkSymmetry( const HArray<IndexType>&
 
     WriteOnlyAccess<IndexType> perm1( rank1, host, n );
     WriteOnlyAccess<IndexType> perm2( rank2, host, n );
-     
+
     sortIJ( perm1, ia, ja, n );
     sortIJ( perm2, ja, ia, n );
 
@@ -683,18 +684,18 @@ MatrixMarketIO::Symmetry MatrixMarketIO::checkSymmetry( const HArray<IndexType>&
         IndexType j1 = ja[perm1[i]];
         IndexType j2 = ia[perm2[i]];
 
-        SCAI_LOG_TRACE( logger, "Check: pos1 = " << perm1[i] << ": ( " << i1 << ", " << j1 
-                                 << " ), pos2 = " << perm2[i] << ": ( " << i2 << ", " << j2 << " )" )
+        SCAI_LOG_TRACE( logger, "Check: pos1 = " << perm1[i] << ": ( " << i1 << ", " << j1
+                        << " ), pos2 = " << perm2[i] << ": ( " << i2 << ", " << j2 << " )" )
 
         if ( i1 != i2 || j1 != j2 )
         {
             isSym  = false;
             isHerm = false;
             SCAI_LOG_DEBUG( logger, "entry (" << i1 << ", " << j1 << ") available, "
-                                    << "but not entry (" << j1 << ", " << i1 << ")" )
+                            << "but not entry (" << j1 << ", " << i1 << ")" )
             break;
         }
-       
+
         // we have found entry( i1, j1 ) and entry( j1, i1 )
 
         if ( i1 <= j1 )
@@ -713,6 +714,7 @@ MatrixMarketIO::Symmetry MatrixMarketIO::checkSymmetry( const HArray<IndexType>&
         {
             isSym = false;
         }
+
         if ( common::Math::conj( v1 ) != v2 )
         {
             isHerm = false;
@@ -747,7 +749,7 @@ static void removeUpperTriangular( HArray<IndexType>& cooIA, HArray<IndexType>& 
 
     IndexType k = 0;
 
-    // take only entries( i, j ) with i >= j 
+    // take only entries( i, j ) with i >= j
 
     {
         ContextPtr host = Context::getHostPtr();
@@ -780,7 +782,7 @@ static void removeUpperTriangular( HArray<IndexType>& cooIA, HArray<IndexType>& 
 template<typename ValueType>
 void MatrixMarketIO::writeDenseMatrix(
     const DenseStorage<ValueType>& storage,
-    const std::string& fileName ) 
+    const std::string& fileName )
 {
     SCAI_REGION( "IO.MM.writeDense" )
 
@@ -813,7 +815,7 @@ void MatrixMarketIO::writeDenseMatrix(
 template<typename ValueType>
 void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
-    const std::string& fileName ) 
+    const std::string& fileName )
 {
     if ( storage.getFormat() == _MatrixStorage::DENSE )
     {
@@ -842,12 +844,12 @@ void MatrixMarketIO::writeStorageImpl(
 
     Symmetry symFlag = checkSymmetry( cooIA, cooJA, cooValues );
 
-    SCAI_LOG_INFO( logger, "symmetry = " << symmetry2str( symFlag ) ) 
+    SCAI_LOG_INFO( logger, "symmetry = " << symmetry2str( symFlag ) )
 
     if ( symFlag == SYMMETRIC || symFlag == HERMITIAN )
     {
         removeUpperTriangular( cooIA, cooJA, cooValues );
-  
+
         SCAI_LOG_INFO( logger, "#values = " << cooIA.size() << ", due to symmetry " << symmetry2str( symFlag ) )
     }
 
@@ -904,10 +906,10 @@ void MatrixMarketIO::writeStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::readStorageInfo( 
-    IndexType& numRows, 
-    IndexType& numColumns, 
-    IndexType& numValues, 
+void MatrixMarketIO::readStorageInfo(
+    IndexType& numRows,
+    IndexType& numColumns,
+    IndexType& numValues,
     const std::string& fileName )
 
 {
@@ -936,7 +938,7 @@ void MatrixMarketIO::readStorageInfo(
             // in case of symmetry we assume one entry for each diagonal element and double the non-diagonal elements
 
             SCAI_ASSERT_EQUAL( numRows, numColumns, "symmetry only possible for square matrices" )
-    
+
             numValues = numRows + 2 * ( numValuesFile - numRows );
         }
     }
@@ -945,7 +947,7 @@ void MatrixMarketIO::readStorageInfo(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixMarketIO::readMMArray( 
+void MatrixMarketIO::readMMArray(
     IOStream& inFile,
     HArray<ValueType>& data,
     const IndexType numRows,
@@ -976,13 +978,14 @@ void MatrixMarketIO::readMMArray(
     {
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            // symmemtric data has no upper triangular, i < j 
+            // symmemtric data has no upper triangular, i < j
 
             if ( symmetry == SYMMETRIC && i < j )
             {
                 wData[i * numColumns + j] = wData[ j * numRows + i];
                 continue;
             }
+
             if ( symmetry == HERMITIAN && i < j )
             {
                 wData[i * numColumns + j] = common::Math::conj( wData[ j * numRows + i] );
@@ -1006,7 +1009,7 @@ void MatrixMarketIO::readMMArray(
 
     if ( inFile.eof() )
     {
-         COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
+        COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
     }
 
     // check if there is more data in the file tht should not be there
@@ -1017,7 +1020,7 @@ void MatrixMarketIO::readMMArray(
         COMMON_THROWEXCEPTION( "'" << fileName << "': invalid file, contains to many elements." )
     }
 }
-   
+
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1042,20 +1045,20 @@ void MatrixMarketIO::readStorageImpl(
     readMMHeader( inFile, numRows, numColumns, numValuesFile, mmType, isVector, symmetry );
 
     SCAI_LOG_DEBUG( logger, "from header: nrows = " << numRows << ", ncols = " << numColumns << ", nnz = " << numValuesFile
-                            << ", mmType = " << mmType << ", symmetry = " << symmetry )
+                    << ", mmType = " << mmType << ", symmetry = " << symmetry )
 
     // check for consistency
 
     if ( common::isComplex( mmType ) && !common::isComplex( common::TypeTraits<ValueType>::stype ) )
     {
-        SCAI_LOG_WARN( logger, "Read matrix from Matrix Market file " << fileName 
-                               << ": contains complex data but read in non-complex storage " << storage )
+        SCAI_LOG_WARN( logger, "Read matrix from Matrix Market file " << fileName
+                       << ": contains complex data but read in non-complex storage " << storage )
     }
 
     if ( numValuesFile == nIndex )
     {
         DenseStorage<ValueType> denseStorage( numRows, numColumns );
- 
+
         HArray<ValueType>& data = denseStorage.getData();
 
         readMMArray( inFile, data, numRows, numColumns, symmetry );
@@ -1079,7 +1082,7 @@ void MatrixMarketIO::readStorageImpl(
     LArray<ValueType> val;  // values as in COO format
 
     SCAI_LOG_DEBUG( logger, "read in" )
-    
+
     if ( common::scalar::PATTERN == mmType )
     {
         // to be consistent with other FileIO handlers throw an exception if not Pattern expected
@@ -1119,7 +1122,7 @@ void MatrixMarketIO::readStorageImpl(
     }
     else if ( symmetry == SKEW_SYMMETRIC )
     {
-        // skew-symmetric not supported 
+        // skew-symmetric not supported
 
         SCAI_THROWEXCEPTION( common::IOException, "Matrix Market file " << fileName
                              << ": skew-symmetric not supported yet" )
@@ -1129,13 +1132,13 @@ void MatrixMarketIO::readStorageImpl(
 
     inFile.closeCheck();
 
-    // we shape the matrix by maximal appearing indexes, apply max only if size > 0 
+    // we shape the matrix by maximal appearing indexes, apply max only if size > 0
 
     IndexType nrows = ia.size() ? ia.max() + 1 : 0;
     IndexType ncols = ja.size() ? ja.max() + 1 : 0;
 
     SCAI_LOG_INFO( logger, "size from header: " << numRows << " x " << numColumns
-                           << ", size by indexes: " << nrows << " x " << ncols )
+                   << ", size by indexes: " << nrows << " x " << ncols )
 
     // specified size might be greater, but less is ERROR
 

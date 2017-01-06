@@ -256,7 +256,7 @@ void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
     LAPACKFlag TA = LAPACKTrait::enum2char( trans );
     LAPACKFlag DI = LAPACKTrait::enum2char( diag );
     SCAI_LOG_INFO( logger,
-                   "tptrs<" << common::TypeTraits<ValueType>::id() << ">, n = " << n 
+                   "tptrs<" << common::TypeTraits<ValueType>::id() << ">, n = " << n
                    << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     if ( order == CblasColMajor )
@@ -268,7 +268,7 @@ void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
     }
     else if ( order == CblasRowMajor )
     {
-        // not supported by LAPACK, call own implementation 
+        // not supported by LAPACK, call own implementation
         OpenMPLAPACK::tptrs( order, uplo, trans, diag, n, nrhs, AP, B, ldb );
     }
 }

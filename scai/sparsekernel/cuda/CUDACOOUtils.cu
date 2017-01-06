@@ -506,7 +506,7 @@ void CUDACOOUtils::ia2offsets(
     SCAI_LOG_INFO( logger,
                    "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues ) << " )" )
 
-    // Note: the array cooIA is assumed to be sorted 
+    // Note: the array cooIA is assumed to be sorted
 
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;// default stream, asynchronous execution not supported here
@@ -588,7 +588,7 @@ void CUDACOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                     << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, ctx, flag );
 }
@@ -599,7 +599,7 @@ void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 

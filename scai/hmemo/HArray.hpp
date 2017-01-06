@@ -333,6 +333,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
         ValueType* hostData = static_cast<ValueType*>( data.get() );
         // ToDo: iterator changed from size_t to IndexType due to errors using compilers just supporting OpenMP 2.5
         #pragma omp parallel for
+
         for ( IndexType i = 0; i < mSize; ++i )
         {
             hostData[i] = value;

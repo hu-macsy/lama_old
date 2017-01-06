@@ -121,10 +121,10 @@ public:
     /**
      * @brief creates a replicated DenseVector of the passed size initilized a sequence of values
      *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
-     * 
+     *
      * @param[in] size       the size of the new DenseVector.
      * @param[in] startValue the first value of the new DenseVector
-     * @param[in] inc        the increment for the sequence of values 
+     * @param[in] inc        the increment for the sequence of values
      * @param[in] context    specifies optionally the context where dense vector should reside
      */
     DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
@@ -132,10 +132,10 @@ public:
     /**
      * @brief creates a distributed DenseVector of the passed size initilized a sequence of values
      *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
-     * 
+     *
      * @param[in] distribution  the distribution to use for the new vector.
      * @param[in] startValue    the first value of the new DenseVector
-     * @param[in] inc           the increment for the sequence of values 
+     * @param[in] inc           the increment for the sequence of values
      * @param[in] context    specifies optionally the context where dense vector should reside
      */
     DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
@@ -163,7 +163,7 @@ public:
 
     /**
      * More general constructor that creates a deep copy of an arbitrary vector.
-     * 
+     *
      * The explicit specifier avoids implict conversions as the following example shows.
      *
      * \code
@@ -320,8 +320,8 @@ public:
     using Vector::operator=;
 
     /**
-     * This method initializes a distributed vector with random numbers. 
-     * 
+     * This method initializes a distributed vector with random numbers.
+     *
      * @param[in] distribution specifies the distribution of the vector
      * @param[in] fillRate for the number of non-zeros
      */
@@ -335,11 +335,11 @@ public:
 
     virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution );
 
-    /** Sort all elements of this vector. 
+    /** Sort all elements of this vector.
      *
-     *  Currently, sorting is only possible on block distributed vectors. 
+     *  Currently, sorting is only possible on block distributed vectors.
      *  Keep in mind that this operation might introduce a new (general block) distribution
-     *  for the vector. 
+     *  for the vector.
      *
      *  @param[out] perm         permutation vector with the global indexes of original positions
      *  @param[in]  ascending    flag if sorting is ascending or descending
@@ -353,9 +353,9 @@ public:
 
     virtual void sort( bool ascending );
 
-    /** Checking whether all values in a dense vector are sorted. 
+    /** Checking whether all values in a dense vector are sorted.
      *
-     *  This method can only be applied for block distributions. 
+     *  This method can only be applied for block distributions.
      */
     virtual bool isSorted( bool ascending ) const;
 
@@ -482,7 +482,7 @@ public:
     virtual void assign( const hmemo::_HArray& globalValues );
 
     /** Setting this vector by gathering vector elements from another vector.
-     * 
+     *
      *  @param[in] source is the vector from which elements are gathered
      *  @param[in] index  are the elements needed from other processors
      *  @param[in] op     specifies how to combine elements with existing ones
@@ -490,18 +490,18 @@ public:
      *  If op is COPY, this vector will have the same size and distribution as index, otherwise
      *  this vector and the other vector must have the same size and distribution.
      */
-    virtual void gather( 
-        const DenseVector<ValueType>& source, 
+    virtual void gather(
+        const DenseVector<ValueType>& source,
         const DenseVector<IndexType>& index,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
     /** Scattering values from another vector into this vector
-     * 
-     *  @param[in] index  specifies positions where to update values     
+     *
+     *  @param[in] index  specifies positions where to update values
      *  @param[in] source values that are scattered
      *  @param[in] op     specifies how to combine elements with existing ones
      *
-     *  *this[ index ] = source, index and source must have same size/distribution 
+     *  *this[ index ] = source, index and source must have same size/distribution
      */
     virtual void scatter(
         const DenseVector<IndexType>& index,
@@ -564,8 +564,8 @@ private:
 
     /** Static method for sorting of DenseVector */
 
-    static void sortImpl( 
-        DenseVector<IndexType>* perm, 
+    static void sortImpl(
+        DenseVector<IndexType>* perm,
         DenseVector<ValueType>* out,
         DenseVector<ValueType>& in,
         bool descending );
@@ -574,7 +574,7 @@ private:
 
     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
 
-    mutable utilskernel::LArray<ValueType> mHaloValues; 
+    mutable utilskernel::LArray<ValueType> mHaloValues;
 
 public:
 

@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_CASE( scatterTest )
                 {
                     target.scatter( index, source, utilskernel::binary::ADD );
                 }, common::Exception );
-               
+
                 continue;
             }
 

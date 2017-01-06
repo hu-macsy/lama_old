@@ -118,8 +118,8 @@ JDSStorage<ValueType>::JDSStorage(
     const HArray<ValueType>& values )
 
     : CRTPMatrixStorage<JDSStorage<ValueType>, ValueType>( numRows, numColumns ), mNumDiagonals(
-          numDiagonals ), mNumValues( numValues ), mDlg( dlg ), mIlg( ilg ), mPerm( perm ), mJa(
-          ja ), mValues( values )
+        numDiagonals ), mNumValues( numValues ), mDlg( dlg ), mIlg( ilg ), mPerm( perm ), mJa(
+            ja ), mValues( values )
 {
     check( "JDSStorage( #row, #cols, #values, #diags, dlg, ilg, perm, ja, values" );
     this->resetDiagonalProperty();
@@ -361,7 +361,7 @@ void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
         WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
-        ReadAccess<IndexType> rDlg( mDlg, loc ); 
+        ReadAccess<IndexType> rDlg( mDlg, loc );
         ReadAccess<IndexType> rPerm( mPerm, loc );
         ReadAccess<IndexType> rJa( mJa, loc );
 
@@ -416,7 +416,7 @@ void JDSStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-                                           const utilskernel::binary::BinaryOp op )
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "setColumn( " << j << " ) of : " << *this << " with column " << column )
 
@@ -1251,7 +1251,7 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
             const HArray<ValueType>&,
             const HArray<ValueType>&,
             const ValueType omega ) const
-            = &JDSStorage<ValueType>::jacobiIterate;
+        = &JDSStorage<ValueType>::jacobiIterate;
         using scai::common::bind;
         using scai::common::ref;
         using scai::common::cref;
@@ -1611,10 +1611,10 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void JDSStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-                                                     const utilskernel::binary::BinaryOp );                          \
+            const utilskernel::binary::BinaryOp );                          \
     template void JDSStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void JDSStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-                                                        const utilskernel::binary::BinaryOp );                       \
+            const utilskernel::binary::BinaryOp );                       \
     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
@@ -1626,11 +1626,11 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
 #define JDS_STORAGE_INST_LVL1( ValueType )                                                                                  \
     SCAI_COMMON_LOOP_LVL2( ValueType, JDS_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_LOOP( JDS_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef JDS_STORAGE_INST_LVL2
 #undef JDS_STORAGE_INST_LVL1
 
-    } /* end namespace lama */
+} /* end namespace lama */
 
-    } /* end namespace scai */
+} /* end namespace scai */

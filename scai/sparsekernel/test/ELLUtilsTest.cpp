@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillELlValuesTest, ValueType, scai_numeric_test_t
                 testVal += rValues[ pos ] * rX[ j ];
             }
         }
- 
+
         BOOST_CHECK_EQUAL( ValueType( 0 ), testVal );
     }
 }
@@ -1807,8 +1807,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compress2Test, ValueType, scai_numeric_test_types
 
         for ( IndexType k = 0; k < newNumValues; ++k )
         {
-            std::cout << "value " << k << ": " << rJA[k] << ":" << rValues[k] 
-                                    << ", expected " << ja_compress[k] << ":" << values_compress[k] << std::endl;
+            std::cout << "value " << k << ": " << rJA[k] << ":" << rValues[k]
+                      << ", expected " << ja_compress[k] << ":" << values_compress[k] << std::endl;
 
             BOOST_CHECK_EQUAL( rJA[k], ja_compress[k] );
             BOOST_CHECK_EQUAL( rValues[k], values_compress[k] );
@@ -2048,8 +2048,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( numRows, res_values, testContext );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
-                                << ", with x = " << x
-                                << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
+                       << ", with x = " << x
+                       << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -2063,8 +2063,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 
             sparseGEMV[loc]( wResult.get(),
                              alpha, rX.get(),
-                             numRows, numValuesPerRow, 
-                             numNonEmptyRows, rIndexes.get(), 
+                             numRows, numValuesPerRow,
+                             numNonEmptyRows, rIndexes.get(),
                              rIA.get(), rJA.get(), rValues.get() );
         }
 
@@ -2142,8 +2142,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( numColumns, res_values, testContext );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
-                                << ", with x = " << x
-                                << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
+                       << ", with x = " << x
+                       << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -2156,8 +2156,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
             WriteAccess<ValueType> wResult( res, loc );
 
             sparseGEVM[loc]( wResult.get(), alpha, rX.get(),
-                             numRows, numColumns, numValuesPerRow, 
-                             numNonEmptyRows, rIndexes.get(), 
+                             numRows, numColumns, numValuesPerRow,
+                             numNonEmptyRows, rIndexes.get(),
                              rIA.get(), rJA.get(), rValues.get() );
         }
 
@@ -2324,7 +2324,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
             WriteAccess<ValueType> wSolution( solution, loc, numColumns );
 
             jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(),
-                             numValuesPerRow, rIA.get(), rJA.get(), rValues.get(), 
+                             numValuesPerRow, rIA.get(), rJA.get(), rValues.get(),
                              rIndexes.get(), numNonEmptyRows,
                              rOld.get(), omega );
         }

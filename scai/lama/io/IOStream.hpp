@@ -94,7 +94,7 @@ public:
     void open( const std::string& filename, std::ios_base::openmode mode, Endian usedEndian = MACHINE_ENDIAN );
 
     /** Write array data binary in the opened file
-     * 
+     *
      *  @param[in] data is the array, size can be queried
      *  @param[in] type specifies the data type used in the file
      *
@@ -151,7 +151,7 @@ public:
     /** current file name, file must be open. */
 
     const std::string& getFileName();
-    
+
 protected:
 
     /** Logger for this class */
@@ -165,7 +165,7 @@ private:
     template<typename FileType>
     inline void writeBinDirect( const hmemo::HArray<FileType>& data );
 
-    /** Write binary array with conversion 
+    /** Write binary array with conversion
      *
      * @param data is array to be written, will be converted to FileType before
      * @tparam FileType is type used in file
@@ -292,8 +292,8 @@ inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
 template<typename ValueType>
 inline void IOStream::writeBinDirect( const hmemo::HArray<ValueType>& data )
 {
-    SCAI_LOG_INFO( logger, "writeBinDirect<" << common::TypeTraits<ValueType>::id() << 
-                            ">, size = " << data.size() << " * " << sizeof( ValueType) ) 
+    SCAI_LOG_INFO( logger, "writeBinDirect<" << common::TypeTraits<ValueType>::id() <<
+                   ">, size = " << data.size() << " * " << sizeof( ValueType ) )
 
     hmemo::ReadAccess<ValueType> dataRead( data );
 
@@ -362,7 +362,7 @@ inline void IOStream::readBinDirect( hmemo::HArray<ValueType>& data,
 
     if ( mUsedEndian == MACHINE_ENDIAN || ( mUsedEndian == mMachineEndian ) )
     {
-        std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), ndata);
+        std::fstream::read( reinterpret_cast<char*>( dataWrite.get() ), ndata );
 
         if ( this->fail() )
         {
@@ -428,12 +428,12 @@ void IOStream::writeFormatted( const hmemo::HArray<ValueType>& val, int prec )
 {
     IndexType n = val.size();
 
-    SCAI_LOG_INFO( logger, "writeFormatted<" 
-                           << common::TypeTraits<ValueType>::id() << ":" << prec 
-                           << ">, n = " << n )
+    SCAI_LOG_INFO( logger, "writeFormatted<"
+                   << common::TypeTraits<ValueType>::id() << ":" << prec
+                   << ">, n = " << n )
 
     if ( n == 0 )
-    {  
+    {
         return;
     }
 
@@ -455,7 +455,7 @@ void IOStream::writeFormatted( const hmemo::HArray<ValueType>& val, int prec )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2, typename ValueType3>
-void IOStream::writeFormatted( 
+void IOStream::writeFormatted(
     const hmemo::HArray<ValueType1>& val1, int prec1,
     const hmemo::HArray<ValueType2>& val2, int prec2,
     const hmemo::HArray<ValueType3>& val3, int prec3 )
@@ -465,11 +465,11 @@ void IOStream::writeFormatted(
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
     SCAI_ASSERT_EQUAL( n, val3.size(), "size mismatch" );
 
-    SCAI_LOG_INFO( logger, "writeFormatted<" 
-                           << common::TypeTraits<ValueType1>::id() << ":" << prec1
-                           << ", " << common::TypeTraits<ValueType2>::id() << ":" << prec2
-                           << ", " << common::TypeTraits<ValueType3>::id() << ":" << prec3
-                           << ">, n = " << n )
+    SCAI_LOG_INFO( logger, "writeFormatted<"
+                   << common::TypeTraits<ValueType1>::id() << ":" << prec1
+                   << ", " << common::TypeTraits<ValueType2>::id() << ":" << prec2
+                   << ", " << common::TypeTraits<ValueType3>::id() << ":" << prec3
+                   << ">, n = " << n )
 
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
@@ -495,7 +495,7 @@ void IOStream::writeFormatted(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void IOStream::writeFormatted( 
+void IOStream::writeFormatted(
     const hmemo::HArray<ValueType1>& val1, int prec1,
     const hmemo::HArray<ValueType2>& val2, int prec2 )
 {
@@ -503,10 +503,10 @@ void IOStream::writeFormatted(
 
     SCAI_ASSERT_EQUAL( n, val2.size(), "size mismatch" );
 
-    SCAI_LOG_INFO( logger, "writeFormatted<" 
-                           << common::TypeTraits<ValueType1>::id() << ":" << prec1
-                           << ", " << common::TypeTraits<ValueType2>::id() << ":" << prec2
-                           << ">, n = " << n )
+    SCAI_LOG_INFO( logger, "writeFormatted<"
+                   << common::TypeTraits<ValueType1>::id() << ":" << prec1
+                   << ", " << common::TypeTraits<ValueType2>::id() << ":" << prec2
+                   << ">, n = " << n )
 
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
@@ -554,9 +554,9 @@ template<typename ValueType>
 void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
                               const IndexType nlines )
 {
-    SCAI_LOG_INFO( logger, "readFormatted<" 
-                           << common::TypeTraits<ValueType>::id()
-                           << ">, nlines = " << nlines )
+    SCAI_LOG_INFO( logger, "readFormatted<"
+                   << common::TypeTraits<ValueType>::id()
+                   << ">, nlines = " << nlines )
 
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
@@ -570,9 +570,9 @@ void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
 
         if ( this->fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, 
-                                 "readFormatted<" << common::TypeTraits<ValueType>::id() 
-                                 << "> from " << mFileName 
+            SCAI_THROWEXCEPTION( common::IOException,
+                                 "readFormatted<" << common::TypeTraits<ValueType>::id()
+                                 << "> from " << mFileName
                                  << " at entry line " << k << " of " << nlines )
         }
 
@@ -589,10 +589,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
                               hmemo::HArray<ValueType2>& val2,
                               const IndexType nlines )
 {
-    SCAI_LOG_INFO( logger, "readFormatted<" 
-                           << common::TypeTraits<ValueType1>::id() << ", "
-                           << common::TypeTraits<ValueType2>::id() 
-                           << ">, nlines = " << nlines )
+    SCAI_LOG_INFO( logger, "readFormatted<"
+                   << common::TypeTraits<ValueType1>::id() << ", "
+                   << common::TypeTraits<ValueType2>::id()
+                   << ">, nlines = " << nlines )
 
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
@@ -607,10 +607,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
 
         if ( this->fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, 
-                                 "readFormatted<" << common::TypeTraits<ValueType1>::id() 
-                                 << ", " << common::TypeTraits<ValueType2>::id() 
-                                 << "> from " << mFileName 
+            SCAI_THROWEXCEPTION( common::IOException,
+                                 "readFormatted<" << common::TypeTraits<ValueType1>::id()
+                                 << ", " << common::TypeTraits<ValueType2>::id()
+                                 << "> from " << mFileName
                                  << " at entry line " << k << " of " << nlines )
         }
 
@@ -621,7 +621,7 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
 
         if ( iss.fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName 
+            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName
                                  << ", entry line " << k << " of " << nlines
                                  << ", line = " << line )
         }
@@ -636,10 +636,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
                               hmemo::HArray<ValueType3>& val3,
                               const IndexType nlines )
 {
-    SCAI_LOG_INFO( logger, "readFormatted<" 
-                           << common::TypeTraits<ValueType1>::id() << ", "
-                           << common::TypeTraits<ValueType2>::id() << ", "
-                           << common::TypeTraits<ValueType3>::id() << ">, nlines = " << nlines )
+    SCAI_LOG_INFO( logger, "readFormatted<"
+                   << common::TypeTraits<ValueType1>::id() << ", "
+                   << common::TypeTraits<ValueType2>::id() << ", "
+                   << common::TypeTraits<ValueType3>::id() << ">, nlines = " << nlines )
 
     hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
 
@@ -655,11 +655,11 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
 
         if ( this->fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, 
-                                 "readFormatted<" << common::TypeTraits<ValueType1>::id() 
-                                 << ", " << common::TypeTraits<ValueType2>::id() 
-                                 << ", " << common::TypeTraits<ValueType3>::id() 
-                                 << "> from " << mFileName 
+            SCAI_THROWEXCEPTION( common::IOException,
+                                 "readFormatted<" << common::TypeTraits<ValueType1>::id()
+                                 << ", " << common::TypeTraits<ValueType2>::id()
+                                 << ", " << common::TypeTraits<ValueType3>::id()
+                                 << "> from " << mFileName
                                  << " at entry line " << k << " of " << nlines )
         }
 
@@ -671,7 +671,7 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
 
         if ( iss.fail() )
         {
-            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName 
+            SCAI_THROWEXCEPTION( common::IOException, "Error reading file " << mFileName
                                  << ", entry line " << k << " of " << nlines
                                  << ", line = " << line )
         }

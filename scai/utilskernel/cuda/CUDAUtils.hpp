@@ -126,7 +126,7 @@ public:
     /** CUDA implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType, typename otherValueType>
-    static void setSection( ValueType out[], const IndexType inc_out, 
+    static void setSection( ValueType out[], const IndexType inc_out,
                             const otherValueType in[], const IndexType inc_in, const IndexType n, const binary::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::unaryOp */
@@ -152,21 +152,21 @@ public:
     /** CUDA implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType, typename otherValueType>
-    static void setGather( 
-        ValueType out[], 
-        const otherValueType in[], 
-        const IndexType indexes[], 
+    static void setGather(
+        ValueType out[],
+        const otherValueType in[],
+        const IndexType indexes[],
         const utilskernel::binary::BinaryOp op,
         const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType, typename otherValueType>
-    static void setScatter( 
-        ValueType out[], 
-        const IndexType indexes[], 
-        const otherValueType in[], 
-        const binary::BinaryOp op, 
+    static void setScatter(
+        ValueType out[],
+        const IndexType indexes[],
+        const otherValueType in[],
+        const binary::BinaryOp op,
         const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::scatterVal */
@@ -237,19 +237,19 @@ private:
 
     struct Registrator
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType>
     struct RegArrayKernels
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     template<typename ValueType, typename OtherValueType>
     struct RegistratorVO
     {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag ); 
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
     /** Constructor for registration. */

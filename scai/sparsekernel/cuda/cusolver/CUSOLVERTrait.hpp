@@ -38,10 +38,10 @@
 #include <cuda_runtime_api.h>
 
 #ifndef CUDART_VERSION
-    #error CUDART_VERSION Undefined!
+#error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
-    #include <cusolverDn.h>
-    #include <cusolverSp.h>
+#include <cusolverDn.h>
+#include <cusolverSp.h>
 
 // macros
 #define CUSOLVER_DN_NAME( name, prefix ) cusolverDn##prefix##name

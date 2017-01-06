@@ -389,7 +389,7 @@ void OpenMPBLAS1::copy(
 {
     SCAI_REGION( "OpenMP.BLAS1.copy" )
     SCAI_LOG_INFO( logger,
-                    "copy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
+                   "copy<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", x = " << x << ", incX = " << incX << ", y = " << y << ", incY = " << incY )
 
     if ( ( incX <= 0 ) || ( incY <= 0 ) )
     {
@@ -575,8 +575,8 @@ void OpenMPBLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelReg
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
 
-    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 OpenMP-routines for Host at kernel registry: " << 
-                            "T = " << common::TypeTraits<ValueType>::id() )
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 OpenMP-routines for Host at kernel registry: " <<
+                    "T = " << common::TypeTraits<ValueType>::id() )
 
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( OpenMPBLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( OpenMPBLAS1::nrm2, ctx, flag );

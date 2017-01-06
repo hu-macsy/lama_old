@@ -104,10 +104,10 @@ void* MICMemory::allocate( const size_t size ) const
     {
         pointer = ::malloc( size );
 
-        success = (pointer != NULL);
+        success = ( pointer != NULL );
     }
 
-    if( !success )
+    if ( !success )
     {
         SCAI_THROWEXCEPTION( MemoryException, "malloc failed for size = " << size )
     }
