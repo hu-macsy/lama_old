@@ -553,17 +553,17 @@ long double Math::conj( const long double& x )
 
 float Math::exp( const float& x )
 {
-    return ::expf(x);
+    return ::expf( x );
 }
 
 double Math::exp( const double& x )
 {
-    return ::exp(x);
+    return ::exp( x );
 }
 
 long double Math::exp( const long double& x )
 {
-    return ::expl(x);
+    return ::expl( x );
 }
 
 // -------------------------------- pow -----------------------------
@@ -572,7 +572,7 @@ int Math::pow( const int& base, const int& exponent )
 {
     int r = 1;
 
-    for( int i = 0; i < exponent; ++i )
+    for ( int i = 0; i < exponent; ++i )
     {
         r *= base;
     }

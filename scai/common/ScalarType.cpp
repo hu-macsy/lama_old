@@ -143,7 +143,7 @@ int precision( const scalar::ScalarType stype )
 
     SCAI_ASSERT( stype != scalar::INTERNAL, "precision of INTERNAL unknown" )
 
-    // loop over all supported types and query its precision 
+    // loop over all supported types and query its precision
 
     return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::precision( stype );
 }

@@ -216,7 +216,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 }
 
 template<typename InputType, typename OutputType>
-std::map<InputType, OutputType( * )() >& Factory<InputType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
 {
     // Factory will be created during static initialization when it is needed for the first time
     // A destructor is never called as registered objects still might remove themselves later

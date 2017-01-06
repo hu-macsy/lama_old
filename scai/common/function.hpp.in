@@ -41,7 +41,7 @@ namespace scai
 
 namespace common
 {
-    using std::function;
+using std::function;
 } /* end namespace common */
 
 } /* end namespace scai */

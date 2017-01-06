@@ -186,6 +186,7 @@ CUDACtx::~CUDACtx()
 
         mcuSolverSpHandle = 0;
     }
+
 #endif
 
     res = cuCtxDestroy( mCUcontext );

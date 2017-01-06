@@ -43,7 +43,7 @@ namespace scai
 
 namespace common
 {
-    using boost::weak_ptr;
+using boost::weak_ptr;
 } /* end namespace common */
 
 } /* end namespace scai */

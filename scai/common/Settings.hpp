@@ -153,12 +153,12 @@ private:
 
     /** Template version of getEnvironment */
 
-    template<typename ValueType>       
+    template<typename ValueType>
     static bool getEnvironmentValue( ValueType& val, const char* envVarName );
 
     static int sRank;  //<!  specifies pos to take from comma separated values
 
-    static const char* RANK_DELIMITER(); 
+    static const char* RANK_DELIMITER();
 };
 
 } /* end namespace common */

@@ -43,9 +43,9 @@ namespace scai
 
 namespace common
 {
-    using boost::bind;
-    using boost::ref;
-    using boost::cref;
+using boost::bind;
+using boost::ref;
+using boost::cref;
 } /* end namespace common */
 
 } /* end namespace scai */

@@ -97,7 +97,7 @@ typedef IndexType PartitionId;
 COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
- * Lists of all supported numeric types 
+ * Lists of all supported numeric types
  */
 
 #ifdef SCAI_COMPLEX_SUPPORTED

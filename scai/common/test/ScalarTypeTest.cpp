@@ -76,10 +76,10 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
         typeSize( scalar::INTERNAL );
     }, common::Exception );
 
-    bool contains1 = mepr::ScalarTypeHelper<SCAI_TYPELIST(char, int)>::contains( scalar::INT );
+    bool contains1 = mepr::ScalarTypeHelper<SCAI_TYPELIST( char, int )>::contains( scalar::INT );
     BOOST_CHECK( contains1 );
 
-    bool contains2 = mepr::ScalarTypeHelper<SCAI_TYPELIST(char, int)>::contains( scalar::FLOAT );
+    bool contains2 = mepr::ScalarTypeHelper<SCAI_TYPELIST( char, int )>::contains( scalar::FLOAT );
     BOOST_CHECK( !contains2 );
 }
 
@@ -97,10 +97,10 @@ BOOST_AUTO_TEST_CASE( precisionTest )
             {
                 precision( stype );
             }, common::Exception );
- 
+
             continue;
         }
-        
+
         int n = precision( stype );
 
         if ( isNumeric( stype ) )

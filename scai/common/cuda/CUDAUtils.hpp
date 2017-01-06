@@ -38,12 +38,12 @@
 
 extern "C"
 {
-extern __device__ __device_builtin__ int          __iAtomicAdd(int *address, int val);
-extern __device__ __device_builtin__ unsigned int __uAtomicAdd(unsigned int *address, unsigned int val);
-extern __device__ __device_builtin__ unsigned long long __ullAtomicAdd(unsigned long long *address, unsigned long long val);
-extern __device__ __device_builtin__ int          __iAtomicCAS(int *address, int compare, int val);
-extern __device__ __device_builtin__ unsigned int __uAtomicCAS(unsigned int *address, unsigned int compare, unsigned int val);
-extern __device__ __device_builtin__ unsigned long long __ullAtomicCAS(unsigned long long *address, unsigned long long compare, unsigned long long val);
+    extern __device__ __device_builtin__ int          __iAtomicAdd( int* address, int val );
+    extern __device__ __device_builtin__ unsigned int __uAtomicAdd( unsigned int* address, unsigned int val );
+    extern __device__ __device_builtin__ unsigned long long __ullAtomicAdd( unsigned long long* address, unsigned long long val );
+    extern __device__ __device_builtin__ int          __iAtomicCAS( int* address, int compare, int val );
+    extern __device__ __device_builtin__ unsigned int __uAtomicCAS( unsigned int* address, unsigned int compare, unsigned int val );
+    extern __device__ __device_builtin__ unsigned long long __ullAtomicCAS( unsigned long long* address, unsigned long long compare, unsigned long long val );
 }
 
 namespace scai
@@ -103,7 +103,7 @@ __device__ long CUDAUtils::atomicCAS( long* address, long compare, long val )
 
     RepT* t_address = reinterpret_cast<RepT*>( address );
 
-    return __ullAtomicCAS( t_address, *ptrCompare, *ptrVal);
+    return __ullAtomicCAS( t_address, *ptrCompare, *ptrVal );
 }
 
 __device__ unsigned long CUDAUtils::atomicCAS( unsigned long* address, unsigned long compare, unsigned long val )
@@ -115,7 +115,7 @@ __device__ unsigned long CUDAUtils::atomicCAS( unsigned long* address, unsigned 
 
     RepT* t_address = reinterpret_cast<RepT*>( address );
 
-    return __ullAtomicCAS( t_address, *ptrCompare, *ptrVal);
+    return __ullAtomicCAS( t_address, *ptrCompare, *ptrVal );
 }
 
 // -------------------------------- atomicAdd --------------------------------------
@@ -153,18 +153,20 @@ __device__ long CUDAUtils::atomicAdd( long* address, long val )
 __device__ void CUDAUtils::atomicAdd( double* address, double val )
 {
     unsigned long long int* address_as_ull =
-                              (unsigned long long int*)address;
+        ( unsigned long long int* )address;
     unsigned long long int old = *address_as_ull, assumed;
 
-    do {
+    do
+    {
         assumed = old;
-        old = __ullAtomicCAS( address_as_ull, 
+        old = __ullAtomicCAS( address_as_ull,
                               assumed,
-                              __double_as_longlong(val + __longlong_as_double( assumed ) ) );
+                              __double_as_longlong( val + __longlong_as_double( assumed ) ) );
 
         // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
 
-    } while ( assumed != old );
+    }
+    while ( assumed != old );
 }
 
 __device__ void CUDAUtils::atomicAdd( float* address, float val )

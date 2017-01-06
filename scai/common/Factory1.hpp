@@ -202,7 +202,7 @@ OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType t
 /* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename ValueType, typename OutputType>
-std::map<InputType, OutputType( * )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
 {
     // Factory might be already used during static initialization, so dynamic allocation is needed
     // Factory might be used at program exit, so it is never deleted

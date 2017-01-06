@@ -157,7 +157,7 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
 /* ----------------------------------------------------------------------------- */
 
-template<typename ValueType> 
+template<typename ValueType>
 bool Settings::getEnvironmentValue( ValueType& val, const char* envVarName )
 {
     std::string envVal;
@@ -225,7 +225,7 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
 
 void Settings::tokenize( std::vector<std::string>& tokens, const std::string& input, const std::string& delimiters )
 {
-    tokens.clear();  
+    tokens.clear();
 
     // Skip delimiters at beginning.
     std::string::size_type lastPos = input.find_first_not_of( delimiters, 0 );

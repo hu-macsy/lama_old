@@ -76,12 +76,19 @@ int main( int argc, const char** argv )
         }
 
         const char* lib = argv[1];
+
         std::cout << "Load " << lib << std::endl;
+
         LibModule::LibHandle handle = LibModule::loadLib( lib );
+
         runIt();
+
         std::cout << "Library loaded successfully, now unload" << std::endl;
+
         LibModule::freeLib( handle );
+
         std::cout << "Library freed, still try to use it" << std::endl;
+
         runIt();   // undefined whether it works
     }
 }

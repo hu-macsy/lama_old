@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( powTest, ValueType, scai_numeric_test_types )
 
     ValueType x1p10 = Math::pow( x1, ValueType( 10 ) );
 
-    BOOST_CHECK( Math::abs( x1p10 - ValueType( 1024 ) ) < 0.01);
+    BOOST_CHECK( Math::abs( x1p10 - ValueType( 1024 ) ) < 0.01 );
 
     ValueType y = 16;
 
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( argTest, ValueType, scai_math_complex_test_types 
     AbsType y = Math::arg( x );
 
     BOOST_CHECK_SMALL( y - AbsType( 0.927295218001612 ), scai::common::TypeTraits<ValueType>::small() );
-} 
+}
 #endif
 
 /* --------------------------------------------------------------------- */

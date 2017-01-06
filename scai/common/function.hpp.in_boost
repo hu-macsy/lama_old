@@ -43,7 +43,7 @@ namespace scai
 
 namespace common
 {
-    using boost::function;
+using boost::function;
 } /* end namespace common */
 
 } /* end namespace scai */

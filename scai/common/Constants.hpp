@@ -103,7 +103,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
         }
         else
         {
-            // complex data, do not use operator < 
+            // complex data, do not use operator <
 
             AbsType i = Math::imag( x );
 
@@ -115,7 +115,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
     else
     {
         AbsType r = Math::real( x );
- 
+
         bool isRealOne = Math::abs( r - AbsType( 1 ) ) < TypeTraits<ValueType>::eps1();
 
         if ( typeid( AbsType ) == typeid( ValueType ) )

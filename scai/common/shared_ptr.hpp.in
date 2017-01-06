@@ -41,9 +41,9 @@ namespace scai
 
 namespace common
 {
-    using std::shared_ptr;
-    using std::dynamic_pointer_cast;
-    using std::enable_shared_from_this;
+using std::shared_ptr;
+using std::dynamic_pointer_cast;
+using std::enable_shared_from_this;
 
 } /* end namespace common */
 

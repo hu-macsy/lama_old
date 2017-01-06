@@ -90,6 +90,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
+
     std::string slash;
 
     if ( *directory.rbegin() != '/' )
@@ -183,6 +184,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
+
     std::string slash;
 
     if ( *directory.rbegin() != '/' )

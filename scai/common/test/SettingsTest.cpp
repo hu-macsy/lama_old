@@ -150,8 +150,8 @@ BOOST_AUTO_TEST_CASE( getIntTest )
         BOOST_CHECK_EQUAL( one, i );
     }
 
-/* --------------------------------------------------------------------- */
+    /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE_END()
+    BOOST_AUTO_TEST_SUITE_END()
 
 }

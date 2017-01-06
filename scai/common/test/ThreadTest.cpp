@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( criticalRegionTest )
 
     time = Walltime::get() - time;
     // If critical region is implemented correctly, time must be > ( #threds * sleep_time )
-    BOOST_CHECK( C_THREADS * SLEEP_TIME <= time );
+    BOOST_CHECK( C_THREADS* SLEEP_TIME <= time );
 }
 
 // Define routine that is executed by one thread

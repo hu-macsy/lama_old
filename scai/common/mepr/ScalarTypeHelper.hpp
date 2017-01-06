@@ -74,7 +74,7 @@ struct ScalarTypeHelper<NullType>
 
     static int precision( const scalar::ScalarType )
     {
-        // no type T available with TypeTraits<T>::stype 
+        // no type T available with TypeTraits<T>::stype
         return 0;
     }
 
