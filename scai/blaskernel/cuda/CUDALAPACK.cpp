@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CUDALAPACK.cpp
- * @author lschubert
+ * @brief Definition of static class with CUDA implementations of LAPACK routines.
+ * @author Lauretta Schubert
  * @date 06.07.2012
  */
 

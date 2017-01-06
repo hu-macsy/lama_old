@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief LAPACK_LAPACK.cpp
- * @author lschubert
+ * @brief Implementation of LAPACK kernels for LAMA by using (Fortran) LAPACK.
+ * @author Lauretta Schubert
  * @date 02.07.2012
  */
 

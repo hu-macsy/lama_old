@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file blaskernel/cuda/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief blaskernel/cuda/CMakeLists.txt
+ # @brief CMake configuration for CUDA implementations of BLAS kernels.
  # @author Eric Schricker
  # @date 11.11.2015
 ###

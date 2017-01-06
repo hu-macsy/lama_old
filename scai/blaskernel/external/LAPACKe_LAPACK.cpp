@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief LAPACKe_LAPACK.cpp
+ * @brief Implementation of LAPACK kernel routines for Host by wrapping to LAPACKe library.
  * @author Lauretta Schubert
  * @date 02.07.2012
  */

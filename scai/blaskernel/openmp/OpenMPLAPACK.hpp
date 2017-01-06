@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OpenMPLAPACK.hpp
+ * @brief Class with default implementations of LAPACK kernels for host.
  * @author Eric Schricker
  * @date 02.07.2012
  */

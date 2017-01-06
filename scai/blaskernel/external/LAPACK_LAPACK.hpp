@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief LAPACK_LAPACK.hpp
+ * @brief Definition of static class that provides LAPACK kernel implementations via LAPACK.
  * @author Lauretta Schubert
  * @date 02.07.2012
  */

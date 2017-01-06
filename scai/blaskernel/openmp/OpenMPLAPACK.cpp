@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OpenMPLAPACK.cpp
+ * @brief Own implementation of used LAPACK routines for Host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 19.11.2013
  */

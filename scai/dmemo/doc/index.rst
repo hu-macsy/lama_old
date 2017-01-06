@@ -111,10 +111,13 @@ External dependencies:
 Related Work
 ************
 
-* Boost MPI
+* |BOOST_MPI|
 * |CUDA_MPI|
 
 .. |CUDA_MPI| raw:: html
 
-  <a href="https://devblogs.nvidia.com/parallelforall/introduction-cuda-aware-mpi>" target="_blank">CUDA Aware MPI</a>
+  <a href="https://devblogs.nvidia.com/parallelforall/introduction-cuda-aware-mpi" target="_blank">CUDA Aware MPI</a>
 
+.. |BOOST_MPI| raw:: html
+
+  <a href="http://www.boost.org/libs/mpi" target="_blank">Boost.MPI</a>

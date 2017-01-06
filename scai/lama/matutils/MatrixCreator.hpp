@@ -43,15 +43,6 @@
 // std
 #include <memory>
 
-/** This class creates 'distributed' marices for poisson solvers.
- *
- *  \code
- *  common::unique_ptr<CSRSparseMatrix<double> > MatrixCreator<double>::createPoisson2D( 9, 4, 4 )  );
- *  \endcode
- *
- *  The matrix A will have a general distribution and is in CSR format.
- */
-
 namespace scai
 {
 

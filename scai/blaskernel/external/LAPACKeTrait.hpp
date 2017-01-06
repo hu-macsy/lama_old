@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Typedefs and macros for LAPACKeWrapper
+ * @brief Typedefs and macros for wrapping routines of the LAPACKe library.
  * @author Eric Schricker
  * @date 14.01.2016
  */

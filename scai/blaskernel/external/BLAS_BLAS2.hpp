@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief BLAS_BLAS2.hpp
+ * @brief BLAS2 utilities on Host Context by wrapping to BLAS library
  * @author Lauretta Schubert
  * @date 05.07.2012
  */

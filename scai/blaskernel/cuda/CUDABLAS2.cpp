@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CUDABLAS2.cpp
+ * @brief CUDA implementations of BLAS2 routines for the class CUDABLAS2.
  * @author Lauretta Schubert
  * @date 05.07.2012
  */

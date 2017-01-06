@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Kernel traits for BLAS operations used in LAMA.
+ * @brief Kernel traits for BLAS and LAPACK operations used in LAMA.
  * @author Thomas Brandes
  * @date 02.04.2013
  */
@@ -50,7 +50,11 @@ namespace scai
 namespace blaskernel
 {
 
-/** Struct with all kernel traits for BLAS routines.
+/** Struct with all LAMA kernel traits for BLAS and LAPACK routines currently used.
+ *
+ *  Syntax of the LAMA kernel definitions are nearly the same as used for the 
+ *  corresponing BLAS and LAPACK routines. 
+ *
  *  It could have been just a namespace but struct disables
  *  'using namespace BLASKerneltrait'.
  */

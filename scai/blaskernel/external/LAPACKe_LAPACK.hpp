@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implemenation of LAMA LAPACK interface via LAPACKe
+ * @brief Definition of static class for LAPACK kernel routines using LAPACKe library.
  * @author Thomas Brandes
  * @date 10.04.2013
  */

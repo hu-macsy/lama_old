@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of BLAS3 methods used in LAMA with own C++ implementation.
+ * @brief Own implementation of BLAS3 kernels for Host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 15.10.2013
  */

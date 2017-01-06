@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Wrapper for LAPACKe functions
+ * @brief Definition of wrapper class for LAPACKe functions
  * @author Eric Schricker
  * @date 12.11.2015
  */

@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of used BLAS1 routines in C++ wtih OpenMP parallelization.
+ * @brief Own implementation of BLAS1 routines for Host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 02.10.2013
  */

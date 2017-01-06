@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CUDABLAS2.hpp
+ * @brief Definition of static class with CUDA implementations of BLAS2 routines.
  * @author lschubert
  * @date 05.07.2012
  */

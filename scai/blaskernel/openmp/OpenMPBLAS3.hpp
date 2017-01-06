@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OpenMPBLAS3.hpp
+ * @brief Class with default implementations of BLAS3 routines for host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 05.07.2012
  */

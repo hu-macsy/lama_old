@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of class with utility routines.
+ * @brief Implemenation of the utility routines for HArrays using corresponding kernel routines.
  * @author Thomas Brandes
  * @date 10.10.2011
  */
