@@ -1,8 +1,8 @@
 /**
- * @file PartitionIO.hpp
+ * @file lama/io/PartitionIO.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *

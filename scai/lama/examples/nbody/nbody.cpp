@@ -2,7 +2,7 @@
  * @file nbody.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief nbody.cpp is an example for an nbody simulation - here one fixed big body in the middle of the system,
- *          all others movable (random positions, masses and velocities in the beginning)
+ *        all others movable (random positions, masses and velocities in the beginning)
  * @author Vanessa Wolff
  * @date 26.09.2016
  */

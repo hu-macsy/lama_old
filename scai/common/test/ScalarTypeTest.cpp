@@ -2,8 +2,7 @@
  * @file ScalarTypeTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
- * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *

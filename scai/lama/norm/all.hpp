@@ -2,7 +2,7 @@
  * @file norm/all.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Include file for all norm classes for more convenient use
- * @author
+ * @author 
  * @date 21.05.2013
  */
 

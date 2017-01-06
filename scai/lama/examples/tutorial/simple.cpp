@@ -2,7 +2,7 @@
  * @file simple.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief simple.cpp
- * @author
+ * @author 
  * @date 17.05.2013
  */
 
