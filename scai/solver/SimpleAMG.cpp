@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief SimpleAMG.cpp
+ * @brief Implementation of methods for the default AMG solver SimpleAMG.
  * @author Jiri Kraus
  * @date 27.10.2011
  */

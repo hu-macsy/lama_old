@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class MyJacobi.cpp
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Contains the implementation of the class MyJacobi.
+ * @author Matthias Makulla
  * @date 22.02.2012
  */
 

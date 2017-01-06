@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class GeneralDistributionTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @brief Specific tests for derived distribution class GeneralDistributionTest.
+ * @author Thomas Brandes
  * @date 30.07.2012
  */
 

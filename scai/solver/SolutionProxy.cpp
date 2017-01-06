@@ -27,12 +27,11 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief SolutionProxy.cpp
+ * @brief Implementation of methods for the class SolutionProxy.
  * @author Jiri Kraus
  * @date 07.06.2011
  */
 
-// hpp
 #include <scai/solver/SolutionProxy.hpp>
 
 namespace scai

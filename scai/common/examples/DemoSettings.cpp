@@ -48,12 +48,12 @@ int main( int argc, char const* argv[] )
     // print all SCAI values
     cout << "SCAI variables of environment:" << endl;
     cout << "==============================" << endl;
-    Settings::printEnvironment();
+    Settings::printEnvironment( cout );
     cout << endl;
     Settings::parseArgs( argc, argv );
     cout << "SCAI variables of environment (after parsing command line args):" << endl;
     cout << "================================================================" << endl;
-    Settings::printEnvironment();
+    Settings::printEnvironment( cout );
     cout << endl;
     // take the 4-th argument for comma separated value lists
     Settings::setRank( 3 );

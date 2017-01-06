@@ -128,24 +128,20 @@ extern "C"
     FORTRAN_LAPACK_DEF( getri, s, void, CALL_DEF_GETRI( float ) )
     FORTRAN_LAPACK_DEF( getrf, s, void, CALL_DEF_GETRF( float ) )
     FORTRAN_LAPACK_DEF( tptrs, s, void, CALL_DEF_TPTRS( float ) )
-    FORTRAN_LAPACK_DEF( laswp, s, scai::blaskernel::LAPACKTrait::LAPACKIndexType, CALL_DEF_LASWP( float ) )
 // double
     FORTRAN_LAPACK_DEF( getrf, d, void, CALL_DEF_GETRF( double ) )
     FORTRAN_LAPACK_DEF( getri, d, void, CALL_DEF_GETRI( double ) )
     FORTRAN_LAPACK_DEF( tptrs, d, void, CALL_DEF_TPTRS( double ) )
-    FORTRAN_LAPACK_DEF( laswp, d, scai::blaskernel::LAPACKTrait::LAPACKIndexType, CALL_DEF_LASWP( double ) )
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 // ComplexFloat
     FORTRAN_LAPACK_DEF( getrf, c, void, CALL_DEF_GETRF( ComplexFloat ) )
     FORTRAN_LAPACK_DEF( getri, c, void, CALL_DEF_GETRI( ComplexFloat ) )
     FORTRAN_LAPACK_DEF( tptrs, c, void, CALL_DEF_TPTRS( ComplexFloat ) )
-    FORTRAN_LAPACK_DEF( laswp, c, scai::blaskernel::LAPACKTrait::LAPACKIndexType, CALL_DEF_LASWP( ComplexFloat ) )
 // ComplexDouble
     FORTRAN_LAPACK_DEF( getri, z, void, CALL_DEF_GETRI( ComplexDouble ) )
     FORTRAN_LAPACK_DEF( getrf, z, void, CALL_DEF_GETRF( ComplexDouble ) )
     FORTRAN_LAPACK_DEF( tptrs, z, void, CALL_DEF_TPTRS( ComplexDouble ) )
-    FORTRAN_LAPACK_DEF( laswp, z, scai::blaskernel::LAPACKTrait::LAPACKIndexType, CALL_DEF_LASWP( ComplexDouble ) )
 #endif
 
 #undef CALL_DEF_GETRI

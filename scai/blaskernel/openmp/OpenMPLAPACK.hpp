@@ -98,19 +98,6 @@ public:
         ValueType* B,
         const IndexType ldb );
 
-    /** OpenMP implementation for BLASKernelTrait::LAPACK::laswp */
-
-    template<typename ValueType>
-    static void laswp(
-        const CBLAS_ORDER order,
-        const IndexType n,
-        ValueType* A,
-        const IndexType lda,
-        const IndexType k1,
-        const IndexType k2,
-        const IndexType* ipiv,
-        const IndexType incx );
-
 private:
 
     /** Routine that registers all methods at the kernel registry. */

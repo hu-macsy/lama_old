@@ -81,6 +81,8 @@ void CUSparseCSRUtils::convertCSR2CSC(
     IndexType numColumns,
     IndexType numValues )
 {
+    SCAI_REGION( "CUSparse.CSR.convert2CSC" )
+
     SCAI_LOG_INFO( logger,
                    "convertCSR2CSC<" << common::getScalarType<ValueType>() << "> -> cusparseScsr2csc" << ", matrix size = "
                    << numRows << " x " << numColumns << ", nnz = " << numValues )

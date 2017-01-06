@@ -25,8 +25,8 @@
  # @endlicense
  #
  # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
+ #        measure code coverage of LAMA subproject utilskernel
+ # @author Lauretta Schubert, Thomas Brnades
  # @date 15.08.2012
 ###
 

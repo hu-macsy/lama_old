@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class TimerTest.
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Test routines for the class Timer.
+ * @author Matthias Makulla
  * @date 03.02.2012
  */
 

@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief MINRESTest.cpp
- * @author Jan Ecker
+ * @brief Specific tests for the solver class MINRES.
+ * @author David Schissler
  * @date 09.03.2016
  */
 

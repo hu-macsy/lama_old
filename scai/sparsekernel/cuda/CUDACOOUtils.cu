@@ -432,6 +432,8 @@ void CUDACOOUtils::offsets2ia(
     const IndexType numRows,
     const IndexType numDiagonals )
 {
+    SCAI_REGION( "CUDA.COO.offsets2ia" )
+
     SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 )
                    << " ), #diagonals = " << numDiagonals )
@@ -491,62 +493,30 @@ static void build_offset_kernel(
     }
 }
 
-__global__
-static void add_diagonals_kernel(
-    IndexType* offsets,
-    const IndexType numRows,
-    const IndexType numDiagonals )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    //  #diagonals = 3               |
-    //  offsets( in ) :  0  3  4   7   9  10
-    //  offsets( out ):  0  4  6  10  12  13
-    //  i                   0  1   2   3   4
-
-    if ( i < numRows )
-    {
-        if ( i < numDiagonals )
-        {
-            offsets[i + 1] += i + 1;
-        }
-        else
-        {
-            offsets[i + 1] += numDiagonals;
-        }
-    }
-}
-
 /* --------------------------------------------------------------------------- */
 
 void CUDACOOUtils::ia2offsets(
     IndexType csrIA[],
     const IndexType numRows,
-    const IndexType numDiagonals,
     const IndexType cooIA[],
     const IndexType numValues )
 {
+    SCAI_REGION( "CUDA.COO.ia2offsets" )
+
     SCAI_LOG_INFO( logger,
-                   "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues )
-                   << " ), #diagonals = " << numDiagonals )
-    // Note: the array cooIA is assumed to be sorted after the diagonal elements
+                   "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues ) << " )" )
+
+    // Note: the array cooIA is assumed to be sorted 
+
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;// default stream, asynchronous execution not supported here
+
     const int blockSize = CUDASettings::getBlockSize();
     const dim3 dimBlock( blockSize, 1, 1 );
     const dim3 dimGrid = makeGrid( numValues, dimBlock.x );
-    build_offset_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows,
-            cooIA + numDiagonals, numValues - numDiagonals );
+    build_offset_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows, cooIA, numValues );
 
-    // increment offsets for the diagonal elements
-
-    if ( numDiagonals > 0 )
-    {
-        const dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-        add_diagonals_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows, numDiagonals );
-    }
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "ia2offsets, stream = " << stream )
 }
 
 /* --------------------------------------------------------------------------- */

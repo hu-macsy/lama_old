@@ -535,18 +535,19 @@ void fillEllKernel(
     if ( i < n )
     {
         IndexType lastJ = 0;
-        IndexType pos = ell_ia[i];
-        IndexType ellOffset = i + pos * n;
+        IndexType nRow = ell_ia[i];
+        IndexType ellOffset = i + nRow * n;
 
-        if ( pos > 0 && pos < ellNumValuesPerRow )
+        if ( nRow > 0 && nRow < ellNumValuesPerRow )
         {
-            lastJ = ell_ja[ pos - n ];
+            lastJ = ell_ja[ ellOffset - n ];
         }
 
         // fill in useful values until length of line
 
-        for ( IndexType jj = pos; jj < ellNumValuesPerRow; ++jj )
+        for ( IndexType jj = nRow; jj < ellNumValuesPerRow; ++jj )
         {
+            // ell_ja[ellOffset] = lastJ;
             ell_ja[ellOffset] = lastJ;
             ell_values[ellOffset] = static_cast<ValueType>( 0 );
             ellOffset += n;

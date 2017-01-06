@@ -36,9 +36,16 @@
 
 #include <scai/common/Settings.hpp>
 
-BOOST_AUTO_TEST_CASE( SettingsTest )
+using scai::common::Settings;
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE( SettingsTest )
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( parseArgTest )
 {
-    using scai::common::Settings;
     const char* args[] = { "--SCAI_DEVICE=0,1,2", "--SOLVER=cg" };
     int nargs = 2;
     Settings::parseArgs( nargs, args );
@@ -54,10 +61,11 @@ BOOST_AUTO_TEST_CASE( SettingsTest )
     BOOST_CHECK( !set );
 }
 
-BOOST_AUTO_TEST_CASE( SettingsConvertTest )
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( getBoolTest )
 {
     static char var[] = "Dummy";
-    using scai::common::Settings;
     bool flag;
     bool set;
     Settings::putEnvironment( var, "Yes" );
@@ -66,6 +74,21 @@ BOOST_AUTO_TEST_CASE( SettingsConvertTest )
     Settings::putEnvironment( var, "No" );
     set = Settings::getEnvironment( flag, var );
     BOOST_CHECK( set && !flag );
+    Settings::putEnvironment( var, "1" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && flag );
+    Settings::putEnvironment( var, "false" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && !flag );
+    Settings::putEnvironment( var, "True" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && flag );
+    Settings::putEnvironment( var, "0" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && !flag );
+    Settings::putEnvironment( var, "Ja" );
+    set = Settings::getEnvironment( flag, var );
+    BOOST_CHECK( set && flag );
     Settings::putEnvironment( var, "shit" );
     set = Settings::getEnvironment( flag, var );
     BOOST_CHECK( !set );
@@ -74,3 +97,61 @@ BOOST_AUTO_TEST_CASE( SettingsConvertTest )
     BOOST_CHECK( set && !flag );
 }
 
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( printSettingTest )
+{
+
+    static std::string var  = "SCAI_XYZ";
+    static std::string val  = "XYZ_Done";
+
+    Settings::putEnvironment( var.c_str(), val.c_str() );
+
+    std::ostringstream out;
+
+    Settings::printEnvironment( out );
+
+    BOOST_CHECK( out.str().find( var ) != std::string::npos );
+    BOOST_CHECK( out.str().find( val ) != std::string::npos );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( getIntTest )
+{
+    Settings::putEnvironment( "SCAI_INT_VAL", "1" );
+
+    {
+        int i = 0;
+        int one = 1;
+        bool set = Settings::getEnvironment( i, "SCAI_INT_VAL" );
+        BOOST_CHECK( set );
+        BOOST_CHECK_EQUAL( one, i );
+    }
+    {
+        unsigned int i = 0;
+        unsigned int one = 1;
+        bool set = Settings::getEnvironment( i, "SCAI_INT_VAL" );
+        BOOST_CHECK( set );
+        BOOST_CHECK_EQUAL( one, i );
+    }
+    {
+        long i = 0;;
+        bool set = Settings::getEnvironment( i, "SCAI_INT_VAL" );
+        BOOST_CHECK( set );
+        long one = 1;
+        BOOST_CHECK_EQUAL( one, i );
+    }
+    {
+        unsigned long i = 0;
+        unsigned long one = 1;
+        bool set = Settings::getEnvironment( i, "SCAI_INT_VAL" );
+        BOOST_CHECK( set );
+        BOOST_CHECK_EQUAL( one, i );
+    }
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_SUITE_END()
+
+}

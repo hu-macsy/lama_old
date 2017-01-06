@@ -390,7 +390,7 @@ struct ELLKernelTrait
     template<typename ValueType>
     struct sparseGEMV
     {
-        /** result = alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
+        /** result += alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector

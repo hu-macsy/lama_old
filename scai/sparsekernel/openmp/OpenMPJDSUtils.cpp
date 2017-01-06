@@ -143,74 +143,14 @@ void OpenMPJDSUtils::setRow(
         }
     }
 
-    IndexType k = 0;
+    SCAI_ASSERT_VALID_INDEX_ERROR( ii, numRows, "row " << i << " not in permutuation" )
 
-    // ToDo: solution with own loop for each binary op is so much more efficient
-    //       than calling binary op elementwise, at least if not inlined, check
-    //
-    //      for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
-    //      {
-    //          applyReduction( values[ii + k], static_cast<ValueType>( row[ja[ii + k] ] ), op )
-    //          k += dlg[jj];
-    //      }
-    //      break;
-   
-    switch ( op )
+    IndexType k = ii;
+
+    for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
     {
-        case utilskernel::binary::COPY :
-        {
-            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
-            {
-                values[ii + k] = static_cast<ValueType>( row[ja[ii + k] ] );
-                k += dlg[jj];
-            }
-            break;
-        }
-
-        case utilskernel::binary::ADD :
-        {
-            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
-            {
-                values[ii + k] += static_cast<ValueType>( row[ja[ii + k] ] );
-                k += dlg[jj];
-            }
-            break;
-        }
-
-        case utilskernel::binary::SUB :
-        {
-            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
-            {
-                values[ii + k] -= static_cast<ValueType>( row[ja[ii + k] ] );
-                k += dlg[jj];
-            }
-            break;
-        }
-
-        case utilskernel::binary::MULT :
-        {
-            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
-            {
-                values[ii + k] *= static_cast<ValueType>( row[ja[ii + k] ] );
-                k += dlg[jj];
-            }
-            break;
-        }
-
-        case utilskernel::binary::DIVIDE :
-        {
-            for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
-            {
-                values[ii + k] /= static_cast<ValueType>( row[ja[ii + k] ] );
-                k += dlg[jj];
-            }
-            break;
-        }
-
-        default:
-        {
-            COMMON_THROWEXCEPTION( "unsupported binary op in setRow: " << op )
-        }
+        values[k] = applyBinary( values[k], op, static_cast<ValueType>( row[ja[k]] ) );
+        k += dlg[jj];
     }
 }
 

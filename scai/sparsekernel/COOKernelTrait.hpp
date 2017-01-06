@@ -42,7 +42,11 @@ namespace scai
 namespace sparsekernel
 {
 
-/** Kernel traits for functions to be used in COO storage. */
+/** Kernel traits for functions to be used in COO storage. 
+ *
+ *  Note: routines to build CSR data from COO data are not required any more
+ *        as this is done by bucket sort
+ */
 
 struct COOKernelTrait
 {
@@ -138,6 +142,9 @@ struct COOKernelTrait
          *  @param[in] cooJA column indexes
          *  @param[in] n number of diagonal elements
          *  @return true if first n entries stand for the diagonal elements
+         *
+         *  Attention: do not call this routine if n > numValues (size of cooIA, cooJA) where
+         *             diagonal property is already false
          */
 
         typedef bool ( *FuncType )(

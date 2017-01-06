@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief TFQMRT.cpp
+ * @brief Specific test routines for the solver class TFQMRT.
  * @author Jan Ecker
  * @date 09.03.2016
  */

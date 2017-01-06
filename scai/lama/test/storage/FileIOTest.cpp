@@ -53,7 +53,7 @@ using utilskernel::LArray;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
-#undef DELETE_OUTPUT_FILES
+#define DELETE_OUTPUT_FILES
 
 /* ------------------------------------------------------------------------- */
 
@@ -262,6 +262,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
             BOOST_REQUIRE_EQUAL( numRows, csrStorage.getNumRows() );
         }
+
+        BOOST_REQUIRE_EQUAL( csrStorage.getNumRows(), FileIO::getStorageSize( fileName ) );
 
         CSRStorage<ValueType> readStorage;
         readStorage.readFromFile( fileName );

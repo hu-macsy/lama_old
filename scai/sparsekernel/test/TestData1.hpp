@@ -78,6 +78,19 @@ static void getDenseTestData(
 
 /* ------------------------------------------------------------------------------------- */
 
+/** Return  a vector with indexes of all rows that are not empty */
+
+static inline void getRowIndexes( IndexType& numNonEmptyRows, HArray<IndexType>& rowIndexes )
+{
+    const IndexType nonzero_rows[] = { 0, 1, 2, 3, 4, 6 };   // only row 5 is empty
+
+    numNonEmptyRows = sizeof( nonzero_rows ) / sizeof( IndexType );
+
+    rowIndexes.init( nonzero_rows, numNonEmptyRows );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 static void getCSRTestData(
     IndexType& numRows,
@@ -114,6 +127,41 @@ static void getCSRTestData(
 /* ------------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+static void getCSCTestData(
+    IndexType& numRows,
+    IndexType& numColumns,
+    IndexType& numValues,
+    HArray<IndexType>& cscIA,
+    HArray<IndexType>& cscJA,
+    HArray<ValueType>& cscValues )
+{
+   /*   Matrix:       6  0  0  4         0    3   2   0        6  5  9  4
+                      7  0  0  0         1    6       2        7  1     4
+                      0  0  9  4         3            3        2        3
+                      2  5  0  3         4            4        2        1
+                      2  0  0  1                      6                 2
+                      0  0  0  0                      
+                      0  1  0  2         
+    */
+
+    const IndexType ja_values[]  = { 0,          4,    6, 7,             12 };
+    const IndexType ia_values[]  = { 0, 1, 3, 4, 3, 6, 2, 0, 2, 3, 4, 6 };
+    const ValueType nz_values[]  = { 6, 7, 2, 2, 5, 1, 9, 4, 4, 3, 1, 2 };
+
+    numRows    = 7;
+    numColumns = sizeof( ja_values) / sizeof( IndexType ) - 1;
+    numValues  = sizeof( ia_values ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( numValues, ja_values[numColumns], "size mismatch" )
+
+    cscJA.init( ja_values, numColumns + 1 );
+    cscIA.init( ia_values, numValues );
+    cscValues.init( nz_values, numValues );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 static void getELLTestData(
     IndexType& numRows,
     IndexType& numColumns,
@@ -140,6 +188,10 @@ static void getELLTestData(
 
     numRows         = sizeof( ia_sizes) / sizeof( IndexType );
     numColumns      = 4;
+
+    SCAI_ASSERT_EQ_ERROR( sizeof( ja_values ) / sizeof( IndexType ), 
+                          sizeof( nz_values ) / sizeof( ValueType ),
+                          "ja and values of ELL format must have same number of entries" )
 
     IndexType numValues  = sizeof( ja_values ) / sizeof( IndexType );
 
@@ -375,6 +427,50 @@ static void getGEVMResult( HArray<ValueType>& res,
             }
 
             wRes[j] = alpha * v + beta * rY[j];
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+/** This method computes the result of a jacobi step by hand */
+
+template<typename ValueType>
+static void getJacobiHaloResult( HArray<ValueType>& solution,
+                                 const HArray<ValueType>& oldSolution,
+                                 const HArray<ValueType>& diag,
+                                 const ValueType omega )
+{
+    IndexType numRows;
+    IndexType numColumns;
+
+    HArray<ValueType> denseValues;
+
+    getDenseTestData( numRows, numColumns, denseValues );
+
+    SCAI_ASSERT_EQ_ERROR( solution.size(), numRows, "size mismatch for solution" )
+    SCAI_ASSERT_EQ_ERROR( oldSolution.size(), numRows, "size mismatch for oldSolution" )
+    SCAI_ASSERT_EQ_ERROR( diag.size(), numRows, "size mismatch for diagonal" )
+
+    {
+        using scai::hmemo::ReadAccess;
+        using scai::hmemo::WriteAccess;
+
+        ReadAccess<ValueType> rOld( oldSolution );
+        ReadAccess<ValueType> rDiag( diag );
+        WriteAccess<ValueType> wSol( solution );
+        ReadAccess<ValueType> rDense( denseValues );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            ValueType v    = 0;
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                v += rDense[ i * numColumns + j ] * rOld[j];
+            }
+
+            wSol[i] -= omega * v / rDiag[i];
         }
     }
 }

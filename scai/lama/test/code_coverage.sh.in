@@ -31,7 +31,7 @@
  #
  # @brief This file is a shellscript, which contains all necessary steps to 
  #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
+ # @author Lauretta Schubert, Thomas Brandes
  # @date 15.08.2012
 ###
 
@@ -46,6 +46,7 @@ prepare_coverage $dirname ../..
 
 export SCAI_LOG=WARN
 export SCAI_TRACE=time
+export SCAI_UNSUPPORTED=IGNORE
 	
 # check if installed LAMA version supports MPI communicator
 

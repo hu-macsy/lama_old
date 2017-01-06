@@ -41,6 +41,7 @@
 #include <scai/sparsekernel/DIAKernelTrait.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/utilskernel/LArray.hpp>
+#include <scai/tasking/SyncToken.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
 
@@ -67,7 +68,99 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAUtilsTest" )
 
 /* ------------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest0, ValueType, scai_numeric_test_types )
+{
+    // check to get a correct CSR storage from empty DIA storage
+
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
+    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
+    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
+
+    ContextPtr loc = testContext;
+
+    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
+
+    IndexType numRows = 5;
+    IndexType numColumns = 5;
+    IndexType numDiagonals = 0;
+
+    HArray<ValueType> diaValues( testContext );
+    HArray<IndexType> diaOffsets( testContext );
+
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    ValueType eps = 0;
+    bool diagonalProperty = true;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
+        ReadAccess<ValueType> rValues( diaValues, loc );
+        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
+
+        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get(), eps );
+    }
+
+    {
+        ReadAccess<IndexType> rIA( csrIA, hostContext );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            BOOST_CHECK_EQUAL( rIA[i], 1 );
+        }
+    }
+
+    IndexType numValues = 0;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteAccess<IndexType> wIA( csrIA, loc );
+        wIA.resize( numRows + 1 );
+        numValues = scan[loc]( wIA.get(), numRows );
+    }
+
+    BOOST_REQUIRE_EQUAL( numRows, numValues );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<ValueType> rValues( diaValues, loc );
+        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
+        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
+        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
+
+        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty,
+                           numRows, numColumns, numDiagonals,
+                           rOffsets.get(), rValues.get(), eps );
+    }
+
+    {
+        ReadAccess<IndexType> rJA( csrJA, hostContext );
+        ReadAccess<ValueType> rValues( csrValues, hostContext );
+
+        for ( IndexType i = 0; i < numValues; ++i )
+        {
+            BOOST_CHECK_EQUAL( rJA[i], i );
+            BOOST_CHECK_EQUAL( rValues[i], ValueType( 0 ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
     ContextPtr hostContext = Context::getHostPtr();
@@ -163,6 +256,98 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest2, ValueType, scai_numeric_test_types )
+{
+    // Test conversion DIA -> CSR  this time with diagonal property
+
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<DIAKernelTrait::getCSRSizes<ValueType> > getCSRSizes;
+    static LAMAKernel<DIAKernelTrait::getCSRValues<ValueType, ValueType> > getCSRValues;
+    static LAMAKernel<UtilKernelTrait::scan<IndexType> > scan;
+
+    ContextPtr loc = testContext;
+
+    getCSRSizes.getSupportedContext( loc, getCSRValues, scan );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    HArray<ValueType> diaValues( testContext );
+    HArray<IndexType> diaOffsets( testContext );
+
+    data2::getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    ValueType eps = 0;
+    bool diagonalProperty = true;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
+        ReadAccess<ValueType> rValues( diaValues, loc );
+        WriteOnlyAccess<IndexType> wIA( csrIA, loc, numRows );
+
+        getCSRSizes[loc]( wIA.get(), diagonalProperty, numRows, numColumns, numDiagonals, rOffsets.get(), rValues.get(), eps );
+    }
+
+    IndexType numValues = 0;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteAccess<IndexType> wIA( csrIA, loc );
+        wIA.resize( numRows + 1 );
+        numValues = scan[loc]( wIA.get(), numRows );
+    }
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIA( csrIA, loc );
+        ReadAccess<ValueType> rValues( diaValues, loc );
+        ReadAccess<IndexType> rOffsets( diaOffsets, loc );
+        WriteOnlyAccess<IndexType> wJA( csrJA, loc, numValues );
+        WriteOnlyAccess<ValueType> wValues( csrValues, loc, numValues );
+
+        getCSRValues[loc]( wJA.get(), wValues.get(), rIA.get(), diagonalProperty,
+                           numRows, numColumns, numDiagonals,
+                           rOffsets.get(), rValues.get(), eps );
+    }
+
+    // we compare the computed CSR data with expected CSR data from test data2
+
+    IndexType numRows1;
+    IndexType numColumns1;
+    IndexType numValues1;
+
+    LArray<IndexType> expIA;
+    LArray<IndexType> expJA;
+    LArray<ValueType> expValues;
+
+    data2::getCSRTestData( numRows1, numColumns1, numValues1, expIA, expJA, expValues );
+
+    BOOST_REQUIRE_EQUAL( numRows1, numRows );
+    BOOST_REQUIRE_EQUAL( numColumns1, numColumns );
+    BOOST_REQUIRE_EQUAL( numValues1, numValues );
+
+    BOOST_CHECK_EQUAL( expIA.maxDiffNorm( csrIA ), 0 );
+    BOOST_CHECK_EQUAL( expJA.maxDiffNorm( csrJA ), 0 );
+    BOOST_CHECK_EQUAL( expValues.maxDiffNorm( csrValues ), 0 );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -215,6 +400,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y )
         {
+            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            SCAI_ASYNCHRONOUS( syncToken.get() );
+
             SCAI_CONTEXT_ACCESS( loc );
 
             ReadAccess<IndexType> rOffsets( diaOffsets, loc );
@@ -301,6 +489,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
                        << ", with x = " << x << ", y = " << y
                        << ", DIA: offsets = " << diaOffsets << ", values = " << diaValues )
         {
+            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            SCAI_ASYNCHRONOUS( syncToken.get() );
+
             SCAI_CONTEXT_ACCESS( loc );
 
             ReadAccess<IndexType> rOffsets( diaOffsets, loc );
@@ -475,8 +666,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxValTest, ValueType, scai_numeric_test_types
     IndexType numDiagonals;
 
     data1::getDIATestData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
-
-    LArray<ValueType> dense( numRows * numColumns, 0, testContext );
 
     ValueType maxVal = 0;
 

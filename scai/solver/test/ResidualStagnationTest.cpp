@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class ResidualStagnationTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @brief Test routines for the class ResidualStagnation.
+ * @author Thomas Brandes, Malte Foerster
  * @date 14.02.2012
  */
 

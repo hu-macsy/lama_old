@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OmegaSolver.hpp
+ * @brief Test methods for the generic solver class OmegaSolver.
  * @author Kai Buschulte
  * @date 10.08.2011
  */

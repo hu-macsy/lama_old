@@ -58,19 +58,6 @@ namespace blaskernel
 
 class COMMON_DLL_IMPORTEXPORT CUDALAPACK
 {
-public:
-
-    template<typename ValueType>
-    static void laswp(
-        const CBLAS_ORDER order,
-        const IndexType n,
-        ValueType* A,
-        const IndexType lda,
-        const IndexType k1,
-        const IndexType k2,
-        const IndexType* ipiv,
-        const IndexType incx );
-
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

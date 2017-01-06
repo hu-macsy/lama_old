@@ -36,6 +36,7 @@
 
 #include <scai/common/exception/UnsupportedException.hpp>
 
+#include <iostream>
 #include <sstream>
 
 /** This macro should be used to give hints about unsupported features.

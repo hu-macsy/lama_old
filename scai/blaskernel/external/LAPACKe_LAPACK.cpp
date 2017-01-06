@@ -212,19 +212,26 @@ void LAPACKe_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
     LAPACKeTrait::LAPACKFlag DI = LAPACKeTrait::enum2char( diag );
     LAPACKeTrait::LAPACKOrder matrix_order = LAPACKeTrait::enum2order( order );
 
-    if ( TypeTraits<IndexType>::stype
-            != TypeTraits<LAPACKIndexType>::stype )
+    if ( TypeTraits<IndexType>::stype != TypeTraits<LAPACKIndexType>::stype )
     {
         // ToDo: convert ipiv array
         COMMON_THROWEXCEPTION( "indextype mismatch" );
     }
 
-    SCAI_LOG_INFO( logger, "tptrs<" << TypeTraits<ValueType>::id() << ">" <<
-                           ", n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
+    SCAI_LOG_INFO( logger, "tptrs<" << TypeTraits<ValueType>::id() << ">" 
+                           << ", n = " << n << ", nrhs = " << nrhs << ", order = " << matrix_order 
+                           << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     IndexType one = 1;
 
-    SCAI_ASSERT_ERROR( ldb >= common::Math::max( one, n ), "ldb = " << ldb << " out of range" );
+    if ( order == CblasColMajor )
+    {
+        SCAI_ASSERT_ERROR( ldb >= common::Math::max( one, n ), "ldb = " << ldb << " out of range" );
+    }
+    else
+    {
+        SCAI_ASSERT_ERROR( ldb >= common::Math::max( one, nrhs ), "ldb = " << ldb << " out of range" );
+    }
 
     int info = LAPACKeWrapper<ValueType>::tptrs( matrix_order, UL, TA, DI,
                static_cast<LAPACKIndexType>( n ),

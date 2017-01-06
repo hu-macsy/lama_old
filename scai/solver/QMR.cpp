@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief QMR.cpp
- * @author lschubert
+ * @brief Implementation of methods for the QMR solver.
+ * @author Lauretta Schubert
  * @date 06.08.2013
  */
 

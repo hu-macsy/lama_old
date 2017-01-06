@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Definition of a structure for a dense matrix.
- * @author Michael Drost
+ * @author Thomas Brandes, Lauretta Schubert
  * @date 27.04.2011
  */
 
@@ -57,8 +57,9 @@ template<typename ValueType> class DenseStorage;
  *  @tparam ValueType is the value type of the matrix values.
  */
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseStorageView:
-    public CRTPMatrixStorage<DenseStorageView<ValueType>, ValueType>
+class COMMON_DLL_IMPORTEXPORT DenseStorage:
+    public CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>,
+    public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
 {
 public:
 
@@ -68,31 +69,62 @@ public:
 
     static const char* typeName();
 
+    /** @brief Default constructor for a dense storage of 0 x 0  */
+
+    DenseStorage();
+
     /**
-     * @brief Creates a dense matrix with referenced data array
+     * @brief Creates a dense matrix with all values set to zero.
      *
-     * @param[in] data            is an array whose values will be copied
-     * @param[in] numRows         the number of rows of the matrix
-     * @param[in] numColumns      the number of columns of the matrix
-     * @param[in] initializedData should be true for existing data to verify good sizes
+     * @param[in] numRows       the number of rows of the matrix
+     * @param[in] numColumns    the number of columns of the matrix
      */
-    DenseStorageView(
-        hmemo::HArray<ValueType>& data,
-        const IndexType numRows,
-        const IndexType numColumns,
-        bool initializedData = true );
+    DenseStorage( const IndexType numRows, const IndexType numColumns );
+
+    /**
+     * @brief Creates a dense matrix with all values copied
+     *
+     * @param[in] data          is an array whose values will be copied
+     * @param[in] numRows       the number of rows of the matrix
+     * @param[in] numColumns    the number of columns of the matrix
+     */
+    DenseStorage( const hmemo::HArray<ValueType>& data, const IndexType numRows, const IndexType numColumns );
+
+    /** Default copy constructor is overridden */
+
+    DenseStorage( const DenseStorage<ValueType>& other );
+
+    /** Copy constructor that handles also type and format conversion. */
+
+    explicit DenseStorage( const _MatrixStorage& other );
+
+    /** Copy constructor can take any matrix storage or context. */
+
+    DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr context );
 
     /** Destructor of Dense matrix reference. */
 
-    virtual ~DenseStorageView();
+    virtual ~DenseStorage();
+
+    /** Override MatrixStorage::getTypeName() */
+
+    const char* getTypeName() const;
+
+    /** General assignment operator */
+
+    DenseStorage<ValueType>& operator=( const _MatrixStorage& other );
+
+    /** Also overwrite the default assignment operator */
+
+    DenseStorage<ValueType>& operator=( const DenseStorage<ValueType>& other );
 
     /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
 
-    virtual DenseStorageView<ValueType>* newMatrixStorage() const;
+    virtual DenseStorage<ValueType>* newMatrixStorage() const;
 
     /** Implementation of MatrixStorage::copy for derived class. */
 
-    virtual DenseStorageView<ValueType>* copy() const;
+    virtual DenseStorage<ValueType>* copy() const;
 
     /** Test the storage data for inconsistencies.
      *
@@ -303,7 +335,7 @@ public:
 
     /** Implementation of maxDiffNorm for dense matrices */
 
-    virtual ValueType maxDiffNormImpl( const DenseStorageView<ValueType>& other ) const;
+    virtual ValueType maxDiffNormImpl( const DenseStorage<ValueType>& other ) const;
 
     /** Template version of getRow */
 
@@ -364,9 +396,13 @@ public:
 
     virtual size_t getMemoryUsageImpl() const;
 
-    void swapImpl( DenseStorageView<ValueType>& other );
+    void swapImpl( DenseStorage<ValueType>& other );
 
     void swap( _MatrixStorage& other );
+
+    /** This swap operation allows to set the dense data values with an existing array without copy */
+
+    void swap( hmemo::HArray<ValueType>& other, const IndexType numRows, const IndexType numColumns );
 
     void allocate( const IndexType numRows, const IndexType numColumns );
 
@@ -375,7 +411,7 @@ public:
     virtual void print( std::ostream& ) const;
 
     template<typename OtherType>
-    void assignDenseStorageImpl( const DenseStorageView<OtherType>& otherDenseStorage );
+    void assignDenseStorageImpl( const DenseStorage<OtherType>& otherDenseStorage );
 
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::assign;
@@ -388,7 +424,7 @@ protected:
     using MatrixStorage<ValueType>::mDiagonalProperty;
     using MatrixStorage<ValueType>::mContext;
 
-    hmemo::HArray<ValueType>& mData; //!<  Reference to the matrix value array
+    hmemo::HArray<ValueType> mData;  //!<  matrix data as HArray, stored row-wise
 
     /** Logger just for this class / matrix format. */
 
@@ -398,25 +434,19 @@ protected:
 
     virtual    bool checkDiagonalProperty() const;
 
-
 private:
-
-    /** Disable default constructor. */
-
-    DenseStorageView();
-
 
     /** Implementation of matrix times matrix for dense matrices. */
 
     void matrixTimesMatrixDense( const ValueType alpha,
-                                 const DenseStorageView<ValueType>& a,
-                                 const DenseStorageView<ValueType>& b,
+                                 const DenseStorage<ValueType>& a,
+                                 const DenseStorage<ValueType>& b,
                                  const ValueType beta,
-                                 const DenseStorageView<ValueType>& c );
+                                 const DenseStorage<ValueType>& c );
 
     /** @brief invert only for DenseStorage. */
 
-    void invertDense( const DenseStorageView<ValueType>& other );
+    void invertDense( const DenseStorage<ValueType>& other );
 
     static std::string initTypeName();
 
@@ -432,94 +462,6 @@ public:
 };
 
 /* --------------------------------------------------------------------------- */
-
-/** DenseStorage is a DenseStorageView that manages its own data.
- *
- *  @tparam ValueType is the value type of the matrix values.
- */
-template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT DenseStorage:
-    public DenseStorageView<ValueType>,
-    public _MatrixStorage::Register<DenseStorage<ValueType> >    // register at factory
-{
-public:
-
-    /** @brief Getter of type name of the matrix storage format. */
-
-    static const char* typeName();
-
-    /** @brief Default constructor for a dense storage of 0 x 0  */
-
-    DenseStorage();
-
-    /**
-     * @brief Creates a dense matrix with all values set to zero.
-     *
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
-     */
-    DenseStorage( const IndexType numRows, const IndexType numColumns );
-
-    /**
-     * @brief Creates a dense matrix with all values copied
-     *
-     * @param[in] data          is an array whose values will be copied
-     * @param[in] numRows       the number of rows of the matrix
-     * @param[in] numColumns    the number of columns of the matrix
-     */
-    DenseStorage( const hmemo::HArray<ValueType>& data, const IndexType numRows, const IndexType numColumns );
-
-    /** Default copy constructor is overridden */
-
-    DenseStorage( const DenseStorage<ValueType>& other );
-
-    /** Copy constructor that handles also type and format conversion. */
-
-    explicit DenseStorage( const _MatrixStorage& other );
-
-    /** Copy constructor can take any matrix storage or context. */
-
-    DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr context );
-
-    /** Override MatrixStorage::getTypeName() */
-
-    const char* getTypeName() const;
-
-    DenseStorage<ValueType>& operator=( const _MatrixStorage& other );
-
-    DenseStorage<ValueType>& operator=( const DenseStorage<ValueType>& other );
-
-    /** Destructor of Dense matrix. */
-
-    virtual ~DenseStorage();
-
-    /** Implementation of MatrixStorage::newMatrixStorage for derived class. */
-
-    virtual DenseStorage<ValueType>* newMatrixStorage() const;
-
-    using MatrixStorage<ValueType>::mNumRows;
-    using MatrixStorage<ValueType>::mNumColumns;
-    using MatrixStorage<ValueType>::assign;
-
-    using DenseStorageView<ValueType>::mData;
-
-private:
-
-    hmemo::HArray<ValueType> mDataArray; //!<  matrix values, size is mNumRows x mNumColumns
-
-    static std::string initTypeName();
-
-public:
-
-    // static create method that will be used to register at MatrixStorage factory
-
-    static _MatrixStorage* create();
-
-    // key for factory
-
-    static MatrixStorageCreateKeyType createValue();
-
-};
 
 } /* end namespace lama */
 
