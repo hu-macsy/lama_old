@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Richardson.cpp
+ * @brief Implementation of methods for the Richardson solver.
  * @author David Schissler
  * @date 17.04.2015
  */

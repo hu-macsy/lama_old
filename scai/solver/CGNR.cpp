@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief CGNR.cpp
- * @author David schissler
+ * @author David Schissler
  * @date 27.05.2015
  */
 

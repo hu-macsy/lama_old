@@ -1387,7 +1387,9 @@ void MatrixStorage<ValueType>::setRawDenseData(
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
     HArrayRef<OtherValueType> data( numRows * numColumns, values );
     SCAI_LOG_INFO( logger, "use LAMA array ref: " << data << ", size = " << data.size() )
-    DenseStorageView<OtherValueType> denseStorage( data, numRows, numColumns );
+    DenseStorage<OtherValueType> denseStorage;
+    // swap data avoids copy of the data
+    denseStorage.swap( data, numRows, numColumns );
     assign( denseStorage ); // will internally use the value epsilon
     SCAI_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
 }

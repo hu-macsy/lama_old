@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class RedistributorTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @brief Tests for the class Redistributor.
+ * @author Thomas Brandes
  * @date 14.02.2012
  */
 

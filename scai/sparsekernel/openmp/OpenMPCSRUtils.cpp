@@ -34,6 +34,7 @@
 
 // for dll_import
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
+#include <scai/sparsekernel/openmp/BuildSparseIndexes.hpp>
 
 // local library
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
@@ -545,43 +546,46 @@ void OpenMPCSRUtils::convertCSR2CSC(
     SCAI_REGION( "OpenMP.CSRUtils.CSR2CSC" )
     SCAI_LOG_INFO( logger, "convertCSR2CSC of matrix " << numRows << " x " << numColumns )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, rIA[numRows] )
-    // initialization of column counters with 0
-    #pragma omp parallel for
 
+    // initialization of column counters with 0
+
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numColumns; ++i )
     {
         cscIA[i] = 0;
     }
 
     // loop over all rows of the row matrix to count columns, not yet OpenMP parallelized
-    #pragma omp parallel for
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
     {
-        // loop over all none zero elements of column i
+        // loop over all none zero elements of row i
+
         for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
         {
-            IndexType j = rJA[jj];
-            #pragma omp atomic
-            cscIA[j]++;
+            IndexType j = rJA[jj];   // inc size counter for this column
+            atomicInc( cscIA[j] );   // old value not needed here
         }
     }
 
     sizes2offsets( cscIA, numColumns );
+
     SCAI_LOG_INFO( logger, "convertCSR2CSC, #num values counted = " << cscIA[ numColumns ] )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, cscIA[numColumns] )
+
     // temporary copy neeeded of cscIA
     std::vector<IndexType> cscIA1( numColumns );
-    #pragma omp parallel for
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numColumns; ++i )
     {
         cscIA1[i] = cscIA[i];
     }
 
     // fill in the array cscJA and cscValues
-    #pragma omp parallel for
 
+    #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
     {
         for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
@@ -698,7 +702,7 @@ void OpenMPCSRUtils::normalGEVM_s(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
-    normalGEVM( result, ax.first, ax.second, by.first, by.second, numRows, numColumns, csrIA, csrJA, csrValues );
+    normalGEVM( result, ax.first, ax.second, by.first, by.second, numRows, numColumns, csrIA[numRows], csrIA, csrJA, csrValues );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -712,6 +716,7 @@ void OpenMPCSRUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType,
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[] )
@@ -1137,27 +1142,19 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 {
     SCAI_LOG_INFO( logger,
                    "matrixAddSizes for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+
     SCAI_REGION( "OpenMP.CSR.matrixAddSizes" )
+
     // determine the number of entries in output matrix
-    const IndexType NINIT = numColumns + 1; // marks unused colums
-    const IndexType END = numColumns + 2; // marks end of list
+
     #pragma omp parallel
     {
-        scoped_array<IndexType> indexList( new IndexType[numColumns] );
-
-        for ( IndexType j = 0; j < numColumns; j++ )
-        {
-            indexList[j] = NINIT;
-        }
+        BuildSparseIndexes indexList( numColumns );  // one builder for each thread
 
         #pragma omp for
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            IndexType length = 0;
-            IndexType firstCol = END;
-            bool diagonal = false; // will be set if diagonal element is set
-
             // loop over all none zero elements of row i of input matrix a
 
             for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
@@ -1168,19 +1165,7 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 // element a(i,j) will generate an output element c(i,j)
 
-                if ( indexList[j] == NINIT )
-                {
-                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" )
-                    // Add column position j to the indexList
-                    indexList[j] = firstCol;
-                    firstCol = j;
-                    ++length;
-
-                    if ( j == i )
-                    {
-                        diagonal = true;
-                    }
-                }
+                indexList.pushIndex( j );
             }
 
             for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
@@ -1191,41 +1176,27 @@ IndexType OpenMPCSRUtils::matrixAddSizes(
 
                 // element a(i,j) will generate an output element c(i,j)
 
-                if ( indexList[j] == NINIT )
-                {
-                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" )
-                    // Add column position j to the indexList
-                    indexList[j] = firstCol;
-                    firstCol = j;
-                    ++length;
-
-                    if ( j == i )
-                    {
-                        diagonal = true;
-                    }
-                }
+                indexList.pushIndex( j );
             }
 
-            if ( diagonalProperty && !diagonal )
+            if ( diagonalProperty )
             {
-                ++length; // diagaonal needed, but not filled yet
+                indexList.pushIndex( i );
             }
 
             // so we have now the correct length
-            SCAI_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
-            cSizes[i] = length;
+
+            cSizes[i] = indexList.getLength();
+
+            SCAI_LOG_TRACE( logger, "row " << i << " will have " << cSizes[i] << " entries" )
 
             // reset indexList for next use
 
-            while ( firstCol != END )
-            {
-                SCAI_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
-                IndexType nextCol = indexList[firstCol];
-                indexList[firstCol] = NINIT;
-                firstCol = nextCol;
-            }
+            indexList.reset();
+
         } // end loop over all rows of input matrices
     }
+
     return sizes2offsets( cSizes, numRows );
 }
 
@@ -1245,27 +1216,18 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
     SCAI_REGION( "OpenMP.CSR.matrixMultiplySizes" )
     SCAI_LOG_INFO( logger,
                    "matrixMutliplySizes for " << m << " x " << n << " matrix" << ", diagonalProperty = " << diagonalProperty )
-    // determine the number of entries in output matrix
-    const IndexType NINIT = n + 1; // marks unused colums
-    const IndexType END = n + 2; // marks end of list
-    IndexType newElems = 0;
-    IndexType doubleElems = 0;
-    #pragma omp parallel reduction( + : newElems, doubleElems )
-    {
-        scoped_array<IndexType> indexList( new IndexType[n] );
 
-        for ( IndexType j = 0; j < n; j++ )
-        {
-            indexList[j] = NINIT;
-        }
+    // determine the number of entries in output matrix
+
+    #pragma omp parallel
+    {
+        BuildSparseIndexes indexList( n );  // Each thread has its own build object, is reused 
 
         #pragma omp for
 
         for ( IndexType i = 0; i < m; ++i )
         {
-            IndexType length = 0;
-            IndexType firstCol = END;
-            bool diagonal = false; // will be set if diagonal element is set
+            indexList.reset();   // build sparse indexes for each row
 
             // loop over all none zero elements of row i of input matrix a
 
@@ -1290,49 +1252,26 @@ IndexType OpenMPCSRUtils::matrixMultiplySizes(
 
                     // element a(i,j) an b(j,k) will generate the output element c(i,k)
 
-                    if ( indexList[k] == NINIT )
-                    {
-                        SCAI_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
-                        // Add column position k to the indexList
-                        indexList[k] = firstCol;
-                        firstCol = k;
-                        ++length;
-
-                        if ( k == i )
-                        {
-                            diagonal = true;
-                        }
-
-                        newElems++;
-                    }
-                    else
-                    {
-                        doubleElems++;
-                    }
+                    indexList.pushIndex( k );
                 }
             }
 
-            if ( diagonalProperty && !diagonal )
+            if ( diagonalProperty )
             {
-                ++length; // diagaonal needed, but not filled yet
+                indexList.pushIndex( i );
             }
 
             // so we have now the correct length
-            SCAI_LOG_TRACE( logger, "row " << i << " will have " << length << " entries" )
-            cSizes[i] = length;
 
-            // reset indexList for next use
+            cSizes[i] = indexList.getLength();
 
-            while ( firstCol != END )
-            {
-                SCAI_LOG_TRACE( logger, "entry [" << i << "," << firstCol << "] will be set" )
-                IndexType nextCol = indexList[firstCol];
-                indexList[firstCol] = NINIT;
-                firstCol = nextCol;
-            }
+            SCAI_LOG_TRACE( logger, "row " << i << " will have " << cSizes[i] << " entries" )
+
         } //end loop over all rows of input matrix
     }
+
     sizes2offsets( cSizes, m );
+
     return cSizes[m];
 }
 
@@ -1358,44 +1297,28 @@ void OpenMPCSRUtils::matrixAdd(
     SCAI_REGION( "OpenMP.CSR.matrixAdd" )
     SCAI_LOG_INFO( logger,
                    "matrixAddJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
-    const IndexType NINIT = numColumns + 1;
-    const IndexType END = numColumns + 2;
+
     // determine the number of entries in output matrix
+
     #pragma omp parallel
     {
-        scoped_array<IndexType> indexList( new IndexType[numColumns] );
-        scoped_array<ValueType> valueList( new ValueType[numColumns] );
-
-        for ( IndexType j = 0; j < numColumns; j++ )
-        {
-            indexList[j] = NINIT;
-            valueList[j] = static_cast<ValueType>( 0.0 );
-        }
+        BuildSparseVector<ValueType> sparseRow( numColumns );
 
         #pragma omp for
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            IndexType length = 0;
-            IndexType firstCol = END;
-
             for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
             {
                 // j is column of none zero element jj of row i of input matrix a
                 // so we are at position a(i,j)
+
                 IndexType j = aJA[jj];
-                valueList[j] += alpha * aValues[jj];
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a" << ", new val = " << valueList[j] )
+                ValueType v = alpha * aValues[jj];
 
-                // element a(i,j) will generate an output element c(i,j)
+                sparseRow.push( j, v );
 
-                if ( indexList[j] == NINIT )
-                {
-                    // Add column position j to the indexList
-                    indexList[j] = firstCol;
-                    firstCol = j;
-                    ++length;
-                }
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by a, val = " << v )
             }
 
             for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
@@ -1403,18 +1326,11 @@ void OpenMPCSRUtils::matrixAdd(
                 // j is column of none zero element jj of row i of input matrix b
                 // so we are at position b(i,j)
                 IndexType j = bJA[jj];
-                valueList[j] += beta * bValues[jj];
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b" << ", new val = " << valueList[j] )
+                ValueType v = beta * bValues[jj];
 
-                // element b(i,j) will generate an output element c(i,j)
+                sparseRow.push( j, v );
 
-                if ( indexList[j] == NINIT )
-                {
-                    // Add column position j to the indexList
-                    indexList[j] = firstCol;
-                    firstCol = j;
-                    ++length;
-                }
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << j << "] by b, val = " << v  )
             }
 
             IndexType offset = cIA[i];
@@ -1422,142 +1338,42 @@ void OpenMPCSRUtils::matrixAdd(
             if ( diagonalProperty )
             {
                 // first element is reserved for diagonal element
+
                 SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
                 cJA[offset] = i;
-                cValues[offset] = static_cast<ValueType>( 0.0 );
+                cValues[offset] = static_cast<ValueType>( 0.0 ); 
                 ++offset;
             }
 
+            SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
+
             // fill in csrJA, csrValues and reset indexList, valueList for next use
 
-            while ( firstCol != END )
+            while ( !sparseRow.isEmpty() )
             {
-                IndexType nextCol = indexList[firstCol];
-                ValueType val = valueList[firstCol];
-                indexList[firstCol] = NINIT;
-                valueList[firstCol] = static_cast<ValueType>( 0.0 ); // reset for next time
+                IndexType col;
+                ValueType val;
 
-                if ( diagonalProperty && firstCol == i )
+                sparseRow.pop( col, val );
+
+                SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
+
+                if ( diagonalProperty && col == i )
                 {
-                    SCAI_LOG_TRACE( logger, "diagonal already added before" )
-                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] = " << val )
                     cValues[cIA[i]] = val;
                 }
                 else
                 {
-                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "] = " << val )
-                    cJA[offset] = firstCol;
+                    cJA[offset] = col;
                     cValues[offset] = val;
                     ++offset;
                 }
-
-                firstCol = nextCol;
             }
 
             // make sure that we have still the right offsets
+
             SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
-        } //end loop over all rows of input matrix a
-    }
-}
 
-/* --------------------------------------------------------------------------- */
-
-void OpenMPCSRUtils::matrixMultiplyJA(
-    IndexType cJA[],
-    const IndexType cIA[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    bool diagonalProperty,
-    const IndexType aIA[],
-    const IndexType aJA[],
-    const IndexType bIA[],
-    const IndexType bJA[] )
-{
-    SCAI_LOG_INFO( logger,
-                   "matrixMutliplyJA for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
-    const IndexType NINIT = numColumns + 1;
-    const IndexType END = numColumns + 2;
-    // determine the number of entries in output matrix
-    #pragma omp parallel
-    {
-        scoped_array<IndexType> indexList( new IndexType[numColumns] );
-
-        for ( IndexType j = 0; j < numColumns; j++ )
-        {
-            indexList[j] = NINIT;
-        }
-
-        #pragma omp for
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            IndexType length = 0;
-            IndexType firstCol = END;
-
-            // loop over all none zero elements of row i of input matrix a
-
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
-            {
-                // j is column of none zero element jj of row i of input matrix a
-                // so we are at position a(i,j)
-                IndexType j = aJA[jj];
-
-                // loop over all none zero elements of row j of input matrix b
-                // that is the row of b that corresponds to the column of the current
-                // element of a
-
-                for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
-                {
-                    // k is the column of none zero element kk of row j of input matrix b
-                    // so we are looking at position b(j,k)
-                    IndexType k = bJA[kk];
-
-                    // element a(i,j) an b(j,k) will generate the output element c(i,k)
-
-                    if ( indexList[k] == NINIT )
-                    {
-                        // Add column position k to the indexList
-                        indexList[k] = firstCol;
-                        firstCol = k;
-                        ++length;
-                        SCAI_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
-                    }
-                }
-            }
-
-            IndexType offset = cIA[i];
-
-            if ( diagonalProperty )
-            {
-                // first element is reserved for diagonal element
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
-                cJA[offset] = i;
-                ++offset;
-            }
-
-            // fill in csrJA and reset indexList for next use
-
-            while ( firstCol != END )
-            {
-                IndexType nextCol = indexList[firstCol];
-                indexList[firstCol] = NINIT;
-
-                if ( diagonalProperty && firstCol == i )
-                {
-                    SCAI_LOG_TRACE( logger, "diagonal already added before" )
-                }
-                else
-                {
-                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
-                    cJA[offset] = firstCol;
-                    ++offset;
-                }
-
-                firstCol = nextCol;
-            }
-
-            // make sure that we have still the right offsets
-            SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
         } //end loop over all rows of input matrix a
     }
 }
@@ -1581,107 +1397,11 @@ void OpenMPCSRUtils::matrixMultiply(
     const IndexType bJA[],
     const ValueType bValues[] )
 {
-    //TODO: Rewrite this!
-    const IndexType NINIT = n + 1;
-    const IndexType END = n + 2;
-    // determine the number of entries in output matrix
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.CSR.matrixMultiply1" )
+        SCAI_REGION( "OpenMP.CSR.matrixMultiply" )
 
-        scoped_array<IndexType> indexList( new IndexType[n] );
-
-        for ( IndexType j = 0; j < n; j++ )
-        {
-            indexList[j] = NINIT;
-        }
-
-        #pragma omp for
-
-        for ( IndexType i = 0; i < m; ++i )
-        {
-            IndexType length = 0;
-            IndexType firstCol = END;
-
-            // loop over all none zero elements of row i of input matrix a
-
-            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
-            {
-                // j is column of none zero element jj of row i of input matrix a
-                // so we are at position a(i,j)
-                IndexType j = aJA[jj];
-
-                // loop over all none zero elements of row j of input matrix b
-                // that is the row of b that corresponds to the column of the current
-                // element of a
-
-                for ( IndexType kk = bIA[j]; kk < bIA[j + 1]; ++kk )
-                {
-                    // k is the column of none zero element kk of row j of input matrix b
-                    // so we are looking at position b(j,k)
-                    IndexType k = bJA[kk];
-
-                    // element a(i,j) an b(j,k) will generate the output element c(i,k)
-
-                    if ( indexList[k] == NINIT )
-                    {
-                        // Add column position k to the indexList
-                        indexList[k] = firstCol;
-                        firstCol = k;
-                        ++length;
-                        SCAI_LOG_TRACE( logger, "entry for [" << i << "," << k << "]" )
-                    }
-                }
-            }
-
-            IndexType offset = cIA[i];
-
-            if ( diagonalProperty )
-            {
-                // first element is reserved for diagonal element
-                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
-                cJA[offset] = i;
-                ++offset;
-            }
-
-            // fill in csrJA and reset indexList for next use
-
-            while ( firstCol != END )
-            {
-                IndexType nextCol = indexList[firstCol];
-                indexList[firstCol] = NINIT;
-
-                if ( diagonalProperty && firstCol == i )
-                {
-                    SCAI_LOG_TRACE( logger, "diagonal already added before" )
-                }
-                else
-                {
-                    SCAI_LOG_TRACE( logger, "entry for [" << i << "," << firstCol << "]" )
-                    cJA[offset] = firstCol;
-                    ++offset;
-                }
-
-                firstCol = nextCol;
-            }
-
-            // make sure that we have still the right offsets
-            // SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i+1] )
-        } //end loop over all rows of input matrix a
-    }
-
-    #pragma omp parallel
-    {
-        SCAI_REGION( "OpenMP.CSR.matrixMultiply2" )
-
-        // temporary array for cRow, allocated by each thread
-
-        scoped_array<ValueType> cRow( new ValueType[n] );
-
-        for ( IndexType j = 0; j < n; j++ )
-        {
-            cRow[j] = static_cast<ValueType>( 0 );
-        }
+        BuildSparseVector<ValueType> sparseRow( n ); // one for each thread
 
         #pragma omp for
 
@@ -1699,32 +1419,50 @@ void OpenMPCSRUtils::matrixMultiply(
 
                     // element a(i,j) an b(j,k) will be added to  c(i,k)
 
-                    cRow[k] += aValues[jj] * bValues[kk];
+                    sparseRow.push( k, aValues[jj] * bValues[kk] );
                 }
             }
 
-            // now take all values from the row as needed
+            IndexType offset = cIA[i];
 
-            for ( IndexType jj = cIA[i]; jj < cIA[i + 1]; ++jj )
+            if ( diagonalProperty )
             {
-                IndexType j = cJA[jj];
+                // first element is reserved for diagonal element
 
-                if ( j == nIndex )
-                {
-                    continue;
-                }
-
-                cValues[jj] = alpha * cRow[j];
-
-                cRow[j] = static_cast<ValueType>( 0 );
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
+                cJA[offset] = i;
+                cValues[offset] = static_cast<ValueType>( 0.0 );
+                ++offset;
             }
 
-            // just make sure that we really got all non-zero entries
+            SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
 
-            // for ( IndexType j = 0; j < n; j++ )
-            // {
-            //     SCAI_ASSERT_EQ_ERROR( cRow[j], ValueType( 0 ), "serious mismatch" )
-            // }
+            // fill in csrJA, csrValues and reset indexList, valueList for next use
+
+            while ( !sparseRow.isEmpty() )
+            {
+                IndexType col;
+                ValueType val;
+
+                sparseRow.pop( col, val );
+
+                SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
+
+                if ( diagonalProperty && col == i )
+                {
+                    cValues[cIA[i]] = alpha * val;
+                }
+                else
+                {
+                    cJA[offset] = col;
+                    cValues[offset] = alpha * val;
+                    ++offset;
+                }
+            }
+
+            // make sure that we have still the right offsets
+
+            SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
         }
     }
 }
@@ -1966,11 +1704,13 @@ void OpenMPCSRUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<CSRKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sizes2offsets>( sizes2offsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::offsets2sizes>( offsets2sizes, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::offsets2sizesGather>( offsets2sizesGather, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::validOffsets>( validOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::countNonEmptyRowsByOffsets>( countNonEmptyRowsByOffsets, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::setNonEmptyRowsByOffsets>( setNonEmptyRowsByOffsets, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAddSizes>( matrixAddSizes, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
-    KernelRegistry::set<CSRKernelTrait::matrixMultiplyJA>( matrixMultiplyJA, ctx, flag );
 }
 
 template<typename ValueType>

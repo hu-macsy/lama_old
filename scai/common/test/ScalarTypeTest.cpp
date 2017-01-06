@@ -83,3 +83,36 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
     bool contains2 = mepr::ScalarTypeHelper<SCAI_TYPELIST(char, int)>::contains( scalar::FLOAT );
     BOOST_CHECK( !contains2 );
 }
+
+BOOST_AUTO_TEST_CASE( precisionTest )
+{
+    for ( int type = scalar::ScalarType( 0 ); type < scalar::UNKNOWN; ++type )
+    {
+        scalar::ScalarType stype = scalar::ScalarType( type );
+
+        if ( stype == scalar::INTERNAL )
+        {
+            // should throw an exception to make sure that call is replaced with correct type
+
+            BOOST_CHECK_THROW(
+            {
+                precision( stype );
+            }, common::Exception );
+ 
+            continue;
+        }
+        
+        int n = precision( stype );
+
+        if ( isNumeric( stype ) )
+        {
+            BOOST_CHECK( n > 0 );
+        }
+        else
+        {
+            BOOST_CHECK_EQUAL( 0, n );
+        }
+    }
+}
+
+

@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class NoDistributionTest.
- * @author Alexander Büchel
+ * @brief Specific tests for the class NoDistributionTest derived from Distribution.
+ * @author Thmas Brandes
  * @date 01.08.2012
  */
 

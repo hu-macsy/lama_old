@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class SimpleAMGTest.cpp
- * @author Alexander Büchel, Robin Rehrmann
+ * @brief Specific test routines for the solver class SimpleAMG.
+ * @author Malte Foerster
  * @date 22.02.2012
  */
 

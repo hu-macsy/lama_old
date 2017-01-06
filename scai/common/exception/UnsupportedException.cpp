@@ -103,6 +103,11 @@ UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSettin
     return unsupportedSetting;
 }
 
+void UnsupportedException::resetSetting()
+{
+    unsupportedSetting = UNSUPPORTED_UNDEFINED;
+}
+
 } /* end common */
 
 } /* end scai */

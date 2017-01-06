@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief CGS.cpp
- * @author David schissler
+ * @author David Schissler
  * @date 18.05.2015
  */
 

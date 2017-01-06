@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of methods
+ * @brief Implementation of methods to read/write Matrix Market files
  * @author Thomas Brandes
  * @date 10.06.2016
  */
@@ -39,11 +39,14 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/io/IOStream.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Math.hpp>
+
+#include <scai/tracing.hpp>
 
 #include <sstream>
 #include <iomanip>
@@ -197,48 +200,74 @@ void MatrixMarketIO::writeMMHeader(
 /* --------------------------------------------------------------------------------- */
 
 void MatrixMarketIO::readMMHeader(
+    IOStream& inFile,
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
     common::scalar::ScalarType& dataType,
-    Symmetry& symmetry,
-    IOStream& inFile )
+    bool& isVector,
+    Symmetry& symmetry )
 {
+    const std::string& fileName = inFile.getFileName();
+
     std::string buffer;
-    // read %%MatrixMarket
+
+    // Header: %%MatrixMarket ...
+
     std::getline( inFile, buffer, ' ' );
     std::transform( buffer.begin(), buffer.end(), buffer.begin(), ::tolower );
 
     if ( buffer != "%%matrixmarket" )
     {
-        COMMON_THROWEXCEPTION( "Given file is no valid matrix market file, expected file to begin with %%MatrixMarket" )
+        SCAI_THROWEXCEPTION( common::IOException,
+                             "File " << fileName << " is no valid matrix market file" 
+                                     << ", expected file to begin with %%MatrixMarket" )
     }
 
-    // read object type
+    // read object type matrix | vector
+
     std::getline( inFile, buffer, ' ' );
     std::transform( buffer.begin(), buffer.end(), buffer.begin(), ::tolower );
 
     // check if object type is valid in general
-    if ( buffer != "matrix" && buffer != "vector" )
+
+    if ( buffer == "matrix" )
     {
-        COMMON_THROWEXCEPTION( "Object type in the given matrix market file is invalid, should be matrix or vector" )
+        isVector = false;
     }
-
-    bool isVector = false;
-
-    if ( buffer == "vector" )
+    else if ( buffer == "vector" )
     {
         isVector = true;
     }
+    else
+    {
+        SCAI_THROWEXCEPTION( common::IOException,
+                             "Reading Matrix Market file " << fileName << ": object type " << buffer 
+                              << " illegal, must be matrix or vector" )
+    }
 
-    // read file type
+    // read file type coordinate | array
+
     std::getline( inFile, buffer, ' ' );
     std::transform( buffer.begin(), buffer.end(), buffer.begin(), ::tolower );
 
-    // checkif file type is valid in general
-    if ( buffer != "coordinate" && buffer != "array" )
+    bool isCoordinate = false;
+
+    // check if file type is valid in general
+
+    if ( buffer == "coordinate" )
     {
-        COMMON_THROWEXCEPTION( "Format type in the given matrix market file is invalid, should be coordinate or array" )
+        isCoordinate = true;
+    }
+    else if ( buffer == "array" ) 
+    {
+        isCoordinate = false;
+    }
+    else
+    {
+        SCAI_THROWEXCEPTION( common::IOException,
+                             "Reading Matrix Market file " << fileName << ": format type " << buffer 
+                             << " illegal, must be array or coordinate" )
     }
 
     // read data type
@@ -269,7 +298,7 @@ void MatrixMarketIO::readMMHeader(
     else 
     {
         SCAI_THROWEXCEPTION( common::IOException,
-                             "Reading Matrix Market fille " << inFile.getFileName()
+                             "Reading Matrix Market fille " << fileName
                              << ": data type field = " << buffer << " is illegal" 
                              << ", should be real, double, integer, complex, pattern" )
     }
@@ -326,17 +355,27 @@ void MatrixMarketIO::readMMHeader(
     while ( skip );
 
     std::stringstream bufferSS( buffer );
+
     bufferSS >> numRows;
     bufferSS >> numColumns;
-    // TODO: vector correct here? should it be dense vs sparse?
-    if ( !isVector )
+
+    if ( isCoordinate )
     {
         bufferSS >> numValues;
     }
     else
     {
-        numValues = numRows * numColumns;
+        numValues = nIndex;   // stands for array
     }
+
+    if ( isVector && numColumns != 1 )
+    {
+        SCAI_LOG_WARN( logger, "MatrixMarket file " << fileName << ": vector, but ncol = " << numColumns )
+    }
+
+    SCAI_LOG_INFO( logger, "read MM header: size = " << numRows << " x " << numColumns 
+                           << ", #nnz = " << numValues << ", type = " << dataType
+                           << ", symmetry = " << symmetry )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -423,14 +462,10 @@ void MatrixMarketIO::writeArrayImpl(
     bool      isVector   = true;
     IndexType numRows    = array.size();
     IndexType numColumns = 1;
-    IndexType numValues  = -1;
+    IndexType numValues  = nIndex;
     Symmetry  symmetry   = GENERAL;
 
     writeMMHeader( outFile, isVector, numRows, numColumns, numValues, symmetry, dataType );
-
-    // output code runs only for host context
-
-    ContextPtr host = Context::getHostPtr();
 
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
@@ -443,20 +478,32 @@ void MatrixMarketIO::writeArrayImpl(
 
 void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
+    SCAI_REGION( "IO.MM.readArray" )
+
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
 
+    IndexType numRows;
     IndexType numColumns;
     IndexType numValues;
+    bool      isVector; 
 
     IOStream inFile( fileName, std::ios::in );
 
-    readMMHeader( size, numColumns, numValues, mmType, symmetry, inFile );
+    readMMHeader( inFile, numRows, numColumns, numValues, mmType, isVector, symmetry );
 
-    if ( numColumns != 1 )
+    if ( !isVector )
     {
-        SCAI_LOG_WARN( logger, "reading vector from mtx file, #columns = " << numColumns << ", ignored" )
+        SCAI_LOG_WARN( logger, "Matrix Market file " << fileName << ", contains matrix and not vector" )
     }
+
+    if ( numValues != nIndex )
+    {
+        SCAI_THROWEXCEPTION( common::IOException,
+                             "Matrix Market file " << fileName << ": coordinate not allowed for reading a vector" )
+    }
+
+    size = numRows * numColumns;
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -468,17 +515,28 @@ void MatrixMarketIO::readArrayImpl(
     const IndexType first, 
     const IndexType n ) 
 {
+    SCAI_REGION( "IO.MM.readArray" )
+
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
 
     IndexType numRows;
     IndexType numColumns;
     IndexType size;
+    bool      isVector;
 
     ValueType val;
     std::string line;
     IOStream inFile( fileName, std::ios::in );
-    readMMHeader( numRows, numColumns, size, mmType, symmetry, inFile );
+    readMMHeader( inFile, numRows, numColumns, size, mmType, isVector, symmetry );
+
+    if ( size != nIndex )
+    {
+        SCAI_THROWEXCEPTION( common::IOException,
+                             "Matrix Market file " << fileName << ": coordinate format for vector not supported" )
+    }
+
+    size = numRows * numColumns;
 
     if ( numColumns != 1 )
     {
@@ -596,6 +654,8 @@ static void sortIJ( IndexType perm[], const IndexType ia[], const IndexType ja[]
 template<typename ValueType>
 MatrixMarketIO::Symmetry MatrixMarketIO::checkSymmetry( const HArray<IndexType>& cooIA, const HArray<IndexType>& cooJA, const HArray<ValueType>& cooValues )
 {
+    SCAI_REGION( "IO.MM.checkSymmetry" )
+
     IndexType n = cooIA.size();
 
     bool isSym  = true;
@@ -718,10 +778,53 @@ static void removeUpperTriangular( HArray<IndexType>& cooIA, HArray<IndexType>& 
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixMarketIO::writeDenseMatrix(
+    const DenseStorage<ValueType>& storage,
+    const std::string& fileName ) 
+{
+    SCAI_REGION( "IO.MM.writeDense" )
+
+    IOStream outFile( fileName, std::ios::out | std::ios::trunc );
+
+    common::scalar::ScalarType dataType = mScalarTypeData;
+
+    if ( dataType == common::scalar::INTERNAL )
+    {
+        dataType = common::TypeTraits<ValueType>::stype;
+    }
+
+    bool      isVector   = false;
+    IndexType numRows    = storage.getNumRows();
+    IndexType numColumns = storage.getNumColumns();
+    IndexType numValues  = nIndex;
+    Symmetry  symmetry   = GENERAL;
+
+    writeMMHeader( outFile, isVector, numRows, numColumns, numValues, symmetry, dataType );
+
+    int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
+
+    outFile.writeFormatted( storage.getData(), precData );
+
+    outFile.close();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixMarketIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName ) 
 {
+    if ( storage.getFormat() == _MatrixStorage::DENSE )
+    {
+        DenseStorage<ValueType> denseStorage;
+        denseStorage.assignTranspose( storage );
+        writeDenseMatrix( denseStorage, fileName );
+        return;
+    }
+
+    SCAI_REGION( "IO.MM.writeCOO" )
+
     SCAI_ASSERT_ERROR( mFileMode != BINARY, *this << ": Matrix market format can not be written binary" );
 
     COOStorage<ValueType> coo( storage );
@@ -801,29 +904,120 @@ void MatrixMarketIO::writeStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void MatrixMarketIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+void MatrixMarketIO::readStorageInfo( 
+    IndexType& numRows, 
+    IndexType& numColumns, 
+    IndexType& numValues, 
+    const std::string& fileName )
+
 {
+    SCAI_REGION( "IO.MM.readStorageInfo" )
+
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
+    bool isVector;
 
     IndexType numValuesFile;
 
     IOStream inFile( fileName, std::ios::in );
 
-    readMMHeader( numRows, numColumns, numValuesFile, mmType, symmetry, inFile );
+    readMMHeader( inFile, numRows, numColumns, numValuesFile, mmType, isVector, symmetry );
 
-    numValues = numValuesFile;
-
-    if ( symmetry )
+    if ( numValuesFile == nIndex )
     {
-        // in case of symmetry we assume one entry for each diagonal element and double the non-diagonal elements
+        numValues = numRows * numColumns;
+    }
+    else
+    {
+        numValues = numValuesFile;
 
-        SCAI_ASSERT_EQUAL( numRows, numColumns, "symmetry only possible for square matrices" )
+        if ( symmetry )
+        {
+            // in case of symmetry we assume one entry for each diagonal element and double the non-diagonal elements
 
-        numValues = numRows + 2 * ( numValuesFile - numRows );
+            SCAI_ASSERT_EQUAL( numRows, numColumns, "symmetry only possible for square matrices" )
+    
+            numValues = numRows + 2 * ( numValuesFile - numRows );
+        }
     }
 }
 
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixMarketIO::readMMArray( 
+    IOStream& inFile,
+    HArray<ValueType>& data,
+    const IndexType numRows,
+    const IndexType numColumns,
+    const Symmetry symmetry )
+{
+    SCAI_REGION( "IO.MM.readDense" )
+
+    const std::string& fileName = inFile.getFileName();
+
+    if ( symmetry != GENERAL )
+    {
+        SCAI_ASSERT_EQ_ERROR( numRows, numColumns, "symmetric data only for square matrices" )
+    }
+
+    if ( symmetry == SKEW_SYMMETRIC )
+    {
+        COMMON_THROWEXCEPTION( "skew symmentric not supported yet" )
+    }
+
+    WriteOnlyAccess<ValueType> wData( data, numRows * numColumns );
+
+    // values in input file are column-major order
+
+    std::string line;   // used for reading lines of file
+
+    for ( IndexType j = 0; j < numColumns; ++j )
+    {
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            // symmemtric data has no upper triangular, i < j 
+
+            if ( symmetry == SYMMETRIC && i < j )
+            {
+                wData[i * numColumns + j] = wData[ j * numRows + i];
+                continue;
+            }
+            if ( symmetry == HERMITIAN && i < j )
+            {
+                wData[i * numColumns + j] = common::Math::conj( wData[ j * numRows + i] );
+                continue;
+            }
+
+            if ( inFile.eof() )
+            {
+                COMMON_THROWEXCEPTION( "failed to read further entry" )
+            }
+
+            std::getline( inFile, line );
+            std::istringstream reader( line );
+
+            ValueType val;
+
+            reader >> val;
+            wData[i * numColumns + j] = val;
+        }
+    }
+
+    if ( inFile.eof() )
+    {
+         COMMON_THROWEXCEPTION( "'" << fileName << "': reached end of file, before having read all data." )
+    }
+
+    // check if there is more data in the file tht should not be there
+    std::getline( inFile, line );
+
+    if ( !inFile.eof() )
+    {
+        COMMON_THROWEXCEPTION( "'" << fileName << "': invalid file, contains to many elements." )
+    }
+}
+   
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -833,16 +1027,19 @@ void MatrixMarketIO::readStorageImpl(
     const IndexType firstRow,
     const IndexType nRows )
 {
+    SCAI_REGION( "IO.MM.readStorage" )
+
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
 
     IndexType numRows;
     IndexType numColumns;
     IndexType numValuesFile;
+    bool isVector;
 
     IOStream inFile( fileName, std::ios::in );
 
-    readMMHeader( numRows, numColumns, numValuesFile, mmType, symmetry, inFile );
+    readMMHeader( inFile, numRows, numColumns, numValuesFile, mmType, isVector, symmetry );
 
     SCAI_LOG_DEBUG( logger, "from header: nrows = " << numRows << ", ncols = " << numColumns << ", nnz = " << numValuesFile
                             << ", mmType = " << mmType << ", symmetry = " << symmetry )
@@ -853,6 +1050,26 @@ void MatrixMarketIO::readStorageImpl(
     {
         SCAI_LOG_WARN( logger, "Read matrix from Matrix Market file " << fileName 
                                << ": contains complex data but read in non-complex storage " << storage )
+    }
+
+    if ( numValuesFile == nIndex )
+    {
+        DenseStorage<ValueType> denseStorage( numRows, numColumns );
+ 
+        HArray<ValueType>& data = denseStorage.getData();
+
+        readMMArray( inFile, data, numRows, numColumns, symmetry );
+
+        if ( firstRow == 0 && nRows == nIndex )
+        {
+            storage = denseStorage;
+        }
+        else
+        {
+            denseStorage.copyBlockTo( storage, firstRow, nRows );
+        }
+
+        return;
     }
 
     // use local arrays instead of heteregeneous arrays as we want ops on them

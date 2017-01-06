@@ -71,7 +71,7 @@ namespace lama
 {
 
 template<typename ValueType> class CSRStorage;
-template<typename ValueType> class DenseStorageView;
+template<typename ValueType> class DenseStorage;
 
 /** Enumeration type for different matrix storage formats.
  *

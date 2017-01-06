@@ -347,7 +347,7 @@ void CUDACSRUtils::convertCSR2CSC(
     thrust::stable_sort_by_key( ja_d, ja_d + numValues,
                                 thrust::make_zip_iterator( thrust::make_tuple( values_d, ia_d ) ) );
     // cscJA is now sorted, can become an offset array
-    CUDACOOUtils::ia2offsets( cscIA, numColumns, 0, cooIA, numValues );
+    CUDACOOUtils::ia2offsets( cscIA, numColumns, cooIA, numValues );
     SCAI_CUDA_RT_CALL( cudaFree( cooIA ), "free tmp cooIA" )
 }
 
@@ -968,6 +968,7 @@ void CUDACSRUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
+    const IndexType, 
     const IndexType csrIA[],
     const IndexType csrJA[],
     const ValueType csrValues[] )

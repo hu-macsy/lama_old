@@ -76,13 +76,11 @@ public:
         const IndexType csrJA[],
         const IndexType numValues );
 
-    /** This method computes the total number of non-zero rows by the offset array
-     *
-     */
+    /** Implementation for CSRKernelTrait::countNonEmptyRowsByOffsets */
 
     static IndexType countNonEmptyRowsByOffsets( const IndexType offsets[], const IndexType numRows );
 
-    /** Build a vector of indexes for non-empty rows. */
+    /** Implementation for CSRKernelTrait::setNonEmptyRowsByOffsets */
 
     static void setNonEmptyRowsByOffsets(
         IndexType rowIndexes[],
@@ -209,6 +207,7 @@ public:
         const ValueType y[],
         const IndexType numRows,
         const IndexType numColumns,
+        const IndexType numValues,
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[] );
@@ -317,19 +316,6 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        bool diagonalProperty,
-        const IndexType aIA[],
-        const IndexType aJA[],
-        const IndexType bIA[],
-        const IndexType bJA[] );
-
-    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplyJA  */
-
-    static void matrixMultiplyJA(
-        IndexType cJA[],
-        const IndexType cIA[],
-        const IndexType numRows,
-        const IndexType numColumns,
         bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],

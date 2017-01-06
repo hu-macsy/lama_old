@@ -40,6 +40,8 @@
 #include <string>
 #include <vector>
 
+/** Namespace used for all projects of the LAMA software and other provided packages like logging, tracing, etc. */
+
 namespace scai
 {
 
@@ -132,9 +134,9 @@ public:
 
     static void setRank( int rank );
 
-    /** Print all environment variables starting with SCAI_ (only for debug, demo purpose) */
+    /** Print all environment variables starting with SCAI_ (only for debug, demo purpose) in an output stream */
 
-    static void printEnvironment();
+    static void printEnvironment( std::ostream& out );
 
 private:
 

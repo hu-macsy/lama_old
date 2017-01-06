@@ -1,5 +1,5 @@
 /**
- * @file lama/mepr/DenseStorageViewWrapper.hpp
+ * @file lama/mepr/DenseStorageWrapper.hpp
  *
  * @license
  * Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./lama/mepr/DenseStorageViewWrapper.hpp
+ * @brief ToDo: Missing description in ./lama/mepr/DenseStorageWrapper.hpp
  * @author eschricker
  * @date 16.03.2016
  */
@@ -50,31 +50,31 @@ namespace lama
 namespace mepr
 {
 
-template<typename ValueType, typename TList> struct DenseStorageViewWrapper;
+template<typename ValueType, typename TList> struct DenseStorageWrapper;
 
 template<typename ValueType>
-struct DenseStorageViewWrapper<ValueType, common::mepr::NullType>
+struct DenseStorageWrapper<ValueType, common::mepr::NullType>
 {
-    static bool assignImpl( DenseStorageView<ValueType>&, const _MatrixStorage& )
+    static bool assignImpl( DenseStorage<ValueType>&, const _MatrixStorage& )
     {
         return false;
     }
 };
 
 template<typename ValueType, typename H, typename T>
-struct DenseStorageViewWrapper<ValueType, common::mepr::TypeList<H, T> >
+struct DenseStorageWrapper<ValueType, common::mepr::TypeList<H, T> >
 {
-    static bool assignImpl( DenseStorageView<ValueType>& obj, const _MatrixStorage& other )
+    static bool assignImpl( DenseStorage<ValueType>& obj, const _MatrixStorage& other )
     {
         if ( other.getValueType() == common::getScalarType<H>() )
         {
-            const DenseStorageView<H>& otherTyped = reinterpret_cast<const DenseStorageView<H>& >( other );
+            const DenseStorage<H>& otherTyped = reinterpret_cast<const DenseStorage<H>& >( other );
             obj.assignDenseStorageImpl( otherTyped );
             return true;
         }
         else
         {
-            return DenseStorageViewWrapper<ValueType, T>::assignImpl( obj, other );
+            return DenseStorageWrapper<ValueType, T>::assignImpl( obj, other );
         }
     }
 };

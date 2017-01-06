@@ -78,12 +78,11 @@ public:
         const IndexType numRows,
         const IndexType numDiagonals );
 
-    /** Implementation for COOKernelTrait::ia2offsets with CUDA on GPUs */
+    /** Help routine that computes an offsets array for sorted array of COO row indexes */
 
     static void ia2offsets(
         IndexType csrIA[],
         const IndexType numRows,
-        const IndexType numDiagonals,
         const IndexType cooIA[],
         const IndexType numValues );
 

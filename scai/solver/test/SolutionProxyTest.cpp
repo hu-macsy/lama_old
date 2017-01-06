@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class SolutionProxyTest
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Test routines for the class SolutionProxy.
+ * @author Matthias Makulla, Jiri Kraus
  * @date 03.02.2012
  */
 

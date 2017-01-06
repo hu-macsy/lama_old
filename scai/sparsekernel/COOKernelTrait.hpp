@@ -42,7 +42,11 @@ namespace scai
 namespace sparsekernel
 {
 
-/** Kernel traits for functions to be used in COO storage. */
+/** Kernel traits for functions to be used in COO storage. 
+ *
+ *  Note: routines to build CSR data from COO data are not required any more
+ *        as this is done by bucket sort
+ */
 
 struct COOKernelTrait
 {
@@ -138,6 +142,9 @@ struct COOKernelTrait
          *  @param[in] cooJA column indexes
          *  @param[in] n number of diagonal elements
          *  @return true if first n entries stand for the diagonal elements
+         *
+         *  Attention: do not call this routine if n > numValues (size of cooIA, cooJA) where
+         *             diagonal property is already false
          */
 
         typedef bool ( *FuncType )(
@@ -245,7 +252,7 @@ struct COOKernelTrait
          *  @param x is input vector for matrix multiplication
          *  @param beta is scaling factor for additional vector
          *  @param y is additional input vector to add
-         *  @param numRows is number of elements for all vectors and rows of matrix
+         *  @param numRows is number of elements for vectors result and b and rows of matrix
          *  @param cooIA, cooJA, cooValues are arrays of COO storage
          *  @param numValues is the size of the coo arrays
          */
@@ -271,13 +278,25 @@ struct COOKernelTrait
     template<typename ValueType>
     struct normalGEVM
     {
+        /** result = alpha * x * CSR-Matrix + b * y.
+         *
+         *  @param result is the result vector
+         *  @param alpha is scaling factor for matrix x vector
+         *  @param x is input vector for matrix multiplication
+         *  @param beta is scaling factor for additional vector
+         *  @param y is additional input vector to add
+         *  @param numColumns is number of elements for columns of matrix, size of result, y
+         *  @param cooIA, cooJA, cooValues are arrays of COO storage
+         *  @param numValues is the size of the coo arrays
+         */
+
         typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
             const ValueType beta,
             const ValueType y[],
-            const IndexType numRows,
+            const IndexType numColumns,
             const IndexType nnz,
             const IndexType cooIA[],
             const IndexType cooJA[],

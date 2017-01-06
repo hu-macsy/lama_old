@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class GMRESTest.
+ * @brief Specific tests for the solver class GMRES.
  * @author Malte Förster
  * @date 10.04.2012
  */

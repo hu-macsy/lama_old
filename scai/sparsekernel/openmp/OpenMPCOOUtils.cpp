@@ -368,7 +368,7 @@ void OpenMPCOOUtils::normalGEVM(
 {
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
-                   << ">, result[" << numColumns << "] = " << alpha << " * A( coo, #vals = " << numValues << " ) * x + "
+                   << ">, result[" << numColumns << "] = " << alpha << " x[] * A( coo, #vals = " << numValues << " ) + "
                    << beta << " * y " )
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 

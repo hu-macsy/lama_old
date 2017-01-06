@@ -38,17 +38,22 @@
 // others
 #include <scai/hmemo.hpp>
 #include <scai/kregistry/KernelContextFunction.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/COOKernelTrait.hpp>
 
 #include <scai/sparsekernel/test/TestMacros.hpp>
+#include <scai/sparsekernel/test/TestData1.hpp>
+#include <scai/sparsekernel/test/TestData2.hpp>
 
 /*--------------------------------------------------------------------- */
 
 using namespace scai;
 
 using namespace hmemo;
-using namespace sparsekernel;
 using namespace kregistry;
+using namespace sparsekernel;
+using namespace utilskernel;
 using common::TypeTraits;
 
 /* --------------------------------------------------------------------- */
@@ -64,9 +69,14 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.COOUtilsTest" )
 BOOST_AUTO_TEST_CASE( offsets2iaTest )
 {
     ContextPtr testContext = ContextFix::testContext;
-    KernelTraitContextFunction<COOKernelTrait::offsets2ia > offsets2ia;
-    ContextPtr loc = Context::getContextPtr( offsets2ia.validContext( testContext->getType() ) );
+
+    LAMAKernel<COOKernelTrait::offsets2ia > offsets2ia;
+
+    ContextPtr loc = testContext;
+    offsets2ia.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
     SCAI_LOG_INFO( logger, "offsets2ia test for " << *testContext << " on " << *loc )
     // Test without diagonal property
     {
@@ -86,7 +96,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc->getType()]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -115,7 +125,7 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
         {
             WriteOnlyAccess<IndexType> wIA( ia, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            offsets2ia[loc->getType()]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            offsets2ia[loc]( wIA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<IndexType> rIA( ia );
 
@@ -132,11 +142,18 @@ BOOST_AUTO_TEST_CASE( offsets2iaTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_types )
 {
     typedef float CSRValueType;
+
     ContextPtr testContext = ContextFix::testContext;
-    KernelTraitContextFunction<COOKernelTrait::setCSRData<ValueType, CSRValueType> > setCSRData;
-    ContextPtr loc = Context::getContextPtr( setCSRData.validContext( testContext->getType() ) );
+
+    LAMAKernel<COOKernelTrait::setCSRData<ValueType, CSRValueType> > setCSRData;
+
+    ContextPtr loc = testContext;
+    setCSRData.getSupportedContext( loc );
+
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
     SCAI_LOG_INFO( logger, "setCSRData< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
+
     // setCSRData is for conversion of CSR storage to COO storage
     // is usually just a copy but has some reordering if diagonal property is required
     // here we test only for csrJA
@@ -159,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_type
         {
             WriteOnlyAccess<ValueType> wCOOJA( cooJA, loc, numValues );
             SCAI_CONTEXT_ACCESS( loc );
-            setCSRData[loc->getType()]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
+            setCSRData[loc]( wCOOJA.get(), rCSRJA.get(), numValues, rOffsets.get(), numRows, numDiagonals );
         }
         ReadAccess<ValueType> rCOOJA( cooJA );
 
@@ -170,16 +187,79 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRDataTest, ValueType, scai_numeric_test_type
     }
 } // setCSRData
 
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( getValueTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = testContext;
+
+    getValuePos.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    LArray<IndexType> cooIA( testContext );
+    LArray<IndexType> cooJA( testContext );
+    LArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    HArray<ValueType> denseValues( testContext );
+
+    data1::getDenseTestData( numRows, numColumns, denseValues );
+
+    ValueType zero = 0;
+
+    {
+        ReadAccess<IndexType> rIa( cooIA, loc );
+        ReadAccess<IndexType> rJa( cooJA, loc );
+
+        // comparison is done via accesses on the host
+
+        ReadAccess<ValueType> rValues( cooValues, hostContext );
+        ReadAccess<ValueType> rDense( denseValues, hostContext );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), numValues );
+
+                IndexType k   = i * numColumns + j;
+
+                if ( pos == nIndex )
+                {   
+                    BOOST_CHECK_EQUAL( rDense[ k ], zero );
+                }
+                else
+                {   
+                    BOOST_CHECK_EQUAL( rDense[ k], rValues[pos] );
+                }
+            }
+        }
+    }
+}
 
 /* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( getValuePosColTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<COOKernelTrait::getValuePosCol> getValuePosCol;
+    LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
 
-    ContextPtr loc = Context::getContextPtr( getValuePosCol.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    getValuePosCol.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -210,7 +290,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
+        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
@@ -231,7 +311,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
-        cnt = getValuePosCol[loc->getType()]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
+        cnt = getValuePosCol[loc]( wRow.get(), wPos.get(), columnIndex, rIA.get(), numRows, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for column 2, order might be arbitrary
@@ -256,11 +336,12 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 
 BOOST_AUTO_TEST_CASE( getValuePosRowTest )
 {
-    ContextPtr testContext = Context::getContextPtr();
+    ContextPtr testContext = ContextFix::testContext;
 
-    kregistry::KernelTraitContextFunction<COOKernelTrait::getValuePosRow> getValuePosRow;
+    LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
 
-    ContextPtr loc = Context::getContextPtr( getValuePosRow.validContext( testContext->getType() ) );
+    ContextPtr loc = testContext;
+    getValuePosRow.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
@@ -291,7 +372,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wCol( col, loc, numCols );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numCols );
-        cnt = getValuePosRow[loc->getType()]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
+        cnt = getValuePosRow[loc]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 1 ) );   //  only one entry for column 1
@@ -312,7 +393,7 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
         ReadAccess<IndexType> rJA( cooJA, loc );
         WriteOnlyAccess<IndexType> wCol( col, loc, numCols );
         WriteOnlyAccess<IndexType> wPos( pos, loc, numCols );
-        cnt = getValuePosRow[loc->getType()]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
+        cnt = getValuePosRow[loc]( wCol.get(), wPos.get(), rowIndex, rIA.get(), numCols, rJA.get(), numValues );
     }
 
     BOOST_REQUIRE_EQUAL( cnt, IndexType( 2 ) );   //  two entries for row 2, order might be arbitrary
@@ -329,6 +410,408 @@ BOOST_AUTO_TEST_CASE( getValuePosRowTest )
             IndexType j = rCol[k];
             BOOST_CHECK_EQUAL( rIA[ p ], rowIndex );
             BOOST_CHECK( rJA[p] == j );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    LAMAKernel<COOKernelTrait::hasDiagonalProperty> hasDiagonalProperty;
+
+    ContextPtr loc = testContext;
+
+    hasDiagonalProperty.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    LArray<IndexType> cooIA( testContext );
+    LArray<IndexType> cooJA( testContext );
+    LArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    bool okay;
+
+    IndexType numDiagonals = common::Math::min( numRows, numColumns );
+
+    {
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<IndexType> rJA( cooJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        if ( numValues < numDiagonals )
+        { 
+            okay = false;
+        }
+        else
+        {
+            okay = hasDiagonalProperty[loc]( rIA.get(), rJA.get(), numDiagonals );
+        }
+    }
+
+    BOOST_CHECK( !okay );
+
+    // data set 2 has a square matrix with diagonal entries first
+
+    data2::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    BOOST_REQUIRE_EQUAL( numRows, numColumns );
+
+    {
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<IndexType> rJA( cooJA, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        if ( numValues < numRows )
+        {
+            okay = false;
+        }
+        else
+        {
+            okay = hasDiagonalProperty[loc]( rIA.get(), rJA.get(), numRows );
+        }
+    }
+
+    BOOST_CHECK( okay );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::scaleRows<ValueType, ValueType> > scaleRows;
+
+    ContextPtr loc = testContext;
+
+    scaleRows.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    HArray<ValueType> savedValues( cooValues );  // keep a copy for comparison later
+
+    const ValueType row_factors[]   = { 2, 3, 4, 5, 1, 3, 2 };
+
+    const IndexType n_factors = sizeof( row_factors ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( numRows, n_factors );
+
+    HArray<ValueType> rows( n_factors, row_factors, testContext );
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        WriteAccess<ValueType> wValues( cooValues, loc );
+        ReadAccess<IndexType> rIA( cooIA, loc );
+        ReadAccess<ValueType> rRows( rows, loc );
+
+        scaleRows[loc]( wValues.get(), rRows.get(), rIA.get(), numValues );
+    }
+
+    // prove by hand on host
+
+    {
+        ReadAccess<IndexType> rIA( cooIA, hostContext );
+        ReadAccess<ValueType> rRows( rows, hostContext );
+        ReadAccess<ValueType> rSavedValues( savedValues, hostContext );
+        ReadAccess<ValueType> rValues( cooValues, hostContext );
+
+        for ( IndexType k = 0; k < numValues; ++k )
+        {
+            ValueType f = rRows[ rIA[k] ];
+            BOOST_CHECK_EQUAL( f * rSavedValues[k], rValues[k] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
+
+    ContextPtr loc = testContext;
+
+    normalGEMV.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( cooValues.size(), numValues, "size mismatch" )
+
+    const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 };
+    const ValueType x_values[]   = { 3, -3, 2, -2 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numRows, n_y, "size mismatch" );
+
+    HArray<ValueType> x( numColumns, x_values, testContext );
+    HArray<ValueType> y( numRows, y_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
+    {
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
+
+        HArray<ValueType> res( testContext );
+
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * COO * x + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( cooIA, loc );
+            ReadAccess<IndexType> rJA( cooJA, loc );
+            ReadAccess<ValueType> rValues( cooValues, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
+
+            normalGEMV[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numRows, numValues, rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes;
+
+        data1::getGEMVResult( expectedRes, alpha, x, beta, y );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+} 
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
+
+    ContextPtr loc = testContext;
+
+    normalGEVM.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    SCAI_ASSERT_EQ_ERROR( cooIA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( cooJA.size(), numValues, "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( cooValues.size(), numValues, "size mismatch" )
+
+    const ValueType y_values[]   = { 1, -1, 2, -2 };
+    const ValueType x_values[]   = { 3, -2, -2, 3, 1, 0, 1 };
+
+    const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
+    const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( numRows, n_x, "size mismatch" );
+    SCAI_ASSERT_EQ_ERROR( numColumns, n_y, "size mismatch" );
+
+    HArray<ValueType> x( numRows, x_values, testContext );
+    HArray<ValueType> y( numColumns, y_values, testContext );
+
+    // use different alpha and beta values as kernels might be optimized for it
+
+    const ValueType alpha_values[] = { -3, 1, -1, 0, 2 };
+    const ValueType beta_values[]  = { -2, 0, 1 };
+
+    const IndexType n_alpha = sizeof( alpha_values ) / sizeof( ValueType );
+    const IndexType n_beta  = sizeof( beta_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_alpha * n_beta; ++icase )
+    {
+        ValueType alpha = alpha_values[icase % n_alpha ];
+        ValueType beta  = beta_values[icase / n_alpha ];
+
+        HArray<ValueType> res( testContext );
+
+        SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * COO + " << beta << " * y "
+                                << ", with x = " << x << ", y = " << y
+                                << ", COO: ia = " << cooIA << ", ja = " << cooJA << ", values = " << cooValues )
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+    
+            ReadAccess<IndexType> rIA( cooIA, loc );
+            ReadAccess<IndexType> rJA( cooJA, loc );
+            ReadAccess<ValueType> rValues( cooValues, loc );
+
+            ReadAccess<ValueType> rX( x, loc );
+            ReadAccess<ValueType> rY( y, loc );
+            WriteOnlyAccess<ValueType> wResult( res, loc, numColumns );
+
+            normalGEVM[loc]( wResult.get(),
+                             alpha, rX.get(), beta, rY.get(),
+                             numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
+        }
+
+        HArray<ValueType> expectedRes;
+
+        data1::getGEVMResult( expectedRes, alpha, x, beta, y );
+
+        {
+            ReadAccess<ValueType> rComputed( res, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                BOOST_CHECK_EQUAL( rExpected[j], rComputed[j] );
+            }
+        }
+    }
+} 
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<COOKernelTrait::jacobi<ValueType> > jacobi;
+
+    ContextPtr loc = testContext;
+
+    jacobi.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "jacobi test for " << *testContext << " on " << *loc )
+
+    HArray<IndexType> cooIA( testContext );
+    HArray<IndexType> cooJA( testContext );
+    HArray<ValueType> cooValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data2::getCOOTestData( numRows, numColumns, numValues, cooIA, cooJA, cooValues );
+
+    const ValueType rhs_values[]   = { 1, -1, 2, -2 };
+    const ValueType old_values[]   = { 3, -2, -2, 3 };
+
+    HArray<ValueType> rhs( numRows, rhs_values, testContext );
+    HArray<ValueType> oldSolution( numRows, old_values, testContext );
+
+    // const ValueType omega_values[] = { 0, 0.5, 0.7, 1 };
+
+    const ValueType omega_values[] = { 1 };
+
+    const IndexType n_omega  = sizeof( omega_values ) / sizeof( ValueType );
+
+    for ( IndexType icase = 0; icase < n_omega; ++icase )
+    {
+        ValueType omega  = omega_values[icase];
+
+        HArray<ValueType> res( testContext );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            ReadAccess<IndexType> rIA( cooIA, loc );
+            ReadAccess<IndexType> rJA( cooJA, loc );
+            ReadAccess<ValueType> rValues( cooValues, loc );
+
+            ReadAccess<ValueType> rOld( oldSolution, loc );
+            ReadAccess<ValueType> rRhs( rhs, loc );
+            WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
+
+            jacobi[loc]( wSolution.get(), 
+                         numValues, rIA.get(), rJA.get(), rValues.get(),
+                         rOld.get(), rRhs.get(), omega, numRows );
+
+        }
+
+        LArray<ValueType> expectedRes( testContext );
+
+        data2::getJacobiResult( expectedRes, oldSolution, omega, rhs );
+
+        ValueType maxDiff = expectedRes.maxDiffNorm( res );
+
+        BOOST_CHECK( common::Math::real( maxDiff ) < 0.1 );
+
+        bool mustBeIdentical = false;
+
+        if ( mustBeIdentical )
+        {
+            ReadAccess<ValueType> rExpected( expectedRes );
+            ReadAccess<ValueType> rComputed( res );
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
         }
     }
 }

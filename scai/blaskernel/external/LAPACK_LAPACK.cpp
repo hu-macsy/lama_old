@@ -40,6 +40,7 @@
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/external/LAPACKTrait.hpp>
 #include <scai/blaskernel/external/LAPACKWrapper.hpp>
+#include <scai/blaskernel/openmp/OpenMPLAPACK.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // scai libraries
@@ -94,13 +95,13 @@ void LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
                                                 static_cast<LAPACKIndexType>( n ), A,
                                                 static_cast<LAPACKIndexType>( lda ), ipiv );
     }
-    else if ( m == n && n == lda )
+    else if ( m == n )
     {
         for ( IndexType i = 0; i < m; ++i )
         {
             for ( IndexType j = i + 1; j < n; ++j )
             {
-                std::swap( A[i * n + j], A[j * m + i] );
+                std::swap( A[i * lda + j], A[j * lda + i] );
             }
         }
 
@@ -112,13 +113,13 @@ void LAPACK_LAPACK::getrf( const CBLAS_ORDER order, const IndexType m,
         {
             for ( IndexType j = i + 1; j < n; ++j )
             {
-                std::swap( A[i * n + j], A[j * m + i] );
+                std::swap( A[i * lda + j], A[j * lda + i] );
             }
         }
     }
     else
     {
-        COMMON_THROWEXCEPTION( "row major only supported for square matrices" );
+        COMMON_THROWEXCEPTION( "row major only supported for square matrices, current is " << m << " x " << n );
     }
 
     for ( IndexType i = 0; i < m; ++i )
@@ -204,14 +205,12 @@ void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
 
     if ( order != CblasColMajor )
     {
-        SCAI_ASSERT_EQUAL_ERROR( lda, n )
-
         for ( IndexType i = 0; i < n; ++i )
         {
             // swap row and column
             for ( IndexType j = i + 1; j < n; ++j )
             {
-                std::swap( a[i * n + j], a[j * n + i] );
+                std::swap( a[i * lda + j], a[j * lda + i] );
             }
         }
     }
@@ -228,7 +227,7 @@ void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
         {
             for ( IndexType j = i + 1; j < n; ++j )
             {
-                std::swap( a[i * n + j], a[j * n + i] );
+                std::swap( a[i * lda + j], a[j * lda + i] );
             }
         }
     }
@@ -250,14 +249,15 @@ void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
                            const IndexType nrhs, const ValueType* AP, ValueType* B,
                            const IndexType ldb )
 {
-    SCAI_REGION( "LAPACK.LAPACK.tptrs<float>" )
+    SCAI_REGION( "LAPACK.LAPACK.tptrs" )
     typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
     typedef LAPACKTrait::LAPACKFlag LAPACKFlag;
     LAPACKFlag UL = LAPACKTrait::enum2char( uplo );
     LAPACKFlag TA = LAPACKTrait::enum2char( trans );
     LAPACKFlag DI = LAPACKTrait::enum2char( diag );
     SCAI_LOG_INFO( logger,
-                   "tptrs<float>, n = " << n << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
+                   "tptrs<" << common::TypeTraits<ValueType>::id() << ">, n = " << n 
+                   << ", nrhs = " << nrhs << ", order = " << order << ", UL = " << UL << ", TA = " << TA << ", DI = " << DI );
 
     if ( order == CblasColMajor )
     {
@@ -268,54 +268,8 @@ void LAPACK_LAPACK::tptrs( const CBLAS_ORDER order, const CBLAS_UPLO uplo,
     }
     else if ( order == CblasRowMajor )
     {
-        // TODO: transpose matrix.
-        COMMON_THROWEXCEPTION( "row major order not supported for tptrs" );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void LAPACK_LAPACK::laswp( const CBLAS_ORDER order, const IndexType N,
-                           ValueType* A, const IndexType LDA, const IndexType K1,
-                           const IndexType K2, const IndexType* ipiv, const IndexType INCX )
-{
-    SCAI_REGION( "LAPACK.LAPACK.laswp<float>" )
-    typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
-
-    if ( common::TypeTraits<IndexType>::stype
-            != common::TypeTraits<LAPACKIndexType>::stype )
-    {
-        // ToDo: convert ipiv array
-        COMMON_THROWEXCEPTION( "indextype mismatch" );
-    }
-
-    if ( order == CblasRowMajor )
-    {
-        for ( IndexType i = K1; i < K2; ++i )
-        {
-            if ( ipiv[i * INCX] == i )
-            {
-                continue;
-            }
-
-            BLAS_BLAS1::swap<ValueType>( N, &A[ipiv[i * INCX] * LDA], INCX,
-                                         &A[i * LDA], INCX );
-        }
-    }
-    else if ( order == CblasColMajor )
-    {
-        typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
-        LAPACKWrapper<ValueType>::laswp( static_cast<LAPACKIndexType>( N ), A,
-                                         static_cast<LAPACKIndexType>( LDA ),
-                                         static_cast<LAPACKIndexType>( K1 ),
-                                         static_cast<LAPACKIndexType>( K2 ),
-                                         reinterpret_cast<const LAPACKIndexType*>( ipiv ),
-                                         static_cast<LAPACKIndexType>( INCX ) );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "cblas_laswp Illegal order setting" )
+        // not supported by LAPACK, call own implementation 
+        OpenMPLAPACK::tptrs( order, uplo, trans, diag, n, nrhs, AP, B, ldb );
     }
 }
 
@@ -332,8 +286,8 @@ void LAPACK_LAPACK::RegistratorV<ValueType>::registerKernels( kregistry::KernelR
     KernelRegistry::set<BLASKernelTrait::getri<ValueType> >( LAPACK_LAPACK::getri, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::getinv<ValueType> >( LAPACK_LAPACK::getinv, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::tptrs<ValueType> >( LAPACK_LAPACK::tptrs, ctx, flag );
-    KernelRegistry::set<BLASKernelTrait::laswp<ValueType> >( LAPACK_LAPACK::laswp, ctx, flag );
 }
+
 /* --------------------------------------------------------------------------- */
 /*    Static initialiazion at program start                                    */
 /* --------------------------------------------------------------------------- */

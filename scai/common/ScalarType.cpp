@@ -139,7 +139,7 @@ bool isNumeric( const scalar::ScalarType stype )
 
 int precision( const scalar::ScalarType stype )
 {
-    // call with INTERNAL not allowed, replace it at cal size with precision( TypeTraits<ValueType>::sid )
+    // call with INTERNAL not allowed, replace it at call site with precision( TypeTraits<ValueType>::sid )
 
     SCAI_ASSERT( stype != scalar::INTERNAL, "precision of INTERNAL unknown" )
 

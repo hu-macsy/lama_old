@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief IterativeSolverTest.cpp
+ * @brief Generic tests for solvers derived from IterativeSolver.
  * @author Jan Ecker
  * @date 09.03.2016
  */

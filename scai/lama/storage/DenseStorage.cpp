@@ -37,7 +37,7 @@
 #include <scai/lama/storage/DIAStorage.hpp>
 
 // local libraries
-#include <scai/lama/mepr/DenseStorageViewWrapper.hpp>
+#include <scai/lama/mepr/DenseStorageWrapper.hpp>
 
 // internal scai libraries
 #include <scai/sparsekernel/DenseKernelTrait.hpp>
@@ -82,34 +82,13 @@ namespace lama
 
 /* --------------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorageView<ValueType>::logger,
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseStorage<ValueType>::logger,
                               "MatrixStorage.DenseStorage" )
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorageView<ValueType>::DenseStorageView(
-    HArray<ValueType>& data,
-    const IndexType numRows,
-    const IndexType numColumns,
-    bool initializedData )
-
-    : CRTPMatrixStorage<DenseStorageView<ValueType>, ValueType>( numRows, numColumns ), mData( data )
-{
-    if ( initializedData )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
-    }
-
-    SCAI_LOG_DEBUG( logger, "created dense storage with referenced data" )
-    // we can always access diagonals directly
-    mDiagonalProperty = checkDiagonalProperty();
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-HArray<ValueType>& DenseStorageView<ValueType>::getData()
+HArray<ValueType>& DenseStorage<ValueType>::getData()
 {
     return mData;
 }
@@ -117,7 +96,7 @@ HArray<ValueType>& DenseStorageView<ValueType>::getData()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-const HArray<ValueType>& DenseStorageView<ValueType>::getData() const
+const HArray<ValueType>& DenseStorage<ValueType>::getData() const
 {
     return mData;
 }
@@ -125,7 +104,7 @@ const HArray<ValueType>& DenseStorageView<ValueType>::getData() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType DenseStorageView<ValueType>::getNumValues() const
+IndexType DenseStorage<ValueType>::getNumValues() const
 {
     static LAMAKernel<DenseKernelTrait::nonZeroValues<ValueType> > nonZeroValues;
     ContextPtr loc = this->getContextPtr();
@@ -141,11 +120,11 @@ IndexType DenseStorageView<ValueType>::getNumValues() const
 
 #ifdef SCAI_ASSERT_LEVEL_OFF
 template<typename ValueType>
-void DenseStorageView<ValueType>::check( const char* ) const
+void DenseStorage<ValueType>::check( const char* ) const
 {}
 #else
 template<typename ValueType>
-void DenseStorageView<ValueType>::check( const char* /* msg */ ) const
+void DenseStorage<ValueType>::check( const char* /* msg */ ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows * mNumColumns, mData.size() )
 }
@@ -154,7 +133,7 @@ void DenseStorageView<ValueType>::check( const char* /* msg */ ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::setDiagonalImpl( const ValueType value )
+void DenseStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
     static LAMAKernel<DenseKernelTrait::setDiagonalValue<ValueType> > setDiagonalValue;
     ContextPtr loc = this->getContextPtr();
@@ -168,7 +147,7 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const ValueType value )
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType rowIndex ) const
+void DenseStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType rowIndex ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
 
@@ -190,7 +169,7 @@ void DenseStorageView<ValueType>::getRowImpl( HArray<OtherType>& row, const Inde
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType rowIndex,
+void DenseStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType rowIndex,
                                               const utilskernel::binary::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( rowIndex, mNumRows, "row index out of range" )
@@ -212,7 +191,7 @@ void DenseStorageView<ValueType>::setRowImpl( const HArray<OtherType>& row, cons
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void DenseStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
@@ -236,7 +215,7 @@ void DenseStorageView<ValueType>::getColumnImpl( HArray<OtherType>& column, cons
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType colIndex,
+void DenseStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType colIndex,
                                                  const utilskernel::binary::BinaryOp op ) 
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mNumColumns, "column index out of range" )
@@ -258,7 +237,7 @@ void DenseStorageView<ValueType>::setColumnImpl( const HArray<OtherType>& column
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
+void DenseStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
 
@@ -282,7 +261,7 @@ void DenseStorageView<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal )
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
+void DenseStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 {
     IndexType numDiagonalValues = common::Math::min( mNumColumns, mNumRows );
 
@@ -304,7 +283,7 @@ void DenseStorageView<ValueType>::setDiagonalImpl( const HArray<OtherType>& diag
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
+void DenseStorage<ValueType>::scaleImpl( const ValueType value )
 {
     // not used here: HArrayUtils::scale( mData, value, this->getContextPtr() )
     // reasoning:     workload distribution would not fit to distribution of rows
@@ -319,7 +298,7 @@ void DenseStorageView<ValueType>::scaleImpl( const ValueType value )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::conj()
+void DenseStorage<ValueType>::conj()
 {
     HArrayUtils::unaryOp( mData, mData, utilskernel::unary::CONJ, this->getContextPtr() );
 }
@@ -328,7 +307,7 @@ void DenseStorageView<ValueType>::conj()
 
 template<typename ValueType>
 template<typename OtherType>
-void DenseStorageView<ValueType>::scaleImpl( const HArray<OtherType>& values )
+void DenseStorage<ValueType>::scaleImpl( const HArray<OtherType>& values )
 {
     static LAMAKernel<DenseKernelTrait::scaleRows<ValueType, OtherType> > scaleRows;
     ContextPtr loc = this->getContextPtr();
@@ -342,7 +321,7 @@ void DenseStorageView<ValueType>::scaleImpl( const HArray<OtherType>& values )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::transposeImpl()
+void DenseStorage<ValueType>::transposeImpl()
 {
     SCAI_REGION( "Storage.Dense.transpose" )
 
@@ -399,7 +378,7 @@ void DenseStorageView<ValueType>::transposeImpl()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseStorageView<ValueType>::checkDiagonalProperty() const
+bool DenseStorage<ValueType>::checkDiagonalProperty() const
 {
     return mNumRows == mNumColumns;
 }
@@ -407,7 +386,7 @@ bool DenseStorageView<ValueType>::checkDiagonalProperty() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-size_t DenseStorageView<ValueType>::getMemoryUsageImpl() const
+size_t DenseStorage<ValueType>::getMemoryUsageImpl() const
 {
     size_t memoryUsage = 0;
     memoryUsage += sizeof( ValueType ) * mData.size();
@@ -417,7 +396,7 @@ size_t DenseStorageView<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
+common::scalar::ScalarType DenseStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -425,7 +404,7 @@ common::scalar::ScalarType DenseStorageView<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat DenseStorageView<ValueType>::getFormat() const
+Format::MatrixStorageFormat DenseStorage<ValueType>::getFormat() const
 {
     return Format::DENSE;
 }
@@ -433,7 +412,7 @@ Format::MatrixStorageFormat DenseStorageView<ValueType>::getFormat() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::setIdentity( const IndexType size )
+void DenseStorage<ValueType>::setIdentity( const IndexType size )
 {
     if ( ( mNumRows == size ) && ( mNumColumns == size ) )
     {
@@ -450,7 +429,7 @@ void DenseStorageView<ValueType>::setIdentity( const IndexType size )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::setZero()
+void DenseStorage<ValueType>::setZero()
 {
     LAMAKernel<DenseKernelTrait::setValue<ValueType> > setValue;
     ContextPtr loc = this->getContextPtr();
@@ -465,7 +444,7 @@ void DenseStorageView<ValueType>::setZero()
 
 template<typename ValueType>
 template<typename OtherValueType>
-void DenseStorageView<ValueType>::buildCSR(
+void DenseStorage<ValueType>::buildCSR(
     HArray<IndexType>& csrIA,
     HArray<IndexType>* csrJA,
     HArray<OtherValueType>* csrValues,
@@ -501,7 +480,7 @@ void DenseStorageView<ValueType>::buildCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
+void DenseStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& ) const
 {
     COMMON_THROWEXCEPTION( "getFirstColumnIndexes not possible for DENSE format" )
 }
@@ -510,7 +489,7 @@ void DenseStorageView<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType
 
 template<typename ValueType>
 template<typename OtherValueType>
-void DenseStorageView<ValueType>::setCSRDataImpl(
+void DenseStorage<ValueType>::setCSRDataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numValues,
@@ -568,7 +547,7 @@ void DenseStorageView<ValueType>::setCSRDataImpl(
 
 template<typename ValueType>
 template<typename OtherValueType>
-void DenseStorageView<ValueType>::setDIADataImpl(
+void DenseStorage<ValueType>::setDIADataImpl(
     const IndexType numRows,
     const IndexType numColumns,
     const IndexType numDiagonals,
@@ -583,13 +562,13 @@ void DenseStorageView<ValueType>::setDIADataImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other )
+void DenseStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
 {
     SCAI_LOG_INFO( logger, "invert( " << other << ") to a dense storage" )
 
     if ( other.getFormat() == Format::DENSE )
     {
-        const DenseStorageView<ValueType>* otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
+        const DenseStorage<ValueType>* otherDense = dynamic_cast<const DenseStorage<ValueType>*>( &other );
         SCAI_ASSERT_ERROR( otherDense, "Internal error: dynamic cast Dense" )
         invertDense( *otherDense );
     }
@@ -604,7 +583,7 @@ void DenseStorageView<ValueType>::invert( const MatrixStorage<ValueType>& other 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>& other )
+void DenseStorage<ValueType>::invertDense( const DenseStorage<ValueType>& other )
 {
     SCAI_LOG_INFO( logger, "invertDense: " << other )
 
@@ -631,7 +610,7 @@ void DenseStorageView<ValueType>::invertDense( const DenseStorageView<ValueType>
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::matrixTimesVector(
+void DenseStorage<ValueType>::matrixTimesVector(
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
@@ -718,7 +697,7 @@ void DenseStorageView<ValueType>::matrixTimesVector(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::vectorTimesMatrix(
+void DenseStorage<ValueType>::vectorTimesMatrix(
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
@@ -801,7 +780,7 @@ void DenseStorageView<ValueType>::vectorTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::print( std::ostream& stream ) const
+void DenseStorage<ValueType>::print( std::ostream& stream ) const
 {
     using std::endl;
     ReadAccess<ValueType> values( mData );
@@ -823,7 +802,7 @@ void DenseStorageView<ValueType>::print( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::matrixTimesMatrix(
+void DenseStorage<ValueType>::matrixTimesMatrix(
     const ValueType alpha,
     const MatrixStorage<ValueType>& a,
     const MatrixStorage<ValueType>& b,
@@ -833,9 +812,9 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
     SCAI_LOG_INFO( logger,
                    *this << ": = " << alpha << " * A * B + " << beta << " * C" << ", with A = " << a << ", B = " << b << ", C = " << c )
     // a and b have to be Dense storages, otherwise create temporaries.
-    const DenseStorageView<ValueType>* denseA = NULL;
-    const DenseStorageView<ValueType>* denseB = NULL;
-    const DenseStorageView<ValueType>* denseC = NULL;
+    const DenseStorage<ValueType>* denseA = NULL;
+    const DenseStorage<ValueType>* denseB = NULL;
+    const DenseStorage<ValueType>* denseC = NULL;
     // Define shared pointers in case we need temporaries
     shared_ptr<DenseStorage<ValueType> > tmpA;
     shared_ptr<DenseStorage<ValueType> > tmpB;
@@ -843,7 +822,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
 
     if ( a.getFormat() == Format::DENSE )
     {
-        denseA = dynamic_cast<const DenseStorageView<ValueType>*>( &a );
+        denseA = dynamic_cast<const DenseStorage<ValueType>*>( &a );
         SCAI_ASSERT_DEBUG( denseA, "could not cast to DenseStorage " << a )
     }
     else
@@ -855,7 +834,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
 
     if ( b.getFormat() == Format::DENSE )
     {
-        denseB = dynamic_cast<const DenseStorageView<ValueType>*>( &b );
+        denseB = dynamic_cast<const DenseStorage<ValueType>*>( &b );
         SCAI_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << b )
     }
     else
@@ -867,7 +846,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
 
     if ( c.getFormat() == Format::DENSE )
     {
-        denseC = dynamic_cast<const DenseStorageView<ValueType>*>( &c );
+        denseC = dynamic_cast<const DenseStorage<ValueType>*>( &c );
         SCAI_ASSERT_DEBUG( denseB, "could not cast to DenseStorage " << c )
     }
     else
@@ -884,16 +863,16 @@ void DenseStorageView<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::matrixTimesMatrixDense(
+void DenseStorage<ValueType>::matrixTimesMatrixDense(
     const ValueType alpha,
-    const DenseStorageView<ValueType>& a,
-    const DenseStorageView<ValueType>& b,
+    const DenseStorage<ValueType>& a,
+    const DenseStorage<ValueType>& b,
     const ValueType beta,
-    const DenseStorageView<ValueType>& c )
+    const DenseStorage<ValueType>& c )
 {
     // shape(a) = m x k,  shape(b) = k x n
-    const DenseStorageView<ValueType>* ptrA = &a;
-    const DenseStorageView<ValueType>* ptrB = &b;
+    const DenseStorage<ValueType>* ptrA = &a;
+    const DenseStorage<ValueType>* ptrB = &b;
     common::shared_ptr<DenseStorage<ValueType> > tmpA;
     common::shared_ptr<DenseStorage<ValueType> > tmpB;
     SCAI_LOG_INFO( logger,
@@ -987,7 +966,7 @@ void DenseStorageView<ValueType>::matrixTimesMatrixDense(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorageView<ValueType>::~DenseStorageView()
+DenseStorage<ValueType>::~DenseStorage()
 {
     SCAI_LOG_DEBUG( logger, "~DenseStorage for matrix " << mNumRows << " x " << mNumColumns )
 }
@@ -995,7 +974,7 @@ DenseStorageView<ValueType>::~DenseStorageView()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::l1Norm() const
+ValueType DenseStorage<ValueType>::l1Norm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1016,7 +995,7 @@ ValueType DenseStorageView<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::l2Norm() const
+ValueType DenseStorage<ValueType>::l2Norm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1036,7 +1015,7 @@ ValueType DenseStorageView<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::maxNorm() const
+ValueType DenseStorage<ValueType>::maxNorm() const
 {
     IndexType n = mNumRows * mNumColumns;
 
@@ -1058,16 +1037,16 @@ ValueType DenseStorageView<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+ValueType DenseStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
     common::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
-    const DenseStorageView<ValueType>* otherDense;
+    const DenseStorage<ValueType>* otherDense;
 
     if ( other.getValueType() == getValueType() && ( other.getFormat() == Format::DENSE ) )
     {
-        otherDense = dynamic_cast<const DenseStorageView<ValueType>*>( &other );
+        otherDense = dynamic_cast<const DenseStorage<ValueType>*>( &other );
         SCAI_ASSERT_ERROR( otherDense, other << ": could not cast to " << typeName() )
     }
     else
@@ -1083,7 +1062,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNorm( const MatrixStorage<ValueTyp
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<ValueType>& other ) const
+ValueType DenseStorage<ValueType>::maxDiffNormImpl( const DenseStorage<ValueType>& other ) const
 {
     // no more checks needed here
 
@@ -1101,7 +1080,7 @@ ValueType DenseStorageView<ValueType>::maxDiffNormImpl( const DenseStorageView<V
 
 template<typename ValueType>
 template<typename OtherValueType>
-void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView<OtherValueType>& other )
+void DenseStorage<ValueType>::assignDenseStorageImpl( const DenseStorage<OtherValueType>& other )
 {
     // actualize member variables of base class
     _MatrixStorage::_assign( other ); // copy sizes, flags
@@ -1121,7 +1100,7 @@ void DenseStorageView<ValueType>::assignDenseStorageImpl( const DenseStorageView
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
+void DenseStorage<ValueType>::assign( const _MatrixStorage& other )
 {
     // Here more efficient solutions can be used instead of build/set CSR data
     if ( &other == this )
@@ -1133,7 +1112,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
     if ( other.getFormat() == Format::DENSE )
     {
         // more efficient solution for assigment of dense storage
-        if ( mepr::DenseStorageViewWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( *this, other ) )
+        if ( mepr::DenseStorageWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignImpl( *this, other ) )
         {
             return;
         }
@@ -1147,7 +1126,7 @@ void DenseStorageView<ValueType>::assign( const _MatrixStorage& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::allocate( IndexType numRows, IndexType numCols )
+void DenseStorage<ValueType>::allocate( IndexType numRows, IndexType numCols )
 {
     SCAI_LOG_INFO( logger, "allocate Dense sparse matrix of size " << numRows << " x " << numCols )
     mNumRows = numRows;
@@ -1159,7 +1138,7 @@ void DenseStorageView<ValueType>::allocate( IndexType numRows, IndexType numCols
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::writeAt( std::ostream& stream ) const
+void DenseStorage<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << getTypeName() << "( rows = " << mNumRows << ", cols = " << mNumColumns << " )";
 }
@@ -1167,7 +1146,7 @@ void DenseStorageView<ValueType>::writeAt( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DenseStorageView<ValueType>::getValue( const IndexType i, const IndexType j ) const
+ValueType DenseStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1180,7 +1159,7 @@ ValueType DenseStorageView<ValueType>::getValue( const IndexType i, const IndexT
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::setValue( const IndexType i,
+void DenseStorage<ValueType>::setValue( const IndexType i,
                                             const IndexType j,
                                             const ValueType val,
                                             const utilskernel::binary::BinaryOp op )
@@ -1196,7 +1175,7 @@ void DenseStorageView<ValueType>::setValue( const IndexType i,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::prefetch( const ContextPtr location ) const
+void DenseStorage<ValueType>::prefetch( const ContextPtr location ) const
 {
     mData.prefetch( location );
 }
@@ -1204,7 +1183,7 @@ void DenseStorageView<ValueType>::prefetch( const ContextPtr location ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::wait() const
+void DenseStorage<ValueType>::wait() const
 {
     mData.wait();
 }
@@ -1214,23 +1193,22 @@ void DenseStorageView<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage()
+DenseStorage<ValueType>::DenseStorage() :
 
-    : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
+    CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>( 0, 0 )
 {
-// mDataArray is now correctly initialized
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType numColumns )
+DenseStorage<ValueType>::DenseStorage( const IndexType numRows, const IndexType numColumns ) : 
 
-    : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
+    CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>( numRows, numColumns )
+
 {
-    // now resize the array and fill it with zero
-    mNumRows = numRows;
-    mNumColumns = numColumns;
+    mDiagonalProperty = checkDiagonalProperty();
     this->setZero();
 }
 
@@ -1240,22 +1218,22 @@ template<typename ValueType>
 DenseStorage<ValueType>::DenseStorage(
     const HArray<ValueType>& data,
     const IndexType numRows,
-    const IndexType numColumns )
+    const IndexType numColumns ) : 
 
-    : DenseStorageView<ValueType>( mDataArray, numRows, numColumns, false )
+    CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>( numRows, numColumns )
 
 {
-// here we can check for correct size
     SCAI_ASSERT_EQUAL_ERROR( data.size(), numRows * numColumns )
-    mDataArray = data; // is a flat copy of the array
+    mData = data; // is a flat copy of the array
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const DenseStorage<ValueType>& other )
+DenseStorage<ValueType>::DenseStorage( const DenseStorage<ValueType>& other ) :
 
-    : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
+    CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>()
 
 {
     assign( other );
@@ -1264,9 +1242,9 @@ DenseStorage<ValueType>::DenseStorage( const DenseStorage<ValueType>& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other )
+DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other ) :
 
-    : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
+    CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>()
 
 {
     assign( other );
@@ -1275,9 +1253,9 @@ DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr loc )
+DenseStorage<ValueType>::DenseStorage( const _MatrixStorage& other, const hmemo::ContextPtr loc ) :
 
-    : DenseStorageView<ValueType>( mDataArray, 0, 0, false )
+    CRTPMatrixStorage<DenseStorage<ValueType>, ValueType>()
 
 {
     _MatrixStorage::setContextPtr( loc );
@@ -1305,33 +1283,44 @@ DenseStorage<ValueType>& DenseStorage<ValueType>::operator=( const DenseStorage<
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::swap( _MatrixStorage& other )
+void DenseStorage<ValueType>::swap( _MatrixStorage& other )
 {
     SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
     SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
 
     // only in debug mode use the more expensive dynamic cast for verification
 
-    SCAI_ASSERT_DEBUG( dynamic_cast<DenseStorageView<ValueType>* >( &other ), "illegal storage to swap" )
+    SCAI_ASSERT_DEBUG( dynamic_cast<DenseStorage<ValueType>* >( &other ), "illegal storage to swap" )
 
-    swapImpl( reinterpret_cast<DenseStorageView<ValueType>& >( other ) );
+    swapImpl( reinterpret_cast<DenseStorage<ValueType>& >( other ) );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseStorageView<ValueType>::swapImpl( DenseStorageView<ValueType>& other )
+void DenseStorage<ValueType>::swapImpl( DenseStorage<ValueType>& other )
 {
     MatrixStorage<ValueType>::swapMS( other ); // swap member variable of base class
 
     mData.swap( other.mData ); // swap data
+
+    // other properties remain unchanged, also the context
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorage<ValueType>::~DenseStorage()
+void DenseStorage<ValueType>::swap( HArray<ValueType>& other, const IndexType numRows, const IndexType numColumns )
 {
+    SCAI_ASSERT_EQ_ERROR( other.size(), numRows * numColumns, 
+                          "array of dense storage has not size " << numRows << " x " << numColumns )
+
+    mNumRows    = numRows;
+    mNumColumns = numColumns;
+
+    mData.swap( other );
+
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1345,42 +1334,10 @@ const char* DenseStorage<ValueType>::getTypeName() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseStorageView<ValueType>*
-DenseStorageView<ValueType>::copy() const
+DenseStorage<ValueType>*
+DenseStorage<ValueType>::copy() const
 {
     return new DenseStorage<ValueType>( *this );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-_MatrixStorage* DenseStorageView<ValueType>::create()
-{
-    COMMON_THROWEXCEPTION( "creation currently not possible" )
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-MatrixStorageCreateKeyType DenseStorageView<ValueType>::createValue()
-{
-    return MatrixStorageCreateKeyType( Format::DENSE, common::getScalarType<ValueType>() );
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-DenseStorageView<ValueType>* DenseStorageView<ValueType>::newMatrixStorage() const
-{
-    COMMON_THROWEXCEPTION( "DenseStorageView<ValueType>::newMatrixStorage() not implemented yet" )
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-_MatrixStorage* DenseStorage<ValueType>::create()
-{
-    return new DenseStorage<ValueType>();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1394,12 +1351,22 @@ MatrixStorageCreateKeyType DenseStorage<ValueType>::createValue()
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+_MatrixStorage* DenseStorage<ValueType>::create()
+{
+    return new DenseStorage<ValueType>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
 {
     common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 std::string DenseStorage<ValueType>::initTypeName()
@@ -1409,23 +1376,10 @@ std::string DenseStorage<ValueType>::initTypeName()
     return s.str();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType>
 const char* DenseStorage<ValueType>::typeName()
-{
-    static const std::string s = initTypeName();
-    return  s.c_str();
-}
-
-template<typename ValueType>
-std::string DenseStorageView<ValueType>::initTypeName()
-{
-    std::stringstream s;
-    s << std::string( "DenseStorageView<" ) << common::getScalarType<ValueType>() << std::string( ">" );
-    return s.str();
-}
-
-template<typename ValueType>
-const char* DenseStorageView<ValueType>::typeName()
 {
     static const std::string s = initTypeName();
     return  s.c_str();
@@ -1436,24 +1390,23 @@ const char* DenseStorageView<ValueType>::typeName()
 /* ========================================================================= */
 
 SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
-SCAI_COMMON_INST_CLASS( DenseStorageView, SCAI_NUMERIC_TYPES_HOST )
 
 #define DENSE_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                             \
-    template void DenseStorageView<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,        \
+    template void DenseStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,        \
             const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                            \
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                             \
-    template void DenseStorageView<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,        \
+    template void DenseStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,        \
             const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );            \
-    template void DenseStorageView<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;      \
-    template void DenseStorageView<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,        \
+    template void DenseStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;      \
+    template void DenseStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,        \
                                                            const utilskernel::binary::BinaryOp );                  \
-    template void DenseStorageView<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;   \
-    template void DenseStorageView<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,     \
+    template void DenseStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;   \
+    template void DenseStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,     \
                                                               const utilskernel::binary::BinaryOp );               \
-    template void DenseStorageView<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                  \
-    template void DenseStorageView<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                  \
-    template void DenseStorageView<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                        \
-    template void DenseStorageView<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,           \
+    template void DenseStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                  \
+    template void DenseStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                  \
+    template void DenseStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                        \
+    template void DenseStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,           \
             hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
 
 #define DENSE_STORAGE_INST_LVL1( ValueType )                                                                                  \

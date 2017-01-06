@@ -653,58 +653,6 @@ struct BLASKernelTrait
         }
     };
 
-    /** Kernel trait for LAPACK routine laswp.
-     *
-     *  @tparam ValueType stands for the arithmetic type used in this operation.
-     */
-    template<typename ValueType>
-    struct laswp
-    {
-        /**
-         * @brief performs a series of row interchanges on the matrix A.
-         * One row interchange is initiated for each of rows k1 through k2 of A.
-         *
-         * @param[in] order      Specifies, whether the matrix is stored in column major
-         *                       order (i.e. CblasColMajor) or in row major order (i.e.
-         *                       CblasRowMajor). Since a translation of the data would be
-         *                       too expensiv, if it was stored in row major order, the
-         *                       BLAS level1 function SSWAP will be called instead. The
-         *                       beginning column of the vector in A will then be LDA-N.
-         * @param[in] n          The number of columns of the matrix A.
-         * @param[in,out] A      Array of dimension (LDA,N). On entry, the matrix of
-         *                       column dimension N to which the row interchanges will be
-         *                       applied. On exit, the permuted matrix.
-         * @param[in] lda        If the matrix is stored in column major order, lda
-         *                       specifies the actual number of rows of A. If else the
-         *                       matrix is stored in row major order, lda specifies the
-         *                       actual number of columns of A.
-         * @param[in] k1         The first element of ipiv for which a row interchange will
-         *                       be done.
-         * @param[in] k2         The last element of ipiv for which a row interchange will
-         *                       be done.
-         * @param[in] ipiv       Array of dimension (k2*abs(incx)). The vector of pivot
-         *                       indices. Only the elements in positions k1 through k2 of
-         *                       ipiv are accessed. ipiv(k) = l implies rows k and l are
-         *                       to be interchanged.
-         * @param[in] incx       The increment between successive values of ipiv. If ipiv
-         *                       is negative, the pivots are applied in reverse order.
-         */
-        typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
-            const IndexType n,
-            ValueType* A,
-            const IndexType lda,
-            const IndexType k1,
-            const IndexType k2,
-            const IndexType* ipiv,
-            const IndexType incx );
-
-        static const char* getId()
-        {
-            return "LAPACK.laswp";
-        }
-    };
-
     /** Kernel trait for using SCALAPACK to compute inverse.
      *
      *  @tparam ValueType stands for the arithmetic type used in this operation.

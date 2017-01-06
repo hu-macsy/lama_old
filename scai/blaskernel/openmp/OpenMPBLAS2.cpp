@@ -176,7 +176,19 @@ void OpenMPBLAS2::gemv(
         }
         else if ( TransA == CblasConjTrans )
         {
-            //'C'
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < N; i++ )
+            {
+                ValueType Z = 0;
+
+                for ( IndexType j = 0; j < M; j++ )
+                {
+                    Z += common::Math::conj( A[lda * i + j] ) * X[j * incX];
+                }
+
+                Y[i * incY] = Z * alpha + Y[i * incY] * beta;
+            }
         }
         else
         {
@@ -263,7 +275,19 @@ void OpenMPBLAS2::gemv(
         }
         else if ( TransA == CblasConjTrans )
         {
-            //TA = 'N'
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < N; i++ )
+            {
+                ValueType Z = 0;
+
+                for ( IndexType j = 0; j < M; j++ )
+                {
+                    Z += common::Math::conj( A[lda * j + i] ) * X[j * incX];
+                }
+
+                Y[i * incY] = Z * alpha + Y[i * incY] * beta;
+            }
         }
         else
         {
