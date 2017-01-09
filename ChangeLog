@@ -4,6 +4,14 @@
 
 2016-06-15    Fraunhofer SCAI
 
+VERSION 2.1.0 (11.01.2017):
+
+ * configurable IndexType (int, long, unsigned int, unsigned int)
+ * DenseVector now can be instantiated with IndexType
+ * additional unary and binary operations on LArray and Vector like sin, cos, log, exp, ...
+ * more distributed Operations: parallel I/O, parallel sort (heap sort), scatter/gather
+ * new I/O formats: .psc (PETSc), .mat (Matlab), .txt (ASCII)
+
 VERSION 2.0.0 (15.06.2016):
 
  * switch to AGPL license
