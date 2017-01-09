@@ -500,9 +500,11 @@ void OpenMPELLUtils::compressValues(
         {
             IndexType gap = 0;
 
-            for ( IndexType j = 0; j < IA[i]; j++ )
+            for ( IndexType jj = 0; jj < IA[i]; jj++ )
             {
-                IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
+                IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+
+                // delete it if zero and not diagonal entry
 
                 if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
                 {
@@ -510,16 +512,18 @@ void OpenMPELLUtils::compressValues(
                     continue;
                 }
 
-                IndexType newpos = ellindex( i, j - gap, numRows, newNumValuesPerRow );
+                // move entry gap positions back in this row
+
+                IndexType newpos = ellindex( i, jj - gap, numRows, newNumValuesPerRow );
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
 
             // fill up to top
 
-            for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+            for (  IndexType jj = IA[i] - gap; jj < newNumValuesPerRow; jj++ )
             {
-                IndexType newpos = ellindex( i, j, numRows, newNumValuesPerRow );
+                IndexType newpos = ellindex( i, jj, numRows, newNumValuesPerRow );
                 newValues[newpos] = 0;
                 newJA[newpos] = 0;
             }
