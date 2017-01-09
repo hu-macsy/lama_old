@@ -1794,7 +1794,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compress2Test, ValueType, scai_numeric_test_types
         WriteOnlyAccess<ValueType> wnValues( newValues, loc, newNumValues );
 
         // bool diagonalFlag = false;
-        double eps = 0.000001;
+        ValueType eps = 0.000001;
 
         compressValues[loc->getType()]( roIA.get(), roJA.get(), roValues.get(), numRows, oldNumValuesPerRow, eps,
                                         newNumValuesPerRow, wnJA.get(), wnValues.get() );
