@@ -174,14 +174,6 @@ private:
 
     std::string mDeviceName; //!< name set during initialization
 
-    // we need a stack of CUDACtx as there might be multiple accesses
-
-    mutable std::stack<const common::CUDACtx*> mContextStack;
-
-    // and a mutex for access on the stack
-
-    mutable common::Thread::Mutex mStackMutex;
-
     // static int numUsedDevices; //!< total number of used devices
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

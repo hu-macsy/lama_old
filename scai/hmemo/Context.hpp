@@ -205,6 +205,10 @@ public:
      */
     static bool hasContext( const ContextType type );
 
+    /** Get the currently accessed context of this thread */
+
+    Context* getCurrentContext();
+
 protected:
 
     /** Default constructor, can only be called by base classes. */
@@ -222,6 +226,28 @@ protected:
     mutable const char* mFile;//!< File name where context has been enabled
 
     mutable int mLine;//!< Line number where context has been enabled
+
+private:
+
+    /**
+     *  Set this Context as the current one of this thread.
+     *
+     *  Only one Context can be the current one.
+     *
+     *  Global access to the current context makes design easier
+     *  as it can be decided locally. 
+     */
+
+    void setCurrent() const;
+
+    /**
+     *  Current Context will be no more current one.
+     */
+    void unsetCurrent() const;
+
+    /** thread-private variable where the current context of a thread can be asked for */
+
+    static SCAI_THREAD_PRIVATE_PTR( Context, currentContext )
 };
 
 inline Context::ContextType Context::getType() const

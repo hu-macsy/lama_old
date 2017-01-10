@@ -145,22 +145,16 @@ void CUDAContext::writeAt( std::ostream& stream ) const
 
 void CUDAContext::disable( const char* file, int line ) const
 {
-    common::Thread::ScopedLock lock( mStackMutex );
-
     Context::disable( file, line ); // call routine of base class
-    SCAI_ASSERT( !mContextStack.empty(), "call of disable without previous enable" )
-    common::CUDAAccess::disable( mContextStack.top() );
-    mContextStack.pop();
+    common::CUDAAccess::disable( this );
 }
 
 /* ----------------------------------------------------------------------------- */
 
 void CUDAContext::enable( const char* file, int line ) const
 {
-    common::Thread::ScopedLock lock( mStackMutex );
-
     Context::enable( file, line ); // call routine of base class
-    mContextStack.push( common::CUDAAccess::enable( *this ) );
+    common::CUDAAccess::enable( *this );
 }
 
 /* ----------------------------------------------------------------------------- */

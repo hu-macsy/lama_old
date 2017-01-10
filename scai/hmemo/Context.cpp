@@ -88,6 +88,8 @@ void Context::enable( const char* file, int line ) const
     mEnabled = true;
     mFile = file;
     mLine = line;
+
+    setCurrent();
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -105,6 +107,8 @@ void Context::disable( const char* file, int line ) const
     mEnabled = false;
     mFile = NULL;
     mLine = 0;
+
+    unsetCurrent();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -192,6 +196,53 @@ ContextPtr Context::getContextPtr()
 
     return getHostPtr();
 }
+
+/* ---------------------------------------------------------------------------------*/
+/*  thread private : current context                                                */
+/* ---------------------------------------------------------------------------------*/
+
+void Context::setCurrent() const
+{
+    Context* current = currentContext.get();
+
+    if ( current != NULL )
+    {
+        SCAI_LOG_ERROR( logger, "Nested CONTEXT_ACCESS: now: " << *this << ", but set is: " << *current )
+    }
+
+    currentContext.set( const_cast<Context*>( this ));
+}
+
+void Context::unsetCurrent() const
+{
+    Context* current = currentContext.get();
+
+    if ( current == NULL )
+    {
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but was not set, current == NULL" )
+    }
+    else if ( current != this )
+    {
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but was: " << *current )
+        currentContext.set( NULL );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "unset this context " << *this << " was current" )
+        currentContext.set( NULL );
+    }
+}
+
+Context* Context::getCurrentContext()
+{
+    return currentContext.get();
+}
+
+// we can rely on the fact that thread-private variable is initialized with NULL
+
+SCAI_THREAD_PRIVATE_PTR( Context, Context::currentContext )
+
+/* ----------------------------------------------------------------------- */
 
 } /* end namespace hmemo */
 
