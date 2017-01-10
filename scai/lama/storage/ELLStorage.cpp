@@ -443,7 +443,6 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         }
         else
         {
-            SCAI_CONTEXT_ACCESS( loc )
             mDiagonalProperty = hasDiagonalProperty[loc]( numDiagonals, ellJA.get() );
         }
     }
@@ -853,12 +852,18 @@ void ELLStorage<ValueType>::setValue( const IndexType i,
 
     ContextPtr loc = this->getContextPtr();
     getValuePos.getSupportedContext( loc );
-    SCAI_CONTEXT_ACCESS( loc )
 
-    ReadAccess<IndexType> rIa( mIA, loc );
-    ReadAccess<IndexType> rJa( mJA, loc );
+    IndexType pos = nIndex;
 
-    IndexType pos = getValuePos[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get() );
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<IndexType> rIa( mIA, loc );
+        ReadAccess<IndexType> rJa( mJA, loc );
+
+        pos = getValuePos[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get() );
+
+    }
 
     if ( pos == nIndex )
     {
