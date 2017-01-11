@@ -188,14 +188,19 @@ bool PartitionIO::fileExists( const std::string& fileName, const dmemo::Communic
     }
     else
     {
+        int iExists = 0;   // help variable as not bcast<bool> available
+
         const PartitionId root = 0;
 
         if ( comm.getRank() == root )
         {
             exists = FileIO::fileExists( pFileName );
+            iExists = exists ? 1 : 0 ;
         }
 
-        comm.bcast( reinterpret_cast<int*>( &exists ), 1, root );
+        comm.bcast( &iExists, 1, root );
+
+        exists = iExists == 1;
     }
 
     return exists;
