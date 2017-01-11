@@ -1256,7 +1256,7 @@ void DenseVector<ValueType>::scatter(
 
     // Now scatter all received values
 
-    HArrayUtils::scatter( mLocalValues, recvIndexes, recvValues, op );
+    HArrayUtils::scatter( mLocalValues, recvIndexes, recvValues, op, source.getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
