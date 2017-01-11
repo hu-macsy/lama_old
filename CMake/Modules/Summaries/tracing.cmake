@@ -54,7 +54,7 @@ heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI logging"      "SCAI_LOGGING_FOUND"      "REQUIRED" "Version ${SCAI_LOGGING_VERSION}"      )
 
 heading ( "Optional components" "" )
-heading3 ( "Java:" "JAVA_FOUND" )
+heading3 ( "Java:" "USE_JAVA" )
     found_message ( "Java Exexutable" "JAVA_FOUND" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
 
 include ( Summaries/Modules/Build )
