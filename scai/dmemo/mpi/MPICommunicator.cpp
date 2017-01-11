@@ -452,6 +452,31 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
 
 /* ---------------------------------------------------------------------------------- */
 
+/** The following method returns the memory of the actual context.
+ *
+ *  This memory is required for send/recv communication on the same processor
+ *  where memcpy is called to do this instead of send/recv. As memcpy is not
+ *  CUDA-aware we must use the routine of the corresponding device memory.
+ *
+ *  This is safe, as source and target are always in the same memory and not
+ *  in different memories; otherwise memory transfer between different memories would
+ *  be required.
+ */
+
+static inline hmemo::Memory& getActualMemory()
+{
+    const hmemo::Context* ctx = hmemo::Context::getCurrentContext();
+
+    if ( ctx == NULL )
+    {
+        ctx = hmemo::Context::getHostPtr().get();
+    }
+
+    return *ctx->getMemoryPtr();
+}
+
+/* ---------------------------------------------------------------------------------- */
+
 void MPICommunicator::exchangeByPlanImpl(
     void* recvData,
     const CommunicationPlan& recvPlan,
@@ -519,7 +544,7 @@ void MPICommunicator::exchangeByPlanImpl(
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
-            memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
+            getActualMemory().memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
         }
     }
 
@@ -591,7 +616,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
-            memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
+            getActualMemory().memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
         }
     }
 
@@ -997,6 +1022,8 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
                           << ": val type = " << stype << ", size = " << typeSize
                           << ", index type = " << common::TypeTraits<IndexType>::id() << ", size = " << sizeof( IndexType ) )
 
+    // only on Host
+
     common::scoped_array<char> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
@@ -1024,6 +1051,8 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
                           "val and loc not contiguously in memory"
                           << ": val type = " << stype << ", size = " << typeSize
                           << ", index type = " << common::TypeTraits<IndexType>::id() << ", size = " << sizeof( IndexType ) )
+
+    // only on host
 
     common::scoped_array<char> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
@@ -1070,6 +1099,8 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
     }
 
     SCAI_REGION( "Communicator.MPI.swap" )
+
+    // only on host
 
     common::scoped_array<char> tmp ( new char[ n * common::typeSize( stype ) ] );
 

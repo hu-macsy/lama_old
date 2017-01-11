@@ -442,7 +442,10 @@ void Communicator::sumArray( HArray<ValueType>& array ) const
 {
     ContextPtr commContext = getCommunicationContext( array );
 
-    SCAI_LOG_INFO( logger, "sumArray at this context " << *commContext << ", array = " << array )
+    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id() 
+                           << " at this context " << *commContext << ", array = " << array )
+
+    SCAI_CONTEXT_ACCESS( commContext );
 
     IndexType numElems = array.size();
 
@@ -471,9 +474,13 @@ void Communicator::shiftArray(
     }
 
     ContextPtr commContext = getCommunicationContext( sendArray );
-    SCAI_LOG_INFO( logger,
-                   "shiftArray at this context " << *commContext << ", sendArray = " << sendArray
+
+    SCAI_LOG_INFO( logger, "shiftArray<" << common::TypeTraits<ValueType>::id() 
+                   << " at this context " << *commContext << ", sendArray = " << sendArray
                    << ", recvArray = " << recvArray )
+
+    SCAI_CONTEXT_ACCESS( commContext )
+
     ReadAccess<ValueType> sendData( sendArray, commContext );
     IndexType numSendElems = sendData.size();
     // make recv array large enough to fit for send data
@@ -497,10 +504,16 @@ SyncToken* Communicator::shiftAsync(
     const int direction ) const
 {
     SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+
+    // ToDo: not quite clear how to deal with asynchronous communication on other devices
+
+    ContextPtr commContext = Context::getHostPtr();
+
+    SCAI_CONTEXT_ACCESS( commContext )
+
     recvArray.clear(); // do not keep any old data, keep capacities
-    WriteAccess<ValueType> recvData( recvArray, contextPtr );
-    ReadAccess<ValueType> sendData( sendArray, contextPtr );
+    WriteAccess<ValueType> recvData( recvArray, commContext );
+    ReadAccess<ValueType> sendData( sendArray, commContext );
     IndexType numElems = sendData.size();
     recvData.resize( numElems ); // size should fit at least to keep own data
     // For shifting of data we use the pure virtual methods implemened by each communicator
@@ -613,6 +626,8 @@ void Communicator::computeOwners(
     const IndexType requiredIndexes[],
     const IndexType nIndexes ) const
 {
+    // Note: this routine is only supported on Host, may change in future releases
+
     PartitionId rank = getRank();
     PartitionId size = getSize();
 
@@ -648,7 +663,9 @@ void Communicator::computeOwners(
     HArray<IndexType> indexesReceiveArray( receiveSize );
     HArray<IndexType> ownersSendArray( receiveSize );
     HArray<IndexType> ownersReceiveArray( receiveSize );
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
     {
         WriteAccess<IndexType> indexesSend( indexesSendArray, contextPtr );
         WriteAccess<IndexType> ownersSend( ownersSendArray, contextPtr );
@@ -981,12 +998,22 @@ void Communicator::exchangeByPlan(
     const CommunicationPlan& sendPlan ) const
 {
     SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
+
     IndexType recvSize = recvPlan.totalQuantity();
+
     // find a context where data of sendArray can be communicated
     // if possible try to find a context where valid data is available
     // CUDAaware MPI: might give GPU or Host context here
+
     hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
-    SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlan, comCtx = " << *comCtx )
+
+    SCAI_LOG_INFO( logger, *this << ": exchangeByPlan<" << common::TypeTraits<ValueType>::id() << ">" 
+                   << ", send " << sendArray.size() << " values to " << sendPlan.size() << " processors"
+                   << ", recv " << recvSize << " values from " << recvPlan.size() << " processors"
+                   << ", data at this context " << *comCtx )
+
+    SCAI_CONTEXT_ACCESS( comCtx )
+
     hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
     // Data will be received at the same context where send data is
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
