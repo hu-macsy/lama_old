@@ -50,6 +50,8 @@
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/function.hpp>
 
+#include <stack>
+
 namespace scai
 {
 
@@ -207,7 +209,7 @@ public:
 
     /** Get the currently accessed context of this thread */
 
-    Context* getCurrentContext();
+    const Context* getCurrentContext();
 
 protected:
 
@@ -247,7 +249,9 @@ private:
 
     /** thread-private variable where the current context of a thread can be asked for */
 
-    static SCAI_THREAD_PRIVATE_PTR( Context, currentContext )
+    typedef std::stack<const Context*> ContextStack;
+
+    static SCAI_THREAD_PRIVATE_PTR( ContextStack, contextStack )
 };
 
 inline Context::ContextType Context::getType() const

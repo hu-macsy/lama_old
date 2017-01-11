@@ -203,44 +203,69 @@ ContextPtr Context::getContextPtr()
 
 void Context::setCurrent() const
 {
-    Context* current = currentContext.get();
+    ContextStack* myStack = contextStack.get();
 
-    if ( current != NULL )
+    if ( myStack == NULL )
     {
-        SCAI_LOG_ERROR( logger, "Nested CONTEXT_ACCESS: now: " << *this << ", but set is: " << *current )
+        // first time use of stack, it must be allocated
+
+        myStack = new ContextStack;
+        contextStack.set( myStack );
     }
 
-    currentContext.set( const_cast<Context*>( this ));
+    myStack->push( this );
 }
 
 void Context::unsetCurrent() const
 {
-    Context* current = currentContext.get();
+    ContextStack* myStack = contextStack.get();
 
-    if ( current == NULL )
+    if ( myStack == NULL )
     {
-        SCAI_LOG_WARN( logger, "unset this context " << *this << " but was not set, current == NULL" )
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but NEVER set before" )
+        return;
     }
-    else if ( current != this )
+
+    if ( myStack->empty() )
+    {
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but not set before" )
+        return;
+    }
+
+    const Context* current = myStack->top();
+
+    if ( current != this )
     {
         SCAI_LOG_WARN( logger, "unset this context " << *this << " but was: " << *current )
-        currentContext.set( NULL );
     }
     else
     {
         SCAI_LOG_INFO( logger, "unset this context " << *this << " was current" )
-        currentContext.set( NULL );
     }
+
+    myStack->pop();
 }
 
-Context* Context::getCurrentContext()
+const Context* Context::getCurrentContext()
 {
-    return currentContext.get();
+    ContextStack* myStack = contextStack.get();
+
+    if ( myStack == NULL )
+    {
+        return NULL;
+    }
+
+    if ( myStack->empty() )
+    {
+        return NULL;
+    }
+
+    return myStack->top();
 }
 
 // we can rely on the fact that thread-private variable is initialized with NULL
 
-SCAI_THREAD_PRIVATE_PTR( Context, Context::currentContext )
+SCAI_THREAD_PRIVATE_PTR( Context::ContextStack, Context::contextStack )
 
 /* ----------------------------------------------------------------------- */
 
