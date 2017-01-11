@@ -209,7 +209,7 @@ public:
 
     /** Get the currently accessed context of this thread */
 
-    const Context* getCurrentContext();
+    static const Context* getCurrentContext();
 
 protected:
 
