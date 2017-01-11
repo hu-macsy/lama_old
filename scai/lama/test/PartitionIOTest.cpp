@@ -212,11 +212,15 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
+        SCAI_LOG_DEBUG( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
+
         DenseVector<ValueType> vector;
 
         float fillRate = 1;
 
         vector.setRandom( dist, fillRate );
+
+        // now write the distributed vector and its distribution, each to a single file
 
         vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *dist, distFileName );
@@ -226,6 +230,9 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         // read vector and reconstruct its old distribution
 
         readVector.readFromFile( vectorFileName, distFileName );
+
+        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
+                                << ", read vector = " << readVector );
 
         // The local parts of the two vectors must be exactly the same
 
@@ -238,12 +245,14 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         BOOST_CHECK( diff == ValueType( 0 ) );
 
+        // remove the files for vector data + distribution
+
         int rc = PartitionIO::removeFile( vectorFileName, *comm );
-        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_REQUIRE_EQUAL( 0, rc );
         BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
 
         rc = PartitionIO::removeFile( distFileName, *comm );
-        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_REQUIRE_EQUAL( 0, rc );
         BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
     }
 }
