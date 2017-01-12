@@ -151,11 +151,20 @@ void MatrixMarketIO::writeMMHeader(
 
     if ( vector )
     {
-        outFile << "vector array ";
+        outFile << "vector ";
     }
     else
     {
-        outFile << "matrix coordinate ";
+        outFile << "matrix ";
+    }
+
+    if ( numValues == nIndex )
+    {
+        outFile << "array ";
+    }
+    else
+    {
+        outFile << "coordinate ";
     }
 
     switch ( dataType )
@@ -187,7 +196,9 @@ void MatrixMarketIO::writeMMHeader(
 
     outFile << symmetry2str( symmetry ) << std::endl;
 
-    if ( vector )
+    // array ( numValues == nIndex ) has no entry numValues, only coordinate
+
+    if ( numValues == nIndex )
     {
         outFile << numRows << " " << numColumns << std::endl;
     }
