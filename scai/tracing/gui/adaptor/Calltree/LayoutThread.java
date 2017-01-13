@@ -16,17 +16,17 @@
  */
 package adaptor.Calltree;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import java.io.FileInputStream;
 import java.io.FileWriter;
+
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
 
 import org.apache.log4j.Logger;
 
@@ -186,48 +186,28 @@ class LayoutThread extends Thread {
 
         try {
 
-            boolean eof = false;
-
             // set for P : > output
 
             FileOutputStream outFile = new FileOutputStream(output);
+            FileInputStream  infile  = new FileInputStream(input);
 
-            FileReader infile = new FileReader(input);
-            BufferedReader inbuff = new BufferedReader(infile);
+            OutputStream out = layoutProcess.getOutputStream();
+            InputStream  in  = layoutProcess.getInputStream();
 
-            DataOutputStream out = new DataOutputStream(layoutProcess.getOutputStream());
-            DataInputStream in = new DataInputStream(layoutProcess.getInputStream());
+            final int BufferSize = 2048;
 
-            while (!eof) {
-                
-                int nextChar = inbuff.read();
+            byte[] buffer = new byte[BufferSize];
+            int noOfBytes = 0;
 
-                eof = (nextChar == eofChar);
-
-                if (!eof) {
-                    
-                    out.write(nextChar);
-                    
-                }
-
-            } // while not eof
+            while ((noOfBytes = infile.read(buffer)) != -1) {
+                out.write(buffer, 0, noOfBytes);
+            }
 
             out.close();
 
-            eof = false;
-
-            while (!eof) {
-                
-                int nextChar = in.read();
-
-                eof = (nextChar == eofChar);
-
-                if (!eof) {
-                    
-                    outFile.write(nextChar);                    
-                }
-
-            } // while not eof
+            while ((noOfBytes = in.read(buffer)) != -1) {
+                outFile.write(buffer, 0, noOfBytes);
+            }
 
             outFile.close();
 
@@ -302,18 +282,20 @@ class LayoutThread extends Thread {
             String replacePattern1 = "width=\"$1\""; 
             String searchPattern2 = "height=([0-9]*\\.[0-9]*)";
             String replacePattern2 = "height=\"$1\""; 
-
-            try {
-                readReplace( outputName, searchPattern1, replacePattern1,
-                                         searchPattern2, replacePattern2 );
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            // in case of error return
-
+ 
             if ((rc == 0) && display) {
                 
+                // replace only for layout files, not for exported files like png, jpg, ...
+
+                try {
+                    readReplace( outputName, searchPattern1, replacePattern1,
+                                             searchPattern2, replacePattern2 );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+               // in case of error return
+
                 myCT.showGraphFile(outputName);
             }
         }
