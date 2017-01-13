@@ -177,8 +177,6 @@ class LayoutThread extends Thread {
      */
     static int handleProcess(Process layoutProcess, String input, String output) {
 
-        final int eofChar = -1;
-        
         int rc = 0; // returnCode (0 for success)
 
         // pipe "infile" into the output stream of process P
@@ -188,28 +186,32 @@ class LayoutThread extends Thread {
 
             // set for P : > output
 
-            FileOutputStream outFile = new FileOutputStream(output);
-            FileInputStream  infile  = new FileInputStream(input);
+            FileOutputStream layoutOutput = new FileOutputStream(output);
+            FileInputStream  layoutInput  = new FileInputStream(input);
 
-            OutputStream out = layoutProcess.getOutputStream();
-            InputStream  in  = layoutProcess.getInputStream();
+            OutputStream std_in  = layoutProcess.getOutputStream();
+            InputStream  std_out = layoutProcess.getInputStream();
 
             final int BufferSize = 2048;
 
             byte[] buffer = new byte[BufferSize];
             int noOfBytes = 0;
 
-            while ((noOfBytes = infile.read(buffer)) != -1) {
-                out.write(buffer, 0, noOfBytes);
+            // copy input file to std input of process
+
+            while ((noOfBytes = layoutInput.read(buffer)) != -1) {
+                std_in.write(buffer, 0, noOfBytes);
             }
 
-            out.close();
+            std_in.close();
 
-            while ((noOfBytes = in.read(buffer)) != -1) {
-                outFile.write(buffer, 0, noOfBytes);
+            // copy std output file to final output
+
+            while ((noOfBytes = std_out.read(buffer)) != -1) {
+                layoutOutput.write(buffer, 0, noOfBytes);
             }
 
-            outFile.close();
+            layoutOutput.close();
 
             rc = layoutProcess.waitFor();
 
