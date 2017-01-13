@@ -24,12 +24,13 @@ import javax.swing.JButton;
 
 /**
  * The class EventButton impelements a button assigned to each performance event.
- * 
+ *
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
 
-public class EventButton extends JButton implements ActionListener {
+public class EventButton extends JButton implements ActionListener
+{
 
     /**
      * The performance event for which this button stands.
@@ -43,28 +44,29 @@ public class EventButton extends JButton implements ActionListener {
 
     /**
      * Constructor for an event button.
-     * 
+     *
      * @param config is pointer for callback into the editor
      * @param event is the performance event for this button
      */
-    public EventButton(EditPM config, PerformanceEvent event) {
-    
+    public EventButton( EditPM config, PerformanceEvent event )
+    {
+
         // name of the button is the name of the performance event
-    
-        super(event.getName());
-    
+
+        super( event.getName() );
+
         // set the interface that we can call later method when button is selected
-    
+
         myEditPM = config;
-    
-        setBackground(event.getColor());
-    
+
+        setBackground( event.getColor() );
+
         myPerformanceEvent = event;
-    
-        setToolTipText(event.getDescription());
-    
-        addActionListener(this);
-    
+
+        setToolTipText( event.getDescription() );
+
+        addActionListener( this );
+
     } // constructior EventButton
 
     /**
@@ -72,15 +74,16 @@ public class EventButton extends JButton implements ActionListener {
      *
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed( ActionEvent e )
+    {
 
         EventButton actionButton;
 
-        actionButton = (EventButton) e.getSource();
+        actionButton = ( EventButton ) e.getSource();
 
         // we let the Editor decide what to do
 
-        myEditPM.actionEvent(actionButton.myPerformanceEvent);
+        myEditPM.actionEvent( actionButton.myPerformanceEvent );
 
     }
 

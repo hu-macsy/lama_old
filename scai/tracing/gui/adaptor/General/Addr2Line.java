@@ -1,16 +1,16 @@
 /*
  * Addr2Line.java
- * 
+ *
  * Utility class that is used to translate binary addresses in the executable
  * to routine names with information about file location.
- * 
+ *
  * Created: 2007-10-20 Thomas Brandes <thomas.brandes@scai.fraunhofer.de>
  * Changed:
- * 
+ *
  * $Id$
- * 
+ *
  * Copyright (C) 2007 Fraunhofer SCAI, Germany
- * 
+ *
  * All rights reserved
  *
  * http://www.scai.fhg.de/EP-CACHE/adaptor
@@ -30,27 +30,28 @@ import org.apache.log4j.Logger;
 /***
  * Utility class that is used to translate binary addresses in the executable
  * to routine names with information about file location.
- * 
+ *
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public final class Addr2Line {
+public final class Addr2Line
+{
 
     /**
      * Use this name as input file for "addrline".
      */
     private static final String INFILE_NAME = "addr2line.in";
-    
+
     /**
      * Use this name as output file for "addrline".
      */
     private static final String OUTFILE_NAME = "addr2line.out";
-    
+
     /**
      * Logger variable for this class.
      */
-    private static Logger logger = Logger.getLogger(Addr2Line.class);
-    
+    private static Logger logger = Logger.getLogger( Addr2Line.class );
+
     /**
      * Variable will contain the name of the program executable.
      */
@@ -59,46 +60,51 @@ public final class Addr2Line {
     /**
      * overwrite default constructor.
      */
-    private Addr2Line() {  
+    private Addr2Line()
+    {
     }
-    
+
     /**
      * This routine is used to set the name of the executable. The routine
      * might search it in the path and append a suffix.
-     * 
+     *
      * @param name is the (short) name of the executable.
      * @return true if the executable has been found.
      */
-    private static boolean setExecutable(String name) {
+    private static boolean setExecutable( String name )
+    {
 
         theExecutable = name;
 
-        File f = new File(theExecutable);
+        File f = new File( theExecutable );
 
         // ready if we can access the executable
 
-        if (f.exists()) {
+        if ( f.exists() )
+        {
 
             return true;
         }
 
         // on Windows we give it a try with the suffix exe
 
-        String osName = System.getProperty("os.name");
+        String osName = System.getProperty( "os.name" );
 
-        logger.info("os.name = " + osName);
+        logger.info( "os.name = " + osName );
 
         // It might be useful to add the suffix .exe for Windows
 
-        if (System.getProperty("os.name").startsWith("Win")) {
+        if ( System.getProperty( "os.name" ).startsWith( "Win" ) )
+        {
 
-            logger.info("Executable " + name + " not found, try " + name + ".exe");
+            logger.info( "Executable " + name + " not found, try " + name + ".exe" );
 
             theExecutable = name + ".exe";
 
-            f = new File(theExecutable);
+            f = new File( theExecutable );
 
-            if (f.exists()) {
+            if ( f.exists() )
+            {
 
                 return true;
             }
@@ -106,7 +112,7 @@ public final class Addr2Line {
 
         return false;
     }
-    
+
 
     /**
 
@@ -114,74 +120,86 @@ public final class Addr2Line {
 
     /**
      * This routine translates region addresses to region names.
-     * 
+     *
      * @param addresses is an array of addresses
      * @param filenames will contain the name of the source file for location addresses[i]
-     * @param lines [i] will contain the line number for location addresses[i] 
+     * @param lines [i] will contain the line number for location addresses[i]
      */
-    private static void translate(String[] addresses, String[] filenames, int[] lines) {
+    private static void translate( String[] addresses, String[] filenames, int[] lines )
+    {
 
         // ToDo: find the executable if it is not in the current dir
-       
-        try {
 
-            BufferedWriter out = new BufferedWriter(new FileWriter("addr2line.in"));
-        
-            for (String addr : addresses)  {
+        try
+        {
 
-                out.write(addr);
+            BufferedWriter out = new BufferedWriter( new FileWriter( "addr2line.in" ) );
+
+            for ( String addr : addresses )
+            {
+
+                out.write( addr );
                 out.newLine();
 
             }
 
             out.close();
 
-        } catch (IOException e) {
+        }
+        catch ( IOException e )
+        {
 
-            logger.error(e.getMessage());
+            logger.error( e.getMessage() );
 
         }
 
-        logger.info("have written " + addresses.length + " records in file " + INFILE_NAME); 
-                    
+        logger.info( "have written " + addresses.length + " records in file " + INFILE_NAME );
+
         // run the executable addr2line
 
-        try {
+        try
+        {
 
-            // option -e <executable> 
+            // option -e <executable>
             // option -f Show function names
             // -C        Demangle function names
 
             String cmd = "addr2line -e " + theExecutable + " -f -C";
-            
+
             Runtime myRuntime = Runtime.getRuntime();
 
-            logger.info("exec: " + cmd);
+            logger.info( "exec: " + cmd );
 
-            Process layoutProcess = myRuntime.exec(cmd);
+            Process layoutProcess = myRuntime.exec( cmd );
 
-            int rc = ProcessUtility.handleProcess(layoutProcess, INFILE_NAME, OUTFILE_NAME);
-                        
-            logger.info("addr2line ready, result = " + rc);
+            int rc = ProcessUtility.handleProcess( layoutProcess, INFILE_NAME, OUTFILE_NAME );
 
-        } catch (IOException e) {
+            logger.info( "addr2line ready, result = " + rc );
 
-            logger.error("exec has exception: " + e.getMessage());
+        }
+        catch ( IOException e )
+        {
 
-        } catch (RuntimeException e) {
-            
-            logger.error("addr2line terminated with runtime exception: " + e.getMessage());
+            logger.error( "exec has exception: " + e.getMessage() );
+
+        }
+        catch ( RuntimeException e )
+        {
+
+            logger.error( "addr2line terminated with runtime exception: " + e.getMessage() );
         }
 
         // read the output file with names and files
 
-        try { 
+        try
+        {
 
-            FileReader file = new FileReader(OUTFILE_NAME);
+            FileReader file = new FileReader( OUTFILE_NAME );
 
-            BufferedReader buff = new BufferedReader(file);
+            BufferedReader buff = new BufferedReader( file );
 
-            for (int i = 0; i < addresses.length; i++) {
+            for ( int i = 0; i < addresses.length; i++ )
+            {
 
                 String line = buff.readLine();
 
@@ -193,20 +211,22 @@ public final class Addr2Line {
 
                 // <filename>:<line_nr>
 
-                int pos = line.lastIndexOf(":");
+                int pos = line.lastIndexOf( ":" );
 
-                filenames[i] = line.substring(0, pos);
+                filenames[i] = line.substring( 0, pos );
 
-                lines[i] = Integer.parseInt(line.substring(pos + 1));
+                lines[i] = Integer.parseInt( line.substring( pos + 1 ) );
 
-                logger.debug("line2: File = " + filenames[i] + " line = " + lines[i]);
+                logger.debug( "line2: File = " + filenames[i] + " line = " + lines[i] );
             }
-        
+
             buff.close();
 
-        } catch (IOException e) {
+        }
+        catch ( IOException e )
+        {
 
-            logger.error(e.getMessage());
+            logger.error( e.getMessage() );
 
         }
 
@@ -215,51 +235,59 @@ public final class Addr2Line {
     /**
      * This routine translates region addresses to region names.
      * We know that we have a region address if the filename is the executable.
-     * 
+     *
      * @param myRegionTable is the table with all regions.
      * @param myFileTable is the table of all files that might be updated with the new source files.
      * @param executable is the name of the executable where we will find the binary addresses.
      */
-    public static void addr2line(RegionTable myRegionTable, FileTable myFileTable, String executable) {
+    public static void addr2line( RegionTable myRegionTable, FileTable myFileTable, String executable )
+    {
 
         int i;
         int k;
 
-        String executableName = new File(executable).getName();
+        String executableName = new File( executable ).getName();
 
         int noRegions = 0; // counter for address translations needed
 
         // Step 1: count the number of translations that are needed
 
-        for (i = 0; i < myRegionTable.noRegions(); i++) {
+        for ( i = 0; i < myRegionTable.noRegions(); i++ )
+        {
 
-            RegionDescriptor region = myRegionTable.getRegion(i);
-            
-            if (region == null) {
-                
+            RegionDescriptor region = myRegionTable.getRegion( i );
+
+            if ( region == null )
+            {
+
                 continue;
             }
 
-            if (!region.getFile().getShortFileName().equals(executableName)) {
-                                
-                continue;                
+            if ( !region.getFile().getShortFileName().equals( executableName ) )
+            {
+
+                continue;
             }
 
-            if (region.getRegionKind().equals(RegionDescriptor.RegionKind.CYGFUNC)) {
+            if ( region.getRegionKind().equals( RegionDescriptor.RegionKind.CYGFUNC ) )
+            {
 
                 noRegions += 1;
 
-            } else if (region.getRegionKind().equals(RegionDescriptor.RegionKind.CYGUSER)) {
+            }
+            else if ( region.getRegionKind().equals( RegionDescriptor.RegionKind.CYGUSER ) )
+            {
 
                 noRegions += 2;
             }
         }
 
-        logger.info("addr2line will get " + noRegions + " entries to translate");
+        logger.info( "addr2line will get " + noRegions + " entries to translate" );
 
         // we are ready if there are no __cyg profiled functions
 
-        if (noRegions == 0) {
+        if ( noRegions == 0 )
+        {
 
             return;
         }
@@ -269,29 +297,35 @@ public final class Addr2Line {
         k = 0;
 
         final String hexPrefix = "0x";
-        
-        for (i = 0; i < myRegionTable.noRegions(); i++) {
 
-            RegionDescriptor region = myRegionTable.getRegion(i);
+        for ( i = 0; i < myRegionTable.noRegions(); i++ )
+        {
 
-            if (region == null) {
-                
-                continue;
-            }
-            
-            if (!region.getFile().getShortFileName().equals(executableName)) {
-                
+            RegionDescriptor region = myRegionTable.getRegion( i );
+
+            if ( region == null )
+            {
+
                 continue;
             }
 
-            if (region.getRegionKind().equals(RegionDescriptor.RegionKind.CYGFUNC)) {
+            if ( !region.getFile().getShortFileName().equals( executableName ) )
+            {
 
-                regionNames[k++] = hexPrefix + Integer.toHexString(region.getFirstLine());
+                continue;
+            }
 
-            } else if (region.getRegionKind().equals(RegionDescriptor.RegionKind.CYGUSER)) {
+            if ( region.getRegionKind().equals( RegionDescriptor.RegionKind.CYGFUNC ) )
+            {
 
-                regionNames[k++] = hexPrefix + Integer.toHexString(region.getFirstLine());
-                regionNames[k++] = hexPrefix + Integer.toHexString(region.getLastLine());
+                regionNames[k++] = hexPrefix + Integer.toHexString( region.getFirstLine() );
+
+            }
+            else if ( region.getRegionKind().equals( RegionDescriptor.RegionKind.CYGUSER ) )
+            {
+
+                regionNames[k++] = hexPrefix + Integer.toHexString( region.getFirstLine() );
+                regionNames[k++] = hexPrefix + Integer.toHexString( region.getLastLine() );
             }
 
         }
@@ -299,72 +333,82 @@ public final class Addr2Line {
         // target arrays for address translation get same size as input array region_names
 
         String[] fileNames = new String[noRegions];
-        
+
         int[] lines = new int[noRegions];
 
-       // generate a file with all region addresses 
-        
-        boolean done = setExecutable(executable);
+        // generate a file with all region addresses
 
-        if (!done) {
+        boolean done = setExecutable( executable );
 
-            logger.error("could not find the executable " + executable);
+        if ( !done )
+        {
+
+            logger.error( "could not find the executable " + executable );
             return;
-        }        
-        
-        try {
+        }
 
-            translate(regionNames, fileNames, lines);
+        try
+        {
 
-        } catch (RuntimeException e) {
+            translate( regionNames, fileNames, lines );
 
-            logger.error("Addr2Line fails: " + e.getMessage());
+        }
+        catch ( RuntimeException e )
+        {
+
+            logger.error( "Addr2Line fails: " + e.getMessage() );
             return;
         }
 
         k = 0;
 
-        for (i = 0; i < myRegionTable.noRegions(); i++) {
+        for ( i = 0; i < myRegionTable.noRegions(); i++ )
+        {
 
-            RegionDescriptor region = myRegionTable.getRegion(i);
-            
-            if (region == null) {
-                
+            RegionDescriptor region = myRegionTable.getRegion( i );
+
+            if ( region == null )
+            {
+
                 continue;
             }
 
-            if (!region.getFile().getShortFileName().equals(executableName)) {
-                
+            if ( !region.getFile().getShortFileName().equals( executableName ) )
+            {
+
                 continue;
             }
 
-            if (region.getRegionKind().equals(RegionDescriptor.RegionKind.CYGFUNC)) {
+            if ( region.getRegionKind().equals( RegionDescriptor.RegionKind.CYGFUNC ) )
+            {
 
-                region.setName(regionNames[k]);
+                region.setName( regionNames[k] );
 
-                FileDescriptor file = myFileTable.getFile(fileNames[k]);
-                
-                region.setFileInfo(file, lines[k], lines[k]);
-                
-                logger.info("cyg func region " + k + " = " + regionNames[k] + " in " + 
-                            fileNames[k] + "(fileId = " + file.getFileId() + "):" + lines[k]);
+                FileDescriptor file = myFileTable.getFile( fileNames[k] );
+
+                region.setFileInfo( file, lines[k], lines[k] );
+
+                logger.info( "cyg func region " + k + " = " + regionNames[k] + " in " +
+                             fileNames[k] + "(fileId = " + file.getFileId() + "):" + lines[k] );
 
                 k++;
 
-            } else if (region.getRegionKind().equals(RegionDescriptor.RegionKind.CYGUSER)) {
+            }
+            else if ( region.getRegionKind().equals( RegionDescriptor.RegionKind.CYGUSER ) )
+            {
 
                 // Attention: we do not update the name of the user region
 
                 // FileDescriptor file = new FileDescriptor(i, fileNames[i]);
-                
-                // myFileTable.defineFile(i, file);
-                
-                FileDescriptor file = myFileTable.getFile(fileNames[k]);
-                
-                region.setFileInfo(file, lines[k], lines[k + 1]);
 
-                logger.info("cyg user region " + region.getName() + ": " + fileNames[k] + 
-                             "(fileId = " + file.getFileId() + "):" + lines[k] + "-" + lines[k + 1]);
+                // myFileTable.defineFile(i, file);
+
+                FileDescriptor file = myFileTable.getFile( fileNames[k] );
+
+                region.setFileInfo( file, lines[k], lines[k + 1] );
+
+                logger.info( "cyg user region " + region.getName() + ": " + fileNames[k] +
+                             "(fileId = " + file.getFileId() + "):" + lines[k] + "-" + lines[k + 1] );
 
                 k++;
                 k++;

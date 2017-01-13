@@ -20,12 +20,13 @@ package adaptor.EditPM;
 import java.awt.Color;
 
 /**
- * The class BasicEvent is a basic performance event. 
+ * The class BasicEvent is a basic performance event.
  *
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public class BasicEvent extends PerformanceEvent {
+public class BasicEvent extends PerformanceEvent
+{
 
     /**
      * Every basic event gets yellow color.
@@ -39,25 +40,27 @@ public class BasicEvent extends PerformanceEvent {
 
     /**
      * Constructor for a new basic event.
-     * 
+     *
      * @param isAdaptor indicates that this event is supported by ADAPTOR
      * @param sname is the short name of the basic event
      * @param lname is the description of the event
      */
-    public BasicEvent(boolean isAdaptor, String sname, String lname) {
-    
-        super(isAdaptor, sname);
-    
+    public BasicEvent( boolean isAdaptor, String sname, String lname )
+    {
+
+        super( isAdaptor, sname );
+
         longName = lname;
-    
+
     } // constructor BasicEvent
 
     /**
      * This routine gets a color for this kind of event.
-     * 
+     *
      * @return the color for this event
      */
-    public static Color getEventColor() {
+    public static Color getEventColor()
+    {
 
         return BASIC_EVENT_COLOR;
 
@@ -68,11 +71,13 @@ public class BasicEvent extends PerformanceEvent {
      *
      * @see adaptor.EditPM.PerformanceEvent#getColor()
      */
-    public Color getColor() {
+    public Color getColor()
+    {
 
         Color c = BASIC_EVENT_COLOR;
 
-        if (isADAPTORCounter()) {
+        if ( isADAPTORCounter() )
+        {
 
             c = c.darker();
         }
@@ -85,8 +90,9 @@ public class BasicEvent extends PerformanceEvent {
      *
      * @see adaptor.EditPM.PerformanceEvent#getDescription()
      */
-    public String getDescription() {
-        
+    public String getDescription()
+    {
+
         return longName;
     }
 }

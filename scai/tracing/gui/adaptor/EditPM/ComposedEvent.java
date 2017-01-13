@@ -25,7 +25,8 @@ import java.awt.Color;
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public class ComposedEvent extends PerformanceEvent {
+public class ComposedEvent extends PerformanceEvent
+{
 
     /**
      * Color for composed events to distinguish them from others.
@@ -36,12 +37,12 @@ public class ComposedEvent extends PerformanceEvent {
      * This is the pointer to the first basic event.
      */
     private BasicEvent p1 = null;
-    
+
     /**
      * This is the pointer to the second basic event.
      */
     private BasicEvent p2 = null;
-    
+
     /**
      * The op string stands for the binary operation between
      * the two basic events.
@@ -51,32 +52,34 @@ public class ComposedEvent extends PerformanceEvent {
     /**
      * A composed event has a name and combines two basic events
      * to some kind of metric.
-     * 
+     *
      * @param name is the name of the composed event
      * @param e1 is the first basic event
      * @param cop is the binary operator
      * @param e2 is the second basic event
      */
-    public ComposedEvent(String name, PerformanceEvent e1, String cop, PerformanceEvent e2) {
-    
+    public ComposedEvent( String name, PerformanceEvent e1, String cop, PerformanceEvent e2 )
+    {
+
         // name is always taken as ADAPTOR specific
-        
-        super(true, name);
-        
+
+        super( true, name );
+
         adaptorName = name;
-        p1 = (BasicEvent) e1;
-        p2 = (BasicEvent) e2;
+        p1 = ( BasicEvent ) e1;
+        p2 = ( BasicEvent ) e2;
         op = cop;
-    
+
     } // ComposedEvent
 
     /**
      * This routine gives the color for composed events.
-     * 
+     *
      * @return the color for a composed event
      */
-    public static Color getEventColor() {
-        
+    public static Color getEventColor()
+    {
+
         return COMPOSED_EVENT_COLOR;
     }
 
@@ -85,8 +88,9 @@ public class ComposedEvent extends PerformanceEvent {
      *
      * @see adaptor.EditPM.PerformanceEvent#getColor()
      */
-    public Color getColor() {
-        
+    public Color getColor()
+    {
+
         return COMPOSED_EVENT_COLOR;
     }
 
@@ -95,35 +99,39 @@ public class ComposedEvent extends PerformanceEvent {
      *
      * @see adaptor.EditPM.PerformanceEvent#getDescription()
      */
-    public String getDescription() {
-        
+    public String getDescription()
+    {
+
         return p1.getName() + " " + op + " " + p2.getName();
     }
-    
+
     /**
      * This routine gets the binary operator for the composed event.
-     * 
+     *
      * @return Returns the op.
      */
-    public String getOp() {
+    public String getOp()
+    {
         return op;
     }
 
-    
+
     /**
      * The first basic event.
      * @return Returns the p1.
      */
-    public BasicEvent getP1() {
+    public BasicEvent getP1()
+    {
         return p1;
     }
 
-    
+
     /**
      * The second basic event.
      * @return Returns the p2.
      */
-    public BasicEvent getP2() {
+    public BasicEvent getP2()
+    {
         return p2;
     }
 
