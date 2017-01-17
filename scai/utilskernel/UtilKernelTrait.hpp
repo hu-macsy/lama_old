@@ -214,25 +214,25 @@ struct UtilKernelTrait
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct set
     {
         /** Set out[i] _op= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
+        typedef void ( *FuncType ) ( TargetValueType out[], const SourceValueType in[], const IndexType n, const binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.set";
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct setSection
     {
         /** Set out[i + inc_out] _op= in[i + inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const IndexType inc_out,
-                                     const ValueType2 in[], const IndexType inc_in,
+        typedef void ( *FuncType ) ( TargetValueType out[], const IndexType inc_out,
+                                     const SourceValueType in[], const IndexType inc_in,
                                      const IndexType n, const binary::BinaryOp op );
         static const char* getId()
         {
@@ -331,14 +331,14 @@ struct UtilKernelTrait
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct setGather
     {
         /** Set out[i] op = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
         typedef void ( *FuncType ) (
-            ValueType1 out[],
-            const ValueType2 in[],
+            TargetValueType out[],
+            const SourceValueType in[],
             const IndexType indexes[],
             const binary::BinaryOp op,
             const IndexType n );
@@ -376,7 +376,7 @@ struct UtilKernelTrait
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct setScatter
     {
         /** @brief Indirect set of arrays also known as scatter.
@@ -397,9 +397,9 @@ struct UtilKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            ValueType1 out[],
+            TargetValueType out[],
             const IndexType indexes[],
-            const ValueType2 in[],
+            const SourceValueType in[],
             const binary::BinaryOp op,
             const IndexType n );
 
@@ -591,8 +591,8 @@ struct UtilKernelTrait
         /** Count the non-zero elements in an array, used to allocate data for sparse version.
          *
          *  @param[in] denseArray are the values
-         *  @param[in] eps        threshold when a value is to be considered as non-zero
          *  @param[in] n          number of elements in the dense array
+         *  @param[in] eps        threshold when a value is to be considered as non-zero
          *  @returns   number of non-zero elements in denseArray
          */
 
@@ -604,26 +604,28 @@ struct UtilKernelTrait
         }
     };
 
-    template<typename ValueType>
+    template<typename TargetValueType, typename SourceValueType>
     struct compress
     {
         /** Build sparse array and sparse indexes from dense array
          *
          *  @param[out] sparseArray     array with non-zero values
-         *  @param[out] sparseIndexes  indexes of the non-zero values of input array
+         *  @param[out] sparseIndexes   indexes of the non-zero values of input array
          *  @param[in]  denseArray      array with dense values
          *  @param[in]  n               number of elements in the dense array
+         *  @param[in]  eps             threshold when a value is still considered as zero
          *  @returns    number of non-zero elements in denseArray
          *
-         *  Note: sparseArray and sparseIndexes must have been allocated with the  correct size before
+         *  Note: the returned value is exactly the same as countNonZeros( denseArray, n, eps )
+         *  Note: sparseArray and sparseIndexes must have been allocated with the correct size before
          */
 
         typedef IndexType ( *FuncType ) (
-            ValueType sparseArray[],
+            TargetValueType sparseArray[],
             IndexType sparseIndexes[],
-            const ValueType denseArray[],
+            const SourceValueType denseArray[],
             const IndexType n,
-            const ValueType eps );
+            const SourceValueType eps );
 
         static const char* getId()
         {
