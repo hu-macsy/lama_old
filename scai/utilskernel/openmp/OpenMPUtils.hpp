@@ -251,13 +251,13 @@ private:
 
     /** OpenMP implementation of UtilsKernelTrait::compress */
 
-    template<typename ValueType>
+    template<typename TargetType, typename SourceType>
     static IndexType compress(
-        ValueType sparseArray[],
+        TargetType sparseArray[],
         IndexType sparseIndexes[],
-        const ValueType denseArray[],
+        const SourceType denseArray[],
         const IndexType n,
-        const ValueType eps );
+        const SourceType eps );
 
     template<typename ValueType>
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );

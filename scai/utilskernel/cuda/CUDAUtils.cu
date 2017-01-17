@@ -1723,21 +1723,22 @@ struct notEqual
     }
 };
 
-template<typename ValueType>
+template<typename ValueType, typename SourceType>
 IndexType CUDAUtils::compress(
     ValueType sparseArray[],
     IndexType sparseIndexes[],
-    const ValueType denseArray[],
+    const SourceType denseArray[],
     const IndexType n,
-    const ValueType eps )
+    const SourceType eps )
 {
     SCAI_REGION( "CUDA.Utils.compress" )
 
-    SCAI_LOG_INFO( logger, "compress<" << TypeTraits<ValueType>::id() << "> array[ " << n << " ]" )
+    SCAI_LOG_INFO( logger, "compress<" << TypeTraits<ValueType>::id() << ", "
+                           << TypeTraits<SourceType>::id() << "> array[ " << n << " ]" )
 
     SCAI_CHECK_CUDA_ACCESS
 
-    thrust::device_ptr<ValueType> dense_ptr( const_cast<ValueType*>( denseArray ) );
+    thrust::device_ptr<SourceType> dense_ptr( const_cast<SourceType*>( denseArray ) );
     thrust::counting_iterator<IndexType> sequence( IndexType( 0 ) );
     thrust::device_vector<IndexType> tmp( n );
 
@@ -1806,7 +1807,6 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar1<ValueType> >( binaryOpScalar1, ctx, flag );
@@ -1825,6 +1825,7 @@ void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregi
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::compress<ValueType, OtherValueType> >( compress, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

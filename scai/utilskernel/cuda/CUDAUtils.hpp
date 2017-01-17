@@ -200,13 +200,13 @@ public:
 
     /** CUDA implementation of UtilKernelTrait::compress */
 
-    template<typename ValueType>
+    template<typename TargetValueType, typename SourceValueType>
     static IndexType compress(
-        ValueType sparseArray[],
+        TargetValueType sparseArray[],
         IndexType sparseIndexes[],
-        const ValueType denseArray[],
+        const SourceValueType denseArray[],
         const IndexType n,
-        const ValueType eps );
+        const SourceValueType eps );
 
 private:
 

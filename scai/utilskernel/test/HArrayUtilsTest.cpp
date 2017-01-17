@@ -1178,4 +1178,45 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( findPosTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+    IndexType index_values[] = { 0, 3, 7, 11, 16, 19 };
+    const IndexType n = sizeof( index_values ) / sizeof( IndexType );
+    HArray<IndexType> indexArray( n, index_values, loc );
+
+    IndexType pos = HArrayUtils::findPosInSortedIndexes( indexArray, -5 );
+    BOOST_CHECK_EQUAL( pos, nIndex );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 12 );
+    BOOST_CHECK_EQUAL( pos, nIndex );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 23 );
+    BOOST_CHECK_EQUAL( pos, nIndex );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
+    BOOST_CHECK_EQUAL( pos, 0 );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 11 );
+    BOOST_CHECK_EQUAL( pos, 3 );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 19 );
+    BOOST_CHECK_EQUAL( pos, 5 );
+
+    indexArray.resize( 1 );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
+    BOOST_CHECK_EQUAL( pos, 0 );
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 19 );
+    BOOST_CHECK_EQUAL( pos, nIndex );
+
+    indexArray.clear();
+
+    pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
+    BOOST_CHECK_EQUAL( pos, nIndex );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

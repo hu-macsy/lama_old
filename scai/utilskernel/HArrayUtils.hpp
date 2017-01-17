@@ -571,7 +571,14 @@ public:
     static void buildSparseArray(
         hmemo::HArray<ValueType>& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
-        const hmemo::HArray<ValueType>& denseArray,
+        const hmemo::_HArray& denseArray,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename TargetType, typename SourceType>
+    static void buildSparseArrayImpl(
+        hmemo::HArray<TargetType>& sparseArray,
+        hmemo::HArray<IndexType>& sparseIndexes,
+        const hmemo::HArray<SourceType>& denseArray,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build sparse indexes only, useful if sparseArray is not really needed */
@@ -593,13 +600,20 @@ public:
      *  Note: sparseIndexes must contain only indexes between 0 and denseN - 1
      */
 
-    template<typename ValueType>
     static void buildDenseArray(
-        hmemo::HArray<ValueType>& denseArray,
+        hmemo::_HArray& denseArray,
         const IndexType denseN,
-        const hmemo::HArray<ValueType>& sparseArray,
+        const hmemo::_HArray& sparseArray,
         const hmemo::HArray<IndexType>& sparseIndexes,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Find an index in an array of sorted indexes 
+     *
+     *  @param[in] indexes is an array of sorted indexes
+     *  @param[in] index is the index to be found in indexes
+     *  @return position of index in indexes if found, nIndex otherwise
+     */
+    static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType> indexes, const IndexType pos );
 
 private:
 

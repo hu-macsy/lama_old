@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 {
     ContextPtr testContext = Context::getContextPtr();
 
-    static LAMAKernel<UtilKernelTrait::compress<IndexType> > compress;
+    static LAMAKernel<UtilKernelTrait::compress<IndexType, IndexType> > compress;
 
     ContextPtr loc = Context::getContextPtr( compress.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );

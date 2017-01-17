@@ -118,6 +118,15 @@ template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullT
     {
         return ValueType( 0 );
     }
+
+    static void buildSparse( 
+        hmemo::HArray<ValueType>&, 
+        hmemo::HArray<IndexType>&,
+        const hmemo::_HArray& denseArray, 
+        const hmemo::ContextPtr )
+    {
+        COMMON_THROWEXCEPTION( "buildSparse: source type unsupported, array = " << denseArray )
+    }
 };
 
 template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
@@ -323,6 +332,23 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         else
         {
             return UtilsWrapperT< ValueType, T>::getValImpl( array, indexes );
+        }
+    }
+
+    static void buildSparse( 
+        hmemo::HArray<ValueType>& sparseArray, 
+        hmemo::HArray<IndexType>& sparseIndexes,
+        const hmemo::_HArray& denseArray, 
+        const hmemo::ContextPtr prefLoc )
+    {
+        if ( common::getScalarType<H>() == denseArray.getValueType() )
+        {
+            const hmemo::HArray<H>& typedDenseArray = reinterpret_cast<const hmemo::HArray<H>&>( denseArray );
+            HArrayUtils::buildSparseArrayImpl( sparseArray, sparseIndexes, typedDenseArray, prefLoc );
+        }
+        else
+        {
+            UtilsWrapperT< ValueType, T >::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
         }
     }
 };

@@ -1466,7 +1466,7 @@ void HArrayUtils::buildSparseIndexes(
 {
     const IndexType n = denseArray.size();
     static LAMAKernel<UtilKernelTrait::countNonZeros<ValueType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<ValueType> > compress;
+    static LAMAKernel<UtilKernelTrait::compress<ValueType, ValueType> > compress;
     ContextPtr loc = prefLoc;
 
     // default location for conversion: where we have the dense values
@@ -1492,12 +1492,26 @@ template<typename ValueType>
 void HArrayUtils::buildSparseArray(
     hmemo::HArray<ValueType>& sparseArray,
     hmemo::HArray<IndexType>& sparseIndexes,
-    const hmemo::HArray<ValueType>& denseArray,
+    const hmemo::_HArray& denseArray,
+    hmemo::ContextPtr prefLoc )
+{
+    // call buildSparseArrayImpl<ValueType, SourceType> with SourceType = denseArray.getValueType()
+
+    mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType, typename OtherType>
+void HArrayUtils::buildSparseArrayImpl(
+    hmemo::HArray<ValueType>& sparseArray,
+    hmemo::HArray<IndexType>& sparseIndexes,
+    const hmemo::HArray<OtherType>& denseArray,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
-    static LAMAKernel<UtilKernelTrait::countNonZeros<ValueType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<ValueType> > compress;
+    static LAMAKernel<UtilKernelTrait::countNonZeros<OtherType> > countNonZeros;
+    static LAMAKernel<UtilKernelTrait::compress<ValueType, OtherType> > compress;
     ContextPtr loc = prefLoc;
 
     // default location for conversion: where we have the dense values
@@ -1510,7 +1524,7 @@ void HArrayUtils::buildSparseArray(
     compress.getSupportedContext( loc, countNonZeros );
     SCAI_CONTEXT_ACCESS( loc )
     ValueType eps = common::TypeTraits<ValueType>::eps1();
-    ReadAccess<ValueType> rDenseArray( denseArray, loc );
+    ReadAccess<OtherType> rDenseArray( denseArray, loc );
     // we count the non-zeros at first to have sizes for sparse data
     IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, eps );
     WriteOnlyAccess<ValueType> wSparseArray( sparseArray, loc, sparseN );
@@ -1520,11 +1534,10 @@ void HArrayUtils::buildSparseArray(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
 void HArrayUtils::buildDenseArray(
-    hmemo::HArray<ValueType>& denseArray,
+    hmemo::_HArray& denseArray,
     const IndexType denseN,
-    const hmemo::HArray<ValueType>& sparseArray,
+    const hmemo::_HArray& sparseArray,
     const hmemo::HArray<IndexType>& sparseIndexes,
     hmemo::ContextPtr prefLoc )
 {
@@ -1535,8 +1548,38 @@ void HArrayUtils::buildDenseArray(
     // use of existent HArray utilities, even if we have two write accesses for denseArray
     denseArray.clear();
     denseArray.resize( denseN );
-    HArrayUtils::setScalar( denseArray, ValueType( 0 ), binary::COPY, prefLoc );
-    HArrayUtils::scatterImpl( denseArray, sparseIndexes, sparseArray, binary::COPY, prefLoc );
+    HArrayUtils::assignScalar( denseArray, 0.0, binary::COPY, prefLoc );
+    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, binary::COPY, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType> indexes, const IndexType pos )
+{
+    ReadAccess<IndexType> rIndexes( indexes );
+
+    IndexType first = 0;
+    IndexType last  = indexes.size();
+
+    while ( first < last )
+    {
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( rIndexes[middle] == pos )
+        {
+            return middle;
+        }
+        else if ( rIndexes[middle] > pos )
+        {
+            last = middle;
+        }
+        else
+        {
+            first = middle + 1;
+        }
+    }
+
+    return nIndex;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1625,10 +1668,7 @@ void HArrayUtils::buildDenseArray(
             hmemo::ContextPtr );                                                                                             \
     template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );   \
     template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,            \
-            const hmemo::HArray<ValueType>&, hmemo::ContextPtr );                                                            \
-    template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                       \
-            const hmemo::HArray<ValueType>&,                                                                                 \
-            const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                                                            \
+            const hmemo::_HArray&, hmemo::ContextPtr );                                                            \
     \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 

@@ -1559,19 +1559,19 @@ IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexT
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
+template<typename TargetType, typename SourceType>
 IndexType OpenMPUtils::compress(
-    ValueType sparseArray[],
+    TargetType sparseArray[],
     IndexType sparseIndexes[],
-    const ValueType denseArray[],
+    const SourceType denseArray[],
     const IndexType n,
-    const ValueType eps )
+    const SourceType eps )
 {
     SCAI_REGION( "OpenMP.Utils.compress" )
 
     IndexType nonZeros = 0;
 
-    // use of parallel for + atomicInc might be possible but would give an arbitrary order
+    // use of parallel for + atomicInc might be possible but would give an arbitrary order of sparse indexes
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -1706,7 +1706,6 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::compress<ValueType> >( compress, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
@@ -1725,6 +1724,7 @@ void OpenMPUtils::BinOpKernels<ValueType, OtherValueType>::registerKernels( kreg
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::compress<ValueType, OtherValueType> >( compress, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */
