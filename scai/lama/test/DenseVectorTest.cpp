@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
         hmemo::HArray<ValueType> tmp;
 
-        distV.buildValues( tmp );
+        distV.buildLocalValues( tmp );
         newV.setValues( tmp );
 
         // replicate newV, so we can compare with repV

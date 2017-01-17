@@ -74,6 +74,13 @@ public:
         {
             scai::lama::VectorPtr vectorPtr( scai::lama::Vector::create( values[i] ) );
 
+            // Not yet: sparse vectors
+
+            if ( vectorPtr->getVectorKind() == scai::lama::Vector::SPARSE )
+            {
+                continue;
+            }
+
             if ( ctx )
             {
                 vectorPtr->setContextPtr( ctx );

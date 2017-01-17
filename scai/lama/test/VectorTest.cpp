@@ -214,6 +214,13 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
     {
         VectorPtr v1 = vectors[i];
 
+        if ( v1->getVectorKind() != Vector::DENSE )
+        {
+            break;
+        }
+
+        _DenseVector& dV1 = reinterpret_cast<_DenseVector&>( *v1 );
+
         if ( ! common::isNumeric( v1->getValueType() ) )
         {
             continue;   // this test does not work for int, uint, ....
@@ -223,34 +230,34 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
         {
             dmemo::DistributionPtr dist = dists[j];
 
-            v1->setSequence( 3, 1, dist );
+            dV1.setSequence( 3, 1, dist );   // only supported for dense vectors
 
             MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
 
-            VectorPtr v2( v1->newVector() );
+            VectorPtr v2( dV1.newVector() );
 
-            *v2 = *m * *v1;
-
-            // Now v1 and v2 must be equal
-
-            *v2 -= *v1;
-
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
-
-            *v2 = 2 * *m * *v1;
+            *v2 = *m * dV1;
 
             // Now v1 and v2 must be equal
 
-            *v2 -= 2 * *v1;
+            *v2 -= dV1;
 
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
 
-            *v2 = *m * *v1 - *v1;
+            *v2 = 2 * *m * dV1;
+
+            // Now v1 and v2 must be equal
+
+            *v2 -= 2 * dV1;
 
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
 
-            *v2 = 2 * *m * *v1 - 2 * *v1;
+            *v2 = *m * dV1 - dV1;
+
+            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+
+            *v2 = 2 * *m * dV1 - 2 * dV1;
 
             BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
         }

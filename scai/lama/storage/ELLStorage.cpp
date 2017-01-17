@@ -919,7 +919,7 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
     // Get function pointers for needed kernel routines
 
     static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<IndexType> > compress;
+    static LAMAKernel<UtilKernelTrait::compress<IndexType, IndexType> > compress;
 
     // choose location where both routines are available
 

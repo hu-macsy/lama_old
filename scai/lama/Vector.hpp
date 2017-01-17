@@ -46,6 +46,7 @@
 #include <scai/lama/io/FileIO.hpp>
 
 // others
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
@@ -110,8 +111,7 @@ typedef std::pair<_Vector::VectorKind, common::scalar::ScalarType> VectorCreateK
  *
  * The following methods must be implemented by derived classes:
  *
- *  - buildValues to get all local elements on one processor
- *  - getLocalValue( i ) the the i-th local element
+ *  - buildLocalValues to get all local elements on one processor
  *
  * This base class can be used to define dense and sparse vectors of
  * any type.
@@ -301,15 +301,6 @@ public:
     const Scalar operator()( const IndexType i ) const;
 
     /**
-     * @brief Builds an array with local values of the vector.
-     *
-     * @param[in,out] values   LAMA array that will be filled with the local values.
-     *
-     * Only the type of the LAMA array is used as input arg to determine the value type.
-     */
-    virtual void buildValues( hmemo::_HArray& values ) const = 0;
-
-    /**
      * @brief Sets the local values of a vector by an array.
      *
      * @param[out] values    is the array with local vector values.
@@ -320,30 +311,22 @@ public:
     virtual void setValues( const hmemo::_HArray& values ) = 0;
 
     /**
+     * @brief Sets the local size of the vector to zero. 
+     *
+     * This routine has the same semantic as setValues with an empty array of any type. It is
+     * a private routine as it allows a temporary inconsistency between the local part and 
+     * the distribution.
+     */
+
+    virtual void clearValues() = 0;
+
+    /**
      * This method initializes a (distributed) vector with random numbers.
      *
      * @param[in] distribution specifies the distribution of the vector
      * @param[in] fillRate for the number of non-zeros
      */
     virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
-
-    /**
-     * @brief This method initializes a (replicated) vector with a sequence of values.
-     *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the elements
-     * @param[in] n will be the size of this replicated vector.
-     */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n ) = 0;
-
-    /**
-     * This method initializes a (distributed) vector with a sequence of values
-     *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the element
-     * @param[in] distribution determines global/local size of the vector
-     */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution ) = 0;
 
     /**
      * This method sets a vector by reading its values from one or multiple files.
@@ -392,25 +375,27 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
-     * @brief get a vector with all local values
-     */
-    virtual const hmemo::_HArray& getLocalValues() const = 0;
-
-    /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
     virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
-     * @brief Returns a copy of the value at the passed global index.
+     * @brief Returns the value at the passed global index.
      *
      * @param[in] globalIndex   the global index to get the value at.
      * @return                  a copy of the value at the passed global position.
      *
      * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
+     * Therefore it is recommended to query values on the local vector data with local indexes.
      */
     virtual Scalar getValue( IndexType globalIndex ) const = 0;
 
+    /**
+     *
+     * @brief This methods sets/updates a value of a vector.
+     *
+     * Be careful: this method might throw an exception on a sparse vector, if the element is not available
+     */
     virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
 
     /**
@@ -542,12 +527,20 @@ public:
     /**
      *  Builds an array with local values of a distributed vector.
      *
-     *  @param[out] localValues   will be an array that contains local values of the vector
+     *  @param[in,out] localValues   will be an array that contains local values of the vector
+     *  @param[in]     op            is the binary operation 
+     *  @param[in]     prefLoc       is the location where the values are needed
      *
      *  For different value types, implicit format conversion will be done.
-     *  A sparse vector should generate an array with all values.
+     *  A sparse vector generates an array with all local values.
+     *
+     *  If op is not COPY, the binary operation op is applied to existing values in localValues. In this
+     *  case, the array localValues must have the local size of the distribution.
      */
-    virtual void buildLocalValues( hmemo::_HArray& localValues ) const = 0;
+    virtual void buildLocalValues( 
+        hmemo::_HArray& localValues, 
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -760,11 +753,11 @@ private:
 
     /** write only the local data to a file, no communication here */
 
-    void writeLocalToFile(
+    virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
         const common::scalar::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileIO::FileMode fileMode ) const = 0;
 
     /** write the whole vector into a single file, can imply redistribution */
 
@@ -783,6 +776,20 @@ private:
         const FileIO::FileMode fileMode ) const;
 
     void readFromSingleFile( const std::string& fileName );
+
+    /** Read only the local part from a file, no communication here.
+     *
+     *  This routine is implemented individually by sparse and dense vectors.
+     *
+     *  @param[in] fileName is the name of the input file containing the local vector data
+     *  @param[in] first is index of first element to read
+     *  @param[in] size number of elements to read, if nIndex read up to maximal size
+     *  @return    the size of the local vector read in
+     *
+     *  This routine is private as it allows a temporary inconsistency between the size of 
+     *  the local vector data and the distribution.
+     */
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex ) = 0;
 
     /** In this version each processor reads from input file its local part. */
 

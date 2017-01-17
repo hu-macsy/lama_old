@@ -52,6 +52,7 @@ scai_project (
         NormTest
         ScalarTest
         PartitionIOTest
+        SparseVectorTest
         VectorTest
         VersionTest
     )

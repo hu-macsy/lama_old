@@ -857,10 +857,22 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
     }
 
-    HArray<ValueType> localDiagonal;
-    diagonal.buildValues( localDiagonal );
-    // localDiagonal has the same value type as LocalData, no virtual call needed.
-    mLocalData->setDiagonalV( localDiagonal );
+    switch ( diagonal.getVectorKind() )
+    {
+        case Vector::DENSE :
+        {
+            const _DenseVector& denseDiagonal = reinterpret_cast<const _DenseVector&>( diagonal );
+            mLocalData->setDiagonalV( denseDiagonal.getLocalValues() );
+        }
+
+        default:
+        {
+            HArray<ValueType> localDiagonal;
+            diagonal.buildLocalValues( localDiagonal );
+            // localDiagonal has the same value type as LocalData, no virtual call needed.
+            mLocalData->setDiagonalV( localDiagonal );
+        }
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -883,7 +895,7 @@ void SparseMatrix<ValueType>::scale( const Vector& scaling )
 {
     SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )
     HArray<ValueType> localValues;
-    scaling.buildValues( localValues );
+    scaling.buildLocalValues( localValues );
     mLocalData->scaleRows( localValues );
 
     // scale Halo storage only if it is used; otherwise there might be a size mismatch

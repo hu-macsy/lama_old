@@ -193,31 +193,25 @@ void Vector::readFromSingleFile( const std::string& fileName )
 
     // this is a bit tricky stuff, but it avoids an additional copy from array -> vector
 
-    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
-
-    IndexType vectorSize;
+    IndexType globalSize;
 
     if ( myRank == MASTER )
     {
-        SCAI_LOG_INFO( logger, *comm << ": read array from single file " << fileName )
+        SCAI_LOG_INFO( logger, *comm << ": read local array from file " << fileName )
 
-        FileIO::read( localValues, fileName );
-
-        vectorSize = localValues.size();
+        globalSize = readLocalFromFile( fileName );
     }
 
-    comm->bcast( &vectorSize, 1, MASTER );
+    comm->bcast( &globalSize, 1, MASTER );
 
     if ( myRank != MASTER )
     {
-        localValues.clear();
+        clearValues();
     }
 
-    DistributionPtr distribution( new CyclicDistribution( vectorSize, vectorSize, comm ) );
+    DistributionPtr distribution( new CyclicDistribution( globalSize, globalSize, comm ) );
 
-    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
-
-    assign( localValues, distribution );
+    setDistributionPtr( distribution );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -250,13 +244,12 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
         first = distribution->local2global( 0 );   // first global index
     }
 
-    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
-
     bool error = false;
 
     try
     {
-        FileIO::read( localValues, fileName, common::scalar::INTERNAL, first, n );
+        IndexType localSize = readLocalFromFile( fileName, first, n );
+        error = localSize != distribution->getLocalSize();
     }
     catch ( Exception& ex )
     {
@@ -270,10 +263,6 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
     {
         COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
     }
-
-    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
-
-    assign( localValues, distribution );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -282,20 +271,13 @@ void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, Di
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    // this is a bit tricky stuff, but it provides us with an array of the right type
-    // and it avoids an additional copy from array -> vector
-
-    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
-
     bool errorFlag = false;
 
     IndexType localSize = 0;
 
     try
     {
-        FileIO::read( localValues, myPartitionFileName );
-
-        localSize = localValues.size();
+        localSize = readLocalFromFile( myPartitionFileName );
 
         if ( dist.get() )
         {
@@ -328,9 +310,7 @@ void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, Di
         vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
     }
 
-    // make sure that all processors have the same number of columns
-
-    assign( localValues, vectorDist );
+    setDistributionPtr( vectorDist );   // distribution matches size of local part
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -636,6 +616,104 @@ Vector& Vector::operator-=( const Expression_SMV& exp )
 Vector& Vector::operator-=( const Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   writeToFile                                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::writeToSingleFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
+) const
+{
+    if ( getDistribution().isReplicated() )
+    {
+        // make sure that only one processor writes to file
+
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+        if ( comm->getRank() == 0 )
+        {
+            writeLocalToFile( fileName, fileType, dataType, fileMode );
+        }
+
+        // synchronization to avoid that other processors start with
+        // something that might depend on the finally written file
+
+        comm->synchronize();
+    }
+    else
+    {
+        // writing a distributed vector into a single file requires redistributon
+
+        DistributionPtr dist( new NoDistribution( size() ) );
+        common::unique_ptr<Vector> repV( copy() );
+        repV->redistribute( dist );
+        repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::writeToPartitionedFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode ) const
+{
+    bool errorFlag = false;
+
+    try
+    {
+        writeLocalToFile( fileName, fileType, dataType, fileMode );
+    }
+    catch ( common::Exception& e )
+    {
+        errorFlag = true;
+    }
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Partitioned IO of vector failed" )
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::writeToFile(
+    const std::string& fileName,
+    const std::string& fileType,               /* = "", take IO type by suffix   */
+    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */
+) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    std::string newFileName = fileName;
+
+    bool writePartitions;
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
+
+    if ( !writePartitions )
+    {
+        writeToSingleFile( newFileName, fileType, dataType, fileMode );
+    }
+    else
+    {
+        // matrix_%r.mtx -> matrix_0.4.mtx,  ..., matrix_3.4.mtxt
+        writeToPartitionedFile( newFileName, fileType, dataType, fileMode );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/

@@ -51,13 +51,106 @@
 #include <scai/common/macros/throw.hpp>
 
 // std
-#include <fstream>
 
 namespace scai
 {
 
 namespace lama
 {
+
+/**
+ * @brief Common base class for all dense vectors to deal with untyped dense vectors.
+ *
+ * A dense vector is a distributed one-dimensional array where each value is explicitly available.
+ * This base class provides common methods for typed dense vectors and allows access to the
+ * data via untyped heterogeneous arrays.
+ */
+
+class COMMON_DLL_IMPORTEXPORT _DenseVector :
+
+    public Vector
+
+{
+
+public:
+
+    /** Implementation of pure method Vector::getVectorKind() */
+
+    inline virtual VectorKind getVectorKind() const;
+
+    /**
+     * @brief get a reference to local values of this dense vector.
+     *
+     * @return  a reference to the local values of this dense vector.
+     *
+     * This method allows to modifiy the values of the array but it 
+     * should not be used to change the size of the array.
+     *
+     * Derived classes can overwrite this method and might use a covariant return type,
+     * i.e. a typed version of a heterogeneous array.
+     */
+
+    virtual hmemo::_HArray& getLocalValues() = 0;
+
+    /**
+     * @brief get a constant reference to local values of this Dense Vector.
+     *
+     * @return  a constant reference to the local values of this dense vector.
+     */
+    virtual const hmemo::_HArray& getLocalValues() const = 0;
+
+    /**
+     * @brief This method initializes a (replicated) dense vector with a sequence of values.
+     *
+     * @param[in] startValue value for the first element
+     * @param[in] inc increment between the elements
+     * @param[in] n will be the size of this replicated vector.
+     */
+    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n ) = 0;
+
+    /**
+     * This method initializes a (distributed) dense vector with a sequence of values
+     *
+     * @param[in] startValue value for the first element
+     * @param[in] inc increment between the element
+     * @param[in] distribution determines global/local size of the vector
+     */
+    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution ) = 0;
+
+    /**
+     * @brief Create a new dense vector of a certain type 
+     *
+     * @param type is the value type of the vector
+     * @return new allocated DenseVector of the given type 
+     * @throw  common::Exception if no dense vector of this type is registered in factory.
+     */
+     
+    static _DenseVector* create( common::scalar::ScalarType );
+
+    // make operators and methods of Vector visible for _DenseVector
+
+    using Vector::operator=;
+
+protected:
+
+    // All constructors here just call the corresponing constructors of Vector 
+
+    _DenseVector( const IndexType n );
+
+    _DenseVector( const IndexType n, hmemo::ContextPtr context );
+
+    _DenseVector( const dmemo::DistributionPtr dist );
+
+    _DenseVector( const dmemo::DistributionPtr dist, hmemo::ContextPtr context );
+
+    _DenseVector( const _DenseVector& other );
+
+    _DenseVector( const Vector& other );
+
+    /** Common logger for all types of dense vectors. */
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 /**
  * @brief The template DenseVector represents a distributed 1D Vector with elements of type ValueType.
@@ -67,7 +160,7 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseVector:
 
-    public Vector,
+    public _DenseVector,
 
     public Vector::Register<DenseVector<ValueType> >    // register at factory
 
@@ -295,10 +388,6 @@ public:
      */
     virtual ~DenseVector();
 
-    /** Implementation of pure method Vector::getVectorKind() */
-
-    inline virtual VectorKind getVectorKind() const;
-
     /** Implememenation of pure routine Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
@@ -366,11 +455,6 @@ public:
     /**
      * Implementation of pure method.
      */
-    virtual void buildValues( hmemo::_HArray& values ) const;
-
-    /**
-     * Implementation of pure method.
-     */
     virtual void setValues( const hmemo::_HArray& values );
 
     /**
@@ -383,16 +467,6 @@ public:
      */
     virtual DenseVector* newVector() const;
 
-    //TODO: We either need a none const getLocalValues()
-    // or an operator[] with local sematics or both
-    // i guess both is the most intuitive because a user that does not request
-    // a parallel environment expects the operator[] to exists
-    // and for users of a distributed DenseVector the usage of
-    // getLocalValues and getHaloValues is more explicite and there for
-    // better understandable and less errorprone.
-    // Maybe an access proxy would be a nice solution, because with a proxy we
-    // can avoid to change the size and other attributes of the HArray
-    // mLocalValues.
     /**
      * @brief get a non constant reference to local values of this Dense Vector.
      *
@@ -508,7 +582,10 @@ public:
         const DenseVector<ValueType>& source,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
-    virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
+    virtual void buildLocalValues( 
+        hmemo::_HArray& localValues,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
@@ -558,8 +635,6 @@ protected:
 
     using Vector::mContext;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
 private:
 
     /** Static method for sorting of DenseVector */
@@ -576,6 +651,22 @@ private:
 
     mutable utilskernel::LArray<ValueType> mHaloValues;
 
+    /** Implementation of Vector::writeLocalToFile */
+
+    virtual void writeLocalToFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** Implementation of Vector::readLocalFromFile */
+
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
+
+    /** Implementation of Vector::clearValues */
+
+    virtual void clearValues();
+
 public:
 
     // static methods, variables to register create routine in Vector factory of base class.
@@ -591,8 +682,7 @@ public:
 
 /* ------------------------------------------------------------------------- */
 
-template<typename ValueType>
-Vector::VectorKind DenseVector<ValueType>::getVectorKind() const
+Vector::VectorKind _DenseVector::getVectorKind() const
 {
     return Vector::DENSE;
 }
@@ -601,8 +691,10 @@ Vector::VectorKind DenseVector<ValueType>::getVectorKind() const
 
 template<typename ValueType>
 template<typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context )
-    : Vector( size, context )
+DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context ) :
+
+    _DenseVector( size, context )
+
 {
     // use LAMA array reference to avoid copy of the raw data
     hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );

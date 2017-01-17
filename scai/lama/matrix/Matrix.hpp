@@ -41,7 +41,7 @@
 
 // local library
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/DenseVector.hpp>
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
@@ -962,9 +962,10 @@ public:
      *  Note: this method is for a more convenient use
      */
 
-    Vector* newDenseVector() const
+    _DenseVector* newDenseVector() const
     {
-        Vector* v = Vector::getDenseVector( getValueType(), getRowDistributionPtr() );
+        _DenseVector* v = _DenseVector::create( getValueType() );
+        v->allocate( getRowDistributionPtr() );
         v->setContextPtr( getContextPtr() );
         return v;
     }

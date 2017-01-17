@@ -108,6 +108,7 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         DenseVector
+        SparseVector
         Vector
 
     HEADERS                  # .hpp only

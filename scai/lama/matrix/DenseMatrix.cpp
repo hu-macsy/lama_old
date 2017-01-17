@@ -1389,7 +1389,22 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonalV( diagonal.getLocalValues() );
+    if ( diagonal.getVectorKind() == Vector::DENSE )
+    {
+        // set diagonal via getLocalValues, only for DENSE available
+
+        const _DenseVector& diagonalDense = reinterpret_cast<const _DenseVector&>( diagonal );
+
+        getLocalStorage().setDiagonalV( diagonalDense.getLocalValues() );
+    }
+    else if ( diagonal.getVectorKind() == Vector::SPARSE )
+    {
+        COMMON_THROWEXCEPTION( "setDiagonal: for sparse vectors not available yet" )
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unknwon vector kind: " << diagonal.getVectorKind() );
+    }
 }
 
 template<typename ValueType>
@@ -1411,7 +1426,21 @@ void DenseMatrix<ValueType>::scale( const Vector& vector )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().scaleRows( vector.getLocalValues() );
+    if ( vector.getVectorKind() == Vector::DENSE )
+    {
+        const _DenseVector& denseVector = reinterpret_cast<const _DenseVector&>( vector );
+        getLocalStorage().scaleRows( denseVector.getLocalValues() );
+    }
+    else if ( vector.getVectorKind() == Vector::SPARSE )
+    {
+        HArray<ValueType> localValues;
+        vector.buildLocalValues( localValues );
+        getLocalStorage().scaleRows( localValues );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "unknwon vector kind: " << vector.getVectorKind() );
+    }
 }
 
 template<typename ValueType>
