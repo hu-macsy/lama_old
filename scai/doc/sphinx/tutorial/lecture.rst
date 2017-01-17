@@ -41,7 +41,7 @@ follows:
 
 .. code-block:: bash
 
-   g++ -I $SCAI_ROOT/include -L $SCAI_ROOT/lib -lscai_lama -o simple simple.cpp
+   g++ -I${SCAI_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama -o simple simple.cpp
 
 For running the executable, it is necessary to include the lib directory of LAMA
 into your library path.
@@ -50,7 +50,7 @@ into your library path.
 
    export LD_LIBRARY_PATH=$SCAI_ROOT/lib:$LD_LIBRARY_PATH
 
-The following example program can be used to verify that compilation, linking
+The following example program can be used to verify that compilation, linking 
 and running works fine.
 
 :download:`Solver <solver.cpp>`

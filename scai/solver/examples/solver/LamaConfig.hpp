@@ -261,7 +261,7 @@ static void getTolerance( double& tolerance, const char* name )
 LamaConfig::LamaConfig()
 {
     using scai::common::Settings;
-
+ 
     // take default communicator, can be set by SCAI_COMMUNICATOR
 
     mComm = scai::dmemo::Communicator::getCommunicatorPtr();
