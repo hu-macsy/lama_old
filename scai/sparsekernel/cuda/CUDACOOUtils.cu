@@ -2,7 +2,7 @@
  * @file sparsekernel/cuda/CUDACOOUtils.cu
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,6 +52,7 @@
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/cuda/CUDASettings.hpp>
 #include <scai/common/cuda/CUDAError.hpp>
+#include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -76,63 +77,6 @@ SCAI_LOG_DEF_LOGGER( CUDACOOUtils::logger, "CUDA.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-__device__ inline void cooAtomicAdd( double* address, double val )
-{
-    unsigned long long int* address_as_ull =
-        ( unsigned long long int* ) address;
-    unsigned long long int old = *address_as_ull, assumed;
-
-    do
-    {
-        assumed = old;
-        old = atomicCAS( address_as_ull, assumed,
-                         __double_as_longlong( val +
-                                               __longlong_as_double( assumed ) ) );
-    }
-    while ( assumed != old );
-}
-
-__device__ inline void cooAtomicAdd( float* address, float val )
-
-{
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 200
-    // CUDA runtime offers faster solution for capability >= 2.0
-    atomicAdd( address, val );
-#else
-    // old slow solution
-    int i_val = __float_as_int( val );
-    int tmp0 = 0;
-    int tmp1;
-
-    while ( ( tmp1 = atomicCAS( ( int* ) address, tmp0, i_val ) ) != tmp0 )
-    {
-        tmp0 = tmp1;
-        i_val = __float_as_int( val + __int_as_float( tmp1 ) );
-    }
-
-#endif
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-__device__ inline void cooAtomicAdd( ComplexFloat* address, ComplexFloat val )
-{
-    float* faddress = ( float* ) address;
-    cooAtomicAdd( &faddress[0], val.real() );
-    cooAtomicAdd( &faddress[1], val.imag() );
-}
-
-__device__ inline void cooAtomicAdd( ComplexDouble* address, ComplexDouble val )
-{
-    double* daddress = ( double* ) address;
-    cooAtomicAdd( &daddress[0], val.real() );
-    cooAtomicAdd( &daddress[1], val.imag() );
-}
-
-#endif
-
-/* --------------------------------------------------------------------------- */
-
 template<typename ValueType, bool useTexture>
 __global__ void cooGemvKernel(
     ValueType* result,
@@ -152,7 +96,7 @@ __global__ void cooGemvKernel(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
         // atomic add required, solution above
-        cooAtomicAdd( &result[i], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
     }
 }
 
@@ -176,7 +120,7 @@ __global__ void cooGemvKernel_alpha_one(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, j );
         // atomic add required, solution above
-        cooAtomicAdd( &result[i], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[i], resultUpdate );
     }
 }
 
@@ -201,7 +145,7 @@ __global__ void cooGevmKernel(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = alpha * cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
         // atomic add required, solution above
-        cooAtomicAdd( &result[j], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[j], resultUpdate );
     }
 }
 
@@ -225,7 +169,7 @@ __global__ void cooGevmKernel_alpha_one(
         // we must use atomic updates as different threads might update same row i
         const ValueType resultUpdate = cooValues[k] * fetchVectorX<ValueType, useTexture>( x, i );
         // atomic add required, solution above
-        cooAtomicAdd( &result[j], resultUpdate );
+        common::CUDAUtils::atomicAdd( &result[j], resultUpdate );
     }
 }
 
@@ -273,7 +217,8 @@ void CUDACOOUtils::normalGEMV(
     {
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
         // setScale also deals with y undefined for beta == 0
-        CUDAUtils::setScale( result, beta, y, numRows );
+
+        CUDAUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
@@ -382,7 +327,7 @@ void CUDACOOUtils::normalGEVM(
     else
     {
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
-        CUDAUtils::setScale( result, beta, y, numRows );
+        CUDAUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )
@@ -487,6 +432,8 @@ void CUDACOOUtils::offsets2ia(
     const IndexType numRows,
     const IndexType numDiagonals )
 {
+    SCAI_REGION( "CUDA.COO.offsets2ia" )
+
     SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 )
                    << " ), #diagonals = " << numDiagonals )
@@ -546,62 +493,30 @@ static void build_offset_kernel(
     }
 }
 
-__global__
-static void add_diagonals_kernel(
-    IndexType* offsets,
-    const IndexType numRows,
-    const IndexType numDiagonals )
-{
-    const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    //  #diagonals = 3               |
-    //  offsets( in ) :  0  3  4   7   9  10
-    //  offsets( out ):  0  4  6  10  12  13
-    //  i                   0  1   2   3   4
-
-    if ( i < numRows )
-    {
-        if ( i < numDiagonals )
-        {
-            offsets[i + 1] += i + 1;
-        }
-        else
-        {
-            offsets[i + 1] += numDiagonals;
-        }
-    }
-}
-
 /* --------------------------------------------------------------------------- */
 
 void CUDACOOUtils::ia2offsets(
     IndexType csrIA[],
     const IndexType numRows,
-    const IndexType numDiagonals,
     const IndexType cooIA[],
     const IndexType numValues )
 {
+    SCAI_REGION( "CUDA.COO.ia2offsets" )
+
     SCAI_LOG_INFO( logger,
-                   "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues )
-                   << " ), #diagonals = " << numDiagonals )
-    // Note: the array cooIA is assumed to be sorted after the diagonal elements
+                   "build csrIA( " << numRows + 1 << " ) from cooIA( " << ( numValues ) << " )" )
+
+    // Note: the array cooIA is assumed to be sorted
+
     SCAI_CHECK_CUDA_ACCESS
     cudaStream_t stream = 0;// default stream, asynchronous execution not supported here
+
     const int blockSize = CUDASettings::getBlockSize();
     const dim3 dimBlock( blockSize, 1, 1 );
     const dim3 dimGrid = makeGrid( numValues, dimBlock.x );
-    build_offset_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows,
-            cooIA + numDiagonals, numValues - numDiagonals );
+    build_offset_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows, cooIA, numValues );
 
-    // increment offsets for the diagonal elements
-
-    if ( numDiagonals > 0 )
-    {
-        const dim3 dimGrid = makeGrid( numRows, dimBlock.x );
-        add_diagonals_kernel <<< dimGrid, dimBlock>>>( csrIA, numRows, numDiagonals );
-    }
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "normalGEMV, stream = " << stream )
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( stream ), "ia2offsets, stream = " << stream )
 }
 
 /* --------------------------------------------------------------------------- */
@@ -658,7 +573,7 @@ void CUDACOOUtils::setCSRData(
 
 /* --------------------------------------------------------------------------- */
 
-void CUDACOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDACOOUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -668,23 +583,23 @@ void CUDACOOUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelReg
 }
 
 template<typename ValueType>
-void CUDACOOUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDACOOUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::normalGEMV<ValueType> >( CUDACOOUtils::normalGEMV, ctx, flag );
     KernelRegistry::set<COOKernelTrait::normalGEVM<ValueType> >( CUDACOOUtils::normalGEVM, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
-void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
-    SCAI_LOG_INFO( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register COOUtils CUDA-routines for CUDA at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<COOKernelTrait::setCSRData<ValueType, OtherValueType> >( CUDACOOUtils::setCSRData, ctx, flag );
 }
 
@@ -694,18 +609,22 @@ void CUDACOOUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregist
 
 CUDACOOUtils::CUDACOOUtils()
 {
+    SCAI_LOG_INFO( logger, "register COOUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDACOOUtils::~CUDACOOUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister COOUtilsKernel CUDA version" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_CUDA_LIST, SCAI_ARITHMETIC_CUDA_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_CUDA_LIST, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels( flag );
 }
 
 CUDACOOUtils CUDACOOUtils::guard;    // guard variable for registration

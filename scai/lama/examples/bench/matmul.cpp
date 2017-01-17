@@ -2,7 +2,7 @@
  * @file matmul.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,8 +58,8 @@ static void bench( IndexType size, double fillRate )
     CSRSparseMatrix<ValueType> a( size, size );
     CSRSparseMatrix<ValueType> b( size, size );
     CSRSparseMatrix<ValueType> c( size, size );
-    MatrixCreator<ValueType>::fillRandom( a, fillRate );
-    MatrixCreator<ValueType>::fillRandom( b, fillRate );
+    MatrixCreator::fillRandom( a, fillRate );
+    MatrixCreator::fillRandom( b, fillRate );
     a.setContextPtr( host );
     b.setContextPtr( host );
     c.setContextPtr( host );
@@ -95,15 +95,24 @@ static void bench( IndexType size, double fillRate )
     }
 
     const int precision = 1;
+
     cout << "Size = " << size << ", rate = " << ( fillRate * 100 )
          << "%, type = " << scai::common::getScalarType<ValueType>() << endl;
+
     cout << "===================================" << endl;
+
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
+
     cout << "time host = " << setw( 6 ) << timeHost * 1000.0 << endl;
+
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
+
     cout << "time cuda = " << setw( 6 ) << timeGPU * 1000.0 << endl;
+
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
+
     cout << "speedup   = " << setw( 6 ) << ( timeHost / timeGPU ) << endl;;
+
     cout << endl;
 }
 
@@ -126,7 +135,7 @@ int main()
         {
 #define     DO_BENCH( ValueType ) bench<ValueType>( sizes[i], fillrates[j] );
             // do the benchmark for each supported CUDA type
-            SCAI_COMMON_LOOP( DO_BENCH, SCAI_ARITHMETIC_CUDA )
+            SCAI_COMMON_LOOP( DO_BENCH, SCAI_NUMERIC_TYPES_CUDA )
         }
     }
 }

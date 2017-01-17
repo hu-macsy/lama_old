@@ -2,7 +2,7 @@
  * @file CSRKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,7 +35,9 @@
 
 // for dll_import
 #include <scai/common/config.hpp>
+
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 namespace scai
 {
@@ -49,6 +51,59 @@ namespace sparsekernel
 
 struct CSRKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in ja/values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] csrIA is the CSR offset array
+         *  @param[in] csrJA is the CSR ja array
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType csrIA[],
+            const IndexType csrJA[] );
+
+        static const char* getId()
+        {
+            return "CSR.getValuePos";
+        }
+    };
+
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the CSR matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the csrJA/csrValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] csrIA is the CSR offset array
+         *  @param[in] numRows is the number of rows
+         *  @param[in] csrJA is the CSR ja array
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType csrIA[],
+            const IndexType numRows,
+            const IndexType csrJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "CSR.getValuePosCol";
+        }
+    };
+
     /** Structure defining function types for operations on CSR data
      *
      *  @tparam ValueType is the value type of the matrix element, e.g. float, double
@@ -157,6 +212,30 @@ struct CSRKernelTrait
         }
     };
 
+    /* LU factorization with Pardiso(MKL)/cusolver */
+    template <typename ValueType>
+    struct decomposition
+    {
+        /** Direct solving of linear equations
+         *
+         *  @since 2.1.0
+         */
+        typedef void ( *FuncType ) (
+            ValueType solution[],
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const ValueType rhs[],
+            const IndexType numRows,
+            const IndexType nnz,
+            const bool isSymmetic );
+
+        static const char* getId()
+        {
+            return "CSR.decomposition";
+        }
+    };
+
     /** Structure with type definitions for offset routines. */
 
     struct sizes2offsets
@@ -206,6 +285,30 @@ struct CSRKernelTrait
         }
     };
 
+    struct offsets2sizesGather
+    {
+        /** This method computes size array from an offset array.
+         *
+         *  @param[out] sizes will contain the sizes (e.g. for each row ), has numRows entries
+         *  @param[in] offsets contains the offsets, has numRows + 1 entries
+         *  @param[in] rows only sizes of these rows are needed
+         *  @param[in] n is size of array sizes and pos
+         *
+         *  \code
+         *           offsets :   0   5  11   16  19  19  21  23
+         *           pos     :   0   2  4   6
+         *           sizes   :   5   5  0   2
+         *  \endcode
+         *
+         */
+        typedef void ( *FuncType ) ( IndexType sizes[], const IndexType offsets[], const IndexType pos[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "CSR.offsets2sizesGather";
+        }
+    };
+
     struct validOffsets
     {
         /** Check for a legal offset array.
@@ -223,6 +326,47 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.validOffsets";
+        }
+    };
+
+    struct countNonEmptyRowsByOffsets
+    {
+        /** This method computes the total number of non-zero rows by the offset array
+         *
+         *  @param[in] offsets is the array with offsets
+         *  @param[in] n s number of rows, offset has n + 1 entries
+         *  @return    number of rows with at least one element
+         *
+         *  Note: the number of rows is needed to allocate the array with indexes of non-empty rows
+         */
+
+        typedef IndexType ( *FuncType ) ( const IndexType offsets[], const IndexType n );
+
+        static const char* getId()
+        {
+            return "CSR.countNonEmptyRowsByOffsets";
+        }
+    };
+
+    struct setNonEmptyRowsByOffsets
+    {
+        /** Bild a vector of indexes for non-empty rows.
+         *
+         *  @param[out] rowIndexes
+         *  @param[in]  numNonEmptyRows is allocated size of rowIndexes
+         *  @param[in]  offsets is the offset array
+         *  @param[in]  n is the number of rows, offsets has size n + 1
+         */
+
+        typedef void ( *FuncType ) (
+            IndexType rowIndexes[],
+            const IndexType numNonEmptyRows,
+            const IndexType offsets[],
+            const IndexType numRows );
+
+        static const char* getId()
+        {
+            return "CSR.setNonEmptyRowsByOffsets";
         }
     };
 
@@ -284,36 +428,6 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.matrixMultiplySizes";
-        }
-    };
-
-    struct matrixMultiplyJA
-    {
-        /** This method computes the column indexes for result matrix C of matrix multiplication A x B
-         *
-         *  @param[out] cJA array will contain the column indexes, size is cIA[numRows]
-         *  @param[in]  CIA array with row offsets as computed by matrixMultiplySizes + sizes2offsets
-         *  @param[in]  numRows number of rows for matrix C and A
-         *  @param[in]  numColumns number of columns for matrix C and B
-         *  @param[in]  diagonalProperty if true, diagonal elements will filled in at begin of each row
-         *  @param[in]  aIA, aJA are the index arrays of matrix A
-         *  @param[in]  bIA, bJA are the index arrays of matrix B
-         */
-
-        typedef void ( *FuncType ) (
-            IndexType cJA[],
-            const IndexType cIA[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            bool diagonalProperty,
-            const IndexType aIA[],
-            const IndexType aJA[],
-            const IndexType bIA[],
-            const IndexType bJA[] );
-
-        static const char* getId()
-        {
-            return "CSR.matrixMultiplyJA";
         }
     };
 
@@ -486,6 +600,7 @@ struct CSRKernelTrait
             const ValueType y[],
             const IndexType numRows,
             const IndexType numColumns,
+            const IndexType numValues,
             const IndexType csrIA[],
             const IndexType csrJA[],
             const ValueType csrValues[] );
@@ -499,7 +614,7 @@ struct CSRKernelTrait
     template<typename ValueType>
     struct sparseGEMV
     {
-        /** result = alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
+        /** result += alpha * CSR-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -544,7 +659,7 @@ struct CSRKernelTrait
 
         static const char* getId()
         {
-            return "CSR.sparseGEMV";
+            return "CSR.sparseGEVM";
         }
     };
 

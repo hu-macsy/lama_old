@@ -41,7 +41,7 @@ heading3 ( "OpenMP" "USE_OPENMP" )
 # LAMA CUDA
 heading3 ( "CUDA" "CUDA_ENABLED" )
     found_message ( "CUDA" "CUDA_FOUND" "OPTIONAL" "Version ${CUDA_VERSION} at ${SCAI_CUDA_INCLUDE_DIR}" )
-    found_message ( "Compute Capability" "CUDA_HAVE_GPU" "OPTIONAL" "${CUDA_COMPUTE_CAPABILITY}" )
+    found_message ( "Compute Capability" "CUDA_COMPUTE_CAPABILITY" "OPTIONAL" "${CUDA_COMPUTE_CAPABILITY}" )
                            
 # LAMA MIC
 heading3 ( "MIC" "USE_MIC" )

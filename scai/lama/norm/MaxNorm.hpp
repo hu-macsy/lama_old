@@ -2,7 +2,7 @@
  * @file MaxNorm.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,10 +46,16 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT MaxNorm: public scai::lama::Norm
+class COMMON_DLL_IMPORTEXPORT MaxNorm:
+
+    public Norm,
+    public Norm::Register<MaxNorm>
+
 {
 public:
+
     MaxNorm();
+
     virtual ~MaxNorm();
 
     virtual Scalar apply( const Scalar& scalar ) const;
@@ -57,6 +63,20 @@ public:
     virtual Scalar apply( const Vector& vector ) const;
 
     virtual Scalar apply( const Matrix& matrix ) const;
+
+    /**
+     *  Getter routine for key of this derived class used in Norm factory
+     */
+    static std::string createValue();
+
+    /**
+     *  Create method is just function version of constructor.
+     */
+    static Norm* create();
+
+    /** Override Printable::writeAt with version for this class. */
+
+    virtual void writeAt( std::ostream& stream ) const;
 };
 
 COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );

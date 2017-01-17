@@ -2,7 +2,7 @@
  * @file DIAKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,6 +46,30 @@ namespace sparsekernel
 
 struct DIAKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] diaOffsets diagonal offsets, size is numDiagonals
+         *  @param[in] numDiagonals number of stored diagonals
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType numRows,
+            const IndexType diaOffsets[],
+            const IndexType numDiagonals );
+
+        static const char* getId()
+        {
+            return "DIA.getValuePos";
+        }
+    };
+
     template<typename ValueType>
     struct getCSRSizes
     {
@@ -124,7 +148,7 @@ struct DIAKernelTrait
     template<typename ValueType>
     struct normalGEMV
     {
-        /** result = alpha * CSR-Matrix * x + b * y.
+        /** result = alpha * DIA-Matrix * x + b * y.
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -157,7 +181,7 @@ struct DIAKernelTrait
     template<typename ValueType>
     struct normalGEVM
     {
-        /** result = alpha * x * CSR-Matrix + b * y.
+        /** result = alpha * x * DIA-Matrix + b * y.
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -222,7 +246,7 @@ struct DIAKernelTrait
     {
         /** This method returns the maximal absolute value of a DIA storage. */
 
-        typedef ValueType (  *FuncType ) (
+        typedef ValueType ( *FuncType ) (
             const IndexType numRows,
             const IndexType numColumns,
             const IndexType numDiagonals,

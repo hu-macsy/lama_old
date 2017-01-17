@@ -2,7 +2,7 @@
  * @file CUDAELLUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -66,21 +66,9 @@ public:
         return jj * numRows + i;
     }
 
-    /** This method computes the total number of non-zero rows by the size array  */
-
-    static IndexType countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows );
-
-    /** check diagonal property. ELL format with diagonal property: diagonal is just the first column in mValues */
+    /** CUDA Implementation for ELLUtils::hasDiagonalProperty */
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType ellJA[] );
-
-    /** Build a vector of indexes for non-empty rows. */
-
-    static void setNonEmptyRowsBySizes(
-        IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType sizes[],
-        const IndexType numRows );
 
     static void check(
         const IndexType mNumRows,
@@ -124,6 +112,32 @@ public:
         const IndexType ellSizes[],
         ValueType ellValues[],
         const OtherValueType values[] );
+
+    /** Implementation for ELLKernelTrait::compressIA */
+
+    template<typename ValueType>
+    static void compressIA(
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const ValueType eps,
+        IndexType newIA[] );
+
+    /** Implementation for ELLKernelTrait::compressValues */
+
+    template<typename ValueType>
+    static void compressValues(
+        const IndexType ellIA[],
+        const IndexType ellJA[],
+        const ValueType ellValues[],
+        const IndexType numRows,
+        const IndexType numValuesPerRow,
+        const ValueType eps,
+        const IndexType newNumValuesPerRow,
+        IndexType newJA[],
+        ValueType newValues[] );
 
     /** Implementation for ELLKernelTrait::Conversions::getCSRValues */
 
@@ -255,11 +269,36 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods without template arguments */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
+
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

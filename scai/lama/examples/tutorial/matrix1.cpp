@@ -2,7 +2,7 @@
  * @file matrix1.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -69,7 +69,7 @@ int main()
 {
     IndexType perm [] = { 5, 2, 1, 0, 3, 4 };
     const IndexType irow = 3;
-    const int N = sizeof( perm ) / sizeof( IndexType );
+    const IndexType N = sizeof( perm ) / sizeof( IndexType );
     CSRSparseMatrix<ValueType> a;
     common::scoped_array<ValueType> values( new ValueType[ N * N ] );
 
@@ -95,7 +95,8 @@ int main()
     }
 
     std::cout << *comm << ": have " << myGlobalIndexes.size() << " indexes" << std::endl;
-    DistributionPtr dist( new GeneralDistribution( N, myGlobalIndexes, comm ) );
+    hmemo::HArrayRef<IndexType> indexes( static_cast<IndexType>( myGlobalIndexes.size() ), &myGlobalIndexes[0] );
+    DistributionPtr dist( new GeneralDistribution( N, indexes, comm ) );
     a.redistribute( dist, dist );
     std::cout << "Communicator = " << *comm << std::endl;
     DenseVector<ValueType> row( dist );     // any type, any distribution
@@ -118,5 +119,5 @@ int main()
 
     std::cout << std::endl;
     std::cout << "Errors = " << errors << std::endl;
-    a.writeToFile( "MatrixA", File::MATRIX_MARKET );
+    a.writeToFile( "MatrixA.mtx" );
 }

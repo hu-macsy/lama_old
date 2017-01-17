@@ -2,7 +2,7 @@
  * @file Settings.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -39,6 +39,8 @@
 
 #include <string>
 #include <vector>
+
+/** Namespace used for all projects of the LAMA software and other provided packages like logging, tracing, etc. */
 
 namespace scai
 {
@@ -83,6 +85,17 @@ public:
      */
     static bool getEnvironment( int& val, const char* envVarName );
 
+    /** Set a long by value of its environment variable
+     *
+     *  @param[out]  val is long variable that will be set
+     *  @param[in]   envVarName is name of the environment variable
+     *  @return      true if environment variable has been used to set flag
+     */
+    static bool getEnvironment( long& val, const char* envVarName );
+
+    static bool getEnvironment( unsigned int& val, const char* envVarName );
+    static bool getEnvironment( unsigned long& val, const char* envVarName );
+
     /** Set a string by value of its environment variable
      *
      *  @param[out]  val is string that will be set
@@ -103,27 +116,27 @@ public:
      *
      *  @param[out] vals is a vector of separated strings from the environment varialbe
      *  @param[in]  envVarName is name of the environment variable
-     *  @param[in]  separator is the character used to separate
+     *  @param[in]  delimiters contains characters used for splitting
      *  @return     true if environment variable was set
      */
-    static bool getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator );
+    static bool getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char* delimiters );
 
     /** Help routine to tokenize a string by a given separator
      *
-     *  @param[out] values is a vector of separated strings from the input string
+     *  @param[out] tokens is a vector of separated strings from the input string
      *  @param[in]  input is a string that will be tokenized
-     *  @param[in]  seperator is the character used to separate
+     *  @param[in]  delimiters contains all characters used for separation
      *
      */
-    static void tokenize( std::vector<std::string>& values, const std::string& input, const char seperator );
+    static void tokenize( std::vector<std::string>& tokens, const std::string& input, const std::string& delimiters = " " );
 
     /** This method sets globally the number of argument that is taken by a comma separated value list. */
 
     static void setRank( int rank );
 
-    /** Print all environment variables starting with SCAI_ (only for debug, demo purpose) */
+    /** Print all environment variables starting with SCAI_ (only for debug, demo purpose) in an output stream */
 
-    static void printEnvironment();
+    static void printEnvironment( std::ostream& out );
 
 private:
 
@@ -138,18 +151,14 @@ private:
 
     static bool convertYesNoString( bool& flag, const char* value );
 
-    /** convert the string value to an int value
-     *
-     *  @param[out]  number is variable that will be set
-     *  @param[in]   value is string to be converted
-     *  @return      true if string could be converted, false if no legal value has been found
-     */
+    /** Template version of getEnvironment */
 
-    static bool convertValue( int& number, const char* value );
+    template<typename ValueType>
+    static bool getEnvironmentValue( ValueType& val, const char* envVarName );
 
     static int sRank;  //<!  specifies pos to take from comma separated values
 
-    static const char RANK_SEPARATOR_CHAR = ',';
+    static const char* RANK_DELIMITER();
 };
 
 } /* end namespace common */

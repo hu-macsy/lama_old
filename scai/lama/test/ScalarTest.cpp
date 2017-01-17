@@ -2,7 +2,7 @@
  * @file ScalarTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -37,18 +37,17 @@
 
 #include <scai/lama/Scalar.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 //#include <complex>
 
 using namespace scai::lama;
-using namespace scai::hmemo;
 using namespace scai::common;
 
 // Scalar can be tested for all LAMA arithmetic types even if LAMA matrices
 // and vectors have not been instantiated for these types
 
-typedef boost::mpl::list< SCAI_ARITHMETIC_HOST> test_types;
+typedef boost::mpl::list< SCAI_NUMERIC_TYPES_HOST> test_types;
 
 /* --------------------------------------------------------------------- */
 
@@ -142,10 +141,14 @@ BOOST_AUTO_TEST_CASE( EqualityTest )
     BOOST_CHECK( s != u );
     BOOST_CHECK( s < u );
     BOOST_CHECK( u > s );
-//    BOOST_CHECK( s <= t );
-//    BOOST_CHECK( s <= u );
-//    BOOST_CHECK( u >= s );
-//    BOOST_CHECK( u >= t );
+
+    // negative values
+    Scalar n ( -2.0 );
+    BOOST_CHECK( n < s );
+    BOOST_CHECK( n != s );
+    BOOST_CHECK( s > n );
+    BOOST_CHECK( !( n > s ) );
+    BOOST_CHECK( !( s < n ) );
 }
 
 /* --------------------------------------------------------------------- */

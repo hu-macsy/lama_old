@@ -45,20 +45,18 @@ include ( Summaries/Modules/Compiler )
 heading ( "Required core:" )
 
 set ( REQUIRED_FOUND FALSE )
-if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
+if    ( SCAI_THREAD_LIBRARIES AND SCAI_BLAS_FOUND )
     set ( REQUIRED_FOUND TRUE )
     if ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
         set( REQUIRED_FOUND FALSE )
         message ( FATAL_ERROR "External libraries incomplete" )
     endif ( SCAI_BLAS_NAME MATCHES "BLAS" AND NOT LAPACK_FOUND )
-endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR AND SCAI_BLAS_FOUND )
+endif ( SCAI_THREAD_LIBRARIES AND SCAI_BLAS_FOUND )
 
 heading2 ( "External Libraries" "REQUIRED_FOUND" )
 
     # pthreads
     found_message ( "pThreads" "SCAI_THREAD_LIBRARIES" "REQUIRED" "Version ${SCAI_THREAD_VERSION}" )
-    # boost
-    found_message ( "Boost" "SCAI_BOOST_INCLUDE_DIR" "REQUIRED" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
 
     include ( Summaries/Modules/BLAS )
 
@@ -66,9 +64,10 @@ heading ( "Optional External Libraries:" )
 include ( Summaries/Modules/Accelerator )
 include ( Summaries/Modules/Distributed )
 include ( Summaries/Modules/Graphpartitioning )
+include ( Summaries/Modules/ZLIB )
 
 heading ( "Optional components:" "" )
-heading3 ( "Java:" "JAVA_FOUND" )
+heading3 ( "Java:" "USE_JAVA" )
     found_message ( "Java Exexutable" "JAVA_FOUND" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
 
 include ( Summaries/Modules/Build )

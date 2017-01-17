@@ -2,7 +2,7 @@
  * @file HArrays.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -38,8 +38,7 @@
 
 typedef scai::common::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
 
-/** Class for a list of matrix storage pointers, one for each supported
- *  matrix storage format and each supported arithmetic type.
+/** Class for a list of arrays, one for each supported array type.
  */
 
 class HArrays : public std::vector<ArrayPtr>

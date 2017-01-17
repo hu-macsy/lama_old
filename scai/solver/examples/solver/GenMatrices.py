@@ -30,7 +30,7 @@ def generate( dim, stencil, n1, n2 = None, n3 = None ):
             print 'created directory %s'%d
         filestring = d + "/" + filestring
 
-    cmd = "./matrix_generator.exe %s %s"%( filestring, argstring )
+    cmd = "./matrixStencilGenerator.exe %s %s"%( filestring, argstring )
 
     print cmd
 

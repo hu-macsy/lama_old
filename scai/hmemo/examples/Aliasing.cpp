@@ -2,7 +2,7 @@
  * @file Aliasing.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -100,7 +100,7 @@ void printIt( const Array& a )
 
 int main()
 {
-    static int N = 10;
+    static IndexType N = 10;
     Array a, b, c;
     // initialize b and c
     ContextPtr host = Context::getHostPtr();

@@ -2,7 +2,7 @@
  * @file L1NormTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class L1NormTest
- * @author Alexander Büchel
+ * @brief Contains specific tests for derived norm class L1Norm
+ * @author Thomas Brandes
  * @date 21.02.2012
  */
 
@@ -39,7 +39,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/L1Norm.hpp>
 
-#include <scai/lama/test/NormTest.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 using namespace scai::lama;
 using namespace scai::hmemo;
@@ -55,14 +55,17 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.L1NormTest" )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_numeric_test_types )
 {
+    // Note: l1norm( vec ) is same as vec.l1Norm()
+
     IndexType n = 4;
     ValueType val = 5.0;
     DenseVector<ValueType> vec( n, val );
     L1Norm l1norm;
-    ValueType expected = n * val;
+    ValueType expected = ValueType( n ) * val;
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
+    BOOST_CHECK_EQUAL( vec.l1Norm(), l1norm( vec ) );
     WriteAccess<ValueType> hwa( vec.getLocalValues() );
     hwa[0] = 1.0;
     hwa[1] = -2.0;
@@ -71,6 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L1NormVectorTests, ValueType, scai_arithmetic_tes
     hwa.release();
     expected = 10.0;
     BOOST_CHECK_EQUAL( expected, l1norm( vec ) );
+    BOOST_CHECK_EQUAL( vec.l1Norm(), l1norm( vec ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -82,23 +86,6 @@ BOOST_AUTO_TEST_CASE( L1NormScalarTests )
     BOOST_CHECK_EQUAL( Scalar( 4.0 ), l1norm( scalar ) );
 }
 
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( commonTestCases )
-{
-    L1Norm l1norm;
-    NormTest normtest( l1norm );
-
-    if ( base_test_case )
-    {
-        SCAI_LOG_INFO( logger, "Run method " << testcase << " in L1NormTest." );
-        NORMTEST_COMMONTESTCASES( normtest );
-    }
-    else
-    {
-        normtest.runTests();
-    }
-}
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

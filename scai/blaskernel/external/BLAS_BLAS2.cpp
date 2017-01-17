@@ -2,7 +2,7 @@
  * @file BLAS_BLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -38,6 +38,7 @@
 // local library
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 #include <scai/blaskernel/external/BLASWrapper.hpp>
+#include <scai/blaskernel/openmp/OpenMPBLAS2.hpp>
 #include <scai/blaskernel/cblas.hpp>
 
 // internal scai libraries
@@ -144,10 +145,24 @@ void BLAS_BLAS2::gemv(
 
         if ( common::isComplex( TypeTraits<ValueType>::stype ) && transA == CblasConjTrans )
         {
-            COMMON_THROWEXCEPTION( "conj matrix vector multiply on complex numbers currently not supported" )
-        }
+            // this case is not handled by Fortran BLAS, so we call own implementation
 
-        BLASWrapper<ValueType>::gemv( ta, static_cast<BLASTrait::BLASIndexType>( n ), static_cast<BLASTrait::BLASIndexType>( m ), alpha, a, static_cast<BLASTrait::BLASIndexType>( lda ), x, static_cast<BLASTrait::BLASIndexType>( incX ), beta, y, static_cast<BLASTrait::BLASIndexType>( incY ) );
+            OpenMPBLAS2::gemv( order, transA, m, n, alpha, a, lda, x, incX, beta, y, incY );
+        }
+        else
+        {
+            BLASWrapper<ValueType>::gemv( ta,
+                                          static_cast<BLASTrait::BLASIndexType>( n ),
+                                          static_cast<BLASTrait::BLASIndexType>( m ),
+                                          alpha,
+                                          a,
+                                          static_cast<BLASTrait::BLASIndexType>( lda ),
+                                          x,
+                                          static_cast<BLASTrait::BLASIndexType>( incX ),
+                                          beta,
+                                          y,
+                                          static_cast<BLASTrait::BLASIndexType>( incY ) );
+        }
     }
 
     return;
@@ -158,7 +173,7 @@ void BLAS_BLAS2::gemv(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void BLAS_BLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -171,15 +186,18 @@ void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
         SCAI_LOG_INFO( logger, "BLAS2 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS not set or 0)" )
         return;
     }
-    else if ( level > 1 )
+    else if ( level > 2 )
     {
-        // only level 2 or level 3 wrappers might be used
+        // only level 3 wrappers might be used
+
         SCAI_LOG_INFO( logger,
                        "BLAS2 wrapper routines for Host Interface are disabled (SCAI_USE_BLAS = " << level << ")" )
         return;
     }
 
-    SCAI_LOG_INFO( logger, "register BLAS2 wrapper routines for Host at kernel registry [" << flag << "]" )
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS2 wrapper routines for Host at kernel registry: " <<
+                    "T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( BLAS_BLAS2::gemv, ctx, flag );
 }
 
@@ -189,13 +207,17 @@ void BLAS_BLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 BLAS_BLAS2::BLAS_BLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "register BLAS2 wrapper routines for Host at kernel registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS2::~BLAS_BLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "unregister BLAS2 wrapper routines for Host at kernel registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

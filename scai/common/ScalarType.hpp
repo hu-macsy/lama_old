@@ -2,7 +2,7 @@
  * @file ScalarType.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -70,17 +70,21 @@ struct scalar
 
     typedef enum
     {
-        INDEX_TYPE, //!<  synonymous for IndexType
-        INT,
-        LONG,
-        FLOAT, //!<  synonymous for float
-        DOUBLE, //!<  synonymous for double
-        LONG_DOUBLE, //!<  synonymous for long double
-        COMPLEX, //!<  synonymous for complex
-        DOUBLE_COMPLEX, //!<  synonymous for double complex
+        INT,                 //!<  synonymous for int (signed 32 bit)
+        LONG,                //!<  synonymous for long (signed 64 bit)
+        FLOAT,               //!<  synonymous for float
+        DOUBLE,              //!<  synonymous for double
+        LONG_DOUBLE,         //!<  synonymous for long double
+        COMPLEX,             //!<  synonymous for complex
+        DOUBLE_COMPLEX,      //!<  synonymous for double complex
         LONG_DOUBLE_COMPLEX, //!<  synonymous for long double complex
-        PATTERN, //!<  dummy type of size 0
-        INTERNAL, //!<  take the type currently in use, getScalarType<ValueType>()
+        CHAR,                //!<  synonymous for char(signed 8 bit)
+        UNSIGNED_INT,        //!<  synonymous for uint(unsigned 32 bit)
+        UNSIGNED_LONG,       //!<  synonymous for size_t(unsigned 64 bit)
+
+        INDEX_TYPE,          //!<  take the type as defined for IndexType, getScalarType<IndexType>()
+        PATTERN,             //!<  dummy type of size 0
+        INTERNAL,            //!<  take the type currently in use, getScalarType<ValueType>()
         UNKNOWN
     } ScalarType;
 
@@ -88,7 +92,19 @@ struct scalar
 
 /** Query an enum value whether it is complex or not. */
 
-COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType t );
+COMMON_DLL_IMPORTEXPORT bool isComplex( const scalar::ScalarType stype );
+
+/** Query an enum value whether it is supported and numeric. */
+
+COMMON_DLL_IMPORTEXPORT bool isNumeric( const scalar::ScalarType stype );
+
+/** Query an enum value about the precision used in output */
+
+COMMON_DLL_IMPORTEXPORT int precision( const scalar::ScalarType stype );
+
+/** Query sizeof( ScalarType stype ) same as sizeof( type ) for which stype stands for */
+
+COMMON_DLL_IMPORTEXPORT size_t typeSize( const scalar::ScalarType stype );
 
 /*
  * Output of ScalarType in stream by writing strings instead of numbers
@@ -101,9 +117,9 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const sc
  *
  */
 
-MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
 
-MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
+COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
 
 } /* end namespace common */
 

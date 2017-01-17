@@ -2,7 +2,7 @@
  * @file CUDAError.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -271,6 +271,47 @@ const char* cusparseErrorString( cusparseStatus_t res )
 
     return str;
 }
+
+#if ( CUDART_VERSION >= 7050 )
+const char* cusolverErrorString( cusolverStatus_t res )
+{
+    const char* str = "";
+
+    switch ( res )
+    {
+        case CUSOLVER_STATUS_SUCCESS:
+            str = "CUSOLVER successful";
+            break;
+
+        case CUSOLVER_STATUS_NOT_INITIALIZED:
+            str = "CUSOLVER library not initialized";
+            break;
+        case CUSOLVER_STATUS_ALLOC_FAILED:
+            str = "resource allocation failed";
+            break;
+        case CUSOLVER_STATUS_INVALID_VALUE:
+            str = "unsupported numerical value was passed to function";
+            break;
+        case CUSOLVER_STATUS_ARCH_MISMATCH:
+            str = "function requires an architectural feature absent from the architecture of the device";
+            break;
+        case CUSOLVER_STATUS_EXECUTION_FAILED:
+            str = "CUSOLVER program failed to execute";
+            break;
+        case CUSOLVER_STATUS_INTERNAL_ERROR:
+            str = "CUSOLVER internal error";
+            break;
+        case CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED:
+            str = "CUSOLVER unsupported matrix type";
+            break;
+
+        default:
+            str = "Unknown CUSPARSE error";
+    }
+
+    return str;
+}
+#endif
 
 /* ----------------------------------------------------------------------------- */
 

@@ -2,7 +2,7 @@
  * @file CGS.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,15 +28,12 @@
  * @endlicense
  *
  * @brief CGS.cpp
- * @author David schissler
+ * @author David Schissler
  * @date 18.05.2015
  */
 
 // hpp
 #include <scai/solver/CGS.hpp>
-
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
 
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -87,7 +84,7 @@ void CGS::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGSRuntime& runtime = getRuntime();
     runtime.mNormRes = 1.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecT.reset( coefficients.newDenseVector() );
     runtime.mVecP.reset( coefficients.newDenseVector() );
@@ -127,6 +124,7 @@ void CGS::solveInit( Vector& solution, const Vector& rhs )
 
     //initial <res,res> inner product;
     runtime.mInnerProdRes = ( *runtime.mRes0 ).dotProduct( *runtime.mRes0 );
+    SCAI_LOG_INFO( logger, "solveInit, mInnerProdRes = " << runtime.mInnerProdRes )
     runtime.mSolveInit = true;
 }
 
@@ -162,6 +160,9 @@ void CGS::iterate()
         alpha = innerProdRes / innerProduct;
     }
 
+    SCAI_LOG_INFO( logger, "vecQ = vecU - " << alpha << " vecT, normRes = " << normRes
+                   << ", innerProdRes = " << innerProdRes << ", innerProduct = " << innerProduct )
+
     vecQ = vecU - alpha * vecT;
 
     // PRECONDITIONING
@@ -190,6 +191,8 @@ void CGS::iterate()
     {
         beta = innerProdRes / innerProdResOld ;
     }
+
+    SCAI_LOG_INFO( logger, "beta = " << beta )
 
     vecU = res + beta * vecQ;
     vecP = vecU + beta * beta * vecP;

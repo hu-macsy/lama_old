@@ -2,7 +2,7 @@
  * @file utilskernel/examples/vectorAdd.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,8 +63,8 @@ int main( int, char** )
     setVal.getSupportedContext( loc );
     hmemo::WriteOnlyAccess<double> writeB( b, loc, size );
     hmemo::WriteOnlyAccess<double> writeC( c, loc, size );
-    setVal[loc]( writeB.get(), size, double( 2 ), utilskernel::reduction::COPY );
-    setVal[loc]( writeC.get(), size, double( 3 ), utilskernel::reduction::COPY );
+    setVal[loc]( writeB.get(), size, double( 2 ), utilskernel::binary::COPY );
+    setVal[loc]( writeC.get(), size, double( 3 ), utilskernel::binary::COPY );
     writeB.release();
     writeC.release();
     add ( a, b, c );

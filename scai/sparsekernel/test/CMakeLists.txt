@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -34,8 +34,11 @@
 
 set ( CXX_SOURCES
       sparsekernelTest
+      BuildSparseTest
       COOUtilsTest
       CSRUtilsTest
+      DenseUtilsTest
+      DIAUtilsTest
       ELLUtilsTest
       JDSUtilsTest
 ) 
@@ -51,16 +54,10 @@ target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
 
 if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageFirst.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageFirst.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageFirst.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageSecond.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageSecond.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageSecond.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageThird.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageThird.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageThird.sh 
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" 
+                    "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" 
+                    @ONLY )
+    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
            FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
     file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 

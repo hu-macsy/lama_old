@@ -2,7 +2,7 @@
  * @file MaxNorm.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,16 +27,20 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief MaxNorm.cpp
- * @author Jiri Kraus
+ * @brief Implementations for derived norm class MaxNorm.
+ * @author Thomas Brandes, Jiri Kraus
  * @date 14.06.2011
  */
 
 // hpp
 #include <scai/lama/norm/MaxNorm.hpp>
 
+
 namespace scai
 {
+
+template lama::Norm::Register<lama::MaxNorm>::RegisterGuard
+lama::Norm::Register<lama::MaxNorm>::registerGuard;
 
 namespace lama
 {
@@ -47,6 +51,21 @@ MaxNorm::MaxNorm()
 
 MaxNorm::~MaxNorm()
 {
+}
+
+std::string MaxNorm::createValue()
+{
+    return "Max";
+}
+
+Norm* MaxNorm::create()
+{
+    return new MaxNorm();
+}
+
+void MaxNorm::writeAt( std::ostream& stream ) const
+{
+    stream << "MaxNorm";
 }
 
 Scalar MaxNorm::apply( const Scalar& scalar ) const

@@ -1,0 +1,16 @@
+# This script calls lama_format recursively also for subdirectories
+
+  for file in *.cpp *.hpp *.cu *.hpp.in*
+  do
+    lama_format $file
+    rm -f $file.pre
+  done
+
+  for file in *
+  do 
+    if [ -d $file ] ; then
+       echo "Rename in directory $file"
+       ( cd $file; lama_formatAll )
+    fi
+  done
+

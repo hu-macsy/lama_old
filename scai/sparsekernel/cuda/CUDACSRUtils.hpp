@@ -2,7 +2,7 @@
  * @file CUDACSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,6 +45,12 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+#include <cuda_runtime_api.h>
+
+#ifndef CUDART_VERSION
+#error CUDART_VERSION Undefined!
+#endif
+
 namespace scai
 {
 
@@ -64,6 +70,17 @@ public:
 
     static void offsets2sizes( IndexType sizes[], const IndexType offsets[], const IndexType n );
 
+    /** Implementation for CSRKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType csrJA[],
+        const IndexType numValues );
+
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
 
     /** Matrix transpose for CSR matrices on CUDA device. */
@@ -76,9 +93,9 @@ public:
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[],
-        int numRows,
-        int numColumns,
-        int numValues );
+        IndexType numRows,
+        IndexType numColumns,
+        IndexType numValues );
 
     /** Implementation for CSRKernelTrait::Mult::scaleRows  */
 
@@ -116,6 +133,7 @@ public:
         const ValueType y[],
         const IndexType numRows,
         const IndexType numColumns,
+        const IndexType numValues,
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[] );
@@ -254,17 +272,78 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
+    /** CUDA implementation for CSRKernelTrait::sortRowElements */
+
+    template<typename ValueType>
+    static void sortRowElements(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const bool diagonalFlag );
+
+    /** CUDA Implementation for CSRKernelTrait::countNonZeros */
+
+    template<typename ValueType>
+    static void countNonZeros(
+        IndexType sizes[],
+        const IndexType ia[],
+        const IndexType ja[],
+        const ValueType values[],
+        const IndexType numRows,
+        const ValueType eps,
+        const bool diagonalFlag );
+
+    /** CUDA Implementation for CSRKernelTrait::compress */
+
+    template<typename ValueType>
+    static void compress(
+        IndexType newJA[],
+        ValueType newValues[],
+        const IndexType newIA[],
+        const IndexType ia[],
+        const IndexType ja[],
+        const ValueType values[],
+        const IndexType numRows,
+        const ValueType eps,
+        const bool diagonalFlag );
+
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     static unsigned int lastHashTableSize;// local variable to handhover hash table size for multiply
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods without template arguments */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
+
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

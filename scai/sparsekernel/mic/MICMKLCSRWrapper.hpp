@@ -2,7 +2,7 @@
  * @file sparsekernel/mic/MICMKLCSRWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,7 +58,7 @@ class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper;
         typedef MICMKLCSRTrait::BLASTrans BLASTrans;                                                                              \
         typedef MICMKLCSRTrait::BLASMatrix BLASMatrix;                                                                            \
         \
-        static BLASIndexType csr2csc(                                                                                               \
+        static MIC_CALLABLE_MEMBER BLASIndexType csr2csc(                                                                               \
                 const BLASIndexType* job,                                                                                               \
                 const BLASIndexType n,                                                                                                  \
                 const ValueType *Acsr,                                                                                                  \
@@ -77,7 +77,7 @@ class COMMON_DLL_IMPORTEXPORT MICMKLCSRWrapper;
             return info;                                                                                                            \
         }                                                                                                                           \
         \
-        static void csrmv(                                                                                                          \
+        static MIC_CALLABLE_MEMBER void csrmv(                                                                                                          \
                 const BLASTrans transA,                                                                                                 \
                 const BLASIndexType m,                                                                                                  \
                 const BLASIndexType k,                                                                                                  \

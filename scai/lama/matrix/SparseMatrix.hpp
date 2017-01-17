@@ -2,7 +2,7 @@
  * @file SparseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -144,10 +144,6 @@ public:
         dmemo::DistributionPtr rowDist,
         dmemo::DistributionPtr colDist );
 
-    SparseMatrix( const Matrix& matrix, const bool transposeFlag = false );
-
-    SparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
-
     /** Override also the default copy constructor that does not make a
      *  deep copy of the input matrix due to the use of shared pointers.
      */
@@ -200,6 +196,15 @@ public:
         const IndexType numValues,
         const hmemo::HArray<IndexType>& ia,
         const hmemo::HArray<IndexType>& ja,
+        const hmemo::_HArray& values );
+
+    /** Implementation for pure method Matrix::setDIAData. */
+
+    virtual void setDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
         const hmemo::_HArray& values );
 
     /* Implementation of pure method of class Matrix. */
@@ -322,21 +327,7 @@ public:
         const ValueType beta,
         const DenseMatrix<ValueType>& y ) const;
 
-    /* Implemenation of pure method of class Matrix */
-
-    virtual void matrixTimesVector(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const;
-
-    void vectorTimesMatrix(
-        Vector& result,
-        const Scalar alpha,
-        const Vector& x,
-        const Scalar beta,
-        const Vector& y ) const;
+    /* Implementation of method needed for CRTPMatrix */
 
     void vectorTimesMatrixImpl(
         DenseVector<ValueType>& result,
@@ -386,6 +377,35 @@ public:
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
     /**
+     * @brief Operation on transposed distributed matrix with halo exchange, sync version
+     *
+     * @param[out]    localResult is the result array
+     * @param[in]     localX is the array with local values
+     * @param[in,out] haloX is a temporary array keeping the non-local halo values of X
+     * @param[in]     localF is the operation called with local matrix and localX
+     * @param[in]     haloF is the operation called with halo matrix and haloX
+     *
+     * Very similiar to haloOperationSync but here the halo computations are done for
+     * the other processors (as this processor owns it) and the results are sent to the other
+     * processors. Uses inverse halo communication schedule, scatters the received values instead
+     * of gathering the send values.
+     */
+    void invHaloOperationSync(
+        hmemo::HArray<ValueType>& localResult,
+        const hmemo::HArray<ValueType>& localX,
+        hmemo::HArray<ValueType>& haloX,
+        common::function <
+        void(
+            const MatrixStorage<ValueType>* localMatrix,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& localX ) > localF,
+        common::function <
+        void(
+            const MatrixStorage<ValueType>* haloMatrix,
+            hmemo::HArray<ValueType>& localResult,
+            const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
+
+    /**
      * @brief Operation on distributed matrix with halo exchange, async version
      *
      * The asynchronous version starts the local computation asynchronously so it
@@ -405,36 +425,6 @@ public:
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
-
-    void vectorHaloOperationSync(
-        hmemo::HArray<ValueType>& localResult,
-        const hmemo::HArray<ValueType>& localX,
-        const hmemo::HArray<ValueType>& localY,
-        common::function <
-        void(
-            const MatrixStorage<ValueType>* localMatrix,
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX ) > calcF,
-        common::function <
-        void(
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY ) > addF ) const;
-
-    void vectorHaloOperationAsync(
-        hmemo::HArray<ValueType>& localResult,
-        const hmemo::HArray<ValueType>& localX,
-        const hmemo::HArray<ValueType>& localY,
-        common::function <
-        tasking::SyncToken * (
-            const MatrixStorage<ValueType>* localMatrix,
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX ) > calcF,
-        common::function <
-        /*tasking::SyncToken**/void(
-            hmemo::HArray<ValueType>& localResult,
-            const hmemo::HArray<ValueType>& localX,
-            const hmemo::HArray<ValueType>& localY ) > addF ) const;
 
     /* Implemenation of pure method of class Matrix */
 
@@ -492,6 +482,14 @@ public:
 
     virtual Scalar getValue( IndexType i, IndexType j ) const;
 
+    /** Implementation of pure method Matrix::setValue */
+
+    virtual void setValue(
+        const IndexType i,
+        const IndexType j,
+        const Scalar val,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     /**
      * @brief Read access to the halo of the distributed matrix.
      *
@@ -547,31 +545,6 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    /** Writes this sparse matrix to a file in CSR format. */
-
-    void writeToFile1(
-        const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const;
-
-    /**
-     * @brief Assigns this matrix with a replicated sparse matrix read from file.
-     *
-     * Creates a replicated sparse matrix read from file. Currently supported is
-     * the matrix market format, XDR, formatted, unformatted, binary.
-     *
-     * TODO: set reference to description in StorageIO.
-     *
-     * @param[in] filename      the filename to read from
-     *
-     * Note: Derived classes might use this routine within a constructor for convenience.
-     *       This class does not support such a constructor as no file format is known.
-     */
-    void readFromFile( const std::string& filename );
-
     using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::operator=; // make overloaded routines visible before overwriting one
 
     using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistribution;
@@ -598,9 +571,25 @@ public:
         return Matrix::SPARSE;
     }
 
-    /** Get a complete row of local part only. */
+    /** Get a complete row of this matrix from its local part. */
 
-    void getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const;
+    void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
+
+    /** Set a complete row of this matrix in its local part. */
+
+    void setLocalRow( const hmemo::HArray<ValueType>& row,
+                      const IndexType localRowIndex,
+                      const utilskernel::binary::BinaryOp op  );
+
+    /** Get the local part of a col of this matrix */
+
+    void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
+
+    /** Set the local col of this matrix */
+
+    void setLocalColumn( const hmemo::HArray<ValueType>& column,
+                         const IndexType colIndex,
+                         const utilskernel::binary::BinaryOp op  );
 
 protected:
 

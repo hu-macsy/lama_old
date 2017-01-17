@@ -2,7 +2,7 @@
  * @file OpenMP.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -33,6 +33,8 @@
  */
 
 #pragma once
+
+#include <scai/common/mic/MICCallable.hpp>
 
 #ifdef _OPENMP
 
@@ -79,22 +81,74 @@ inline double omp_get_wtime( void )
  */
 
 template<typename ValueType>
-inline void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
+inline MIC_CALLABLE_MEMBER void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
 {
     #pragma omp critical
     sharedResult += threadResult;
 }
 
 template<>
-inline void atomicAdd( float& sharedResult, const float& threadResult )
+inline MIC_CALLABLE_MEMBER void atomicAdd( float& sharedResult, const float& threadResult )
 {
     #pragma omp atomic
     sharedResult += threadResult;
 }
 
 template<>
-inline void atomicAdd( double& sharedResult, const double& threadResult )
+inline MIC_CALLABLE_MEMBER void atomicAdd( double& sharedResult, const double& threadResult )
 {
     #pragma omp atomic
     sharedResult += threadResult;
 }
+
+template<>
+inline MIC_CALLABLE_MEMBER void atomicAdd( int& sharedResult, const int& threadResult )
+{
+    #pragma omp atomic
+    sharedResult += threadResult;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline ValueType atomicInc( ValueType& var )
+{
+    ValueType val;
+
+    #pragma omp critical
+    {
+        val = var++;
+    }
+
+    return val;
+}
+
+template<>
+inline int atomicInc( int& var )
+{
+    return __sync_fetch_and_add( &var, 1 );
+}
+
+/** This routine computes within a parallel region a contiguous block for each thread
+ *
+ *  @param[in] n the range 0 <= i < n is distributed
+ *  @param[out] lb, ub is the range belonging to this thread, lb <= i < ub
+ *
+ *  This routine corresponds the static worksharing of a for( i = 0; i < N; ++i ) loop
+ */
+
+template<typename IndexType>
+inline void omp_get_my_range( IndexType& lb, IndexType& ub, const IndexType n )
+{
+    int rank = omp_get_thread_num();
+    int nthreads = omp_get_num_threads();
+    IndexType blockSize = ( n + nthreads - 1 ) / nthreads;
+    lb = rank * blockSize;
+    ub = ( rank + 1 ) * blockSize;
+
+    if ( ub >= n )
+    {
+        ub = n;
+    }
+}
+

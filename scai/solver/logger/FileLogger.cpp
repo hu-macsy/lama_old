@@ -2,7 +2,7 @@
  * @file FileLogger.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,7 +63,14 @@ FileLogger& FileLogger::getFileLogger()
 
 void FileLogger::logMessage( const std::string& message )
 {
-    mFileStream << message;
+    if ( mFileStream.is_open() )
+    {
+        mFileStream << message;
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "FileLogger: no open file" )
+    }
 }
 
 void FileLogger::setLogFile( const std::string& logFileName )
@@ -81,7 +88,7 @@ void FileLogger::setLogFile( const std::string& logFileName )
     }
     else if ( logFileName != mFileName )
     {
-        COMMON_THROWEXCEPTION( "Tried to set the log file of the logger to two different files." );
+        COMMON_THROWEXCEPTION( "Tried to set new log file " << logFileName << ", but current log file " << mFileName << " is still open" );
     }
 }
 

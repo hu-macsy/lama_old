@@ -2,7 +2,7 @@
  * @file Distribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/hmemo.hpp>
+#include <scai/utilskernel.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -92,29 +93,50 @@ Distribution::~Distribution()
 
 /* ---------------------------------------------------------------------- */
 
-bool Distribution::operator==( const Distribution& other ) const
+bool Distribution::proveEquality( bool& isSame, const Distribution& other ) const
 {
-    // two distributions are the same if they are both replicated
-    SCAI_LOG_TRACE( logger, "check " << *this << " == " << other )
-    bool isSame = false;
+    // In many cases equality or inequality is given rather straightforward
+
+    bool proved = true;
 
     if ( this == &other )
     {
         isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": pointer equal" )
     }
+    else if ( getGlobalSize() != other.getGlobalSize() )
+    {
+        isSame = false;
+        SCAI_LOG_DEBUG( logger, *this << " != " << other << ": different global size" )
+    }
     else if ( isReplicated() && other.isReplicated() )
     {
-        isSame = getGlobalSize() == other.getGlobalSize();
+        // on a single processor all distributions are the same
+
+        isSame = true;
         SCAI_LOG_DEBUG( logger, *this << " == " << other << ": both are replicated, same size" )
+    }
+    else if ( other.getCommunicator() != getCommunicator() )
+    {
+        isSame = false;
+        SCAI_LOG_DEBUG( logger, *this << " != " << other << ": different communicators" )
     }
     else
     {
-        isSame = isEqual( other );
-        SCAI_LOG_DEBUG( logger, *this << " == " << other << ": " << isSame )
+        // more detailed checks are required, here nothing has been proved
+        proved = false;
     }
 
-    return isSame;
+    return proved;
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool Distribution::operator==( const Distribution& other ) const
+{
+    // call the virtual method of derived class
+
+    return isEqual( other );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -128,6 +150,8 @@ bool Distribution::operator!=( const Distribution& other ) const
 
 const Communicator& Distribution::getCommunicator() const
 {
+    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
+
     return *mCommunicator;
 }
 
@@ -142,9 +166,18 @@ CommunicatorPtr Distribution::getCommunicatorPtr() const
 
 PartitionId Distribution::getNumPartitions() const
 {
-    // mCommunicator is never NULL, but just in case
-    SCAI_ASSERT( mCommunicator, "Distribution without a Communicator is not allowed" )
+    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
+
     return mCommunicator->getSize();
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType Distribution::getMaxLocalSize() const
+{
+    SCAI_ASSERT_DEBUG( mCommunicator, "Distribution has NULL communicator" )
+
+    return mCommunicator->max( getLocalSize() );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -157,15 +190,67 @@ void Distribution::writeAt( std::ostream& stream ) const
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::computeOwners(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
+void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
-    SCAI_LOG_INFO( logger, "compute owners via communicator (default)" )
-    // use communicator to compute ownership on each processor
-    IndexType n = requiredIndexes.size();
-    owners.resize( n );
-    mCommunicator->computeOwners( &owners[0], *this, &requiredIndexes[0], n );
+    // Note: this default implementation requires communication
+
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+
+    const IndexType n = indexes.size();
+
+    SCAI_LOG_INFO( logger, *this << ": computeOwners for " << n << " indexes" )
+
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
+
+    mCommunicator->computeOwners( wOwners, *this, rIndexes, n );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) const
+{
+    HArray<IndexType> indexes;
+
+    if ( getCommunicator().getRank()  == root )
+    {
+        // we need the owners only on the host processor
+        // indexes = 0, 1, 2, ..., globalSize - 1
+
+        utilskernel::HArrayUtils::setOrder( indexes, getGlobalSize() );
+    }
+
+    // Note: only master process asks for owners, other processes have 0 indexes
+
+    SCAI_LOG_INFO( logger, *this << ": computeOwners for indexes = " << indexes )
+
+    computeOwners( owners, indexes );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    const IndexType nLocal  = getLocalSize();
+    const IndexType nGlobal = mGlobalSize;
+
+    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << nGlobal )
+
+    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+    IndexType k = 0;
+
+    // This routine works for all distributions, but might not be the most efficient one
+
+    for ( IndexType i = 0; i < nGlobal; ++i )
+    {
+        if ( isLocal( i ) )
+        {
+            wGlobalIndexes[k++] = i;
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( k, nLocal, "serious local mismatch" );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -254,28 +339,42 @@ template<typename T1, typename T2>
 void Distribution::replicateN( T1* allValues, const T2* localValues, const IndexType n ) const
 {
     SCAI_REGION( "Distribution.replicateN" )
+
     const Communicator& comm = getCommunicator();
+
     // Implemenation via cyclic shifting of the vector data and distribution
     // maximal number of elements needed to allocate sufficient receive buffer but also to avoid reallocations
+
     IndexType currentSize = getLocalSize();
     IndexType maxLocalSize = comm.max( currentSize );
+
     SCAI_LOG_INFO( logger,
-                   comm << ": replicateN, n = " << n << ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
-    // Only allocate the needed size of the Arrays
+                   comm << ": replicateN, n = " << n <<
+                   ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << "]" <<
+                   ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
+
     HArray<T1> valuesSend;
     HArray<T1> valuesReceive;
     HArray<IndexType> indexesSend;
     HArray<IndexType> indexesReceive;
+
     // set my owned indexes and my values
+
     ContextPtr commContext = comm.getCommunicationContext( valuesSend );
+
     // capacity of send arrays should also be sufficient for receiving data
+
     indexesSend.reserve( commContext, maxLocalSize );
     valuesSend.reserve( commContext, maxLocalSize * n );
+
     SCAI_LOG_INFO( logger, "replicate on this communication context: " << *commContext )
+
     {
         WriteOnlyAccess<IndexType> wIndexesSend( indexesSend, commContext, currentSize );
-        WriteOnlyAccess<T1> wValuesSend( valuesSend, commContext, currentSize * n );
+        WriteOnlyAccess<T1>        wValuesSend ( valuesSend, commContext, currentSize * n );
+
         // current workaround as commContext works like HostContext
+
         IndexType* pIndexesSend = wIndexesSend.get();
         T1* pValuesSend = wValuesSend.get();
 
@@ -290,11 +389,9 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
                 pValuesSend[i * n + j] = static_cast<T1>( localValues[i * n + j] ); // type conversion here
                 allValues[globalIndex * n + j] = static_cast<T1>( localValues[i * n + j] ); // type conversion here
             }
-
-            pValuesSend[i] = static_cast<T1>( localValues[i] ); // type conversion here
-            allValues[globalIndex] = static_cast<T1>( localValues[i] ); // type conversion here
         }
     }
+
     IndexType countLines = currentSize; // count values set in the global vector, currentSize has been done
     // capacity of receive arrays should be sufficient for receiving data to avoid reallocations
     indexesReceive.reserve( commContext, maxLocalSize );
@@ -492,9 +589,9 @@ Distribution* Distribution::getDistributionPtr(
 
 #define DMEMO_DISTRIBUTE_INST( ValueType )  \
     template void Distribution::replicateRagged<ValueType>( ValueType*, const ValueType*, const IndexType* ) const;                 \
-    SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, DMEMO_DISTRIBUTE2_INST, SCAI_ARRAY_TYPES_HOST )
 
-SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( DMEMO_DISTRIBUTE_INST, SCAI_ARRAY_TYPES_HOST )
 
 // template instantiation for the supported data types
 

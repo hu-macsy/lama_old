@@ -2,7 +2,7 @@
  * @file MINRES.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,16 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief MINRES.cpp
- * @author David schissler
+ * @brief Implementation of methods for the MINRES solver.
+ * @author David Schissler
  * @date 13.05.2015
  */
 
 // hpp
 #include <scai/solver/MINRES.hpp>
-
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
 
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -99,7 +96,7 @@ void MINRES::initialize( const Matrix& coefficients )
     runtime.mVecP.reset( coefficients.newDenseVector() );
     runtime.mVecPOld.reset( coefficients.newDenseVector() );
     runtime.mVecPNew.reset( coefficients.newDenseVector() );
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
 }
 
 void MINRES::solveInit( Vector& solution, const Vector& rhs )

@@ -2,7 +2,7 @@
  * @file examples/BenchMath.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,13 +40,15 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Walltime.hpp>
 
+typedef IndexType myType; // for bigger testcases need size_t
+
 using scai::common::Math;
 
 /*
  * Templated kernel using Math-functions from common
  */
 template<typename ValueType>
-ValueType asum_with_math( const size_t N, const ValueType* x )
+ValueType asum_with_math( const myType N, const ValueType* x )
 {
     ValueType asum = 0;
     #pragma omp parallel
@@ -54,7 +56,7 @@ ValueType asum_with_math( const size_t N, const ValueType* x )
         ValueType thread_asum = 0;
         #pragma omp for
 
-        for ( size_t i = 0; i < N; ++i )
+        for ( myType i = 0; i < N; ++i )
         {
             thread_asum += Math::abs( Math::real( x[i] ) + Math::imag( x[i] ) );
         }
@@ -67,12 +69,12 @@ ValueType asum_with_math( const size_t N, const ValueType* x )
 /*
  * Explicit kernel for double
  */
-double asum_explicit( const size_t N, const double* x )
+double asum_explicit( const myType N, const double* x )
 {
     double asum = 0;
     #pragma omp parallel for reduction(+:asum)
 
-    for ( size_t i = 0; i < N; ++i )
+    for ( myType i = 0; i < N; ++i )
     {
         asum += std::abs( x[i] );
     }
@@ -84,24 +86,24 @@ double asum_explicit( const size_t N, const double* x )
  * Function for setting array to a specific value
  */
 template<typename ValueType>
-void set( const size_t N, ValueType* x, const ValueType val );
+void set( const myType N, ValueType* x, const ValueType val );
 
 /*
  * Calculate average time
  */
-double avg_time( const size_t N, const double* time_data );
+double avg_time( const myType N, const double* time_data );
 
 /*
  * Parse commandline arguments
  */
-void parseArguments( int argc, char** argv, size_t& repitions, size_t& N );
+void parseArguments( int argc, char** argv, myType& repitions, myType& N );
 
 /*
  * Main
  */
 int main( int argc, char** argv )
 {
-    size_t repitions, N;
+    myType repitions, N;
     /*
      * Default values
      */
@@ -130,7 +132,7 @@ int main( int argc, char** argv )
     /*
      * Math kernel
      */
-    for ( size_t i = 0; i < repitions; ++i )
+    for ( myType i = 0; i < repitions; ++i )
     {
         tmpTime = scai::common::Walltime::get();
         asum_with_math( N, d );
@@ -142,7 +144,7 @@ int main( int argc, char** argv )
     /*
      * Explicit kernel
      */
-    for ( size_t i = 0; i < repitions; ++i )
+    for ( myType i = 0; i < repitions; ++i )
     {
         tmpTime = scai::common::Walltime::get();
         asum_explicit( N, d );
@@ -159,23 +161,23 @@ int main( int argc, char** argv )
 }
 
 template<typename ValueType>
-void set( const size_t N, ValueType* x, const ValueType val )
+void set( const myType N, ValueType* x, const ValueType val )
 {
     #pragma omp parallel for
 
-    for ( size_t i = 0; i < N; ++i )
+    for ( myType i = 0; i < N; ++i )
     {
         x[i] = val;
     }
 }
 
-double avg_time( const size_t N, const double* time_data )
+double avg_time( const myType N, const double* time_data )
 {
     double min, max, avg;
     min = max = time_data[1];
     avg = 0;
 
-    for ( size_t i = 1; i < N - 1; ++i )
+    for ( myType i = 1; i < N - 1; ++i )
     {
         min = Math::min( min, time_data[i] );
         max = Math::max( max, time_data[i] );
@@ -188,7 +190,7 @@ double avg_time( const size_t N, const double* time_data )
     return avg;
 }
 
-void parseArguments( int argc, char** argv, size_t& repitions, size_t& N )
+void parseArguments( int argc, char** argv, myType& repitions, myType& N )
 {
     for ( int i = 1; i < argc; ++i )
     {

@@ -117,7 +117,7 @@ For optional features you may also install the following:
 
 .. |apidoc| raw:: html
 
-  <a href="https://test.libama.org/doxygen/index.html" target="_blank">here</a>
+  <a href="https://libama.org/doxygen/index.html" target="_blank">here</a>
 
 .. _supported:
 
@@ -155,11 +155,10 @@ for known issues and needed to add the following to boost/tuple/detail/tuple_bas
 .. code-block:: c++
    :emphasize-lines: 1,2,3,4,5,14,15,16,17
 
-    +#if BOOST_GCC >= 40700
-    +#pragma GCC diagnostic push
-    +#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    +#endif
-    +
+    #if BOOST_GCC >= 40700
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+    #endif
 
     namespace boost
     {
@@ -168,11 +167,9 @@ for known issues and needed to add the following to boost/tuple/detail/tuple_bas
 
     } // namespace boost
  
-    +#if BOOST_GCC >= 40700
-    +#pragma GCC diagnostic pop
-    +#endif
-    +
-
+    #if BOOST_GCC >= 40700
+    #pragma GCC diagnostic pop
+    #endif
 
 :sup:`2` OpenBLAS (develop, commit: 6e7be06e072cddc5d34617f28f60a32484b9e910, date: 02/22/2016)
 

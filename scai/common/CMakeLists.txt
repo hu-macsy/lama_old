@@ -2,7 +2,7 @@
  # @file scai/common/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -53,6 +53,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables)
 include ( Dependencies/internal )
 include ( Dependencies/external )
+include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -72,9 +73,14 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## C++11 or Boost
 include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+if    ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( NOT CXX_SUPPORTS_C11 )
+
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
+    include( Package/BoostTest )
+endif ( BUILD_TEST )
 
 ### include all search packages
 addInternalAndExternalPackages()
@@ -95,7 +101,7 @@ set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 if    ( NOT CXX_SUPPORTS_C11 )
-    include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+    include_directories ( ${BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
 set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
@@ -188,6 +194,7 @@ set ( COMMON_HEADERS
         Math
         OpenMP
         NonCopyable
+        Utils
 )
 
 if    ( ${USE_COMPLEX} )
@@ -259,6 +266,11 @@ add_subdirectory ( mic )
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+
+### set link directories ###
+if ( WIN32 )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
+endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -34,6 +34,9 @@
 
 ### Add classes and header files ###
 
+add_subdirectory ( cusolver )
+add_subdirectory ( cusparse )
+
 scai_project(
 
     CLASSES      # .cpp, .hpp
@@ -45,15 +48,15 @@ scai_project(
         CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
-        CUSparseCSRUtils
 
     CUDA_SOURCES   # .cu
 
-
     HEADERS        # .hpp
-
-        CUSPARSETrait
-        CUSPARSEWrapper
 
     ADD_PARENT_SCOPE
 )
+
+
+#  cuSPARSE, cuSOLVER come always with CUDA so no additional tests here
+
+

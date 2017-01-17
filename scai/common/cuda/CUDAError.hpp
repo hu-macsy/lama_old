@@ -2,7 +2,7 @@
  * @file CUDAError.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,6 +42,14 @@
 #include <cublas_v2.h>
 #include <cusparse_v2.h>
 
+#include <cuda_runtime_api.h>
+
+#ifndef CUDART_VERSION
+#error CUDART_VERSION Undefined!
+#elif ( CUDART_VERSION >= 7050 )
+#include <cusolverSp.h>
+#endif
+
 namespace scai
 {
 
@@ -49,15 +57,21 @@ namespace common
 {
 /** Function that translates enum CUresult to strings. */
 
-const char* cudaDriverErrorString( CUresult res );
+COMMON_DLL_IMPORTEXPORT const char* cudaDriverErrorString( CUresult res );
 
 /** Function that translates enum cublasStatus to strings. */
 
-const char* cublasErrorString( cublasStatus_t res );
+COMMON_DLL_IMPORTEXPORT const char* cublasErrorString( cublasStatus_t res );
 
-/** Function that translates enum cuparseStatus to strings. */
+/** Function that translates enum cusparseStatus to strings. */
 
-const char* cusparseErrorString( cusparseStatus_t res );
+COMMON_DLL_IMPORTEXPORT const char* cusparseErrorString( cusparseStatus_t res );
+
+#if ( CUDART_VERSION >= 7050 )
+/** Function that translates enum cusolverStatus to strings. */
+
+COMMON_DLL_IMPORTEXPORT const char* cusolverErrorString( cusolverStatus_t res );
+#endif
 
 } /* end namespace common */
 
@@ -140,16 +154,36 @@ const char* cusparseErrorString( cusparseStatus_t res );
         }                                                                           \
     }
 
-#define SCAI_CHECK_CUDA_ACCESS                                                          \
-    {                                                                                   \
-        CUcontext pctx;                                                                 \
-        SCAI_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                             \
-        SCAI_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )    \
+#if ( CUDART_VERSION >= 7050 )
+#define SCAI_CUSOLVER_CALL( call, msg )                                             \
+    {                                                                               \
+        cusolverStatus_t res = call;                                                \
+        if ( CUSOLVER_STATUS_SUCCESS != res )                                       \
+        {                                                                           \
+            std::ostringstream errorStr;                                            \
+            errorStr << "CUSolver error in line " << __LINE__;                      \
+            errorStr << " of file " << __FILE__ << std::endl;                       \
+            errorStr << "  Call : " #call;                                          \
+            errorStr << "  Msg  : " << msg << std::endl;                            \
+            errorStr << "  Error: ";                                                \
+            errorStr << scai::common::cusolverErrorString( res );                   \
+            errorStr << ", cusolverStatus = " << res << "\n";                       \
+            scai::common::Exception::addCallStack( errorStr );                      \
+            throw scai::common::Exception( errorStr.str() );                        \
+        }                                                                           \
+    }
+#endif
+
+#define SCAI_CHECK_CUDA_ACCESS                                                      \
+    {                                                                               \
+        CUcontext pctx;                                                             \
+        SCAI_CUDA_DRV_CALL( cuCtxGetCurrent( &pctx ), "" );                         \
+        SCAI_ASSERT( pctx, "No current context, forgotten SCAI_CONTEXT_ACCESS ?" )  \
     }
 
-#define SCAI_CHECK_CUDA_ERROR                                                         \
-    {                                                                                 \
-        SCAI_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                    \
+#define SCAI_CHECK_CUDA_ERROR                                                       \
+    {                                                                               \
+        SCAI_CUDA_RT_CALL( cudaGetLastError(), "last CUDA error" )                  \
     }
 
 //    #define SCAI_CHECK_CUDA_ERROR

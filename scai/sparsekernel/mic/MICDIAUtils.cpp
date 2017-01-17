@@ -2,7 +2,7 @@
  * @file MICDIAUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
+#include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -205,10 +206,11 @@ void MICDIAUtils::getCSRValues(
 
                 if ( j >= numColumns )
                 {
-                    break;
+                    continue;
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
+
                 bool nonZero = std::abs( value ) > eps;
 
                 if ( nonZero )
@@ -265,7 +267,7 @@ void MICDIAUtils::getCSRSizes(
 
             if ( j >= numColumns )
             {
-                break;
+                continue;
             }
 
             bool nonZero = std::abs( diaValues[i + ii * numRows] ) > eps;
@@ -312,7 +314,9 @@ void MICDIAUtils::normalGEMV(
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
     // SCAI_REGION( "MIC.DIA.normalGEMV" )
-    MICUtils::setScale( result, beta, y, numRows );
+
+    MICUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+
     void* resultPtr = result;
     const void* xPtr = x;
     const void* diaOffsetsPtr = diaOffsets;
@@ -442,12 +446,13 @@ void MICDIAUtils::jacobi(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
@@ -458,14 +463,18 @@ void MICDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 MICDIAUtils::MICDIAUtils()
 {
+    SCAI_LOG_INFO( logger, "register DIAUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICDIAUtils::~MICDIAUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister DIAUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICDIAUtils MICDIAUtils::guard;    // guard variable for registration

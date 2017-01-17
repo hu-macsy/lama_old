@@ -2,7 +2,7 @@
  * @file common/Thread.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -249,10 +249,10 @@ public:
 } /* end namespace scai */
 
 /** This macro defines a thread private pointer variable that can be used via
- *  operations set and get. 
+ *  operations set and get.
  *
  *  Note: allocate / free is not done here, so no ownership is given here
  */
 
 #define SCAI_THREAD_PRIVATE_PTR( type, var ) \
-scai::common::ThreadPrivatePtr<type> var;
+    scai::common::ThreadPrivatePtr<type> var;

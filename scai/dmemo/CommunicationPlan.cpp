@@ -2,7 +2,7 @@
  * @file CommunicationPlan.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -186,6 +186,8 @@ void CommunicationPlan::purge()
 
 void CommunicationPlan::allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag )
 {
+    mCompressed = false;
+
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from quantities" )
     mEntries.resize( noPartitions );
     mQuantity = 0; // counts total quantity
@@ -211,12 +213,47 @@ void CommunicationPlan::allocate( const IndexType quantities[], const PartitionI
 
 /* ------------------------------------------------------------------------- */
 
+void CommunicationPlan::allocateByOffsets( const IndexType offsets[], const PartitionId noPartitions, bool compressFlag )
+{
+    mCompressed = false;
+
+    SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions by offsets" )
+
+    mEntries.resize( noPartitions );
+
+    SCAI_ASSERT_EQ_ERROR( offsets[0], 0, "Illegal offsets array" )
+
+    for ( PartitionId i = 0; i < noPartitions; ++i )
+    {
+        Entry& entry = mEntries[i];
+        SCAI_ASSERT_LE_ERROR( offsets[i], offsets[i + 1], "illegal offsets for i = " << i )
+        entry.quantity = offsets[i + 1] - offsets[i];
+        entry.offset = offsets[i];
+        entry.partitionId = i;
+        SCAI_LOG_TRACE( logger, "Entries[" << i << "].quantity = " << mEntries[i].quantity )
+        SCAI_LOG_TRACE( logger, " mQuantity = " << mQuantity )
+    }
+
+    mQuantity = offsets[noPartitions];   // total quantity
+
+    mAllocated = true;
+
+    if ( compressFlag )
+    {
+        compress();
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 void CommunicationPlan::allocate(
     const PartitionId noPartitions,
     const PartitionId owners[],
     const IndexType nOwners,
     bool compressFlag )
 {
+    mCompressed = false;
+
     mEntries.resize( noPartitions );
     SCAI_LOG_INFO( logger, "allocate plan for " << noPartitions << " partitions from owners" )
 
@@ -229,7 +266,7 @@ void CommunicationPlan::allocate(
     for ( IndexType i = 0; i < nOwners; ++i )
     {
         const PartitionId& p = owners[i];
-        SCAI_ASSERT( p >= 0 && p < noPartitions, "Illegal owner value: " << p << " at Position " << i )
+        SCAI_ASSERT_VALID_INDEX( p, noPartitions, "Illegal owner value at owners[ " << i << "]" )
         ++mEntries[p].quantity;
         SCAI_LOG_TRACE( logger, " entry for p = " << p << ", total = " << mEntries[p].quantity )
     }

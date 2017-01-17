@@ -2,7 +2,7 @@
  * @file LAMAKernel.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -131,6 +131,6 @@ public:
     }
 };
 
-}
+} /* end namespace utilskernel */
 
-}
+} /* end namespace scai */

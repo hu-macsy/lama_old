@@ -2,7 +2,7 @@
  * @file MPICommunicator.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,7 +40,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/dmemo/CRTPCommunicator.hpp>
+#include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
@@ -67,37 +67,16 @@ namespace dmemo
 
 class COMMON_DLL_IMPORTEXPORT MPICommunicator:
 
-    public CRTPCommunicator<MPICommunicator>,
+    public Communicator,
     public Communicator::Register<MPICommunicator>           // register at factory
 {
-
-// Only MPICommunicatorManager is allowed to create MPI communicator
-
-    friend class MPICommunicatorManager;
-    friend class CRTPCommunicator<MPICommunicator> ;
-
 public:
+
     virtual ~MPICommunicator();
 
     virtual bool isEqual( const Communicator& other ) const;
 
     virtual ThreadSafetyLevel getThreadSafetyLevel() const;
-
-    /** @brief Provide implementation for Communicator::getSize */
-
-    virtual PartitionId getSize() const;
-
-    /** @brief Provide implementation for Communicator::getRank */
-
-    virtual PartitionId getRank() const;
-
-    /** @brief Provide implementation for Communicator::getNodeSize */
-
-    virtual PartitionId getNodeSize() const;
-
-    /** @brief Provide implementation for Communicator::getNodeRank */
-
-    virtual PartitionId getNodeRank() const;
 
     MPI_Comm getMPIComm() const;
 
@@ -111,11 +90,9 @@ public:
      */
     virtual void all2all( IndexType recvValues[], const IndexType sendValues[] ) const;
 
-    template<typename ValueType>
-    MPI_Request startrecv( ValueType* buffer, int count, int source ) const;
+    MPI_Request startrecv( void* buffer, int count, int source, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    MPI_Request startsend( const ValueType buffer[], int count, int target ) const;
+    MPI_Request startsend( const void* buffer, int count, int target, common::scalar::ScalarType stype ) const;
 
     virtual void synchronize() const;
 
@@ -123,104 +100,131 @@ public:
 
 private:
 
-    MPICommunicator( int& argc, char**& argv );
+    MPICommunicator( int& argc, char** & argv );
 
-    template<typename ValueType>
-    inline static MPI_Datatype getMPIType();
+    /** Implementation of Communicator::sumImpl */
 
-    template<typename T1, typename T2>
-    inline static MPI_Datatype getMPI2Type();
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    inline static MPI_Op getMPISum();
+    /** Implementation of Communicator::minImpl */
 
-    template<typename ValueType>
-    inline static MPI_Op getMPIMin();
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    inline static MPI_Op getMPIMax();
+    /** Implementation of Communicator::maxImpl */
 
-    template<typename ValueType>
-    void bcastImpl( ValueType val[], const IndexType n, const PartitionId root ) const;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    void all2allvImpl( ValueType* recvBuffer[], IndexType recvCount[], ValueType* sendBuffer[], IndexType sendCount[] ) const;
+    /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
 
-    template<typename ValueType>
-    ValueType sumImpl( ValueType myVal ) const;
+    inline static MPI_Datatype getMPIType( common::scalar::ScalarType stype );
 
-    template<typename ValueType>
-    ValueType maxImpl( ValueType myVal ) const;
+    /** Translate SCAI project enum type ScalarType ( two types ) to MPI enum MPI_Datatype */
 
-    template<typename ValueType>
-    ValueType minImpl( ValueType myVal ) const;
+    inline static MPI_Datatype getMPI2Type( common::scalar::ScalarType stype1, common::scalar::ScalarType stype2 );
 
-    template<typename ValueType>
-    inline void send( const ValueType* buffer, int count, int target ) const;
+    inline static MPI_Op getMPISum( common::scalar::ScalarType stype );
 
-    template<typename ValueType>
-    inline int getCount( MPI_Status& status ) const;
+    inline static MPI_Op getMPIMin( common::scalar::ScalarType stype );
 
-    template<typename ValueType>
-    void scatterImpl( ValueType myvals[], const IndexType n, const PartitionId root, const ValueType allvals[] ) const;
+    inline static MPI_Op getMPIMax( common::scalar::ScalarType stype );
 
-    template<typename ValueType>
-    void scatterVImpl(
-        ValueType myvals[],
-        const IndexType n,
-        const PartitionId root,
-        const ValueType allvals[],
-        const IndexType sizes[] ) const;
+    /** MPI implementation for pure method Communicator::bcastImpl */
 
-    template<typename ValueType>
-    void gatherImpl( ValueType allvals[], const IndexType n, const PartitionId root, const ValueType myvals[] ) const;
+    void bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
+    /** MPI Implementation for pure method Communciator::all2allvImpl */
+
+    void all2allvImpl( void* recvBuffer[], IndexType recvCount[],
+                       void* sendBuffer[], IndexType sendCount[],
+                       common::scalar::ScalarType stype ) const;
+
+    inline void send( const void* buffer, int count, int target, common::scalar::ScalarType stype ) const;
+
+    inline int getCount( MPI_Status& status, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::scatterImpl */
+
+    void scatterImpl( void* myVals, const IndexType n, const PartitionId root, const void* allVals, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::scatterVImpl */
+
+    void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
+                       const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::gatherImpl */
+
+    void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of pure method Communicator::gatherVImpl */
+
     void gatherVImpl(
-        ValueType allvals[],
+        void* allvals,
         const IndexType n,
         const PartitionId root,
-        const ValueType myvals[],
-        const IndexType sizes[] ) const;
+        const void* myvals,
+        const IndexType sizes[],
+        common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
+    /** Implementation of pure method Communicator::shiftImpl */
+
     IndexType shiftImpl(
-        ValueType newvals[],
+        void* newVals,
         const IndexType newSize,
         const PartitionId source,
-        const ValueType oldVals[],
+        const void* oldVals,
         const IndexType oldSize,
-        const PartitionId dest ) const;
-
-    template<typename ValueType>
-    tasking::SyncToken* shiftAsyncImpl(
-        ValueType newvals[],
-        const PartitionId source,
-        const ValueType oldVals[],
         const PartitionId dest,
-        const IndexType size ) const;
+        common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
-    void swapImpl( ValueType val[], const IndexType n, PartitionId partner ) const;
+    /** Implementation of pure method Communicator::shiftAsyncImpl */
 
-    template<typename ValueType>
-    void maxlocImpl( ValueType& val, IndexType& location, PartitionId root ) const;
+    tasking::SyncToken* shiftAsyncImpl(
+        void* newVals,
+        const PartitionId source,
+        const void* oldVals,
+        const PartitionId dest,
+        const IndexType size,
+        common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
+    /** Implementation of pure method Communicator::swapImpl */
+
+    void swapImpl( void* val, const IndexType n, PartitionId partner, common::scalar::ScalarType stype ) const;
+
+    void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+
+    void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
+
+    /** Implementation of Communicator::supportsLocReduction */
+
+    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
+
+    /** Implementation of pure method Communicator::exchangeByPlanImpl */
+
     void exchangeByPlanImpl(
-        ValueType recvData[],
+        void* recvData,
         const CommunicationPlan& recvPlan,
-        const ValueType sendData[],
-        const CommunicationPlan& sendPlan ) const;
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const;
 
-    template<typename ValueType>
+    /** Implementation of pure method Communicator::exchangeByPlanAsyncImpl */
+
     tasking::SyncToken* exchangeByPlanAsyncImpl(
-        ValueType recvData[],
+        void* recvData,
         const CommunicationPlan& recvPlan,
-        const ValueType sendData[],
-        const CommunicationPlan& sendPlan ) const;
+        const void* sendData,
+        const CommunicationPlan& sendPlan,
+        const common::scalar::ScalarType stype ) const;
 
-    void initialize( int& argc, char**& argv );
+    /** Implementation of Communicator::getProcessorName */
+
+    virtual void getProcessorName( char* name ) const;
+
+    /** Implementation of Communicator::maxProcessorName */
+
+    virtual size_t maxProcessorName() const;
+
+    void initialize( int& argc, char** & argv );
 
     const common::Thread::Id mMainThread;  // id of thread that calls constructor
 
@@ -232,16 +236,11 @@ private:
 
 protected:
 
-    MPICommunicator( int& argc, char**& argv, const CommunicatorKind& type );
+    MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type );
 
     MPICommunicator();
 
-    void setNodeData();
-
     virtual hmemo::ContextPtr getCommunicationContext( const hmemo::_HArray& array ) const;
-
-    int mRank; // rank of this processor
-    int mSize;// size of communicator
 
     bool mExternInitialization;
 
@@ -254,6 +253,8 @@ protected:
 
     static void sum_complex_long_double( void* in, void* out, int* count,
                                          MPI_Datatype* dtype );
+
+    static MPI_Datatype mComplexLongDoubleType;
 
     static MPI_Op mMaxComplexFloat;
     static MPI_Op mMaxComplexDouble;
@@ -304,187 +305,126 @@ private:
 /*              getMPIType                                                            */
 /* ---------------------------------------------------------------------------------- */
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<float>()
+inline MPI_Datatype MPICommunicator::getMPIType( common::scalar::ScalarType stype )
 {
-    return MPI_FLOAT;
-}
+    switch ( stype )
+    {
+        case common::scalar::INT                 :
+            return MPI_INT;
+        case common::scalar::LONG                :
+            return MPI_LONG;
+        case common::scalar::FLOAT               :
+            return MPI_FLOAT;
+        case common::scalar::DOUBLE              :
+            return MPI_DOUBLE;
+        case common::scalar::LONG_DOUBLE         :
+            return MPI_LONG_DOUBLE;
+        case common::scalar::COMPLEX             :
+            return MPI_COMPLEX;
+        case common::scalar::DOUBLE_COMPLEX      :
+            return MPI_DOUBLE_COMPLEX;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            return mComplexLongDoubleType;
+        case common::scalar::CHAR                :
+            return MPI_CHAR;
+        case common::scalar::UNSIGNED_INT        :
+            return MPI_UNSIGNED;
+        case common::scalar::UNSIGNED_LONG       :
+            return MPI_UNSIGNED_LONG;
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<char>()
-{
-    return MPI_CHAR;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<double>()
-{
-    return MPI_DOUBLE;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<int>()
-{
-    return MPI_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<unsigned int>()
-{
-    return MPI_UNSIGNED;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<long double>()
-{
-    return MPI_LONG_DOUBLE;
-}
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexFloat>()
-{
-    return MPI_COMPLEX;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexDouble>()
-{
-    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
-    // May be helpful: MPI::DOUBLE_COMPLEX
-    return MPI_DOUBLE_COMPLEX;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<ComplexLongDouble>()
-{
-    // Be careful: some MPI implementations do not provide MPI_DOUBLE_COMPLEX
-    // May be helpful: MPI::DOUBLE_COMPLEX
-    return MPI::LONG_DOUBLE_COMPLEX;
-}
-
-#endif
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPIType<unsigned long>()
-{
-    return MPI_UNSIGNED_LONG;
+        default:
+            COMMON_THROWEXCEPTION( "No MPI Type specified for " << stype )
+            return MPI_INT;
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPI2Type                                                           */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename T1, typename T2>
-inline MPI_Datatype MPICommunicator::getMPI2Type()
+inline MPI_Datatype MPICommunicator::getMPI2Type( common::scalar::ScalarType stype1,
+        common::scalar::ScalarType stype2 )
 {
-    COMMON_THROWEXCEPTION( "unsupported type for MPI communication" )
-    return MPI_2INT;
-}
+    if ( stype2 != common::scalar::INT )
+    {
+        COMMON_THROWEXCEPTION( "getMPI2Type, 2nd type must be INT, is " << stype2 )
+    }
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<float, int>()
-{
-    return MPI_FLOAT_INT;
-}
+    switch ( stype1 )
+    {
+        case common::scalar::INT                 :
+            return MPI_2INT;
+        case common::scalar::FLOAT               :
+            return MPI_FLOAT_INT;
+        case common::scalar::DOUBLE              :
+            return MPI_DOUBLE_INT;
 
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<double, int>()
-{
-    return MPI_DOUBLE_INT;
-}
-
-template<>
-inline MPI_Datatype MPICommunicator::getMPI2Type<int, int>()
-{
-    return MPI_2INT;
+        default:
+            COMMON_THROWEXCEPTION( "No MPI2 Type for " << stype1 )
+            return MPI_2INT;
+    }
 }
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPISum                                                             */
 /* ---------------------------------------------------------------------------------- */
 
-
-template<typename ValueType>
-inline MPI_Op MPICommunicator::getMPISum()
+inline MPI_Op MPICommunicator::getMPISum( common::scalar::ScalarType stype )
 {
-    return MPI_SUM;
-}
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
-template<>
-inline MPI_Op MPICommunicator::getMPISum<ComplexLongDouble>()
-{
-    return mSumComplexLongDouble;
-}
+    if ( stype == common::scalar::LONG_DOUBLE_COMPLEX )
+    {
+        return mSumComplexLongDouble;
+    }
 
 #endif
+
+    return MPI_SUM;
+}
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPIMax                                                             */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename ValueType>
-inline MPI_Op MPICommunicator::getMPIMax()
+inline MPI_Op MPICommunicator::getMPIMax( common::scalar::ScalarType stype )
 {
-    return MPI_MAX;
-}
-
+    switch ( stype )
+    {
 #ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline MPI_Op MPICommunicator::getMPIMax<ComplexFloat>()
-{
-    return mMaxComplexFloat;
-}
-
-template<>
-inline MPI_Op MPICommunicator::getMPIMax<ComplexDouble>()
-{
-    return mMaxComplexDouble;
-}
-
-template<>
-inline MPI_Op MPICommunicator::getMPIMax<ComplexLongDouble>()
-{
-    return mMaxComplexLongDouble;
-}
-
+        case common::scalar::COMPLEX             :
+            return mMaxComplexFloat;
+        case common::scalar::DOUBLE_COMPLEX      :
+            return mMaxComplexDouble;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            return mMaxComplexLongDouble;
 #endif
+        default:
+            return MPI_MAX;
+    }
+}
 
 /* ---------------------------------------------------------------------------------- */
 /*              getMPIMin                                                             */
 /* ---------------------------------------------------------------------------------- */
 
-template<typename ValueType>
-inline MPI_Op MPICommunicator::getMPIMin()
+inline MPI_Op MPICommunicator::getMPIMin( common::scalar::ScalarType stype )
 {
-    return MPI_MIN;
-}
-
+    switch ( stype )
+    {
 #ifdef SCAI_COMPLEX_SUPPORTED
-
-template<>
-inline MPI_Op MPICommunicator::getMPIMin<ComplexFloat>()
-{
-    return mMinComplexFloat;
-}
-
-template<>
-inline MPI_Op MPICommunicator::getMPIMin<ComplexDouble>()
-{
-    return mMinComplexDouble;
-}
-
-template<>
-inline MPI_Op MPICommunicator::getMPIMin<ComplexLongDouble>()
-{
-    return mMinComplexLongDouble;
-}
-
+        case common::scalar::COMPLEX             :
+            return mMinComplexFloat;
+        case common::scalar::DOUBLE_COMPLEX      :
+            return mMinComplexDouble;
+        case common::scalar::LONG_DOUBLE_COMPLEX :
+            return mMinComplexLongDouble;
 #endif
+        default:
+            return MPI_MIN;
+    }
+}
 
 } /* end namespace dmemo */
 

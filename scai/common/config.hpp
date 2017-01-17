@@ -2,7 +2,7 @@
  * @file common/config.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,6 +35,7 @@
 //No include header guards because we want to allow this header to be included multiple times
 
 #ifdef WIN32
+
 #ifdef min
 #undef min
 #endif //min
@@ -55,10 +56,20 @@
 #endif //COMMON_COMPILING_DLL
 #endif //COMMON_DLL_IMPORTEXPORT
 
-#else //WIN32 is not defined
+#else  //WIN32
+
+// visibility can now be restricted in gnu compilers with -fvisibility=hidden
 
 #ifndef COMMON_DLL_IMPORTEXPORT
+
+#if __GNUC__ >= 4
+#define COMMON_DLL_IMPORTEXPORT  __attribute__ ( ( visibility ( "default" ) ) )
+#else
 #define COMMON_DLL_IMPORTEXPORT
-#endif //COMMON_DLL_IMPORTEXPORT
+#endif
+
+#endif
+
 
 #endif //WIN32
+

@@ -2,7 +2,7 @@
  * @file OpenMPUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,7 +42,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/utilskernel/UnaryOp.hpp>
 
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -58,46 +59,54 @@ class COMMON_DLL_IMPORTEXPORT OpenMPUtils
 {
 public:
 
-    /** OpenMP implementation for UtilKernelTrait::conj */
-
-    template<typename ValueType>
-    static void conj( ValueType mValues[], const IndexType n );
-
-    /** OpenMP implementation for UtilKernelTrait::setScale */
-
-    template<typename ValueType, typename OtherValueType>
-    static void setScale(
-        ValueType outValues[],
-        const ValueType value,
-        const OtherValueType inValues[],
-        const IndexType n );
-
-    /*  This method is an implementation of UtilKernelTrait::validIndexes */
+    /** OpenMP implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
     /** OpenMP implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
+    static ValueType reduce(
+        const ValueType array[],
+        const IndexType n,
+        const ValueType zero,
+        const binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setVal */
+    /** OpenMP implementation for UtilKernelTrait::reduce2 */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
+    static ValueType reduce2(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const binary::BinaryOp binOp,
+        const ValueType zero,
+        const binary::BinaryOp redOp );
 
-    /** OpenMP implementation for UtilKernelTrait::Setter::setOrder */
+    /** OpenMP implementation for UtilKernelTrait::setVal */
+
+    template<typename ValueType>
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::scaleVectorAddScalar */
+
+    template<typename ValueType>
+    static void scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
+
+    /** OpenMP implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::getValue */
+
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
-
-    /** OpenMP implementation for UtilKernelTrait::absMaxDiffVal */
-
-    template<typename ValueType>
-    static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::isSorted */
 
@@ -107,12 +116,48 @@ public:
     /** OpenMP implementation for UtilKernelTrait::set */
 
     template<typename ValueType1, typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::setSection */
+
+    template<typename ValueType1, typename ValueType2>
+    static void setSection(
+        ValueType1 out[],
+        const IndexType inc1,
+        const ValueType2 in[],
+        const IndexType inc2,
+        const IndexType n,
+        const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::unaryOp */
+
+    template<typename ValueType>
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::binaryOp */
+
+    template<typename ValueType>
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar1 */
+
+    template<typename ValueType>
+    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+
+    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar2 */
+
+    template<typename ValueType>
+    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
     template<typename ValueType1, typename ValueType2>
-    static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
+    static void setGather(
+        ValueType1 out[],
+        const ValueType2 in[],
+        const IndexType indexes[],
+        const binary::BinaryOp op,
+        const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scatterVal */
 
@@ -122,40 +167,76 @@ public:
     /** OpenMP implementation for UtilKernelTrait::setScatter */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
-
-    /** OpenMP implementation for UtilKernelTrait::invert */
-
-    template<typename ValueType>
-    static void invert( ValueType array[], const IndexType n );
+    static void setScatter( ValueType1 out[],
+                            const IndexType indexes[],
+                            const ValueType2 in[],
+                            const binary::BinaryOp op,
+                            const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>
     static ValueType scan( ValueType array[], const IndexType n );
 
-    /** OpenMP implementation for UtilKernelTrait::sort, uses bucket sort */
+    /** OpenMP implementation for UtilKernelTrait::unscan */
 
     template<typename ValueType>
-    static void sort( ValueType array[], IndexType perm[], const IndexType n );
+    static ValueType unscan( ValueType array[], const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::sort */
+
+    template<typename ValueType>
+    static void sort(
+        IndexType perm[],
+        ValueType outValues[],
+        const ValueType inValues[],
+        const IndexType n,
+        const bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
+    /** Count bucket sizes for values mapped to buckets, see UtilKernelTrait::countBuckets */
+
+    template<typename BucketType>
+    static void countBuckets( IndexType bucketSizes[], const BucketType nBuckets, const BucketType bucketMap[], const IndexType n );
+
+    /** Resort indexes 0, ..., n-1 according to their mapping to buckets, see UtilKernelTrait::sortInBuckets */
+
+    template<typename BucketType>
+    static void sortInBuckets( IndexType sortedIndexes[],
+                               IndexType offsets[],
+                               const BucketType nBuckets,
+                               const BucketType bucketMap[],
+                               const IndexType n );
 private:
 
-    template<typename ValueType>
-    static ValueType reduceSum( const ValueType array[], const IndexType n );
+    /** Optimized reduce for binary::ADD as reduction operator. */
 
     template<typename ValueType>
-    static ValueType reduceMaxVal( const ValueType array[], const IndexType n );
+    static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceMinVal( const ValueType array[], const IndexType n );
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
 
     template<typename ValueType>
-    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n );
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    template<typename ValueType>
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    /** The following method is the same as reduce but will not switch for optimized routines any more. */
+
+    template<typename ValueType>
+    static ValueType reduceBinOp(
+        const ValueType array[],
+        const IndexType n,
+        const ValueType zero,
+        const binary::BinaryOp op );
+
+    template<typename ValueType>
+    static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     template<typename ValueType>
     static ValueType scanSerial( ValueType array[], const IndexType numValues );
@@ -178,11 +259,35 @@ private:
         const IndexType n,
         const ValueType eps );
 
+    template<typename ValueType>
+    static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
+
+    /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
+
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct BaseKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType>
+    struct NumericKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType>
+    struct ArrayKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct BinOpKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

@@ -2,7 +2,7 @@
  * @file count.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,8 +43,8 @@
  */
 
 #define SCAI_COMMON_COUNT_NARG( ... ) COUNT_NARG_( __VA_ARGS__ )
-#define COUNT_NARG_( ... ) COUNT_ARGS_( , ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-#define COUNT_ARGS_( z, a, b, c, d, e, f, g, h, i, cnt, ...) cnt
+#define COUNT_NARG_( ... ) COUNT_ARGS_( , ##__VA_ARGS__, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+#define COUNT_ARGS_( z, a, b, c, d, e, f, g, h, i, j, k, l, cnt, ...) cnt
 
 /** Macro gives the first argument of a variadic argument list. Uses help macro to force evaluation of macro before
  *

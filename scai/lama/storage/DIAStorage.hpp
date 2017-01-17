@@ -2,7 +2,7 @@
  * @file DIAStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -183,6 +183,10 @@ public:
         hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
 
+    /** Override MatrixStorage<ValueType>::getFirstColumnIndexes */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
+
     /**
      * @brief fills DIA matrix storage by csr sparse data.
      *
@@ -203,6 +207,25 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr loc );
+
+    /**
+     * @brief fills DIA sparse matrix by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the input csr sparse matrix
+     * @param[in] values       the data values of the input csr sparse matrix
+     * @param[in] loc          is the context where filling takes place
+     */
+    template<typename OtherValueType>
+    void setDIADataImpl(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
 
     /** Implementation of MatrixStorage::matrixTimesVector for DIA */
 
@@ -264,10 +287,27 @@ public:
 
     IndexType getNumDiagonals() const;
 
-    /** Template method for getting row. */
+    /** Template version of getRow */
 
     template<typename OtherType>
-    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::binary::BinaryOp op );
+
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
+                        const utilskernel::binary::BinaryOp op );
 
     /** This method returns the diagonal
      *
@@ -328,6 +368,11 @@ public:
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for DIA storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     /** Initiate an asynchronous data transfer to a specified location. */
 
     void prefetch( const hmemo::ContextPtr location ) const;
@@ -339,7 +384,11 @@ public:
     /** Swaps this with other.
      * @param[in,out] other the DIAStorage to swap this with
      */
-    void swap( DIAStorage<ValueType>& other );
+    void swapImpl( DIAStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     virtual size_t getMemoryUsageImpl() const;
 
@@ -383,11 +432,9 @@ private:
         const IndexType numRows,
         const IndexType numDiagonals )
     {
-        SCAI_ASSERT_ERROR( irow >= 0, "irow = " << irow );
-        SCAI_ASSERT_ERROR( idiag >= 0, "idiag = " << idiag );
-        SCAI_ASSERT_ERROR( irow < numRows, "irow = " << irow << " out of range, numRows = " << numRows );
-        SCAI_ASSERT_ERROR( idiag < numDiagonals,
-                           "idiag = " << idiag << " out of range, numDiagonals = " << numDiagonals );
+        SCAI_ASSERT_VALID_INDEX_ERROR( irow, numRows, "illegal row index" )
+        SCAI_ASSERT_VALID_INDEX_ERROR( idiag, numDiagonals, "illegal diag" )
+
         return idiag * numRows + irow;
     }
 

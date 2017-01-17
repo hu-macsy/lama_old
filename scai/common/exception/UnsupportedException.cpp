@@ -2,7 +2,7 @@
  * @file UnsupportedException.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -101,6 +101,11 @@ UnsupportedException::UnsupportedType UnsupportedException::getUnsupportedSettin
     }
 
     return unsupportedSetting;
+}
+
+void UnsupportedException::resetSetting()
+{
+    unsupportedSetting = UNSUPPORTED_UNDEFINED;
 }
 
 } /* end common */

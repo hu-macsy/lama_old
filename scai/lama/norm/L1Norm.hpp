@@ -2,7 +2,7 @@
  * @file L1Norm.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,10 +46,15 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT L1Norm: public scai::lama::Norm
+class COMMON_DLL_IMPORTEXPORT L1Norm:
+
+    public Norm,
+    public Norm::Register<L1Norm>
 {
 public:
+
     L1Norm();
+
     virtual ~L1Norm();
 
     virtual Scalar apply( const Scalar& scalar ) const;
@@ -57,6 +62,14 @@ public:
     virtual Scalar apply( const Vector& vector ) const;
 
     virtual Scalar apply( const Matrix& matrix ) const;
+
+    static std::string createValue();
+
+    static Norm* create();
+
+    /** Override Printable::writeAt with version for this class. */
+
+    virtual void writeAt( std::ostream& stream ) const;
 };
 
 Scalar l1Norm( const Scalar& scalar );

@@ -2,7 +2,7 @@
  * @file Context.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -88,6 +88,8 @@ void Context::enable( const char* file, int line ) const
     mEnabled = true;
     mFile = file;
     mLine = line;
+
+    setCurrent();
 }
 
 /* -----------------------------------------------------------------------------*/
@@ -105,6 +107,8 @@ void Context::disable( const char* file, int line ) const
     mEnabled = false;
     mFile = NULL;
     mLine = 0;
+
+    unsetCurrent();
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -192,6 +196,78 @@ ContextPtr Context::getContextPtr()
 
     return getHostPtr();
 }
+
+/* ---------------------------------------------------------------------------------*/
+/*  thread private : current context                                                */
+/* ---------------------------------------------------------------------------------*/
+
+void Context::setCurrent() const
+{
+    ContextStack* myStack = contextStack.get();
+
+    if ( myStack == NULL )
+    {
+        // first time use of stack, it must be allocated
+
+        myStack = new ContextStack;
+        contextStack.set( myStack );
+    }
+
+    myStack->push( this );
+}
+
+void Context::unsetCurrent() const
+{
+    ContextStack* myStack = contextStack.get();
+
+    if ( myStack == NULL )
+    {
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but NEVER set before" )
+        return;
+    }
+
+    if ( myStack->empty() )
+    {
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but not set before" )
+        return;
+    }
+
+    const Context* current = myStack->top();
+
+    if ( current != this )
+    {
+        SCAI_LOG_WARN( logger, "unset this context " << *this << " but was: " << *current )
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, "unset this context " << *this << " was current" )
+    }
+
+    myStack->pop();
+}
+
+const Context* Context::getCurrentContext()
+{
+    ContextStack* myStack = contextStack.get();
+
+    if ( myStack == NULL )
+    {
+        return NULL;
+    }
+
+    if ( myStack->empty() )
+    {
+        return NULL;
+    }
+
+    return myStack->top();
+}
+
+// we can rely on the fact that thread-private variable is initialized with NULL
+
+SCAI_THREAD_PRIVATE_PTR( Context::ContextStack, Context::contextStack )
+
+/* ----------------------------------------------------------------------- */
 
 } /* end namespace hmemo */
 

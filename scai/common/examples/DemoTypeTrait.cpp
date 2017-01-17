@@ -2,7 +2,7 @@
  * @file common/examples/DemoTypeTrait.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,21 +35,51 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/ScalarType.hpp>
 
+#include<iostream>
+#include<iomanip>
+
 using scai::common::TypeTraits;
+
+using namespace std;
 
 template<typename ValueType>
 void testRoutine()
 {
-    std::cout << "TypeTraits<...>::id() = " << TypeTraits<ValueType>::id() << std::endl;
-    scai::common::scalar::ScalarType x = TypeTraits<ValueType>::stype;
-    std::cout << "TypeTraits<...>::stype = " << x << std::endl;
+    // common string used for output of name of ValueType
+
+    string typeTemplate = TypeTraits<ValueType>::id();
+    typeTemplate = "<" + typeTemplate + ">";
+
+    cout << "TypeTraits" << typeTemplate << " = " << TypeTraits<ValueType>::id() << endl;
+    scai::common::scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    cout << "TypeTraits" << typeTemplate << "::stype = " << stype << endl;
+    cout << "isComplex = " << isComplex( stype ) << endl;
+
+    ValueType alpha = ValueType( 1 ) / ValueType( 3 );
+    ValueType beta  = ValueType( 2 ) / ValueType( 3 );
+    int precision = TypeTraits<ValueType>::precision();
+    cout << "precision" << typeTemplate << " = " << precision << endl;
+    cout << setprecision( precision ) << "  1/3 = " << alpha << endl;
+    cout << setprecision( precision ) << "  2/3 = " << beta  << endl;
+
+    cout << "eps0" << typeTemplate << " = " << TypeTraits<ValueType>::eps0() << endl;
+    cout << "eps1" << typeTemplate << " = " << TypeTraits<ValueType>::eps1() << endl;
+    cout << "min" << typeTemplate << " = " << TypeTraits<ValueType>::getMin() << endl;
+    cout << "max" << typeTemplate << " = " << TypeTraits<ValueType>::getMax() << endl;
+    cout << "small" << typeTemplate << " = " << TypeTraits<ValueType>::small() << endl;
 }
 
 int main()
 {
+    testRoutine<IndexType>();
     testRoutine<float>();
     testRoutine<double>();
+    testRoutine<long double>();
+
 #ifdef SCAI_COMPLEX_SUPPORTED
     testRoutine<ComplexFloat>();
+    testRoutine<ComplexDouble>();
+    testRoutine<ComplexLongDouble>();
 #endif
+
 }

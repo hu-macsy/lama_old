@@ -2,7 +2,7 @@
  * @file lama/test/matrix/Redistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -86,7 +86,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.P_MatrixStorageTest" );
 
 /* ------------------------------------------------------------------------- */
 
-typedef boost::mpl::list< CSRStorage<float>,
+typedef boost::mpl::list < CSRStorage<float>,
         ELLStorage<double>,
         JDSStorage<float>,
         COOStorage<double>,
@@ -257,7 +257,12 @@ BOOST_AUTO_TEST_CASE( exchangeHaloTest )
         }
 
         SCAI_LOG_INFO( logger, *comm << ": #required rows = " << requiredIndexes.size() );
-        HaloBuilder::build( *rowDist, requiredIndexes, halo );
+
+        {
+            HArrayRef<IndexType> haloIndexes( requiredIndexes );  // does not copy values
+            HaloBuilder::build( *rowDist, haloIndexes, halo );
+        }
+
         unique_ptr<MatrixStorage<ValueType> > haloMatrix( matrixStorage.newMatrixStorage() );
         haloMatrix->exchangeHalo( halo, matrixStorage, *comm );
         SCAI_LOG_INFO( logger, *comm << ": halo matrix = " << *haloMatrix );

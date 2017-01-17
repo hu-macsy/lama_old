@@ -2,7 +2,7 @@
  * @file L2Norm.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -50,7 +50,11 @@ namespace lama
  * @brief L2Norm is a functor specialization of Norm that calculates the l2 norm
  *        for the passed values.
  */
-class COMMON_DLL_IMPORTEXPORT L2Norm: public scai::lama::Norm
+class COMMON_DLL_IMPORTEXPORT L2Norm:
+
+    public Norm,
+    public Norm::Register<L2Norm>
+
 {
 public:
     /**
@@ -89,6 +93,20 @@ public:
      * @return              the l2 norm of the Matrix matrix.
      */
     virtual Scalar apply( const Matrix& matrix ) const;
+
+    /**
+     *  Getter routine for key of this derived class used in Norm factory
+     */
+    static std::string createValue();
+
+    /**
+     *  Create method is just function version of constructor.
+     */
+    static Norm* create();
+
+    /** Override Printable::writeAt with version for this class. */
+
+    virtual void writeAt( std::ostream& stream ) const;
 };
 
 /**

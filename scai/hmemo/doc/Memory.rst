@@ -7,6 +7,8 @@ Memory itself is a polymorphic base class that defines some pure virtual functio
 must be provided by the derived classes.
 
 .. image:: _images/MemoryClass.png
+    :align: center
+    :width: 800px
 
 These are the derived classes currently supported:
 
@@ -107,4 +109,3 @@ The following figure shows how the different memory transfer operations interact
 .. image:: _images/MemoryTransfer.png
     :align: center
     :width: 800px
-

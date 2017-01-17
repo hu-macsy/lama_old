@@ -2,7 +2,7 @@
  * @file Bitmap.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -131,12 +131,12 @@ public:
     }
 
     template<typename ValueType>
-    void drawCSR( const int nRows, const int nCols, const int ia[], const int ja[], const ValueType values[] )
+    void drawCSR( const IndexType nRows, const IndexType nCols, const IndexType ia[], const IndexType ja[], const ValueType values[] )
     {
         ValueType minval =  10000.0;
         ValueType maxval = -100000.0;
 
-        for ( int k = 0; k < ia[nRows]; ++k )
+        for ( IndexType k = 0; k < ia[nRows]; ++k )
         {
             ValueType v = values[k];
 
@@ -155,9 +155,9 @@ public:
         double multCol = double( width ) / double( nCols );
         setMinMax( minval, maxval );
 
-        for ( int i = 0; i < nRows; ++i )
+        for ( IndexType i = 0; i < nRows; ++i )
         {
-            for ( int j = ia[i]; j < ia[i + 1]; ++j )
+            for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
             {
                 set( static_cast<int>( i * multRow ), static_cast<int>( ja[j] * multCol ), values[j] );
             }
@@ -165,9 +165,9 @@ public:
 
         // diagonals drawn at the end
 
-        for ( int i = 0; i < nRows; ++i )
+        for ( IndexType i = 0; i < nRows; ++i )
         {
-            for ( int j = ia[i]; j < ia[i + 1]; ++j )
+            for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
             {
                 if ( ja[j] == i )
                 {

@@ -2,7 +2,7 @@
  * @file HArrayTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,6 +42,8 @@
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
 using namespace boost;
 using namespace scai;
 using namespace scai::hmemo;
@@ -76,12 +78,13 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     ContextPtr contextPtr = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "constructorTest on " << *contextPtr );
     const IndexType N = 100;
+    const IndexType zero = 0;
     HArray<float> array;
-    BOOST_CHECK_EQUAL( array.size(), 0 );
+    BOOST_CHECK_EQUAL( array.size(), zero );
     BOOST_CHECK_EQUAL( array.isValid( contextPtr ), false );
     array.resize( N );
     BOOST_CHECK_EQUAL( array.size(), N );
-    BOOST_CHECK_EQUAL( array.capacity( contextPtr ), 0 );
+    BOOST_CHECK_EQUAL( array.capacity( contextPtr ), zero );
     BOOST_CHECK_EQUAL( array.isValid( contextPtr ), false );
     {
         WriteAccess<float> write( array, contextPtr );
@@ -141,6 +144,42 @@ BOOST_AUTO_TEST_CASE( initTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( init1Test )
+{
+    const IndexType N = 4;
+    const IndexType val = 1;
+
+    HArray<IndexType> array;
+
+    array.init( val, 0 );
+    array.init( val, N );
+
+    BOOST_REQUIRE_EQUAL( array.size(), N );
+
+    ContextPtr hostContext = Context::getHostPtr();
+
+    {
+        ReadAccess<IndexType>read( array, hostContext );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            BOOST_CHECK_EQUAL( val, read[i] );
+        }
+    }
+
+    IndexType N2 = N / 2;
+    array.init( val + 1, N2 );
+
+    ReadAccess<IndexType>read( array, hostContext );
+
+    for ( IndexType i = 0; i < N2; ++i )
+    {
+        BOOST_CHECK_EQUAL( val + 1, read[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( resizeTest )
 {
     ContextPtr contextPtr = Context::getContextPtr();
@@ -165,27 +204,59 @@ BOOST_AUTO_TEST_CASE( resizeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( resize1Test )
+{
+    ContextPtr contextPtr = Context::getContextPtr();
+
+    SCAI_LOG_INFO( logger, "resize1Test with context = " << *contextPtr )
+
+    const IndexType N = 5;
+
+    HArray<IndexType> hArray; // default, not allocated at all
+
+    {
+        WriteOnlyAccess<IndexType> writeAccess( hArray, contextPtr, 0 );
+    }
+    {
+        WriteOnlyAccess<IndexType> writeAccess( hArray, contextPtr, N );
+
+        if ( contextPtr->getType() == Context::Host )
+        {
+            for ( IndexType i = 0; i < N; ++i )
+            {
+                writeAccess[i] = 0;
+            }
+        }
+    }
+
+    BOOST_CHECK_EQUAL( hArray.size(), N );
+    BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), N );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( capacityTest )
 {
     ContextPtr contextPtr = Context::getContextPtr();  // test context
     ContextPtr hostPtr    = Context::getHostPtr();
     SCAI_LOG_INFO( logger, "capacityTest on " << *contextPtr );
-    static IndexType N = 10;
+    const IndexType N = 10;
+    const IndexType zero = 0;
     HArray<IndexType> hArray; // default, not allocated at all
     hArray.reserve( contextPtr, N );
-    BOOST_CHECK_EQUAL( hArray.size(), 0 );
+    BOOST_CHECK_EQUAL( hArray.size(), zero );
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), N );
     {
         WriteAccess<IndexType> access( hArray, contextPtr );
         BOOST_CHECK_EQUAL( access.capacity(), N );
         access.reserve( 2 * N );
     }
-    BOOST_CHECK_EQUAL( hArray.size(), 0 );
+    BOOST_CHECK_EQUAL( hArray.size(), zero );
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 2 * N );
     hArray.clear();
     BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 2 * N );
     hArray.purge();
-    BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), 0 );
+    BOOST_CHECK_EQUAL( hArray.capacity( contextPtr ), zero );
     {
         WriteOnlyAccess<IndexType> access( hArray, hostPtr, N );
     }
@@ -205,8 +276,11 @@ BOOST_AUTO_TEST_CASE( swapTest )
     const IndexType n2 = 5;
     ContextPtr contextPtr = Context::getContextPtr();  // test context
     SCAI_LOG_INFO( logger, "swapTest with valid copies on " << *contextPtr );
+
     HArray<double> arr1( n1, 1 );
     HArray<double> arr2( n2, 2 );
+    HArray<float>  arr3( n1, 3 );
+
     // now make them valid on test device
     {
         WriteAccess<double> write1( arr1, contextPtr );
@@ -232,6 +306,11 @@ BOOST_AUTO_TEST_CASE( swapTest )
             BOOST_CHECK_EQUAL( 1, read[i] );
         }
     }
+
+    BOOST_CHECK_THROW(
+    {
+        arr1.swap( arr3 );
+    }, common::Exception );
 }
 
 /* --------------------------------------------------------------------- */
@@ -245,14 +324,9 @@ BOOST_AUTO_TEST_CASE( createTest )
     std::vector<scai::common::scalar::ScalarType> values;
     _HArray::getCreateValues( values );
 
-    for ( size_t i = 0; i < values.size(); ++i )
-    {
-        //std::cout << "Registered values[" << i << "] = " << values[i] << std::endl;
-    }
-
     BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
     BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );
-    BOOST_CHECK( _HArray::canCreate( scalar::INDEX_TYPE ) );
+    BOOST_CHECK( _HArray::canCreate( TypeTraits<IndexType>::stype ) );
     BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
     _HArray* ca1 = _HArray::create( scalar::FLOAT );
     BOOST_REQUIRE( ca1 );
@@ -287,6 +361,76 @@ BOOST_AUTO_TEST_CASE( validTest )
         // read access on undefined array, might give warning
         ReadAccess<float> read( C, hostContext );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( remoteTest )
+{
+    ContextPtr hostContext = Context::getHostPtr();
+    ContextPtr remoteContext = Context::getContextPtr();
+
+    // Note: in hmemo we can use any value type for HArray
+
+    typedef double ValueType;
+
+    const IndexType Nh = 50;
+    const IndexType N = 2 * Nh;
+
+    HArray<ValueType> hostA( N, 5, hostContext );
+    HArray<ValueType> remA( N, 2, remoteContext );
+
+    // put single values on remote context
+
+    for ( IndexType i = 0; i < N; i += 2 )
+    {
+        ReadAccess<ValueType> readA( hostA, hostContext );
+        WriteAccess<ValueType> writeA( remA, remoteContext );
+        ValueType elem = readA[i];
+        writeA.setValue( elem, i );
+    }
+
+    ValueType sum = 0;
+
+    {
+        ReadAccess<double> readA( remA, hostContext );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            sum += readA[i];
+        }
+    }
+
+    {
+        // make incarnation of remA invalid
+        WriteAccess<ValueType> write( remA, remoteContext );
+    }
+
+    BOOST_CHECK_EQUAL( 2 * Nh + 5 * Nh, sum );
+
+    // now we read value from remote context
+
+    for ( IndexType i = 1; i < N; i += 2 )
+    {
+        ReadAccess<ValueType> readA( remA, remoteContext );
+        WriteAccess<ValueType> writeA( hostA, hostContext );
+        ValueType elem;
+        readA.getValue( elem, i );
+        writeA[i] = elem;
+    }
+
+    sum = 0;
+
+    {
+        ReadAccess<double> readA( hostA, hostContext );
+
+        for ( IndexType i = 0; i < N; ++i )
+        {
+            sum += readA[i];
+        }
+    }
+
+    BOOST_CHECK_EQUAL( 2 * Nh + 5 * Nh, sum );
 }
 
 /* --------------------------------------------------------------------- */

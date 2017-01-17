@@ -2,7 +2,7 @@
  * @file ContextAccess.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -107,4 +107,4 @@ private:
  *  \endcode
  */
 
-#define SCAI_CONTEXT_ACCESS( context ) hmemo::ContextAccess SCAI_Ctx_Access__( context, __FILE__, __LINE__ );
+#define SCAI_CONTEXT_ACCESS( context ) scai::hmemo::ContextAccess SCAI_Ctx_Access__( context, __FILE__, __LINE__ );

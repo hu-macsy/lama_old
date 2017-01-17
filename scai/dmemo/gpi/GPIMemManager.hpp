@@ -2,7 +2,7 @@
  * @file GPIMemManager.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -96,6 +96,10 @@ public:
     static void freeAll();
 
 private:
+
+    /** Help routine to get default/defined size of a memory segment */
+
+    static size_t getSegmentSize();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

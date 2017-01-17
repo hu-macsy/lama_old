@@ -2,7 +2,7 @@
  * @file OpenMPCOOUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,6 +61,37 @@ class COMMON_DLL_IMPORTEXPORT OpenMPCOOUtils
 {
 public:
 
+    /** OpenMP implementation for COOKernelTrait::getValuePos */
+
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const IndexType cooIA[],
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType cooIA[],
+        const IndexType numRows,
+        const IndexType cooJA[],
+        const IndexType numValues );
+
+    /** Implementation for COOKernelTrait::getValuePosRow */
+
+    static IndexType getValuePosRow(
+        IndexType col[],
+        IndexType pos[],
+        const IndexType i,
+        const IndexType cooIA[],
+        const IndexType numColumns,
+        const IndexType cooJA[],
+        const IndexType numValues );
+
     /** OpenMP implementation for COOKernelTrait::hasDiagonalProperty */
 
     static bool hasDiagonalProperty (
@@ -84,27 +115,6 @@ public:
         const OtherValueType rowValues[],
         const IndexType cooIA[],
         const IndexType numValues );
-
-    /** OpenMP implementation for COOKernelTrait::getCSRSizes */
-
-    static void getCSRSizes(
-        IndexType csrSizes[],
-        const IndexType numRows,
-        const IndexType numValues,
-        const IndexType cooIA[] );
-
-    /** Serial implementation for COOKernelTrait::getCSRValues */
-
-    template<typename COOValueType, typename CSRValueType>
-    static void getCSRValues(
-        IndexType csrJA[],
-        CSRValueType csrValues[],
-        IndexType csrIA[],
-        const IndexType numRow,
-        const IndexType numValues,
-        const IndexType cooIA[],
-        const IndexType cooJA[],
-        const COOValueType cooValues[] );
 
     /** OpenMP implementation for COOKernelTrait::setCSRData */
 
@@ -185,11 +195,36 @@ private:
         const IndexType cooJA[],
         const ValueType cooValues[] );
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods without template arguments */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
+
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

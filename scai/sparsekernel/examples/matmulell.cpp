@@ -2,7 +2,7 @@
  * @file sparsekernel/examples/matmulell.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -100,8 +100,8 @@ static void multiplication()
     IndexType* sizes = new IndexType[ m ];
     // init
     init( m * max_nnz, values, zero );
-    init( m * max_nnz, ja, 0 );
-    init( m, sizes, 0 );
+    init( m * max_nnz, ja, IndexType( 0 ) );
+    init( m, sizes, IndexType( 0 ) );
     // Values-Array
     //     i             j  Index
     values[0 + m * 0] = 7;

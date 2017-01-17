@@ -2,7 +2,7 @@
  * @file Norm.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,6 +42,8 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
+#include <scai/common/Factory.hpp>
+
 namespace scai
 {
 
@@ -58,7 +60,11 @@ typedef common::shared_ptr<Norm> NormPtr;
  * The Functor Norm is mainly used by the stopping criteria ResidualThreshold and
  * ResidualStagnation, to allow a to customize the Norms for these stopping criteria.
  */
-class COMMON_DLL_IMPORTEXPORT Norm
+class COMMON_DLL_IMPORTEXPORT Norm :
+
+    public common::Factory<std::string, Norm*>,
+    public common::Printable
+
 {
 public:
     /**

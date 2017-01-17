@@ -2,7 +2,7 @@
  * @file ELLStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ELLStorageTest" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     const IndexType numRows = 10;
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
     ELLStorage<ValueType> ellStorage( numRows, numColumns, context );
     BOOST_REQUIRE_EQUAL( numRows, ellStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, ellStorage.getNumColumns() );
-    BOOST_REQUIRE_EQUAL( 0, ellStorage.getNumValues() );
+    BOOST_REQUIRE_EQUAL( IndexType( 0 ), ellStorage.getNumValues() );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
     const IndexType numRows = 3;
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor1Test, ValueType, scai_arithmetic_test
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr loc = Context::getContextPtr();
 
@@ -183,10 +183,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
         const IndexType numColumns = 3;
         const IndexType numValuesPerRow = 2;
         const IndexType numValues = numRows * numValuesPerRow;
-        const IndexType ia[] =
-        { 1, 1, 2 };
-        const IndexType ja[] =
-        { 0, 1, 2, 0, 0, 2 };
+        const IndexType ia[] = { 1, 1, 2 };
+        const IndexType ja[] = { 0, 1, 2, 0, 0, 2 };
         // just make sure that ia and ja have correct sizes
         BOOST_REQUIRE_EQUAL( numRows, static_cast<IndexType>( sizeof( ia ) / sizeof( IndexType ) ) );
         BOOST_REQUIRE_EQUAL( numValues, static_cast<IndexType>( sizeof( ja ) / sizeof( IndexType ) ) );
@@ -205,14 +203,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
         {
             //  -> invalid ia     { 1, 1, 3 }
             LArray<IndexType>& ellIA = const_cast<LArray<IndexType>&>( ellStorage.getIA() );
-            HArrayUtils::setVal( ellIA, 2, 3 );
+            HArrayUtils::setVal<IndexType>( ellIA, 2, 3 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
         else if ( icase == 2 )
         {
             //  -> invalid ja     { 0, 1, 2, 0, 0, 2 }
             LArray<IndexType>& ellJA = const_cast<LArray<IndexType>&>( ellStorage.getJA() );
-            HArrayUtils::setVal( ellJA, 5, 15 );
+            HArrayUtils::setVal<IndexType>( ellJA, 5, 15 );
             BOOST_CHECK_THROW( { ellStorage.check( "Expect illegal index in JA" ); }, Exception );
         }
     }
@@ -220,7 +218,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_arithmetic_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     // use template storage test
     storageSwapTest<ELLStorage<ValueType> >();
@@ -228,7 +226,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for ELLStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     storageTypeNameTest<ELLStorage<ValueType> >( "ELL" );
@@ -240,6 +238,68 @@ BOOST_AUTO_TEST_CASE( ELLCopyTest )
 {
     typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
     copyStorageTest<ELLStorage<ValueType> >();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    ContextPtr context = Context::getContextPtr();
+
+    const IndexType numRows = 3;
+    const IndexType numColumns = 3;
+    const IndexType numValuesPerRow = 2;
+    const IndexType realValues = 4;
+    const IndexType storedValues = numRows * numValuesPerRow;
+
+    /*   matrix:       saved values   saved columns   ia
+
+          1  -   -     1 0            0 0             1
+          -  1   -     1 0            1 0             1
+          -  0   1     0 1            1 2             2
+     */
+
+    const IndexType ia[]     = { 1, 1, 2 };
+    const IndexType ja[]     = { 0, 1, 1, 0, 0, 2 };
+    const ValueType values[] = { 1, 1, 0, 0, 0, 1 };
+
+    LArray<IndexType> ellIA( numRows, ia );
+    LArray<IndexType> ellJA( storedValues, ja );
+    LArray<ValueType> ellValues( storedValues, values );
+
+    ELLStorage<ValueType> ell( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
+    ell.setContextPtr( context );
+
+    BOOST_CHECK_EQUAL( realValues, ell.getNumValues() );
+
+    ell.compress();
+    // one zero element (not diagonal) is removed by compress
+    BOOST_CHECK_EQUAL( realValues - 1, ell.getNumValues() );
+
+    const IndexType expected_ia[]     = { 1, 1, 1 };
+    const IndexType expected_ja[]     = { 0, 1, 2 };
+    const IndexType expected_values[] = { 1, 1, 1 };
+
+    LArray<IndexType> compressedIA     = ell.getIA();
+    LArray<IndexType> compressedJA     = ell.getJA();
+    LArray<ValueType> compressedValues = ell.getValues();
+
+    ReadAccess<IndexType> rIA ( compressedIA );
+    ReadAccess<IndexType> rJA ( compressedJA );
+    ReadAccess<ValueType> rValues ( compressedValues );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        BOOST_CHECK_EQUAL( rIA[i], expected_ia[i] );
+    }
+
+    for ( IndexType i = 0; i < realValues - 1; ++i )
+    {
+        BOOST_CHECK_EQUAL( rJA[i], expected_ja[i] );
+        BOOST_CHECK_EQUAL( rValues[i], expected_values[i] );
+    }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

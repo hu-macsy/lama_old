@@ -2,7 +2,7 @@
  * @file CommunicationPlan.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -165,6 +165,10 @@ public:
      *  \endcode
      */
     void allocate( const IndexType quantities[], const PartitionId noPartitions, bool compressFlag = true );
+
+    /** Allocate a communication plan by offsets instead of quantities for each partition.
+     */
+    void allocateByOffsets( const IndexType offsets[], const PartitionId noPartitions, bool compressFlag = true );
 
     /** @brief Allocate communication plan by an array of owners.
      *

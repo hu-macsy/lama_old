@@ -2,7 +2,7 @@
  # @file code_coverage.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -28,42 +28,15 @@
  # @endlicense
  #
  # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
- # @date 15.08.2012
-###
-
-###
- # @file code_coverage.sh
- #
- # @license
- # Copyright (c) 2009-2016
- # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- # for Fraunhofer-Gesellschaft
- #
- # This file is part of the SCAI framework LAMA.
- #
- # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
- # Software Foundation, either version 3 of the License, or (at your option)
- # any later version.
- #
- # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
- # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- # more details.
- #
- # You should have received a copy of the GNU Affero General Public License
- # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- # @endlicense
- #
- # @brief This file is a shellscript, which contains all necessary steps to 
- #        measure code coverage of LAMA.
- # @author Alexander Büchel, Lauretta Schubert
+ #        measure code coverage of LAMA subproject dmemo.
+ # @author Lauretta Schubert, Eric Schricker
  # @date 15.08.2012
 ###
 
 source scai_code_coverage_functions.sh
+
+# Check requirements for codecoverage
+requirements_coverage
 
 dirname=$(create_dir)
 echo "Create coverage directory: ${dirname}"
@@ -74,34 +47,42 @@ export SCAI_LOG=TRACE
 export SCAI_TRACE=time
 	
 # Running dmemo tests
-echo "Running dmemo tests"
-./dmemoTest >/dev/null
-if [ $? -ne 0 ]
-then
-	echo "ERROR in dmemoTest"
-	error_count=$(($error_count + $?))
-fi
+echo "Running dmemo tests serial"
+count_error ./dmemoTest --SCAI_COMMUNICATOR=NO
 
 if [ -d ../mpi ];
 then
     # Running parallel tests
-    for i in 2 3 4;
+    for i in 1 2 3 4;
     do
-        echo "Running distributed tests with $i processes"
-        mpirun -np $i ./dmemoTest >/dev/null
-        if [ $? -ne 0 ]
-        then
-            echo "ERROR in dmemoTest"
-            error_count=$(($error_count + $?))
-        fi
+        echo "Running distributed tests with $i MPI processes"
+        count_error mpirun -np $i ./dmemoTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1
     done
 fi
+
+if [ -d ../gpi ];
+then
+    # Running parallel tests
+    for i in 1 2 3 4;
+    do
+        echo "Running distributed tests with $i GPI processes"
+        hostname > machines
+        for (( k=2; k<=$i; k++ ))
+        do
+            hostname >> machines
+        done
+        cat machines
+        # For GPI-2: only root processor output is available
+        count_error gaspi_run -m machines ${PWD}/dmemoTest ${BOOST_TEST_ARGS} --SCAI_COMMUNICATOR=GPI --SCAI_NUM_THREADS=1 1> ${dirname}/dist_tests_gpi_${i}.xml
+        # wait a little bit to get resources freed
+        sleep 1
+    done
+fi
+
+exit_on_failure ${error_count}
     
 do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-if [ $? == 1 ];
-then
-    exit 1
-fi
+exit_on_failure $?
 
 zip -qr ../dmemo_coverage.zip *

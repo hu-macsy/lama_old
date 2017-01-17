@@ -2,7 +2,7 @@
  # @file lama/examples/run_all.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -68,7 +68,10 @@ i=0
 RUN 1 bench/conversion.exe
 RUN 1 bench/matadd.exe
 RUN 1 bench/matmul.exe
+RUN 1 bench/matvecmul.exe
 RUN 1 bench/maxnorm.exe
+RUN 1 bench/rowcol.exe
+RUN 1 bench/sort.exe 10000
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/bench/*.exe | wc -l`

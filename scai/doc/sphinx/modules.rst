@@ -22,7 +22,7 @@ In the following we describe the goals of each module and you find the user docu
 
 .. |SysDoc| raw:: html
 
-	<a href="https://test.libama.org/doxygen/index.html" target="_blank"> System Documentation </a>
+	<a href="https://libama.org/doxygen/index.html" target="_blank"> System Documentation </a>
 
 Heterogeneous Computing Development Kit
 ---------------------------------------

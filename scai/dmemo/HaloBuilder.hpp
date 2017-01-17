@@ -2,7 +2,7 @@
  * @file HaloBuilder.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -50,7 +50,7 @@ namespace dmemo
 class COMMON_DLL_IMPORTEXPORT HaloBuilder
 {
 public:
-    static void build( const Distribution& distribution, const std::vector<IndexType>& requiredIndexes, Halo& halo );
+    static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, Halo& halo );
 
 private:
 

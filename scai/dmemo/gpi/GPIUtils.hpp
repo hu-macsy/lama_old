@@ -2,7 +2,7 @@
  * @file GPIUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,6 +40,7 @@
 #include <cstdio>
 #include <iostream>
 #include <GASPI.h>
+#include <GASPI_Ext.h>
 
 /** This directive might be enabled for debugging  */
 

@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -47,15 +47,16 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 project ( LAMA_ALL CXX )
 
 ## general Settings for all projects
+include ( Dependencies/minimalSupportedVersions )
 include ( SetBuildFlags ) # VERBOSE, RPATH, LIB64
 include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
 ## maybe boost
 include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+if    ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+endif ( NOT CXX_SUPPORTS_C11 )
 
 include ( Functions/checkValue )
 include ( Functions/setAndCheckCache )
@@ -65,6 +66,11 @@ include ( Functions/concatCacheArguments )
 include ( VersionDefinition )
 include ( SetProjectVariables )
 include ( Functions/scaiFunctions )
+
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
+    include( Package/BoostTest )
+endif ( BUILD_TEST )
 
 include ( Dependencies/external )
 

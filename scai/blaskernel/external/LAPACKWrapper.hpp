@@ -2,7 +2,7 @@
  * @file LAPACKWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -81,26 +81,14 @@ class COMMON_DLL_IMPORTEXPORT LAPACKWrapper;
         }                                                                                                   \
         \
         static LAPACKIndexType tptrs(LAPACKFlag uplo,                                                       \
-                                     LAPACKFlag transa, LAPACKFlag diag,                                                         \
-                                     const LAPACKIndexType n,                                                                    \
-                                     const LAPACKIndexType nrhs, const ValueType* ap,                                            \
-                                     ValueType* b, const LAPACKIndexType ldb)                                                    \
+                                     LAPACKFlag transa, LAPACKFlag diag,                                    \
+                                     const LAPACKIndexType n,                                               \
+                                     const LAPACKIndexType nrhs, const ValueType* ap,                       \
+                                     ValueType* b, const LAPACKIndexType ldb)                               \
         {                                                                                                   \
             LAPACKIndexType info;                                                                           \
             FORTRAN_LAPACK_NAME( tptrs, prefix )(&uplo, &transa, &diag, &n, &nrhs, ap, b, &ldb, &info );    \
             return info;                                                                                    \
-        }                                                                                                   \
-        \
-        static void laswp(                                                                                  \
-                const LAPACKIndexType n,                                                                    \
-                ValueType* a,                                                                               \
-                const LAPACKIndexType lda,                                                                  \
-                const LAPACKIndexType k1,                                                                   \
-                const LAPACKIndexType k2,                                                                   \
-                const LAPACKIndexType* ipiv,                                                                \
-                const LAPACKIndexType incx)                                                                 \
-        {                                                                                                   \
-            FORTRAN_LAPACK_NAME( laswp, prefix )( &n, a, &lda, &k1, &k2, ipiv, &incx);                      \
         }                                                                                                   \
     };
 

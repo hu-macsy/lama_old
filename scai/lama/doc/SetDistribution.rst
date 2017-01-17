@@ -40,7 +40,7 @@ Now you can create a ``Distribution`` by calling the constructor or you can get 
 	dmemo::DistributionPtr cyclicDist ( dmemo::Distribution::getDistribution( "CYCLIC", comm, size, weight ) );
 
 
-You can set a ``Distribution`` to a ``Vector`` or ``Matrix`` at initialization time by calling the constructor. For the different constructors please refer to :ref:`lama_Vector` or :ref:`lama_matrix`. To set a distribution after creation, e.g. after initialization, or just to change it later in your application, you can call ``redistribute`` on both with one (``Vector``) or two (``Matrix``) ``Distributions``.
+You can set a ``Distribution`` to a ``Vector`` or ``Matrix`` at initialization time by calling the constructor. For the different constructors please refer to :ref:`lama_Vector` or :ref:`lama_Matrix`. To set a distribution after creation, e.g. after initialization, or just to change it later in your application, you can call ``redistribute`` on both with one (``Vector``) or two (``Matrix``) ``Distributions``.
 
 .. code-block:: c++
 

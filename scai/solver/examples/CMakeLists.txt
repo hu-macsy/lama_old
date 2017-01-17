@@ -2,7 +2,7 @@
  # @file solver/examples/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -32,10 +32,12 @@
  # @date 25.01.2016
 ###
 
+add_subdirectory ( FDSimulation )
 add_subdirectory ( lecture )
 if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
     add_subdirectory ( myJacobi )
 endif ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
+add_subdirectory ( pardiso )
 add_subdirectory ( solver )
 add_subdirectory ( spy )
 

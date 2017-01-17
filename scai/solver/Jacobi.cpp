@@ -2,7 +2,7 @@
  * @file Jacobi.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -145,7 +145,9 @@ void Jacobi::solveInit( Vector& solution, const Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !getConstRuntime().mOldSolution.get() )
     {
-        getRuntime().mOldSolution.reset( Vector::create( solution.getCreateValue() ) );
+        // Important: method newVector creats vector with same context as solution
+
+        getRuntime().mOldSolution.reset( solution.newVector() );
 
         if ( getConstRuntime().mCoefficients->getNumColumns() != getConstRuntime().mOldSolution->size() )
         {
@@ -192,7 +194,7 @@ void Jacobi::iterate()
             return;                                                                                 \
         }                                                                                           \
     }
-    SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP( SCAI_SOLVER_TYPE_CAST, SCAI_NUMERIC_TYPES_HOST )
 #undef SCAI_SOLVER_TYPE_CAST
     // has already been check in initialize, but in any case
     COMMON_THROWEXCEPTION        (
@@ -242,18 +244,26 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
         }
 
         const ValueType omega = mOmega.getValue<ValueType>();
+
         // from rhs and solution we need only the local parts as LAMA arrays
         const HArray<ValueType>& localRhs = denseRhs.getLocalValues();
+
         HArray<ValueType>& localSolution = denseSolution.getLocalValues();
+
         const HArray<ValueType>& localOldSolution = denseOldSolution.getLocalValues();
+
         HArray<ValueType>& haloOldSolution = denseOldSolution.getHaloValues();
+
         const HArray<ValueType>* diagonal = dynamic_cast<const HArray<ValueType>*>( getRuntime().mDiagonal.get() );
+
         using namespace scai::common;  // placeholders are also needed
+
         void ( scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo )(
             HArray<ValueType>& localSolution,
             const HArray<ValueType>& localDiagonal,
             const HArray<ValueType>& oldHaloSolution,
             const ValueType omega ) const = &lama::MatrixStorage<ValueType>::jacobiIterateHalo;
+
         // will call jacobiIterateHalo( haloMatrix, localSolution, diagonal, haloOldSolution, omega )
         function <
         void(

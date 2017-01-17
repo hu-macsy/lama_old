@@ -2,7 +2,7 @@
  * @file BiCG.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -101,7 +101,6 @@ public:
         common::shared_ptr<lama::Vector> mQ2;
         common::shared_ptr<lama::Vector> mZ2;
         lama::Scalar mPScalar2;
-        lama::Scalar mEps;
         mutable common::shared_ptr<lama::Vector> mResidual2;
     };
 

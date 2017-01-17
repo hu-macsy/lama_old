@@ -2,7 +2,7 @@
  * @file OpenMPDenseUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,6 +44,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 
 // std
@@ -55,8 +56,7 @@ namespace scai
 namespace sparsekernel
 {
 
-/** This class provides OpenMP implementations for methods in scai::lama::DenseKernelTrait
- */
+/** This class provides OpenMP implementations for methods in scai::lama::DenseKernelTrait */
 
 class COMMON_DLL_IMPORTEXPORT OpenMPDenseUtils
 {
@@ -95,14 +95,15 @@ public:
         const DenseValueType denseValues[],
         const DenseValueType eps );
 
-    /** OpenMP implementation for DenseKernelTrait::copyDenseValues */
+    /** OpenMP implementation for DenseKernelTrait::set */
 
     template<typename DenseValueType1, typename DenseValueType2>
-    static void copyDenseValues(
+    static void set(
         DenseValueType1 newValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType2 oldValues[] );
+        const DenseValueType2 oldValues[],
+        const utilskernel::binary::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
@@ -115,36 +116,6 @@ public:
         const IndexType csrJA[],
         const CSRValueType csrValues[] );
 
-    /** OpenMP implementation for DenseKernelTrait::getRow */
-
-    template<typename RowValueType, typename DenseValueType>
-    static void getRow(
-        RowValueType rowValues[],
-        const DenseValueType denseValues[],
-        const IndexType irow,
-        const IndexType numRows,
-        const IndexType numColumns );
-
-    /** OpenMP implementation for DenseKernelTrait::getDiagonal */
-
-    template<typename DiagonalValueType, typename DenseValueType>
-    static void getDiagonal(
-        DiagonalValueType diagonalValues[],
-        const IndexType numDiagonalValues,
-        const DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns );
-
-    /** OpenMP implementation for DenseKernelTrait::setDiagonal */
-
-    template<typename DenseValueType, typename DiagonalValueType>
-    static void setDiagonal(
-        DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DiagonalValueType diagonalValues[],
-        const IndexType numDiagonalValues );
-
     /** OpenMP implementation for DenseKernelTrait::setValue */
 
     template<typename DenseValueType>
@@ -152,16 +123,8 @@ public:
         DenseValueType denseValues[],
         const IndexType numRows,
         const IndexType numColumns,
-        const DenseValueType val );
-
-    /** OpenMP implementation for DenseKernelTrait::scaleValue */
-
-    template<typename DenseValueType>
-    static void scaleValue(
-        DenseValueType denseValues[],
-        const IndexType numRows,
-        const IndexType numColumns,
-        const DenseValueType val );
+        const DenseValueType val,
+        const utilskernel::binary::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
 
@@ -194,10 +157,29 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

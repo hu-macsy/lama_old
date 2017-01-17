@@ -2,7 +2,7 @@
  # @file scai/lama/test/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -38,34 +38,20 @@ scai_project (
 
     CLASSES
 
-       # Configuration
-        NormTest
-        SparseMatrixHelper
-        SparseMatrixTest
-    
     HEADERS
         
-        SameMatrixHelper
-        EquationHelper
-        TestMacros
-        TestSparseMatrices
+       TestMacros
+       TestVectors
 
     SOURCES
 
-        COOSparseMatrixTest
-        CSRSparseMatrixTest
-        DenseMatrixTest
-        DenseMatrixTest1
-        DerivedSparseMatrixTest
-        DIASparseMatrixTest
-        ELLSparseMatrixTest
-        JDSSparseMatrixTest
+        DenseVectorTest
         L1NormTest
         L2NormTest
-        MatrixTest
         MaxNormTest
+        NormTest
         ScalarTest
-        StorageIOTest
+        PartitionIOTest
         VectorTest
         VersionTest
     )
@@ -76,7 +62,7 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
 ### set include directories ###
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )

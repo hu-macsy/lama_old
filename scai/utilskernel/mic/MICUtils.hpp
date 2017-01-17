@@ -2,7 +2,7 @@
  * @file MICUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,7 +40,8 @@
 // others
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/utilskernel/ReductionOp.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/utilskernel/UnaryOp.hpp>
 
 // logging
 #include <scai/logging.hpp>
@@ -59,33 +60,44 @@ class COMMON_DLL_IMPORTEXPORT MICUtils
 {
 public:
 
-    /** MIC implementation for UtilKernelTrait::Copy::setScale */
-
-    template<typename ValueType, typename OtherValueType>
-    static void setScale(
-        ValueType outValues[],
-        const ValueType value,
-        const OtherValueType inValues[],
-        const IndexType n );
-
-    /*  This method is an implementation of UtilKernelTrait::validIndexes */
+    /** MIC implementation of UtilKernelTrait::validIndexes */
 
     static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
-    /** MIC implementation for UtilKernelTrait::Reductions::reduce */
+    /** MIC implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( const ValueType array[], const IndexType n, const reduction::ReductionOp op );
+    static ValueType reduce(
+        const ValueType array[],
+        const IndexType n,
+        const ValueType zero,
+        const binary::BinaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::Setter::setVal */
+    /** MIC implementation for UtilKernelTrait::reduce2 */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const reduction::ReductionOp op );
+    static ValueType reduce2(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const binary::BinaryOp binOp,
+        const ValueType zero,
+        const binary::BinaryOp redOp );
 
-    /** MIC implementation for UtilKernelTrait::Setter::setOrder */
+    /** MIC implementation for UtilKernelTrait::setVal */
+
+    template<typename ValueType>
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
+
+    /** MIC implementation for UtilKernelTrait::setOrder */
 
     template<typename ValueType>
     static void setOrder( ValueType array[], const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::setSequence */
+
+    template<typename ValueType>
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
 
     /** MIC implementation for UtilKernelTrait::getValue */
 
@@ -102,23 +114,54 @@ public:
     template<typename ValueType>
     static bool isSorted( const ValueType array[], const IndexType n, bool acending );
 
-    template<typename ValueType1, typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const reduction::ReductionOp op );
+    /** MIC implementation for UtilKernelTrait::setInversePerm */
 
-    /** Set out[i] = in[ indexes[i] ],  0 <= i < n */
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    template<typename ValueType1, typename ValueType2>
-    static void setGather( ValueType1 out[], const ValueType2 in[], const IndexType indexes[], const IndexType n );
-
-    /** Set out[ indexes[i] ] = in [i] */
+    /** MIC implementation for UtilKernelTrait::set */
 
     template<typename ValueType1, typename ValueType2>
-    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const IndexType n );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
 
-    /** MIC implementation for UtilKernelTrait::invert */
+    /** MIC implementation for UtilKernelTrait::setGather */
+
+    template<typename ValueType, typename otherValueType>
+    static void setGather(
+        ValueType out[],
+        const otherValueType in[],
+        const IndexType indexes[],
+        const utilskernel::binary::BinaryOp op,
+        const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::setScatter */
+
+    template<typename ValueType1, typename ValueType2>
+    static void setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const binary::BinaryOp op, const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::scatterVal */
 
     template<typename ValueType>
-    static void invert( ValueType array[], const IndexType n );
+    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+
+    /** MIC implementation for UtilKernelTrait::unaryOp */
+
+    template<typename ValueType>
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+
+    /** MIC implementation for UtilKernelTrait::binaryOp */
+
+    template<typename ValueType>
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
+
+    /** MIC implementation for UtilKernelTrait::binaryOpScalar1 */
+
+    template<typename ValueType>
+    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
+
+    /** MIC implementation for UtilKernelTrait::binaryOpScalar2 */
+
+    template<typename ValueType>
+    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
 
 protected:
 
@@ -140,10 +183,28 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
+    template<typename ValueType>
+    struct RegNumericKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType>
+    struct RegArrayKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 

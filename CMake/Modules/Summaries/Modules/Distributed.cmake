@@ -42,7 +42,7 @@ heading3 ( "Distributed" "REQUIRED_FOUND" )
     found_message ( "GPI" "GPI_FOUND" "OPTIONAL" "with:" )
     if    ( GPI_FOUND )
     	message ( STATUS "                                 GPI2 Version ${GPI2_VERSION} at ${GPI2_INCLUDE_DIR}" )
-    	message ( STATUS "                                 IBVERBS at ${IBVERBS_INCLUDE_DIR}" )
+    	message ( STATUS "                                 GPI2 Libraries ${SCAI_GPI_LIBRARIES}" )
     # no IBVERBS_VERSION
     #foreach    ( _LIB GPI2 IBVERBS )
     #    message ( STATUS "                                 ${_LIB} Version ${${_LIB}_VERSION} at ${${_LIB}_INCLUDE_DIR}" )

@@ -2,7 +2,7 @@
  * @file OpenMPLAPACK.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OpenMPLAPACK.hpp
+ * @brief Class with default implementations of LAPACK kernels for host.
  * @author Eric Schricker
  * @date 02.07.2012
  */
@@ -61,7 +61,7 @@ public:
     /** Implementation of BLASKernelTrait::LAPACK::getrf by LAPACK. */
 
     template<typename ValueType>
-    static IndexType getrf(
+    static void getrf(
         const CBLAS_ORDER order,
         const IndexType m,
         const IndexType n,
@@ -72,7 +72,7 @@ public:
     /** Implementation of BLASKernelTrait::LAPACK::getrf by LAPACK. */
 
     template<typename ValueType>
-    static IndexType getri(
+    static void getri(
         const CBLAS_ORDER order,
         const IndexType n,
         ValueType* const A,
@@ -87,7 +87,7 @@ public:
     /** Implementation of BLASKernelTrait::LAPACK::tptrs vi LAPACK. */
 
     template<typename ValueType>
-    static IndexType tptrs(
+    static void tptrs(
         const CBLAS_ORDER order,
         const CBLAS_UPLO uplo,
         const CBLAS_TRANSPOSE trans,
@@ -98,24 +98,15 @@ public:
         ValueType* B,
         const IndexType ldb );
 
-    /** OpenMP implementation for BLASKernelTrait::LAPACK::laswp */
-
-    template<typename ValueType>
-    static void laswp(
-        const CBLAS_ORDER order,
-        const IndexType n,
-        ValueType* A,
-        const IndexType lda,
-        const IndexType k1,
-        const IndexType k2,
-        const IndexType* ipiv,
-        const IndexType incx );
-
 private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

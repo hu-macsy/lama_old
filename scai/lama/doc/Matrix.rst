@@ -161,6 +161,86 @@ Also the combination with the assign operator is possible (internally handled as
    r += 1.5 * csrMatrix * x;
    c += 3.3 * csrMatrix
 
+Access of Rows, Columns, and Diagonal
+-------------------------------------
+
+The following functions can be used to get a copy of a column or row of a matrix.
+
+.. code-block:: c++
+
+   const Matrix& mat = 
+   Vector& row = ...;
+   Vector& col = ...;
+   ...
+   mat.getRow( row, rowIndex );
+   mat.getColumn( col, columnIndex );
+
+When getting a row, the result vector is replicated on all processors. When getting a
+column, the result vector has the same distribution as the row distribution of the matrix.
+
+By corresponding setter operations, a row, a column or the diagonal of a matrix can be set 
+or updated. Different binary operations are supported to combine the old column values
+with the new ones, the replacement is forced by the COPY operation.
+
+.. code-block:: c++
+
+   Matrix& a = 
+   const Vector& row = ...;
+   const Vector& col = ...;
+   ...
+   a.setRow( row, rowIndex, binary::COPY );
+   a.setColumn( col, columnIndex, binary::ADD );
+
+In a similiar way, get and set of the diagonal is supported. Here, the set operation supports only 
+the replacement of the old diagonal values. The distribution of the diagonal will be the same
+as the row distribution of the matrix (for getDiagonal) or must be the same when it is set.
+Access of the diagonal of a matrix is only possible if the matrix has the diagonal flag. This
+is true for dense matrices, but also for sparse matrices that are square and have been filled
+with entries for each diagonal element.
+
+.. code-block:: c++
+
+   Matrix& mat = ...
+   Vector& diagonal = ...
+   ...
+   mat.getDiagonal( diag );
+   // Note: diag.getDistribution() == mat.getRowDistribution() is now valid
+   ...
+   // diag.getDistribution() == mat.getRowDistribution() must be valid
+   mat.setDiagonal( diag );
+
+Access of Matrix Elements
+-------------------------
+
+Even if it is not recommended or not efficient at all, the entries of a matrix can be 
+elementwise accessed.
+
+.. code-block:: c++
+
+   Matrix& mat = 
+   Scalar S;
+   ...
+   S = mat.getValue( i, j );
+   mat.setValue( i, j, binary::MIN )
+
+The following items should be kept in mind when using these routines:
+
+ * Getting a single element of a distributed matrix implies always a broadcast of the element
+ * Setting a single element in a sparse matrix is only possible when the matrix has had an
+   entry at the corresponding position before. Otherwise an exception is thrown.
+   For filling a sparse matrix elementwise the SparseAssemblyStorge class should be used.
+
+Instead of using the ``getValue`` method it is possible to use to operator ``()`` 
+where both need the global row index ``i`` and column index ``j``. 
+
+.. code-block:: c++
+
+   Matrix& mat = 
+   Scalar S;
+   ...
+   S = mat.getValue( i, j );
+   S = mat( i, j );
+
 Utility Functions
 -----------------
 
@@ -178,28 +258,10 @@ Additionally you have some utility functions that can be called on a matrix: for
 
    Vector* aCopy = a.copy(); // calls the copy constructor
 
-You can have special access to rows or the diagonal of the matrix by ``getRow`` and ``getDiagonal``, that data will be copied to a DenseVector - but the data of the matrix won't be affected by adapting the vector. For the diagonal you can call ``setDiagonal``.
-
-.. code-block:: c++
-
-   Vector* v = ...;
-   a.getRow( *v, rowIndex );
-   Vector* diag = ...;
-   a.getDiagonal( *diag );
-   Vector* newDiag = ...;
-   a.setDiagonal( * newDiag );
-
-For accessing single values of a matrix you can use ``getValue`` or ``()`` with the global index ``i, j``. But you must have in mind, that it may be inefficient if the matrix is distributed and/or not on the Host Context, because of communication between nodes or CPU and GPU:
-
-.. code-block:: c++
-
-   s = a.getValue( i, j );
-   s = a( i, j );
-
 File I/O
 --------
 
-Except from a constructor with a passed string, you can use ``readFromFile`` and ``writeToFile``. The generally excepted format in LAMA for vector and matrices is defined :doc:`here<IO>`.
+Except from a constructor with a passed string, you can use ``readFromFile`` and ``writeToFile``. The generally excepted format in LAMA for vector and matrices is defined :doc:`here<FileIO>`.
 
 .. code-block:: c++
  

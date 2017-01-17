@@ -2,7 +2,7 @@
  * @file ContextDataManager.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -72,7 +72,7 @@ typedef size_t ContextDataIndex;
  *  at different contexts.
  */
 
-class ContextDataManager : private common::NonCopyable, public common::Printable
+class COMMON_DLL_IMPORTEXPORT ContextDataManager : private common::NonCopyable, public common::Printable
 {
 public:
 

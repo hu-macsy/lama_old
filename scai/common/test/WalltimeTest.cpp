@@ -2,7 +2,7 @@
  * @file WalltimeTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,6 +40,13 @@ BOOST_AUTO_TEST_CASE( WalltimeTest )
 {
     using scai::common::Walltime;
     using scai::common::INTEGER_8;
+
+    for ( int k = 0; k < 5; ++k )
+    {
+        // get some time stamps to avoid possible initialization overhead
+        Walltime::timestamp();
+    }
+
     INTEGER_8 i0 = Walltime::timestamp();
     double t0 = Walltime::get();
     Walltime::sleep( 1000 );
@@ -47,8 +54,8 @@ BOOST_AUTO_TEST_CASE( WalltimeTest )
     INTEGER_8 i1 = Walltime::timestamp();
     // time in seconds
     double time = t1 - t0;
-    // should be rather accurate one second
-    BOOST_CHECK_CLOSE( 1.0, time, 1 );
+    // should be rather accurate one second, but we give it 2 percent
+    BOOST_CHECK_CLOSE( 1.0, time, 2 );
     // using timestamp instead of get() should give same result
     BOOST_CHECK_CLOSE( double( i1 - i0 ) / double( Walltime::timerate() ), time, 1 );
 }

@@ -2,7 +2,7 @@
  * @file QMR.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,16 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief QMR.cpp
- * @author lschubert
+ * @brief Implementation of methods for the QMR solver.
+ * @author Lauretta Schubert
  * @date 06.08.2013
  */
 
 // hpp
 #include <scai/solver/QMR.hpp>
-
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
 
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -99,7 +96,7 @@ void QMR::initialize( const Matrix& coefficients )
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
     QMRRuntime& runtime = getRuntime();
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();

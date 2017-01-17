@@ -2,7 +2,7 @@
  * @file ContextFunction.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,7 @@ typedef void ( *VoidFunction )();
  *  where the function pointer might be NULL for unsupported context
  */
 
-class _ContextFunction : public common::context
+class COMMON_DLL_IMPORTEXPORT _ContextFunction : public common::context
 {
 public:
 

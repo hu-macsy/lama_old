@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -34,18 +34,31 @@
 
 ### Add classes and header files ###
 
+set ( IO_CLASSES 
+
+        IOStream
+
+        FileIO
+        SAMGIO
+        MatrixMarketIO
+        PETScIO
+        TextIO
+        PartitionIO
+) 
+
+if ( ZLIB_FOUND )
+    set ( IO_CLASSES ${IO_CLASSES} MatlabIO MATIOStream )
+endif ( ZLIB_FOUND )
+
 scai_project (
 
     CLASSES
         
-        mmio
-        XDRFileStream
-        IOUtils
-        FileStream
+        ${IO_CLASSES}
 
     HEADERS
 
-        FileType
+        CRTPFileIO
 
     ADD_PARENT_SCOPE
 )

@@ -2,7 +2,7 @@
  * @file Constants.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,6 +40,7 @@
 
 #include <cmath>
 #include <limits>
+#include <iomanip>
 
 namespace scai
 {
@@ -86,15 +87,73 @@ inline ValueType getConstant( const constants::ConstantType& c )
 /** Comparison against constant ZERO or ONE uses machine-specific EPS */
 
 template<typename ValueType>
-bool operator==( const ValueType& x, const constants::ConstantType& c )
+inline bool operator==( const ValueType& x, const constants::ConstantType& c )
 {
-    return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+    if ( constants::ZERO == c )
+    {
+        AbsType r = Math::real( x );
+
+        bool isRealZero = Math::abs( r ) < TypeTraits<ValueType>::eps0();
+
+        if ( typeid( AbsType ) == typeid( ValueType ) )
+        {
+            return isRealZero;
+        }
+        else
+        {
+            // complex data, do not use operator <
+
+            AbsType i = Math::imag( x );
+
+            bool isImagZero = Math::abs( i ) < TypeTraits<ValueType>::eps0();
+
+            return isRealZero && isImagZero;
+        }
+    }
+    else
+    {
+        AbsType r = Math::real( x );
+
+        bool isRealOne = Math::abs( r - AbsType( 1 ) ) < TypeTraits<ValueType>::eps1();
+
+        if ( typeid( AbsType ) == typeid( ValueType ) )
+        {
+            return isRealOne;
+        }
+        else
+        {
+            // for complex type we have to assure that imaginary part is close to 0
+
+            AbsType i = Math::imag( x );
+
+            bool isImagZero = Math::abs( i ) < TypeTraits<ValueType>::eps0();
+
+            return isRealOne && isImagZero;
+        }
+    }
+}
+
+// Use template specialization for IndexType as real/imag might not be available
+
+template<>
+inline bool operator==( const IndexType& x, const constants::ConstantType& c )
+{
+    if ( constants::ZERO == c )
+    {
+        return x == 0;
+    }
+    else
+    {
+        return x == 1;
+    }
 }
 
 template<typename ValueType>
 bool operator==( const constants::ConstantType& c, const ValueType& x )
 {
-    return Math::abs( x - getConstant<ValueType>( c ) ) < TypeTraits<ValueType>::getEps();
+    return operator==( x, c );
 }
 
 /** Operator not equal also provided for convenience */
@@ -102,13 +161,13 @@ bool operator==( const constants::ConstantType& c, const ValueType& x )
 template<typename ValueType>
 bool operator!=( const ValueType& x, const constants::ConstantType& c )
 {
-    return ! ( x == c );
+    return !operator==( x, c );
 }
 
 template<typename ValueType>
 bool operator!=( const constants::ConstantType& c, const ValueType& x )
 {
-    return ! ( x == c );
+    return !operator==( x, c );
 }
 
 } /* end namespace common */

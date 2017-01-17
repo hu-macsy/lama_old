@@ -2,7 +2,7 @@
  * @file Richardson.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Richardson.cpp
+ * @brief Implementation of methods for the Richardson solver.
  * @author David Schissler
  * @date 17.04.2015
  */
@@ -98,12 +98,16 @@ void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( lama::Vector::create( solution.getCreateValue() ) );
+        // Important: method newVector creates vector with same context as solution
+
+        runtime.mOldSolution.reset( solution.newVector() );
     }
 
     if ( !runtime.mX.get() )
     {
-        runtime.mX.reset( lama::Vector::create( solution.getCreateValue() ) );
+        // Important: method newVector creates vector with same context as solution
+
+        runtime.mX.reset( solution.newVector() );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();

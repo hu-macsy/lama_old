@@ -2,7 +2,7 @@
  * @file AMGSetup.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,7 +43,7 @@ namespace solver
 
 AMGSetup::AMGSetup()
     : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-          std::numeric_limits<IndexType>::max() )
+        std::numeric_limits<IndexType>::max() )
 {
 }
 

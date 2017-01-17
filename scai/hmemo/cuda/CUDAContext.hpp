@@ -2,7 +2,7 @@
  * @file CUDAContext.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -173,8 +173,6 @@ private:
     //    cusparseHandle_t mCusparseHandle; //!< handle to cusparse library
 
     std::string mDeviceName; //!< name set during initialization
-
-    mutable std::stack<const common::CUDACtx*> contextStack;
 
     // static int numUsedDevices; //!< total number of used devices
 

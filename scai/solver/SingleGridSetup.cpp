@@ -2,7 +2,7 @@
  * @file solver/SingleGridSetup.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief SingleGridSetup.hpp
+ * @brief Implementation of methods for the class SingleGridSetup.
  * @author Jiri Kraus
  * @date 27.10.2011
  */

@@ -2,7 +2,7 @@
  * @file solver/examples/lecture/task2.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -85,15 +85,15 @@ int main( int argc, char* argv[] )
     std::cout << "Vector x : " << x << std::endl;
     // d = r = b - A * x
     // help = A * x;
-    DenseVector<ValueType> r = b - A * x;
-    DenseVector<ValueType> d = r;
+    DenseVector<ValueType> r ( b - A * x );
+    DenseVector<ValueType> d ( r );
     Scalar rOld = r.dotProduct( r );
     Scalar eps = 0.00001;
     L2Norm norm;
 
     for ( int k = 0 ; k < maxIter and norm( r ) > eps; k++ )
     {
-        DenseVector<ValueType> z = A * d;
+        DenseVector<ValueType> z( A * d );
         Scalar alpha = rOld / d.dotProduct( z );
         x = x + alpha * d;
         r = r - alpha * z;

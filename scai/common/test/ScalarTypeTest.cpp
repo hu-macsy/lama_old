@@ -2,7 +2,7 @@
  * @file ScalarTypeTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,6 +35,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/mepr/ScalarTypeHelper.hpp>
+#include <scai/common/SCAITypes.hpp>
 #include <sstream>
 
 using namespace scai;
@@ -42,7 +44,7 @@ using namespace common;
 
 BOOST_AUTO_TEST_CASE( ScalarTypeTest )
 {
-    for ( int type = scalar::INDEX_TYPE; type <= scalar::UNKNOWN; ++type )
+    for ( int type = scalar::ScalarType( 0 ); type <= scalar::UNKNOWN; ++type )
     {
         scalar::ScalarType stype = scalar::ScalarType( type );
         std::ostringstream s;
@@ -60,4 +62,56 @@ BOOST_AUTO_TEST_CASE( ScalarTypeTest )
             BOOST_CHECK( pos == std::string::npos );
         }
     }
+
+    BOOST_CHECK( typeSize( scalar::PATTERN ) == 0 );
+
+    BOOST_CHECK( ! isNumeric( scalar::INT ) );
+
+    BOOST_CHECK( ! isNumeric( scalar::INDEX_TYPE ) );
+
+    BOOST_CHECK_EQUAL( sizeof( IndexType ), typeSize( scalar::INDEX_TYPE ) );
+
+    BOOST_CHECK_THROW (
+    {
+        typeSize( scalar::INTERNAL );
+    }, common::Exception );
+
+    bool contains1 = mepr::ScalarTypeHelper<SCAI_TYPELIST( char, int )>::contains( scalar::INT );
+    BOOST_CHECK( contains1 );
+
+    bool contains2 = mepr::ScalarTypeHelper<SCAI_TYPELIST( char, int )>::contains( scalar::FLOAT );
+    BOOST_CHECK( !contains2 );
 }
+
+BOOST_AUTO_TEST_CASE( precisionTest )
+{
+    for ( int type = scalar::ScalarType( 0 ); type < scalar::UNKNOWN; ++type )
+    {
+        scalar::ScalarType stype = scalar::ScalarType( type );
+
+        if ( stype == scalar::INTERNAL )
+        {
+            // should throw an exception to make sure that call is replaced with correct type
+
+            BOOST_CHECK_THROW(
+            {
+                precision( stype );
+            }, common::Exception );
+
+            continue;
+        }
+
+        int n = precision( stype );
+
+        if ( isNumeric( stype ) )
+        {
+            BOOST_CHECK( n > 0 );
+        }
+        else
+        {
+            BOOST_CHECK_EQUAL( 0, n );
+        }
+    }
+}
+
+

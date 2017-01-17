@@ -2,7 +2,7 @@
  * @file BiCGTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief BiCGTest.cpp
+ * @brief Speficic tests for the solver class BiCG.
  * @author Lauretta Schubert
  * @date 04.07.2013
  */

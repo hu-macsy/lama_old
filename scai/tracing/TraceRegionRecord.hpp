@@ -2,7 +2,7 @@
  * @file TraceRegionRecord.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,7 +58,7 @@ namespace tracing
  *  stop explicitly as it works also very well in case of exception.
  */
 
-class TraceRegionRecord
+class COMMON_DLL_IMPORTEXPORT TraceRegionRecord
 {
 
 public:

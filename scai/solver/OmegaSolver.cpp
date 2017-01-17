@@ -2,7 +2,7 @@
  * @file solver/OmegaSolver.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OmegaSolver.hpp
+ * @brief Test methods for the generic solver class OmegaSolver.
  * @author Kai Buschulte
  * @date 10.08.2011
  */

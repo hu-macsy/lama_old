@@ -1,0 +1,400 @@
+/**
+ * @file PETScIO.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2017
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Implementation of IO methods for PETSc format
+ * @author Thomas Brandes
+ * @date 10.06.2016
+ */
+
+
+#include "PETScIO.hpp"
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/lama/io/IOStream.hpp>
+
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/Settings.hpp>
+
+#define PETSC_SUFFIX ".psc"
+
+/** Internal id as specified by PETSc */
+
+#define MAT_FILE_CLASSID 1211216
+
+/** Internal id as specified by PETSc */
+
+#define VEC_FILE_CLASSID 1211214
+
+namespace scai
+{
+
+using namespace hmemo;
+
+namespace lama
+{
+
+/* --------------------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( PETScIO::logger, "FileIO.PETScIO" )
+
+/* --------------------------------------------------------------------------------- */
+/*    Implementation of Factory methods                                              */
+/* --------------------------------------------------------------------------------- */
+
+FileIO* PETScIO::create()
+{
+    return new PETScIO();
+}
+
+std::string PETScIO::createValue()
+{
+    return PETSC_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool PETScIO::isSupportedMode( const FileMode mode ) const
+{
+    // only binary is supported
+
+
+    if ( mode == FORMATTED )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::writeAt( std::ostream& stream ) const
+{
+    stream << "PETScIO ( ";
+    stream << "suffix = " << PETSC_SUFFIX << ", ";
+    writeMode( stream );
+    stream << ", only binary, BIG Endian )";
+}
+
+/* --------------------------------------------------------------------------------- */
+
+PETScIO::PETScIO()
+{
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::writeArrayImpl(
+    const hmemo::HArray<ValueType>& array,
+    const std::string& fileName )
+{
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
+
+    // int    VEC_FILE_CLASSID
+    // int    number of rows
+    // type   values
+
+    IndexType nrows = array.size();
+
+    std::ios::openmode flags = std::ios::out | std::ios::binary;
+
+    if ( mAppendMode )
+    {
+        flags |= std::ios::app;
+    }
+    else
+    {
+        flags |= std::ios::trunc;
+    }
+
+    IOStream outFile( fileName, flags, IOStream::BIG );
+
+    SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
+
+    utilskernel::LArray<IndexType> headValues( 2 );
+
+    headValues[0] = VEC_FILE_CLASSID;
+    headValues[1] = nrows;
+
+    outFile.writeBinary( headValues, mScalarTypeIndex );
+    outFile.writeBinary( array, mScalarTypeData );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
+{
+    // int    VEC_FILE_CLASSID
+    // int    number of rows
+    // type   values
+
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read array info from file " << fileName )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<IndexType> headerVals;
+
+    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+
+    IndexType classid = headerVals[0];
+
+    SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
+
+    size = headerVals[1];
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::readArrayImpl(
+    hmemo::HArray<ValueType>& array,
+    const std::string& fileName,
+    const IndexType first,
+    const IndexType n )
+{
+    // int    VEC_FILE_CLASSID
+    // int    number of rows
+    // type   values
+
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read array<" << common::TypeTraits<ValueType>::id()
+                   << "> from file " << fileName << ", type = " << mScalarTypeData )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<IndexType> headerVals;
+
+    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+
+    IndexType classid = headerVals[0];
+    IndexType size    = headerVals[1];
+
+    SCAI_LOG_INFO( logger, "Read: id = " << classid << ", size = " << size )
+
+    SCAI_ASSERT_EQUAL( VEC_FILE_CLASSID, classid, "illegal VEC_FILE_CLASSID" )
+
+    if ( ! common::Utils::validIndex( first, size ) )
+    {
+        array.clear();
+        return;
+    }
+
+    IndexType nEntries = n;
+
+    if ( n == nIndex )
+    {
+        nEntries = size - first;
+    }
+    else
+    {
+        SCAI_ASSERT_LE_ERROR( first + n, size, "array block size " << n << " invalid" )
+    }
+
+    // check if the specified data size fits the expected data type
+
+    inFile.readBinary( array, size, mScalarTypeData );
+
+    inFile.close();
+
+    if ( nEntries != array.size() )
+    {
+        hmemo::HArray<ValueType> block( nEntries );
+        hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+        SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
+
+        IndexType inc = 1;
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+
+        array.swap( block );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::writeStorageImpl(
+    const MatrixStorage<ValueType>& storage,
+    const std::string& fileName )
+{
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
+
+    // int    MAT_FILE_CLASSID
+    // int    number of rows
+    // int    number of columns
+    // int    total number of nonzeros
+    // int    *number nonzeros in each row
+    // int    *column indices of all nonzeros (starting index is zero)
+
+    IndexType nrows = storage.getNumRows();
+    IndexType ncols = storage.getNumColumns();
+
+    HArray<IndexType> csrIA;    // first offsets, later sizes
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    storage.buildCSRData( csrIA, csrJA, csrValues );
+
+    IndexType nnz = csrJA.size();
+
+    // we need the CSR sizes, not the offsets
+
+    utilskernel::HArrayUtils::unscan( csrIA );
+
+    std::ios::openmode flags = std::ios::out | std::ios::binary;
+
+    if ( mAppendMode )
+    {
+        flags |= std::ios::app;
+    }
+    else
+    {
+        flags |= std::ios::trunc;
+    }
+
+    IOStream outFile( fileName, flags, IOStream::BIG );
+
+    SCAI_LOG_INFO( logger, "File " << fileName << " now open for binary write, append = " << mAppendMode )
+
+    // Note: PETSc starts indexing with 0
+
+    utilskernel::LArray<IndexType> headValues( 4 );
+
+    headValues[0] = MAT_FILE_CLASSID;
+    headValues[1] = nrows;
+    headValues[2] = ncols;
+    headValues[3] = nnz;
+
+    // for binary output we make conversions to mScalarTypeData, mScalarTypeIndex
+
+    outFile.writeBinary( headValues, mScalarTypeIndex );
+    outFile.writeBinary( csrIA, mScalarTypeIndex );
+    outFile.writeBinary( csrJA , mScalarTypeIndex );
+
+    // output of values is skipped for PATTERN
+
+    if ( mScalarTypeData != common::scalar::PATTERN )
+    {
+        outFile.writeBinary( csrValues, mScalarTypeData );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
+{
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read storage info from file " << fileName )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<IndexType> headerVals;
+
+    inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
+
+    IndexType classid = headerVals[0];
+
+    SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
+
+    numRows      = headerVals[1];
+    numColumns   = headerVals[2];
+    numValues    = headerVals[3];
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::readStorageImpl(
+    MatrixStorage<ValueType>& storage,
+    const std::string& fileName,
+    const IndexType firstRow,
+    const IndexType nRows )
+{
+    // int    MAT_FILE_CLASSID
+    // int    number of rows
+    // int    number of columns
+    // int    total number of nonzeros
+    // int    *number nonzeros in each row
+    // int    *column indices of all nonzeros (starting index is zero)
+
+    std::ios::openmode flags = std::ios::in | std::ios::binary;
+
+    SCAI_LOG_INFO( logger, "Read storage<" << common::TypeTraits<ValueType>::id() << "> from file " << fileName )
+
+    IOStream inFile( fileName, flags, IOStream::BIG );
+
+    utilskernel::LArray<IndexType> headerVals;
+
+    inFile.readBinary( headerVals, 4, common::TypeTraits<IndexType>::stype );
+
+    IndexType classid = headerVals[0];
+    IndexType numRows   = headerVals[1];
+    IndexType numCols   = headerVals[2];
+    IndexType nnz     = headerVals[3];
+
+    SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << numRows
+                   << ", #cols = " << numCols << ", #nnz = " << nnz )
+
+    SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
+
+    HArray<IndexType> csrSizes;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    inFile.readBinary( csrSizes, numRows, mScalarTypeIndex );
+    inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
+
+    if ( mScalarTypeData != common::scalar::PATTERN )
+    {
+        inFile.readBinary( csrValues, nnz, mScalarTypeData );
+    }
+    else
+    {
+        csrValues.init( ValueType( 1 ), nnz );
+    }
+
+    if ( firstRow == 0 && nRows == nIndex )
+    {
+        storage.setCSRData( numRows, numCols, nnz, csrSizes, csrJA, csrValues );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "read block not yet available" )
+    }
+}
+
+}  // lama
+
+}  // scai

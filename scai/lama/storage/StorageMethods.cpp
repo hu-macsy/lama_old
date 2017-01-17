@@ -2,7 +2,7 @@
  * @file StorageMethods.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -290,48 +290,58 @@ void StorageMethods<ValueType>::splitCSR(
     const Distribution* rowDist )
 {
     SCAI_REGION( "Storage.splitCSR" )
+
+    ContextPtr ctx = Context::getHostPtr();  // all done on host here
+
     IndexType numRows = csrIA.size() - 1;
-    SCAI_LOG_INFO( logger,
-                   "splitCSR (#rows = " << numRows << ", #values = " << csrJA.size() << ", colDist = " << colDist )
+
+    SCAI_LOG_INFO( logger, "splitCSR( #rows = " << numRows << ", #values = " << csrJA.size()
+                   << ", colDist = " << colDist << " ) on " << *ctx )
 
     if ( rowDist )
     {
         numRows = rowDist->getLocalSize();
     }
 
-    ReadAccess<IndexType> ia( csrIA );
-    ReadAccess<IndexType> ja( csrJA );
-    WriteOnlyAccess<IndexType> wLocalIA( localIA, numRows + 1 );
-    WriteOnlyAccess<IndexType> wHaloIA( haloIA, numRows + 1 );
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    ReadAccess<IndexType> ia( csrIA, ctx );
+    ReadAccess<IndexType> ja( csrJA, ctx );
+    WriteOnlyAccess<IndexType> wLocalIA( localIA, ctx, numRows + 1 );
+    WriteOnlyAccess<IndexType> wHaloIA( haloIA, ctx, numRows + 1 );
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    #pragma omp parallel
     {
-        IndexType globalI = i;
+        SCAI_REGION( "Storage.splitCount" )
 
-        if ( rowDist )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            globalI = rowDist->local2global( i );
-        }
+            IndexType globalI = i;
 
-        IndexType localNonZeros = 0;
-        IndexType haloNonZeros = 0;
-
-        for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
-        {
-            if ( colDist.isLocal( ja[jj] ) )
+            if ( rowDist )
             {
-                ++localNonZeros;
+                globalI = rowDist->local2global( i );
             }
-            else
-            {
-                ++haloNonZeros;
-            }
-        }
 
-        // assignment takes also care for correct first touch
-        wLocalIA[i] = localNonZeros;
-        wHaloIA[i] = haloNonZeros;
+            IndexType localNonZeros = 0;
+            IndexType haloNonZeros = 0;
+
+            for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
+            {
+                if ( colDist.isLocal( ja[jj] ) )
+                {
+                    ++localNonZeros;
+                }
+                else
+                {
+                    ++haloNonZeros;
+                }
+            }
+
+            // assignment takes also care for correct first touch
+            wLocalIA[i] = localNonZeros;
+            wHaloIA[i] = haloNonZeros;
+        }
     }
 
     // build now row offset from running sums, set nnz
@@ -339,56 +349,70 @@ void StorageMethods<ValueType>::splitCSR(
     IndexType haloNumValues = OpenMPCSRUtils::sizes2offsets( wHaloIA.get(), numRows );
     SCAI_LOG_DEBUG( logger,
                     "split: local part has " << localNumValues << " values" << ", halo part has " << haloNumValues << " values" )
+
     // so we can now allocate s of correct size
-    WriteOnlyAccess<IndexType> wLocalJA( localJA, localNumValues );
-    WriteOnlyAccess<ValueType> wLocalValues( localValues, localNumValues );
-    WriteOnlyAccess<IndexType> wHaloJA( haloJA, haloNumValues );
-    WriteOnlyAccess<ValueType> wHaloValues( haloValues, haloNumValues );
-    ReadAccess<ValueType> values( csrValues );
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
 
-    for ( IndexType i = 0; i < numRows; i++ )
+    WriteOnlyAccess<IndexType> wLocalJA( localJA, ctx, localNumValues );
+    WriteOnlyAccess<ValueType> wLocalValues( localValues, ctx, localNumValues );
+    WriteOnlyAccess<IndexType> wHaloJA( haloJA, ctx, haloNumValues );
+    WriteOnlyAccess<ValueType> wHaloValues( haloValues, ctx, haloNumValues );
+
+    ReadAccess<ValueType> values( csrValues, ctx );
+
+    #pragma omp parallel
     {
-        IndexType globalI = i;
+        SCAI_REGION( "Storage.splitTransfer" )
+        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        if ( rowDist )
+        for ( IndexType i = 0; i < numRows; i++ )
         {
-            globalI = rowDist->local2global( i );
-        }
+            IndexType globalI = i;
 
-        IndexType localOffset = wLocalIA[i];
-        IndexType haloOffset = wHaloIA[i];
-        SCAI_LOG_TRACE( logger, "fill local row " << i << " from " << localOffset << " to " << wLocalIA[i + 1] )
-        SCAI_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i + 1] )
-
-        for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
-        {
-            const IndexType jLocal = colDist.global2local( ja[jj] );
-
-            if ( jLocal != nIndex )
+            if ( rowDist )
             {
-                // Attention: local gets already local column indexes
-                wLocalJA[localOffset] = jLocal;
-                wLocalValues[localOffset] = values[jj];
-                SCAI_LOG_TRACE( logger,
-                                "row " << i << " (global = " << globalI << ": j = " << ja[jj] << " is local " << " local offset = " << localOffset )
-                ++localOffset;
+                globalI = rowDist->local2global( i );
             }
-            else
-            {
-                // Attention: halo keeps global column indexes
-                wHaloJA[haloOffset] = ja[jj];
-                wHaloValues[haloOffset] = values[jj];
-                SCAI_LOG_TRACE( logger,
-                                "row " << i << " (global = " << globalI << ": j = " << ja[jj] << " is not local " << " halo offset = " << haloOffset )
-                ++haloOffset;
-            }
-        }
 
-        SCAI_ASSERT_DEBUG( localOffset == wLocalIA[i + 1],
-                           ", localOffset = " << localOffset << ", expected " << wLocalIA[i + 1] )
-        SCAI_ASSERT_DEBUG( haloOffset == wHaloIA[i + 1],
-                           ", haloOffset = " << haloOffset << ", expected " << wHaloIA[i + 1] )
+            IndexType localOffset = wLocalIA[i];
+            IndexType haloOffset = wHaloIA[i];
+
+            SCAI_LOG_TRACE( logger, "fill local row " << i << " from " << localOffset << " to " << wLocalIA[i + 1] )
+            SCAI_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i + 1] )
+
+            for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
+            {
+                const IndexType jLocal = colDist.global2local( ja[jj] );
+
+                if ( jLocal != nIndex )
+                {
+                    // local column index, will be used in local JA
+
+                    wLocalJA[localOffset] = jLocal;
+                    wLocalValues[localOffset] = values[jj];
+
+                    SCAI_LOG_TRACE( logger,
+                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj]
+                                    << " is local " << " local offset = " << localOffset )
+
+                    ++localOffset;
+                }
+                else
+                {
+                    // non-local index, global index remains in halo JA
+
+                    wHaloJA[haloOffset] = ja[jj];
+                    wHaloValues[haloOffset] = values[jj];
+
+                    SCAI_LOG_TRACE( logger,
+                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj]
+                                    << " is not local " << " halo offset = " << haloOffset )
+                    ++haloOffset;
+                }
+            }
+
+            SCAI_ASSERT_EQ_DEBUG( localOffset, wLocalIA[i + 1], "serious mismatch to previsous counting" )
+            SCAI_ASSERT_EQ_DEBUG( haloOffset, wHaloIA[i + 1], "serious mitmatch to previous counting" )
+        }
     }
 }
 
@@ -419,7 +443,12 @@ void _StorageMethods::buildHalo(
     haloIndexes.resize( it - haloIndexes.begin() );
     SCAI_LOG_DEBUG( logger,
                     "Eliminating multiple global indexes, " << haloNumValues << " are shrinked to " << haloIndexes.size() << " values, is halo size" )
-    HaloBuilder::build( colDist, haloIndexes, halo );
+
+    {
+        HArrayRef<IndexType> requiredIndexes( haloIndexes );
+        HaloBuilder::build( colDist, requiredIndexes, halo );
+    }
+
     SCAI_LOG_DEBUG( logger, "Halo = " << halo )
     haloSize = static_cast<IndexType>( haloIndexes.size() );
     const std::map<IndexType, IndexType>& table = halo.getMap();
@@ -542,7 +571,7 @@ void StorageMethods<ValueType>::joinCSR(
 
 /* -------------------------------------------------------------------------- */
 
-SCAI_COMMON_INST_CLASS( StorageMethods, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( StorageMethods, SCAI_NUMERIC_TYPES_HOST )
 
 /* -------------------------------------------------------------------------- */
 

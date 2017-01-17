@@ -2,7 +2,7 @@
  * @file HArray.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -204,7 +204,9 @@ public:
      *
      * @param[in] other the HArray to swap the contens with.
      */
-    void swap( HArray<ValueType>& other );
+    void swapImpl( HArray<ValueType>& other );
+
+    void swap( _HArray& other );
 
     /**
      * @brief sets the size of this to 0 an frees all memory
@@ -291,9 +293,7 @@ HArray<ValueType>::HArray( ContextPtr context ) :
 
 template<typename ValueType>
 HArray<ValueType>::HArray( MemoryPtr memory ) :
-
     _HArray( 0, sizeof( ValueType ) )
-
 {
     // just make the first entry for the memory
     /* ContextDataIndex data = */  mContextDataManager.getMemoryData( memory );
@@ -304,9 +304,7 @@ HArray<ValueType>::HArray( MemoryPtr memory ) :
 
 template<typename ValueType>
 HArray<ValueType>::HArray( const IndexType n ) :
-
     _HArray( n, sizeof( ValueType ) )
-
 {
     // reserves already memory on the host, but this data is not valid
     ContextPtr hostPtr = Context::getHostPtr();
@@ -333,15 +331,17 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr
     if ( n > 0 )
     {
         ValueType* hostData = static_cast<ValueType*>( data.get() );
+        // ToDo: iterator changed from size_t to IndexType due to errors using compilers just supporting OpenMP 2.5
         #pragma omp parallel for
 
-        for ( size_t i = 0; i < mSize; ++i )
+        for ( IndexType i = 0; i < mSize; ++i )
         {
             hostData[i] = value;
         }
     }
 
     releaseWriteAccess( index );
+
     SCAI_LOG_DEBUG( logger, "constructed: " << *this )
 
     // if array is constructed for other context than host, we prefetch the data to it
@@ -483,7 +483,17 @@ void HArray<ValueType>::assign( const HArray<ValueType>& other, ContextPtr conte
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::swap( HArray<ValueType>& other )
+void HArray<ValueType>::swap( _HArray& other )
+{
+    SCAI_ASSERT_EQUAL( getValueType(), other.getValueType(), "swap only for same value type" )
+
+    swapImpl( reinterpret_cast<HArray<ValueType>& >( other ) );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void HArray<ValueType>::swapImpl( HArray<ValueType>& other )
 {
     SCAI_LOG_DEBUG( logger, *this << ": swap with other = " << other )
     // we cannot swap if there is any access for any array
@@ -548,10 +558,12 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 {
     ContextData& entry = mContextDataManager[index];
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
+
     // SCAI_ASSERT( entry.locked( common::context::Write ), "resize illegal here " << entry )
     // static cast to have multiplication with 64 bit values
-    size_t allocSize = static_cast<size_t>( size ) * mValueSize;
-    size_t validSize = static_cast<size_t>( mSize ) * mValueSize;
+
+    size_t allocSize = static_cast<size_t>( size )  * static_cast<size_t>( mValueSize );
+    size_t validSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
 
     if ( validSize > allocSize )
     {
@@ -570,16 +582,19 @@ void HArray<ValueType>::resize( ContextDataIndex index, const IndexType size )
 template<typename ValueType>
 void HArray<ValueType>::reserve( ContextDataIndex index, const IndexType size ) const
 {
-    if ( static_cast<size_t>( size ) <= mSize )
+    if ( size <= mSize )
     {
         return;   // nothing to do
     }
 
     bool inUse =  mContextDataManager.locked() > 1;   // further accesses on this array
     ContextData& entry = mContextDataManager[index];
-    size_t allocSize = size * mValueSize;
-    size_t validSize = mSize * mValueSize;
+
+    size_t allocSize = static_cast<size_t>( size ) * static_cast<size_t>( mValueSize );
+    size_t validSize = static_cast<size_t>( mSize ) * static_cast<size_t>( mValueSize );
+
     entry.reserve( allocSize, validSize, inUse );
+
     // Note: mSize does not change by the reserve
 }
 
@@ -618,6 +633,8 @@ HArray<ValueType>* HArray<ValueType>::create( common::scalar::ScalarType key )
         COMMON_THROWEXCEPTION( "creation not possible here" )
     }
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 } /* end namespace hmemo */
 

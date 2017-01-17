@@ -2,7 +2,7 @@
  * @file CUDABLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CUDABLAS2.cpp
+ * @brief CUDA implementations of BLAS2 routines for the class CUDABLAS2.
  * @author Lauretta Schubert
  * @date 05.07.2012
  */
@@ -146,7 +146,7 @@ void CUDABLAS2::gemv(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDABLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDABLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -160,13 +160,13 @@ void CUDABLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 CUDABLAS2::CUDABLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS2::~CUDABLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

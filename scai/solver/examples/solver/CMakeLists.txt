@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -34,7 +34,7 @@
 
 set ( HEADER LamaConfig.hpp LamaTiming.hpp )
 
-foreach ( executable solver lama_info matrix_generator matrix_convert vector_generator )
+foreach ( executable lamaSolver lamaInfo matrixStencilGenerator matrixRandomGenerator vectorGenerator )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

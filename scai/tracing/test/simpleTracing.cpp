@@ -2,7 +2,7 @@
  * @file scai/tracing/test/simpleTracing.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,7 +35,7 @@
 #include <scai/tracing.hpp>
 #include <scai/logging.hpp>
 #include <cstdio>
-#include <omp.h>
+#include <scai/common/OpenMP.hpp>
 
 void subA( int& X )
 {

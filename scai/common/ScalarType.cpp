@@ -2,7 +2,7 @@
  * @file ScalarType.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,6 +34,9 @@
 
 // hpp
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/TypeTraits.hpp>
+#include <scai/common/mepr/ScalarTypeHelper.hpp>
+#include <scai/common/macros/assert.hpp>
 
 #include <cstring>
 
@@ -59,9 +62,6 @@ const char* scalarType2str( const scalar::ScalarType stype )
         case scalar::DOUBLE:
             return "double";
 
-        case scalar::INDEX_TYPE:
-            return "IndexType";
-
         case scalar::LONG_DOUBLE:
             return "LongDouble";
 
@@ -74,6 +74,18 @@ const char* scalarType2str( const scalar::ScalarType stype )
         case scalar::LONG_DOUBLE_COMPLEX:
             return "ComplexLongDouble";
 
+        case scalar::CHAR:
+            return "char";
+
+        case scalar::UNSIGNED_INT:
+            return "uint";
+
+        case scalar::UNSIGNED_LONG:
+            return "ulong";
+
+        case scalar::INDEX_TYPE:
+            return "IndexType";
+
         case scalar::INTERNAL:
             return "_Internal";
 
@@ -85,43 +97,82 @@ const char* scalarType2str( const scalar::ScalarType stype )
     }
 }
 
+/*************************************************************************/
+
 scalar::ScalarType str2ScalarType( const char* str )
 {
-    for ( int type = scalar::INDEX_TYPE; type < scalar::UNKNOWN; ++type )
+    for ( int stype = scalar::INT; stype < scalar::UNKNOWN; ++stype )
     {
-        if ( strcmp( scalarType2str( scalar::ScalarType( type ) ), str ) == 0 )
+        if ( strcmp( scalarType2str( scalar::ScalarType( stype ) ), str ) == 0 )
         {
-            return scalar::ScalarType( type );
+            return scalar::ScalarType( stype );
         }
     }
 
     return scalar::UNKNOWN;
 }
 
-bool isComplex( const scalar::ScalarType t )
-{
-    bool is = false;
-
-    switch ( t )
-    {
-        case scalar::DOUBLE_COMPLEX:
-        case scalar::COMPLEX:
-        case scalar::LONG_DOUBLE_COMPLEX :
-            is = true;
-            break;
-
-        default:
-            is = false;
-    }
-
-    return is;
-}
+/*************************************************************************/
 
 std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object )
 {
     stream << scalarType2str( object );
     return stream;
 }
+
+/*************************************************************************/
+
+bool isComplex( const scalar::ScalarType stype )
+{
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isComplex( stype );
+}
+
+/*************************************************************************/
+
+bool isNumeric( const scalar::ScalarType stype )
+{
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isNumeric( stype );
+}
+
+/*************************************************************************/
+
+
+int precision( const scalar::ScalarType stype )
+{
+    // call with INTERNAL not allowed, replace it at call site with precision( TypeTraits<ValueType>::sid )
+
+    SCAI_ASSERT( stype != scalar::INTERNAL, "precision of INTERNAL unknown" )
+
+    // loop over all supported types and query its precision
+
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::precision( stype );
+}
+
+/*************************************************************************/
+
+size_t typeSize( const scalar::ScalarType stype )
+{
+    // call with INTERNAL not allowed, replace it at cal size with typeSize( TypeTraits<ValueType>::sid )
+
+    SCAI_ASSERT( stype != scalar::INTERNAL, "typeSize of INTERNAL unknown" )
+
+    if ( stype == scalar::PATTERN )
+    {
+        return 0;      // allowed, stands for a dummy type
+    }
+
+    if ( stype == scalar::INDEX_TYPE )
+    {
+        return sizeof( IndexType );   // must be handled separately here
+    }
+
+    // for all types use TypeTraits as they contain already this information
+
+    return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::sizeOf( stype );
+}
+
+/*************************************************************************/
+
 
 } /* end namespace common */
 

@@ -2,7 +2,7 @@
  * @file COOKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,10 +42,98 @@ namespace scai
 namespace sparsekernel
 {
 
-/** Kernel traits for functions to be used in COO storage. */
+/** Kernel traits for functions to be used in COO storage.
+ *
+ *  Note: routines to build CSR data from COO data are not required any more
+ *        as this is done by bucket sort
+ */
 
 struct COOKernelTrait
 {
+    struct getValuePos
+    {
+        /** Returns position of element (i,j) in ja/values array
+         *
+         *  @param[in] i is the row of the element
+         *  @param[in] j is the column of the element
+         *  @param[in] cooIA is the COO ia array
+         *  @param[in] cooJA is the COO ja array
+         *  @returns  offset of element in values array, nIndex if not found
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType i,
+            const IndexType j,
+            const IndexType cooIA[],
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePos";
+        }
+    };
+
+    struct getValuePosRow
+    {
+        /** This method returns for a certain row of the COO matrix all
+         *  col indexes for which elements exist and the corresponding positions
+         *  in the cooIA/cooJA/cooValues array
+         *
+         *  @param[out] col indexes of cols that have an entry for row i
+         *  @param[out] pos positions of entries with row = i in cooXXX array
+         *  @param[in] i is the row of which positions are required
+         *  @param[in] cooIA is the COO array with row indexes
+         *  @param[in] numColumns is the number of columns
+         *  @param[in] cooJA is the COO array with col indexes
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with row index = i
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType col[],
+            IndexType pos[],
+            const IndexType i,
+            const IndexType cooIA[],
+            const IndexType numColumns,
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePosRow";
+        }
+    };
+
+    struct getValuePosCol
+    {
+        /** This method returns for a certain column of the COO matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the cooIA/cooJA/cooValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in cooJA,
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] cooIA is the COO array with row indexes
+         *  @param[in] numRows is the number of rows
+         *  @param[in] cooJA is the COO array with col indexes
+         *  @param[in] numValues is the number of non-zero values
+         *  @returns  number of entries with col index = j
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType cooIA[],
+            const IndexType numRows,
+            const IndexType cooJA[],
+            const IndexType numValues );
+
+        static const char* getId()
+        {
+            return "COO.getValuePosCol";
+        }
+    };
+
     struct hasDiagonalProperty
     {
         /** Routine checks for diagonal property, first n entries are the diagonal elements.
@@ -54,6 +142,9 @@ struct COOKernelTrait
          *  @param[in] cooJA column indexes
          *  @param[in] n number of diagonal elements
          *  @return true if first n entries stand for the diagonal elements
+         *
+         *  Attention: do not call this routine if n > numValues (size of cooIA, cooJA) where
+         *             diagonal property is already false
          */
 
         typedef bool ( *FuncType )(
@@ -64,28 +155,6 @@ struct COOKernelTrait
         static const char* getId()
         {
             return "COO.hasDiagonalProperty";
-        }
-    };
-
-    struct getCSRSizes
-    {
-        /** Helper routine for conversion of COO format to CSR format to get sparse row sizes.
-         *
-         *  @param[out] csrSizes array with number of non-zero entries in each row
-         *  @param[in] numRows number of rows
-         *  @param[in] numValues number of non-zero values
-         *  @param[in] array with row indexes of COO storage (size is numValues)
-         */
-
-        typedef void ( *FuncType )(
-            IndexType csrSizes[],
-            const IndexType numRows,
-            const IndexType numValues,
-            const IndexType cooIA[] );
-
-        static const char* getId()
-        {
-            return "COO.getCSRSizes";
         }
     };
 
@@ -142,37 +211,6 @@ struct COOKernelTrait
     };
 
     template<typename COOValueType, typename CSRValueType>
-    struct getCSRValues
-    {
-        /** Helper routine for conversion COO to CSR
-         *
-         *  @param[out] csrJA will contain the column indexes
-         *  @param[out] csrValues will contain the matrix elements
-         *  @param[in] csrIA is the array with the offsets (must already be available before)
-         *
-         *   - csrIA has numRows + 1 entries
-         *   - csrJA and csrValues must have at least numValues entries, numValues = csrIA[numRows]
-         *
-         *  Note: this routine preserves the diagonal property of the COO format
-         */
-
-        typedef void ( *FuncType )(
-            IndexType csrJA[],
-            CSRValueType csrValues[],
-            IndexType csrIA[],
-            const IndexType numRow,
-            const IndexType numValues,
-            const IndexType cooIA[],
-            const IndexType cooJA[],
-            const COOValueType cooValues[] );
-
-        static const char* getId()
-        {
-            return "COO.getCSRValues";
-        }
-    };
-
-    template<typename COOValueType, typename CSRValueType>
     struct setCSRData
     {
 
@@ -214,7 +252,7 @@ struct COOKernelTrait
          *  @param x is input vector for matrix multiplication
          *  @param beta is scaling factor for additional vector
          *  @param y is additional input vector to add
-         *  @param numRows is number of elements for all vectors and rows of matrix
+         *  @param numRows is number of elements for vectors result and b and rows of matrix
          *  @param cooIA, cooJA, cooValues are arrays of COO storage
          *  @param numValues is the size of the coo arrays
          */
@@ -240,13 +278,25 @@ struct COOKernelTrait
     template<typename ValueType>
     struct normalGEVM
     {
+        /** result = alpha * x * CSR-Matrix + b * y.
+         *
+         *  @param result is the result vector
+         *  @param alpha is scaling factor for matrix x vector
+         *  @param x is input vector for matrix multiplication
+         *  @param beta is scaling factor for additional vector
+         *  @param y is additional input vector to add
+         *  @param numColumns is number of elements for columns of matrix, size of result, y
+         *  @param cooIA, cooJA, cooValues are arrays of COO storage
+         *  @param numValues is the size of the coo arrays
+         */
+
         typedef void ( *FuncType ) (
             ValueType result[],
             const ValueType alpha,
             const ValueType x[],
             const ValueType beta,
             const ValueType y[],
-            const IndexType numRows,
+            const IndexType numColumns,
             const IndexType nnz,
             const IndexType cooIA[],
             const IndexType cooJA[],

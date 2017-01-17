@@ -2,7 +2,7 @@
  * @file GenBlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class GenBlockDistributionTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @brief Specific tests for GenBlockDistribution.
+ * @author Thomas Brandes
  * @date 30.07.2012
  */
 
@@ -37,8 +37,10 @@
 
 #include <scai/dmemo.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -91,17 +93,15 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.GenBlockDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
-    std::vector<IndexType> indexes;
+    utilskernel::LArray<IndexType> indexes;
+    utilskernel::LArray<PartitionId> owners;
 
-    for ( IndexType i = 0; i < globalSize; i++ )
-    {
-        indexes.push_back( i );
-    }
+    utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
-    std::vector<PartitionId> owners;
-    dist->computeOwners( indexes, owners );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
+    dist->computeOwners( owners, indexes );
+
+    BOOST_REQUIRE_EQUAL( globalSize, owners.size() );
+    BOOST_REQUIRE_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
     // now check for correct owners
 
@@ -126,25 +126,29 @@ BOOST_AUTO_TEST_CASE( genBlockSizeTest )
 
     IndexType globalSize = size * ( size + 1 );
     GenBlockDistribution dist1( globalSize, mlocalSizes, comm );
-    BOOST_CHECK( dist1.getLocalSize() == 2 * ( rank + 1 ) );
+    BOOST_CHECK( dist1.getLocalSize() == static_cast<IndexType>( 2 * ( rank + 1 ) ) );
     IndexType lb1, ub1;
     dist1.getLocalRange( lb1, ub1 );
-    GenBlockDistribution dist2( globalSize, 2 * ( rank + 1 ), comm );
+    GenBlockDistribution dist2( globalSize, static_cast<IndexType>( 2 * ( rank + 1 ) ), comm );
     IndexType lb2, ub2;
     dist1.getLocalRange( lb2, ub2 );
     BOOST_CHECK( lb1 == lb2 );
     BOOST_CHECK( ub1 == ub2 );
-    GenBlockDistribution dist3( globalSize, lb1, ub1, comm );
+    SCAI_LOG_INFO( logger, "lb = " << lb1 << ", ub = " << ub1 << ", global = " << globalSize )
+    GenBlockDistribution dist3( globalSize, lb1, ub1, true, comm );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    DistributionPtr genblockdist1( new GenBlockDistribution( comm->getSize(), 1, comm ) );
+    IndexType globalSize = comm->getSize();
+    IndexType localSize = 1;
+
+    DistributionPtr genblockdist1( new GenBlockDistribution( globalSize, localSize, comm ) );
     DistributionPtr genblockdist2( genblockdist1 );
-    DistributionPtr genblockdist3( new GenBlockDistribution( comm->getSize(), 1, comm ) );
-    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * comm->getSize(), 2, comm ) );
+    DistributionPtr genblockdist3( new GenBlockDistribution( globalSize, localSize, comm ) );
+    DistributionPtr genblockdist4( new GenBlockDistribution( 2 * globalSize, 2 * localSize, comm ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist2 ) );
     BOOST_CHECK( ( *genblockdist1 ).isEqual( *genblockdist3 ) );
     BOOST_CHECK( !( *genblockdist1 ).isEqual( *genblockdist4 ) );

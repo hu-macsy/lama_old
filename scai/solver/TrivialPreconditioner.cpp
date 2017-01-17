@@ -2,7 +2,7 @@
  * @file TrivialPreconditioner.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief TrivialPreconditioner.cpp
+ * @brief Implementation of methods for the class TrivialPreconditioner.
  * @author Matthias Makulla
  * @date 06.04.2011
  */

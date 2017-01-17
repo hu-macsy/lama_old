@@ -2,7 +2,7 @@
  * @file CUDAContext.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,6 +46,7 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
+#include <scai/common/Settings.hpp>
 #include <scai/common/macros/assert.hpp>
 
 // std
@@ -145,9 +146,7 @@ void CUDAContext::writeAt( std::ostream& stream ) const
 void CUDAContext::disable( const char* file, int line ) const
 {
     Context::disable( file, line ); // call routine of base class
-    SCAI_ASSERT( !contextStack.empty(), "call of disable without previous enable" )
-    common::CUDAAccess::disable( contextStack.top() );
-    contextStack.pop();
+    common::CUDAAccess::disable( this );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -155,7 +154,7 @@ void CUDAContext::disable( const char* file, int line ) const
 void CUDAContext::enable( const char* file, int line ) const
 {
     Context::enable( file, line ); // call routine of base class
-    contextStack.push( common::CUDAAccess::enable( *this ) );
+    common::CUDAAccess::enable( *this );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -218,7 +217,9 @@ CUDAStreamSyncToken* CUDAContext::getTransferSyncToken() const
 
 static int getDefaultDeviceNr()
 {
-    return 0;
+    int device = 0;
+    common::Settings::getEnvironment( device, "SCAI_DEVICE" );
+    return device;
 }
 
 /* ----------------------------------------------------------------------------- */

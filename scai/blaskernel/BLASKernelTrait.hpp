@@ -2,7 +2,7 @@
  * @file BLASKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Kernel traits for BLAS operations used in LAMA.
+ * @brief Kernel traits for BLAS and LAPACK operations used in LAMA.
  * @author Thomas Brandes
  * @date 02.04.2013
  */
@@ -50,7 +50,11 @@ namespace scai
 namespace blaskernel
 {
 
-/** Struct with all kernel traits for BLAS routines.
+/** Struct with all LAMA kernel traits for BLAS and LAPACK routines currently used.
+ *
+ *  Syntax of the LAMA kernel definitions are nearly the same as used for the
+ *  corresponing BLAS and LAPACK routines.
+ *
  *  It could have been just a namespace but struct disables
  *  'using namespace BLASKerneltrait'.
  */
@@ -533,15 +537,10 @@ struct BLASKernelTrait
          *                       first incremented and afterwards decremented, to fit
          *                       the Fortran interface.
          *
-         * @return info         If info=0, the execution is successful.
-         *                      If info = -i, the i-th parameter had an illegal value.
-         *                      If info = i, uii is 0. The factorization has been
-         *                       completed, but U is exactly singular. Division by 0
-         *                       will occur if you use the factor U for solving a
-         *                       system of linear equations.
+         * @throws common::Exception for illegal arguments or incomplete factorization
          */
 
-        typedef IndexType ( *FuncType ) (
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const IndexType m,
             const IndexType n,
@@ -588,7 +587,7 @@ struct BLASKernelTrait
     template<typename ValueType>
     struct getri
     {
-        typedef IndexType ( *FuncType ) (
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER ,
             const IndexType n,
             ValueType* a,
@@ -614,7 +613,7 @@ struct BLASKernelTrait
          *  where op(A) is either A, AT or AH;
          *  and B is a matrix of right hand sides and will contain the solution of all
          *  equations on output.
-         *
+
          * @param[in] order   Specifies, whether the matrix is stored in column major
          *                    order (i.e. CblasColMajor) or in row major order (i.e.
          *                    CblasRowMajor).
@@ -641,7 +640,7 @@ struct BLASKernelTrait
          *                     of B.
          */
 
-        typedef IndexType ( *FuncType ) (
+        typedef void ( *FuncType ) (
             const CBLAS_ORDER order,
             const CBLAS_UPLO uplo,
             const CBLAS_TRANSPOSE trans,
@@ -655,58 +654,6 @@ struct BLASKernelTrait
         static const char* getId()
         {
             return "LAPACK.tptrs";
-        }
-    };
-
-    /** Kernel trait for LAPACK routine laswp.
-     *
-     *  @tparam ValueType stands for the arithmetic type used in this operation.
-     */
-    template<typename ValueType>
-    struct laswp
-    {
-        /**
-         * @brief performs a series of row interchanges on the matrix A.
-         * One row interchange is initiated for each of rows k1 through k2 of A.
-         *
-         * @param[in] order      Specifies, whether the matrix is stored in column major
-         *                       order (i.e. CblasColMajor) or in row major order (i.e.
-         *                       CblasRowMajor). Since a translation of the data would be
-         *                       too expensiv, if it was stored in row major order, the
-         *                       BLAS level1 function SSWAP will be called instead. The
-         *                       beginning column of the vector in A will then be LDA-N.
-         * @param[in] n          The number of columns of the matrix A.
-         * @param[in,out] A      Array of dimension (LDA,N). On entry, the matrix of
-         *                       column dimension N to which the row interchanges will be
-         *                       applied. On exit, the permuted matrix.
-         * @param[in] lda        If the matrix is stored in column major order, lda
-         *                       specifies the actual number of rows of A. If else the
-         *                       matrix is stored in row major order, lda specifies the
-         *                       actual number of columns of A.
-         * @param[in] k1         The first element of ipiv for which a row interchange will
-         *                       be done.
-         * @param[in] k2         The last element of ipiv for which a row interchange will
-         *                       be done.
-         * @param[in] ipiv       Array of dimension (k2*abs(incx)). The vector of pivot
-         *                       indices. Only the elements in positions k1 through k2 of
-         *                       ipiv are accessed. ipiv(k) = l implies rows k and l are
-         *                       to be interchanged.
-         * @param[in] incx       The increment between successive values of ipiv. If ipiv
-         *                       is negative, the pivots are applied in reverse order.
-         */
-        typedef void ( *FuncType ) (
-            const CBLAS_ORDER order,
-            const IndexType n,
-            ValueType* A,
-            const IndexType lda,
-            const IndexType k1,
-            const IndexType k2,
-            const IndexType* ipiv,
-            const IndexType incx );
-
-        static const char* getId()
-        {
-            return "LAPACK.laswp";
         }
     };
 

@@ -2,7 +2,7 @@
  * @file DenseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,6 +58,7 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/unsupported.hpp>
+#include <scai/common/macros/unused.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
@@ -84,47 +85,30 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseMatrix<ValueTyp
 template<typename ValueType>
 void DenseMatrix<ValueType>::computeOwners()
 {
-    // build global vector mOwners with mOwners[i] is owner of column i
+    // build vector mOwners with mOwners[i] is owner of column i
+    // Note: this vector is replicated for all processors, has globalSize entries
+
     const Distribution& colDist = getColDistribution();
-    SCAI_LOG_DEBUG( logger, "computerOwners for col dist = " << colDist )
-    mOwners.resize( mNumColumns );
+
+    SCAI_LOG_INFO( logger, "computerOwners for col dist = " << colDist )
+
+    // Note: colDist.globalSize() == mNumColumns
+
+    if ( colDist.isReplicated() )
     {
-        std::vector<IndexType> requiredIndexes( mNumColumns );
-
-        for ( std::vector<IndexType>::size_type i = 0; i < requiredIndexes.size(); ++i )
-        {
-            requiredIndexes[i] = static_cast<IndexType>( i );
-        }
-
-        if ( SCAI_LOG_TRACE_ON( logger ) )
-        {
-            std::string s = "requiredIndexes{ ";
-
-            for ( unsigned int i = 0; i < requiredIndexes.size(); ++i )
-            {
-                s += " ";
-                s += requiredIndexes[i];
-            }
-
-            s += " }";
-            SCAI_LOG_TRACE( logger, s );
-        }
-
-        colDist.computeOwners( requiredIndexes, mOwners );
+        IndexType owner = 0;
+        mOwners.resize( mNumColumns );
+        mOwners = owner;
     }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
+    else
     {
-        std::string s = "mOwners{ ";
+        HArray<IndexType> indexes;   // will contain all column indexes to get all owners
 
-        for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
-        {
-            s += " ";
-            s += mOwners[i];
-        }
+        utilskernel::HArrayUtils::setOrder( indexes, mNumColumns );
 
-        s += " }";
-        SCAI_LOG_TRACE( logger, s );
+        colDist.computeOwners( mOwners, indexes );
+
+        SCAI_ASSERT_EQ_DEBUG( mNumColumns, mOwners.size(), "Serious mismatch, probably due to wrong distribution" );
     }
 }
 
@@ -135,28 +119,28 @@ void DenseMatrix<ValueType>::computeOwners()
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix()
 {
-    mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( 0, 0 ) );
-}
-
-template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns )
-
-    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
-{
-    mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );
     computeOwners();
+    allocateData();      // will initialize it with zero
 }
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist )
-    :
+DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns ) :
+
+    CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
+
+{
+    computeOwners();
+    allocateData();      // will initialize it with zero
+}
+
+template<typename ValueType>
+DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist ) :
 
     CRTPMatrix<DenseMatrix<ValueType>, ValueType>( rowDist, colDist )
+
 {
     computeOwners();
-    allocateData();   // will initialize it with zero
+    allocateData();      // will initialize it with zero
 }
 
 template<typename ValueType>
@@ -191,27 +175,39 @@ DenseMatrix<ValueType>::DenseMatrix(
     assign( other, rowDistribution, colDistribution );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
 {
+    // resolve expression in base class matrix, usually -> matrixPlusMatrix
     Matrix::operator=( expression );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
 {
+    // resolve expression in base class matrix
     Matrix::operator=( expression );
 }
 
@@ -221,67 +217,26 @@ template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const std::string& fileName )
 {
     SCAI_LOG_INFO( logger, "DenseMatrix( (fileName = " << fileName )
-    common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
-    denseStorage->readFromFile( fileName );
-    SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
+
+    // initialize mData, so getLocalStorage() returns valid data
+
     mData.resize( 1 );
-    mData[0] = denseStorage;
-    Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
-    computeOwners();
+    mData[0].reset( new DenseStorage<ValueType>( 0, 0 ) );
+
+    this->readFromFile( fileName );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::readFromFile( const std::string& fileName )
+DenseMatrix<ValueType>::DenseMatrix( const _MatrixStorage& globalData )
 {
-    SCAI_LOG_INFO( logger, "set dense matrix with values from input file " << fileName )
-    common::shared_ptr<DenseStorage<ValueType> > denseStorage( new DenseStorage<ValueType>() );
-    denseStorage->readFromFile( fileName );
-    SCAI_LOG_INFO( logger, "read dense storage from file " << fileName << ": " << denseStorage )
-    mData.resize( 1 );
-    mData[0] = denseStorage;
-    Matrix::setReplicatedMatrix( denseStorage->getNumRows(), denseStorage->getNumColumns() );
-    computeOwners();
+    DistributionPtr rowDist( new NoDistribution( globalData.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( globalData.getNumColumns() ) );
+    DenseMatrix<ValueType>::assign( globalData, rowDist, colDist );
 }
 
 /* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::writeToFile1(
-    const std::string& fileName,
-    const File::FileType fileType /* = UNFORMATTED */,
-    const common::scalar::ScalarType valuesType /* = INTERNAL */,
-    const common::scalar::ScalarType iaType /* = INDEX_TYPE */,
-    const common::scalar::ScalarType jaType /* = INDEX_TYPE */,
-    const bool writeBinary /* = false */ ) const
-{
-    SCAI_LOG_INFO( logger,
-                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << valuesType << " )" )
-
-    if ( getRowDistribution().isReplicated() && getColDistribution().isReplicated() )
-    {
-        // make sure that only one processor writes to file
-        const Communicator& comm = getRowDistribution().getCommunicator();
-
-        if ( comm.getRank() == 0 )
-        {
-            getLocalStorage().writeToFile( fileName, fileType, valuesType, iaType, jaType, writeBinary );
-        }
-
-        // synchronization to avoid that other processors start with
-        // something that might depend on the finally written file
-        comm.synchronize();
-    }
-    else
-    {
-        DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
-        DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        DenseMatrix<ValueType> repM( *this, rowDist, colDist );
-        // repM.redistribute( rowDist, colDist );
-        repM.writeToFile1( fileName, fileType, valuesType, iaType, jaType, writeBinary );
-    }
-}
 
 template<typename ValueType>
 DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<ValueType>& other )
@@ -307,50 +262,18 @@ DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Matrix& other )
+DenseMatrix<ValueType>::DenseMatrix( const Matrix& other, bool transposeFlag )
 {
-    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other )
-    assign( other ); // will choose the local assignment
-}
+    SCAI_LOG_INFO( logger, "copy constructor( any matrix) : " << other << ", transpse = " << transposeFlag )
 
-/* ------------------------------------------------------------------------ */
-
-template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( DistributionPtr distribution )
-
-    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( distribution, distribution )
-{
-    const Distribution& dist = getRowDistribution();
+    if ( transposeFlag )
     {
-        const int n = dist.getNumPartitions();
-        const int numLocalRows = dist.getLocalSize();
-        computeOwners();
-        scoped_array<int> numCols( new int[n] );
-
-        for ( int i = 0; i < n; ++i )
-        {
-            numCols[i] = 0;
-        }
-
-        for ( unsigned int i = 0; i < mOwners.size(); ++i )
-        {
-            ++numCols[mOwners[i]];
-        }
-
-        mData.resize( n );
-        SCAI_LOG_DEBUG( logger, "mData.size() = " << mData.size() )
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-        for ( int i = 0; i < n; ++i )
-        {
-            //create Storage Vector
-            mData[i].reset( new DenseStorage<ValueType>( numLocalRows, numCols[i] ) );
-        }
-
-        mData[0]->setDiagonalImpl( ValueType( 1 ) );
-        SCAI_LOG_DEBUG( logger, "mData[0] : " << *mData[0] << ", with data = " << mData[0]->getData() )
+        assignTranspose( other );
     }
-    SCAI_LOG_INFO( logger, *this << " constructed" )
+    else
+    {
+        assign( other );
+    }
 }
 
 /* ------------------------------------------------------------------ */
@@ -408,7 +331,7 @@ void DenseMatrix<ValueType>::setDenseData(
     {
         splitColumns( colDist );
 
-        for ( int i = 0; i < colDist->getCommunicator().getSize(); ++i )
+        for ( PartitionId i = 0; i < colDist->getCommunicator().getSize(); ++i )
         {
             SCAI_LOG_DEBUG( logger, "mData[" << i << "] = " << *mData[i] );
         }
@@ -450,9 +373,42 @@ void DenseMatrix<ValueType>::setCSRData(
 /* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::setDIAData(
+    DistributionPtr rowDist,
+    DistributionPtr colDist,
+    const IndexType numDiagonals,
+    const HArray<IndexType>& offsets,
+    const _HArray& values )
+{
+    DistributionPtr tmpReplicatedColDistribution = colDist;
+    const IndexType n = rowDist->getLocalSize();
+    const IndexType m = colDist->getGlobalSize();
+
+    // splitting of the column data will be done after setting full column data
+
+    if ( !colDist->isReplicated() )
+    {
+        tmpReplicatedColDistribution.reset( new NoDistribution( m ) );
+    }
+
+    Matrix::setDistributedMatrix( rowDist, tmpReplicatedColDistribution );
+
+    // due to temporary replicated col distribution, mData has only one entry
+
+    mData[0]->setDIAData( n, m, numDiagonals, offsets, values );
+
+    if ( !colDist->isReplicated() )
+    {
+        splitColumns( colDist );
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
 bool DenseMatrix<ValueType>::isConsistent() const
 {
-    int consistencyErrors = 0;
+    IndexType consistencyErrors = 0;
     // ToDo: this implementation should use a corresponding predicate of MatrixStorage
     const IndexType numLocalRows = getRowDistribution().getLocalSize();
 
@@ -488,50 +444,8 @@ void DenseMatrix<ValueType>::invert( const Matrix& other )
     DistributionPtr colDist = other.getColDistributionPtr();
     DistributionPtr tmpColDist( new NoDistribution( other.getNumColumns() ) );
 
-    if ( rowDist->isReplicated() || ( !hasScalaPack() ) )
-    {
-        assign( other );
-        invertReplicated();
-        return;
-    }
-
-    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( rowDist.get() );
-    DistributionPtr tmpRowDist;
-
-    if ( cyclicDist )
-    {
-        tmpRowDist = rowDist;
-    }
-    else
-    {
-        const IndexType blockSize = 64;
-        CommunicatorPtr comm = rowDist->getCommunicatorPtr();
-        tmpRowDist.reset( new CyclicDistribution( other.getNumRows(), blockSize, comm ) );
-    }
-
     assign( other );
-    redistribute( tmpRowDist, tmpColDist );
-    invertCyclic();
-    redistribute( rowDist, colDist );
-}
-
-/* ------------------------------------------------------------------ */
-
-template<typename ValueType>
-bool DenseMatrix<ValueType>::hasScalaPack()
-{
-    return false;
-    /* Original code:
-
-    // check the Kernel registry if ScalaPack is available ( at least on Host )
-
-    typename blaskernel::BLASKernelTrait::SCALAPACK<ValueType>::inverse inverse = loc->getInterface().BLAS.inverse<ValueType>();
-
-    ContextPtr loc = Context::getHostPtr();
-
-    return inverse != NULL;
-
-    */
+    invertReplicated();
 }
 
 /* ------------------------------------------------------------------ */
@@ -548,56 +462,6 @@ void DenseMatrix<ValueType>::invertReplicated()
     // now invert the dense matrix storage
     mData[0]->invert( *mData[0] );
     redistribute( rowDist, colDist );
-}
-
-/* ------------------------------------------------------------------ */
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::invertCyclic()
-{
-    // ToDO: invertCyclic uses function invert from Scalapack, interface should not know Communicator
-//    SCAI_REGION( "Mat.Dense.invertCyclic" )
-//
-//    const Communicator& comm = getRowDistribution().getCommunicator();
-//
-//    const Distribution& rowDist = getRowDistribution();
-//
-//    const CyclicDistribution* cyclicDist = dynamic_cast<const CyclicDistribution*>( &rowDist );
-//
-//    SCAI_ASSERT_ERROR( cyclicDist, "no cyclic distribution: " << rowDist )
-//
-//    const int nb = cyclicDist->chunkSize(); // blocking factor
-//
-//    static LAMAKernel<blaskernel::BLASKernelTrait::inverse<ValueType> > inverse;
-//
-//    // location where inverse computation will be done
-//    ContextPtr loc = inverse.getValidContext( this->getContextPtr() );
-//
-//    // be careful: loc might have changed to location where 'inverse' is available
-//
-//    const int n = getNumRows();
-//
-//    // assert square matrix
-//
-//    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), n )
-//
-//    DenseStorage<ValueType>& denseStorage = getLocalStorage();
-//
-//    const IndexType localSize = denseStorage.getData().size();
-//
-//    SCAI_ASSERT_EQUAL_ERROR( localSize, denseStorage.getNumRows() * n )
-//
-//    SCAI_LOG_INFO( logger, "local dense data = " << denseStorage << ", localSize = " << localSize )
-//
-//    WriteAccess<ValueType> localValues( denseStorage.getData(), loc );
-//
-//    ValueType* data = localValues.get();
-//
-//    SCAI_LOG_INFO( logger, "now call inverse" )
-//
-//    SCAI_CONTEXT_ACCESS( loc )
-//
-//    inverse[loc]( n, nb, data, comm );
 }
 
 /* ------------------------------------------------------------------ */
@@ -651,47 +515,33 @@ void DenseMatrix<ValueType>::clear()
 }
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::purge()
+{
+    Matrix::setReplicatedMatrix( 0, 0 ); // clear Matrix
+    mData.resize( 1 ); // clear Data
+    mData[0]->purge();
+}
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::allocate( const IndexType numRows, const IndexType numColumns )
 {
-    Matrix::setReplicatedMatrix( numRows, numColumns );
-    mData.resize( 1 ); // all other storages will be freed
-    SCAI_ASSERT_ERROR( mData[0], "no local data available" )
-    mData[0]->allocate( mNumRows, mNumColumns );
+    DistributionPtr rowDist( new NoDistribution( numRows ) );
+    DistributionPtr colDist( new NoDistribution( numColumns ) );
+
+    allocate( rowDist, colDist );
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::allocate( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
-    SCAI_LOG_DEBUG( logger,
-                    *this << " with mData[" << mData.size() << "]" << ", owners[" << mOwners.size() << "] " << " allocate row dist = " << *rowDistribution << ", col dist = " << *colDistribution )
-
-    if ( colDistribution->isReplicated() )
-    {
-        mData.resize( 1 ); // all other storages will be freed
-
-        if ( mData[0] )
-        {
-            // just reallocate the storage
-            mData[0]->allocate( rowDistribution->getLocalSize(), colDistribution->getGlobalSize() );
-        }
-        else
-        {
-            // first time allocation
-            mData[0].reset( new DenseStorage<ValueType>( rowDistribution->getLocalSize(),
-                            colDistribution->getGlobalSize() ) );
-        }
-
-        if ( *colDistribution != getColDistribution() )
-        {
-            computeOwners();
-        }
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "coldistribution not handled here" )
-    }
+    SCAI_LOG_INFO( logger,
+                   *this << " with mData[" << mData.size() << "]" << ", owners[" << mOwners.size() << "] " << " allocate row dist = " << *rowDistribution << ", col dist = " << *colDistribution )
 
     Matrix::setDistributedMatrix( rowDistribution, colDistribution );
+
+    computeOwners();
+    allocateData();
+
     SCAI_LOG_DEBUG( logger, *this << ": now allocated" )
 }
 
@@ -723,6 +573,8 @@ void DenseMatrix<ValueType>::assignTranspose( const Matrix& other  )
 template<typename ValueType>
 void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& Mat )
 {
+    SCAI_REGION( "Mat.Dense.assignTranspose" )
+
     const Communicator& comm = Mat.getRowDistribution().getCommunicator();
     IndexType size = comm.getSize();
     DistributionPtr distRow = Mat.getRowDistributionPtr();
@@ -814,13 +666,13 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     if ( other.getMatrixKind() == Matrix::DENSE )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
-        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignDenseImpl( *this, other );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDenseImpl( *this, other );
         return;
     }
     else if ( other.getMatrixKind() == Matrix::SPARSE )
     {
         SCAI_LOG_INFO( logger, "copy sparse matrix" )
-        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::assignSparseImpl( *this, other );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignSparseImpl( *this, other );
         return;
     }
 
@@ -889,28 +741,32 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
 
     if ( storage.getNumRows() == rowDist->getLocalSize() )
     {
-// only format conversion of the local storage, @todo avoid it if storage is DenseStorage<ValueType>
+        // only format conversion of the local storage, @todo avoid it if storage is DenseStorage<ValueType>
+
         if ( storage.getFormat() == Format::DENSE && storage.getValueType() == getValueType() )
         {
             const DenseStorage<ValueType>* localData = dynamic_cast<const DenseStorage<ValueType>*>( &storage );
             SCAI_ASSERT_ERROR( localData, "dynamic_cast<constDenseStorage<ValueType>*> failed: " << storage )
+
             splitColumnData( mData, *localData, numColPartitions, mOwners );
         }
         else if ( colDist->isReplicated() )
         {
+            common::shared_ptr<DenseStorage<ValueType> > dataPtr( new DenseStorage<ValueType>( storage ) );
+
             mData.resize( 1 );
-            mData[0].reset( new DenseStorage<ValueType>( storage ) );
+            mData[0] = dataPtr;
         }
         else
         {
-            DenseStorage<ValueType> localData;
-            localData.assign( storage );
+            DenseStorage<ValueType> localData( storage );
             splitColumnData( mData, localData, numColPartitions, mOwners );
         }
     }
     else if ( storage.getNumRows() == rowDist->getGlobalSize() )
     {
-// we also localize the rows of the matrix
+        // we also localize the rows of the matrix
+
         DenseStorage<ValueType> localData;
         localData.localize( storage, *rowDist );
         splitColumnData( mData, localData, numColPartitions, mOwners );
@@ -952,65 +808,64 @@ void DenseMatrix<ValueType>::joinColumnData(
     const IndexType firstRow,
     const IndexType nRows ) const
 {
+    SCAI_REGION( "Mat.Dense.joinColumnData" )
+
     SCAI_LOG_DEBUG( logger, "join column data, firstRow = " << firstRow << ", nRows = " << nRows << ", result = " << result )
     const IndexType ncol = getNumColumns();
     // make sure that the array mOwners is set correctly
     SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( mOwners.size() ), ncol )
+
     const PartitionId numColPartitions = static_cast<PartitionId>( mData.size() );
-    typedef common::shared_ptr<ReadAccess<ValueType> > ReadAccessPtr;
-    std::vector<ReadAccessPtr> chunkRead( numColPartitions );
-    std::vector<IndexType> chunkOffset( numColPartitions ); // offset for each chunk
+
     ContextPtr hostContext = Context::getHostPtr();
+
     // Get read access to all chunks, make some assertions for each chunk
+
     IndexType numGlobalColumns = 0;
+
+    typedef const ValueType* PtrType;
+
+    common::scoped_array<PtrType> chunkPtr( new PtrType [ numColPartitions ] );
 
     for ( PartitionId p = 0; p < numColPartitions; ++p )
     {
         SCAI_ASSERT_ERROR( mData[p], "no chunk data for partition " << p )
+
         IndexType numLocalColumns = mData[p]->getNumColumns();
-        chunkRead[p].reset( new ReadAccess<ValueType>( mData[p]->getData(), hostContext ) );
-        chunkOffset[p] = numLocalColumns * firstRow;
+
+        ReadAccess<ValueType> chunkRead( mData[p]->getData(), hostContext );
+
+        chunkPtr[p] = chunkRead.get() + numLocalColumns * firstRow;
+
         numGlobalColumns += numLocalColumns;
+
         SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *mData[p] )
     }
 
     SCAI_ASSERT_EQUAL_ERROR( numGlobalColumns, ncol );   // local column sizes must add to global column size
+
     SCAI_LOG_DEBUG( logger, "resize result to " << ncol << " x " << nRows )
-    WriteOnlyAccess<ValueType> resultWrite( result, hostContext, ncol * nRows );
-    IndexType writePos = 0;
+
+    WriteOnlyAccess<ValueType> wResult( result, hostContext, ncol * nRows );
+
+    ReadAccess<PartitionId> rOwners( mOwners, hostContext );
+
+    // gather data of chunks, each chunk data is contiguous
+
+    IndexType pos = 0;
+
+    // No OpenMP parallelization, would require chunkPtr array for each thread
 
     for ( IndexType i = firstRow; i < firstRow + nRows ; ++i )
     {
-        SCAI_LOG_DEBUG( logger, "fill row " << i )
-
         for ( IndexType j = 0; j < ncol; ++j )
         {
-            IndexType chunkId = mOwners[j];
-            SCAI_LOG_DEBUG( logger, "col " << j << " in chunk " << chunkId  )
-            ReadAccess<ValueType>& chunkData = *chunkRead[chunkId];
-            SCAI_LOG_DEBUG( logger, "chunkData has size " << chunkData.size() )
-            IndexType offset = chunkOffset[chunkId]++;
-            SCAI_LOG_DEBUG( logger, "offset " << chunkData.size() )
-            resultWrite[ writePos++ ] = chunkData[offset];
-            SCAI_LOG_DEBUG( logger, "col " << j << " in chunk " << chunkId << ", offset = " << offset << ", val = " << chunkData[offset] )
+            IndexType chunkId = rOwners[j];
+            wResult[ pos++ ] = *chunkPtr[chunkId]++;
         }
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( writePos, ncol * nRows )
-
-    // Verify that last offset for each chunk is equal to the corresponding size
-
-    for ( PartitionId p = 0; p < numColPartitions; ++p )
-    {
-        SCAI_LOG_DEBUG( logger, "Offset chunk " << p << " of " << numColPartitions << " = " << chunkOffset[p]
-                        << ", mData is " << *mData[p] )
-        SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], mData[p]->getNumColumns() * ( firstRow + nRows ) )
-    }
-
     SCAI_LOG_DEBUG( logger, "ready join column data" )
-    resultWrite.release();
-    SCAI_LOG_DEBUG( logger, "ready join column data, released access" )
-    SCAI_LOG_DEBUG( logger, "ready join column data, result = " << result )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1018,40 +873,52 @@ void DenseMatrix<ValueType>::joinColumnData(
 template<typename ValueType>
 void DenseMatrix<ValueType>::allocateData()
 {
-// mOwners are already computed, now we count them
-    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, ( IndexType ) mOwners.size() )
+    // mOwners are already computed, now we count them
+
+    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, mOwners.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, getColDistribution().getGlobalSize() )
+
     const PartitionId numChunks = getColDistribution().getCommunicator().getSize();
-    mData.clear();
+
     mData.resize( numChunks );
-    const IndexType numRows = getRowDistribution().getLocalSize();
-    SCAI_LOG_INFO( logger, "build " << numChunks << " data arrays for numRows = " << numRows );
+
+    const IndexType numLocalRows = getRowDistribution().getLocalSize();
+
+    SCAI_LOG_INFO( logger, "build " << numChunks << " data arrays for numLocalRows = " << numLocalRows );
 
     if ( numChunks == 1 )
     {
-// simple case, no need to count owners for each partition
-        mData[0].reset( new DenseStorage<ValueType>( numRows, mNumColumns ) );
+        if ( mData[0] )
+        {
+            // just reallocate the storage
+            mData[0]->allocate( numLocalRows, mNumColumns );
+        }
+        else
+        {
+            // first time allocation
+            mData[0].reset( new DenseStorage<ValueType>( numLocalRows, mNumColumns ) );
+        }
+
         return;
     }
 
-    scoped_array<PartitionId> numColsPartition( new PartitionId[numChunks] );
+    utilskernel::LArray<IndexType> numColsPartition;  // for counting elements per partition
+
+    utilskernel::HArrayUtils::bucketCount( numColsPartition, mOwners, numChunks );
+
+    ContextPtr ctx = Context::getHostPtr();
+
+    ReadAccess<IndexType> rSizes( numColsPartition, ctx );
+
+    IndexType count = 0;   // sum up the sizes, verify correct sum
 
     for ( PartitionId p = 0; p < numChunks; ++p )
     {
-        numColsPartition[p] = 0;
+        count += rSizes[p];
+        mData[p].reset( new DenseStorage<ValueType>( numLocalRows, rSizes[p] ) );
     }
 
-    for ( std::vector<PartitionId>::size_type i = 0; i < mOwners.size(); ++i )
-    {
-        SCAI_ASSERT_DEBUG( mOwners[i] < numChunks,
-                           "column owner [" << i << "] = " << mOwners[i] << " out of range, #chunks = " << numChunks )
-        ++numColsPartition[mOwners[i]];
-    }
-
-    for ( PartitionId p = 0; p < numChunks; ++p )
-    {
-        mData[p].reset( new DenseStorage<ValueType>( numRows, numColsPartition[p] ) );
-    }
+    SCAI_ASSERT_EQ_ERROR( count, mNumColumns, "Illegal owners." )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1060,55 +927,74 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::splitColumnData(
     std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
     const DenseStorage<ValueType>& columnData,
-    const PartitionId numChunks,
-    const std::vector<IndexType>& columnOwners )
+    const PartitionId numPartitions,
+    const HArray<PartitionId>& columnOwners )
 {
-    SCAI_LOG_INFO( logger, "split columns of " << columnData << " into " << numChunks << " chunks" )
-// Note: this is a static method, no member variables are used
+    if ( numPartitions == 1 )
+    {
+        SCAI_LOG_INFO( logger, "split columns of " << columnData << " unnecessary, #partitions = 1" )
+
+        chunks.resize( 1 );
+
+        if ( !chunks[0].get() )
+        {
+            chunks[0].reset( new DenseStorage<ValueType>( columnData ) );
+        }
+        else
+        {
+            // can be aliased here, avoids copy
+
+            *chunks[0] = columnData;
+        }
+
+        return;
+    }
+
+    SCAI_LOG_INFO( logger, "split columns of " << columnData << " into " << numPartitions << " partition chunks" )
+
     const IndexType numColumns = columnData.getNumColumns();
     const IndexType numRows = columnData.getNumRows();
-    SCAI_ASSERT_EQUAL_ERROR( static_cast<IndexType>( columnOwners.size() ), numColumns )
-    std::vector<PartitionId> numCols( numChunks, 0 );
 
-    for ( std::vector<PartitionId>::size_type i = 0; i < columnOwners.size(); ++i )
-    {
-        SCAI_ASSERT_DEBUG( columnOwners[i] < numChunks, "owner out of range" )
-        ++numCols[columnOwners[i]];
-    }
+    SCAI_ASSERT_EQUAL_ERROR( columnOwners.size(), numColumns )
+
+    utilskernel::LArray<IndexType> offsets;
+    utilskernel::LArray<IndexType> perm;
+
+    utilskernel::HArrayUtils::bucketSort( offsets, perm, columnOwners, numPartitions );
+
+    // offsets array, last entry stands for number of elements sorted into buckets
+
+    SCAI_ASSERT_EQ_DEBUG( numColumns, offsets[numPartitions], "Illegal column owners" )
+    SCAI_ASSERT_EQ_DEBUG( columnOwners.size(), perm.size(), "Illegal column owners" )
 
     chunks.clear();
-    chunks.resize( numChunks );
-    typedef common::shared_ptr<WriteAccess<ValueType> > WriteAccessPtr;
-    std::vector<WriteAccessPtr> chunkWrite( numChunks );
-    // Get write access to all chunks, make some assertions for each chunk
-    ContextPtr contextPtr = Context::getHostPtr();
+    chunks.resize( numPartitions );
 
-    for ( PartitionId p = 0; p < numChunks; ++p )
+    ContextPtr ctx = Context::getHostPtr();
+
+    ReadAccess<ValueType> columnDataRead( columnData.getData(), ctx );
+    ReadAccess<IndexType> rPerm( perm, ctx );
+    ReadAccess<IndexType> rOffsets( offsets, ctx );
+
+    for ( PartitionId p = 0; p < numPartitions; ++p )
     {
-        chunks[p].reset( new DenseStorage<ValueType>( numRows, numCols[p] ) );
-        chunkWrite[p].reset( new WriteAccess<ValueType>( chunks[p]->getData(), contextPtr ) );
-        SCAI_LOG_DEBUG( logger, "column chunk[" << p << "] : " << *chunks[p] )
-    }
+        IndexType lb = rOffsets[p];
+        IndexType ub = rOffsets[p + 1];
 
-    std::vector<IndexType> chunkOffset( numChunks, 0 ); // offset for each chunk
-    ReadAccess<ValueType> columnDataRead( columnData.getData(), contextPtr );
+        chunks[p].reset( new DenseStorage<ValueType>( numRows, ub - lb ) );
 
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        for ( IndexType j = 0; j < numColumns; ++j )
+        WriteAccess<ValueType> wChunkData( chunks[p]->getData(), ctx );
+
+        IndexType pos = 0;  // traversing the elements of chunk data for p-th partition
+
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            IndexType chunkId = columnOwners[j];
-            WriteAccess<ValueType>& chunkData = *chunkWrite[chunkId];
-            IndexType idx = chunkOffset[chunkId]++;
-            chunkData[idx] = columnDataRead[i * numColumns + j];
+            for ( IndexType j = lb; j < ub; ++j )
+            {
+                IndexType jj = rPerm[j];
+                wChunkData[pos++] = columnDataRead[ i * numColumns + jj ];
+            }
         }
-    }
-
-// Verify that last offset for each chunk is equal to the corresponding size
-
-    for ( PartitionId p = 0; p < numChunks; ++p )
-    {
-        SCAI_ASSERT_EQUAL_ERROR( chunkOffset[p], numCols[p] * numRows )
     }
 }
 
@@ -1279,26 +1165,183 @@ void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getLocalRow( DenseVector<ValueType>& row, const IndexType iLocal ) const
+void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexType localRowIndex ) const
 {
-    SCAI_LOG_INFO( logger, "get local row " << iLocal << " into " << row << " from this matrix: " << *this )
-    SCAI_ASSERT_ERROR( row.getDistribution().isReplicated(), "row vector must be replicated" )
+    SCAI_REGION( "Mat.Dense.getLocalRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" );
+
+    SCAI_LOG_INFO( logger, "get local row " << localRowIndex << " from this matrix: " << *this )
+
     const Distribution& distributionCol = getColDistribution();
 
     if ( distributionCol.isReplicated() )
     {
         // in this case we just can take the values from the local storage
-        getLocalStorage().getRowImpl( row.getLocalValues(), iLocal );
+        getLocalStorage().getRowImpl( row, localRowIndex );
         return;
     }
 
     // with column distribution: join the corresponding column data
-    joinColumnData( row.getLocalValues(), iLocal, 1 );
-    SCAI_LOG_INFO( logger, "joined ready" )
-    SCAI_LOG_INFO( logger, "joined row value array = " << row.getLocalValues() )
-    // just make sure that there is no mismatch of sizes
-    SCAI_ASSERT_EQUAL_ERROR( row.getLocalValues().size(), row.size() );
+
+    joinColumnData( row, localRowIndex, 1 );
+
+    SCAI_LOG_INFO( logger, "local row with joined column data: " << row )
 }
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setLocalRow(
+    const hmemo::HArray<ValueType>& row,
+    const IndexType localRowIndex,
+    const utilskernel::binary::BinaryOp op )
+{
+    SCAI_REGION( "Mat.Dense.setLocalRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" )
+    SCAI_ASSERT_EQ_DEBUG( row.size(), mNumColumns, "size of row illegal" )
+
+    const PartitionId numColPartitions = static_cast<PartitionId>( mData.size() );
+
+    if ( numColPartitions == 1 )
+    {
+        // in this case we just can take the values from the local storage
+
+        mData[0]->setRowImpl( row, localRowIndex, op );
+        return;
+    }
+
+    // do a bucket sort of row, buckets are determined by the owners
+
+    utilskernel::LArray<IndexType> offsets;
+    utilskernel::LArray<IndexType> perm;
+
+    utilskernel::HArrayUtils::bucketSort( offsets, perm, mOwners, numColPartitions );
+
+    SCAI_LOG_DEBUG( logger, "bucketSort, offsets = " << offsets )
+
+    HArray<ValueType> rowResorted;   // row resorted according to the owners
+
+    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, utilskernel::binary::COPY );
+
+    ReadAccess<IndexType> rOffsets( offsets );
+
+    // now sort in the different parts
+
+    for ( PartitionId ip = 0; ip < numColPartitions; ++ip )
+    {
+        // tricky workaround for: HArraySection<ValueType>( rowResorted, offset = .., inc = 1, n = ... )
+
+        const ValueType* ptrRowPart;
+
+        IndexType nRowPart = rOffsets[ ip + 1 ] - rOffsets[ip];
+
+        {
+            ReadAccess<ValueType> rRow( rowResorted );
+            ptrRowPart = rRow.get() + rOffsets[ip];
+            nRowPart   = rOffsets[ ip + 1 ] - rOffsets[ ip ];
+        }
+
+        HArrayRef<ValueType> rowPartition( nRowPart, ptrRowPart );
+
+        mData[ip]->setRowImpl( rowPartition, localRowIndex, op );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+static IndexType getLocalIndex( const IndexType globalIndex, const Distribution& dist, const PartitionId owners[] )
+{
+    if ( dist.getNumPartitions() == 1 )
+    {
+        return globalIndex;
+    }
+
+    if ( dist.isLocal( globalIndex ) )
+    {
+        return dist.global2local( globalIndex );
+    }
+
+    // up to know no efficient way to get local index
+
+    IndexType localIndex = 0;
+    PartitionId owner = owners[globalIndex];
+
+    for ( PartitionId k = 0; k < globalIndex; ++k )
+    {
+        if ( owner == owners[k] )
+        {
+            ++localIndex;
+        }
+    }
+
+    return localIndex;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, const IndexType colIndex ) const
+{
+    SCAI_REGION( "Mat.Dense.getLocalColumn" )
+
+    // find the owner and local column index of col
+
+    PartitionId owner         = 0;
+    IndexType   localColIndex = colIndex;
+
+    const Distribution& colDist = getColDistribution();
+
+    if ( !colDist.isReplicated() )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mOwners.size(), "column index out of range" )
+
+        ReadAccess<IndexType> rOwners( mOwners );
+        owner = rOwners[ colIndex ];
+        localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+    }
+
+    SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
+
+    SCAI_LOG_INFO( logger, "getLocalColumn( " << colIndex << " ) : owner = " << owner
+                   << ", local col = " << localColIndex << ", mData = " << *mData[owner] )
+
+    mData[owner]->getColumnImpl( column, localColIndex );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setLocalColumn(
+    const hmemo::HArray<ValueType>& column,
+    const IndexType colIndex,
+    const utilskernel::binary::BinaryOp op )
+{
+    SCAI_REGION( "Mat.Dense.setLocalColumn" )
+
+    // find the owner and local column index of col
+
+    PartitionId owner         = 0;
+    IndexType   localColIndex = colIndex;
+
+    const Distribution& colDist = getColDistribution();
+
+    if ( !colDist.isReplicated() )
+    {
+        ReadAccess<IndexType> rOwners( mOwners );
+        owner = rOwners[ colIndex ];
+
+        localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
+    }
+
+    SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
+
+    SCAI_LOG_INFO( logger, "setLocalColumn( " << colIndex << " ) : owner = " << owner
+                   << ", local col = " << localColIndex  << ", mData = " << *mData[owner] )
+
+    mData[owner]->setColumnImpl( column, localColIndex, op );
+}
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 template<typename OtherValueType>
@@ -1323,7 +1366,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
     if ( true )
     {
 // Dense vector with this row distribution, so we do not need a temporary array
-        mepr::DenseMatrixWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::getDiagonalImpl( *this, diagonal );
+        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::getDiagonalImpl( *this, diagonal );
         return;
     }
 
@@ -1384,46 +1427,36 @@ void DenseMatrix<ValueType>::conj()
 }
 
 template<typename ValueType>
-std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix<ValueType>::getCyclicLocalValues()
-{
-    return mData;
-}
-
-template<typename ValueType>
-const std::vector<typename DenseMatrix<ValueType>::DenseStoragePtr>& DenseMatrix<ValueType>::getCyclicLocalValues() const
-{
-    return mData;
-}
-
-template<typename ValueType>
 Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     ValueType myValue = static_cast<ValueType>( 0.0 );
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
-    const Communicator& comm = rowDist.getCommunicator();
+    const Communicator& commRow = rowDist.getCommunicator();
 
     if ( getRowDistribution().isLocal( i ) )
     {
         const IndexType iLocal = getRowDistribution().global2local( i );
-        PartitionId owner = comm.getRank();
+
+        PartitionId owner = 0;
+        IndexType  jLocal = nIndex;
 
         if ( colDist.getNumPartitions() == 1 )
         {
-            owner = 0;
+            owner  = 0;
+            jLocal = j;
         }
-
-        IndexType jLocal = -1;
-
-        if ( colDist.isLocal( j ) )
+        else if ( colDist.isLocal( j ) )
         {
+            owner  = mOwners[j];
             jLocal = colDist.global2local( j );
         }
         else
         {
-            owner = mOwners[j];
+            owner  = mOwners[j];
+            jLocal = 0;
 
-            for ( PartitionId k = 0; k <= j; ++k )
+            for ( PartitionId k = 0; k < j; ++k )
             {
                 if ( owner == mOwners[k] )
                 {
@@ -1439,7 +1472,58 @@ Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     }
 
     SCAI_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
-    return Scalar( comm.sum( myValue ) );
+    return Scalar( commRow.sum( myValue ) );
+}
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::setValue(
+    const IndexType i,
+    const IndexType j,
+    const Scalar val,
+    const utilskernel::binary::BinaryOp op )
+{
+    const Distribution& distributionRow = getRowDistribution();
+
+    const IndexType iLocal = distributionRow.global2local( i );
+
+    if ( iLocal == nIndex )
+    {
+        return; // this processor does not have the value
+    }
+
+    const Distribution& distributionCol = getColDistribution();
+
+    PartitionId owner  = 0;
+
+    IndexType   jLocal = nIndex;
+
+    if ( distributionCol.getNumPartitions() == 1 )
+    {
+        jLocal = j;
+    }
+    else if ( distributionCol.isLocal( j ) )
+    {
+        owner  = mOwners[j];
+        jLocal = distributionCol.global2local( j );
+    }
+    else
+    {
+        owner = mOwners[j];
+
+        jLocal = 0;
+
+        for ( PartitionId k = 0; k < j; ++k )
+        {
+            if ( owner == mOwners[k] )
+            {
+                ++jLocal;
+            }
+        }
+    }
+
+    SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
+
+    mData[owner]->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
 }
 
 template<typename ValueType>
@@ -1471,8 +1555,8 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     ContextPtr localContext = mData[0]->getContextPtr();
     const Distribution& colDist = getColDistribution();
     const Communicator& comm = colDist.getCommunicator();
-    int rank = comm.getRank();
-    int n = colDist.getNumPartitions();
+    PartitionId rank = comm.getRank();
+    PartitionId n = colDist.getNumPartitions();
     mData[0]->prefetch();
 
     // It makes no sense to prefetch denseX because, if a transfer is started
@@ -1484,6 +1568,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     }
 
     const HArray<ValueType>& localX = denseX.getLocalValues();
+
     SCAI_LOG_INFO( logger,
                    comm << ": matrixTimesVector" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
     SCAI_LOG_INFO( logger,
@@ -1500,7 +1585,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     }
 
     SCAI_LOG_INFO( logger, comm << ": start pipelined multiplication." )
-    int size = comm.max( localX.size() ); // largest local part of X
+    IndexType size = comm.max( localX.size() ); // largest local part of X
     mSendValues.clear();
     mReceiveValues.clear();
     ContextPtr contextPtr = Context::getHostPtr();
@@ -1512,7 +1597,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
         WriteOnlyAccess<ValueType> wSendValues( *sendValues, contextPtr, size );
         ReadAccess<ValueType> rLocalX( localX, contextPtr );
 // fill send buffer with local X of this processor
-        int i = 0;
+        IndexType i = 0;
 
         for ( ; i < localX.size(); ++i )
         {
@@ -1596,7 +1681,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
                             comm << ": send " << *sendValues << ", recv " << *recvValues << ", actual = " << actualPartition )
             SCAI_LOG_INFO( logger,
                            comm << ": matrixTimesVector, actual dense block [" << actualPartition << "] = " << *mData[actualPartition] << ", sendX = " << *sendValues << ", localResult = " << localResult )
-            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, static_cast<ValueType>( 1.0 ), localResult );
+            mData[actualPartition]->matrixTimesVector( localResult, alphaValue, *sendValues, ValueType( 1 ), localResult );
             std::swap( sendValues, recvValues );
         }
     }
@@ -1613,30 +1698,91 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
     const DenseVector<ValueType>& denseY ) const
 {
     SCAI_REGION( "Mat.Dense.vectorTimesMatrix" )
+
     const HArray<ValueType>& localY = denseY.getLocalValues();
+
     HArray<ValueType>& localResult = denseResult.getLocalValues();
-    ContextPtr localContext = mData[0]->getContextPtr();
+
     const Distribution& colDist = getColDistribution();
+    const Distribution& rowDist = getRowDistribution();
+
     const Communicator& comm = colDist.getCommunicator();
-    mData[0]->prefetch();
-
-    //It makes no sense to prefetch denseX because, if a transfer is started
-    //the halo update needs to wait for this transfer to finish
-
-    if ( betaValue != common::constants::ZERO )
-    {
-        denseY.prefetch( localContext );
-    }
 
     const HArray<ValueType>& localX = denseX.getLocalValues();
-    SCAI_LOG_INFO( logger,
-                   comm << ": vectorTimesMatrix" << ", alpha = " << alphaValue << ", localX = " << localX << ", beta = " << betaValue << ", localY = " << localY )
-    SCAI_LOG_INFO( logger,
-                   "Aliasing: result = y : " << ( &denseResult == &denseY ) << ", local = " << ( &localResult == &localY ) )
-    const DenseStorage<ValueType>& dense = *mData[0];
-    SCAI_LOG_INFO( logger, comm << ": vectorTimesMatrix, singe dense block = " << dense )
-    dense.vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
-    return;
+
+    PartitionId nParts = colDist.getNumPartitions();
+
+    SCAI_ASSERT_GT( nParts, 1, "replicated columns are not considered here" )
+
+    if ( rowDist.getNumPartitions() == 1 )
+    {
+        // the full matrix is replicated, the result is distributed, compute just its part
+
+        PartitionId rank = comm.getRank();
+        mData[rank]->vectorTimesMatrix( localResult, alphaValue, localX, betaValue, localY );
+
+        SCAI_LOG_INFO( logger, comm << ": computed local Result for replicated matrix: " << localResult );
+
+        return;
+    }
+
+    const int COMM_DIRECTION = 1;       // circular shifting
+
+    // reuse member variables of this DenseMatrix, avoids too much reallocation
+
+    HArray<ValueType>& sendValues = mSendValues;
+
+    HArray<ValueType>& recvValues = mReceiveValues;
+
+    IndexType maxSize = colDist.getMaxLocalSize();
+
+    // send/recv buffers must be large enough to keep largest amout of data from any processor
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    recvValues.reserve( contextPtr, maxSize );
+
+    sendValues.reserve( contextPtr, maxSize );
+
+    SCAI_LOG_DEBUG( logger, comm << ": recv buffer = " << recvValues << ", send buffer = " << sendValues );
+
+    for ( PartitionId p = 0; p < nParts; ++p )
+    {
+        // compute the owner of the values that are in the current send buffer
+
+        PartitionId actualPartition = comm.getNeighbor( -p );
+
+        SCAI_LOG_INFO( logger, comm << ": will compute part for partition " << actualPartition << ", mData = " << *mData[actualPartition] )
+
+        if ( p == 0 )
+        {
+            // start here with computation of own part
+
+            SCAI_LOG_INFO( logger, comm << ": localX = " << localX << ", localY = " << localY )
+
+            mData[actualPartition]->vectorTimesMatrix( sendValues, alphaValue, localX, betaValue, localY );
+        }
+        else
+        {
+            // This processor computes the part for actual partition and adds it
+
+            SCAI_LOG_INFO( logger, comm << ": localX = " << localX << ", sendValues = " << sendValues )
+
+            mData[actualPartition]->vectorTimesMatrix( sendValues, alphaValue, localX, ValueType( 1 ), sendValues );
+        }
+
+        SCAI_LOG_INFO( logger, comm << ": computed part for partition " << actualPartition << ", is " << sendValues );
+
+        comm.shiftArray( recvValues, sendValues, COMM_DIRECTION );
+
+        SCAI_LOG_DEBUG( logger, comm << ": received next " << recvValues );
+
+        std::swap( sendValues, recvValues );
+    }
+
+    // we do not swap here as allocated data for localResult fits best
+
+    utilskernel::HArrayUtils::assign( localResult, sendValues );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1667,13 +1813,27 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
     const DenseMatrix<ValueType>& B )
 {
     SCAI_REGION( "Mat.plusMatrix" )
-// already verified
+
+    // already verified
+
     SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
-// Now we can do it completely local
-    Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
-// Add matrices of each chunk
-    SCAI_LOG_INFO( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
+
+    // Now we can do it completely local
+
+    SCAI_LOG_INFO( logger, "Mat.plusMatrix, this = " << alpha << " * A + " << beta << " * B"
+                   << ", A = " << A << ", B = " << B )
+
+    // allocate this result matrix, but only if it is not aliased with A or B
+
+    if ( this != &A && this != &B )
+    {
+        allocate( A.getRowDistributionPtr(), A.getColDistributionPtr() );
+    }
+
+    // Add matrices of each chunk
+
+    SCAI_LOG_DEBUG( logger, "Mat.plusMatrix, mDataSize = " << mData.size() );
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
@@ -1768,6 +1928,7 @@ Scalar DenseMatrix<ValueType>::maxNorm() const
     }
 
     const Communicator& comm = getRowDistribution().getCommunicator();
+
     return Scalar( comm.max( myMaxDiff ) );
 }
 
@@ -1855,6 +2016,7 @@ ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>&
     }
 
     const Communicator& comm = getRowDistribution().getCommunicator();
+
     return comm.max( myMaxDiff );
 }
 
@@ -1890,15 +2052,16 @@ void DenseMatrix<ValueType>::wait() const
 template<typename ValueType>
 const DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage() const
 {
-    SCAI_ASSERT_ERROR( mData.size() > 0, "no local values allocated" )
+    SCAI_ASSERT_ERROR( mData.size() > 0, *this << ": no local values allocated" )
 
     if ( mData.size() == 1 )
     {
         return *mData[0];
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), getColDistribution() )
-    const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
+    // take the column data chunk that is owned by this processor regarding col dist
+
+    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
 
@@ -1912,8 +2075,9 @@ DenseStorage<ValueType>& DenseMatrix<ValueType>::getLocalStorage()
         return *mData[0];
     }
 
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), getColDistribution() )
-    const PartitionId myRank = getRowDistribution().getCommunicator().getRank();
+    // take the column data chunk that is owned by this processor regarding col dist
+
+    const PartitionId myRank = getColDistribution().getCommunicator().getRank();
     return *mData[myRank];
 }
 
@@ -1969,7 +2133,7 @@ void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
     common::scalar::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << mNumRows << " x " << mNumColumns << ", rowdist = "
-           << getRowDistribution() << ", coldist = " << getColDistribution() << ")";
+           << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
 }
 
 template<typename ValueType>
@@ -2067,7 +2231,7 @@ const char* DenseMatrix<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( DenseMatrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

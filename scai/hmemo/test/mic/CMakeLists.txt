@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -40,7 +40,7 @@ scai_project (
         MICContextTest
 )
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( hmemoMICTest ${CXX_SOURCES} )
 

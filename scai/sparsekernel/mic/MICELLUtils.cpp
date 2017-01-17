@@ -2,7 +2,7 @@
  * @file MICELLUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -74,64 +74,6 @@ namespace sparsekernel
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 SCAI_LOG_DEF_LOGGER( MICELLUtils::logger, "MIC.ELLUtils" )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-IndexType MICELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
-{
-    IndexType counter = 0;
-    const void* sizesPtr = sizes;
-    int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ) in( sizesPtr, numRows ), out( counter )
-    {
-        counter = 0;
-        const IndexType* sizes = static_cast<const IndexType*>( sizesPtr );
-        #pragma omp parallel for reduction( +:counter )
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            if ( sizes[i] > 0 )
-            {
-                counter++;
-            }
-        }
-    }
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
-    return counter;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void MICELLUtils::setNonEmptyRowsBySizes(
-    IndexType rowIndexes[],
-    const IndexType numNonEmptyRows,
-    const IndexType sizes[],
-    const IndexType numRows )
-{
-    IndexType counter = 0;
-    const void* sizesPtr = sizes;
-    void* rowIndexesPtr = rowIndexes;
-    int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ), in( rowIndexesPtr, sizesPtr, numRows ), out( counter )
-    {
-        IndexType* rowIndexes = static_cast<IndexType*>( rowIndexesPtr );
-        const IndexType* sizes = static_cast<const IndexType*>( sizesPtr );
-        counter = 0;
-
-        // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            if ( sizes[i] > 0 )
-            {
-                rowIndexes[counter] = i;
-                counter++;
-            }
-        }
-    }
-    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
-}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -344,31 +286,27 @@ void MICELLUtils::getRow(
     }
 }
 
-template<typename ValueType>
-ValueType MICELLUtils::getValue(
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType MICELLUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[] )
+    const IndexType ellJA[] )
 {
-    SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
-    ValueType value = 0;  // not really needed, just for safety
+    IndexType vPos = nIndex;  // in/out
+
     const void* ellSizesPtr = ellSizes;
     const void* ellJAPtr = ellJA;
-    const void* ellValuesPtr = ellValues;
-    ValueType* valuePtr = &value;
+
     int device = MICContext::getCurrentDevice();
-#pragma offload target( mic : device ), out( valuePtr[0:1] ), in( ellSizesPtr, ellJAPtr, ellValuesPtr, \
-                                                              i, j, numRows, numValuesPerRow )
+
+#pragma offload target( mic : device ), in( ellSizesPtr, ellJAPtr, i, j, numRows, numValuesPerRow )
     {
         const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
         const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
-        const ValueType* ellValues = static_cast<const ValueType*>( ellValuesPtr );
-        ValueType& valueRef = *valuePtr;
-        valueRef = 0;  // new initialiation, has not been copied in
 
         for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
         {
@@ -376,11 +314,73 @@ ValueType MICELLUtils::getValue(
 
             if ( ellJA[pos] == j )
             {
-                valueRef = ellValues[pos];
+                vPos = pos;
+                break;
             }
         }
     }
-    return value;
+
+    return vPos;
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType MICELLUtils::getValuePosCol(
+    IndexType row[],
+    IndexType pos[],
+    const IndexType j,
+    const IndexType ellSizes[],
+    const IndexType numRows,
+    const IndexType ellJA[],
+    const IndexType numValuesPerRow )
+{
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    const void* ellSizesPtr = ellSizes;
+    const void* ellJAPtr = ellJA;
+    void* rowPtr = row;
+    void* posPtr = pos;
+
+    int device = MICContext::getCurrentDevice();
+
+#pragma offload target( mic : device ), in( posPtr, rowPtr, ellSizesPtr, ellJAPtr, j, numRows, numValuesPerRow ), out( cnt )
+    {
+        cnt  = 0;
+
+        const IndexType* ellSizes = static_cast<const IndexType*>( ellSizesPtr );
+        const IndexType* ellJA = static_cast<const IndexType*>( ellJAPtr );
+
+        IndexType* row = reinterpret_cast<IndexType*>( rowPtr );
+        IndexType* pos = reinterpret_cast<IndexType*>( posPtr );
+
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+            {
+                IndexType p = ellindex( i, jj, numRows, numValuesPerRow );
+
+                if ( ellJA[p] == j )
+                {
+                    // workaround: IndexType k = atomicInc( cnt );
+
+                    IndexType k;
+
+                    #pragma omp critical
+                    {
+                        k = cnt++;
+                    }
+
+                    row[k] = i;
+                    pos[k] = p;
+                    break;
+                }
+            }
+        }
+    }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -965,6 +965,7 @@ void MICELLUtils::jacobiHalo(
             }
 
             const ValueType diag = diagonal[i];
+
             solution[i] -= temp * ( omegaRef / diag );
         }
     }
@@ -1127,24 +1128,27 @@ void MICELLUtils::sparseGEMV(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void MICELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag << "]" )
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: untyped routines" )
+
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
 }
 
 template<typename ValueType>
-void MICELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
@@ -1152,12 +1156,14 @@ void MICELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 }
 
 template<typename ValueType, typename OtherValueType>
-void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for MIC at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
+                    common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
@@ -1170,18 +1176,22 @@ void MICELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistr
 
 MICELLUtils::RegisterGuard::RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "register ELLUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_MIC_LIST, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICELLUtils::RegisterGuard::~RegisterGuard()
 {
+    SCAI_LOG_INFO( logger, "unregister ELLUtils routines for MIC(OpenMP,offload) at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_MIC_LIST, SCAI_ARITHMETIC_MIC_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_MIC_LIST, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels( flag );
 }
 
 MICELLUtils::RegisterGuard MICELLUtils::guard;    // guard variable for registration

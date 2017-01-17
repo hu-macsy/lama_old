@@ -2,7 +2,7 @@
  * @file scai/common.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -53,7 +53,6 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/Printable.hpp>
-#include <scai/common/ReductionOp.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Settings.hpp>

@@ -2,7 +2,7 @@
  * @file OpenMPELLUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -40,6 +40,7 @@
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
@@ -52,12 +53,13 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Math.hpp>
 
 // std
+#include <cmath>
 #include <set>
 #include <map>
-#include <cmath>
 
 namespace scai
 {
@@ -71,50 +73,6 @@ namespace sparsekernel
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 SCAI_LOG_DEF_LOGGER( OpenMPELLUtils::logger, "OpenMP.ELLUtils" )
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-IndexType OpenMPELLUtils::countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows )
-{
-    IndexType counter = 0;
-    #pragma omp parallel for reduction( +:counter )
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        if ( sizes[i] > 0 )
-        {
-            counter++;
-        }
-    }
-
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", counted by sizes" )
-    return counter;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPELLUtils::setNonEmptyRowsBySizes(
-    IndexType rowIndexes[],
-    const IndexType numNonEmptyRows,
-    const IndexType sizes[],
-    const IndexType numRows )
-{
-    IndexType counter = 0;
-
-    // Note: this routine is not easy to parallelize, no offsets for rowIndexes available
-
-    for ( IndexType i = 0; i < numRows; ++i )
-    {
-        if ( sizes[i] > 0 )
-        {
-            rowIndexes[counter] = i;
-            counter++;
-        }
-    }
-
-    SCAI_ASSERT_EQUAL_DEBUG( counter, numNonEmptyRows )
-    SCAI_LOG_INFO( logger, "#non-zero rows = " << counter << ", set by sizes" )
-}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -191,13 +149,14 @@ void OpenMPELLUtils::check(
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            if ( ellSizes[i] >= 0 && ellSizes[i] <= numValuesPerRow )
+            // Attention, ellSizes[i] == numValuesPerRow is also valid
+            if ( common::Utils::validIndex( ellSizes[i], numValuesPerRow + 1 ) )
             {
                 for ( IndexType jj = 0; jj < ellSizes[i]; jj++ )
                 {
                     IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                     IndexType j = ellJA[pos];
-                    integrityJA = integrityJA && ( 0 <= j && j < numColumns );
+                    integrityJA = integrityJA && common::Utils::validIndex( j, numColumns );
                 }
             }
             else
@@ -290,18 +249,17 @@ void OpenMPELLUtils::getRow(
     }
 }
 
-template<typename ValueType>
-ValueType OpenMPELLUtils::getValue(
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPELLUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
     const IndexType numValuesPerRow,
     const IndexType ellSizes[],
-    const IndexType ellJA[],
-    const ValueType ellValues[] )
+    const IndexType ellJA[] )
 {
-    SCAI_LOG_TRACE( logger, "get value i = " << i << ", j = " << j )
-    ValueType val = 0.0;
+    IndexType vPos = nIndex;
 
     for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
     {
@@ -309,12 +267,44 @@ ValueType OpenMPELLUtils::getValue(
 
         if ( ellJA[pos] == j )
         {
-            val = ellValues[pos];
+            vPos = pos;
             break;
         }
     }
 
-    return val;
+    return vPos;
+}
+
+/* --------------------------------------------------------------------------- */
+
+IndexType OpenMPELLUtils::getValuePosCol( IndexType row[], IndexType pos[],
+        const IndexType j,
+        const IndexType ellIA[], const IndexType numRows,
+        const IndexType ellJA[], const IndexType numValuesPerRow )
+{
+    SCAI_REGION( "OpenMP.ELLUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = 0; jj < ellIA[i]; ++jj )
+        {
+            IndexType p = ellindex( i, jj, numRows, numValuesPerRow );
+
+            if ( ellJA[p] == j )
+            {
+                IndexType k = atomicInc( cnt );
+                row[k] = i;
+                pos[k] = p;
+                break;
+            }
+        }
+    }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -335,7 +325,7 @@ void OpenMPELLUtils::getCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.ELL->CSR_values" )
+        SCAI_REGION( "OpenMP.ELL.getCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -373,7 +363,7 @@ void OpenMPELLUtils::setCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.ELL<-CSR_values" )
+        SCAI_REGION( "OpenMP.ELL.setCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -412,9 +402,12 @@ void OpenMPELLUtils::fillELLValues(
     const IndexType numRows,
     const IndexType numValuesPerRow )
 {
-    SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() )
+    SCAI_LOG_INFO( logger, "fill ELLValues<" << TypeTraits<ValueType>::id() << ">" )
+
     #pragma omp parallel
     {
+        SCAI_REGION( "OpenMP.ELL.fillELLValues" )
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -434,7 +427,7 @@ void OpenMPELLUtils::fillELLValues(
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 ellJA[pos] = j; // last used column index
-                ellValues[pos] = static_cast<ValueType>( 0.0 ); // zero entry
+                ellValues[pos] = static_cast<ValueType>( 0 ); // zero entry
             }
         }
     }
@@ -498,6 +491,7 @@ void OpenMPELLUtils::compressValues(
     SCAI_LOG_INFO( logger, "compressValues ( #rows = " << numRows
                    << ", values/row = " << numValuesPerRow << " / " << newNumValuesPerRow
                    << ") with eps = " << eps )
+
     #pragma omp parallel
     {
         #pragma omp for
@@ -506,9 +500,11 @@ void OpenMPELLUtils::compressValues(
         {
             IndexType gap = 0;
 
-            for ( IndexType j = 0; j < IA[i]; j++ )
+            for ( IndexType jj = 0; jj < IA[i]; jj++ )
             {
-                IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
+                IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+
+                // delete it if zero and not diagonal entry
 
                 if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
                 {
@@ -516,16 +512,18 @@ void OpenMPELLUtils::compressValues(
                     continue;
                 }
 
-                IndexType newpos = ellindex( i, j - gap, numRows, newNumValuesPerRow );
+                // move entry gap positions back in this row
+
+                IndexType newpos = ellindex( i, jj - gap, numRows, newNumValuesPerRow );
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
 
             // fill up to top
 
-            for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+            for (  IndexType jj = IA[i] - gap; jj < newNumValuesPerRow; jj++ )
             {
-                IndexType newpos = ellindex( i, j, numRows, newNumValuesPerRow );
+                IndexType newpos = ellindex( i, jj, numRows, newNumValuesPerRow );
                 newValues[newpos] = 0;
                 newJA[newpos] = 0;
             }
@@ -670,7 +668,7 @@ void OpenMPELLUtils::matrixMultiply(
 void OpenMPELLUtils::matrixAddSizes(
     IndexType cSizes[],
     const IndexType m,
-    const IndexType SCAI_UNUSED( n ),
+    const IndexType n,
     const bool SCAI_UNUSED( diagonalProperty ),
     const IndexType aSizes[],
     const IndexType aJA[],
@@ -679,36 +677,140 @@ void OpenMPELLUtils::matrixAddSizes(
     const IndexType bJA[],
     const IndexType bNumValuesPerRow )
 {
+    SCAI_REGION( "OpenMP.ELL.matrixAddSizes" )
+
     SCAI_LOG_INFO( logger, "matrixAddSizes A + B, #rows = " << m )
+
+    static const IndexType NINIT = n + 1; // marks unused colums
+    static const IndexType END   = n + 2; // marks end of list
+
+    // determine the number of entries in output matrix
+
     #pragma omp parallel
     {
+        common::scoped_array<IndexType> indexList( new IndexType[n] );
+
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            indexList[j] = NINIT;
+        }
+
         #pragma omp for
 
         for ( IndexType i = 0; i < m; i++ )
         {
-            std::set<IndexType> iaRow;
-            std::pair<std::set<IndexType>::iterator, bool> ret;
-            IndexType length = 0;
+            IndexType length   = 0;
+            IndexType firstCol = END;
 
-            for ( IndexType j = 0; j < aSizes[i]; j++ )
+            for ( IndexType jj = 0; jj < aSizes[i]; jj++ )
             {
-                IndexType posA = ellindex( i, j, m, aNumValuesPerRow );
-                iaRow.insert( aJA[posA] );
-                length++;
+                IndexType posA = ellindex( i, jj, m, aNumValuesPerRow );
+                IndexType j    = aJA[posA];
+
+                if ( indexList[j] == NINIT )
+                {
+                    // Add column position j to the indexList
+
+                    indexList[j] = firstCol;
+                    firstCol = j;
+                    ++length;
+                }
             }
 
-            for ( IndexType j = 0; j < bSizes[i]; j++ )
+            for ( IndexType jj = 0; jj < bSizes[i]; jj++ )
             {
-                IndexType posB = ellindex( i, j, m, bNumValuesPerRow );
-                ret = iaRow.insert( bJA[posB] );
+                IndexType posB = ellindex( i, jj, m, bNumValuesPerRow );
+                IndexType j    =  bJA[posB];
 
-                if ( ret.second == true )
+                if ( indexList[j] == NINIT )
                 {
-                    length++;
+                    // Add column position j to the indexList
+
+                    indexList[j] = firstCol;
+                    firstCol = j;
+                    ++length;
                 }
             }
 
             cSizes[i] = length;
+
+            // reset the indexList for next use
+
+            while ( firstCol != END )
+            {
+                IndexType nextCol = indexList[firstCol];
+                indexList[firstCol] = NINIT;
+                firstCol = nextCol;
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void OpenMPELLUtils::sortRowElements(
+    IndexType ellJA[],
+    ValueType ellValues[],
+    const IndexType ellIA[],
+    const IndexType numRows,
+    const IndexType numValuesPerRow,
+    const bool diagonalFlag )
+{
+    SCAI_REGION( "OpenMP.ELL.sortRowElements" )
+
+    SCAI_LOG_INFO( logger, "sort elements in each of " << numRows << " rows, diagonal flag = " << diagonalFlag )
+
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        // use bubble sort as sort algorithm
+
+        IndexType start = 0;
+        IndexType end   = ellIA[i] - 1;;
+
+        SCAI_LOG_DEBUG( logger, "row " << i << ": sort " << start << " - " << end )
+
+        bool sorted = false;
+
+        while ( !sorted )
+        {
+            sorted = true; // will be reset if any wrong order appears
+
+            SCAI_LOG_TRACE( logger, "sort in row[" << i << "] from " << start << " - " << end )
+
+            for ( IndexType jj = start; jj < end; ++jj )
+            {
+                IndexType pos  = ellindex( i, jj, numRows, numValuesPerRow );
+                IndexType pos1 = ellindex( i, jj + 1, numRows, numValuesPerRow );
+
+                bool swapIt = false;
+
+                // if diagonalFlag is set, column i is the smallest one
+
+                if ( diagonalFlag && ( ellJA[pos1] == i ) && ( ellJA[pos] != i ) )
+                {
+                    swapIt = true;
+                }
+                else if ( diagonalFlag && ( ellJA[pos] == i ) )
+                {
+                    swapIt = false;
+                }
+                else
+                {
+                    swapIt = ellJA[pos] > ellJA[pos1];
+                }
+
+                if ( swapIt )
+                {
+                    sorted = false;
+                    std::swap( ellJA[pos], ellJA[pos1] );
+                    std::swap( ellValues[pos], ellValues[pos1] );
+                }
+            }
+
+            --end;
         }
     }
 }
@@ -722,7 +824,7 @@ void OpenMPELLUtils::matrixAdd(
     const IndexType cSizes[],
     const IndexType cNumValuesPerRow,
     const IndexType m,
-    const IndexType SCAI_UNUSED( n ),
+    const IndexType numColumns,
     const bool SCAI_UNUSED( diagonalProperty ),
     const ValueType alpha,
     const IndexType aSizes[],
@@ -735,61 +837,97 @@ void OpenMPELLUtils::matrixAdd(
     const ValueType bValues[],
     const IndexType bNumValuesPerRow )
 {
-    SCAI_LOG_INFO( logger, "matrixAdd C = " << alpha << " * A + " << beta << " * B, #rows = " << m )
+    SCAI_REGION( "OpenMP.ELL.matrixAdd" )
+
+    SCAI_LOG_INFO( logger, "matrixAddELL C = " << alpha << " * A + " << beta << " * B, #rows = " << m )
+
+    const IndexType NINIT = numColumns + 1;
+    const IndexType END = numColumns + 2;
+
     #pragma omp parallel
     {
+
+        common::scoped_array<IndexType> indexList( new IndexType[numColumns] );
+        common::scoped_array<ValueType> valueList( new ValueType[numColumns] );
+
+        for ( IndexType j = 0; j < numColumns; j++ )
+        {
+            indexList[j] = NINIT;
+            valueList[j] = static_cast<ValueType>( 0 );
+        }
+
         #pragma omp for
 
         for ( IndexType i = 0; i < m; i++ )
         {
-            std::set<IndexType> jaRow;
-            std::map<IndexType, ValueType> valuesRow;
-            std::pair<std::set<IndexType>::iterator, bool> ret;
+            IndexType length = 0;
+            IndexType firstCol = END;
 
-            for ( IndexType j = 0; j < aSizes[i]; j++ )
+            for ( IndexType jj = 0; jj < aSizes[i]; jj++ )
             {
-                IndexType posA = ellindex( i, j, m, aNumValuesPerRow );
-                jaRow.insert( aJA[posA] );
-                valuesRow.insert( std::pair<IndexType, ValueType>( aJA[posA], aValues[posA] ) );
-            }
+                IndexType posA = ellindex( i, jj, m, aNumValuesPerRow );
+                IndexType j = aJA[posA];
+                valueList[j] += alpha * aValues[posA];
 
-            for ( IndexType j = 0; j < bSizes[i]; j++ )
-            {
-                IndexType posB = ellindex( i, j, m, bNumValuesPerRow );
-                ret = jaRow.insert( bJA[posB] );
+                // element a(i,j) will generate an output element c(i,j)
 
-                if ( ret.second == true )
+                if ( indexList[j] == NINIT )
                 {
-                    valuesRow.insert( std::pair<IndexType, ValueType>( bJA[posB], beta * bValues[posB] ) );
-                }
-                else
-                {
-                    valuesRow[bJA[posB]] += beta * bValues[posB];
+                    // Add column position j to the indexList
+                    indexList[j] = firstCol;
+                    firstCol = j;
+                    ++length;
                 }
             }
 
-            std::set<IndexType>::iterator jaIter;
-            typename std::map<IndexType, ValueType>::iterator valuesIter;
-            jaIter = jaRow.begin();
-            valuesIter = valuesRow.begin();
-
-            for ( IndexType j = 0; j < cSizes[i]; j++ )
+            for ( IndexType jj = 0; jj < bSizes[i]; jj++ )
             {
-                // Note: cNumRows == aNumRows
-                IndexType posC = ellindex( i, j, m, cNumValuesPerRow );
-                cJA[posC] = *jaIter;
-                cValues[posC] = ( *valuesIter ).second;
-                jaIter++;
-                valuesIter++;
+                IndexType posB = ellindex( i, jj, m, bNumValuesPerRow );
+
+                IndexType j = bJA[posB];
+                valueList[j] += beta * bValues[posB];
+
+                // element b(i,j) will generate an output element c(i,j)
+
+                if ( indexList[j] == NINIT )
+                {
+                    // Add column position j to the indexList
+                    indexList[j] = firstCol;
+                    firstCol = j;
+                    ++length;
+                }
             }
+
+            // fill in cJA, cValues and reset indexList, valueList for next use
+
+            IndexType jj = 0;
+
+            while ( firstCol != END )
+            {
+                IndexType nextCol = indexList[firstCol];
+                ValueType val = valueList[firstCol];
+                indexList[firstCol] = NINIT;
+                valueList[firstCol] = static_cast<ValueType>( 0 ); // reset for next time
+
+                SCAI_LOG_DEBUG( logger, "entry for [" << i << "," << firstCol << "] = " << val )
+
+                IndexType posC = ellindex( i, jj, m, cNumValuesPerRow );
+                cJA[posC] = firstCol;
+                cValues[posC] = val;
+
+                firstCol = nextCol;
+                ++jj;
+            }
+
+            SCAI_ASSERT_EQ_ERROR( jj, cSizes[i], "serious mismatch for cSizes[" << i << "]" )
 
             // fill up to top
 
-            for (  IndexType j = cSizes[i]; j < cNumValuesPerRow; j++ )
+            for (  IndexType jj = cSizes[i]; jj < cNumValuesPerRow; ++jj )
             {
-                IndexType posC = ellindex( i, j, m, cNumValuesPerRow );
-                cJA[posC] = 0;
-                cValues[posC] = 0;
+                IndexType posC = ellindex( i, jj, m, cNumValuesPerRow );
+                cJA[posC] = static_cast<IndexType>( 0 );
+                cValues[posC] = static_cast<ValueType>( 0 );
             }
         }
     }
@@ -897,6 +1035,7 @@ void OpenMPELLUtils::jacobiHalo(
             }
 
             const ValueType diag = diagonal[i];
+
             solution[i] -= temp * ( omega / diag );
         }
     }
@@ -1080,7 +1219,7 @@ void OpenMPELLUtils::normalGEVM(
     const ValueType y[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType SCAI_UNUSED( numValuesPerRow ),
+    const IndexType numValuesPerRow,
     const IndexType ellSizes[],
     const IndexType ellJA[],
     const ValueType ellValues[] )
@@ -1094,57 +1233,27 @@ void OpenMPELLUtils::normalGEVM(
         SCAI_LOG_INFO( logger, "asynchronous execution not supported here" )
     }
 
-    //#pragma omp parallel
+    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
+
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+
+    #pragma  omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.normalGEVM" )
 
-        //#pragma omp for schedule(SCAI_OMP_SCHEDULE)
-        for ( IndexType i = 0; i < numColumns; ++i )
+        #pragma omp for
+
+        for ( IndexType i = 0; i < numRows; ++i )
         {
-            ValueType temp = static_cast<ValueType>( 0.0 );
+            for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
+            {
+                IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+                IndexType j   = ellJA[pos];
+                ValueType v   = alpha * ellValues[pos] * x[i];
 
-            for ( IndexType j = 0; j < numRows; ++j )
-            {
-                for ( IndexType k = 0; k < ellSizes[j]; ++k )
-                {
-                    if ( ellJA[k * numRows + j] == i )
-                    {
-                        SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numRows + j] * xAccess[j]; j = " << j )
-                        SCAI_LOG_TRACE( logger, ", dataAccess[k * numRows + j] = " << ellValues[ k * numRows + j ] )
-                        SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
-                        temp += ellValues[k * numRows + j] * x[j];
-                    }
-                }
-            }
-
-            SCAI_LOG_TRACE( logger, "column = " << i << ", temp = " << temp )
-
-            if ( beta == scai::common::constants::ZERO )
-            {
-                // must be handled separately as y[i] might be uninitialized
-                result[i] = alpha * temp;
-            }
-            else if ( alpha == scai::common::constants::ONE )
-            {
-                result[i] = temp + beta * y[i];
-            }
-            else
-            {
-                result[i] = alpha * temp + beta * y[i];
+                atomicAdd( result[j], v );
             }
         }
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::cout << "NormalGEVM: result = ";
-
-        for ( IndexType i = 0; i < numColumns; ++i )
-        {
-            std::cout << " " << result[i];
-        }
-
-        std::cout << std::endl;
     }
 }
 
@@ -1157,7 +1266,7 @@ void OpenMPELLUtils::sparseGEVM(
     const ValueType x[],
     const IndexType numRows,
     const IndexType numColumns,
-    const IndexType SCAI_UNUSED( numValuesPerRow ),
+    const IndexType numValuesPerRow,
     const IndexType numNonZeroRows,
     const IndexType rowIndexes[],
     const IndexType ellSizes[],
@@ -1186,43 +1295,34 @@ void OpenMPELLUtils::sparseGEVM(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.ELL.sparseGEVM" )
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
-        for ( IndexType i = 0; i < numColumns; ++i )
+        #pragma omp for
+
+        for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
-            ValueType temp = 0;
+            IndexType i = rowIndexes[ii];
 
-            for ( IndexType jj = 0; jj < numNonZeroRows; ++jj )
+            for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
-                IndexType j = rowIndexes[jj];
+                IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+                IndexType j   = ellJA[pos];
+                ValueType v   = alpha * ellValues[pos] * x[i];
 
-                for ( IndexType k = 0; k < ellSizes[j]; ++k )
-                {
-                    if ( ellJA[k * numRows + j] == i )
-                    {
-                        SCAI_LOG_TRACE( logger, "temp += dataAccess[k * numNonZeroRows + j] * xAccess[j]; i = " << j )
-                        SCAI_LOG_TRACE( logger,
-                                        ", dataAccess[k * numNonZeroRows + j] = " << ellValues[ k * numNonZeroRows + j ] )
-                        SCAI_LOG_TRACE( logger, ", xAccess[j] = " << x[ j ] )
-                        temp += ellValues[k * numRows + j] * x[j];
-                    }
-                }
+                atomicAdd( result[j], v );
             }
-
-            result[i] += alpha * temp;
         }
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void OpenMPELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPELLUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-    KernelRegistry::set<ELLKernelTrait::countNonEmptyRowsBySizes>( countNonEmptyRowsBySizes, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::setNonEmptyRowsBySizes>( setNonEmptyRowsBySizes, ctx, flag );
+    SCAI_LOG_DEBUG( logger, "register ELLtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    KernelRegistry::set<ELLKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::hasDiagonalProperty>( hasDiagonalProperty, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::check>( check, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixMultiplySizes>( matrixMultiplySizes, ctx, flag );
@@ -1230,15 +1330,16 @@ void OpenMPELLUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelR
 }
 
 template<typename ValueType>
-void OpenMPELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressIA<ValueType> >( compressIA, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::compressValues<ValueType> >( compressValues, ctx, flag );
+    KernelRegistry::set<ELLKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -1247,17 +1348,16 @@ void OpenMPELLUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     KernelRegistry::set<ELLKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );
-    KernelRegistry::set<ELLKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::fillELLValues<ValueType> >( fillELLValues, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register ELLUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
@@ -1270,18 +1370,22 @@ void OpenMPELLUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
 
 OpenMPELLUtils::OpenMPELLUtils()
 {
+    SCAI_LOG_INFO( logger, "register ELLtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPELLUtils::~OpenMPELLUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister ELLtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
  * @file OpenMPBLAS3.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of BLAS3 methods used in LAMA with own C++ implementation.
+ * @brief Own implementation of BLAS3 kernels for Host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 15.10.2013
  */
@@ -94,13 +94,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * h + j] * B[ldb * i + j];
                         }
@@ -118,13 +118,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * h + j] * B[ldb * j + i];
                         }
@@ -168,13 +168,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + h] * B[ldb * i + j];
                         }
@@ -192,13 +192,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + h] * B[ldb * j + i];
                         }
@@ -226,13 +226,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + i] * B[ldb * j + h];
                         }
@@ -250,13 +250,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * j + i] * B[ldb * h + j];
                         }
@@ -280,13 +280,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * j + h];
                         }
@@ -300,13 +300,13 @@ void OpenMPBLAS3::gemm(
                 ValueType temp;
                 #pragma omp parallel for collapse(2) private(temp) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int h = 0; h < n; h++ )
+                for ( IndexType h = 0; h < n; h++ )
                 {
-                    for ( int i = 0; i < m; i++ )
+                    for ( IndexType i = 0; i < m; i++ )
                     {
                         temp = static_cast<ValueType>( 0.0 );
 
-                        for ( int j = 0; j < k; j++ )
+                        for ( IndexType j = 0; j < k; j++ )
                         {
                             temp += A[lda * i + j] * B[ldb * h + j];
                         }
@@ -360,11 +360,11 @@ void OpenMPBLAS3::gemm(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPBLAS3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "set BLAS3 routines for OpenMP in Interface" )
+    SCAI_LOG_DEBUG( logger, "set BLAS3 routines for OpenMP in Interface" )
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( OpenMPBLAS3::gemm, ctx, flag );
 }
 
@@ -374,13 +374,17 @@ void OpenMPBLAS3::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS3::OpenMPBLAS3()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "register BLAS3 routines for OpenMP in Kernel Registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS3::~OpenMPBLAS3()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "unregister BLAS3 routines for OpenMP in Kernel Registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

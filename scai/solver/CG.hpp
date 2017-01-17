@@ -2,7 +2,7 @@
  * @file CG.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -101,7 +101,6 @@ public:
         lama::VectorPtr mQ;
         lama::VectorPtr mZ;
         lama::Scalar mPScalar;
-        lama::Scalar mEps;
     };
 
     /**

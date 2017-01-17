@@ -2,7 +2,7 @@
  * @file LAPACKeWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Wrapper for LAPACKe functions
+ * @brief Definition of wrapper class for LAPACKe functions
  * @author Eric Schricker
  * @date 12.11.2015
  */

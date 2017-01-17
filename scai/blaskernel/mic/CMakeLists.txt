@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -39,8 +39,8 @@ scai_project (
     CLASSES
 
           MICBLAS1
-          MICBLAS2
-          MICBLAS3
+          # MICBLAS2  not really own implementation, just calls BLAS2
+          # MICBLAS3  not really own implementation, just calls BLAS3
           
     HEADERS
     

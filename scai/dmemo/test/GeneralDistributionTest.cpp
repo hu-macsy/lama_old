@@ -2,7 +2,7 @@
  * @file GeneralDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class GeneralDistributionTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @brief Specific tests for derived distribution class GeneralDistributionTest.
+ * @author Thomas Brandes
  * @date 30.07.2012
  */
 
@@ -36,8 +36,11 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -53,10 +56,12 @@ struct GeneralDistributionTestConfig
         elemsPerPartition = 10;
         globalSize = elemsPerPartition * size;
 
-        for ( IndexType k = 0; k < elemsPerPartition; ++k )
-        {
-            localIndexes.push_back( k * size + rank );
-        }
+        // get: rank, rank + size, rank + 2 * size, ...
+
+        const IndexType first = static_cast<IndexType>( rank );
+        const IndexType inc   = static_cast<IndexType>( size );
+
+        utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, elemsPerPartition );
 
         dist = DistributionPtr( new GeneralDistribution( globalSize, localIndexes, comm ) );
     }
@@ -72,7 +77,7 @@ struct GeneralDistributionTestConfig
     IndexType elemsPerPartition;
     IndexType globalSize;
 
-    std::vector<IndexType> localIndexes;
+    hmemo::HArray<IndexType> localIndexes;
 
     DistributionPtr dist;
 };
@@ -94,14 +99,40 @@ BOOST_AUTO_TEST_CASE( generalSizeTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    std::vector<IndexType> localIndexes;
-    DistributionPtr generaldist1( new GeneralDistribution( 1, localIndexes, comm ) );
-    DistributionPtr generaldist2( generaldist1 );
-    DistributionPtr generaldist3( new GeneralDistribution( 1, localIndexes, comm ) );
-    DistributionPtr generaldist4( new GeneralDistribution( 3, localIndexes, comm ) );
-    BOOST_CHECK( ( *generaldist1 ).isEqual( *generaldist2 ) );
-    BOOST_CHECK( !( *generaldist1 ).isEqual( *generaldist3 ) );
-    BOOST_CHECK( !( *generaldist1 ).isEqual( *generaldist4 ) );
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    hmemo::HArray<IndexType> localIndexes;
+
+    IndexType N = 2;
+
+    const IndexType first = rank * N;
+    const IndexType inc   = 1;
+
+    utilskernel::HArrayUtils::setSequence( localIndexes, first, inc, N );
+
+    GeneralDistribution genDist1( size * N, localIndexes, comm );
+    const GeneralDistribution& genDist2 = genDist1;
+    GeneralDistribution genDist3( size * N, localIndexes, comm );
+    GeneralDistribution genDist4( genDist1 );
+    BlockDistribution bdist( size * N, comm );
+    GeneralDistribution genDist5( bdist );
+    GeneralDistribution genDist6( BlockDistribution( size * ( N + 1 ), comm ) );
+
+    BOOST_CHECK_EQUAL( genDist1, genDist2 );  // pointer equality
+    BOOST_CHECK_EQUAL( genDist2, genDist1 );  // pointer equality
+    BOOST_CHECK_EQUAL( genDist1, genDist3 );  // same constructor equality
+    BOOST_CHECK_EQUAL( genDist3, genDist1 );  // same constructor equality
+    BOOST_CHECK_EQUAL( genDist1, genDist4 );  // copy equality
+    BOOST_CHECK_EQUAL( genDist4, genDist1 );  // copy equality
+
+    if ( size != 1 )
+    {
+        BOOST_CHECK( genDist1 != bdist );         // do not compare block dist and general dist
+    }
+
+    BOOST_CHECK_EQUAL( genDist1, genDist5 );  // but if block is copied to a general dist
+    BOOST_CHECK( genDist1 != genDist6 );      // different global sizes
 }
 
 /* --------------------------------------------------------------------- */

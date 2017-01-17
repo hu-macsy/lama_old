@@ -2,7 +2,7 @@
  * @file OpenMPBLAS3.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief OpenMPBLAS3.hpp
+ * @brief Class with default implementations of BLAS3 routines for host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 05.07.2012
  */
@@ -84,7 +84,11 @@ private:
 
     /** Routine that registers all methods at the kernel registry. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

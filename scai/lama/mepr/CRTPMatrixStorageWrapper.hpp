@@ -2,7 +2,7 @@
  * @file lama/mepr/CRTPMatrixStorageWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,6 +68,16 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
         hmemo::ContextPtr )
     {}
 
+    static void setDIADataImpl(
+        Derived*,
+        const IndexType,
+        const IndexType,
+        const IndexType,
+        const hmemo::HArray<IndexType>&,
+        const hmemo::_HArray&,
+        hmemo::ContextPtr )
+    {}
+
     static void buildCSRDataImpl(
         const Derived*,
         hmemo::HArray<IndexType>&,
@@ -80,22 +90,42 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
         const Derived*,
         hmemo::_HArray&,
         const IndexType )
-    { }
+    {}
+
+    static void setRowImpl(
+        Derived*,
+        const hmemo::_HArray&,
+        const IndexType,
+        const utilskernel::binary::BinaryOp )
+    {}
+
+    static void setColumnImpl(
+        Derived*,
+        const hmemo::_HArray&,
+        const IndexType,
+        const utilskernel::binary::BinaryOp )
+    {}
+
+    static void getColumnImpl(
+        const Derived*,
+        hmemo::_HArray&,
+        const IndexType )
+    {}
 
     static void getDiagonalImpl(
         const Derived*,
         hmemo::_HArray& )
-    { }
+    {}
 
     static void setDiagonalVImpl(
         Derived*,
         const hmemo::_HArray& )
-    { }
+    {}
 
     static void scaleRowsImpl(
         Derived*,
         const hmemo::_HArray& )
-    { }
+    {}
 };
 
 /*
@@ -121,6 +151,25 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
         else
         {
             CRTPMatrixStorageWrapper<Derived, T>::setCSRDataImpl( obj, numRows, numColumns, numValues, ia, ja, values, ctx );
+        }
+    }
+
+    static void setDIADataImpl(
+        Derived* obj,
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values,
+        hmemo::ContextPtr ctx )
+    {
+        if ( values.getValueType() == common::getScalarType<H>() )
+        {
+            obj->setDIADataImpl( numRows, numColumns, numDiagonals, offsets, reinterpret_cast<const hmemo::HArray<H>& >( values ), ctx );
+        }
+        else
+        {
+            CRTPMatrixStorageWrapper<Derived, T>::setDIADataImpl( obj, numRows, numColumns, numDiagonals, offsets, values, ctx );
         }
     }
 
@@ -153,6 +202,53 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
         else
         {
             CRTPMatrixStorageWrapper<Derived, T>::getRowImpl( obj, row, irow );
+        }
+    }
+
+    static void setRowImpl(
+        Derived* obj,
+        const hmemo::_HArray& row,
+        const IndexType i,
+        const utilskernel::binary::BinaryOp op )
+    {
+        if ( row.getValueType() == common::getScalarType<H>() )
+        {
+            obj->setRowImpl( reinterpret_cast<const hmemo::HArray<H>& >( row ), i, op );
+        }
+        else
+        {
+            CRTPMatrixStorageWrapper<Derived, T>::setRowImpl( obj, row, i, op );
+        }
+    }
+
+    static void getColumnImpl(
+        const Derived* obj,
+        hmemo::_HArray& column,
+        const IndexType j )
+    {
+        if ( column.getValueType() == common::getScalarType<H>() )
+        {
+            obj->getColumnImpl( reinterpret_cast<hmemo::HArray<H>& >( column ), j );
+        }
+        else
+        {
+            CRTPMatrixStorageWrapper<Derived, T>::getColumnImpl( obj, column, j );
+        }
+    }
+
+    static void setColumnImpl(
+        Derived* obj,
+        const hmemo::_HArray& column,
+        const IndexType j,
+        const utilskernel::binary::BinaryOp op )
+    {
+        if ( column.getValueType() == common::getScalarType<H>() )
+        {
+            obj->setColumnImpl( reinterpret_cast<const hmemo::HArray<H>& >( column ), j, op );
+        }
+        else
+        {
+            CRTPMatrixStorageWrapper<Derived, T>::setColumnImpl( obj, column, j, op );
         }
     }
 

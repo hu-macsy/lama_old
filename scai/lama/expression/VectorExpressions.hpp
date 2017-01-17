@@ -2,7 +2,7 @@
  * @file VectorExpressions.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -83,6 +83,110 @@ inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
     return Expression_SV( Scalar( 1.0 ) / alpha, vector );
+}
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        of two vectors.
+ *
+ * @param[in] x     The first vector.
+ * @param[in] y     The second vector.
+ * @return          The expression representing this sum.
+ */
+inline Expression_VV operator*( const Vector& x, const Vector& y )
+{
+    return Expression_VV( x, y );
+}
+
+/**
+ * @brief The times operator creates an expression that represents scaling a elementwise vector times
+ *        vector expression.
+ *
+ * @param[in] alpha The scalar.
+ * @param[in] exp   The vector times vector expression.
+ * @return          The expression representing this SVV.
+ */
+inline Expression_SVV operator*( const Scalar& alpha, const Expression_VV& exp )
+{
+    return Expression_SVV( Scalar( alpha ), exp );
+}
+
+/**
+ * @brief The times operator creates an expression that represents scaling a elementwise vector times
+ *        vector expression.
+ *
+ * @param[in] exp   an existing expression scalar * vector
+ * @param[in] v     the second multiplicator
+ * @return          The expression representing this SVV.
+ */
+inline Expression_SVV operator*( const Expression_SV exp, const Vector& v )
+{
+    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( exp.getArg2(), v ) );
+}
+
+/**
+ * @brief The times operator creates an expression that represents scaling a elementwise vector times
+ *        vector expression.
+ *
+ * @param[in] v     the first multiplicator
+ * @param[in] exp   an existing expression scalar * vector
+ * @return          The expression representing this SVV.
+ */
+inline Expression_SVV operator*( const Vector& v, const Expression_SV exp )
+{
+    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( v, exp.getArg2() ) );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   operator+ to generate Expression_S_V                                    */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        a vector adding a scalar to each vector element.
+ *
+ * @param[in] alpha The scalar.
+ * @param[in] x     The vector.
+ * @return          The expression representing this sum.
+ */
+
+inline Expression_SV_S operator+( const Scalar& alpha, const Vector& x )
+{
+    // return Expression_S_V( alpha, vectorX );
+    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
+}
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        a vector adding a scalar to each vector element.
+ *
+ * @param[in] x     The vector.
+ * @param[in] alpha The scalar.
+ * @return          The expression representing this sum.
+ */
+
+inline Expression_SV_S operator+( const Vector& x, const Scalar& alpha )
+{
+    // return Expression_S_V( alpha, vectorX );
+    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   operator+ to generate Expression_SV_V                                   */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief The plus operator creates an expression that represents the sum
+ *        a vector adding a scalar to each vector element.
+ *
+ * @param[in] exp   an existing expression scalar * vector
+ * @param[in] beta  The scalar.
+ * @return          The expression representing this sum.
+ */
+
+inline Expression_SV_S operator+( const Expression_SV& exp, const Scalar& beta )
+{
+    return Expression_SV_S( exp, beta );
 }
 
 /* ------------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
  * @file LibModule.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,6 +34,7 @@
 
 #include <scai/common/LibModule.hpp>
 
+#include <scai/common/Settings.hpp>
 #include <scai/common/macros/throw.hpp>
 
 #include <iostream>
@@ -89,6 +90,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
+
     std::string slash;
 
     if ( *directory.rbegin() != '/' )
@@ -182,6 +184,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
+
     std::string slash;
 
     if ( *directory.rbegin() != '/' )
@@ -273,33 +276,11 @@ void LibModule::loadLibsInDir( const char* dir )
 
 /* -------------------------------------------------------------------------- */
 
-static void tokenize( std::vector<std::string>& tokens,
-                      const std::string& str,
-                      const std::string& delimiters = " " )
-{
-    // Skip delimiters at beginning.
-    std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
-    // Find first "non-delimiter".
-    std::string::size_type pos     = str.find_first_of( delimiters, lastPos );
-
-    while ( std::string::npos != pos || std::string::npos != lastPos )
-    {
-        // Found a token, add it to the vector.
-        tokens.push_back( str.substr( lastPos, pos - lastPos ) );
-        // Skip delimiters.  Note the "not_of"
-        lastPos = str.find_first_not_of( delimiters, pos );
-        // Find next "non-delimiter"
-        pos = str.find_first_of( delimiters, lastPos );
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
 void LibModule::loadLibsByPath( const char* path )
 {
     std::vector<std::string> tokens;
     std::string input = path;
-    tokenize( tokens, input, ":" );
+    Settings::tokenize( tokens, input, ":" );
 
     for ( size_t i = 0; i < tokens.size(); ++i )
     {

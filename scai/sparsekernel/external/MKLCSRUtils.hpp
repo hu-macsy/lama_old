@@ -2,7 +2,7 @@
  * @file MKLCSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -85,15 +85,36 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
+    /** Implementation for CSRKernelTrait::decomposition */
+
+    template<typename ValueType>
+    static void decomposition(
+        ValueType* const solution,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const ValueType rhs[],
+        const IndexType numRows,
+        const IndexType nnz,
+        const bool isSymmetic );
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

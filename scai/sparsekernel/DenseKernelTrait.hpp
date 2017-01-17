@@ -2,7 +2,7 @@
  * @file DenseKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,7 +34,9 @@
 #pragma once
 
 // for dll_import
+
 #include <scai/common/config.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 namespace scai
 {
@@ -150,70 +152,22 @@ struct DenseKernelTrait
     };
 
     template<typename DenseValueType1, typename DenseValueType2>
-    struct copyDenseValues
+    struct set
     {
-        /** Copy values of dense matrix; supports also conversion. */
-
-        typedef void ( *FuncType ) ( DenseValueType1 newValues[],
+        /** Set values of dense matrix with other matrix; supports also conversion.
+         *
+         *  This routine is exactly the same as UtilskernelTrait::set with n = numRows * numColumns.
+         *  The only difference is that OpenMP parallelization is only for rows and not the whole vector.
+         */
+        typedef void ( *FuncType ) ( DenseValueType1 out[],
                                      const IndexType numRows,
                                      const IndexType numColumns,
-                                     const DenseValueType2 oldValues[] );
+                                     const DenseValueType2 in[],
+                                     const utilskernel::binary::BinaryOp op );
 
         static const char* getId()
         {
-            return "Dense.copyDenseValues";
-        }
-    };
-
-    template<typename RowValueType, typename DenseValueType>
-    struct getRow
-    {
-        /** Get diagonal of a dense matrix, type conversion is supported. */
-
-        typedef void ( *FuncType ) (
-            RowValueType rowValues[],
-            const DenseValueType denseValues[],
-            const IndexType irow,
-            const IndexType numRows,
-            const IndexType numColumns );
-
-        static const char* getId()
-        {
-            return "Dense.getRow";
-        }
-    };
-
-    template<typename DenseValueType1, typename DenseValueType2>
-    struct getDiagonal
-    {
-        /** Get diagonal of a dense matrix, type conversion is supported. */
-
-        typedef void ( *FuncType ) ( DenseValueType1 diagonalValues[],
-                                     const IndexType numDiagonalValues,
-                                     const DenseValueType2 denseValues[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns );
-
-        static const char* getId()
-        {
-            return "Dense.getDiagonal";
-        }
-    };
-
-    template<typename DenseValueType1, typename DenseValueType2>
-    struct setDiagonal
-    {
-        /** Set diagonal of a dense matrix, type conversion is supported. */
-
-        typedef void ( *FuncType ) ( DenseValueType1 denseValues[],
-                                     const IndexType numRows,
-                                     const IndexType numColumns,
-                                     const DenseValueType2 diagonalValues[],
-                                     const IndexType numDiagonalValues );
-
-        static const char* getId()
-        {
-            return "Dense.setDiagonal";
+            return "Dense.set";
         }
     };
 
@@ -226,28 +180,12 @@ struct DenseKernelTrait
             DenseValueType denseValues[],
             const IndexType numRows,
             const IndexType numColumns,
-            const DenseValueType val );
+            const DenseValueType val,
+            const utilskernel::binary::BinaryOp op );
 
         static const char* getId()
         {
             return "Dense.setValue";
-        }
-    };
-
-    template<typename DenseValueType>
-    struct scaleValue
-    {
-        /** Scale all elements of the dense matrix with a value */
-
-        typedef void ( *FuncType ) (
-            DenseValueType denseValues[],
-            const IndexType numRows,
-            const IndexType numColumns,
-            const DenseValueType val );
-
-        static const char* getId()
-        {
-            return "Dense.scaleValue";
         }
     };
 

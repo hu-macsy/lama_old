@@ -2,7 +2,7 @@
  * @file BLAS_BLAS1.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -306,7 +306,7 @@ ValueType BLAS_BLAS1::dot(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void BLAS_BLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
@@ -327,7 +327,9 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
         return;
     }
 
-    SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS1 wrapper routines for Host at kernel registry: " <<
+                    "T = " << common::TypeTraits<ValueType>::id() )
+
     KernelRegistry::set<BLASKernelTrait::scal<ValueType> >( BLAS_BLAS1::scal, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::nrm2<ValueType> >( BLAS_BLAS1::nrm2, ctx, flag );
     KernelRegistry::set<BLASKernelTrait::asum<ValueType> >( BLAS_BLAS1::asum, ctx, flag );
@@ -357,13 +359,17 @@ void BLAS_BLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry:
 
 BLAS_BLAS1::BLAS_BLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "register BLAS1 wrapper routines for Host at kernel registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_REPLACE );
 }
 
 BLAS_BLAS1::~BLAS_BLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_EXT_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "unregister BLAS1 wrapper routines for Host at kernel registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_EXT_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

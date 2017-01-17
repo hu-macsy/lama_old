@@ -55,11 +55,12 @@ set ( SCAI_LINKER_FLAGS "" )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES GNU )
 
-    set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror" )
+    set ( SCAI_WARNING_FLAGS       "-Wextra -Wall -Werror -Wno-deprecated-declarations" )
     set ( SCAI_CXX_FLAGS           "" )
     set ( SCAI_CXX_FLAGS_DEBUG     "" )
     set ( SCAI_CXX_FLAGS_RELEASE   "-ffast-math -msse4a " )
     set ( SCAI_CODE_COVERAGE_FLAGS "-fprofile-arcs -ftest-coverage" )
+    set ( SCAI_STATIC_FLAGS        "-fPIC" )
 
     ###  Code coverage with gcov/lcov
 
@@ -72,13 +73,13 @@ if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
     set ( MIC_NO_OFFLOAD_FLAG "-no-offload" )
 
-    if    ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
+    if    ( CXX_COMPILER_VERSION VERSION_GREATER 14 )
         set ( MIC_NO_OFFLOAD_FLAG "-qno-offload" )
-    endif ( IntelCXX_COMPILER_VERSION VERSION_GREATER 14 )
+    endif ( CXX_COMPILER_VERSION VERSION_GREATER 14 )
 
     # -fPIC should always be enabled so static libraries can be linked with shared libraries
 
-    set ( SCAI_CXX_FLAGS "-fPIC -shared-intel " ) 
+    set ( SCAI_STATIC_FLAGS "-fPIC -shared-intel " ) 
 
     # -wd1478 : supprress warning deprecated auto_ptr
     # not set: -Werror-all (all warnings will be errors)
@@ -103,7 +104,7 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
 
-    set ( SCAI_WARNING_FLAGS       "-Wall -Werror" ) # "-Weverything" # wow this creates so much warnings
+    set ( SCAI_WARNING_FLAGS       "-Wall -Werror -Wno-deprecated-declarations" ) # "-Weverything" # wow this creates so much warnings
 
 	if    ( CXX_SUPPORTS_C11 )
 	    set ( SCAI_CXX_FLAGS           "-stdlib=libc++" )

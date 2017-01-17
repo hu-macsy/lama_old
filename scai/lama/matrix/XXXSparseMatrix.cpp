@@ -2,7 +2,7 @@
  * @file XXXSparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -370,7 +370,7 @@ const char* XXXSparseMatrix<ValueType>::typeName()
 /*       Template specializations and nstantiations                          */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( XXXSparseMatrix, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( XXXSparseMatrix, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

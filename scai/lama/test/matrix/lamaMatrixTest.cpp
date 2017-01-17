@@ -2,7 +2,7 @@
  * @file lamaMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,6 +45,7 @@
 
 #include <scai/hmemo/test/ContextFix.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 
 #include <cstdio>
 
@@ -60,6 +61,13 @@ scai::hmemo::ContextPtr ContextFix::testContext;
 
 bool init_function()
 {
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
     try
     {
         scai::hmemo::ContextPtr ctx = scai::hmemo::Context::getContextPtr();

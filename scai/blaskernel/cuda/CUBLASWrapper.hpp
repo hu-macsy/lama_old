@@ -2,7 +2,7 @@
  * @file blaskernel/cuda/CUBLASWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./blaskernel/cuda/CUBLASWrapper.hpp
+ * @brief Wrapper class for calls of the cuBLAS library to resolve overloading.
  * @author eschricker
  * @date 24.08.2015
  */

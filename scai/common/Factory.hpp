@@ -2,7 +2,7 @@
  * @file Factory.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -71,7 +71,7 @@ namespace common
  *  as creator functions might be registered later.
  */
 template<typename InputType, typename OutputType>
-class Factory
+class COMMON_DLL_IMPORTEXPORT Factory
 {
 public:
 
@@ -90,7 +90,7 @@ public:
      *  Derived class must provide create function and createValue
      */
     template<class Derived>
-    class Register
+    class COMMON_DLL_IMPORTEXPORT Register
     {
     public:
 
@@ -100,7 +100,7 @@ public:
 
         /** Guard class that registers/unregisters the creator.   */
 
-        class RegisterGuard
+        class COMMON_DLL_IMPORTEXPORT RegisterGuard
         {
         public:
             RegisterGuard();
@@ -216,7 +216,7 @@ OutputType Factory<InputType, OutputType>::create( const InputType type )
 }
 
 template<typename InputType, typename OutputType>
-std::map<InputType, OutputType( * )() >& Factory<InputType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )() >& Factory<InputType, OutputType>::getFactory()
 {
     // Factory will be created during static initialization when it is needed for the first time
     // A destructor is never called as registered objects still might remove themselves later

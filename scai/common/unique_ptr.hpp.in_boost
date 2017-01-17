@@ -2,7 +2,7 @@
  * @file common/unique_ptr.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,21 +48,21 @@ namespace scai
 
 namespace common
 {
-    using boost::scoped_array;
+using boost::scoped_array;
 
-    /** Smart pointer where only one single reference exists. */
+/** Smart pointer where only one single reference exists. */
 
-    template<typename T>
-    class unique_ptr : public std::auto_ptr<T>
+template<typename T>
+class unique_ptr : public std::auto_ptr<T>
+{
+public:
+    unique_ptr( T* ptr ) : std::auto_ptr<T>( ptr )
     {
-    public:
-        unique_ptr( T* ptr ) : std::auto_ptr<T>( ptr ) 
-        {
-        }
-        unique_ptr() : std::auto_ptr<T>() 
-        {
-        }
-    };
+    }
+    unique_ptr() : std::auto_ptr<T>()
+    {
+    }
+};
 
 } /* end namespace common */
 

@@ -2,7 +2,7 @@
  * @file bindFunctionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -67,7 +67,7 @@ struct MyPair
 
 /* -------------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, scai_numeric_test_types )
 {
     function<ValueType()> fn_five = bind ( my_divide<ValueType>, static_cast<ValueType>( 10 ), static_cast<ValueType>( 2 ) );
     ValueType res1 = fn_five();

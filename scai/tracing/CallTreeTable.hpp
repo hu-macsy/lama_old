@@ -2,7 +2,7 @@
  * @file CallTreeTable.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -92,7 +92,7 @@ struct CTTEntry
     }
 };
 
-#define CALL_CACHE_SIZE 16
+#define CALL_CACHE_SIZE 1024
 
 /** A CallTreeTable does not directly write all info records in the file but keeps
  *  them for a certain time in a cache.

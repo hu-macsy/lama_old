@@ -2,7 +2,7 @@
  * @file Matrix.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,14 +42,17 @@
 // local library
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/Vector.hpp>
-
-#include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
 // internal scai libraries
+
+#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
@@ -114,13 +117,22 @@ public:
 
     virtual IndexType getCSRGraphSize() const;
 
+    /**
+     * @brief write the matrix to an output file
+     *
+     * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
+     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
+     * @param[in] dataType representation type for output values, default is same type as matrix values
+     * @param[in] indexType representation type for col/row index values
+     * @param[in] fileMode can be used to forche BINARY or FORMATTED output
+     */
+
     void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType valuesType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief Checks for a given matrix whether the content of its data is sound.
@@ -145,18 +157,6 @@ public:
      */
     virtual const char* getTypeName() const = 0;
 
-    /** @brief Creates a LAMA array with the same value type as the matrix.
-     *
-     *  @return an auto pointer to the LAMA array.
-     *
-     *  Same as hmemo::_HArray::create( this.getValueType() )
-     *
-     *  Value type is known only at runtime, so pointer to the base class
-     *  is returned. Auto pointer indicates that calling routine takes ownership of
-     *  the allocated array.
-     */
-    hmemo::_HArray* createArray() const;
-
     /**
      * @brief Clears the full matrix, resets global and local sizes to 0.
      *
@@ -166,8 +166,16 @@ public:
      *     a.clear();                          \\ same functionality, clears involved arrays
      *
      * \endcode
+     *
+     * This routine will not free any allocated memory. It is especially helpful to invalidate
+     * all data before it is defined again.
      */
     virtual void clear() = 0;
+
+    /**
+     * @brief Same as clear but here all data is freed.
+     */
+    virtual void purge() = 0;
 
     /** @brief Reallocates this matrix to a replicated zero-matrix of the given shape.
      *
@@ -203,19 +211,55 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
 
-    /** Set matrix to a (replicated) identity matrix with same row and column distribution. */
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution.
+     *
+     *  \code
+     *    m.setIdentitiy( n ) ->  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
+     *  \code
+     */
 
     void setIdentity( const IndexType n );
 
     /**
-     * This method sets a matrix by reading its values from a file.
+     * This method sets a matrix by reading its values from one or multiple files.
      *
      * @param[in] filename      the filename to read from
+     * @param[in] rowDist       optional, if set it is the distribution of the matrix
      *
-     * Each matrix class must provide an implementation of this method.
-     * The matrix might have any distribution.
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx" )                    ! matrix only on processor 0
+     *      matrix.readFromFile( "matrix_%r.mtx" )                 ! general block distributed matrix, each processor reads it own file
+     *      matrix.readFromFile( "matrix.mtx", rowDist )           ! each processor gets its local part of the matrix in one file
+     *      matrix.readFromFile( "matrix_%r.mtx", rowDist )        ! read a partitioned matrix with the given distribution
+     *   \endcode
      */
-    virtual void readFromFile( const std::string& filename ) = 0;
+    void readFromFile( const std::string& fileName, dmemo::DistributionPtr rowDist = dmemo::DistributionPtr() );
+
+    /**
+     *  This method sets a matrix a reading its values from one or multiple files and also the distribution from a file
+     *
+     * @param[in] matrixFileName the single or partitioned filename to read from
+     * @param[in] distributionFileName the single or partitioned filename with the row distribution of the matrix
+     *
+     *   \code
+     *      CSRSparseMatrix<double> matrix;
+     *      matrix.readFromFile( "matrix.mtx", "owners.mtx" )
+     *      matrix.readFromFile( "matrix_%r.mtx", "owners.mtx" )
+     *      matrix.readFromFile( "matrix.mtx", "rows%r.mtx" )
+     *      matrix.readFromFile( "matrix_%r.mtx", "rows%r.mtx" )
+     *   \endcode
+     */
+    void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
+
+    /** This method resorts column indexes in such a way that the diagonal element is always the
+     *  first one in a row.
+     *
+     *  This method throws an exception if row and column distribution are not equal. Furhtermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    void setDiagonalProperty();
 
     /** This method sets a matrix with the values owned by this partition in dense format
      *
@@ -254,6 +298,26 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::_HArray& values ) = 0;
 
+    /** This method set a matrix with the values owned by this partition in DIA format
+     *
+     *  @param[in] rowDist      distributon of rows for the matrix
+     *  @param[in] colDist      distributon of columns for the matrix
+     *  @param[in] numDiagonals number of stored diagonals
+     *  @param[in] offsets      offsets of the stored diagonals to the main diagonal
+     *  @param[in] values       contains the local matrix values for each diagonal
+     *
+     *  Note: only the row distribution decides which data is owned by this processor
+     *
+     *  - numDiagonals == offset.size() must be valid, stands for the number stored diagonals
+     */
+
+    virtual void setDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values ) = 0;
+
     /** This method sets raw dense data in the same way as setDenseData but with raw value array */
 
     template<typename ValueType>
@@ -287,6 +351,24 @@ public:
         const hmemo::HArrayRef<IndexType> jaArray( numValues, ja );
         const hmemo::HArrayRef<ValueType> valueArray( numValues, values );
         setCSRData( rowDist, colDist, numValues, iaArray, jaArray, valueArray );
+    }
+
+    /** This method sets raw DIA data in the same way as setDIAData but with raw value array */
+
+    template<typename ValueType>
+    void setRawDIAData(
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist,
+        const IndexType numDiagonals,
+        const IndexType* offsets,
+        const ValueType* values )
+    {
+        const IndexType numRows    = rowDist->getLocalSize();
+        //const IndexType numColumns = colDist->getGlobalSize();
+        // use of HArrayRef instead of HArray avoids additional copying of values
+        const hmemo::HArrayRef<IndexType> offsetArray( numDiagonals, offsets );
+        const hmemo::HArrayRef<ValueType> valueArray( numRows * numDiagonals, values );
+        setDIAData( rowDist, colDist, numDiagonals, offsetArray, valueArray );
     }
 
     /** Setting raw dense data for a replicated matrix, only for convenience. */
@@ -373,6 +455,47 @@ public:
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 
+    /** @brief This method returns one column of the matrix.
+     *
+     * @param[out] column           is a distributed vector with all values of the col
+     * @param[in]  globalColIndex   global column index of the col that should be extracted
+     *
+     * - the vector column might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the distribution of col will be the same as the row distribution of the matrix
+     */
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const = 0;
+
+    /** @brief This method sets one row of the matrix.
+     *
+     * @param[in]  row              is a non-distributed vector
+     * @param[in]  globalRowIndex   global row index of the row that should be set
+     * @param[in]  op               specifies the binary op how to combine old and new element
+     *
+     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - this method throws an exception for a sparse matrix if the pattern must be changed
+     */
+    virtual void setRow( const Vector& row,
+                         const IndexType globalRowIndex,
+                         const utilskernel::binary::BinaryOp op ) = 0;
+
+    /** @brief Pure method to set one column of the matrix.
+     *
+     * @param[in]  column           is a distributed vector with all values of the col
+     * @param[in]  globalColIndex   global column index of the col that should be set
+     * @param[in]  op               specifies the binary op how to combine old and new element
+     *
+     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
+     *   (otherwise conversion)
+     * - the distribution of col must be the same as the row distribution of the matrix
+     * - this method does not change the pattern of a sparse matrix, so throws an exception if it is insufficient
+     */
+    virtual void setColumn(
+        const Vector& column,
+        const IndexType globalColIndex,
+        const utilskernel::binary::BinaryOp op ) = 0;
+
     /** @brief This method returns the diagonal.
      *
      * @param[out]   diagonal is the destination array
@@ -436,6 +559,22 @@ public:
      * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
      */
     virtual Scalar getValue( IndexType i, IndexType j ) const = 0;
+
+    /**
+     * @brief Update of an (existing ) element in a matrix
+     *
+     * @param[in] i   the global row index
+     * @param[in] j   the global column index
+     * @param[in] val value used for update
+     * @param[in] op  binary operation used to combine new and old value, default is COPY
+     *
+     * Note: this method will never change the pattern of a sparse matrix.
+     */
+    virtual void setValue(
+        const IndexType i,
+        const IndexType j,
+        const Scalar val,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -996,6 +1135,16 @@ protected:
      */
     void setDistributedMatrix( dmemo::DistributionPtr distribution, dmemo::DistributionPtr colDistribution );
 
+    void readFromSingleFile( const std::string& fileName );
+
+    void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr distribution );
+
+    void readFromPartitionedFile( const std::string& fileName );
+
+    void resetRowDistribution( dmemo::DistributionPtr distribution );
+
+    void resetRowDistributionByFirstColumn();
+
     dmemo::DistributionPtr mColDistribution;
 
     // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
@@ -1024,7 +1173,23 @@ private    :
 
     void setDefaultKind(); // set default values for communication and compute kind
 
+    static SyncKind getDefaultSyncKind();  // get default kind as set by environment
+
     SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
+
+    void writeToSingleFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
+
+    void writeToPartitionedFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const common::scalar::ScalarType indexType,
+        const FileIO::FileMode fileMode ) const;
 };
 
 /* ======================================================================== */

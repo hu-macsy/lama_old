@@ -44,8 +44,8 @@ if ( NOT SCAI_SPARSEKERNEL_INCLUDE_DIR )
         /usr/local/include/scai
         /usr/include/scai
         ${CMAKE_INSTALL_PREFIX}/include/scai
-        $ENV{SCAI_LAMA_INCLUDE_PATH}/scai
-        ${SCAI_LAMA_ROOT}/include/scai
+        $ENV{SCAI_SPARSEKERNEL_INCLUDE_PATH}/scai
+        ${SCAI_SPARSEKERNEL_ROOT}/include/scai
     )
 endif ( NOT SCAI_SPARSEKERNEL_INCLUDE_DIR )
 

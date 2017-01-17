@@ -2,7 +2,7 @@
  * @file common/examples/DemoMetaProgramming.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,7 @@
 
 // define the list of types
 
-#define MY_TYPELIST SCAI_TYPELIST( SCAI_ARITHMETIC_HOST )
+#define MY_TYPELIST SCAI_TYPELIST( SCAI_NUMERIC_TYPES_HOST )
 
 using namespace scai;
 using namespace common;

@@ -2,7 +2,7 @@
  # @file xmltest.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -33,36 +33,6 @@
  # @date 08.05.2013
 ###
 
-###
- # @file xmltest.sh
- #
- # @license
- # Copyright (c) 2009-2016
- # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- # for Fraunhofer-Gesellschaft
- #
- # This file is part of the SCAI framework LAMA.
- #
- # LAMA is free software: you can redistribute it and/or modify it under the
- # terms of the GNU Affero General Public License as published by the Free
- # Software Foundation, either version 3 of the License, or (at your option)
- # any later version.
- #
- # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
- # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- # more details.
- #
- # You should have received a copy of the GNU Affero General Public License
- # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- # @endlicense
- #
- # @brief This file is a shellscript, which executes all lama tests and creates
- #        xml result files for further usage
- # @author Jan Ecker
- # @date 08.05.2013
-###
-
 # Creating dir named by YEAR_MONTH_DAY-HOURMINUTE
 dirname=xmlresult_$(date +%s)
 echo "Create result directory: ${dirname}"
@@ -72,11 +42,11 @@ ERROR_LEVEL=test_suite
 
 # Running utilskernel serial (only Host)
 echo "Running utilskernel test on Host"
-./utilskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+./utilskernelTest --SCAI_CONTEXT=Host --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTestHost.xml
 
 # Running test on CUDA
 #if [ -d cuda ];
 #then
 	echo "Running utilskernel test on CUDA"
-	./utilskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTest.xml
+	./utilskernelTest --SCAI_CONTEXT=CUDA --output_format=XML --log_level=${ERROR_LEVEL} --report_level=no 1>${dirname}/UtilsKernelTestCUDA.xml
 #fi

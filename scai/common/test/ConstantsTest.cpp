@@ -2,7 +2,7 @@
  * @file test/ConstantsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_SUITE( ConstantsTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( zeroTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( zeroTest, ValueType, scai_numeric_test_types )
 {
     ValueType zero( 0 );
     BOOST_CHECK( zero == constants::ZERO );
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( zeroTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( oneTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( oneTest, ValueType, scai_numeric_test_types )
 {
     ValueType one( 1 );
     BOOST_CHECK( one == constants::ONE );
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( oneTest, ValueType, scai_arithmetic_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
 {
     ValueType val;
     Math::random( val );

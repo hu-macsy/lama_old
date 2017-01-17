@@ -2,7 +2,7 @@
  * @file matrix.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -108,7 +108,7 @@ int main()
     //
     // print vector to file result.frm/.vec (SAMG format)
     //
-    result.writeToFile( "result" , File::SAMG_FORMAT );
+    result.writeToFile( "result.frv" );
     std::cout << "DenseVector is written to 'result.frm/.vec'" << std::endl;
     //
     //  That's it.

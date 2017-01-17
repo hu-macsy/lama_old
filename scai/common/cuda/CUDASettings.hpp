@@ -2,7 +2,7 @@
  * @file CUDASettings.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <scai/common/config.hpp>
+
 namespace scai
 {
 
@@ -46,7 +48,7 @@ namespace common
  *  This class provides only static methods.
  */
 
-class CUDASettings
+class COMMON_DLL_IMPORTEXPORT CUDASettings
 {
 
 public:

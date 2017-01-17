@@ -2,7 +2,7 @@
  * @file OpenMPCSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,6 +42,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 namespace scai
 {
@@ -56,13 +57,30 @@ class COMMON_DLL_IMPORTEXPORT OpenMPCSRUtils
 {
 public:
 
-    /** This method computes the total number of non-zero rows by the offset array
-     *
-     */
+    /** Implementation for CSRKernelTrait::getValuePos */
+
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const IndexType csrIA[],
+        const IndexType csrJA[] );
+
+    /** Implementation for CSRKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType csrIA[],
+        const IndexType numRows,
+        const IndexType csrJA[],
+        const IndexType numValues );
+
+    /** Implementation for CSRKernelTrait::countNonEmptyRowsByOffsets */
 
     static IndexType countNonEmptyRowsByOffsets( const IndexType offsets[], const IndexType numRows );
 
-    /** Build a vector of indexes for non-empty rows. */
+    /** Implementation for CSRKernelTrait::setNonEmptyRowsByOffsets */
 
     static void setNonEmptyRowsByOffsets(
         IndexType rowIndexes[],
@@ -116,11 +134,7 @@ public:
 
     static bool hasDiagonalProperty( const IndexType numDiagonals, const IndexType csrIA[], const IndexType csrJA[] );
 
-    /** This function sorts the column indexes of each row in ascending order.
-     *
-     *  If the diagonal flag is set, the first entry in the row will be the
-     *  diagonal element ( if available ).
-     */
+    /** Host implementation for CSRKernelTrait::sortRowElements using OpenMP parallelization. */
 
     template<typename ValueType>
     static void sortRowElements(
@@ -130,7 +144,7 @@ public:
         const IndexType numRows,
         const bool diagonalFlag );
 
-    /** Implementation for CSRKernelTrait::Transpose::convertCSR2CSC  */
+    /** Implementation for CSRKernelTrait::convertCSR2CSC  */
 
     template<typename ValueType>
     static void convertCSR2CSC(
@@ -144,7 +158,7 @@ public:
         IndexType numColumns,
         IndexType numValues );
 
-    /** Implementation for CSRKernelTrait::Mult::scaleRows  */
+    /** Implementation for CSRKernelTrait::scaleRows  */
 
     template<typename ValueType1, typename ValueType2>
     static void scaleRows(
@@ -153,7 +167,7 @@ public:
         const IndexType numRows,
         const ValueType2 values[] );
 
-    /** Implementation for CSRKernelTrait::Mult::normalGEMV  */
+    /** Implementation for CSRKernelTrait::normalGEMV  */
 
     template<typename ValueType>
     static void normalGEMV(
@@ -193,6 +207,7 @@ public:
         const ValueType y[],
         const IndexType numRows,
         const IndexType numColumns,
+        const IndexType numValues,
         const IndexType csrIA[],
         const IndexType csrJA[],
         const ValueType csrValues[] );
@@ -269,6 +284,19 @@ public:
         const ValueType omega,
         const IndexType numNonEmptyRows );
 
+    /** Implementation for CSRKernelTrait::decomposition */
+
+    template<typename ValueType>
+    static void decomposition(
+        ValueType* const solution,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const ValueType rhs[],
+        const IndexType numRows,
+        const IndexType nnz,
+        const bool isSymmetic );
+
     /** Implementation for CSRKernelTrait::Offsets::matrixAddSizes  */
 
     static IndexType matrixAddSizes(
@@ -288,19 +316,6 @@ public:
         const IndexType m,
         const IndexType n,
         const IndexType k,
-        bool diagonalProperty,
-        const IndexType aIA[],
-        const IndexType aJA[],
-        const IndexType bIA[],
-        const IndexType bJA[] );
-
-    /** Implementation for CSRKernelTrait::Offsets::matrixMultiplyJA  */
-
-    static void matrixMultiplyJA(
-        IndexType cJA[],
-        const IndexType cIA[],
-        const IndexType numRows,
-        const IndexType numColumns,
         bool diagonalProperty,
         const IndexType aIA[],
         const IndexType aJA[],
@@ -390,11 +405,36 @@ protected:
 
 private:
 
-    /** Routine that registers all methods of this class at the Kernel Registry. */
+    /** Struct for registration of methods without template arguments */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
+
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

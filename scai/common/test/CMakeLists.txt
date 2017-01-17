@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -38,6 +38,7 @@ set ( CXX_SOURCES
       commonTest
       ConstantsTest
       ContextTypeTest
+      ExceptionTest  
       FactoryTest  
       Factory1Test  
       FactoryTest
@@ -58,7 +59,7 @@ if    ( ${USE_COMPLEX} )
     set ( CXX_SOURCES ${CXX_SOURCES} ComplexTest TypeConversionTest )
 endif ( ${USE_COMPLEX} )
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( commonTest ${CXX_SOURCES} )
 

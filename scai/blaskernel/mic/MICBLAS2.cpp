@@ -2,7 +2,7 @@
  * @file MICBLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -170,11 +170,13 @@ void MICBLAS2::gemv(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void MICBLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::MIC;
-    SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for MIC at kernel registry [" << flag << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register[" << flag << "], BLAS2<" << common::TypeTraits<ValueType>::id() << ">" )
+
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( MICBLAS2::gemv, ctx, flag );
 }
 
@@ -184,13 +186,17 @@ void MICBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::K
 
 MICBLAS2::RegisterGuard::RegisterGuard()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
+    SCAI_LOG_INFO( logger, "register BLAS2 OpenMP-routines for MIC at kernel registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 MICBLAS2::RegisterGuard::~RegisterGuard()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_MIC_LIST>::call(
+    SCAI_LOG_INFO( logger, "unregister BLAS2 OpenMP-routines for MIC at kernel registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_MIC_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

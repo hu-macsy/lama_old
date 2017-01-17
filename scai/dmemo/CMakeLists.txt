@@ -2,7 +2,7 @@
  # @file scai/dmemo/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -53,6 +53,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables)
 include ( Dependencies/internal )
 include ( Dependencies/external )
+include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -72,7 +73,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages
@@ -101,7 +102,9 @@ include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 addInternalAndExternalIncludes()
 
 if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
-    set ( METISDISTRIBUTION MetisDistribution )
+    if    ( SCAI_INDEX_TYPE STREQUAL "int" )
+        set ( METISDISTRIBUTION MetisDistribution )
+    endif ( SCAI_INDEX_TYPE STREQUAL "int" )
 endif ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -127,9 +130,6 @@ scai_project (
 
         ${METISDISTRIBUTION}
 
-    HEADERS                  # .hpp only
-
-        CRTPCommunicator
     )
 
 ### add subdirectories
@@ -141,6 +141,9 @@ add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 if ( GPI_FOUND AND USE_GPI )
+    include( Package/Boost )
+    message( STATUS "add BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
+    include_directories ( ${BOOST_INCLUDE_DIR} )
     add_subdirectory( gpi )
 endif ( GPI_FOUND AND USE_GPI )
 
@@ -154,8 +157,7 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### set link directories ###
 if ( WIN32 )
-    set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
-	link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
+	link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
 ### add library ###

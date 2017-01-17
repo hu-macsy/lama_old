@@ -2,7 +2,7 @@
  * @file OpenMPJDSUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -82,12 +82,13 @@ void OpenMPJDSUtils::getRow(
     const IndexType ja[],
     const ValueType values[] )
 {
+    SCAI_REGION( "OpenMP.JDS.getRow" )
+
     SCAI_LOG_INFO( logger, "getRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
 
-    //TODO: use OpenMP
     for ( IndexType j = 0; j < numColumns; ++j )
     {
-        row[j] = static_cast<OtherValueType>( 0.0 );
+        row[j] = static_cast<OtherValueType>( 0 );
     }
 
     IndexType ii;
@@ -113,16 +114,56 @@ void OpenMPJDSUtils::getRow(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-template<typename ValueType>
-ValueType OpenMPJDSUtils::getValue(
+template<typename ValueType, typename OtherValueType>
+void OpenMPJDSUtils::setRow(
+    ValueType values[],
+    const IndexType i,
+    const IndexType numColumns,
+    const IndexType numRows,
+    const IndexType perm[],
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType ja[],
+    const OtherValueType row[],
+    const utilskernel::binary::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.JDS.setRow" )
+
+    SCAI_LOG_INFO( logger, "setRow with i = " << i << ", numColumns = " << numColumns << " and numRows = " << numRows )
+
+    IndexType ii;
+
+    // check the permutation of row i
+
+    for ( ii = 0; ii < numRows; ii++ )
+    {
+        if ( perm[ii] == i )
+        {
+            break;
+        }
+    }
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( ii, numRows, "row " << i << " not in permutuation" )
+
+    IndexType k = ii;
+
+    for ( IndexType jj = 0; jj < ilg[ii]; ++jj )
+    {
+        values[k] = applyBinary( values[k], op, static_cast<ValueType>( row[ja[k]] ) );
+        k += dlg[jj];
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getValuePos(
     const IndexType i,
     const IndexType j,
     const IndexType numRows,
-    const IndexType* dlg,
-    const IndexType* ilg,
-    const IndexType* perm,
-    const IndexType* ja,
-    const ValueType* values )
+    const IndexType dlg[],
+    const IndexType ilg[],
+    const IndexType perm[],
+    const IndexType ja[] )
 {
     IndexType ii;
 
@@ -136,45 +177,98 @@ ValueType OpenMPJDSUtils::getValue(
         }
     }
 
+    if ( ii == numRows )
+    {
+        COMMON_THROWEXCEPTION( "row index " << i << " not found in perm array" )
+    }
+
     SCAI_LOG_TRACE( logger, "row " << i << " is now " << ii << ", has " << ilg[ii] << " elements" )
+
     // search in the found row
+
     IndexType k = 0;
+
+    IndexType pos = nIndex;
 
     for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
     {
         if ( ja[ii + k] == j )
         {
-            return values[ii + k];
+            pos = ii + k;
+            break;
         }
 
         k += dlg[jj];
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return pos;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getValuePosCol(
+    IndexType row[],
+    IndexType pos[],
+    const IndexType j,
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[],
+    const IndexType ja[] )
+{
+    SCAI_REGION( "OpenMP.JDSUtils.getValuePosCol" )
+
+    IndexType cnt  = 0;   // counts number of available row entries in column j
+
+    #pragma omp parallel for
+
+    for ( IndexType ii = 0; ii < numRows; ++ii )
+    {
+        IndexType k = 0;
+
+        for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
+        {
+            IndexType p = ii + k;
+
+            if ( ja[p] == j )
+            {
+                IndexType n = atomicInc( cnt );
+                row[n] = perm[ii];
+                pos[n] = p;
+                break;
+            }
+
+            k += dlg[jj];
+        }
+    }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPJDSUtils::scaleValue(
+void OpenMPJDSUtils::scaleRows(
+    ValueType jdsValues[],
     const IndexType numRows,
     const IndexType perm[],
     const IndexType ilg[],
     const IndexType dlg[],
-    ValueType mValues[],
-    const OtherValueType values[] )
+    const OtherValueType rowValues[] )
 {
-    SCAI_LOG_INFO( logger, "scaleValue with numRows = " << numRows )
+    SCAI_LOG_INFO( logger, "scaleRows with numRows = " << numRows )
 
-    //TODO: use OpenMP
+    // Due to false sharing, use of OpenMP is not recommended here
+
     for ( IndexType i = 0; i < numRows; i++ )
     {
         IndexType offset = i;
-        OtherValueType scalar = values[perm[i]];
+
+        ValueType rowScale = static_cast<ValueType>( rowValues[perm[i]] );
 
         for ( IndexType jj = 0; jj < ilg[i]; jj++ )
         {
-            mValues[offset] *= static_cast<ValueType>( scalar );
+            jdsValues[offset] *= rowScale;
             offset += dlg[jj];
         }
     }
@@ -235,104 +329,6 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
     }
 
     return false;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPJDSUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
-{
-    SCAI_LOG_INFO( logger, "compute inverse perm, n = " << n )
-    // Parallel execution is safe as perm does not contain a value twice
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for ( IndexType ii = 0; ii < n; ii++ )
-    {
-        IndexType i = perm[ii];
-        SCAI_ASSERT_DEBUG( 0 <= i && i < n, "permutation value out of range, perm[" << ii << "] = " << i )
-        inversePerm[i] = ii;
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void OpenMPJDSUtils::sortRows( IndexType ilg[], IndexType perm[], const IndexType n )
-{
-    if ( n <= 0 )
-    {
-        // just stop here, max reduction delivers illegal value
-        return;
-    }
-
-    // Help array needed, because bucket sort cannot be done in-place
-    scoped_array<IndexType> input( new IndexType[n] );
-    // Open: can this routine be called where perm is a valid permutation as input
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
-
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        input[i] = perm[i];
-    }
-
-    // The number of buckets is determined by the max value of ilg
-    const IndexType maxBucket = utilskernel::OpenMPUtils::reduce( ilg, n, utilskernel::reduction::MAX );
-    SCAI_LOG_INFO( logger, "sort " << n << " values, number of buckets = " << maxBucket )
-    // longest row = maxBucket, but rows with length 0 is possible too!
-    scoped_array<IndexType> bucket( new IndexType[maxBucket + 1] );
-
-    for ( IndexType i = 0; i <= maxBucket; i++ )
-    {
-        bucket[i] = 0;
-    }
-
-    // counts how many diagonals exist for each possible length
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        bucket[ilg[i]]++;
-    }
-
-    for ( IndexType i = 0; i <= maxBucket; i++ )
-    {
-        SCAI_LOG_DEBUG( logger, "bucket " << i << " has " << bucket[i] << " entries" )
-    }
-
-    // use now bucket array for finding right offsets
-    // diag length:                 0   1   2   3   4   5
-    // number of (now in bucket):   3   4   3   5   1   5
-    // becomes (end of first for): 18  14  11   6   5   0
-    // later (end of second for):  21  18  14  11   6   5
-    IndexType total = 0;
-
-    for ( IndexType i = maxBucket; i >= 0; i-- )
-    {
-        IndexType cnt = bucket[i];
-        bucket[i] = total;
-        total += cnt;
-        SCAI_LOG_TRACE( logger, "bucket " << i << " offset = " << bucket[i] << ", total = " << total )
-    }
-
-    // now we can build the new perm array
-    // diagonals with same lengths are moved to position bucket[b] upwards
-    for ( IndexType i = 0; i < n; i++ )
-    {
-        IndexType b = ilg[i];
-        SCAI_LOG_TRACE( logger, "perm[" << bucket[b] << "]= " << input[i] )
-        perm[bucket[b]++] = input[i];
-    }
-
-    // reorganize of ilg has to wait until after filling of perm array is finished
-    total = 0;
-
-    for ( IndexType i = maxBucket; i >= 0; i-- )
-    {
-        SCAI_LOG_DEBUG( logger, "set ilg[" << total << ":" << ( bucket[i] - 1 ) << "] = " << i )
-
-        for ( IndexType k = total; k < bucket[i]; k++ )
-        {
-            ilg[k] = i;
-        }
-
-        total = bucket[i];
-    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -406,7 +402,7 @@ void OpenMPJDSUtils::getCSRValues(
                    "get CSRValues<" << TypeTraits<JDSValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", #rows = " << numRows << ", #values = " << csrIA[numRows] )
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.JDS->CSR_values" )
+        SCAI_REGION( "OpenMP.JDS.getCSR" )
         #pragma omp for schedule(SCAI_OMP_SCHEDULE)
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -446,7 +442,7 @@ void OpenMPJDSUtils::setCSRValues(
     // parallelization possible as offset array csrIA is available
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.JDS<-CSR_values" )
+        SCAI_REGION( "OpenMP.JDS.setCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType ii = 0; ii < numRows; ii++ )
@@ -517,7 +513,10 @@ void OpenMPJDSUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
-    utilskernel::OpenMPUtils::setScale( result, beta, y, numRows );  // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
+
+    // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
+
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
 
     if ( ndlg == 0 )
     {
@@ -605,44 +604,9 @@ void OpenMPJDSUtils::normalGEVM(
     SCAI_LOG_INFO( logger,
                    "normalGEVM<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads() << ">, result[" << numColumns << "] = " << alpha << " * A( jds, ndlg = " << ndlg << " ) * x + " << beta << " * y " )
 
-    if ( beta == scai::common::constants::ZERO )
-    {
-        SCAI_LOG_DEBUG( logger, "set result = 0.0" )
-        #pragma omp parallel for
+    // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-        for ( IndexType i = 0; i < numColumns; ++i )
-        {
-            result[i] = static_cast<ValueType>( 0.0 );
-        }
-    }
-    else if ( result == y )
-    {
-        // result = result * beta
-        if ( beta != scai::common::constants::ONE )
-        {
-            SCAI_LOG_DEBUG( logger, "set result *= beta" )
-            #pragma omp parallel for
-
-            for ( IndexType i = 0; i < numColumns; ++i )
-            {
-                result[i] *= beta;
-            }
-        }
-        else
-        {
-            SCAI_LOG_DEBUG( logger, "result remains unchanged" )
-        }
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "set result = beta * y" )
-        #pragma omp parallel for
-
-        for ( IndexType i = 0; i < numColumns; ++i )
-        {
-            result[i] = beta * y[i];
-        }
-    }
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
 
     if ( ndlg == 0 )
     {
@@ -650,37 +614,30 @@ void OpenMPJDSUtils::normalGEVM(
     }
 
     // dlg[0] stands exactly for number of non-empty rows
+
     IndexType nonEmptyRows = jdsDLG[0];
+
     SCAI_LOG_DEBUG( logger, "y += alpha * x * A, #non-empty row = " << nonEmptyRows )
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.normalGEVM" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
-        for ( IndexType k = 0; k < numColumns; ++k )
+        #pragma omp for
+
+        for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
-            ValueType value = static_cast<ValueType>( 0.0 ); // sums up final value
+            IndexType offset = ii;
 
-            for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
+            const ValueType tmpX   = x[perm[ii]];
+
+            for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
             {
-                IndexType offset = ii;
-
-                for ( IndexType jj = 0; jj < jdsILG[ii]; jj++ )
-                {
-                    IndexType j = jdsJA[offset];
-
-                    if ( j == k )
-                    {
-                        SCAI_LOG_TRACE( logger,
-                                        "compute entry i = " << perm[ii] << ", j = " << j << ", matrix val = " << jdsValues[offset] << ", vector val = " << x[ perm[ii] ] )
-                        value += jdsValues[offset] * x[perm[ii]];
-                    }
-
-                    offset += jdsDLG[jj]; // there is next value for this row
-                }
+                IndexType j = jdsJA[offset];
+                ValueType v = alpha * jdsValues[offset] * tmpX;
+                atomicAdd( result[j], v );
+                offset += jdsDLG[jj];      // jump to next value for this row
             }
-
-            result[k] += alpha * value;
         }
     }
 }
@@ -812,25 +769,24 @@ void OpenMPJDSUtils::jacobiHalo(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPJDSUtils::Registrator::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
-    KernelRegistry::set<JDSKernelTrait::sortRows>( sortRows, ctx, flag );
-    KernelRegistry::set<JDSKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
+    SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
     KernelRegistry::set<JDSKernelTrait::ilg2dlg>( ilg2dlg, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
 }
 
 template<typename ValueType>
-void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPJDSUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
-    KernelRegistry::set<JDSKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
+    SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<JDSKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
@@ -838,20 +794,19 @@ void OpenMPJDSUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    SCAI_LOG_DEBUG( logger, "register JDSUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
-    \
-    KernelRegistry::set<JDSKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
-    \
+    KernelRegistry::set<JDSKernelTrait::setRow<ValueType, OtherValueType> >( setRow, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
-    \
     KernelRegistry::set<JDSKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
-    \
 }
 
 /* --------------------------------------------------------------------------- */
@@ -860,18 +815,22 @@ void OpenMPJDSUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
 
 OpenMPJDSUtils::OpenMPJDSUtils()
 {
+    SCAI_LOG_INFO( logger, "register JDSUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPJDSUtils::~OpenMPJDSUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister JDSUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    Registrator::initAndReg( flag );
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

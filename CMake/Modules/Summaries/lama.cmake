@@ -65,6 +65,9 @@ heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
     found_message ( "SCAI sparsekernel" "SCAI_SPARSEKERNEL_FOUND" "REQUIRED" "Version ${SCAI_SPARSEKERNEL_VERSION}" )
     found_message ( "SCAI dmemo"        "SCAI_DMEMO_FOUND"        "REQUIRED" "Version ${SCAI_DMEMO_VERSION}"        )
 
+heading ( "Optional External Libraries" )
+include ( Summaries/Modules/ZLIB )
+
 include ( Summaries/Modules/Build )  
 
 include ( Summaries/Modules/Configuration )

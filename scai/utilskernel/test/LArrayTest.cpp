@@ -2,7 +2,7 @@
  * @file LArrayTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -114,7 +114,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     }
 
     const IndexType myVals[N] = { 1, 5, 9, 4, 6, 3, 7, 8, 0, 2 };
+
     LArray<IndexType> array1( N, myVals, testContext );
+
     BOOST_CHECK( array.isValid( testContext ) );
 
     for ( IndexType i = 0; i < N; ++i )
@@ -125,7 +127,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_ARRAY_CUDA> ArrayRedTypes;
+typedef boost::mpl::list<SCAI_ARRAY_TYPES_CUDA> ArrayRedTypes;
 
 // ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
 
@@ -160,7 +162,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 
 /* --------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_CUDA> ArithmeticRedTypes;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_CUDA> ArithmeticRedTypes;
 
 // ToDo: introduce a predicate in COMMON to check if a certain type is supported on a context
 
@@ -287,6 +289,47 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
         // not complex: both arrays should be the same
         BOOST_CHECK_EQUAL( 0, Math::real( array.maxDiffNorm( conjArray ) ) );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( remoteTest, ValueType, ArithmeticRedTypes )
+{
+    testContext = Context::getContextPtr();
+
+    ContextPtr host = Context::getHostPtr();
+
+    SCAI_LOG_INFO( logger, "remoteTest<" << TypeTraits<ValueType>::id() << "> on " << *testContext )
+
+    const IndexType Nh = 50;
+    const IndexType N = 2 * Nh;
+
+    LArray<ValueType> hostA( N, 5, host );
+    LArray<ValueType> remA( N, 2, testContext );
+
+    for ( IndexType i = 0; i < N; i += 2 )
+    {
+        remA[i] = hostA[i];
+    }
+
+    ValueType sum = remA.sum();
+
+    BOOST_CHECK_EQUAL( ValueType( 2 * Nh + 5 * Nh ), sum );
+
+    {
+        // invalidate copy of remA on host
+
+        WriteAccess<ValueType> write( remA, testContext );
+    }
+
+    for ( IndexType i = 1; i < N; i += 2 )
+    {
+        hostA[i] = remA[i];
+    }
+
+    sum = hostA.sum();
+
+    BOOST_CHECK_EQUAL( ValueType( 2 * Nh + 5 * Nh ), sum );
 }
 
 /* --------------------------------------------------------------------- */

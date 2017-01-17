@@ -2,7 +2,7 @@
  * @file common/shared_ptr.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,9 +41,9 @@ namespace scai
 
 namespace common
 {
-    using std::shared_ptr;
-    using std::dynamic_pointer_cast;
-    using std::enable_shared_from_this;
+using std::shared_ptr;
+using std::dynamic_pointer_cast;
+using std::enable_shared_from_this;
 
 } /* end namespace common */
 

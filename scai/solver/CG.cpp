@@ -2,7 +2,7 @@
  * @file CG.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,9 +34,6 @@
 
 // hpp
 #include <scai/solver/CG.hpp>
-
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
 
 // internal scai libraries
 #include <scai/lama/DenseVector.hpp>
@@ -94,7 +91,6 @@ void CG::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
     runtime.mPScalar = 0.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
     runtime.mP.reset( coefficients.newDenseVector() );
     runtime.mQ.reset( coefficients.newDenseVector() );
     runtime.mZ.reset( coefficients.newDenseVector() );
@@ -106,9 +102,6 @@ void CG::iterate()
     CGRuntime& runtime = getRuntime();
     Scalar lastPScalar( runtime.mPScalar );
     Scalar& pScalar = runtime.mPScalar;
-    const Scalar& eps = runtime.mEps;
-    Scalar alpha;
-    Scalar beta;
 
     if ( this->getIterationCount() == 0 )
     {
@@ -149,17 +142,25 @@ void CG::iterate()
     {
         SCAI_REGION( "Solver.CG.setP" )
 
-        if ( lastPScalar.getValue<double>() < eps ) //scalar is small
+        // Note: lastPScalar can be very close to 0, e.g. 1e-100, is okay if pScalar is 1e-98
+
+        Scalar beta = pScalar / lastPScalar;
+
+        if ( Scalar( 0 ) == beta )
         {
-            beta = 0.0;
-        }
-        else
-        {
-            beta = pScalar / lastPScalar;
+            // ToDo: solver should terminate
+
+            SCAI_LOG_INFO( logger, "beta = 0, can stop" )
+
+            pScalar = lastPScalar;  // restore old value,otherwise division by zero in next step
+
+            return;
         }
 
-        SCAI_LOG_DEBUG( logger, "beta = " << beta )
+        SCAI_LOG_DEBUG( logger, "beta = " << beta << ", is p = " << pScalar << " / p_old = " << lastPScalar )
+
         p = z + beta * p;
+
         SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
     }
 
@@ -174,16 +175,15 @@ void CG::iterate()
     const Scalar pqProd = q.dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if ( pqProd.getValue<double>() < eps )  //scalar is small
+/*    if ( pqProd == Scalar( 0.0 ) )
     {
-        alpha = 0.0;
-    }
-    else
-    {
-        alpha = pScalar / pqProd;
-    }
+        COMMON_THROWEXCEPTION( "Diverging due to indefinite matrix. You might try another start solution, better an adequate solver." )
+    }*/
 
-    SCAI_LOG_DEBUG( logger, "alpha = " << alpha )
+    Scalar alpha = pScalar / pqProd;
+
+    SCAI_LOG_DEBUG( logger, "alpha = " << alpha << ", is p = " << pScalar << " / pq = " << pqProd )
+
     {
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.CG.update_x" )

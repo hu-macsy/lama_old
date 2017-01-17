@@ -2,7 +2,7 @@
  # @file scai/tracing/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -53,6 +53,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables)
 include ( Dependencies/internal )
 include ( Dependencies/external )
+include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -72,7 +73,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Boost for Test
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages
@@ -139,7 +140,25 @@ endif ( USE_CODE_COVERAGE )
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
 
-set ( TEST_FILES Makefile README simpleTracing.cpp test.sh )
+# The shell script test.sh uses NUM_THREADS_TEST to verify tracing for threads
+
+if ( USE_OPENMP )
+   set ( NUM_THREADS_TEST 4 )
+else ( USE_OPENMP )
+   set ( NUM_THREADS_TEST 1 )
+endif ( USE_OPENMP )
+
+# Now configure test.sh and set correct permission
+
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/test.sh.in"
+                 "${CMAKE_CURRENT_BINARY_DIR}/test/conf/test.sh" @ONLY )
+
+file ( COPY "${CMAKE_CURRENT_BINARY_DIR}/test/conf/test.sh" 
+       DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/test"
+       FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+
+set ( TEST_FILES Makefile README simpleTracing.cpp )
+
 foreach    ( TEST_FILE ${TEST_FILES} )
     file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE}
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
@@ -152,6 +171,11 @@ add_test ( tracing_test test/test.sh )
 ## end subdir test
 
 add_subdirectory( gui )
+
+### set link directories ###
+if ( WIN32 )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
+endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )

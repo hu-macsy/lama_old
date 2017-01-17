@@ -2,7 +2,7 @@
  * @file FileLoggerTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class FileLoggerTest
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Test routines for the class FileLogger.
+ * @author Matthias Makulla
  * @date 02.02.2012
  */
 
@@ -40,16 +40,19 @@
 
 #include <scai/solver/test/TestMacros.hpp>
 
+#include <scai/logging.hpp>
+
 #include <scai/common/test/Configuration.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 
-using namespace scai::solver;
-using namespace scai::hmemo;
+using namespace scai;
 
-using scai::common::Exception;
-using scai::common::unique_ptr;
-using scai::common::scoped_array;
+using namespace solver;
+
+using common::Exception;
+using common::unique_ptr;
+using common::scoped_array;
 
 /* --------------------------------------------------------------------- */
 

@@ -2,7 +2,7 @@
  * @file DIAStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -54,7 +54,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DIAStorageTest" )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
 {
     // Test the full DIAStorge constructor and the individual getter routines of DIA storage
     const IndexType numRows = 3;
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     // use template storage test
     storageSwapTest<DIAStorage<ValueType> >();
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for DIAStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     storageTypeNameTest<DIAStorage<ValueType> >( "DIA" );

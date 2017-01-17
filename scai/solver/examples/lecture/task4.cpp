@@ -2,7 +2,7 @@
  * @file solver/examples/lecture/task4.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -91,7 +91,7 @@ int main( int argc, char* argv[] )
     cgSolver.solve( solution, rhs );
     std::cout << "The solution is: ";
 
-    for ( int i = 0; i < solution.size(); ++i )
+    for ( IndexType i = 0; i < solution.size(); ++i )
     {
         std::cout << solution.getValue( i ) << " ";
     }

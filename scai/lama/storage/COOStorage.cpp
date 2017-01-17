@@ -2,7 +2,7 @@
  * @file COOStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -252,7 +252,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     SCAI_CONTEXT_ACCESS( loc )
     setOrder[loc]( ia.get(), mNumValues );
     setOrder[loc]( ja.get(), mNumValues );
-    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), utilskernel::reduction::COPY );
+    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), utilskernel::binary::COPY );
     mDiagonalProperty = true;
 }
 
@@ -339,22 +339,66 @@ void COOStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType COOStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
-    // only supported on Host at this time
-    ContextPtr loc = Context::getHostPtr();
-    const ReadAccess<IndexType> ia( mIA, loc );
-    const ReadAccess<IndexType> ja( mJA, loc );
-    const ReadAccess<ValueType> values( mValues, loc );
-    SCAI_LOG_DEBUG( logger, "get value (" << i << ", " << j << ") from " << *this )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
-    for ( IndexType kk = 0; kk < mNumValues; ++kk )
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), mNumValues );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
     {
-        if ( ia[kk] == i && ja[kk] == j )
-        {
-            return values[kk];
-        }
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = utilskernel::HArrayUtils::getVal<ValueType>( mValues, pos );
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::binary::BinaryOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<COOKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, rIa.get(), rJa.get(), mNumValues );
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "COO storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumValues, "illegal value position for ( " << i << ", " << j << " )" );
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -421,7 +465,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::conj( mValues, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, utilskernel::unary::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -453,13 +497,49 @@ void COOStorage<ValueType>::wait() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void COOStorage<ValueType>::swap( COOStorage<ValueType>& other )
+void COOStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<COOStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<COOStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::swapImpl( COOStorage<ValueType>& other )
 {
     std::swap( mNumValues, other.mNumValues );
     mIA.swap( other.mIA );
     mJA.swap( other.mJA );
     mValues.swap( other.mValues );
-    MatrixStorage<ValueType>::swap( other );
+
+    MatrixStorage<ValueType>::swapMS( other );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::swap( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values )
+{
+    IndexType numValues = ia.size();
+
+    SCAI_ASSERT_EQUAL( numValues, ja.size(), "mismatch of coo IA and JA array" );
+    SCAI_ASSERT_EQUAL( numValues, values.size(), "mismatch of coo IA and Values array" );
+
+    mIA.swap( ia );
+    mJA.swap( ja );
+    mValues.swap( values );
+
+    // guarantee consistency of the new array
+
+    mNumValues = numValues;
+    mDiagonalProperty = checkDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -488,7 +568,7 @@ template<typename ValueType>
 ValueType COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-    return HArrayUtils::reduce( mValues, utilskernel::reduction::ABS_MAX, this->getContextPtr() );
+    return HArrayUtils::reduce( mValues, utilskernel::binary::ABS_MAX, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -568,7 +648,7 @@ void COOStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, this->getContextPtr() );
         return;
     }
 
@@ -582,13 +662,12 @@ void COOStorage<ValueType>::matrixTimesVector(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, loc );
     }
     else
     {
-        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, this->getContextPtr() );
     }
 
     bool async = false;
@@ -665,13 +744,12 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, loc );
     }
     else
     {
-        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -698,7 +776,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, loc );
         return new tasking::NoSyncToken();
     }
 
@@ -710,13 +788,13 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, loc );
     }
     else
     {
-        // Note: assignScaled will deal with
+        // Note: binary::MULT will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, loc );
     }
 
     bool async = true;
@@ -747,6 +825,8 @@ void COOStorage<ValueType>::setCSRDataImpl(
         setCSRDataImpl( numRows, numColumns, numValues, offsets, ja, values, prefLoc );
         return;
     }
+
+    SCAI_REGION( "Storage.COO.buildCSR" )
 
     SCAI_ASSERT_EQUAL_DEBUG( numRows + 1, ia.size() )
     SCAI_ASSERT_EQUAL_DEBUG( numValues, ja.size() )
@@ -810,6 +890,19 @@ void COOStorage<ValueType>::setCSRDataImpl(
 }
 
 template<typename ValueType>
+template<typename OtherValueType>
+void COOStorage<ValueType>::setDIADataImpl(
+    const IndexType /*numRows*/,
+    const IndexType /*numColumns*/,
+    const IndexType /*numDiagonals*/,
+    const HArray<IndexType>& /*offsets*/,
+    const HArray<OtherValueType>& /*values*/,
+    const ContextPtr /*prefLoc*/ )
+{
+    COMMON_THROWEXCEPTION( "not yet implemeted" )
+}
+
+template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& diagonal )
 {
@@ -821,7 +914,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& dia
     hmemo::WriteAccess<ValueType> wValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // diagonal elements are the first entries of mValues
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::binary::COPY );
 }
 
 template<typename ValueType>
@@ -838,43 +931,194 @@ void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherType>& diagonal 
     hmemo::ReadAccess<ValueType> rValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // diagonal elements are the first entries of mValues
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::binary::COPY );
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const
 {
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
-    hmemo::ContextPtr hostContext = hmemo::Context::getHostPtr();
-    hmemo::WriteOnlyAccess<OtherType> wRow( row, mNumColumns );
-    const hmemo::ReadAccess<IndexType> ia( mIA, hostContext );
-    const hmemo::ReadAccess<IndexType> ja( mJA, hostContext );
-    const hmemo::ReadAccess<ValueType> values( mValues, hostContext );
+    SCAI_REGION( "Storage.COO.getRow" )
 
-    // ToDo: OpenMP parallelization, interface
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
-    for ( IndexType j = 0; j < mNumColumns; ++j )
+    static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosRow.getSupportedContext( loc );
+
+    HArray<IndexType> colIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> rowValues;    // contains the values of entries belonging to row i
+
     {
-        wRow[j] = static_cast<OtherType>( 0.0 );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumColumns );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumColumns );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
+                                             rIA.get(), mNumColumns, rJA.get(), mNumValues );
+
+        wColIndexes.resize( cnt );
+        wValuePos.resize( cnt );
     }
 
-    for ( IndexType kk = 0; kk < mNumValues; ++kk )
-    {
-        if ( ia[kk] != i )
-        {
-            continue;
-        }
+    row.init( ValueType( 0 ), mNumColumns );
 
-        wRow[ja[kk]] = static_cast<OtherType>( values[kk] );
-    }
+    // row[ colIndexes ] = mValues[ pos ];
+
+    HArrayUtils::gatherImpl( rowValues, mValues, valuePos, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( row, colIndexes, rowValues, utilskernel::binary::COPY, loc );
 }
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                        const utilskernel::binary::BinaryOp op )
+{
+    SCAI_REGION( "Storage.COO.setRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    // get sparse vector with column indexes and positions
+
+    static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosRow.getSupportedContext( loc );
+
+    HArray<IndexType> colIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> rowValues;    // contains the values of entries belonging to row i
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumColumns );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumColumns );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
+                                             rIA.get(), mNumColumns, rJA.get(), mNumValues );
+
+        wColIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    // mValues[pos] = row[ colIndexes ]
+
+    HArrayUtils::gatherImpl( rowValues, row, colIndexes, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, rowValues, op, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_REGION( "Storage.COO.getCol" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), mNumRows, rJA.get(), mNumValues );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    column.init( ValueType( 0 ), mNumRows );
+
+    // column[ row ] = mValues[ pos ];
+
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::binary::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+        const utilskernel::binary::BinaryOp op )
+{
+    SCAI_REGION( "Storage.COO.setCol" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), mNumRows, rJA.get(), mNumValues );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    //  mValues[ pos ] op= column[ rowIndexes ]
+
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
+}
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
     // multiply value with each entry of mValues
-    utilskernel::HArrayUtils::setScalar( mValues, value, utilskernel::reduction::MULT, this->getContextPtr() );
+    utilskernel::HArrayUtils::setScalar( mValues, value, utilskernel::binary::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -900,13 +1144,12 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::reduction::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), utilskernel::binary::COPY, loc );
     }
     else
     {
-        // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::assignScaled( result, beta, y, loc );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -952,40 +1195,43 @@ void COOStorage<ValueType>::jacobiIterate(
                  rOldSolution.get(), rRhs.get(), omega, mNumRows );
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 template<typename OtherValueType>
 void COOStorage<ValueType>::buildCSR(
-    hmemo::HArray<IndexType>& ia,
-    hmemo::HArray<IndexType>* ja,
-    hmemo::HArray<OtherValueType>* values,
+    hmemo::HArray<IndexType>& csrIA,
+    hmemo::HArray<IndexType>* csrJA,
+    hmemo::HArray<OtherValueType>* csrValues,
     const hmemo::ContextPtr preferredLoc ) const
 {
-    // multiple kernel routines needed
-    static utilskernel::LAMAKernel<sparsekernel::CSRKernelTrait::sizes2offsets> sizes2offsets;
-    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRSizes> getCSRSizes;
-    static utilskernel::LAMAKernel<sparsekernel::COOKernelTrait::getCSRValues<ValueType, OtherValueType> > getCSRValues;
-    // do it where all routines are avaialble
-    hmemo::ContextPtr loc = preferredLoc;
-    sizes2offsets.getSupportedContext( loc, getCSRSizes, getCSRValues );
-    SCAI_CONTEXT_ACCESS( loc )
-    hmemo::WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
-    hmemo::ReadAccess<IndexType> cooIA( mIA, loc );
-    getCSRSizes[loc]( csrIA.get(), mNumRows, mNumValues, cooIA.get() );
+    SCAI_REGION( "Storage.COO.buildCSR" )
 
-    if ( ja == NULL || values == NULL )
+    if ( csrJA == NULL || csrValues == NULL )
     {
-        csrIA.resize( mNumRows );
+        // number of entries per row, count with buckets for each row
+
+        SCAI_LOG_INFO( logger, "build CSR sizes from " << *this )
+
+        utilskernel::HArrayUtils::bucketCount( csrIA, mIA, mNumRows, preferredLoc );
         return;
     }
 
-    IndexType numValues = sizes2offsets[loc]( csrIA.get(), mNumRows );
-    SCAI_ASSERT_EQUAL_DEBUG( mNumValues, numValues )
-    hmemo::ReadAccess<IndexType> cooJA( mJA, loc );
-    hmemo::ReadAccess<ValueType> cooValues( mValues, loc );
-    hmemo::WriteOnlyAccess<IndexType> csrJA( *ja, loc, numValues );
-    hmemo::WriteOnlyAccess<OtherValueType> csrValues( *values, loc, numValues );
-    getCSRValues[loc]( csrJA.get(), csrValues.get(), csrIA.get(),
-                       mNumRows, mNumValues, cooIA.get(), cooJA.get(), cooValues.get() );
+    SCAI_LOG_INFO( logger, "build CSR data from " << *this )
+
+    HArray<IndexType> perm;  // help array for resorting the values
+
+    utilskernel::HArrayUtils::bucketSort( csrIA, perm, mIA, mNumRows );
+
+    SCAI_ASSERT_EQ_DEBUG( mNumRows + 1, csrIA.size(), "serious mismatch, should not happen" )
+    SCAI_ASSERT_EQ_ERROR( perm.size(), mIA.size(), "Illegal entries in mIA of COO storage" )
+
+    // CSR array ja, values are the COO arrays resorted
+
+    utilskernel::HArrayUtils::gatherImpl( *csrJA, mJA, perm, utilskernel::binary::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gatherImpl( *csrValues, mValues, perm, utilskernel::binary::COPY, preferredLoc );
+
+    // Note: sort is stable, so diagonal values remain first in each row
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1041,23 +1287,30 @@ const char* COOStorage<ValueType>::typeName()
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( COOStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
 
-#define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+#define COO_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void COOStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;  \
+            hmemo::HArray<OtherValueType>* values,const hmemo::ContextPtr ) const;                                         \
     template void COOStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void COOStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
+            const utilskernel::binary::BinaryOp );                          \
+    template void COOStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
+    template void COOStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
+            const utilskernel::binary::BinaryOp );                       \
     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
-    template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );
+    template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
+    template void COOStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define COO_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, COO_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( COO_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef COO_STORAGE_INST_LVL2
 #undef COO_STORAGE_INST_LVL1

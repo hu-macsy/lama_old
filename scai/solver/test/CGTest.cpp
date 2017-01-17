@@ -2,7 +2,7 @@
  * @file CGTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class CGTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @brief Specific tests for the solver class CG.
+ * @author Thomas Brandes
  * @date 21.02.2012
  */
 

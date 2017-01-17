@@ -2,7 +2,7 @@
  * @file SparseAssemblyStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -127,7 +127,11 @@ public:
      *
      *  @param[in,out] other is the storage to be swapped with this one
      */
-    void swap( SparseAssemblyStorage<ValueType>& other );
+    void swapImpl( SparseAssemblyStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     /** Implementation of pure method _MatrixStorage::allocate */
 
@@ -177,6 +181,11 @@ public:
     {
         return ( *this )( i, j );
     }
+
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
     /** Getter routine for the enum value that stands for this format. */
 
@@ -250,7 +259,7 @@ public:
      * @param[in] ja    the column vector of row i.
      * @param[in] a     the values of row i.
      */
-    void setRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
+    void setSparseRow( const IndexType i, const hmemo::HArray<IndexType>& ja, const hmemo::HArray<ValueType>& a );
 
     /**
      * @brief fixDiagonalProperty fixes the diagonal property of row.
@@ -272,10 +281,27 @@ public:
      */
     void setNumColumns( const IndexType i );
 
-    /** Template method for getting row. */
+    /** Template version of getRow */
 
     template<typename OtherType>
     void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::binary::BinaryOp op );
+
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
+                        const utilskernel::binary::BinaryOp op );
 
     /** Typed version of getDiagonal
      *
@@ -347,6 +373,25 @@ public:
         const hmemo::HArray<IndexType>& ja,
         const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr loc );
+
+    /**
+     * @brief fills Assembly sparse matrix by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the input csr sparse matrix
+     * @param[in] values       the data values of the input csr sparse matrix
+     * @param[in] loc          is the context where filling takes place
+     */
+    template<typename OtherValueType>
+    void setDIADataImpl(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
 
     /** Test the storage data for inconsistencies.
      *

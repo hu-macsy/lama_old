@@ -2,7 +2,7 @@
  * @file common/mepr/ScalarTypeHelper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -37,6 +37,7 @@
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <typeinfo>
 
 namespace scai
 {
@@ -60,14 +61,36 @@ struct ScalarTypeHelper;
 template<>
 struct ScalarTypeHelper<NullType>
 {
-    static long sizeOf( const scalar::ScalarType& )
+    static size_t sizeOf( const scalar::ScalarType stype )
     {
+        COMMON_THROWEXCEPTION( "sizeof: unsupported for " << stype )
         return 0;
     }
 
     static scalar::ScalarType getBySize( const long )
     {
         return scalar::UNKNOWN;
+    }
+
+    static int precision( const scalar::ScalarType )
+    {
+        // no type T available with TypeTraits<T>::stype
+        return 0;
+    }
+
+    static bool isComplex( const scalar::ScalarType )
+    {
+        return false;
+    }
+
+    static bool isNumeric( const scalar::ScalarType )
+    {
+        return false;
+    }
+
+    static bool contains( const scalar::ScalarType )
+    {
+        return false;
     }
 };
 
@@ -77,7 +100,7 @@ struct ScalarTypeHelper<NullType>
 template<typename H, typename T>
 struct ScalarTypeHelper< TypeList<H, T> >
 {
-    static long sizeOf( const scalar::ScalarType& s )
+    static size_t sizeOf( const scalar::ScalarType s )
     {
         if ( s == common::getScalarType<H>() )
         {
@@ -100,6 +123,61 @@ struct ScalarTypeHelper< TypeList<H, T> >
             return ScalarTypeHelper< T >::getBySize( size );
         }
     }
+
+    static int precision( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            return TypeTraits<H>::precision();
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::precision( stype );
+        }
+    }
+
+    static bool isComplex( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            // a type is complex if its AbsType is not the same
+
+            typedef typename TypeTraits<H>::AbsType AbsType;
+
+            return typeid( H ) != typeid( AbsType );
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::isComplex( stype );
+        }
+    }
+
+    static bool isNumeric( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            // a type is numeric if its small value is not ZERO
+
+            return TypeTraits<H>::small() != H( 0 );
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::isNumeric( stype );
+        }
+    }
+
+    static bool contains( const scalar::ScalarType stype )
+    {
+        if ( stype == TypeTraits<H>::stype )
+        {
+            return true;
+        }
+        else
+        {
+            return ScalarTypeHelper<T>::contains( stype );
+        }
+    }
+
 };
 
 } /* end namespace mepr */

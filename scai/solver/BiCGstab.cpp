@@ -2,7 +2,7 @@
  * @file BiCGstab.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,9 +34,6 @@
 
 // hpp
 #include <scai/solver/BiCGstab.hpp>
-
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
 
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -93,7 +90,7 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mOmega = 1.0;
     runtime.mRhoOld = 1.0;
     runtime.mResNorm = 1.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     // get runtime vectors with same row distribution / context / type as cofficients matrix
     runtime.mRes0.reset( coefficients.newDenseVector() );
     runtime.mVecV.reset( coefficients.newDenseVector() );

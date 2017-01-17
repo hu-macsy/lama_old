@@ -2,7 +2,7 @@
  * @file vector.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,7 +61,7 @@ int main()
     //
     // print vector to file vector.frm/.vec (SAMG format)
     //
-    sequenceOfValues.writeToFile( "vector", File::SAMG_FORMAT );
+    sequenceOfValues.writeToFile( "vector.frv" );
     std::cout << "DenseVector is written to 'vector.frm/.vec'" << std::endl;
     //
     //  That's it.

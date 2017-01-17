@@ -2,7 +2,7 @@
  * @file Settings.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,6 +52,13 @@ namespace common
 
 /* ----------------------------------------------------------------------------- */
 
+const char* Settings::RANK_DELIMITER()
+{
+    return ",";
+}
+
+/* ----------------------------------------------------------------------------- */
+
 void Settings::parseArgs( int& argc, const char* argv[] )
 {
     const bool replace = true;   // command line args overwrite environment settings
@@ -82,18 +89,6 @@ void Settings::parseArgs( int& argc, const char* argv[] )
 }
 
 /* ----------------------------------------------------------------------------- */
-
-bool Settings::convertValue( int& flag, const char* stringVal )
-{
-    int nread = sscanf( stringVal, "%d", &flag );
-
-    if ( nread == 1 )
-    {
-        return true;
-    }
-
-    return false;
-}
 
 bool Settings::convertYesNoString( bool& flag, const char* stringVal )
 {
@@ -162,23 +157,43 @@ bool Settings::getEnvironment( bool& flag, const char* envVarName )
 
 /* ----------------------------------------------------------------------------- */
 
-bool Settings::getEnvironment( int& val, const char* envVarName )
+template<typename ValueType>
+bool Settings::getEnvironmentValue( ValueType& val, const char* envVarName )
 {
     std::string envVal;
 
-    if ( !getEnvironment( envVal, envVarName ) )
+    if ( !Settings::getEnvironment( envVal, envVarName ) )
     {
         return false; // no initialization by environment
     }
 
-    bool done = convertValue( val, envVal.c_str() );
+    std::istringstream input( envVal );
 
-    if ( !done )
-    {
-        return false;
-    }
+    input >> val;
 
-    return true; // environment variable was available
+    return input.fail() == 0;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+bool Settings::getEnvironment( int& val, const char* envVarName )
+{
+    return getEnvironmentValue<int>( val, envVarName );
+}
+
+bool Settings::getEnvironment( long& val, const char* envVarName )
+{
+    return getEnvironmentValue<long>( val, envVarName );
+}
+
+bool Settings::getEnvironment( unsigned int& val, const char* envVarName )
+{
+    return getEnvironmentValue<unsigned int>( val, envVarName );
+}
+
+bool Settings::getEnvironment( unsigned long& val, const char* envVarName )
+{
+    return getEnvironmentValue<unsigned long>( val, envVarName );
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -194,11 +209,11 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
 
     val = env;
 
-    if ( std::string::npos != val.find_first_of( RANK_SEPARATOR_CHAR, 0 ) )
+    if ( std::string::npos != val.find_first_of( RANK_DELIMITER(), 0 ) )
     {
         // val = val_1,val_2,val_3
         std::vector<std::string> values;
-        tokenize( values, env, RANK_SEPARATOR_CHAR );
+        tokenize( values, env, RANK_DELIMITER() );
         int pos = sRank % static_cast<int>( values.size() );
         val = values[pos];
     }
@@ -208,28 +223,34 @@ bool Settings::getEnvironment( std::string& val, const char* envVarName )
 
 /* ----------------------------------------------------------------------------- */
 
-void Settings::tokenize( std::vector<std::string>& values, const std::string& input, const char seperator )
+void Settings::tokenize( std::vector<std::string>& tokens, const std::string& input, const std::string& delimiters )
 {
-    values.clear();
-    size_t found = std::string::npos;
+    tokens.clear();
 
-    do
+    // Skip delimiters at beginning.
+    std::string::size_type lastPos = input.find_first_not_of( delimiters, 0 );
+    // Find first "non-delimiter".
+    std::string::size_type pos     = input.find_first_of( delimiters, lastPos );
+
+    while ( std::string::npos != pos || std::string::npos != lastPos )
     {
-        const size_t prevFound = found + 1;
-        found = input.find( seperator, prevFound );
-        values.push_back( input.substr( prevFound, found - prevFound ) );
+        // Found a token, add it to the vector.
+        tokens.push_back( input.substr( lastPos, pos - lastPos ) );
+        // Skip delimiters.  Note the "not_of"
+        lastPos = input.find_first_not_of( delimiters, pos );
+        // Find next "non-delimiter"
+        pos = input.find_first_of( delimiters, lastPos );
     }
-    while ( found != std::string::npos );
 }
 
-bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char separator )
+bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVarName, const char* delimiters )
 {
     std::string val;
     bool found = getEnvironment( val, envVarName );
 
     if ( found )
     {
-        tokenize( vals, val, separator );
+        tokenize( vals, val, delimiters );
     }
 
     return found;
@@ -237,7 +258,7 @@ bool Settings::getEnvironment( std::vector<std::string>& vals, const char* envVa
 
 /* ----------------------------------------------------------------------------- */
 
-void Settings::printEnvironment()
+void Settings::printEnvironment( std::ostream& out )
 {
     int i = 0;
     char* s = *environ;
@@ -246,7 +267,7 @@ void Settings::printEnvironment()
     {
         if ( strncmp( s, "SCAI_", 5 ) == 0 )
         {
-            std::cout << s << std::endl;
+            out << s << std::endl;
         }
 
         s = *( environ + i );

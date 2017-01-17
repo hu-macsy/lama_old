@@ -2,7 +2,7 @@
  * @file lama/examples/labelrank/labelrank.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -326,6 +326,6 @@ int main( int argc, char* argv[] )
     }
 
     cout << "saving new labels to hdd..." << endl;
-    labelsMatrix.writeToFile( "labels-new.mtx", File::MATRIX_MARKET );
+    labelsMatrix.writeToFile( "labels-new.mtx" );
     cout << "total run time was " << Walltime::get() - totalStart << " secs." << endl;
 }

@@ -2,7 +2,7 @@
  * @file AllStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 {
     Storages allMatrixStorages;    // is created by factory
     size_t nFormats = Format::UNDEFINED;
-    size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_ARITHMETIC_HOST );
+    size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     SCAI_LOG_INFO( logger, "#formats = " << nFormats << ", #types = " << nTypes )
     SCAI_LOG_INFO( logger, "Test all storages of factory to be empty, #storages = " << allMatrixStorages.size() )
     BOOST_CHECK_EQUAL( nTypes * nFormats, allMatrixStorages.size() );
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     for ( size_t i = 0; i < allMatrixStorages.size(); ++i )
     {
         _MatrixStorage& storage = *allMatrixStorages[i];
-        BOOST_CHECK_EQUAL( 0, storage.getNumRows() );
-        BOOST_CHECK_EQUAL( 0, storage.getNumColumns() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumRows() );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), storage.getNumColumns() );
     }
 }
 
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( allocateTest )
         SCAI_LOG_DEBUG( logger, "Zero matrix " << numRows << " x " << numColumns << " : " << storage )
         BOOST_REQUIRE_EQUAL( numRows, storage.getNumRows() );
         BOOST_REQUIRE_EQUAL( numColumns, storage.getNumColumns() );
-        BOOST_REQUIRE_EQUAL( 0, storage.getNumValues() );
+        BOOST_REQUIRE_EQUAL( IndexType( 0 ), storage.getNumValues() );
         LArray<ScalarRepType> row;
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -244,6 +244,35 @@ BOOST_AUTO_TEST_CASE( assignDenseTest )
         _MatrixStorage& storage = *allMatrixStorages[s];
         initStorage( storage );
         checkEqual( denseStorage, storage );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( getColTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+    DenseStorage<ValueType> denseStorage;
+    initStorage( denseStorage );
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+    Storages allMatrixStorages( context );    // is created by factory
+    SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
+
+    for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
+    {
+        _MatrixStorage& storage = *allMatrixStorages[s];
+        initStorage( storage );
+
+        LArray<ValueType> col1;
+        LArray<ValueType> col2;
+
+        for ( IndexType j = 0; j < denseStorage.getNumColumns(); ++j )
+        {
+            storage.getColumn( col1, j );
+            denseStorage.getColumn( col2, j );
+
+            BOOST_CHECK( col1.maxDiffNorm( col2 ) < ValueType( 0.0001 ) );
+        }
     }
 }
 

@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -41,7 +41,7 @@ set ( CXX_SOURCES
       MemoryTest
 ) 
 
-include_directories ( ${SCAI_BOOST_INCLUDE_DIR} )
+include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( hmemoTest ${CXX_SOURCES} )
 

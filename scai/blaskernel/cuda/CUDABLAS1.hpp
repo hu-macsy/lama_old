@@ -2,7 +2,7 @@
  * @file CUDABLAS1.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CUDABLAS1.hpp
- * @author lschubert
+ * @brief Definition of static class with CUDA implementations of BLAS1 routines.
+ * @author Eric Schricker
  * @date 05.07.2012
  */
 
@@ -163,7 +163,11 @@ private:
 
     /** Register or unregister all kernel implementations of this class. */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

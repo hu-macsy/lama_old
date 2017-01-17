@@ -2,7 +2,7 @@
  * @file SimpleAMG.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief SimpleAMG.cpp
+ * @brief Implementation of methods for the default AMG solver SimpleAMG.
  * @author Jiri Kraus
  * @date 27.10.2011
  */
@@ -68,28 +68,28 @@ using lama::Scalar;
 
 SimpleAMG::SimpleAMG( const std::string& id )
     : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-          Context::getHostPtr() )
+        Context::getHostPtr() )
 {
     SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
 SimpleAMG::SimpleAMG( const std::string& id, LoggerPtr logger )
     : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-          Context::getHostPtr() )
+        Context::getHostPtr() )
 {
     SCAI_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
 
 SimpleAMG::SimpleAMG( const SimpleAMG& other )
     : IterativeSolver( other ), mMaxLevels( other.mMaxLevels ), mMinVarsCoarseLevel(
-          other.mMinVarsCoarseLevel ), mSmootherContext( other.mSmootherContext )
+        other.mMinVarsCoarseLevel ), mSmootherContext( other.mSmootherContext )
 {
 }
 
 SimpleAMG::SimpleAMGRuntime::SimpleAMGRuntime()
     : IterativeSolverRuntime(), mSetup(), mCurrentLevel( 0 ), mLibHandle( 0 ), mHostOnlyLevel(
-          std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-          std::numeric_limits<IndexType>::max() )
+        std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
+            std::numeric_limits<IndexType>::max() )
 {
 }
 
@@ -130,11 +130,12 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     // Info about available AMGSetup
     std::vector<std::string> values;  // string is create type for the factory
     AMGSetup::getCreateValues( values );
-    std::cout << "Factory of AMGSetup: " << values.size() << " entries" << std::endl;
+
+    SCAI_LOG_INFO( logger, "Factory of AMGSetup: " << values.size() << " entries" )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        std::cout << "   Registered values[" << i << "] = " << values[i] << std::endl;
+        SCAI_LOG_DEBUG( logger, "   Registered values[" << i << "] = " << values[i] )
     }
 
     if ( runtime.mSetup.get() == NULL )

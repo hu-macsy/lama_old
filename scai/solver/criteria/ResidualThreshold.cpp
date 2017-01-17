@@ -2,7 +2,7 @@
  * @file ResidualThreshold.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -49,13 +49,13 @@ namespace solver
 
 ResidualThreshold::ResidualThreshold()
     : Criterion(), mNorm( lama::NormPtr( new lama::L2Norm() ) ), mCheckMode( Relative ), mPrecision( lama::Scalar( 1e-5 ) ), mFirstNormResult(
-          -1.0 )
+        -1.0 )
 {
 }
 
 ResidualThreshold::ResidualThreshold( const lama::NormPtr norm )
     : Criterion(), mNorm( norm ), mCheckMode( Relative ), mPrecision( lama::Scalar( 1e-5 ) ), mFirstNormResult(
-          -1.0 )
+        -1.0 )
 {
 }
 
@@ -67,7 +67,7 @@ ResidualThreshold::ResidualThreshold( const lama::NormPtr norm, lama::Scalar pre
 
 ResidualThreshold::ResidualThreshold( const ResidualThreshold& other )
     : Criterion(), mNorm( other.mNorm ), mCheckMode( other.mCheckMode ), mPrecision( other.mPrecision ), mFirstNormResult(
-          other.mFirstNormResult )
+        other.mFirstNormResult )
 {
 }
 

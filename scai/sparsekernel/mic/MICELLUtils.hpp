@@ -2,7 +2,7 @@
  * @file MICELLUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -60,18 +60,6 @@ class COMMON_DLL_IMPORTEXPORT MICELLUtils
 
 public:
 
-    /** This method computes the total number of non-zero rows by the size array  */
-
-    static IndexType countNonEmptyRowsBySizes( const IndexType sizes[], const IndexType numRows );
-
-    /** Build a vector of indexes for non-empty rows. */
-
-    static void setNonEmptyRowsBySizes(
-        IndexType rowIndexes[],
-        const IndexType numNonEmptyRows,
-        const IndexType sizes[],
-        const IndexType numRows );
-
     /** Addressing function for the arrays ellJA[numRows*numValuesPerRow] and ellValues: column-major order */
 
     __attribute__( ( target( mic ) ) )
@@ -115,17 +103,26 @@ public:
         const IndexType ellJA[],
         const ValueType ellValues[] );
 
-    /** Returns one value of the matrix */
+    /** MIC implementation for ELLKernelTrait::getValuePos */
 
-    template<typename ValueType>
-    static ValueType getValue(
+    static IndexType getValuePos(
         const IndexType i,
         const IndexType j,
         const IndexType numRows,
         const IndexType numValuesPerRow,
         const IndexType ellSizes[],
+        const IndexType ellJA[] );
+
+    /** MIC Implementation for ELLKernelTrait::getValuePosCol */
+
+    static IndexType getValuePosCol(
+        IndexType row[],
+        IndexType pos[],
+        const IndexType j,
+        const IndexType ellIA[],
+        const IndexType numRows,
         const IndexType ellJA[],
-        const ValueType ellValues[] );
+        const IndexType numValuesPerRow );
 
     /** check diagonal property */
 
@@ -322,11 +319,36 @@ protected:
 
 private:
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods without template arguments */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( Registrator )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    struct Registrator
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
+
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 

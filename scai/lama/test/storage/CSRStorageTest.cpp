@@ -2,7 +2,7 @@
  * @file CSRStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.CSRStorageTest" );
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr context = Context::getContextPtr();
     const IndexType numRows = 3;
@@ -126,15 +126,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_arithmetic_test_
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE( compressTest )
 {
-    return; // TODO: fails
+    typedef SCAI_TEST_TYPE ValueType;
+
     ContextPtr context = Context::getContextPtr();
+
     const IndexType numRows = 3;
     const IndexType numColumns = 3;
-    const IndexType ia[] = { 0, 1, 2, 4 };
-    const IndexType ja[] = { 0, 1, 1, 2 };
+
+    /*   matrix:
+
+          1  -   -
+          -  1   -
+          -  0   1
+     */
+
+    const IndexType ia[]     = { 0, 1, 2,    4 };
+    const IndexType ja[]     = { 0, 1, 1, 2 };
     const ValueType values[] = { 1, 1, 0, 1 };
+
     const IndexType numValues = ia[numRows];
     const IndexType sizeJA     = sizeof( ja ) / sizeof( IndexType );
     const IndexType sizeValues = sizeof( values ) / sizeof( ValueType );
@@ -153,7 +164,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_arithmetic_test_typ
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "swapTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     // use template storage test
@@ -162,7 +173,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for CSRStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     storageTypeNameTest<CSRStorage<ValueType> >( "CSR" );
@@ -188,8 +199,8 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     csrStorage.setContextPtr( context );
     csrStorage.allocate( numRows, numColumns );
     csrStorage.swap( csrIA, csrJA, csrValues );
-    BOOST_CHECK_EQUAL( 0, csrJA.size() );
-    BOOST_CHECK_EQUAL( 0, csrValues.size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), csrJA.size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), csrValues.size() );
     BOOST_CHECK_EQUAL( numValues, csrStorage.getNumValues() );
     bool diagonalProperty = csrStorage.hasDiagonalProperty();
     csrStorage.sortRows( diagonalProperty );
@@ -202,6 +213,43 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
     {
         BOOST_CHECK_EQUAL( sorted_ja[i], sortedJA[i] );
         BOOST_CHECK_EQUAL( ValueType( sorted_ja[i] ), sortedVals[i] );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( getFirstColTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;    // test for one value type is sufficient here
+    ContextPtr context = Context::getContextPtr();
+    const IndexType numRows = 4;
+    const IndexType numColumns = 8;
+    const IndexType ia[] = { 0,    2,       5, 6,    8 };
+    const IndexType ja[] = { 1, 2, 3, 2, 4, 5, 7, 4 };
+    const IndexType firstCols[] = { 1, 3, 5, 7 };
+    const IndexType numValues = ia[numRows];
+    LArray<IndexType> csrIA( numRows + 1, ia, context );
+    LArray<IndexType> csrJA( numValues, ja, context );
+    LArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
+    CSRStorage<ValueType> csrStorage;
+    csrStorage.setContextPtr( context );
+    csrStorage.allocate( numRows, numColumns );
+    csrStorage.swap( csrIA, csrJA, csrValues );
+
+    // we check both, base class and derived class method
+
+    LArray<IndexType> firstColIndexes1;
+    LArray<IndexType> firstColIndexes2;
+    csrStorage.getFirstColumnIndexes( firstColIndexes1 );
+    csrStorage.MatrixStorage<ValueType>::getFirstColumnIndexes( firstColIndexes2 );
+
+    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
+    BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
+        BOOST_CHECK_EQUAL( firstColIndexes2[i], firstCols[i] );
     }
 }
 

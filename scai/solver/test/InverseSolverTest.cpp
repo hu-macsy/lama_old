@@ -2,7 +2,7 @@
  * @file InverseSolverTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class InverseSolverTest.
- * @author Alexander Büchel, Robin Rehrmann
+ * @brief Specific tests for the solver class InverseSolver.
+ * @author Thomas Brandes, Robin Rehrmann
  * @date 22.02.2012
  */
 
@@ -53,7 +53,7 @@
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 
-#include <scai/lama/test/EquationHelper.hpp>
+#include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 }
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types )
 {
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get4x4SystemA<ValueType>();
     const IndexType n = 4;
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE( SolveTest )
     SCAI_LOG_INFO( logger, "Problem size = " << N1 << " x " << N2 );
     CSRSparseMatrix<ValueType> coefficients;
     coefficients.setContextPtr( context );
-    MatrixCreator<ValueType>::buildPoisson2D( coefficients, 9, N1, N2 );
+    MatrixCreator::buildPoisson2D( coefficients, 9, N1, N2 );
     SCAI_LOG_INFO( logger, "coefficients matrix = " << coefficients );
     SCAI_LOG_INFO( logger, "InverseTest uses context = " << context->getType() );
     DistributionPtr rowDist( new BlockDistribution( coefficients.getNumRows(), comm ) );

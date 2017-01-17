@@ -2,7 +2,7 @@
  * @file OpenMPDenseUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,6 +44,8 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 
@@ -65,6 +67,8 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     const IndexType numColumns,
     const DenseValueType eps )
 {
+    SCAI_REGION( "OpenMP.DenseUtils.nonZeroValues" )
+
     IndexType count = 0;
     #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) reduction( + : count )
 
@@ -91,6 +95,8 @@ void OpenMPDenseUtils::getCSRSizes(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
+    SCAI_REGION( "OpenMP.DenseUtils.getCSRSizes" )
+
     if ( numRows > 0 )
     {
         SCAI_ASSERT_DEBUG( csrSizes != NULL, "csrSizes is NULL" )
@@ -138,6 +144,8 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
+    SCAI_REGION( "OpenMP.DenseUtils.getCSRValues" )
+
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
     #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
@@ -189,6 +197,8 @@ void OpenMPDenseUtils::setCSRValues(
     const IndexType csrJA[],
     const CSRValueType csrValues[] )
 {
+    SCAI_REGION( "OpenMP.DenseUtils.setCSRValues" )
+
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
     // parallelization possible as offset array csrIA is available
@@ -217,79 +227,48 @@ void OpenMPDenseUtils::setCSRValues(
 /* --------------------------------------------------------------------------- */
 
 template<typename DenseValueType1, typename DenseValueType2>
-void OpenMPDenseUtils::copyDenseValues(
-    DenseValueType1 newValues[],
+void OpenMPDenseUtils::set(
+    DenseValueType1 out[],
     const IndexType numRows,
     const IndexType numColumns,
-    const DenseValueType2 oldValues[] )
+    const DenseValueType2 in[],
+    const utilskernel::binary::BinaryOp op )
 {
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    using namespace utilskernel;
 
-    for ( IndexType i = 0; i < numRows; ++i )
+    SCAI_REGION( "OpenMP.DenseUtils.set" )
+
+    switch ( op )
     {
-        for ( IndexType j = 0; j < numColumns; ++j )
+        case binary::COPY :
         {
-            DenseValueType1& newElem = newValues[denseindex( i, j, numRows, numColumns )];
-            const DenseValueType2& oldElem = oldValues[denseindex( i, j, numRows, numColumns )];
-            newElem = static_cast<DenseValueType1>( oldElem );
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                for ( IndexType j = 0; j < numColumns; ++j )
+                {
+                    IndexType k = denseindex( i, j, numRows, numColumns );
+                    out[k] = static_cast<DenseValueType1>( in[k] );
+                }
+            }
+
+            break;
         }
-    }
-}
 
-/* --------------------------------------------------------------------------- */
+        default:
+        {
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
 
-template<typename RowValueType, typename DenseValueType>
-void OpenMPDenseUtils::getRow(
-    RowValueType rowValues[],
-    const DenseValueType denseValues[],
-    const IndexType irow,
-    const IndexType numRows,
-    const IndexType numColumns )
-{
-    SCAI_ASSERT_LT( irow, numRows, "illegal row index" )
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-    for ( IndexType j = 0; j < numColumns; ++j )
-    {
-        rowValues[j] = static_cast<RowValueType>( denseValues[irow * numColumns + j] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename DiagonalValueType, typename DenseValueType>
-void OpenMPDenseUtils::getDiagonal(
-    DiagonalValueType diagonalValues[],
-    const IndexType numDiagonalValues,
-    const DenseValueType denseValues[],
-    const IndexType numRows,
-    const IndexType numColumns )
-{
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-    for ( IndexType i = 0; i < numDiagonalValues; ++i )
-    {
-        const DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
-        diagonalValues[i] = static_cast<DiagonalValueType>( elem );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename DenseValueType, typename DiagonalValueType>
-void OpenMPDenseUtils::setDiagonal(
-    DenseValueType denseValues[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const DiagonalValueType diagonalValues[],
-    const IndexType numDiagonalValues )
-{
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-    for ( IndexType i = 0; i < numDiagonalValues; ++i )
-    {
-        DenseValueType& elem = denseValues[denseindex( i, i, numRows, numColumns )];
-        elem = static_cast<DenseValueType>( diagonalValues[i] );
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                for ( IndexType j = 0; j < numColumns; ++j )
+                {
+                    IndexType k = denseindex( i, j, numRows, numColumns );
+                    out[k] = applyBinary( out[k], op, static_cast<DenseValueType1>( in[k] ) );
+                }
+            }
+        }
     }
 }
 
@@ -302,6 +281,8 @@ void OpenMPDenseUtils::setDiagonalValue(
     const IndexType numColumns,
     const DenseValueType diagonalValue )
 {
+    SCAI_REGION( "OpenMP.DenseUtils.setDiagonalValue" )
+
     IndexType numDiagonalValues = std::min( numRows, numColumns );
     #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
 
@@ -319,43 +300,59 @@ void OpenMPDenseUtils::setValue(
     DenseValueType denseValues[],
     const IndexType numRows,
     const IndexType numColumns,
-    const DenseValueType val )
+    const DenseValueType val,
+    const utilskernel::binary::BinaryOp op )
 {
-    // Parallel initialization very important for efficient  allocation
-    #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
-    for ( IndexType i = 0; i < numRows; ++i )
+    SCAI_REGION( "OpenMP.DenseUtils.setValue" )
+
+    using namespace utilskernel;
+
+    switch ( op )
     {
-        for ( IndexType j = 0; j < numColumns; ++j )
+        case binary::COPY :
         {
-            denseValues[denseindex( i, j, numRows, numColumns )] = val;
-        }
-    }
-}
+            // Parallel initialization very important for efficient  allocation
+            #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
 
-/* --------------------------------------------------------------------------- */
-
-template<typename DenseValueType>
-void OpenMPDenseUtils::scaleValue(
-    DenseValueType denseValues[],
-    const IndexType numRows,
-    const IndexType numColumns,
-    const DenseValueType val )
-{
-    if ( val == scai::common::constants::ZERO )
-    {
-        // use setValue, as scaleValue might not work correctly on uninitialized data
-        setValue( denseValues, numRows, numColumns, val );
-    }
-    else
-    {
-        #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            for ( IndexType j = 0; j < numColumns; ++j )
+            for ( IndexType i = 0; i < numRows; ++i )
             {
-                DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
-                elem *= val;
+                for ( IndexType j = 0; j < numColumns; ++j )
+                {
+                    denseValues[denseindex( i, j, numRows, numColumns )] = val;
+                }
+            }
+
+            break;
+        }
+
+        case binary::MULT :
+        {
+            // Parallel initialization very important for efficient  allocation
+
+            #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                for ( IndexType j = 0; j < numColumns; ++j )
+                {
+                    denseValues[denseindex( i, j, numRows, numColumns )] *= val;
+                }
+            }
+
+            break;
+        }
+
+        default :
+        {
+            #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                for ( IndexType j = 0; j < numColumns; ++j )
+                {
+                    DenseValueType& elem = denseValues[denseindex( i, j, numRows, numColumns )];
+                    elem = applyBinary( elem, op, val );
+                }
             }
         }
     }
@@ -370,6 +367,8 @@ void OpenMPDenseUtils::scaleRows(
     const IndexType numColumns,
     const OtherValueType rowValues[] )
 {
+    SCAI_REGION( "OpenMP.DenseUtils.scaleRows" )
+
     #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
 
     for ( IndexType i = 0; i < numRows; ++i )
@@ -390,32 +389,28 @@ void OpenMPDenseUtils::scaleRows(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPDenseUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPDenseUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<DenseKernelTrait::nonZeroValues<ValueType> >( nonZeroValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setValue<ValueType> >( setValue, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::scaleValue<ValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::setDiagonalValue<ValueType> >( setDiagonalValue, ctx, flag );
 }
 
 template<typename ValueType, typename OtherValueType>
-void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DenseUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::copyDenseValues<ValueType, OtherValueType> >( copyDenseValues, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::getDiagonal<ValueType, OtherValueType> >( getDiagonal, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::setDiagonal<ValueType, OtherValueType> >( setDiagonal, ctx, flag );
-    KernelRegistry::set<DenseKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
+    KernelRegistry::set<DenseKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
     KernelRegistry::set<DenseKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }
 
@@ -425,16 +420,20 @@ void OpenMPDenseUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kre
 
 OpenMPDenseUtils::OpenMPDenseUtils()
 {
+    SCAI_LOG_INFO( logger, "register DenseUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPDenseUtils::~OpenMPDenseUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister DenseUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

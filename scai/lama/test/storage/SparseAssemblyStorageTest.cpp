@@ -2,7 +2,7 @@
  * @file SparseAssemblyStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -56,14 +56,14 @@ typedef boost::mpl::list<float, double> ValueTypes;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     const IndexType numRows = 10;
     const IndexType numColumns = 15;
     SparseAssemblyStorage<ValueType> assemblyStorage( numRows, numColumns );
     BOOST_REQUIRE_EQUAL( numRows, assemblyStorage.getNumRows() );
     BOOST_REQUIRE_EQUAL( numColumns, assemblyStorage.getNumColumns() );
-    BOOST_REQUIRE_EQUAL( 0, assemblyStorage.getNumValues() );
+    BOOST_REQUIRE_EQUAL( IndexType( 0 ), assemblyStorage.getNumValues() );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_arithmetic_test_
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 10;
     CSRStorage<ValueType> csrStorage;
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types
             wJa[0] = i;
             wValues[0] = 1.0;
         }
-        assemblyStorage.setRow( i, ja, values );
+        assemblyStorage.setSparseRow( i, ja, values );
     }
 
     for ( IndexType i = 0; i < n; ++i )
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetRowTest, ValueType, scai_arithmetic_test_types
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
 {
     // use template storage test
     storageSwapTest<SparseAssemblyStorage<ValueType> >();
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_arithmetic_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( typenameTest, ValueType, scai_numeric_test_types )
 {
     SCAI_LOG_INFO( logger, "typeNameTest for SparseAssemblyStorage<" << common::TypeTraits<ValueType>::id() << ">" )
     storageTypeNameTest<SparseAssemblyStorage<ValueType> >( "SparseAssembly" );

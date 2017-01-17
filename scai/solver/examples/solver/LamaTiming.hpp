@@ -2,7 +2,7 @@
  * @file solver/examples/solver/LamaTiming.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,6 +58,10 @@ public:
 
     ~LamaTiming();
 
+    /** get wall time spent after calling the constructor */
+
+    double getTime() const;
+
 private:
 
     const scai::dmemo::Communicator& mComm;
@@ -74,14 +78,21 @@ LamaTiming::LamaTiming( const scai::dmemo::Communicator& comm, const char* name 
     mStart = scai::common::Walltime::get();
 }
 
-LamaTiming::~LamaTiming()
+double LamaTiming::getTime() const
 {
     double myTime = scai::common::Walltime::get() - mStart;
     // can be that max is not available if double is not supported
     double maxTime = static_cast<double>( mComm.max( RealType( myTime ) ) );
 
+    return maxTime;
+}
+
+LamaTiming::~LamaTiming()
+{
+    double time = getTime();
+
     if ( mComm.getRank() == 0 )
     {
-        std::cout << mName << ": took " << maxTime << " seconds" << std::endl;
+        std::cout << mName << ": took " << time << " seconds" << std::endl;
     }
 }

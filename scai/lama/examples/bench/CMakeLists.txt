@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -32,7 +32,7 @@
  # @date 02.12.2015
 ###
 
-foreach ( executable conversion matadd matmul maxnorm )
+foreach ( executable conversion matadd matmul matvecmul maxnorm rowcol sort )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

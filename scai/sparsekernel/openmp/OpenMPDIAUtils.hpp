@@ -2,7 +2,7 @@
  * @file OpenMPDIAUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,6 +57,15 @@ namespace sparsekernel
 class COMMON_DLL_IMPORTEXPORT OpenMPDIAUtils
 {
 public:
+
+    /** OpenMP implementation for DIAKernelTrait::getValuePos */
+
+    static IndexType getValuePos(
+        const IndexType i,
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType diaOffsets[],
+        const IndexType numDiagonals );
 
     /** OpenMP implementation for DIAKernelTrait::getCSRSizes */
 
@@ -166,10 +175,38 @@ private:
         const IndexType diaOffsets[],
         const ValueType diaValues[] );
 
-    /** Routine that registers all methods at the kernel registry. */
+private:
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorVO, template<typename ValueType, typename OtherValueType> )
+    /** Struct for registration of methods without template arguments */
+
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
+
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    /** Struct for registration of methods with two template arguments.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for all supported types.
+     */
+
+    template<typename ValueType, typename OtherValueType>
+    struct RegistratorVO
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Constructor for registration. */
 

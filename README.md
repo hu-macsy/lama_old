@@ -1,4 +1,4 @@
-# LAMA (Version 2.0.0 Barrancas Blancas)
+# LAMA (Version 2.1.0 Barrancas Blancas)
 
 For building LAMA on your system please consider the installation requirements below and install required packages. 
 
@@ -8,7 +8,7 @@ A description on how to build LAMA is given afterwards or refer to our homepage 
 
 Required:
  * CMake >= 2.8.8
- * C/C++ compiler (optionally: OpenMP 2.0, recommended: capable of C++11)
+ * C/C++ compiler (optionally: OpenMP 3.0, recommended: capable of C++11)
  * Boost-Library (header, optional for tests: unit-test-framework )
  * pThread
 

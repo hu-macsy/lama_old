@@ -2,7 +2,7 @@
  * @file Vector.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -39,8 +39,13 @@
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/Distribution.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/io/PartitionIO.hpp>
 
 // tracing
 #include <scai/tracing.hpp>
@@ -63,16 +68,16 @@ SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* _Vector::kind2Str( const VectorFormat vectorKind )
+const char* _Vector::kind2Str( const VectorKind vectorKind )
 {
     switch ( vectorKind )
     {
         case DENSE:
-            return "Dense";
+            return "DENSE";
             break;
 
         case SPARSE:
-            return "Sparse";
+            return "SPARSE";
             break;
 
         case UNDEFINED:
@@ -80,17 +85,17 @@ const char* _Vector::kind2Str( const VectorFormat vectorKind )
             break;
     }
 
-    return "Undefined";
+    return "<illegal_vector_kind>";
 }
 
-_Vector::VectorFormat _Vector::str2Kind( const char* str )
+_Vector::VectorKind _Vector::str2Kind( const char* str )
 
 {
     for ( int kind = DENSE; kind < UNDEFINED; ++kind )
     {
-        if ( strcmp( kind2Str( VectorFormat( kind ) ), str ) == 0 )
+        if ( strcmp( kind2Str( VectorKind( kind ) ), str ) == 0 )
         {
-            return VectorFormat( kind );
+            return VectorKind( kind );
         }
     }
 
@@ -101,7 +106,7 @@ _Vector::VectorFormat _Vector::str2Kind( const char* str )
 /*    VectorKind opertor<<                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kind )
+std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind )
 {
     stream << _Vector::kind2Str( kind );
     return stream;
@@ -111,17 +116,26 @@ std::ostream& operator<<( std::ostream& stream, const _Vector::VectorFormat& kin
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorFormat format, const common::scalar::ScalarType valueType )
+Vector* Vector::getVector( const VectorKind kind, const common::scalar::ScalarType valueType )
 {
-    VectorCreateKeyType vectype( format, valueType );
+    VectorCreateKeyType vectype( kind, valueType );
     return Vector::create( vectype );
 }
 
-Vector* Vector::getDenseVector( const common::scalar::ScalarType valueType, DistributionPtr distribution )
+Vector* Vector::getDenseVector(
+    const common::scalar::ScalarType valueType,
+    DistributionPtr distribution,
+    ContextPtr context )
 {
     VectorCreateKeyType vectype( Vector::DENSE, valueType );
     Vector* v = Vector::create( vectype );
     v->allocate( distribution );
+
+    if ( context )
+    {
+        v->setContextPtr( context );
+    }
+
     return v;
 }
 
@@ -167,34 +181,231 @@ Vector::~Vector()
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*    Assignment operator                                                                 */
+/*    Reading vector from a file, only host reads                                         */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector& Vector::operator=( const Expression_MV& expression )
+void Vector::readFromSingleFile( const std::string& fileName )
 {
-    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * matrix * vector1 + 0.0 * this" )
-    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be allocated correctly, so we do it here
-    const Expression_SMV exp1( Scalar( 1.0 ), expression );
-    const Expression_SV exp2( Scalar( 0.0 ), *this );
-    const Expression_SMV_SV tempExpression( exp1, exp2 );
-    // due to alias of result/vector2 resize already here
-    allocate( expression.getArg1().getRowDistributionPtr() );
-    return *this = tempExpression;
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    const PartitionId MASTER = 0;
+    const PartitionId myRank = comm->getRank();
+
+    // this is a bit tricky stuff, but it avoids an additional copy from array -> vector
+
+    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
+
+    IndexType vectorSize;
+
+    if ( myRank == MASTER )
+    {
+        SCAI_LOG_INFO( logger, *comm << ": read array from single file " << fileName )
+
+        FileIO::read( localValues, fileName );
+
+        vectorSize = localValues.size();
+    }
+
+    comm->bcast( &vectorSize, 1, MASTER );
+
+    if ( myRank != MASTER )
+    {
+        localValues.clear();
+    }
+
+    DistributionPtr distribution( new CyclicDistribution( vectorSize, vectorSize, comm ) );
+
+    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
+
+    assign( localValues, distribution );
 }
 
-Vector& Vector::operator=( const Expression_VM& expression )
+/* ---------------------------------------------------------------------------------------*/
+/*    Reading vector from a file, every processor reads its partition                     */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
 {
-    SCAI_LOG_DEBUG( logger, "this = matrix * vector1 -> this = 1.0 * vector1 * matrix + 0.0 * this" )
-    // expression = A * x, generalized to A * x * 1.0 + 0.0 * this
-    // but be careful: this might not be resized correctly, so we do it here
-    const Expression_SVM exp1( Scalar( 1.0 ), expression );
-    const Expression_SV exp2( Scalar( 0.0 ), *this );
-    const Expression_SVM_SV tempExpression( exp1, exp2 );
-    // due to alias of result/vector2 resize already here
-    allocate( expression.getArg1().getDistributionPtr() );
-    return *this = tempExpression;
+    if ( distribution.get() == NULL )
+    {
+        readFromSingleFile( fileName );
+        return;
+    }
+
+    const IndexType n = distribution->getBlockDistributionSize();
+
+    if ( n == nIndex )
+    {
+        readFromSingleFile( fileName );
+        redistribute( distribution );
+        return;
+    }
+
+    // we have a block distribution, so every processor reads its own part
+
+    IndexType first = 0;
+
+    if ( n > 0 )
+    {
+        first = distribution->local2global( 0 );   // first global index
+    }
+
+    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
+
+    bool error = false;
+
+    try
+    {
+        FileIO::read( localValues, fileName, common::scalar::INTERNAL, first, n );
+    }
+    catch ( Exception& ex )
+    {
+        SCAI_LOG_ERROR( logger, ex.what() )
+        error = true;
+    }
+
+    error = distribution->getCommunicator().any( error );
+
+    if ( error )
+    {
+        COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
+    }
+
+    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
+
+    assign( localValues, distribution );
 }
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    // this is a bit tricky stuff, but it provides us with an array of the right type
+    // and it avoids an additional copy from array -> vector
+
+    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
+
+    bool errorFlag = false;
+
+    IndexType localSize = 0;
+
+    try
+    {
+        FileIO::read( localValues, myPartitionFileName );
+
+        localSize = localValues.size();
+
+        if ( dist.get() )
+        {
+            // size of storage must match the local size of distribution
+
+            SCAI_ASSERT_EQUAL( dist->getLocalSize(), localSize, "serious mismatch: local matrix in " << myPartitionFileName << " has illegal local size" )
+        }
+    }
+    catch ( common::Exception& e )
+    {
+        SCAI_LOG_ERROR( logger, *comm << ": failed to read " << myPartitionFileName << ": " << e.what() )
+        errorFlag = true;
+    }
+
+    errorFlag = comm->any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "error reading partitioned matrix" )
+    }
+
+    DistributionPtr vectorDist = dist;
+
+    if ( !vectorDist.get() )
+    {
+        // we have no distribution so assume a general block distribution
+
+        IndexType globalSize = comm->sum( localSize );
+
+        vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
+    }
+
+    // make sure that all processors have the same number of columns
+
+    assign( localValues, vectorDist );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromFile( const std::string& vectorFileName, const std::string& distributionFileName )
+{
+    // read the distribution
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr distribution;
+
+    if ( distributionFileName == "BLOCK" )
+    {
+        // for a single file we set a BlockDistribution
+
+        if ( vectorFileName.find( "%r" ) == std::string::npos )
+        {
+            PartitionId root = 0;
+
+            IndexType numRows = nIndex;
+
+            if ( comm->getRank() == root )
+            {
+                numRows = FileIO::getStorageSize( vectorFileName );
+            }
+
+            comm->bcast( &numRows, 1, root );
+
+            distribution.reset( new BlockDistribution( numRows, comm ) );
+        }
+
+        // for a partitioned file general block distribution is default
+    }
+    else
+    {
+        distribution = PartitionIO::readDistribution( distributionFileName, comm );
+    }
+
+    readFromFile( vectorFileName, distribution );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": readFromFile( " << fileName << " )" )
+
+    std::string newFileName = fileName;
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // take default
+
+    if ( distribution.get() )
+    {
+        comm = distribution->getCommunicatorPtr();
+    }
+
+    bool isPartitioned;
+
+    PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
+
+    if ( !isPartitioned )
+    {
+        readFromSingleFile( newFileName, distribution );
+    }
+    else
+    {
+        readFromPartitionedFile( newFileName, distribution );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*    Assignment operator                                                                 */
+/* ---------------------------------------------------------------------------------------*/
 
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
@@ -325,10 +536,36 @@ Vector& Vector::operator=( const Expression_SV& expression )
     return *this;
 }
 
+Vector& Vector::operator=( const Expression_VV& expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
+    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
+    assign( tmpExp );
+    return *this;
+}
+
+Vector& Vector::operator=( const Expression_SVV& expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> alpha * x * y" )
+    assign( expression );
+    return *this;
+}
+
 Vector& Vector::operator=( const Vector& other )
 {
     Distributed::operator=( other );
     assign( other );
+    return *this;
+}
+
+Vector& Vector::operator=( const Expression_SV_S& expression )
+{
+    SCAI_LOG_DEBUG( logger, "operator=, SV_V( alpha, x, beta ) -> alpha * x + beta, alpha="
+                    << expression.getArg1().getArg1() << " x=" << expression.getArg1().getArg2()
+                    << " y=" << expression.getArg2() )
+
+    // Distributed::operator=( expression.getArg1().getArg2() );
+    assign( expression );
     return *this;
 }
 
@@ -347,6 +584,11 @@ Vector& Vector::operator*=( const Scalar value )
     return operator=( Expression_SV( value, *this ) );
 }
 
+Vector& Vector::operator*=( const Vector& other )
+{
+    return scale( other );
+}
+
 Vector& Vector::operator/=( const Scalar value )
 {
     Expression<Scalar, Vector, Times> exp1( Scalar( 1.0 ) / value, *this );
@@ -356,6 +598,12 @@ Vector& Vector::operator/=( const Scalar value )
 Vector& Vector::operator+=( const Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
+}
+
+Vector& Vector::operator+=( const Scalar value )
+{
+    add( value );
+    return *this;
 }
 
 Vector& Vector::operator+=( const Expression_SV& exp )

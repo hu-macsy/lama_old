@@ -2,7 +2,7 @@
  * @file COOStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -227,6 +227,25 @@ public:
         const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
 
+    /**
+     * @brief fills CSR sparse matrix by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the input csr sparse matrix
+     * @param[in] values       the data values of the input csr sparse matrix
+     * @param[in] loc          is the context where filling takes place
+     */
+    template<typename OtherValueType>
+    void setDIADataImpl(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
+
     /* Print relevant information about matrix storage format. */
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -247,10 +266,27 @@ public:
 
     virtual IndexType getNumValues() const;
 
-    /** Template method for getting row. */
+    /** Template version of getRow */
 
     template<typename OtherType>
-    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::binary::BinaryOp op );
+
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
+                        const utilskernel::binary::BinaryOp op );
 
     /** This method returns the diagonal
      *
@@ -367,6 +403,11 @@ public:
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     /** Initiate an asynchronous data transfer to a specified location. */
 
     void prefetch( const hmemo::ContextPtr location ) const;
@@ -378,7 +419,23 @@ public:
     /** Swaps this with other.
      * @param[in,out] other the COOStorage to swap this with
      */
-    void swap( COOStorage<ValueType>& other );
+    void swapImpl( COOStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
+
+    /**
+     * @brief Swap the COO arrays with new arrays.
+     *
+     * This routine is helpful to get temporay write access to COO arrays.
+     *
+     * This routine can be used to build a COO storage with new values. Other member variables
+     * will be defined correctly.
+     *
+     * It is also useful to work on with COO data when COO storage is no more needed.
+     */
+    void swap( hmemo::HArray<IndexType>& ia, hmemo::HArray<IndexType>& ja, hmemo::HArray<ValueType>& values );
 
     virtual size_t getMemoryUsageImpl() const;
 

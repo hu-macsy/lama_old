@@ -2,7 +2,7 @@
  * @file Halo.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -159,8 +159,8 @@ const hmemo::HArray<IndexType>& Halo::getRequiredIndexes() const
 
 void Halo::setGlobal2Halo( IndexType globalIndex, IndexType haloIndex )
 {
-    SCAI_ASSERT_DEBUG( 0 <= haloIndex && haloIndex < getHaloSize(),
-                       "illegal halo index " << haloIndex << ", halo size = " << getHaloSize() )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( haloIndex, getHaloSize(), "illegal halo index" );
+
     mGlobal2Halo[globalIndex] = haloIndex;
 }
 

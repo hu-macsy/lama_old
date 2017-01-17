@@ -2,7 +2,7 @@
  * @file CUDAAccess.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <scai/common/config.hpp>
+
 #include <cuda.h>
 
 namespace scai
@@ -53,7 +55,7 @@ class CUDACtx;
  *  that another thread can also use the same device.
  */
 
-class CUDAAccess
+class COMMON_DLL_IMPORTEXPORT CUDAAccess
 {
 
 public:

@@ -2,7 +2,7 @@
  * @file UnsupportedException.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,6 +68,10 @@ public:
     virtual const char* what() const throw();
 
     static UnsupportedType getUnsupportedSetting();
+
+    /** only for test purpose this routine can be used to re-read the environment variable */
+
+    static void resetSetting();
 
 protected:
 

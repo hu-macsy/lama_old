@@ -2,7 +2,7 @@
  * @file blaskernel/cuda/CUDABLAS1.cu
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -111,8 +111,11 @@ void CUDABLAS1::sum(
     }
 
     const int blockSize = 256;
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( n, dimBlock.x );
+
     sum_kernel <<< dimGrid, dimBlock, 0, stream>>> ( n, alpha, x, beta, y, z );
 
     if ( !syncToken )
@@ -375,12 +378,12 @@ void CUDABLAS1::copy(
 
 template<typename ValueType>
 void CUDABLAS1::axpy(
-    int n,
+    IndexType n,
     ValueType alpha,
     const ValueType* x_d,
-    int incX,
+    IndexType incX,
     ValueType* y_d,
-    const int incY )
+    const IndexType incY )
 {
     SCAI_REGION( "CUDA.BLAS1.axpy" )
 
@@ -465,7 +468,7 @@ ValueType CUDABLAS1::dot(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void CUDABLAS1::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
@@ -487,13 +490,13 @@ void CUDABLAS1::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::
 
 CUDABLAS1::CUDABLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 CUDABLAS1::~CUDABLAS1()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_CUDA_LIST>::call(
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_CUDA_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

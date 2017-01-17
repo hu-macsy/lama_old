@@ -2,7 +2,7 @@
  * @file CGNRTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief CGNRTest.cpp
- * @author Jan Ecker
+ * @brief Specific tests for the solver class CGNR.
+ * @author David Schissler
  * @date 09.03.2016
  */
 

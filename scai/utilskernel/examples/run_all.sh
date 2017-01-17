@@ -2,7 +2,7 @@
  # @file utilskernel/examples/run_all.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -36,7 +36,7 @@
 set -e
 
 # Get location of the script to properly call all example scripts
-MYDIR="$(dirname "$(readlink -f "$0")")"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Function that executes an example and count up a counter
 # Usage: RUN COUNT[0|1] EXECUTABLE
@@ -66,6 +66,9 @@ i=0
 
 # run examples
 RUN 1 vectorAdd.exe
+RUN 1 SingleAccess.exe
+RUN 1 BenchSort.exe
+RUN 1 BenchOps.exe
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/*.exe | wc -l`

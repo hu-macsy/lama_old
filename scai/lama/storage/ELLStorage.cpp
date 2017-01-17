@@ -2,7 +2,7 @@
  * @file ELLStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -99,7 +99,7 @@ ELLStorage<ValueType>::ELLStorage(
     // Initialization requires correct values for the IA array with 0
     mIA.resize( mNumRows );
     // ellSizes[] = 0 @ context
-    HArrayUtils::setScalar( mIA, 0, utilskernel::reduction::COPY, context );
+    HArrayUtils::setScalar( mIA, IndexType( 0 ), utilskernel::binary::COPY, context );
     SCAI_LOG_DEBUG( logger, "ELLStorage for matrix " << mNumRows << " x " << mNumColumns << ", no elements" )
 }
 
@@ -207,7 +207,7 @@ template<typename ValueType>
 IndexType ELLStorage<ValueType>::getNumValues() const
 {
     SCAI_LOG_INFO( logger, "getNumValues" )
-    IndexType numValues = HArrayUtils::reduce( mIA, utilskernel::reduction::ADD, this->getContextPtr() );
+    IndexType numValues = HArrayUtils::reduce( mIA, utilskernel::binary::ADD, this->getContextPtr() );
     return numValues;
 }
 
@@ -239,11 +239,11 @@ void ELLStorage<ValueType>::setIdentity( const IndexType size )
     const ContextPtr loc = this->getContextPtr();
     mIA.clear();
     mIA.resize( mNumRows );
-    HArrayUtils::setScalar( mIA, 1, utilskernel::reduction::COPY, loc );
+    HArrayUtils::setScalar( mIA, IndexType( 1 ), utilskernel::binary::COPY, loc );
     HArrayUtils::setOrder( mJA, mNumRows );
     mValues.clear();
     mValues.resize( mNumRows );
-    HArrayUtils::setScalar( mValues, ValueType( 1 ), utilskernel::reduction::COPY, loc );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), utilskernel::binary::COPY, loc );
     mDiagonalProperty = true;
     SCAI_LOG_INFO( logger, *this << " is identity matrix" )
 }
@@ -254,7 +254,7 @@ template<typename ValueType>
 bool ELLStorage<ValueType>::checkDiagonalProperty() const
 {
     SCAI_LOG_INFO( logger, "checkDiagonalProperty" )
-    IndexType numDiagonals = std::min( mNumRows, mNumColumns );
+    IndexType numDiagonals = common::Math::min( mNumRows, mNumColumns );
     bool diagonalProperty = true;
 
     if ( numDiagonals == 0 )
@@ -308,7 +308,7 @@ void ELLStorage<ValueType>::buildCSR(
     HArray<OtherValueType>* values,
     const ContextPtr context ) const
 {
-    SCAI_REGION( "Storage.ELL->CSR" )
+    SCAI_REGION( "Storage.ELL.buildCSR" )
     SCAI_LOG_INFO( logger,
                    "buildCSR<" << common::getScalarType<OtherValueType>() << ">"
                    << " from ELL<" << common::getScalarType<ValueType>() << ">"
@@ -317,7 +317,7 @@ void ELLStorage<ValueType>::buildCSR(
     IndexType numValues = 0;
     ia.clear();
     ia.reserve( context, mNumRows + 1 );  // reserve one more entry
-    HArrayUtils::setArray( ia, mIA, utilskernel::reduction::COPY, context );
+    HArrayUtils::setArrayImpl( ia, mIA, utilskernel::binary::COPY, context );
 
     if ( ja == NULL || values == NULL )
     {
@@ -353,7 +353,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     const HArray<OtherValueType>& values,
     const ContextPtr context )
 {
-    SCAI_REGION( "Storage.ELL<-CSR" )
+    SCAI_REGION( "Storage.ELL.setCSR" )
     SCAI_LOG_INFO( logger,
                    "set CSR data on " << *context << ": numRows = " << numRows << ", numColumns = " << numColumns
                    << ", numValues = " << numValues << ", compress threshold = " << mCompressThreshold )
@@ -395,7 +395,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
     }
 
     // determine the maximal number of non-zero in one row
-    mNumValuesPerRow = HArrayUtils::reduce( mIA, utilskernel::reduction::MAX, context );
+    mNumValuesPerRow = HArrayUtils::reduce( mIA, utilskernel::binary::MAX, context );
     SCAI_LOG_DEBUG( logger, "setCSRData, #values/row = " << mNumValuesPerRow )
     //  Now we know the size of the ja and values arrays for the ELL format
     const IndexType dataSize = mNumValuesPerRow * mNumRows;
@@ -443,7 +443,6 @@ void ELLStorage<ValueType>::setCSRDataImpl(
         }
         else
         {
-            SCAI_CONTEXT_ACCESS( loc )
             mDiagonalProperty = hasDiagonalProperty[loc]( numDiagonals, ellJA.get() );
         }
     }
@@ -455,6 +454,21 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     buildRowIndexes( loc );
     SCAI_LOG_DEBUG( logger, "convert CSR -> ELL done: " << *this )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void ELLStorage<ValueType>::setDIADataImpl(
+    const IndexType /*numRows*/,
+    const IndexType /*numColumns*/,
+    const IndexType /*numDiagonals*/,
+    const HArray<IndexType>& /*offsets*/,
+    const HArray<OtherValueType>& /*values*/,
+    const ContextPtr /*prefLoc*/ )
+{
+    COMMON_THROWEXCEPTION( "not yet implemeted" )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -474,10 +488,10 @@ void ELLStorage<ValueType>::setELLData(
     _MatrixStorage::setDimension( numRows, numColumns );
     mNumValuesPerRow = numValuesPerRow;
     ContextPtr loc = getContextPtr();
-    HArrayUtils::setArray( mIA, ia, utilskernel::reduction::COPY, loc );
-    HArrayUtils::setArray( mJA, ja, utilskernel::reduction::COPY, loc );
-    // assign works in contrary to setArray with each typed array
-    HArrayUtils::assignOp( mValues, values, utilskernel::reduction::COPY, loc );  // also type conversion
+    HArrayUtils::setArrayImpl( mIA, ia, utilskernel::binary::COPY, loc );
+    HArrayUtils::setArrayImpl( mJA, ja, utilskernel::binary::COPY, loc );
+    // setArray must be used here instead of setArrayImpl as values is untyped
+    HArrayUtils::setArray( mValues, values, utilskernel::binary::COPY, loc );  // also type conversion
     // fill up my arrays ja and values to make matrix-multiplication fast
     {
         static LAMAKernel<ELLKernelTrait::fillELLValues<ValueType> > fillELLValues;
@@ -518,7 +532,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const ValueType value )
     IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
     SCAI_CONTEXT_ACCESS( loc )
     WriteAccess<ValueType> wValues( mValues, loc );
-    setVal[ loc ]( wValues.get(), numDiagonalElements, value, utilskernel::reduction::COPY );
+    setVal[ loc ]( wValues.get(), numDiagonalElements, value, utilskernel::binary::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -536,7 +550,7 @@ void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
     ReadAccess<OtherType> rDiagonal( diagonal, loc );
     WriteAccess<ValueType> wValues( mValues, loc );
     // ELL format with diagonal property: diagonal is just the first column in mValues
-    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::reduction::COPY );
+    set[ loc ]( wValues.get(), rDiagonal.get(), numDiagonalElements, utilskernel::binary::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -546,7 +560,7 @@ template<typename OtherType>
 void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
     SCAI_LOG_TRACE( logger, "getRowImpl # row = " << row << ", i = " << i )
-    SCAI_ASSERT_DEBUG( i >= 0 && i < mNumRows, "row index " << i << " out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     static LAMAKernel<ELLKernelTrait::getRow<ValueType, OtherType> > getRow;
     ContextPtr loc = this->getContextPtr();
     getRow.getSupportedContext( loc );
@@ -562,10 +576,102 @@ void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
 template<typename ValueType>
 template<typename OtherType>
+void ELLStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+{
+    SCAI_REGION( "Storage.ELL.getCol" )
+
+    static LAMAKernel<ELLKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), mNumRows, rJA.get(), mNumValuesPerRow );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    column.init( ValueType( 0 ), mNumRows );
+
+    // column[ row ] = mValues[ pos ];
+
+    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::binary::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void ELLStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
+                                        const utilskernel::binary::BinaryOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a row
+
+    ReadAccess<OtherType> rRow( row );
+
+    for ( IndexType j = 0; j < mNumColumns; ++j )
+    {
+        if ( rRow[j] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rRow[j] ), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
+void ELLStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
+        const utilskernel::binary::BinaryOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )
+
+    // ToDo write more efficient kernel routine for setting a column
+
+    ReadAccess<OtherType> rColumn( column );
+
+    for ( IndexType i = 0; i < mNumRows; ++i )
+    {
+        if ( rColumn[i] == common::constants::ZERO )
+        {
+            continue;
+        }
+
+        setValue( i, j, static_cast<ValueType>( rColumn[i] ), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherType>
 void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
 {
     SCAI_LOG_INFO( logger, "getDiagonalImpl # diagonal = " << diagonal )
-    IndexType numDiagonalElements = std::min( mNumColumns, mNumRows );
+    IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
     // OtherType is output type, so use it as first template argument
     static LAMAKernel<UtilKernelTrait::set<OtherType, ValueType> > set;
     ContextPtr loc = this->getContextPtr();
@@ -574,7 +680,7 @@ void ELLStorage<ValueType>::getDiagonalImpl( HArray<OtherType>& diagonal ) const
     ReadAccess<ValueType> rValues( mValues, loc );
     // ELL format with diagonal property: diagonal is just the first column in mValues
     SCAI_CONTEXT_ACCESS( loc )
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::reduction::COPY );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, utilskernel::binary::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -583,7 +689,7 @@ template<typename ValueType>
 void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl # value = " << value )
-    HArrayUtils::setScalar( mValues, value, utilskernel::reduction::MULT, this->getContextPtr() );
+    HArrayUtils::setScalar( mValues, value, utilskernel::binary::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -591,7 +697,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void ELLStorage<ValueType>::conj()
 {
-    HArrayUtils::conj( mValues, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, utilskernel::unary::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -679,7 +785,7 @@ void ELLStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         setVal.getSupportedContext( loc );
         SCAI_CONTEXT_ACCESS( loc )
         WriteOnlyAccess<IndexType> ia( mIA, loc, mNumRows );
-        setVal[ loc ]( ia.get(), mNumRows, 0, utilskernel::reduction::COPY );
+        setVal[ loc ]( ia.get(), mNumRows, 0, utilskernel::binary::COPY );
     }
     mDiagonalProperty = checkDiagonalProperty();
     SCAI_LOG_DEBUG( logger, "ready allocate" )
@@ -700,16 +806,71 @@ void ELLStorage<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 ValueType ELLStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
 {
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
     SCAI_LOG_TRACE( logger, "get value (" << i << ", " << j << ")" )
-    SCAI_LOG_TRACE( logger, "sizes: ia = " << mIA.size() << ", ja = " << mJA.size() << ", data = " << mValues.size() )
-    static LAMAKernel<ELLKernelTrait::getValue<ValueType> > getValue;
+
+    static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
+
     ContextPtr loc = this->getContextPtr();
-    getValue.getSupportedContext( loc );
+    getValuePos.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
-    const ReadAccess<IndexType> rIa( mIA, loc );
-    const ReadAccess<IndexType> rJa( mJA, loc );
-    const ReadAccess<ValueType> rValues( mValues, loc );
-    return getValue[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get(), rValues.get() );
+
+    ReadAccess<IndexType> rIa( mIA, loc );
+    ReadAccess<IndexType> rJa( mJA, loc );
+
+    IndexType pos = getValuePos[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get() );
+
+    ValueType val = 0;
+
+    if ( pos != nIndex )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( pos, mNumRows * mNumValuesPerRow,
+                                       "illegal value position for ( " << i << ", " << j << " )" );
+
+        val = mValues[ pos ];
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::setValue( const IndexType i,
+                                      const IndexType j,
+                                      const ValueType val,
+                                      const utilskernel::binary::BinaryOp op )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    SCAI_LOG_DEBUG( logger, "set value (" << i << ", " << j << ")" )
+
+    static LAMAKernel<ELLKernelTrait::getValuePos> getValuePos;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePos.getSupportedContext( loc );
+
+    IndexType pos = nIndex;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<IndexType> rIa( mIA, loc );
+        ReadAccess<IndexType> rJa( mJA, loc );
+
+        pos = getValuePos[loc]( i, j, mNumRows, mNumValuesPerRow, rIa.get(), rJa.get() );
+
+    }
+
+    if ( pos == nIndex )
+    {
+        COMMON_THROWEXCEPTION( "ELL storage has no entry ( " << i << ", " << j << " ) " )
+    }
+
+    utilskernel::HArrayUtils::setValImpl( mValues, pos, val, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -751,15 +912,28 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
         return;
     }
 
+    // Note: compress functionality in HArrayUtils available but we
+    // reimplement it here in the same way as compress is optionally done
+    // depending on the threshold value
+
     // Get function pointers for needed kernel routines
-    static LAMAKernel<ELLKernelTrait::countNonEmptyRowsBySizes> countNonEmptyRowsBySizes;
-    static LAMAKernel<ELLKernelTrait::setNonEmptyRowsBySizes> setNonEmptyRowsBySizes;
+
+    static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
+    static LAMAKernel<UtilKernelTrait::compress<IndexType> > compress;
+
     // choose location where both routines are available
+
     ContextPtr loc = context;
-    countNonEmptyRowsBySizes.getSupportedContext( loc, setNonEmptyRowsBySizes );
+    countNonZeros.getSupportedContext( loc, compress );
+
     ReadAccess<IndexType> ellIA( mIA, loc );
+
     SCAI_CONTEXT_ACCESS( loc )
-    IndexType nonZeroRows = countNonEmptyRowsBySizes[loc]( ellIA.get(), mNumRows );
+
+    // count the number of non-zero rows to have a good value for allocation of rowIndexes
+
+    IndexType nonZeroRows = countNonZeros[loc]( ellIA.get(), mNumRows, 0 );
+
     float usage = float( nonZeroRows ) / float( mNumRows );
 
     if ( usage >= mCompressThreshold )
@@ -770,7 +944,10 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
     }
 
     WriteOnlyAccess<IndexType> rowIndexes( mRowIndexes, loc, nonZeroRows );
-    setNonEmptyRowsBySizes[loc]( rowIndexes.get(), nonZeroRows, ellIA.get(), mNumRows );
+
+    IndexType cnt = compress[loc]( NULL, rowIndexes.get(), ellIA.get(), mNumRows, 0 );
+
+    SCAI_ASSERT_EQ_ERROR( cnt, nonZeroRows, "serious mismatch" );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -779,48 +956,86 @@ template<typename ValueType>
 void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
 {
     SCAI_LOG_INFO( logger, "compress: eps = " << eps )
-    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
-    static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
-    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+
     ContextPtr loc = this->getContextPtr();
-    reduce.getSupportedContext( loc );
-    compressIA.getSupportedContext( loc, compressValues );
-    ReadAccess<IndexType> IA( mIA, loc );
-    ReadAccess<IndexType> JA( mJA, loc );
-    ReadAccess<ValueType> values( mValues, loc );
-    // 1. Step: Check for 0 elements and write new IA array
+    static LAMAKernel<ELLKernelTrait::compressIA<ValueType> > compressIA;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+    compressIA.getSupportedContext( loc, reduce );
+
+    IndexType newNumValuesPerRow = -1;
+
     LArray<IndexType> newIAArray;
-    WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
-    compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
-    // 2. Step: compute length of longest row
-    IndexType newNumValuesPerRow = reduce[ loc ]( IA.get(), mNumRows, utilskernel::reduction::MAX );
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        ReadAccess<IndexType> IA( mIA, loc );
+        ReadAccess<IndexType> JA( mJA, loc );
+        ReadAccess<ValueType> values( mValues, loc );
+        // 1. Step: Check for 0 elements and write new IA array
+        WriteOnlyAccess<IndexType> newIA( newIAArray, loc, mNumRows );
+        compressIA[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newIA.get() );
+        // 2. Step: compute length of longest row
+        newNumValuesPerRow = reduce[ loc ]( newIA.get(), mNumRows, 0, utilskernel::binary::MAX );
+    }
 
     // Do further steps, if new array could be smaller
     if ( newNumValuesPerRow < mNumValuesPerRow )
     {
+        static LAMAKernel<ELLKernelTrait::compressValues<ValueType> > compressValues;
+        compressValues.getSupportedContext( loc );
+
+        SCAI_CONTEXT_ACCESS( loc )
+
         // 3. Step: Allocate new JA and Values array
         LArray<ValueType> newValuesArray;
         LArray<IndexType> newJAArray;
-        WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
-        WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
-        // 4. Step: Compute new JA and Values array
-        compressValues[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
-                             newJA.get(), newValues.get() );
+
+        {
+            ReadAccess<IndexType> IA( mIA, loc );
+            ReadAccess<IndexType> JA( mJA, loc );
+            ReadAccess<ValueType> values( mValues, loc );
+            WriteOnlyAccess<ValueType> newValues( newValuesArray, loc, mNumRows * newNumValuesPerRow );
+            WriteOnlyAccess<IndexType> newJA( newJAArray, loc, mNumRows * newNumValuesPerRow );
+            // 4. Step: Compute new JA and Values array
+            compressValues[loc]( IA.get(), JA.get(), values.get(), mNumRows, mNumValuesPerRow, eps, newNumValuesPerRow,
+                                 newJA.get(), newValues.get() );
+        }
+
+        mIA.swap( newIAArray );
         mJA.swap( newJAArray );
         mValues.swap( newValuesArray );
         mNumValuesPerRow = newNumValuesPerRow;
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
-void ELLStorage<ValueType>::swap( ELLStorage<ValueType>& other )
+void ELLStorage<ValueType>::swap( _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( getFormat(), other.getFormat(), "swap only for same storage format" )
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(), "swap only for same value type" )
+
+    // only in debug mode use the more expensive dynamic cast for verification
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<ELLStorage<ValueType>* >( &other ), "illegal storage to swap" )
+
+    swapImpl( reinterpret_cast<ELLStorage<ValueType>& >( other ) );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::swapImpl( ELLStorage<ValueType>& other )
 {
     SCAI_LOG_INFO( logger, "swap # other = " << other )
+
+    MatrixStorage<ValueType>::swapMS( other );
+
     std::swap( mNumValuesPerRow, other.mNumValuesPerRow );
     mIA.swap( other.mIA );
     mJA.swap( other.mJA );
     mValues.swap( other.mValues );
-    MatrixStorage<ValueType>::swap( other );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -905,7 +1120,7 @@ SyncToken* ELLStorage<ValueType>::gemv(
     if ( alpha == common::constants::ZERO || ( mNumValuesPerRow == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, this->getContextPtr() );
 
         if ( async )
         {
@@ -960,7 +1175,7 @@ SyncToken* ELLStorage<ValueType>::gevm(
     if ( alpha == common::constants::ZERO || ( mNumValuesPerRow == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::assignScaled( result, beta, y, this->getContextPtr() );
+        HArrayUtils::binaryOpScalar1( result, beta, y, utilskernel::binary::MULT, this->getContextPtr() );
 
         if ( async )
         {
@@ -1339,7 +1554,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
             const HArray<ValueType>&,
             const HArray<ValueType>&,
             const ValueType omega ) const
-            = &ELLStorage<ValueType>::jacobiIterate;
+        = &ELLStorage<ValueType>::jacobiIterate;
         using scai::common::bind;
         using scai::common::cref;
         using scai::common::ref;
@@ -1526,6 +1741,53 @@ ValueType ELLStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void ELLStorage<ValueType>::matrixPlusMatrix(
+    const ValueType alpha,
+    const MatrixStorage<ValueType>& a,
+    const ValueType beta,
+    const MatrixStorage<ValueType>& b )
+{
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", with A = " << a << ", B = " << b )
+    SCAI_REGION( "Storage.ELL.plusMatrix" )
+    // a and b have to be ELL storages, otherwise create temporaries.
+    const ELLStorage<ValueType>* ellA = NULL;
+    const ELLStorage<ValueType>* ellB = NULL;
+    // Define shared pointers in case we need temporaries
+    common::shared_ptr<ELLStorage<ValueType> > tmpA;
+    common::shared_ptr<ELLStorage<ValueType> > tmpB;
+
+    if ( a.getFormat() == Format::ELL )
+    {
+        ellA = dynamic_cast<const ELLStorage<ValueType>*>( &a );
+        SCAI_ASSERT_DEBUG( ellA, "could not cast to ELLStorage " << a )
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( a << ": will be converted to ELL for matrix add" )
+        tmpA = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( a ) );
+        ellA = tmpA.get();
+    }
+
+    if ( b.getFormat() == Format::ELL )
+    {
+        ellB = dynamic_cast<const ELLStorage<ValueType>*>( &b );
+        SCAI_ASSERT_DEBUG( ellB, "could not cast to ELLStorage " << b )
+    }
+    else
+    {
+        SCAI_UNSUPPORTED( b << ": will be converted to ELL for matrix add" )
+        tmpB = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( b ) );
+        ellB = tmpB.get();
+    }
+
+    ContextPtr loc = this->getContextPtr(); // preferred location for matrix add
+
+    matrixAddMatrixELL( alpha, *ellA, beta, *ellB );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void ELLStorage<ValueType>::matrixTimesMatrix(
     const ValueType alpha,
     const MatrixStorage<ValueType>& a,
@@ -1533,13 +1795,15 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     const ValueType beta,
     const MatrixStorage<ValueType>& c )
 {
+    SCAI_REGION( "Storage.ELL.timesMatrix" )
+
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A * B + " << beta << " * C, with " << "A = " << a << ", B = " << b << ", C = " << c )
     const ELLStorage<ValueType>* ellA = NULL;
     const ELLStorage<ValueType>* ellB = NULL;
     const ELLStorage<ValueType>* ellC = NULL;
-    //    common::shared_ptr<CSRStorage<ValueType> > tmpA;
-    //    common::shared_ptr<CSRStorage<ValueType> > tmpB;
+    //    common::shared_ptr<ELLStorage<ValueType> > tmpA;
+    //    common::shared_ptr<ELLStorage<ValueType> > tmpB;
     common::shared_ptr<ELLStorage<ValueType> > tmpC;
 
     if ( a.getFormat() == Format::ELL )
@@ -1564,7 +1828,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
 
     if ( ellA == NULL || ellB == NULL )
     {
-        // input matrices not ELL format, so try via CSR
+        // input matrices not ELL format, so try via ELL
         MatrixStorage<ValueType>::matrixTimesMatrix( alpha, a, b, beta, c );
         return;
     }
@@ -1609,10 +1873,23 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
 {
     SCAI_LOG_INFO( logger,
                    *this << ": = " << alpha << " * A * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+
+        ELLStorage<ValueType> tmp;
+        tmp.matrixTimesMatrixELL( alpha, a, b );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixMultiplySizes> matrixMultiplySizes;
     static LAMAKernel<ELLKernelTrait::matrixMultiply<ValueType> > matrixMultiply;
+
     ContextPtr loc = Context::getHostPtr();  // not yet available on other devices
+
     SCAI_ASSERT_ERROR( &a != this, "matrixTimesMatrix: alias of a with this result matrix" )
     SCAI_ASSERT_ERROR( &b != this, "matrixTimesMatrix: alias of b with this result matrix" )
     SCAI_ASSERT_EQUAL_ERROR( a.getNumColumns(), b.getNumRows() )
@@ -1632,7 +1909,7 @@ void ELLStorage<ValueType>::matrixTimesMatrixELL(
         matrixMultiplySizes[loc] ( cIA.get(), a.getNumRows(), a.getNumColumns(), b.getNumRows(), false, aIA.get(), aJA.get(),
                                    a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, utilskernel::reduction::MAX );
+        mNumValuesPerRow = reduce[ loc ]( cIA.get(), mNumRows, 0, utilskernel::binary::MAX );
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
@@ -1654,6 +1931,17 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
 {
     SCAI_LOG_INFO( logger,
                    "this = " << alpha << " * A + " << beta << " * B, with " << "A = " << a << ", B = " << b << ", all are ELL" )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+        ELLStorage<ValueType> tmp;
+        tmp.setContextPtr( this->getContextPtr() );
+        tmp.matrixAddMatrixELL( alpha, a, beta, b );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+        return;
+    }
+
     static LAMAKernel<ELLKernelTrait::matrixAddSizes> matrixAddSizes;
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     static LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
@@ -1678,7 +1966,7 @@ void ELLStorage<ValueType>::matrixAddMatrixELL(
         matrixAddSizes[loc]( cIA.get(), a.getNumRows(), a.getNumColumns(), false, aIA.get(), aJA.get(),
                              a.getNumValuesPerRow(), bIA.get(), bJA.get(), b.getNumValuesPerRow() );
         // 2. Step: compute length of longest row
-        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, utilskernel::reduction::MAX );
+        mNumValuesPerRow = reduce[loc]( cIA.get(), mNumRows, 0, utilskernel::binary::MAX );
         // 3. Step: Allocate IA and Values arrays with new size
         WriteOnlyAccess<IndexType> cJA( mJA, loc, mNumValuesPerRow * mNumRows );
         WriteOnlyAccess<ValueType> cValues( mValues, loc, mNumValuesPerRow * mNumRows );
@@ -1746,27 +2034,34 @@ const char* ELLStorage<ValueType>::typeName()
 /*       Template Instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
 
-#define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                  \
+#define ELL_STORAGE_INST_LVL2( ValueType, OtherValueType )                                                                 \
     template void ELLStorage<ValueType>::setCSRDataImpl( const IndexType, const IndexType, const IndexType,                \
-            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, \
-            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );  \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&,                                              \
+            const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
+    template void ELLStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
+            const utilskernel::binary::BinaryOp );                          \
+    template void ELLStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
+    template void ELLStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
+            const utilskernel::binary::BinaryOp );                       \
     template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void ELLStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void ELLStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
     template void ELLStorage<ValueType>::buildCSR( hmemo::HArray<IndexType>&, hmemo::HArray<IndexType>*,                   \
-            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;  \
+            hmemo::HArray<OtherValueType>*, const hmemo::ContextPtr ) const;                                               \
+    template void ELLStorage<ValueType>::setDIADataImpl( const IndexType, const IndexType, const IndexType,                \
+            const hmemo::HArray<IndexType>&, const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );
 
 #define ELL_STORAGE_INST_LVL1( ValueType )                                                                                  \
-    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, ELL_STORAGE_INST_LVL2, SCAI_NUMERIC_TYPES_HOST )
 
-    SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( ELL_STORAGE_INST_LVL1, SCAI_NUMERIC_TYPES_HOST )
 
 #undef ELL_STORAGE_INST_LVL2
 #undef ELL_STORAGE_INST_LVL1
 
-    } /* end namespace lama */
+} /* end namespace lama */
 
-    } /* end namespace scai */
+} /* end namespace scai */

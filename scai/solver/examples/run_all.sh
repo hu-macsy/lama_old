@@ -2,7 +2,7 @@
  # @file solver/examples/run_all.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -36,7 +36,7 @@
 set -e
 
 # Get location of the script to properly call all example scripts
-MYDIR="$(dirname "$(readlink -f "$0")")"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Function that executes an example and count up a counter
 # Usage: RUN COUNT[0|1] EXECUTABLE
@@ -97,14 +97,14 @@ i=0
 
 # run examples solver/*
 cd $MYDIR/solver
-RUN 1 solver/matrix_generator.exe example 3 27 100 100 100
-RUN 1 solver/matrix_convert.exe -mm example.frv example.mtx
-RUN 1 solver/vector_generator.exe example2.mtx 1000 1
-RUN 1 solver/solver.exe example.frm
-RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=Jacobi --SCAI_MAX_ITER=10
-RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=GMRES --SCAI_MAX_ITER=3
-RUN 0 solver/solver.exe example.frm --SCAI_SOLVER=CG --SCAI_REL_TOL=0.0001
-RUN 1 solver/lama_info.exe 
+RUN 1 solver/matrixStencilGenerator.exe example 3 27 100 100 100
+RUN 1 solver/matrixRandomGenerator.exe example1.txt 20 20 0.3 --SCAI_TYPE=ComplexDouble
+RUN 1 solver/vectorGenerator.exe example2.mtx 1000 1
+RUN 1 solver/lamaSolver.exe example.frm
+RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=Jacobi --SCAI_MAX_ITER=10
+RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=GMRES --SCAI_MAX_ITER=3
+RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=CG --SCAI_REL_TOL=0.0001
+RUN 1 solver/lamaInfo.exe 
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/solver/*.exe | wc -l`
@@ -113,6 +113,7 @@ if [ $count -ne $i ]; then
     exit 1
 fi
 
+cd ..
 
 
 #reset counter
@@ -134,6 +135,7 @@ fi
 i=0
 
 # run examples myJacobi/*
+cd myJacobi
 RUN 1 myJacobi/myJacobi.exe
 
 # check if there are unkown examples
@@ -142,3 +144,5 @@ if [ $count -ne $i ]; then
     echo "There are unknown executables in this directory, please add all examples to the related run_all.sh script!"
     exit 1
 fi
+
+cd ..

@@ -2,7 +2,7 @@
  * @file solver/examples/myJacobi/myJacobi.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class MyJacobi.cpp
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Contains the implementation of the class MyJacobi.
+ * @author Matthias Makulla
  * @date 22.02.2012
  */
 
@@ -56,10 +56,10 @@ int main( int , char** )
     int stencil = 7;
     int size = 100;
     CSRSparseMatrix<ValueType> matrix;
-    MatrixCreator<ValueType>::buildPoisson( matrix, dim, stencil, size, size, size );
+    MatrixCreator::buildPoisson( matrix, dim, stencil, size, size, size );
     int vectorSize = static_cast<int>( std::pow( size, dim ) );
     DenseVector<ValueType> exactSolution( vectorSize, 1.0 );
-    DenseVector<ValueType> rhs = matrix * exactSolution;
+    DenseVector<ValueType> rhs ( matrix * exactSolution );
     DenseVector<ValueType> solution( vectorSize, 0.0 );
     LoggerPtr slogger( new CommonLogger( "MyJacobiLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
     MyJacobi jacobiSolver( "MyJacobi", slogger );

@@ -2,7 +2,7 @@
  * @file test/ptrTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@ using namespace common;
 
 /* -------------------------------------------------------------------------------- */
 
-typedef boost::mpl::list<SCAI_ARITHMETIC_HOST> ValueTypes;
+typedef boost::mpl::list<SCAI_NUMERIC_TYPES_HOST> ValueTypes;
 
 /* -------------------------------------------------------------------------------- */
 

@@ -2,7 +2,7 @@
  * @file NoDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class NoDistributionTest.
- * @author Alexander Büchel
+ * @brief Specific tests for the class NoDistributionTest derived from Distribution.
+ * @author Thmas Brandes
  * @date 01.08.2012
  */
 
@@ -76,10 +76,12 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.NoDistributionTest" );
 
 BOOST_AUTO_TEST_CASE( CtorTest )
 {
-    DistributionPtr nodist( new NoDistribution( 20 ) );
+    const IndexType n = 20;
+
+    DistributionPtr nodist( new NoDistribution( n ) );
     BOOST_CHECK_EQUAL( nodist->getCommunicatorPtr()->getType(), Communicator::NO );
-    BOOST_CHECK_EQUAL( nodist->getGlobalSize(), 20 );
-    BOOST_CHECK_EQUAL( nodist->getLocalSize(), 20 );
+    BOOST_CHECK_EQUAL( nodist->getGlobalSize(), n );
+    BOOST_CHECK_EQUAL( nodist->getLocalSize(), n );
 }
 
 /* --------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
  * @file ELLKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -37,6 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/utilskernel/BinaryOp.hpp>
 
 namespace scai
 {
@@ -268,57 +269,59 @@ struct ELLKernelTrait
         }
     };
 
-    template<typename ValueType>
-    struct getValue
+    struct getValuePos
     {
         /** Returns one element of the matrix
          *
          *  @param[in] i is the row of the returned element
          *  @param[in] j is the column of the returned element
          *  @param[in] numRows is the number of rows of the matrix
+         *  @param[in] numValuesPerRow is the maximal number of entries in one row
          *  @param[in] ellSizes is the ELL sizes array
          *  @param[in] ellJA is the ELL ja array
-         *  @param[in] ellValues is the ELL values array
          */
 
-        typedef ValueType ( *FuncType ) (
+        typedef IndexType ( *FuncType ) (
             const IndexType i,
             const IndexType j,
             const IndexType numRows,
             const IndexType numValuesPerRow,
             const IndexType ellSizes[],
-            const IndexType ellJA[],
-            const ValueType ellValues[] );
+            const IndexType ellJA[] );
 
         static const char* getId()
         {
-            return "ELL.getValue";
+            return "ELL.getValuePos";
         }
     };
 
-    struct countNonEmptyRowsBySizes
+    struct getValuePosCol
     {
+        /** This method returns for a certain column of the CSR matrix all
+         *  row indexes for which elements exist and the corresponding positions
+         *  in the ellJA/ellValues array
+         *
+         *  @param[out] row indexes of rows that have an entry for column j
+         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[in] j is the column of which positions are required
+         *  @param[in] ellIA is the ELL sizes array
+         *  @param[in] numRows is the number of rows
+         *  @param[in] csrJA is the CSR ja array
+         *  @param[in] numValuesPerRow is maximal size of one row
+         *  @returns  number of entries with col index = j
+         */
         typedef IndexType ( *FuncType ) (
-            const IndexType ellSizes[],
-            const IndexType numRows );
+            IndexType row[],
+            IndexType pos[],
+            const IndexType j,
+            const IndexType ellIA[],
+            const IndexType numRows,
+            const IndexType ellJA[],
+            const IndexType numValuesPerRow );
 
         static const char* getId()
         {
-            return "ELL.countNonEmptyRowsBySizes";
-        }
-    };
-
-    struct setNonEmptyRowsBySizes
-    {
-        typedef void ( *FuncType ) (
-            IndexType rowIndexes[],
-            const IndexType numNonEmptyRows,
-            const IndexType ellSizes[],
-            const IndexType numRows );
-
-        static const char* getId()
-        {
-            return "ELL.setNonEmptyRowsBySizes";
+            return "ELL.getValuePosCol";
         }
     };
 
@@ -387,7 +390,7 @@ struct ELLKernelTrait
     template<typename ValueType>
     struct sparseGEMV
     {
-        /** result = alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
+        /** result += alpha * ELL-Matrix * x, CSR matrix has only some non-zero rows
          *
          *  @param result is the result vector
          *  @param alpha is scaling factor for matrix x vector
@@ -499,6 +502,33 @@ struct ELLKernelTrait
         static const char* getId()
         {
             return "ELL.scaleValue";
+        }
+    };
+
+    template<typename ValueType>
+    struct sortRowElements
+    {
+        /** This method sorts the elements of a row by increasing column indexes.
+         *
+         *  @param[in,out] ellJA, ellValues  the CSR matrix data and their column indexes
+         *  @param[in]     ellIA             row offsets
+         *  @param[in]     numRows           number of rows
+         *  @param[in]     numValuesPerRow   maximal number of non-zero values per row
+         *  @param[in]     diagonalFlag      if true first entry of each row will be the diagonal element if available
+         *
+         *  Note: This routine does not force the diagonal property, only if each diagonal element is already available
+         */
+        typedef void ( *FuncType )(
+            IndexType ellJA[],
+            ValueType ellValues[],
+            const IndexType ellIA[],
+            const IndexType numRows,
+            const IndexType numValuesPerRow,
+            const bool diagonalFlag );
+
+        static const char* getId()
+        {
+            return "ELL.sortRowElements";
         }
     };
 

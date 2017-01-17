@@ -2,7 +2,7 @@
  * @file LamaConfig.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -69,7 +69,7 @@
  *      LamaConfig lamaconf;    // WRONG: constructur might fail
  *
  *      int main( int argc, const char* argv[] )
- *      { 
+ *      {
  *           common::Settings::parseArgs( argc, argv );
  *           LamaConfig lamaconf;                        // must be defined after parseArgs
  *           ....
@@ -214,13 +214,13 @@ private:
 /* ---------------------------------------------------------------------------- */
 
 #define CONFIG_ERROR( msg )                                    \
-{                                                              \
-    std::ostringstream errorStr;                               \
-    errorStr << msg;                                           \
-    std::cout << "ERROR: " << errorStr.str()  <<  std::endl;   \
-    LamaConfig::printHelp( "<solver>" );                       \
-    exit( 1 );                                                 \
-}
+    {                                                              \
+        std::ostringstream errorStr;                               \
+        errorStr << msg;                                           \
+        std::cout << "ERROR: " << errorStr.str()  <<  std::endl;   \
+        LamaConfig::printHelp( "<solver>" );                       \
+        exit( 1 );                                                 \
+    }
 
 /* ---------------------------------------------------------------------------- */
 
@@ -267,7 +267,7 @@ LamaConfig::LamaConfig()
     mComm = scai::dmemo::Communicator::getCommunicatorPtr();
 
     // allow settings specified for each process
-    // Be careful: can cause problems, e.g. MAX_ITER, xxx_TOL 
+    // Be careful: can cause problems, e.g. MAX_ITER, xxx_TOL
 
     scai::common::Settings::setRank( mComm->getRank() );
 
@@ -388,28 +388,15 @@ LamaConfig::LamaConfig()
         }
     }
 
-    mNorm = "L1";
+    mNorm = "L2";
 
-    if ( scai::common::Settings::getEnvironment( val, "SCAI_NORM" ) )
+    scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
+
+    if ( ! scai::lama::Norm::canCreate( mNorm ) )
     {
-        if ( val == "L2" )
-        {
-            mNorm = "L2";
-        }
-        else if ( val == "L1" ) 
-        {
-            mNorm = "L1";
-        }
-        else if ( val == "Max" ) 
-        {
-            mNorm = "Max";
-        }
-        else
-        {
-            CONFIG_ERROR( "norm " << val << " not available" )
-        }
+        CONFIG_ERROR( "norm " << mNorm << " not available" )
     }
-  
+
     // solver log level, default is convergence History
 
     mLogLevel = scai::solver::LogLevel::convergenceHistory;
@@ -535,15 +522,54 @@ scai::lama::Matrix* LamaConfig::getMatrix()
     return scai::lama::Matrix::getMatrix( mMatrixFormat, mValueType );
 }
 
+static std::string getLoggers()
+{
+    std::ostringstream loggerNames;
+
+    std::vector<std::string> vals;
+    scai::solver::Solver::getCreateValues( vals );
+
+    for ( size_t i = 0; i < vals.size(); ++i )
+    {
+        if ( i > 0 )
+        {
+            loggerNames << "|";
+        }
+
+        loggerNames << vals[i];
+    }
+
+    return loggerNames.str();
+}
+
+static std::string getLogLevels()
+{
+    std::ostringstream levelNames;
+
+    for ( int i = 0; i < scai::solver::LogLevel::UNKNOWN; ++i )
+    {
+        if ( i > 0 )
+        {
+            levelNames << "|";
+        }
+
+        levelNames << scai::solver::LogLevel::LogLevel( i );
+    }
+
+    return levelNames.str();
+}
+
 void LamaConfig::printHelp( const char* progName )
 {
     using std::cout;
     using std::endl;
 
-    cout << "Usage: " << progName << " <matrix_filename> [ rhs_filename ] [ sol_filename ] [ options ] " << endl;
+    cout << "Usage: " << progName << " <matrix_filename> [ rhs ] [start_solution] [ final_solution_filename ] [ options ] " << endl;
+    cout << "         rhs, start_solution can be either a value or a filename" << endl;
     cout << "         solver specific options:" << endl;
-    cout << "         --SCAI_SOLVER=[CG|BiCG|...]" << endl;
-    cout << "         --SCAI_SOLVER_LOG=[noLogging|convergenceHistory|solverInformation|advancedInformation|completeInformation]" << endl;
+    cout << "         --SCAI_DISTRBUTION=BLOCK|<dist_filename>" << endl;
+    cout << "         --SCAI_SOLVER=" << getLoggers() << endl;
+    cout << "         --SCAI_SOLVER_LOG=" << getLogLevels() << endl;
     cout << "         --SCAI_MAX_ITER=<int_val>" << endl;
     cout << "         --SCAI_NORM=L1|L2|Max" << endl;
     cout << "         --SCAI_REL_TOL=<val>" << endl;

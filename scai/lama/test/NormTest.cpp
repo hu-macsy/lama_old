@@ -2,7 +2,7 @@
  * @file NormTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,48 +27,174 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class NormTest
- * @author Alexander Büchel, Micha
- * @date 03.02.2012
+ * @brief Contains general tests for each Norm class registered in Norm factory.
+ * @author Thomas Brandes
+ * @date 16.06.2016
  */
 
-#include <scai/lama/test/NormTest.hpp>
+#include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
+#include <scai/lama/norm/Norm.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 
+#include <scai/common/test/TestMacros.hpp>
+
 typedef SCAI_TEST_TYPE ValueType;
 
-LAMA_COMMON_TEST_CASE( NormTest, positiveHomogeneityTest )
-scai::lama::DenseVector<ValueType> x( 4, 1.0 );
-scai::lama::Scalar s = 3.0;
+using namespace scai;
+using namespace lama;
 
-scai::lama::DenseVector<ValueType> tmp( s* x );
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-//Inequality test
-BOOST_CHECK_EQUAL( mNorm.apply ( tmp ), s* mNorm.apply( x ) );
-LAMA_COMMON_TEST_CASE_END()
+/** Class for vector of all registered Norm objects in factory */
 
-LAMA_COMMON_TEST_CASE( NormTest, triangleInequalityTest )
-scai::lama::DenseVector<ValueType> x( 2, 2.0 );
-scai::lama::DenseVector<ValueType> y( 2, 2.0 );
-scai::lama::DenseVector<ValueType> z( x + y );
-
-BOOST_CHECK( mNorm.apply( z ) == mNorm.apply( x ) + mNorm.apply( y ) );
-LAMA_COMMON_TEST_CASE_END()
-
-LAMA_COMMON_TEST_CASE( NormTest, ZeroVectorTest )
-scai::lama::DenseVector<ValueType> x( 4, 0.0 );
-BOOST_CHECK_EQUAL( mNorm.apply( x ), 0.0 );
-LAMA_COMMON_TEST_CASE_END()
-
-LAMA_COMMON_TEST_CASE_RUNNER( NormTest )
+class Norms : public std::vector<lama::NormPtr>
 {
-    positiveHomogeneityTest();
-    triangleInequalityTest();
-    ZeroVectorTest();
+
+public:
+
+    /** Constructor creates already the list with all storage pointers. */
+
+    Norms()
+    {
+        using namespace scai::lama;
+
+        std::vector<std::string> values;  //  all create values
+
+        Norm::getCreateValues( values );
+
+        for ( size_t i = 0; i < values.size(); ++i )
+        {
+            NormPtr normPtr( scai::lama::Norm::create( values[i] ) );
+            push_back( normPtr );
+        }
+    }
+
+    // Destructor will free all matrix storages due to use of shared pointers
+};
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE( NormTest );
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+SCAI_LOG_DEF_LOGGER( logger, "Test.NormTest" )
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( positiveHomogeneityTest )
+{
+    scai::lama::DenseVector<ValueType> x( 4, 1.0 );
+    scai::lama::Scalar s = 3.0;
+
+    scai::lama::DenseVector<ValueType> tmp( s * x );
+
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        // Homogeneity test
+
+        BOOST_CHECK_EQUAL( norm.apply ( tmp ), s * norm.apply( x ) );
+    }
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( triangleInequalityTest )
+{
+    scai::lama::DenseVector<ValueType> x( 2, 2.0 );
+    scai::lama::DenseVector<ValueType> y( 2, 2.0 );
+    scai::lama::DenseVector<ValueType> z( x + y );
+
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        // Inequality test
+
+        Scalar nz = norm.apply( z );
+        Scalar nxy = norm.apply( x ) + norm.apply( y );
+
+        BOOST_CHECK( nz.getValue<ValueType>() <= nxy.getValue<ValueType>() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( zeroVectorTest )
+{
+    scai::lama::DenseVector<ValueType> x( 4, 0.0 );
+
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        // zero test
+
+        BOOST_CHECK_EQUAL( norm.apply( x ), Scalar( 0 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( zeroMatrixTest )
+{
+    scai::lama::DenseMatrix<ValueType> m( 3, 4 );
+
+    m.getLocalStorage().setZero();
+
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        // zero test
+
+        BOOST_CHECK_EQUAL( norm.apply( m ), Scalar( 0 ) );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( writeTest )
+{
+    Norms allNorms;
+
+    for ( size_t i = 0; i < allNorms.size(); ++i )
+    {
+        Norm& norm = *allNorms[i];
+
+        std::ostringstream out;
+        std::ostringstream outB;
+        std::ostringstream outD;
+
+        out << norm;
+        norm.Norm::writeAt( outB );
+        norm.writeAt( outD );
+
+        BOOST_CHECK( out.str().length() > 0 );
+        BOOST_CHECK( outD.str() == out.str() );
+        BOOST_CHECK( outB.str() != outD.str() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_SUITE_END();
+

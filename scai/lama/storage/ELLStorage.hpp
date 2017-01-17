@@ -2,7 +2,7 @@
  * @file ELLStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -220,6 +220,25 @@ public:
         const hmemo::HArray<OtherValueType>& values,
         const hmemo::ContextPtr context );
 
+    /**
+     * @brief fills ELL sparse matrix by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the input csr sparse matrix
+     * @param[in] values       the data values of the input csr sparse matrix
+     * @param[in] loc          is the context where filling takes place
+     */
+    template<typename OtherValueType>
+    void setDIADataImpl(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
+
     void setELLData(
         const IndexType numRows,
         const IndexType numColumns,
@@ -248,10 +267,27 @@ public:
 
     IndexType getNumValuesPerRow() const;
 
-    /** Template method for getting row. */
+    /** Template version of getRow */
 
     template<typename OtherType>
-    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const __attribute( ( noinline ) );
+    void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::binary::BinaryOp op );
+
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
+                        const utilskernel::binary::BinaryOp op );
 
     /** This method returns the diagonal
      *
@@ -305,6 +341,11 @@ public:
      */
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
+
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
     /** Initiate an asynchronous data transfer to a specified context. */
 
@@ -386,6 +427,14 @@ public:
         const hmemo::HArray<ValueType>& haloOldSolution,
         const ValueType omega ) const;
 
+    /** Implementation of MatrixStorage::matrixPlusMatrix for ELL */
+
+    virtual void matrixPlusMatrix(
+        const ValueType alpha,
+        const MatrixStorage<ValueType>& a,
+        const ValueType beta,
+        const MatrixStorage<ValueType>& b );
+
     /** Implementation of MatrixStorage::matrixTimesMatrix for ELL */
 
     virtual void matrixTimesMatrix(
@@ -426,7 +475,11 @@ public:
      *
      *  Note: swap is only possible for two storages of the same format and same type.
      */
-    void swap( ELLStorage<ValueType>& other );
+    void swapImpl( ELLStorage<ValueType>& other );
+
+    /** Implementation for _MatrixStorage::swap */
+
+    virtual void swap( _MatrixStorage& other );
 
     virtual size_t getMemoryUsageImpl() const;
 

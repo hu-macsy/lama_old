@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -38,7 +38,10 @@ include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
 
 add_subdirectory ( bench )
 add_subdirectory ( labelrank )
+add_subdirectory ( mandelbrot )
+add_subdirectory ( nbody )
 add_subdirectory ( tutorial )
+add_subdirectory ( io )
 
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 

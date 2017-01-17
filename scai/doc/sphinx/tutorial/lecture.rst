@@ -13,7 +13,7 @@ to the basic usage of LAMA. The following tasks are only giving hints which
 functions and classes you should use to complete them. Please consult the
 `online API documentation`_ on how to use these classes.
 
-.. _online API documentation: https://test.libama.org/doxygen/index.html
+.. _online API documentation: https://libama.org/doxygen/index.html
 
 Requirements
 ------------
@@ -53,7 +53,7 @@ into your library path.
 The following example program can be used to verify that compilation, linking 
 and running works fine.
 
-:download:`Solver <../../../solver/examples/solver.cpp>`
+:download:`Solver <solver.cpp>`
 
 An example **Makefile** can be found together with the **simple.cpp** example
 and the solutions for the lecture tasks at **<project-root>/doc/user_guide/cpp_source/tutorial/**.

@@ -2,7 +2,7 @@
  * @file BlockDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,23 +43,25 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( BlockDistribution::logger, "Distribution.BlockDistribution" )
 
-void BlockDistribution::getRange(
+void BlockDistribution::getLocalRange(
     IndexType& lb,
     IndexType& ub,
     const IndexType n,
     const PartitionId rank,
     const PartitionId size )
 {
-    SCAI_ASSERT_DEBUG( rank < size, "illegal rank = " << rank << ", size = " << size )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rank, size, "illegal rank specified" )
     IndexType blockSize = ( n + size - 1 ) / size;
     lb = rank * blockSize;
-    ub = ( rank + 1 ) * blockSize - 1;
-    ub = std::min( ub, n - 1 );
+    ub = ( rank + 1 ) * blockSize;
+    ub = std::min( ub, n );
 }
 
 BlockDistribution::~BlockDistribution()
@@ -75,43 +77,65 @@ BlockDistribution::BlockDistribution( const IndexType globalSize, const Communic
     PartitionId rank = mCommunicator->getRank();
     SCAI_LOG_DEBUG( logger, "BlockDistribution of " << getGlobalSize() << " elements" )
     mBlockSize = ( globalSize + size - 1 ) / size;
-    getRange( mLB, mUB, globalSize, rank, size );
+    getLocalRange( mLB, mUB, globalSize, rank, size );
     SCAI_LOG_INFO( logger,
                    "BlockDistribution of " << getGlobalSize() << " elements" << ", me has " << mLB << " : " << mUB )
 }
 
 bool BlockDistribution::isLocal( const IndexType globalIndex ) const
 {
-    return globalIndex >= mLB && globalIndex <= mUB;
+    return globalIndex >= mLB && globalIndex < mUB;
 }
+
+/* ---------------------------------------------------------------------- */
 
 PartitionId BlockDistribution::getOwner( const IndexType globalIndex ) const
 {
     return globalIndex / mBlockSize;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType BlockDistribution::getLocalSize() const
 {
     IndexType localSize = 0;
 
-    if ( mLB <= mUB )
+    if ( mLB < mUB )
     {
-        localSize = mUB - mLB + 1;
+        localSize = mUB - mLB;
     }
 
     return localSize;
 }
+
+/* ---------------------------------------------------------------------- */
+
+IndexType BlockDistribution::getMaxLocalSize() const
+{
+    return mBlockSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType BlockDistribution::getBlockDistributionSize() const
+{
+    return getLocalSize();
+}
+
+/* ---------------------------------------------------------------------- */
 
 IndexType BlockDistribution::local2global( const IndexType localIndex ) const
 {
     return mLB + localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
 {
     IndexType localIndex = nIndex;
 
-    if ( globalIndex >= mLB && globalIndex <= mUB )
+    if ( globalIndex >= mLB && globalIndex < mUB )
     {
         localIndex = globalIndex - mLB;
     }
@@ -119,35 +143,65 @@ IndexType BlockDistribution::global2local( const IndexType globalIndex ) const
     return localIndex;
 }
 
-void BlockDistribution::computeOwners(
-    const std::vector<IndexType>& requiredIndexes,
-    std::vector<PartitionId>& owners ) const
-{
-    owners.clear();
-    owners.reserve( requiredIndexes.size() );
-    SCAI_LOG_INFO( logger, "compute " << requiredIndexes.size() << " owners for " << *this )
+/* ---------------------------------------------------------------------- */
 
-    for ( size_t i = 0; i < requiredIndexes.size(); i++ )
+void BlockDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
+{
+    ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
+
+    const IndexType n = indexes.size();
+
+    ReadAccess<IndexType> rIndexes( indexes, ctx );
+    WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
+
+    // ToDo: call a kernel and allow arbitrary context
+
+    for ( IndexType i = 0; i < n; i++ )
     {
-        PartitionId owner = getOwner( requiredIndexes[i] );
-        owners.push_back( owner );
+        wOwners[i] = rIndexes[i] / mBlockSize;   // same as getOwner
     }
 }
+
+/* ---------------------------------------------------------------------- */
+
+void BlockDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
+{
+    const IndexType nLocal  = getLocalSize();
+
+    SCAI_LOG_INFO( logger, getCommunicator() << ": getOwnedIndexes, have " << nLocal << " of " << mGlobalSize )
+
+    WriteOnlyAccess<IndexType> wGlobalIndexes( myGlobalIndexes, nLocal );
+
+    for ( IndexType i = mLB; i < mUB; ++i )
+    {
+        wGlobalIndexes[ i - mLB ] = i;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
 
 bool BlockDistribution::isEqual( const Distribution& other ) const
 {
-    if ( this == &other )
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
     {
-        return true;
+        return isSame;
     }
 
-    if ( dynamic_cast<const BlockDistribution*>( &other ) )
+    if ( other.getKind() == getKind() )
     {
-        return mGlobalSize == other.getGlobalSize();
+        isSame = true;
     }
 
-    return false;
+    // we know already that global size and communicator are equal
+
+    return isSame;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void BlockDistribution::writeAt( std::ostream& stream ) const
 {
@@ -156,41 +210,13 @@ void BlockDistribution::writeAt( std::ostream& stream ) const
            << ", size = " << mLB << ":" << mUB << " of " << mGlobalSize <<  " )";
 }
 
-void BlockDistribution::printDistributionVector( std::string name ) const
-{
-    PartitionId myRank = mCommunicator->getRank();
-    PartitionId parts = mCommunicator->getSize();
-    IndexType myLocalSize = getLocalSize();
-    std::vector<IndexType> localSizes( parts );
-    mCommunicator->gather( &localSizes[0], 1, MASTER, &myLocalSize );
-
-    if ( myRank == MASTER ) // process 0 is MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-
-        // print row - partition mapping
-        for ( IndexType i = 0; i < parts; ++i )
-        {
-            for ( IndexType j = 0; j < localSizes[i]; j++ )
-            {
-                file << i << std::endl;
-            }
-        }
-
-        file.close();
-    }
-}
-
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
 
-const char BlockDistribution::theCreateValue[] = "BLOCK";
-
 std::string BlockDistribution::createValue()
 {
-    return theCreateValue;
+    return getId();
 }
 
 Distribution* BlockDistribution::create( const DistributionArguments arg )

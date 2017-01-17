@@ -2,7 +2,7 @@
  * @file UtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,7 +43,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-// import scai_arithmetic_test_types, scai_array_test_types
+// import scai_numeric_test_types, scai_array_test_types
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -57,11 +57,11 @@ extern ContextPtr testContext;
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( HArrayTest )
+BOOST_AUTO_TEST_SUITE( UtilsTest )
 
 /* --------------------------------------------------------------------- */
 
-SCAI_LOG_DEF_LOGGER( logger, "Test.HArrayTest" )
+SCAI_LOG_DEF_LOGGER( logger, "Test.UtilsTest" )
 
 /* --------------------------------------------------------------------- */
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setVal[loc]( wValues.get(), nValues, mult, reduction::MULT );
+        setVal[loc]( wValues.get(), nValues, mult, binary::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, reduction::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), binary::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), reduction::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), binary::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -137,17 +137,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0, reduction::COPY );
+            setVal[loc]( wValues.get(), 3 * n, 0, binary::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10, reduction::COPY );
+            setVal[loc]( wValues.get() + n, n, 10, binary::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
         for ( IndexType i = 0; i < n; i++ )
         {
-            BOOST_CHECK_EQUAL( 0, rValues.get()[i + 0 * n] );
-            BOOST_CHECK_EQUAL( 10, rValues.get()[i + 1 * n] );
-            BOOST_CHECK_EQUAL( 0, rValues.get()[i + 2 * n] );
+            BOOST_CHECK_EQUAL( ValueType( 0 ), rValues.get()[i + 0 * n] );
+            BOOST_CHECK_EQUAL( ValueType( 10 ), rValues.get()[i + 1 * n] );
+            BOOST_CHECK_EQUAL( ValueType( 0 ), rValues.get()[i + 2 * n] );
         }
     }
     {
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7, reduction::COPY );
+            setVal[loc]( wValues.get(), n, 7, binary::COPY );
         }
     }
 }
@@ -241,13 +241,13 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::invert<ValueType> > invert;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binop;
     ContextPtr loc = testContext;
-    invert.getSupportedContext( loc );
+    binop.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
-    SCAI_LOG_INFO( logger, "invertTest<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "binaryOpScalar1Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
     {
         // TODO: should it be possible to pass 0 elements? What should be the result?
         ValueType valuesValues[] =
@@ -257,8 +257,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            invert[loc]( wValues.get(), nValues );
+            binop[loc]( wValues.get(), ValueType( 1 ), wValues.get(), nValues, binary::DIVIDE );
         }
+
         ReadAccess<ValueType> rValues( values );
 
         for ( IndexType i = 0; i < nValues; i++ )
@@ -266,18 +267,272 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_arithmetic_test_types
             BOOST_CHECK_EQUAL( ValueType( 1 ) / valuesValues[i], rValues[i] );
         }
     }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( countNonZerosTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
+
+    ContextPtr loc = Context::getContextPtr( countNonZeros.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    SCAI_LOG_INFO( logger, "countNonZeros for " << *testContext << " on " << *loc )
+
+    // count valid array
     {
-        const IndexType n = 0;
-        LArray<ValueType> values;
+        const IndexType values[] = { 3, 0, 1, 0, 0, 1, 0, 4 };
+        const IndexType n = sizeof( values ) / sizeof( IndexType );
+        HArray<IndexType> sizes( n, values, testContext );
+        ReadAccess<IndexType> rSizes( sizes, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        IndexType count = countNonZeros[loc]( rSizes.get(), n, 0 );
+        BOOST_CHECK_EQUAL( IndexType( 4 ), count );
+    }
+
+    // count empty array
+    {
+        HArray<IndexType> sizes;
+        ReadAccess<IndexType> rSizes( sizes, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        IndexType count = countNonZeros[loc]( rSizes.get(), sizes.size(), 0 );
+        BOOST_CHECK_EQUAL( IndexType( 0 ), count );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( compressTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::compress<IndexType> > compress;
+
+    ContextPtr loc = Context::getContextPtr( compress.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    const IndexType theValues[] = { 3, 0, 1, 0, 0, 1, 0, 4, 3, 0 };
+    const IndexType theSparseIndexes[] = { 0, 2, 5, 7, 8 };
+    const IndexType nDense = 10;
+    const IndexType nSparse = 5;
+
+    HArray<IndexType> denseArray( nDense, theValues, testContext );
+    HArray<IndexType> sparseIndexes( nDense, IndexType( 0 ), testContext );
+
+    {
+        ReadAccess<IndexType> rArray( denseArray, loc );
+        WriteAccess<IndexType> wSparseIndexes( sparseIndexes, loc );
+        SCAI_CONTEXT_ACCESS( loc );
+        IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0 );
+
+        BOOST_REQUIRE_EQUAL( nSparse, cnt );
+    }
+
+    // sparseIndexes are sorted
+
+    {
+        ReadAccess<IndexType> rSparseIndexes( sparseIndexes );
+
+        for ( IndexType i = 0; i < nSparse; ++i )
         {
-            WriteOnlyAccess<ValueType> wValues( values, loc, n );
-            SCAI_CONTEXT_ACCESS( loc );
-            invert[loc]( wValues.get(), n );
+            BOOST_CHECK_EQUAL( theSparseIndexes[i], rSparseIndexes[i] );
         }
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( setInversePermTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::setInversePerm> setInversePerm;
+
+    ContextPtr loc = Context::getContextPtr( setInversePerm.validContext( testContext->getType() ) );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    {
+        IndexType valuesPerm[] = { 5, 0, 2, 3, 1, 4 };
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        IndexType expectedPerm[] = { 1, 4, 2, 3, 5, 0 };
+        const IndexType numRows = 6;
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> inversePerm;  // will be allocated/used on loc
+        {
+            ReadAccess<IndexType> rPerm( perm, loc );
+            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
+            SCAI_CONTEXT_ACCESS( loc );
+            setInversePerm[loc]( wInversePerm.get(), rPerm.get(), numRows );
+        }
+        ReadAccess<IndexType> rInversePerm( inversePerm );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedPerm[i], rInversePerm.get()[i] );
+        }
+    }
+    {
+        const IndexType numRows = 0;
+        HArray<IndexType> perm( numRows );
+        HArray<IndexType> inversePerm( numRows );
+        {
+            ReadAccess<IndexType> rPerm( perm, loc );
+            WriteOnlyAccess<IndexType> wInversePerm( inversePerm, loc, numRows );
+            SCAI_CONTEXT_ACCESS( loc );
+            setInversePerm[loc]( wInversePerm.get(), rPerm.get(), numRows );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( sortIndexesTest )
+{
+    ContextPtr testContext = Context::getContextPtr();
+    static LAMAKernel<UtilKernelTrait::sort<IndexType> > sort;
+    ContextPtr loc = Context::getContextPtr( sort.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    // just one simple example of a typical sort with permutation
+
+    {
+        bool ascending = false;
+
+        IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
+        IndexType expectedArr[]  = { 7, 5, 4, 4, 2, 2 };
+        IndexType expectedPerm[] = { 5, 0, 2, 3, 1, 4 };
+
+        const IndexType n = sizeof( valuesArr ) / sizeof( IndexType );
+        HArray<IndexType> array( n, valuesArr, testContext );
+
+        HArray<IndexType> perm;
+
+        {
+            WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+            WriteAccess<IndexType> wArr( array, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( wPerm.get(), wArr.get(), wArr.get(), n, ascending );
+        }
+
+        ReadAccess<IndexType> rArr( array );
+        ReadAccess<IndexType> rPerm( perm );
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedArr[i], rArr.get()[i] );
+            BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
+        }
+    }
+    {
+        bool ascending = true;
+
+        IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
+        IndexType expectedArr[]  = { 2, 2, 4, 4, 5, 7 };
+
+        const IndexType n = sizeof( valuesArr ) / sizeof( IndexType );
+
+        HArray<IndexType> unsortedArray( n, valuesArr, testContext );
+        HArray<IndexType> sortedArray;
+
+        {
+            WriteOnlyAccess<IndexType> wOut( sortedArray, loc, n );
+            ReadAccess<IndexType> rIn( unsortedArray, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( NULL, wOut.get(), rIn.get(), n, ascending );
+        }
+
+        ReadAccess<IndexType> rArr( sortedArray );
+
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedArr[i], rArr[i] );
+        }
+    }
+    {
+        IndexType valuesArr[]    = { 5, 2, 4, 4, 2, 7 };
+        IndexType valuesPerm[]   = { 0, 1, 2, 3, 4, 5 };
+        IndexType expectedArr[]  = { 2, 2, 4, 4, 5, 7 };
+        IndexType expectedPerm[] = { 1, 4, 2, 3, 0, 5 };
+
+        const IndexType nPerm = sizeof( valuesPerm ) / sizeof( IndexType );
+        const IndexType n = sizeof( valuesArr ) / sizeof( IndexType );
+        const IndexType numRows = 6;
+        HArray<IndexType> perm( nPerm, valuesPerm, testContext );
+        HArray<IndexType> ilg( n, valuesArr, testContext );
+        {
+            WriteAccess<IndexType> wPerm( perm, loc );
+            WriteAccess<IndexType> wArr( ilg, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( wPerm.get(), wArr.get(), wArr.get(), numRows, true );
+        }
+        ReadAccess<IndexType> rArr( ilg );
+        ReadAccess<IndexType> rPerm( perm );
+
+        for ( IndexType i = 0; i < numRows; i++ )
+        {
+            BOOST_CHECK_EQUAL( expectedArr[i], rArr.get()[i] );
+            BOOST_CHECK_EQUAL( expectedPerm[i], rPerm.get()[i] );
+        }
+    }
+    {
+        const IndexType n = 0;
+        HArray<IndexType> perm( n );
+        HArray<IndexType> ilg( n );
+        {
+            WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+            WriteOnlyAccess<IndexType> wArr( ilg, loc, n );
+            SCAI_CONTEXT_ACCESS( loc );
+            sort[loc]( wPerm.get(), wArr.get(), wArr.get(), n, false );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::sort<ValueType> > sort;
+    static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
+
+    ContextPtr loc = testContext;
+    sort.getSupportedContext( loc, isSorted );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    const IndexType n = 1000;
+    const bool ascending = true;
+
+    HArray<ValueType> values( loc );
+    {
+        ContextPtr host = Context::getHostPtr();   // currently only available on host
+
+        WriteOnlyAccess<ValueType> wValues( values, host, n );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            common::Math::random( wValues[i] );
+        }
+    }
+
+    HArray<IndexType> perm;
+
+    WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
+    WriteAccess<ValueType> wValues( values, loc );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    sort[loc]( wPerm.get(), wValues.get(), wValues.get(), n, ascending );
+    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending );
+
+    BOOST_CHECK( valuesSorted );
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

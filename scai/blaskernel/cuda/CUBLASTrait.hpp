@@ -2,7 +2,7 @@
  * @file CUBLASTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definitions for CUBLAS interface
+ * @brief Definitions of class to trait calls for methods of the cuBLAS library.
  * @author Eric Stricker
  * @date 21.01.2016
  */

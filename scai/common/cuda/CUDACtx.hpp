@@ -2,7 +2,7 @@
  * @file CUDACtx.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -44,6 +44,15 @@
 #include <cuda.h>
 #include <cublas_v2.h>
 #include <cusparse.h>
+
+#include <cuda_runtime_api.h>
+
+#ifndef CUDART_VERSION
+#error CUDART_VERSION Undefined!
+#elif ( CUDART_VERSION >= 7050 )
+#include <cusolverDn.h>
+#include <cusolverSp.h>
+#endif
 
 #include <vector>
 
@@ -103,6 +112,16 @@ public:
 
     cusparseHandle_t getcuSparseHandle() const;
 
+#if ( CUDART_VERSION >= 7050 )
+    /** Getter for the cuSolverDn handle, will be created with first use */
+
+    cusolverDnHandle_t getcuSolverDnHandle() const;
+
+    /** Getter for the cuSolverSp handle, will be created with first use */
+
+    cusolverSpHandle_t getcuSolverSpHandle() const;
+#endif
+
     /** Getter for the number of the device. */
 
     int getDeviceNr() const
@@ -125,6 +144,11 @@ private:
     cublasHandle_t mcuBLASHandle;
 
     cusparseHandle_t mcuSparseHandle;
+
+#if ( CUDART_VERSION >= 7050 )
+    cusolverDnHandle_t mcuSolverDnHandle;
+    cusolverSpHandle_t mcuSolverSpHandle;
+#endif
 
     std::vector< common::function<void()> > mShutdownFunctions;
 };

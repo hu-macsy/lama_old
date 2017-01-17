@@ -45,16 +45,18 @@ include ( Summaries/Modules/Compiler )
 heading ( "Required core:" )
 
 set ( REQUIRED_FOUND FALSE )
-if    ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR )
+if    ( SCAI_THREAD_LIBRARIES AND SCAI_DL_LIBRARIES )
     set ( REQUIRED_FOUND TRUE )
-endif ( SCAI_THREAD_LIBRARIES AND SCAI_BOOST_INCLUDE_DIR  )
+endif ( SCAI_THREAD_LIBRARIES AND SCAI_DL_LIBRARIES )
 
 heading2 ( "External Libraries" "REQUIRED_FOUND" )
 
     # pthreads
     found_message ( "pThreads" "SCAI_THREAD_LIBRARIES" "REQUIRED" "Version ${SCAI_THREAD_VERSION}" )
-    # boost
-    found_message ( "Boost" "SCAI_BOOST_INCLUDE_DIR" "REQUIRED" "Version ${BOOST_VERSION} at ${SCAI_BOOST_INCLUDE_DIR}" )
+    found_message ( "dl" "SCAI_DL_LIBRARIES" "REQUIRED" "at ${SCAI_DL_LIBRARIES} " )
+
+heading ( "Optional External Libraries" )
+include ( Summaries/Modules/Accelerator )
 
 include ( Summaries/Modules/Build )
 

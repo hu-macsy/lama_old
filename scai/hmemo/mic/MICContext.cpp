@@ -2,7 +2,7 @@
  * @file MICContext.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -84,12 +84,24 @@ MICContext::MICContext( int deviceNr )
         COMMON_THROWEXCEPTION( "No mic devices available" )
     }
 
-    // ToDo: allow for any device
     mDeviceNr = deviceNr;
+
     SCAI_ASSERT_LT( deviceNr, numDevices, "Illegal deviceNr" )
+
     SCAI_LOG_INFO( logger, "Using device " << mDeviceNr << " of " << numDevices << " installed devices" )
+
     bool targetOK = false;
+
     int numCores;
+
+    if ( common::Settings::getEnvironment( numCores, "SCAI_MIC_NUM_THREADS" ) )
+    {
+#pragma offload target( mic: mDeviceNr ) in( numCores )
+        {
+            omp_set_num_threads( numCores );
+        }
+    }
+
 #pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel

@@ -2,7 +2,7 @@
  * @file LAPACKeTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Typedefs and macros for LAPACKeWrapper
+ * @brief Typedefs and macros for wrapping routines of the LAPACKe library.
  * @author Eric Schricker
  * @date 14.01.2016
  */

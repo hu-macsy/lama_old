@@ -40,6 +40,7 @@ set ( WHITELIST
         ADDITIONAL_CXX_FLAGS_NO_OFFLOAD
         ADDITIONAL_CXX_FLAGS_OPENMP
         ADDITIONAL_CXX_FLAGS_RELEASE
+        ADDITIONAL_CXX_FLAGS_STATIC
         ADDITIONAL_LINKER_FLAGS
         ADDITIONAL_WARNING_FLAGS
         # EXAMPLES
@@ -68,11 +69,14 @@ set ( WHITELIST
         SCAI_ASSERT_LEVEL
         SCAI_CMAKE_VERBOSE
         SCAI_HOST_TYPES_LIST
+        SCAI_INDEX_TYPE        
         SCAI_LIBRARY_TYPE
         SCAI_LOGGING_LEVEL
         SCAI_TRACING
         # USE
         USE_CODE_COVERAGE
+        USE_OPENMP             # put this here, because OpenMP is used with 'common' in each subproject
+        USE_JAVA               # make it availabe in sub project
     )
     
 set ( BOOST_WHITELIST
@@ -165,7 +169,6 @@ set ( MPI_WHITELIST
 
 set ( OPENMP_WHITELIST
         OpenMP_CXX_FLAGS
-        USE_OPENMP
     )
     
 set ( SCAI_BLAS_WHITELIST

@@ -2,7 +2,7 @@
  * @file kregistry/examples/BenchInterface.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -81,16 +81,16 @@ static void setInterface()
 static void doIt1 ( double x )
 {
     // Usual declaration, the functions are searched with each call
-    KernelContextFunction< double ( * ) ( double ) > add( "E+" );
-    KernelContextFunction< double ( * ) ( double ) > sub( "S-" );
+    KernelContextFunction< double (* ) ( double ) > add( "E+" );
+    KernelContextFunction< double (* ) ( double ) > sub( "S-" );
     x = add[context::Host]( sub[context::Host]( x ) );
 }
 
 static void doIt2 ( double x )
 {
     // static declaration, the functions are searched only in first call
-    static KernelContextFunction< double ( * ) ( double ) > add( "E+" );
-    static KernelContextFunction< double ( * ) ( double ) > sub( "S-" );
+    static KernelContextFunction< double (* ) ( double ) > add( "E+" );
+    static KernelContextFunction< double (* ) ( double ) > sub( "S-" );
     x = add[context::Host]( sub[context::Host]( x ) );
 }
 

@@ -2,7 +2,7 @@
  * @file TFQMR.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,16 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief TFQMR.cpp
- * @author David schissler
+ * @brief Implementation of methods for the TFQMR solver.
+ * @author David Schissler
  * @date 13.05.2015
  */
 
 // hpp
 #include <scai/solver/TFQMR.hpp>
-
-// local library
-#include <scai/solver/mepr/SolverEps.hpp>
 
 // internal scai libraries
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -91,7 +88,7 @@ void TFQMR::initialize( const Matrix& coefficients )
     runtime.mC = 0.0;
     runtime.mEta = 0.0;
     runtime.mTheta = 0.0;
-    runtime.mEps = mepr::SolverEps<SCAI_ARITHMETIC_HOST_LIST>::get( coefficients.getValueType() ) * 3.0;
+    runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     // create dense runtime vectors with same row distribution, type, context as coefficients
     runtime.mVecD.reset( coefficients.newDenseVector() );
     runtime.mInitialR.reset( coefficients.newDenseVector() );

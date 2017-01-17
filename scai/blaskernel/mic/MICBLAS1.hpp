@@ -2,7 +2,7 @@
  * @file MICBLAS1.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -71,25 +71,25 @@ public:
         const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::nrm2
+     * This function is the MIC implementation of BLASKernelTrait::nrm2
      */
     template<typename ValueType>
     static ValueType nrm2( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::asum
+     * This function is the MIC implementation of BLASKernelTrait::asum
      */
     template<typename ValueType>
     static ValueType asum( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::iamax
+     * This function is the MIC implementation of BLASKernelTrait::iamax
      */
     template<typename ValueType>
     static IndexType iamax( const IndexType n, const ValueType* x, const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::swap
+     * This function is the MIC implementation of BLASKernelTrait::swap
      */
     template<typename ValueType>
     static void swap(
@@ -100,7 +100,7 @@ public:
         const IndexType incX );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::copy
+     * This function is the MIC implementation of BLASKernelTrait::copy
      */
     template<typename ValueType>
     static void copy(
@@ -111,7 +111,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::axpy
+     * This function is the MIC implementation of BLASKernelTrait::axpy
      */
     template<typename ValueType>
     static void axpy(
@@ -123,7 +123,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::dot
+     * This function is the MIC implementation of BLASKernelTrait::dot
      */
     template<typename ValueType>
     static ValueType dot(
@@ -134,7 +134,7 @@ public:
         const IndexType incY );
 
     /**
-     * This function is the MIC implementation of scai::lama::BLASKernelTrait::sum
+     * This function is the MIC implementation of BLASKernelTrait::sum
      */
     template<typename ValueType>
     static void sum(
@@ -147,9 +147,17 @@ public:
 
 private:
 
-    /** Routine that registers all methods at the kernel registry. */
+    /** Struct for registration of methods with one template argument.
+     *
+     *  Registration function is wrapped in struct/class that can be used as template
+     *  argument for metaprogramming classes to expand for each supported type
+     */
 
-    SCAI_KREGISTRY_DECL_REGISTRATOR( RegistratorV, template<typename ValueType> )
+    template<typename ValueType>
+    struct RegistratorV
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
 
     /** Helper class for (un) registration of kernel routines at static initialization. */
 

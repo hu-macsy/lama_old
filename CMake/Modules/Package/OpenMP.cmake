@@ -39,22 +39,16 @@
 ### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag
 ### OPENMP_VERSION         - version id
 
-if    ( CMAKE_VERSION VERSION_LESS 2.8.7 )
-	enable_language ( C )
-endif ( CMAKE_VERSION VERSION_LESS 2.8.7 ) 
-
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
 
-include ( Functions/setAndCheckCache )
-setAndCheckCache ( OPENMP ) # sets USE_OPENMP
-set ( USE_OPENMP ${USE_OPENMP} CACHE BOOL "Enable / Disable use of OpenMP" )
-
 # LAMA irrelevant entries will be removed from cmake GUI completely
-set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
+if ( OpenMP_C_FLAGS )
+	set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
+endif ( OpenMP_C_FLAGS )
 
 ## get OpenMP version
 if    ( OPENMP_FOUND )
-	    try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
+	try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}/VersionCheck
         ${CMAKE_MODULE_PATH}/VersionCheck/openmp.cpp
         CMAKE_FLAGS 
@@ -62,8 +56,17 @@ if    ( OPENMP_FOUND )
         COMPILE_OUTPUT_VARIABLE OPENMP_COMPILE_OUTPUT_VAR
         RUN_OUTPUT_VARIABLE OPENMP_RUN_OUTPUT_VAR )
 
-        set ( OPENMP_VERSION ${OPENMP_RUN_OUTPUT_VAR} )
+    set ( OPENMP_VERSION ${OPENMP_RUN_OUTPUT_VAR} )
+
+    if    ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
+			message ( WARNING "Found OpenMP version (${OPENMP_VERSION}) of your compiler (${CMAKE_CXX_COMPILER_ID} v ${CXX_COMPILER_VERSION}) is to old - must be at least ${OMP_MINIMUM_VERSION}, disable OpenMP support!!!" )
+		set ( OPENMP_FOUND FALSE )
+	endif ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
 endif ( OPENMP_FOUND )
+
+include ( Functions/setAndCheckCache )
+setAndCheckCache ( OPENMP ) # sets USE_OPENMP
+set ( USE_OPENMP ${USE_OPENMP} CACHE BOOL "Enable / Disable use of OpenMP" )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )
 

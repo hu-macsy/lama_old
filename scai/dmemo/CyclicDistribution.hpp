@@ -2,7 +2,7 @@
  * @file CyclicDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -85,12 +85,16 @@ public:
     virtual PartitionId getOwner( const IndexType globalIndex ) const;
 
     /**
-     * @brief TODO[doxy] Complete Description.
+     * @brief Query the number of owned indexes on this processor.
      */
     virtual IndexType getLocalSize() const;
 
+    /** Override default implementation Distribution::getMaxLocalSize() */
+
+    virtual IndexType getMaxLocalSize() const;
+
     /**
-     * @brief TODO[doxy] Complete Description.
+     * @brief get number of elements nb in chunk as defined by Cyclic( nb )
      */
     inline IndexType chunkSize() const;
 
@@ -129,18 +133,22 @@ public:
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
+    /** Implementation of pure function Distribution::getBlockDistributionSize.
+     *
+     *  A cyclic distribution Cyclic( globalSize, chunkSize ) is a block distribution
+     *  iff chunkSize * nPartitions <= globalSize, i.e. each processor has maximal one chunk
+     */
+    virtual IndexType getBlockDistributionSize() const;
+
     virtual bool isEqual( const Distribution& other ) const;
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void computeOwners( const std::vector<IndexType>& requiredIndexes, std::vector<PartitionId>& owners ) const;
+    virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
-    /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @param[in] problem TODO[doxy] Complete Description.
-     */
-    void printDistributionVector( std::string problem ) const;
+    /** Override Distribution::getOwnedIndexes with more efficient version. */
+
+    virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
     /** Static method required for create to use in Distribution::Register */
 
@@ -152,7 +160,12 @@ public:
 
     virtual const char* getKind() const
     {
-        return createValue().c_str();
+        return getId();
+    }
+
+    static const char* getId()
+    {
+        return "CYCLIC";
     }
 
 private:

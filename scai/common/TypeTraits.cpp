@@ -2,7 +2,7 @@
  * @file TypeTraits.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,7 +41,11 @@ namespace scai
 namespace common
 {
 
-const scalar::ScalarType TypeTraits<IndexType>::stype;
+const scalar::ScalarType TypeTraits<char>::stype;
+const scalar::ScalarType TypeTraits<int>::stype;
+const scalar::ScalarType TypeTraits<long>::stype;
+const scalar::ScalarType TypeTraits<unsigned int>::stype;
+const scalar::ScalarType TypeTraits<unsigned long>::stype;
 const scalar::ScalarType TypeTraits<float>::stype;
 const scalar::ScalarType TypeTraits<double>::stype;
 const scalar::ScalarType TypeTraits<long double>::stype;

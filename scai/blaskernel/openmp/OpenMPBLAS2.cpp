@@ -2,7 +2,7 @@
  * @file OpenMPBLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of BLAS2 routines used in LAMA with own C++/OpenMP implementations.
+ * @brief Own implementation of BLAS2 kernels for Host using OpenMP parallelization.
  * @author Eric Schricker
  * @date 09.10.2013
  */
@@ -39,6 +39,7 @@
 
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
+#include <scai/tracing.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/macros/unused.hpp>
@@ -73,6 +74,8 @@ void OpenMPBLAS2::gemv(
     ValueType* Y,
     const IndexType incY )
 {
+    SCAI_REGION( "OpenMP.BLAS2.gemv" )
+
     SCAI_LOG_INFO( logger,
                    "gemv<" << common::TypeTraits<ValueType>::id() << ">: M = " << M << ", N = " << N
                    << ", LDA = " << lda << ", incX = " << incX << ", incY = " << incY
@@ -103,11 +106,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
@@ -119,11 +122,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
@@ -142,11 +145,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
@@ -158,11 +161,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
@@ -173,7 +176,19 @@ void OpenMPBLAS2::gemv(
         }
         else if ( TransA == CblasConjTrans )
         {
-            //'C'
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < N; i++ )
+            {
+                ValueType Z = 0;
+
+                for ( IndexType j = 0; j < M; j++ )
+                {
+                    Z += common::Math::conj( A[lda * i + j] ) * X[j * incX];
+                }
+
+                Y[i * incY] = Z * alpha + Y[i * incY] * beta;
+            }
         }
         else
         {
@@ -191,11 +206,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j];
                     }
@@ -207,11 +222,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < M; i++ )
+                for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < N; j++ )
+                    for ( IndexType j = 0; j < N; j++ )
                     {
                         Z += A[lda * i + j] * X[j * incX];
                     }
@@ -229,11 +244,11 @@ void OpenMPBLAS2::gemv(
             {
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
 
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j];
                     }
@@ -245,11 +260,11 @@ void OpenMPBLAS2::gemv(
             {
                 //incX != 1 || incY != 1
                 #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
-                for ( int i = 0; i < N; i++ )
+                for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
 
-                    for ( int j = 0; j < M; j++ )
+                    for ( IndexType j = 0; j < M; j++ )
                     {
                         Z += A[lda * j + i] * X[j * incX];
                     }
@@ -260,7 +275,19 @@ void OpenMPBLAS2::gemv(
         }
         else if ( TransA == CblasConjTrans )
         {
-            //TA = 'N'
+            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+
+            for ( IndexType i = 0; i < N; i++ )
+            {
+                ValueType Z = 0;
+
+                for ( IndexType j = 0; j < M; j++ )
+                {
+                    Z += common::Math::conj( A[lda * j + i] ) * X[j * incX];
+                }
+
+                Y[i * incY] = Z * alpha + Y[i * incY] * beta;
+            }
         }
         else
         {
@@ -280,11 +307,11 @@ void OpenMPBLAS2::gemv(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPBLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
+    SCAI_LOG_DEBUG( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( OpenMPBLAS2::gemv, ctx, flag );
 }
 
@@ -294,13 +321,17 @@ void OpenMPBLAS2::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry
 
 OpenMPBLAS2::OpenMPBLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "register BLAS2 routines for OpenMP in Kernel Registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ADD );
 }
 
 OpenMPBLAS2::~OpenMPBLAS2()
 {
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call(
+    SCAI_LOG_INFO( logger, "unregister BLAS2 routines for OpenMP in Kernel Registry" )
+
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels(
         kregistry::KernelRegistry::KERNEL_ERASE );
 }
 

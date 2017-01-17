@@ -40,7 +40,7 @@
 
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
-find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} )
+find_package ( CUDA ${SCAI_FIND_PACKAGE_FLAGS} ${CUDA_MINIMUM_VERSION})
 
 # find out if host compiler version is supported by CUDA installation
 include ( Compiler/cuda/CheckHostCompilerCompatibility )
@@ -52,6 +52,13 @@ include ( Compiler/cuda/ComputeCapabilityCheck )
 include ( Functions/setAndCheckCache )
 setAndCheckCache ( CUDA )
 set ( USE_CUDA ${USE_CUDA} CACHE BOOL "Enable / Disable use of CUDA" )
+
+# define own FIND_CUDA_HELPER_LIBS macro as it is use in cmakes FindCUDA module
+macro( SCAI_FIND_CUDA_HELPER_LIBS _name) # rename so it is not confused
+	cuda_find_library_local_first(CUDA_${_name}_LIBRARY ${_name} "\"${_name}\" library")
+	mark_as_advanced(CUDA_${_name}_LIBRARY)
+endmacro()
+
 
 set ( CUDA_ENABLED FALSE )
 if ( CUDA_FOUND AND USE_CUDA )
@@ -66,26 +73,44 @@ if ( CUDA_FOUND AND USE_CUDA )
 		include ( Compiler/cuda/SetNVCCFlags )
 	endif ( NOT SCAI_COMPLETE_BUILD )
 	
-	### Older cmake version have not set CUDA_cusparse_LIBRARY
+	### find cuda helper libraries when cmake does not
+	# get directory ov blas library as hint
+	get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
+
+	# cusparse showed up in version 3.2
+	# we expect version 4.0 or higher
+	#if    ( CUDA_VERSION VERSION_LESS "3.2" )
+	#	message ( WARN "CUDA_VERSION ${CUDA_VERSION} does not include cusparse. You need CUDA 3.2 or higher to use it.." )
+	#else  ( CUDA_VERSION VERSION_LESS "3.2" )
 	
-	if ( NOT CUDA_cusparse_LIBRARY )
+		### Older cmake versions do not search for cusparse
+		if ( NOT CUDA_cusparse_LIBRARY )
+			### cusparse is usually in same directory as cublas
+			find_library( CUDA_cusparse_LIBRARY NAMES cusparse HINTS ${HINT_CUDA_LIBRARY_DIR} )
+			mark_as_advanced( CUDA_cusparse_LIBRARY )
+		endif ( NOT CUDA_cusparse_LIBRARY )
+
+	#endif ( CUDA_VERSION VERSION_LESS "3.2" )
 	
-	    ### cusparse is usually in same directory as cublas
-	
-	    get_filename_component( HINT_CUDA_LIBRARY_DIR ${CUDA_cublas_LIBRARY} PATH )
-	
-	    find_library( CUDA_cusparse_LIBRARY NAMES cusparse
-	                  HINTS ${HINT_CUDA_LIBRARY_DIR} )
-	
-	    mark_as_advanced( CUDA_cusparse_LIBRARY )
-	
-	endif ( NOT CUDA_cusparse_LIBRARY )
-	
+	# cusolver showed up in version 7.0
+	if    ( CUDA_VERSION VERSION_LESS "7.0" )
+		message ( WARNING "CUDA_VERSION ${CUDA_VERSION} does not include cusolver. You need CUDA 7.0 or higher to use it." )
+	else  ( CUDA_VERSION VERSION_LESS "7.0" )
+
+		### Older cmake versions do not search for cusolver
+		if    ( NOT CUDA_cusolver_LIBRARY )
+			### cusolver is usually in same directory as cublas
+			find_library( CUDA_cusolver_LIBRARY NAMES cusolver HINTS ${HINT_CUDA_LIBRARY_DIR} )
+			mark_as_advanced( CUDA_cusolver_LIBRARY )
+		endif ( NOT CUDA_cusolver_LIBRARY ) 
+
+	endif ( CUDA_VERSION VERSION_LESS "7.0" )
+
 	# just for making it the same variable ending for all packages
 	set ( SCAI_CUDA_INCLUDE_DIR ${CUDA_INCLUDE_DIRS} )
 	
 	# conclude all needed CUDA libraries
-	set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} )
+	set ( SCAI_CUDA_LIBRARIES ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusparse_LIBRARY} ${CUDA_cusolver_LIBRARY} )
 
 	get_filename_component ( SCAI_CUDA_LIBRARY_PATH ${CUDA_CUDART_LIBRARY} PATH CACHE )
 
@@ -98,6 +123,8 @@ mark_as_advanced ( CUDA_TOOLKIT_ROOT_DIR CUDA_SDK_ROOT_DIR CUDA_VERBOSE_BUILD CU
 set ( CUDA_BUILD_CUBIN "${CUDA_BUILD_CUBIN}" CACHE INTERNAL "" )
 set ( CUDA_BUILD_EMULATION "${CUDA_BUILD_EMULATION}" CACHE INTERNAL "" )
 set ( CUDA_SEPARABLE_COMPILATION "${CUDA_SEPARABLE_COMPILATION}" CACHE INTERNAL "" )
+set ( CUDA_USE_STATIC_CUDA_RUNTIME "${CUDA_USE_STATIC_CUDA_RUNTIME}" CACHE INTERNAL "" )
+set ( CUDA_rt_LIBRARY "${CUDA_rt_LIBRARY}" CACHE INTERNAL "" )
 # CUDA_64_BIT_DEVICE_CODE CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE CUDA_GENERATED_OUTPUT_DIR CUDA_TARGET_CPU_ARCH
 # CUDA_TOOLKIT_INCLUDE CUDA_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_TARGET_DIR
 # CUDA_cublasemu_LIBRARY CUDA_cufft_LIBRARY CUDA_cufftemu_LIBRARY

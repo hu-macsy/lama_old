@@ -2,7 +2,7 @@
  * @file NoDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,44 +43,78 @@
 namespace scai
 {
 
+using namespace hmemo;
+
 namespace dmemo
 {
 
 SCAI_LOG_DEF_LOGGER( NoDistribution::logger, "Distribution.NoDistribution" )
+
+/* ---------------------------------------------------------------------- */
 
 NoDistribution::NoDistribution( const IndexType globalSize )
     : Distribution( globalSize )
 {
 }
 
+/* ---------------------------------------------------------------------- */
+
 NoDistribution::~NoDistribution()
 {
 }
+
+/* ---------------------------------------------------------------------- */
 
 bool NoDistribution::isLocal( const IndexType /* index */ ) const
 {
     return true;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType NoDistribution::getLocalSize() const
 {
     return mGlobalSize;
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType NoDistribution::local2global( const IndexType localIndex ) const
 {
     return localIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType NoDistribution::global2local( const IndexType globalIndex ) const
 {
     return globalIndex;
 }
 
+/* ---------------------------------------------------------------------- */
+
+IndexType NoDistribution::getBlockDistributionSize() const
+{
+    return mGlobalSize;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool NoDistribution::isEqual( const Distribution& other ) const
 {
-    return typeid( *this ) == typeid( other ) && getGlobalSize() == other.getGlobalSize();
+    bool isSame = false;
+
+    bool proven = proveEquality( isSame, other );
+
+    if ( proven )
+    {
+        return isSame;
+    }
+
+    return false;
 }
+
+/* ---------------------------------------------------------------------- */
 
 void NoDistribution::writeAt( std::ostream& stream ) const
 {
@@ -88,28 +122,17 @@ void NoDistribution::writeAt( std::ostream& stream ) const
     stream << "NoDistribution( size = " << mGlobalSize << " )";
 }
 
-void NoDistribution::printDistributionVector( std::string name ) const
+/* ---------------------------------------------------------------------- */
+
+void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
-    if ( mCommunicator->getRank() == MASTER ) // process 0 ist MASTER process
-    {
-        std::ofstream file;
-        file.open( ( name + ".part" ).c_str() );
-        // print row - partition mapping
-        file << "No Distribution: all rows are available on all processes." << std::endl;
-        file.close();
-    }
+    PartitionId root = 0;
+    owners.init( root, indexes.size() );
 }
 
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/
-
-const char NoDistribution::theCreateValue[] = "NO";
-
-std::string NoDistribution::createValue()
-{
-    return theCreateValue;
-}
 
 Distribution* NoDistribution::create( const DistributionArguments arg )
 {

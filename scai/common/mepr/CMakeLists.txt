@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -40,8 +40,6 @@ scai_project(
         TypeList
         TypeListUtils
 
-    CLASSES
-        TemplateSpecifier
 
     ADD_PARENT_SCOPE
 )

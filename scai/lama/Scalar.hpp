@@ -2,7 +2,7 @@
  * @file Scalar.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -71,11 +71,11 @@ namespace lama
  * these operations should be avoided in all critical code parts.
  *
  * ScalarRepType is used internally for the representation of
- * the value. For each supported arithmetic type SCAI_ARITHMETIC_TYPE the following
+ * the value. For each supported arithmetic type SCAI_NUMERIC_TYPES_TYPE the following
  * conversions must be supported:
  *
- *    - ScalarRepType( SCAI_ARITHMETIC_TYPE v )
- *    - SCAI_ARITHMETIC_TYPE( ScalarRepType v )
+ *    - ScalarRepType( SCAI_NUMERIC_TYPES_TYPE v )
+ *    - SCAI_NUMERIC_TYPES_TYPE( ScalarRepType v )
  *
  * Conversion into the representation type and back should be lossless, i. e. the
  * following relation must / should  hold:
@@ -125,7 +125,7 @@ public:
     inline Scalar( const type value ) : mValue( value ) \
     { }
 
-    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ARITHMETIC_TYPES )
+    SCAI_COMMON_LOOP( SCAI_LAMA_SCALAR_CONSTRUCTORS, SCAI_ALL_TYPES )
 
 #undef SCAI_LAMA_SCALAR_CONSTRUCTORS
 
@@ -198,6 +198,24 @@ public:
     {
         return common::Math::imag( mValue ) != common::constants::ZERO;
     }
+
+    /** Return a Scalar with the corresponding eps0 value of a type.
+     *
+     *  @param[in] type is the enum value of the required type
+     *
+     *  @returns TypeTraits<ValueType>::eps0() for ValueType with TypeTraits<ValueType>::sid == type
+     */
+
+    static inline Scalar eps0( const common::scalar::ScalarType type );
+
+    /** Return a Scalar with the corresponding eps1 value of a type.
+     *
+     *  @param[in] type is the enum value of the required type
+     *
+     *  @returns TypeTraits<ValueType>::eps1() for ValueType with TypeTraits<ValueType>::sid == type
+     */
+
+    static inline Scalar eps1( const common::scalar::ScalarType type );
 
 protected:
 
@@ -323,12 +341,30 @@ inline bool operator!=( const Scalar& a, const Scalar& b )
 
 inline bool operator<( const Scalar& a, const Scalar& b )
 {
-    return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
+    if ( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO &&
+            common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+    {
+        // no complex number
+        return common::Math::real( a.getValue<ScalarRepType>() ) < common::Math::real( b.getValue<ScalarRepType>() );
+    }
+    else
+    {
+        return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
+    }
 }
 
 inline bool operator>( const Scalar& a, const Scalar& b )
 {
-    return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
+    if ( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO &&
+            common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+    {
+        // no complex number
+        return common::Math::real( a.getValue<ScalarRepType>() ) > common::Math::real( b.getValue<ScalarRepType>() );
+    }
+    else
+    {
+        return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
+    }
 }
 
 //inline bool operator<=( const Scalar& a, const Scalar& b )
@@ -392,6 +428,61 @@ inline Scalar min( const Scalar a, const Scalar b )
                            common::Math::real( a.getValue<ScalarRepType>() ),
                            common::Math::real( b.getValue<ScalarRepType>() ) ) );
     }
+}
+
+template<typename TList>
+struct TypeTraitAccess;
+
+template<>
+struct TypeTraitAccess<common::mepr::NullType>
+{
+    static Scalar eps1( const common::scalar::ScalarType& )
+    {
+        return Scalar( 0 );
+    }
+
+    static Scalar eps0( const common::scalar::ScalarType& )
+    {
+        return Scalar( 0 );
+    }
+};
+
+template<typename H, typename T>
+struct TypeTraitAccess<common::mepr::TypeList<H, T> >
+{
+    static Scalar eps1( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return Scalar( common::TypeTraits<H>::eps1() );
+        }
+        else
+        {
+            return TypeTraitAccess<T>::eps1( type );
+        }
+    }
+
+    static Scalar eps0( const common::scalar::ScalarType& type )
+    {
+        if ( common::TypeTraits<H>::stype == type )
+        {
+            return Scalar( common::TypeTraits<H>::eps0() );
+        }
+        else
+        {
+            return TypeTraitAccess<T>::eps0( type );
+        }
+    }
+};
+
+Scalar Scalar::eps0( const common::scalar::ScalarType type )
+{
+    return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps0( type );
+}
+
+Scalar Scalar::eps1( const common::scalar::ScalarType type )
+{
+    return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps1( type );
 }
 
 } /* end namespace lama */

@@ -2,7 +2,7 @@
  * @file macros/logging.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -244,6 +244,7 @@
 #define SCAI_LOG_FATAL_ON(logger) (false)
 
 #endif // SCAI_LOG_FATAL_ENABLED
+
 /*******************************************************
  *   SCAI_LOG_TRACE                                    *
  *******************************************************/
@@ -253,7 +254,7 @@
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
         \
-        if ( &cLogger && cLogger.isTraceEnabled() )         \
+        if ( cLogger.isTraceEnabled() )                     \
         {                                                   \
             std::ostringstream omsg;                        \
             omsg << msg;                                    \
@@ -261,7 +262,13 @@
         }                                                   \
     }
 #else
-#define SCAI_LOG_TRACE(logger,msg) { if (false){ std::cout<<msg; } }
+#define SCAI_LOG_TRACE( logger, msg )                       \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -272,7 +279,7 @@
 #define SCAI_LOG_DEBUG( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-        if ( &cLogger && cLogger.isDebugEnabled() )         \
+        if ( cLogger.isDebugEnabled() )                     \
         {                                                   \
             std::ostringstream omsg;                        \
             omsg << msg;                                    \
@@ -297,7 +304,7 @@
 #define SCAI_LOG_INFO( logger, msg )                        \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-        if ( &cLogger && cLogger.isInfoEnabled() )          \
+        if ( cLogger.isInfoEnabled() )                      \
         {                                                   \
             std::ostringstream omsg;                        \
             omsg << msg;                                    \
@@ -322,7 +329,7 @@
 #define SCAI_LOG_WARN( logger, msg )                        \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-        if ( &cLogger && cLogger.isWarnEnabled() )          \
+        if ( cLogger.isWarnEnabled() )                      \
         {                                                   \
             std::ostringstream omsg;                        \
             omsg << msg;                                    \
@@ -330,7 +337,13 @@
         }                                                   \
     }
 #else
-#define SCAI_LOG_WARN( logger, msg ) { if ( false ) { std::cout << msg; }  }
+#define SCAI_LOG_WARN( logger, msg )                        \
+    {                                                       \
+        if ( false )                                        \
+        {                                                   \
+            std::cout << msg;                               \
+        }                                                   \
+    }
 #endif
 
 /*******************************************************
@@ -341,7 +354,7 @@
 #define SCAI_LOG_ERROR( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-        if ( &cLogger && cLogger.isErrorEnabled() )         \
+        if ( cLogger.isErrorEnabled() )                     \
         {                                                   \
             std::ostringstream omsg;                        \
             omsg << msg;                                    \
@@ -366,7 +379,7 @@
 #define SCAI_LOG_FATAL( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-        if ( &cLogger && cLogger.isFatalEnabled() )         \
+        if ( cLogger.isFatalEnabled() )                     \
         {                                                   \
             std::ostringstream omsg;                        \
             omsg << msg;                                    \
@@ -389,7 +402,7 @@
 
 #ifdef SCAI_LOG_LEVEL_OFF
 
-#define SCAI_LOG_THREAD( name )                  \
+#define SCAI_LOG_THREAD( name )                      \
     {                                                \
         if ( false )                                 \
         {                                            \
@@ -403,7 +416,7 @@
 
 // macro defines a name for the current thread
 
-#define SCAI_LOG_THREAD( name )                                            \
+#define SCAI_LOG_THREAD( name )                                                \
     {                                                                          \
         std::ostringstream oname;                                              \
         oname << name;                                                         \

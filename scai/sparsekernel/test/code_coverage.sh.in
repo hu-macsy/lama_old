@@ -1,0 +1,90 @@
+###
+ # @file sparsekernel/test/code_coverage.sh
+ #
+ # @license
+ # Copyright (c) 2009-2017
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the SCAI framework LAMA.
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ #
+ # Other Usage
+ # Alternatively, this file may be used in accordance with the terms and
+ # conditions contained in a signed written agreement between you and
+ # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ # @endlicense
+ #
+ # @brief This file is a shellscript, which contains all necessary steps to 
+ #        measure code coverage of LAMA subproject sparsekernel.
+ # @author Lauretta Schubert, Thomas Brandes
+ # @date 15.08.2012
+###
+
+source scai_code_coverage_functions.sh
+
+# Check requirements for codecoverage
+requirements_coverage
+
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
+
+prepare_coverage $dirname ../..
+
+export SCAI_LOG=WARN
+export SCAI_TRACE=time
+
+error_count=0
+
+# Running tests serial
+
+# Note: SCAI_USE_MKL is used during static initialization, passing as command line arg is too late
+
+echo "Running sparsekernel tests on Host using own OpenMP implementations"
+export SCAI_USE_MKL=0
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host
+echo "Running sparsekernel tests on Host using MKL sparse library routines"
+export SCAI_USE_MKL=1
+count_error ./sparsekernelTest --SCAI_CONTEXT=Host 
+
+if [ -d ../cuda ];
+then
+    # Running sparsekernel CUDA tests, without and with using CUsparse library
+    # Note: SCAI_CUDA_USE_CUSPARSE is used during static initialization, passing as command line arg is too late
+    echo "Running sparsekernel tests on CUDA device using own implementations( with/without Texture/SharedMem )"
+    export SCAI_CUDA_USE_CUSPARSE=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=0
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=0 --SCAI_CUDA_USE_SHARED_MEM=1
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=0 
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA --SCAI_CUDA_USE_TEXTURE=1 --SCAI_CUDA_USE_SHARED_MEM=1 
+    echo "Running sparsekernel tests on CUDA device using CUsparse library routines"
+    export SCAI_CUDA_USE_CUSPARSE=1
+    count_error ./sparsekernelTest --SCAI_CONTEXT=CUDA 
+fi
+
+if [ -d ../mic ]
+then
+    #Running sparsekernel MIC tests
+    echo "Running sparsekernel tests with MIC context"
+    count_error ./sparsekernelTest --SCAI_CONTEXT=MIC
+fi
+
+exit_on_failure ${error_count}
+
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
+
+exit_on_failure $?
+
+zip -qr ../sparsekernel_coverage.zip *

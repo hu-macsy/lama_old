@@ -2,7 +2,7 @@
  * @file IterativeSolver.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -172,7 +172,7 @@ const SolverPtr IterativeSolver::getPreconditioner() const
     return mPreconditioner;
 }
 
-int IterativeSolver::getIterationCount() const
+IndexType IterativeSolver::getIterationCount() const
 {
     return getConstRuntime().mIterations;
 }

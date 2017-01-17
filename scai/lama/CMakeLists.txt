@@ -2,7 +2,7 @@
  # @file scai/lama/CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -53,6 +53,7 @@ include ( VersionDefinition )
 include ( SetProjectVariables)
 include ( Dependencies/internal )
 include ( Dependencies/external )
+include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
 include ( Functions/scaiFunctions )
@@ -72,7 +73,7 @@ endif ( NOT SCAI_COMPLETE_BUILD )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
-    include( Package/Boost )
+    include( Package/BoostTest )
 endif ( BUILD_TEST )
 
 ### include all search packages
@@ -107,7 +108,6 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         DenseVector
-        StorageIO
         Vector
 
     HEADERS                  # .hpp only
@@ -142,8 +142,7 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### set link directories ###
 if ( WIN32 )
-    set ( LAMAPP_LINK_DIRECTORIES ${LAMAPP_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS} )
-	link_directories ( ${LAMAPP_LINK_DIRECTORIES} )
+	link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
 ### add library ###
@@ -157,6 +156,10 @@ addInternalAndExternalLinkLibraries()
 if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
     target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
 endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
+
+if ( USE_ZLIB AND ZLIB_FOUND ) 
+    target_link_libraries ( ${PROJECT_NAME} ${ZLIB_LIBRARY} )
+endif ( USE_ZLIB AND ZLIB_FOUND ) 
 
 ### install ###
 

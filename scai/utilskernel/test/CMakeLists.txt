@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -42,7 +42,8 @@ scai_project (
 
     SOURCES
 
-        ReductionOpTest
+        UnaryOpTest
+        BinaryOpTest
         UtilsKernelTest
         HArrayUtilsTest
         UtilsTest
@@ -60,7 +61,9 @@ target_link_libraries ( utilskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${P
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
 
 if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
+    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" 
+                    "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" 
+                    @ONLY )
     file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
            FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )

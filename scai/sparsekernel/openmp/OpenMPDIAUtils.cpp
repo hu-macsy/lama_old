@@ -2,7 +2,7 @@
  * @file OpenMPDIAUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -69,6 +69,28 @@ SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 
+IndexType OpenMPDIAUtils::getValuePos( const IndexType i,
+                                       const IndexType j,
+                                       const IndexType numRows,
+                                       const IndexType diaOffsets[],
+                                       const IndexType numDiagonals )
+{
+    IndexType pos = nIndex;
+
+    for ( IndexType d = 0; d < numDiagonals; ++d )
+    {
+        if ( i + diaOffsets[d] == j )
+        {
+            pos = i + d * numRows;
+            break;
+        }
+    }
+
+    return pos;
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType numRows,
@@ -77,10 +99,12 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    ValueType maxValue = 0;
+
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        ValueType threadVal = 0;
+
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -89,7 +113,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
             {
                 const IndexType j = i + diaOffsets[d];
 
-                if ( ( j < 0 ) || ( j >= numColumns ) )
+                if ( ! common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
@@ -173,7 +197,7 @@ void OpenMPDIAUtils::getCSRValues(
     // go through the DIA the same way again and copy the non-zeros
     #pragma omp parallel
     {
-        SCAI_REGION( "OpenMP.DIA->CSR_values" )
+        SCAI_REGION( "OpenMP.DIA.getCSR" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
@@ -197,17 +221,13 @@ void OpenMPDIAUtils::getCSRValues(
             {
                 IndexType j = i + diaOffsets[ii];
 
-                if ( j < 0 )
+                if ( !common::Utils::validIndex( j, numColumns ) )
                 {
                     continue;
                 }
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
                 const DIAValueType value = diaValues[i + ii * numRows];
+
                 bool nonZero = common::Math::abs( value ) > eps;
 
                 if ( nonZero )
@@ -256,14 +276,9 @@ void OpenMPDIAUtils::getCSRSizes(
         {
             IndexType j = i + diaOffsets[ii]; // column index
 
-            if ( j < 0 )
+            if ( !common::Utils::validIndex( j, numColumns ) )
             {
                 continue;
-            }
-
-            if ( j >= numColumns )
-            {
-                break;
             }
 
             bool nonZero = common::Math::abs( diaValues[i + ii * numRows] ) > eps;
@@ -335,45 +350,32 @@ void OpenMPDIAUtils::normalGEMV(
     SCAI_LOG_INFO( logger,
                    "normalGEMV<" << TypeTraits<ValueType>::id() << ", #threads = " << omp_get_max_threads()
                    << ">, result[" << numRows << "] = " << alpha << " * A( dia, #diags = " << numDiagonals << " ) * x + " << beta << " * y " )
+
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
-    utilskernel::OpenMPUtils::setScale( result, beta, y, numRows );
+
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.normalGEMV" )
+
         #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
-            ValueType accu = static_cast<ValueType>( 0.0 );
+            ValueType accu = 0;
 
             for ( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
                 const IndexType j = i + diaOffsets[ii];
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, numColumns ) )
                 {
                     accu += diaValues[ii * numRows + i] * x[j];
                 }
             }
 
             result[i] += alpha * accu;
-        }
-
-        if ( SCAI_LOG_TRACE_ON( logger ) )
-        {
-            std::cout << "NormalGEMV: result = ";
-
-            for ( IndexType i = 0; i < numRows; ++i )
-            {
-                std::cout << " " << result[i];
-            }
-
-            std::cout << std::endl;
         }
     }
 }
@@ -430,48 +432,31 @@ void OpenMPDIAUtils::normalGEVM(
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
-    utilskernel::OpenMPUtils::setScale( result, beta, y, numColumns );
+
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.normalGEVM" )
-        #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
 
-        for ( IndexType k = 0; k < numColumns; ++k )
+        #pragma omp for
+
+        for ( IndexType j = 0; j < numColumns; j++ )
         {
-            ValueType accu = static_cast<ValueType>( 0.0 );
+            ValueType accu = 0;
 
-            for ( IndexType i = 0; i < numRows; i++ )
+            for ( IndexType ii = 0; ii < numDiagonals; ++ii )
             {
-                for ( IndexType ii = 0; ii < numDiagonals; ++ii )
+                const IndexType i = j - diaOffsets[ii];
+
+                if ( common::Utils::validIndex( i, numRows ) )
                 {
-                    const IndexType j = i + diaOffsets[ii];
-
-                    if ( j >= numColumns )
-                    {
-                        break;
-                    }
-
-                    if ( j == k )
-                    {
-                        accu += diaValues[ii * numRows + i] * x[i];
-                    }
+                    accu += diaValues[ii * numRows + i] * x[i];
                 }
             }
 
-            result[k] += alpha * accu;
+            result[j] += alpha * accu;
         }
-    }
-
-    if ( SCAI_LOG_TRACE_ON( logger ) )
-    {
-        std::cout << "NormalGEVM: result = ";
-
-        for ( IndexType i = 0; i < numRows; ++i )
-        {
-            std::cout << " " << result[i];
-        }
-
-        std::cout << std::endl;
     }
 }
 
@@ -502,6 +487,9 @@ void OpenMPDIAUtils::jacobi(
         SCAI_LOG_ERROR( logger, "jacobi called asynchronously, not supported here" )
     }
 
+    ValueType omega1 = 1;
+    omega1 -= omega;
+
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.Jacobi" )
@@ -516,31 +504,38 @@ void OpenMPDIAUtils::jacobi(
             {
                 const IndexType j = i + diaOffset[ii];
 
-                if ( j >= numColumns )
-                {
-                    break;
-                }
-
-                if ( j >= 0 )
+                if ( common::Utils::validIndex( j, numColumns ) )
                 {
                     temp -= diaValues[ii * numRows + i] * oldSolution[j];
                 }
             }
 
-            solution[i] = omega * ( temp / diag ) + ( static_cast<ValueType>( 1.0 ) - omega ) * oldSolution[i];
+            solution[i] = omega * ( temp / diag ) + omega1 * oldSolution[i];
         }
     }
 }
 
 /* --------------------------------------------------------------------------- */
+/* Registrator classes, method registerKernels                                 */
+/* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPDIAUtils::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag << "]" )
+    KernelRegistry::set<DIAKernelTrait::getValuePos>( getValuePos, ctx, flag );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPDIAUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    common::context::ContextType ctx = common::context::Host;
+    SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<DIAKernelTrait::getCSRSizes<ValueType> >( getCSRSizes, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::absMaxVal<ValueType> >( absMaxVal, ctx, flag );
     KernelRegistry::set<DIAKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
@@ -548,13 +543,15 @@ void OpenMPDIAUtils::RegistratorV<ValueType>::initAndReg( kregistry::KernelRegis
     KernelRegistry::set<DIAKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, typename OtherValueType>
-void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregistry::KernelRegistry::KernelRegistryFlag flag )
+void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     common::context::ContextType ctx = common::context::Host;
-    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
-                   << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+    SCAI_LOG_DEBUG( logger, "register DIAUtils OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<DIAKernelTrait::getCSRValues<ValueType, OtherValueType> >( getCSRValues, ctx, flag );
 }
 
@@ -564,16 +561,24 @@ void OpenMPDIAUtils::RegistratorVO<ValueType, OtherValueType>::initAndReg( kregi
 
 OpenMPDIAUtils::OpenMPDIAUtils()
 {
+    SCAI_LOG_INFO( logger, "register DIAUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPDIAUtils::~OpenMPDIAUtils()
 {
+    SCAI_LOG_INFO( logger, "unregister DIAUtils OpenMP-routines for Host at kernel registry" )
+
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
-    kregistry::mepr::RegistratorV<RegistratorV, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
-    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_ARITHMETIC_HOST_LIST, SCAI_ARITHMETIC_HOST_LIST>::call( flag );
+
+    Registrator::registerKernels( flag );
+    kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<RegistratorVO, SCAI_NUMERIC_TYPES_HOST_LIST, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
  * @file solver/test/TFQMRTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief TFQMRT.cpp
+ * @brief Specific test routines for the solver class TFQMRT.
  * @author Jan Ecker
  * @date 09.03.2016
  */

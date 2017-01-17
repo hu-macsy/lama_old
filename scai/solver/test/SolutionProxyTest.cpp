@@ -2,7 +2,7 @@
  * @file SolutionProxyTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Contains the implementation of the class SolutionProxyTest
- * @author Alexander Büchel, Matthias Makulla
+ * @brief Test routines for the class SolutionProxy.
+ * @author Matthias Makulla, Jiri Kraus
  * @date 03.02.2012
  */
 

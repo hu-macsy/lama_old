@@ -2,7 +2,7 @@
  * @file Communicator.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,6 +43,8 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/unique_ptr.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <locale>
 #include <string>
@@ -86,17 +88,7 @@ SCAI_LOG_DEF_LOGGER( Communicator::logger, "Communicator" )
 
 CommunicatorPtr Communicator::getCommunicatorPtr( const CommunicatorKind& type )
 {
-    SCAI_LOG_TRACE( logger, "Get communicator of type " << type )
-
-    if ( canCreate( type ) )
-    {
-        return create( type );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "could not get communicator " << type << ", take default one" )
-        return getDefaultCommunicatorPtr();
-    }
+    return create( type );
 }
 
 CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
@@ -152,8 +144,16 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
     return getDefaultCommunicatorPtr();
 }
 
-Communicator::Communicator( const CommunicatorKind& type )
-    : mCommunicatorType( type )
+/* -----------------------------------------------------------------------------*/
+
+Communicator::Communicator( const CommunicatorKind& type ) :
+
+    mCommunicatorType( type ),
+    mRank( 0 ),
+    mSize( 1 ),
+    mNodeRank( 0 ),
+    mNodeSize( 1 ),
+    mSeed( 4711 )
 {
     SCAI_LOG_DEBUG( logger, "Communicator constructed, type = " << type )
 }
@@ -176,10 +176,42 @@ bool Communicator::operator!=( const Communicator& other ) const
 void Communicator::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "Communicator";
+    stream << "Communicator( type = " << mCommunicatorType << " )";
 }
 
-void Communicator::factorize2( const double sizeX, const double sizeY, PartitionId procgrid[2] ) const
+/* -------------------------------------------------------------------------- */
+
+void Communicator::setSizeAndRank( PartitionId size, PartitionId rank )
+{
+    mSize = size;
+    mRank = rank;
+    setSeed( mSeed );
+}
+
+void Communicator::setSeed( int seed ) const
+{
+    if ( seed == mSeed )
+    {
+        return;
+    }
+
+    mSeed = seed;
+
+    if ( mSize == 1 )
+    {
+        // all processors must have the same random numbers
+        std::srand( mSeed );
+    }
+    else
+    {
+        // processors must generate different numbers
+        std::srand( mSeed + mRank );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+void Communicator::factorize2( PartitionId procgrid[2], const double sizeX, const double sizeY ) const
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
@@ -230,17 +262,19 @@ void Communicator::factorize2( const double sizeX, const double sizeY, Partition
                    "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] )
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::factorize3(
+    PartitionId procgrid[3],
     const double sizeX,
     const double sizeY,
-    const double sizeZ,
-    PartitionId procgrid[3] ) const
+    const double sizeZ ) const
 {
     PartitionId usergrid[3];
     getUserProcArray( usergrid );
     // assign partitions to 3d grid so as to minimize surface area
     double area[3] =
-    { sizeX * sizeY, sizeX * sizeZ, sizeY * sizeZ };
+    { sizeX* sizeY, sizeX* sizeZ, sizeY* sizeZ };
     double bestsurf = 2.0 * ( area[0] + area[1] + area[2] );
     // try all possible factorizations of size
     // surface = surface area of a proc sub-domain
@@ -304,6 +338,8 @@ void Communicator::factorize3(
                    "Best processor factorization of size = " << size << ": " << procgrid[0] << " x " << procgrid[1] << " x " << procgrid[2] )
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[2] ) const
 {
     SCAI_ASSERT_EQ_ERROR( getSize(), procgrid[0] * procgrid[1], "size mismatch for 2D grid" )
@@ -315,6 +351,8 @@ void Communicator::getGrid2Rank( PartitionId pos[2], const PartitionId procgrid[
     SCAI_LOG_INFO( logger,
                    *this << ": is (" << pos[0] << "," << pos[1] << ") of (" << procgrid[0] << "," << procgrid[1] << ")" )
 }
+
+/* -------------------------------------------------------------------------- */
 
 void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[3] ) const
 {
@@ -331,26 +369,31 @@ void Communicator::getGrid3Rank( PartitionId pos[3], const PartitionId procgrid[
                    *this << ": is (" << pos[0] << "," << pos[1] << "," << pos[2] << ") of (" << procgrid[0] << "," << procgrid[1] << "," << procgrid[2] << ")" )
 }
 
+/* -------------------------------------------------------------------------- */
+
 void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 {
-    const char* np4lama = getenv( "LAMA_NP" );
+    std::string npString;
+
+    bool hasNP = common::Settings::getEnvironment( npString, "SCAI_NP" );
+
     userProcArray[0] = 0;
     userProcArray[1] = 0;
     userProcArray[2] = 0;
-    const std::string delimiters = " x_";
 
-    if ( np4lama )
+    if ( hasNP )
     {
-        std::string str( np4lama );
+        const std::string delimiters = " x_";
+
         int offset = 0;
-        std::string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
+        std::string::size_type lastPos = npString.find_first_not_of( delimiters, 0 );
         // Find first "non-delimiter".
-        std::string::size_type pos = str.find_first_of( delimiters, lastPos );
+        std::string::size_type pos = npString.find_first_of( delimiters, lastPos );
 
         while ( std::string::npos != pos || std::string::npos != lastPos )
         {
             // Found a token
-            std::istringstream val( str.substr( lastPos, pos - lastPos ) );
+            std::istringstream val( npString.substr( lastPos, pos - lastPos ) );
 
             if ( offset > 2 )
             {
@@ -359,17 +402,17 @@ void Communicator::getUserProcArray( PartitionId userProcArray[3] )
 
             val >> userProcArray[offset++];
             // Skip delimiters.  Note the "not_of"
-            lastPos = str.find_first_not_of( delimiters, pos );
+            lastPos = npString.find_first_not_of( delimiters, pos );
             // Find next "non-delimiter"
-            pos = str.find_first_of( delimiters, lastPos );
+            pos = npString.find_first_of( delimiters, lastPos );
         }
 
         SCAI_LOG_INFO( logger,
-                       "LAMA_NP=" << np4lama << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
+                       "SCAI_NP=" << npString << " -> userProcArray " << userProcArray[0] << " x " << userProcArray[1] << " x " << userProcArray[2] )
     }
     else
     {
-        SCAI_LOG_INFO( logger, "environment variable LAMA_NP no set" )
+        SCAI_LOG_INFO( logger, "environment variable SCAI_NP no set" )
     }
 }
 
@@ -395,6 +438,27 @@ IndexType Communicator::shift0(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::sumArray( HArray<ValueType>& array ) const
+{
+    ContextPtr commContext = getCommunicationContext( array );
+
+    SCAI_LOG_INFO( logger, "sumArray<" << common::TypeTraits<ValueType>::id() 
+                           << " at this context " << *commContext << ", array = " << array )
+
+    SCAI_CONTEXT_ACCESS( commContext );
+
+    IndexType numElems = array.size();
+
+    WriteAccess<ValueType> data( array, commContext );
+
+    // alias of inValues and outValues, sumImpl can deal with it
+
+    sumImpl( data.get(), data.get(), numElems, common::TypeTraits<ValueType>::stype );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void Communicator::shiftArray(
     HArray<ValueType>& recvArray,
     const HArray<ValueType>& sendArray,
@@ -410,9 +474,13 @@ void Communicator::shiftArray(
     }
 
     ContextPtr commContext = getCommunicationContext( sendArray );
-    SCAI_LOG_INFO( logger,
-                   "shiftArray at this context " << *commContext << ", sendArray = " << sendArray
+
+    SCAI_LOG_INFO( logger, "shiftArray<" << common::TypeTraits<ValueType>::id() 
+                   << " at this context " << *commContext << ", sendArray = " << sendArray
                    << ", recvArray = " << recvArray )
+
+    SCAI_CONTEXT_ACCESS( commContext )
+
     ReadAccess<ValueType> sendData( sendArray, commContext );
     IndexType numSendElems = sendData.size();
     // make recv array large enough to fit for send data
@@ -420,7 +488,7 @@ void Communicator::shiftArray(
     // but we are able to receive even more data if array is large enough
     IndexType maxNumRecvElems = recvData.capacity();
     // For shifting of data we use the pure virtual methods implemened by each communicator
-    IndexType numRecvElems = shiftData( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
+    IndexType numRecvElems = shift( recvData.get(), maxNumRecvElems, sendData.get(), numSendElems, direction );
     SCAI_LOG_DEBUG( logger,
                     "shift, direction = " << direction << ", sent " << numSendElems
                     << ", recvd " << numRecvElems << "( max was " << maxNumRecvElems << ")" )
@@ -436,15 +504,21 @@ SyncToken* Communicator::shiftAsync(
     const int direction ) const
 {
     SCAI_ASSERT_ERROR( &recvArray != &sendArray, "send and receive array are same, not allowed for shift" )
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+
+    // ToDo: not quite clear how to deal with asynchronous communication on other devices
+
+    ContextPtr commContext = Context::getHostPtr();
+
+    SCAI_CONTEXT_ACCESS( commContext )
+
     recvArray.clear(); // do not keep any old data, keep capacities
-    WriteAccess<ValueType> recvData( recvArray, contextPtr );
-    ReadAccess<ValueType> sendData( sendArray, contextPtr );
+    WriteAccess<ValueType> recvData( recvArray, commContext );
+    ReadAccess<ValueType> sendData( sendArray, commContext );
     IndexType numElems = sendData.size();
     recvData.resize( numElems ); // size should fit at least to keep own data
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
-    common::unique_ptr<SyncToken> syncToken( shiftDataAsync( recvData.get(), sendData.get(), numElems, direction ) );
+    common::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
     SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
     // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
     syncToken->pushRoutine( sendData.releaseDelayed() );
@@ -468,24 +542,17 @@ void Communicator::updateHalo(
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
     SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
+
     // Before we exchange by plan, we have to pack local values to send
     // Note: A previous MPI implementation took advantage of packing the data after
     //       starting the receives. This is here no more possible. But we might now
     //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
+
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
-    // TODO: HArrayUtils::gather( sendValues, localValues, halo.getProvidesIndexes() );
-    {
-        ReadAccess<ValueType> local( localValues );
-        ReadAccess<IndexType> ind ( halo.getProvidesIndexes() );
-        IndexType nValues = ind.size();
-        WriteOnlyAccess<ValueType> send ( sendValues, nValues );
 
-        for ( IndexType i = 0; i < nValues; ++i )
-        {
-            send[i] = local[ ind[i] ];
-        }
-    }
+    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), utilskernel::binary::COPY );
+
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
 
@@ -512,27 +579,22 @@ SyncToken* Communicator::updateHaloAsync(
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
     SCAI_ASSERT_ERROR( providesPlan.allocated(), "Provides plan in Halo not allocated" )
     SCAI_ASSERT_ERROR( providesPlan.size() < getSize(), "Provides plan in Halo mismatches size of communicator" )
+
     // Before we exchange by plan, we have to pack local values to send
     // Note: A previous MPI implementation took advantage of packing the data after
     //       starting the receives. This is here no more possible. But we might now
     //       pack the data already on the GPU and can avoid gpu->host transfer of all localValues
+
     IndexType numSendValues = providesPlan.totalQuantity();
+
     common::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
+
     // put together the (send) values to provide for other partitions
-    {
-        ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
-        WriteAccess<ValueType> sendData( *sendValues, contextPtr );
-        ReadAccess<ValueType> localData( localValues, contextPtr );
-        ReadAccess<IndexType> sendIndexes( halo.getProvidesIndexes(), contextPtr );
 
-        // currently supported only on host
+    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), utilskernel::binary::COPY );
 
-        for ( IndexType i = 0; i < numSendValues; i++ )
-        {
-            sendData[i] = localData[sendIndexes[i]];
-        }
-    }
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
+
     // Also push the sendValues array to the token so it will be freed after synchronization
     // Note: it is guaranteed that access to sendValues is freed before sendValues
     token->pushRoutine( common::bind( releaseArray, sendValues ) );
@@ -544,14 +606,32 @@ SyncToken* Communicator::updateHaloAsync(
 /* -------------------------------------------------------------------------- */
 
 void Communicator::computeOwners(
+    hmemo::HArray<PartitionId>& owners,
+    const Distribution& distribution,
+    const hmemo::HArray<IndexType>& requiredIndexes ) const
+{
+    hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
+
+    IndexType nIndexes = requiredIndexes.size();
+
+    hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, ctx, nIndexes );
+    hmemo::ReadAccess<IndexType> rIndexes( requiredIndexes, ctx );
+
+    computeOwners( wOwners.get(), distribution, rIndexes.get(), nIndexes );
+}
+
+void Communicator::computeOwners(
     PartitionId owners[],
     const Distribution& distribution,
     const IndexType requiredIndexes[],
     const IndexType nIndexes ) const
 {
+    // Note: this routine is only supported on Host, may change in future releases
+
     PartitionId rank = getRank();
     PartitionId size = getSize();
-    SCAI_LOG_DEBUG( logger, "need owners for " << nIndexes << " global indexes" )
+
+    SCAI_LOG_INFO( logger, "need owners for " << nIndexes << " global indexes" )
 
     if ( distribution.getCommunicator() != *this )
     {
@@ -561,6 +641,7 @@ void Communicator::computeOwners(
     IndexType nonLocal = 0;
 
     // Check for own ownership. Mark needed Owners. Only exchange requests for unknown indexes.
+
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
         if ( distribution.isLocal( requiredIndexes[i] ) )
@@ -570,11 +651,11 @@ void Communicator::computeOwners(
         else
         {
             nonLocal++;
-            owners[i] = nIndex;
+            owners[i] = nPartition;
         }
     }
 
-    SCAI_LOG_DEBUG( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
+    SCAI_LOG_INFO( logger, nIndexes - nonLocal << " Indexes are local. Only need to send " << nonLocal << " values." )
     IndexType receiveSize = max( nonLocal ); // --> pure method call
     SCAI_LOG_DEBUG( logger, "max size of receive buffer is " << receiveSize )
     // Allocate the maximal needed size for the communication buffers
@@ -582,7 +663,9 @@ void Communicator::computeOwners(
     HArray<IndexType> indexesReceiveArray( receiveSize );
     HArray<IndexType> ownersSendArray( receiveSize );
     HArray<IndexType> ownersReceiveArray( receiveSize );
-    ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
     {
         WriteAccess<IndexType> indexesSend( indexesSendArray, contextPtr );
         WriteAccess<IndexType> ownersSend( ownersSendArray, contextPtr );
@@ -600,14 +683,14 @@ void Communicator::computeOwners(
 
         for ( IndexType i = 0; i < receiveSize; ++i )
         {
-            ownersSend[i] = nIndex;
+            ownersSend[i] = nPartition;
         }
     }
     IndexType ownersSize = nIndex;
     IndexType currentSize = nonLocal;
     const int direction = 1; // send to right, recv from left
 
-    for ( int iProc = 0; iProc < size - 1; ++iProc )
+    for ( PartitionId iProc = 0; iProc < size - 1; ++iProc )
     {
         WriteAccess<IndexType> indexesSend( indexesSendArray, contextPtr );
         WriteAccess<IndexType> indexesReceive( indexesReceiveArray, contextPtr );
@@ -616,7 +699,7 @@ void Communicator::computeOwners(
         SCAI_LOG_DEBUG( logger,
                         *this << " shift: recv " << receiveSize << ", send " << currentSize << ", direction = " << direction )
         // --->   Pure method call
-        currentSize = shiftData( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
+        currentSize = shift( indexesReceive.get(), receiveSize, indexesSend.get(), currentSize, direction );
         SCAI_ASSERT_ERROR( ownersSize == nIndex || currentSize == ownersSize, "Communication corrupted." )
         SCAI_LOG_DEBUG( logger, "owners size = " << ownersSize << ", current size = " << currentSize )
         IndexType* indexes = indexesReceive.get();
@@ -648,7 +731,7 @@ void Communicator::computeOwners(
         }
 
         // --->   Pure method call
-        ownersSize = shiftData( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
+        ownersSize = shift( ownersReceive.get(), receiveSize, ownersSend.get(), currentSize, direction );
         SCAI_LOG_DEBUG( logger, *this << ": recvd array with " << ownersSize << " owners from left" )
 
         for ( IndexType i = 0; i < ownersSize; i++ )
@@ -664,28 +747,25 @@ void Communicator::computeOwners(
 
     WriteAccess<IndexType> ownersSend( ownersSendArray, contextPtr );
 
-    for ( int i = 0; i < nonLocal; ++i )
+    for ( IndexType i = 0; i < nonLocal; ++i )
     {
         SCAI_LOG_TRACE( logger,
                         *this << ": final " << i << " of " << nonLocal << ": " << requiredIndexes[i] << ", owner = " << ownersSend[i] )
     }
 
     // The Owner Indexes are always passed in the same order, so we can insert them easily.
-    int nn = 0;
+
+    IndexType nn = 0;
 
     for ( IndexType i = 0; i < nIndexes; ++i )
     {
-        if ( owners[i] == nIndex )
+        if ( owners[i] == nPartition )
         {
             owners[i] = ownersSend[nn++];
-
-            //TODO is this usefull for the speed ?
-            if ( nn == nonLocal )
-            {
-                break;
-            }
         }
     }
+
+    SCAI_ASSERT_EQUAL( nn, nonLocal, "serious mismatch" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -745,7 +825,283 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
     }
 }
 
-// Instantiation of template methods for the supported types
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::all2allv( ValueType* recvVal[], IndexType recvCount[],
+                             ValueType* sendVal[], IndexType sendCount[] ) const
+{
+    all2allvImpl( reinterpret_cast<void**>( recvVal ), recvCount,
+                  reinterpret_cast<void**>( sendVal ), sendCount,
+                  common::TypeTraits<ValueType>::stype );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::maxlocDefault( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    SCAI_LOG_INFO( logger, *this << ": maxlocDefault<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    ValueType maxVal = max( val );
+
+    IndexType myMaxLocation = nIndex;
+
+    if ( maxVal == val )
+    {
+        myMaxLocation = location;
+    }
+
+    common::scoped_array<IndexType> allMaxLocations( new IndexType[ getSize() ] );
+
+    gather( allMaxLocations.get(), 1, root, &myMaxLocation );
+
+    if ( getRank() == root )
+    {
+        // find first defined location
+
+        for ( PartitionId p = 0; p < getSize(); ++p )
+        {
+            if ( allMaxLocations[p] != nIndex )
+            {
+                location = allMaxLocations[p];
+                SCAI_LOG_DEBUG( logger, *this << ": maxlocDefault location = " << location << " @ " << p )
+                break;
+            }
+        }
+
+        val = maxVal;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::minlocDefault( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    SCAI_LOG_INFO( logger, *this << ": minlocDefault<" << common::TypeTraits<ValueType>::id() << ">" )
+
+    ValueType minVal = min( val );
+
+    IndexType myMinLocation = nIndex;   // undefined
+
+    if ( minVal == val )
+    {
+        myMinLocation = location;
+    }
+
+    common::scoped_array<IndexType> allMinLocations( new IndexType[ getSize() ] );
+
+    gather( allMinLocations.get(), 1, root, &myMinLocation );
+
+    if ( getRank() == root )
+    {
+        // find first defined location
+
+        for ( PartitionId p = 0; p < getSize(); ++p )
+        {
+            if ( allMinLocations[p] != nIndex )
+            {
+                location = allMinLocations[p];
+                SCAI_LOG_DEBUG( logger, *this << ": minlocDefault location = " << location << " @ " << p )
+                break;
+            }
+        }
+
+        val = minVal;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
+
+    if ( supportsLocReduction( vType, iType ) )
+    {
+
+        // For the virtual routine maxlocImpl we make sure that val and location are stored contiguously
+
+        struct ValAndLoc
+        {
+            ValueType val;
+            IndexType loc;
+        };
+
+        ValAndLoc x;
+
+        x.val = val;
+        x.loc = location;
+
+        maxlocImpl( &x.val, &x.loc, root, vType );
+
+        if ( getRank() == root )
+        {
+            val = x.val;
+            location = x.loc;
+        }
+    }
+    else
+    {
+        maxlocDefault( val, location, root );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
+{
+    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
+
+    if ( supportsLocReduction( vType, iType ) )
+    {
+
+        // For the virtual routine minlocImpl we make sure that val and location are stored contiguously
+
+        struct ValAndLoc
+        {
+            ValueType val;
+            IndexType loc;
+        };
+
+        ValAndLoc x;
+
+        x.val = val;
+        x.loc = location;
+
+        minlocImpl( &x.val, &x.loc, root, vType );
+
+        if ( getRank() == root )
+        {
+            val = x.val;
+            location = x.loc;
+        }
+    }
+    else
+    {
+        minlocDefault( val, location, root );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::exchangeByPlan(
+    hmemo::HArray<ValueType>& recvArray,
+    const CommunicationPlan& recvPlan,
+    const hmemo::HArray<ValueType>& sendArray,
+    const CommunicationPlan& sendPlan ) const
+{
+    SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
+
+    IndexType recvSize = recvPlan.totalQuantity();
+
+    // find a context where data of sendArray can be communicated
+    // if possible try to find a context where valid data is available
+    // CUDAaware MPI: might give GPU or Host context here
+
+    hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
+
+    SCAI_LOG_INFO( logger, *this << ": exchangeByPlan<" << common::TypeTraits<ValueType>::id() << ">" 
+                   << ", send " << sendArray.size() << " values to " << sendPlan.size() << " processors"
+                   << ", recv " << recvSize << " values from " << recvPlan.size() << " processors"
+                   << ", data at this context " << *comCtx )
+
+    SCAI_CONTEXT_ACCESS( comCtx )
+
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    // Data will be received at the same context where send data is
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
+    exchangeByPlan( recvData.get(), recvPlan, sendData.get(), sendPlan );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* Communicator::exchangeByPlanAsync(
+    hmemo::HArray<ValueType>& recvArray,
+    const CommunicationPlan& recvPlan,
+    const hmemo::HArray<ValueType>& sendArray,
+    const CommunicationPlan& sendPlan ) const
+{
+    SCAI_ASSERT_EQ_ERROR( sendArray.size(), sendPlan.totalQuantity(), "size mismatch" )
+    IndexType recvSize = recvPlan.totalQuantity();
+    // allocate accesses, SyncToken will take ownership
+    hmemo::ContextPtr comCtx = getCommunicationContext( sendArray );
+    SCAI_LOG_DEBUG( logger, *this << ": exchangeByPlanAsync, comCtx = " << *comCtx )
+    hmemo::ReadAccess<ValueType> sendData( sendArray, comCtx );
+    hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
+    SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
+    // Add the read and write access to the sync token to get it freed after successful wait
+    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    token->pushRoutine( recvData.releaseDelayed() );
+    token->pushRoutine( sendData.releaseDelayed() );
+    // return ownership of new created object
+    return token;
+}
+
+/* -------------------------------------------------------------------------- */
+
+void Communicator::setNodeData()
+{
+    // Note: here we assume that mSize, mRank are already set correctly
+
+    // routine set mNodeRank and mNodeSize
+    // processors with same processor_name are assumed to be on the same node
+
+    int maxNameLength = maxProcessorName();
+
+    common::scoped_array<char> myNodeName( new char[ maxNameLength ] );
+
+    common::scoped_array<char> allNodeNames( new char[ maxNameLength * getSize() ] );
+
+    getProcessorName( myNodeName.get() );
+
+    SCAI_LOG_INFO( logger, "Node name of processor " << mRank << " of " << mSize << ": " << myNodeName.get() )
+
+    memset( allNodeNames.get(), '\0', maxNameLength * mSize * sizeof( char ) );
+
+    // use gather / bcast
+
+    const PartitionId root = 0;
+
+    gather( allNodeNames.get(), maxNameLength, root, myNodeName.get() );
+    bcast( allNodeNames.get(), maxNameLength * mSize, root );
+
+    mNodeSize = 0;
+    mNodeRank = mSize; // illegal value to verify that it will be set
+
+    const char* ptrAllNodeNames = allNodeNames.get();
+
+    for ( PartitionId i = 0; i < mSize; ++i )
+    {
+        if ( strcmp( &ptrAllNodeNames[i * maxNameLength], myNodeName.get() ) )
+        {
+            continue; // processor i is not on same node
+        }
+
+        // Processor i is on same node as this processor
+
+        if ( i == mRank )
+        {
+            mNodeRank = mNodeSize;
+        }
+
+        ++mNodeSize;
+    }
+
+    SCAI_ASSERT_GT_ERROR( mNodeSize, 0, "Serious problem encountered to get node size" )
+    SCAI_ASSERT_LT_ERROR( mNodeRank, mNodeSize, "Serious problem encountered to get node size" )
+
+    SCAI_LOG_INFO( logger, "Processor " << mRank << ": node rank " << mNodeRank << " of " << mNodeSize )
+}
+
+/* -------------------------------------------------------------------------- */
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
     \
@@ -755,10 +1111,22 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
             const IndexType maxTargetSize,                          \
             const _type sourceVals[],                               \
             const IndexType sourceSize ) const;                     \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::maxloc(                                      \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::minloc(                                      \
+            _type& val,                                             \
+            IndexType& location,                                    \
+            const PartitionId root ) const;                         \
+    \
+    // instantiate methods for all communicator data types
 
-// instantiate methods for all communicator data types
-
-    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
+SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
 
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
@@ -777,10 +1145,33 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
             const int direction ) const;                            \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::sumArray(                                    \
+            HArray<_type>& array ) const;                           \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::updateHalo(                                  \
             HArray<_type>& haloValues,                              \
             const HArray<_type>& localValues,                       \
             const Halo& halo ) const;                               \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::all2allv(                                    \
+            _type* recvVal[], IndexType recvCount[],                \
+            _type* sendVal[], IndexType sendCount[] ) const;        \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::exchangeByPlan(                              \
+            HArray<_type>& recvArray,                               \
+            const CommunicationPlan& recvPlan,                      \
+            const HArray<_type>& sendArray,                         \
+            const CommunicationPlan& sendPlan ) const;              \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    SyncToken* Communicator::exchangeByPlanAsync(                   \
+            HArray<_type>& recvArray,                               \
+            const CommunicationPlan& recvPlan,                      \
+            const HArray<_type>& sendArray,                         \
+            const CommunicationPlan& sendPlan ) const;              \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::updateHaloAsync(                       \
@@ -790,10 +1181,10 @@ void Communicator::bcast( std::string& val, const PartitionId root ) const
 
 // instantiate communicator methods with Harray only for supported array types
 
-    SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ARITHMETIC_ARRAY_HOST )
+SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
-    } /* end namespace dmemo */
+} /* end namespace dmemo */
 
-    } /* end namespace scai */
+} /* end namespace scai */

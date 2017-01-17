@@ -2,7 +2,7 @@
  * @file MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,8 +45,7 @@
 #include <scai/dmemo/Redistributor.hpp>
 #include <scai/dmemo/Halo.hpp>
 
-#include <scai/lama/StorageIO.hpp>
-
+#include <scai/lama/io/FileIO.hpp>
 
 // internal scai libraries
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
@@ -54,6 +53,7 @@
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/openmp/OpenMPUtils.hpp>
 
 #include <scai/tasking/TaskSyncToken.hpp>
@@ -90,7 +90,7 @@ SCAI_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 _MatrixStorage::_MatrixStorage()
 
     : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
-          false ), mContext( Context::getHostPtr() )
+        false ), mContext( Context::getHostPtr() )
 {
     SCAI_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -137,7 +137,7 @@ void _MatrixStorage::setCompressThreshold( float ratio )
 
 /* ---------------------------------------------------------------------------------- */
 
-void _MatrixStorage::swap( _MatrixStorage& other )
+void _MatrixStorage::_swapMS( _MatrixStorage& other )
 {
     std::swap( mNumRows, other.mNumRows );
     std::swap( mNumColumns, other.mNumColumns );
@@ -181,6 +181,20 @@ _MatrixStorage& _MatrixStorage::operator=( const _MatrixStorage& other )
 
 /* --------------------------------------------------------------------------- */
 
+void _MatrixStorage::setDiagonalProperty()
+{
+    // default implementation just throw an exception if diagonal property is not given
+
+    mDiagonalProperty = checkDiagonalProperty();
+
+    if ( !mDiagonalProperty )
+    {
+        COMMON_THROWEXCEPTION( *this << ": has not diagonal property, cannot set it" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void _MatrixStorage::resetDiagonalProperty()
 {
     mDiagonalProperty = checkDiagonalProperty();
@@ -219,7 +233,7 @@ IndexType _MatrixStorage::getNumValues() const
     ContextPtr loc = sizes.getValidContext();
     reduce.getSupportedContext( loc );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, utilskernel::reduction::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, utilskernel::binary::ADD );
     return numValues;
 }
 
@@ -307,9 +321,13 @@ void _MatrixStorage::offsets2sizes( HArray<IndexType>& sizes, const HArray<Index
     }
 
     const IndexType n = offsets.size() - 1;
+
     ReadAccess<IndexType> readOffsets( offsets );
+
     WriteAccess<IndexType> writeSizes( sizes );
+
     writeSizes.clear(); // old values are not used
+
     writeSizes.resize( n );
 
     for ( IndexType i = 0; i < n; i++ )
@@ -391,9 +409,9 @@ common::scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::swap( MatrixStorage<ValueType>& other )
+void MatrixStorage<ValueType>::swapMS( MatrixStorage<ValueType>& other )
 {
-    _MatrixStorage::swap( other );
+    _MatrixStorage::_swapMS( other );
     std::swap( mEpsilon, other.mEpsilon );
 }
 
@@ -444,6 +462,39 @@ void MatrixStorage<ValueType>::buildCSCData(
     buildCSRData( rowIA, rowJA, rowValues );
     ContextPtr loc = Context::getHostPtr();
     convertCSR2CSC( colIA, colJA, colValues, mNumColumns, rowIA, rowJA, rowValues, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const
+{
+    utilskernel::LArray<IndexType> csrIA;
+    utilskernel::LArray<IndexType> csrJA;
+    utilskernel::LArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    // ToDo: csrIA[i] == csrIA[i+1], no entry in row at all
+    // ToDo: csrIA[numRows-1] == numValues possible, out of range addressing
+
+    // gather: colIndexes[i] = csrJA[ csrIA[i] ]
+
+    if ( mNumRows > 0 )
+    {
+        SCAI_ASSERT_LT_ERROR( csrIA[mNumRows - 1], csrJA.size(), "last row without any entry" )
+    }
+
+    static LAMAKernel<UtilKernelTrait::setGather<IndexType, IndexType> > setGather;
+
+    ContextPtr loc = getContextPtr();
+    setGather.getSupportedContext( loc );
+
+    WriteOnlyAccess<IndexType> wColIndexes( colIndexes, loc, mNumRows );
+    SCAI_CONTEXT_ACCESS( loc )
+    ReadAccess<IndexType> ja( csrJA, loc );
+    ReadAccess<IndexType> ia( csrIA, loc );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), utilskernel::binary::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -516,6 +567,122 @@ void MatrixStorage<ValueType>::copyTo( _MatrixStorage& other ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const
+{
+    using namespace utilskernel;
+
+    SCAI_ASSERT_LE( first, first + n, "illegal range" )
+    SCAI_ASSERT_VALID_INDEX( first, mNumRows, "first row out of range" )
+    SCAI_ASSERT_VALID_INDEX( first + n - 1, mNumRows, "last row out of range" );
+
+    LArray<IndexType> csrIA;
+    LArray<IndexType> csrJA;
+    LArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    ContextPtr loc = this->getContextPtr();
+
+    SCAI_LOG_INFO( logger, "copyBlockTo : first = " << first << ", n = " << n << ", from this : " << *this )
+
+    // copy out the corresponding sections, ia needs a shifting to zero
+
+    LArray<IndexType> blockIA( n + 1 );
+    HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, binary::COPY, loc );
+
+    IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
+    HArrayUtils::binaryOpScalar2( blockIA, blockIA, offset, binary::SUB, loc );
+
+    IndexType numBlockValues = blockIA[n];
+
+    SCAI_LOG_DEBUG( logger, "offset = " << offset << ", #nnz = " << numBlockValues );
+
+    LArray<IndexType> blockJA( numBlockValues );
+    LArray<ValueType> blockValues( numBlockValues );
+
+    HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, binary::COPY, loc );
+
+    other.setCSRData( n, mNumColumns, numBlockValues, blockIA, blockJA, blockValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others )
+{
+    using namespace utilskernel;
+
+    IndexType numRows    = 0;
+    IndexType numColumns = 0;
+    IndexType numValues  = 0;
+
+    for ( size_t k = 0; k < others.size(); ++k )
+    {
+        SCAI_ASSERT_ERROR( others[k], "NULL pointer in concatenation" )
+
+        _MatrixStorage& other = *others[k];
+
+        numRows   += other.getNumRows();
+        numValues += other.getNumValues();
+
+        if ( other.getNumColumns() > numColumns )
+        {
+            numColumns = other.getNumColumns();
+        }
+    }
+
+    SCAI_LOG_ERROR( logger, "rowCat: final matrix " << numRows << " x " << numColumns << ", #non-zeros = " << numValues )
+
+    // now we know the final size and can allocate CSR storage for it
+
+    LArray<IndexType> csrIA( numRows + 1 );
+    LArray<IndexType> csrJA( numValues );
+    LArray<ValueType> csrValues( numValues );
+
+    IndexType lb     = 0;
+    IndexType offset = 0;
+
+    ContextPtr ctx = this->getContextPtr();
+
+    for ( size_t k = 0; k < others.size(); ++k )
+    {
+        _MatrixStorage& other = *others[k];
+
+        // Get CSR data of other block on same context as this storage
+
+        LArray<IndexType> otherIA( ctx );
+        LArray<IndexType> otherJA( ctx );
+        LArray<ValueType> otherValues( ctx );
+
+        other.buildCSRData( otherIA, otherJA, otherValues );
+
+        IndexType n   = other.getNumRows();
+        IndexType nnz = other.getNumValues();
+
+        otherIA += offset;  // add elementwise the latest offset
+
+        HArrayUtils::setArraySection( csrIA, lb, 1, otherIA, 0, 1, n, binary::COPY, ctx );
+        HArrayUtils::setArraySection( csrJA, offset, 1, otherJA, 0, 1, nnz, binary::COPY, ctx );
+        HArrayUtils::setArraySection( csrValues, offset, 1, otherValues, 0, 1, nnz, binary::COPY, ctx );
+
+        lb += n;
+        offset += nnz;
+    }
+
+    SCAI_ASSERT_EQ_ERROR( lb, numRows, "serious mismatch of sizes" );
+    SCAI_ASSERT_EQ_ERROR( offset, numValues, "serious mismatch of sizes" );
+
+    // Still set the final value
+
+    csrIA[ numRows ] = numValues;
+
+    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& other )
 {
     SCAI_REGION( "Storage.assignTranspose" )
@@ -551,13 +718,13 @@ void MatrixStorage<ValueType>::joinRows(
 
         // initialize counters (Attention: sizes.size() != rowSizes.size())
 
-        for ( int i = 0; i < sizes.size(); ++i )
+        for ( IndexType i = 0; i < sizes.size(); ++i )
         {
             sizes[i] = 0;
         }
 
         // count elements for each row
-        for ( int i = 0; i < rowSizes.size(); ++i )
+        for ( IndexType i = 0; i < rowSizes.size(); ++i )
         {
             sizes[indexes[i]] += rowSizes[i];
         }
@@ -567,7 +734,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, utilskernel::reduction::COPY );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, utilskernel::binary::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );
@@ -583,11 +750,11 @@ void MatrixStorage<ValueType>::joinRows(
     // insert rows
     IndexType dataIndex = 0;
 
-    for ( int i = 0; i < rowSizes.size(); ++i )
+    for ( IndexType i = 0; i < rowSizes.size(); ++i )
     {
         IndexType currentRow = indexes[i];
 
-        for ( int ii = 0; ii < rowSizes[i]; ++ii )
+        for ( IndexType ii = 0; ii < rowSizes[i]; ++ii )
         {
             // insert data at old position 'dataIndex' in row 'currentRow'
             // at new position 'tmpIA[currentRow]'
@@ -662,7 +829,7 @@ void MatrixStorage<ValueType>::joinHalo(
 
     if ( attemptDiagonalProperty && localData.hasDiagonalProperty() )
     {
-        numKeepDiagonals = std::min( localData.getNumRows(), localData.getNumColumns() );
+        numKeepDiagonals = common::Math::min( localData.getNumRows(), localData.getNumColumns() );
         SCAI_LOG_INFO( logger, localData << ": has diagonal property, numKeepDiagonals = " << numKeepDiagonals );
     }
 
@@ -925,10 +1092,10 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const HArray<ValueType>&,
         const ValueType,
         const HArray<ValueType>& ) const
-        = &MatrixStorage<ValueType>::matrixTimesVector;
-    using scai::common::bind;
-    using scai::common::ref;
-    using scai::common::cref;
+    = &MatrixStorage<ValueType>::matrixTimesVector;
+    using common::bind;
+    using common::ref;
+    using common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -950,10 +1117,10 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const HArray<ValueType>&,
         const ValueType,
         const HArray<ValueType>& ) const
-        = &MatrixStorage<ValueType>::vectorTimesMatrix;
-    using scai::common::bind;
-    using scai::common::ref;
-    using scai::common::cref;
+    = &MatrixStorage<ValueType>::vectorTimesMatrix;
+    using common::bind;
+    using common::ref;
+    using common::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -986,10 +1153,10 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const HArray<ValueType>&,
         const HArray<ValueType>&,
         const ValueType ) const
-        = &MatrixStorage<ValueType>::jacobiIterate;
-    using scai::common::bind;
-    using scai::common::cref;
-    using scai::common::ref;
+    = &MatrixStorage<ValueType>::jacobiIterate;
+    using common::bind;
+    using common::cref;
+    using common::ref;
     return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
 }
 
@@ -1150,20 +1317,31 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
     }
 
     const IndexType numColumns = other.getNumColumns(); // does not change
+
     // check that source distribution fits with storage
     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // get the matrix data from other in CSR format
     HArray<IndexType> sourceIA;
+
     HArray<IndexType> sourceJA;
+
     HArray<ValueType> sourceValues;
+
     other.buildCSRData( sourceIA, sourceJA, sourceValues );
+
     HArray<IndexType> targetIA;
+
     HArray<IndexType> targetJA;
+
     HArray<ValueType> targetValues;
+
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,
             redistributor );
+
     const IndexType targetNumRows = targetIA.size() - 1;
+
     const IndexType targetNumValues = targetJA.size();
+
     setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
 }
 
@@ -1197,16 +1375,23 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
     }
 
     const IndexType numColumns = other.getNumColumns(); // does not change
+
     // check that source distribution fits with storage
     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // it is not necessary to convert the other storage to CSR
     HArray<IndexType> targetIA;
+
     HArray<IndexType> targetJA;
+
     HArray<ValueType> targetValues;
+
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),
             other.getValues(), redistributor );
+
     const IndexType targetNumRows = targetIA.size() - 1;
+
     const IndexType targetNumValues = targetJA.size();
+
     setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
 }
 
@@ -1224,7 +1409,9 @@ void MatrixStorage<ValueType>::setRawDenseData(
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
     HArrayRef<OtherValueType> data( numRows * numColumns, values );
     SCAI_LOG_INFO( logger, "use LAMA array ref: " << data << ", size = " << data.size() )
-    DenseStorageView<OtherValueType> denseStorage( data, numRows, numColumns );
+    DenseStorage<OtherValueType> denseStorage;
+    // swap data avoids copy of the data
+    denseStorage.swap( data, numRows, numColumns );
     assign( denseStorage ); // will internally use the value epsilon
     SCAI_LOG_INFO( logger, *this << ": have set dense data " << numRows << " x " << numColumns )
 }
@@ -1239,7 +1426,7 @@ void MatrixStorage<ValueType>::setDenseData(
     const ValueType epsilon )
 {
     mEpsilon = epsilon;
-    mepr::MatrixStorageWrapper<ValueType, SCAI_ARITHMETIC_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
+    mepr::MatrixStorageWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::setDenseData( this, numRows, numColumns, values, epsilon );
 }
 
 /* ========================================================================= */
@@ -1249,54 +1436,96 @@ void MatrixStorage<ValueType>::setDenseData(
 template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
-    const File::FileType fileType,
+    const std::string& fileType,
     const common::scalar::ScalarType valuesType,
-    const common::scalar::ScalarType iaType,
-    const common::scalar::ScalarType jaType,
-    const bool writeBinary /* = false */ ) const
+    const common::scalar::ScalarType indexType,
+    const FileIO::FileMode mode ) const
 {
-    writeToFile( 1, 0, fileName, fileType, valuesType, iaType, jaType, writeBinary );
+    writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );
 }
 
 template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
-    const PartitionId size,
-    const PartitionId rank,
+    const PartitionId /* size */,
+    const PartitionId /* rank */,
     const std::string& fileName,
-    const File::FileType fileType,
+    const std::string& fileType,
     const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType iaType,
-    const common::scalar::ScalarType jaType,
-    const bool writeBinary /* = false */ ) const
+    const common::scalar::ScalarType indexType,
+    const FileIO::FileMode mode ) const
 {
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-// TODO Do not build CSR if this matrix is CSR storage
-    buildCSRData( csrIA, csrJA, csrValues );
-    StorageIO<ValueType>::writeCSRToFile( size, rank, csrIA, mNumColumns, csrJA, csrValues, fileName, fileType,
-                                          dataType, iaType, jaType, writeBinary );
+    std::string suffix = fileType;
+
+    if ( suffix == "" )
+    {
+        suffix = FileIO::getSuffix( fileName );
+    }
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        if ( dataType != common::scalar::UNKNOWN )
+        {
+            fileIO->setDataType( dataType );
+        }
+
+        if ( indexType != common::scalar::UNKNOWN )
+        {
+            fileIO->setIndexType( indexType );
+        }
+
+        if ( mode != FileIO::DEFAULT_MODE )
+        {
+            fileIO->setMode( mode );
+        }
+
+        SCAI_LOG_INFO( logger, "write matrix storage to file, FileIO = " << *fileIO << ", storage = " << *this )
+
+        // Note. SCAI_IO_TYPE_DATA allows that data is converted
+
+        fileIO->writeStorage( *this, fileName );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "writeToFile " << fileName << ", unknown file type " << suffix )
+    }
 }
 
 /*****************************************************************************/
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::readFromFile( const std::string& fileName )
+void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const IndexType firstRow, IndexType nRows )
 {
     SCAI_LOG_INFO( logger, "MatrixStorage<" << getValueType() << ">::readFromFile( " << fileName << ")" )
     SCAI_REGION( "Storage.readFromFile" )
-    IndexType numColumns;
-    IndexType numRows;
-    IndexType numValues;
-    HArray<IndexType> csrIA;
-    HArray<IndexType> csrJA;
-    HArray<ValueType> csrValues;
-    StorageIO<ValueType>::readCSRFromFile( csrIA, numColumns, csrJA, csrValues, fileName );
-    numRows = csrIA.size() - 1;
-    numValues = csrJA.size();
-    SCAI_LOG_INFO( logger,
-                   "read CSR storage <" << getValueType() << "> : " << numRows << " x " << numColumns << ", #values = " << numValues )
-    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    std::string suffix = FileIO::getSuffix( fileName );
+
+    // Note: reading does not care about binary argument, just read as it is
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        // For reading we expect here that the file data type matches the storage type
+        // so SCAI_IO_TYPE_DATA should be ignored for reading
+
+        fileIO->setDataType( common::scalar::INTERNAL );
+
+        SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
+
+        fileIO->readStorage( *this, fileName, firstRow, nRows );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "readFromFile " << fileName << ", illegal suffix " << suffix )
+    }
+
     check( "read matrix" );
 }
 
@@ -1387,15 +1616,15 @@ std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageForma
             const IndexType, const IndexType, const OtherValueType*, const ValueType );
 
 #define LAMA_MATRIXSTORAGE_INST( ValueType )                                                                                    \
-    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_ARITHMETIC_HOST )
+    SCAI_COMMON_LOOP_LVL2( ValueType, LAMA_MATRIXSTORAGE2_INST, SCAI_NUMERIC_TYPES_HOST )
 
-SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_LOOP( LAMA_MATRIXSTORAGE_INST, SCAI_NUMERIC_TYPES_HOST )
 
 #undef LAMA_MATRIXSTORAGE2_INST
 #undef LAMA_MATRIXSTORAGE_INST
 
 
-SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_ARITHMETIC_HOST )
+SCAI_COMMON_INST_CLASS( MatrixStorage, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace lama */
 

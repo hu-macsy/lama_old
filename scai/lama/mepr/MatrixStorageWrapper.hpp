@@ -2,7 +2,7 @@
  * @file lama/mepr/MatrixStorageWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -81,7 +81,7 @@ struct MatrixStorageWrapper<ValueType, common::mepr::TypeList<H, T> >
         {
             hmemo::_HArray& mValues = const_cast<hmemo::_HArray&>( values );
             hmemo::HArray<H>& typedValues = reinterpret_cast<hmemo::HArray<H>& >( mValues );
-            const DenseStorageView<H> denseStorage( typedValues, numRows, numColumns );
+            const DenseStorage<H> denseStorage( typedValues, numRows, numColumns );
             H tmpEpsilon = static_cast<H>( epsilon );
             denseStorage.swapEpsilon( tmpEpsilon );
             obj->assign( denseStorage );

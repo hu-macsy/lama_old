@@ -2,7 +2,7 @@
  * @file SCAITypes.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -39,5 +39,4 @@
 MIC_CALLABLE_MEMBER const IndexType nIndex = std::numeric_limits<IndexType>::max();
 
 MIC_CALLABLE_MEMBER const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
-
 

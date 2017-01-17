@@ -2,7 +2,7 @@
  * @file MatrixStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -35,17 +35,20 @@
 #pragma once
 
 // local library
-#include <scai/lama/io/FileType.hpp>
+#include <scai/lama/io/FileIO.hpp>
+
 #include <scai/dmemo/Communicator.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/BinaryOp.hpp>
 #include <scai/hmemo.hpp>
 
-#include <scai/common/mepr/TemplateSpecifier.hpp>
 #include <scai/common/Factory.hpp>
+#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>
+#include <vector>
 
 namespace scai
 {
@@ -68,7 +71,7 @@ namespace lama
 {
 
 template<typename ValueType> class CSRStorage;
-template<typename ValueType> class DenseStorageView;
+template<typename ValueType> class DenseStorage;
 
 /** Enumeration type for different matrix storage formats.
  *
@@ -258,14 +261,35 @@ public:
 
     virtual void setIdentity( const IndexType n ) = 0;
 
+    /** This method resorts column indexes in such a way that the diagonal element is always the
+     *  first one in a row.
+     *
+     *  This method throws an exception if the matrix storage is not square. Furthermore
+     *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
+     *  element in a sparse format.
+     */
+    virtual void setDiagonalProperty();
+
     /** This method returns the i-th row of the matrix
      *
      * @param[out] row is the destination array that will contain the row
      * @param[in] i is the row index
      *
      */
-
     virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
+
+    virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::binary::BinaryOp op ) = 0;
+
+    virtual void setColumn( const hmemo::_HArray& column, const IndexType j,
+                            utilskernel::binary::BinaryOp op            ) = 0;
+
+    /** This method returns the j-th column of the matrix
+     *
+     * @param[out] column is the destination array that will contain the column
+     * @param[in] j is the row index
+     *
+     */
+    virtual void getColumn( hmemo::_HArray& column, const IndexType j ) const = 0;
 
     /** This method returns the diagonal of the matrix.
      *
@@ -276,6 +300,14 @@ public:
      */
 
     virtual void getDiagonal( hmemo::_HArray& diagonal ) const = 0;
+
+    /** Get for each row the first column index with value entry.
+     *  If diagonal flag is set, the column index will be the same as the (global) row
+     *  index. I.e. for a local storage this routine gives the owned indexes to reconstruct
+     *  the distribution.
+     */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const = 0;
 
     /** This method sets the diagonal of a matrix storage.
      *
@@ -396,6 +428,22 @@ public:
         const hmemo::HArray<IndexType>& csrJA,
         const hmemo::_HArray& csrValues ) = 0;
 
+    /** Each storage class must provide a routine to set DIA storage data.
+     *
+     *  @param[in] numRows number of rows
+     *  @param[in] numColumns number of columns
+     *  @param[in] numDiagonals number of stored diagonals
+     *  @param[in] offsets offsets of the stored diagonals to the main diagonal
+     *  @param[in] values contains the matrix values for each diagonal
+     */
+
+    virtual void setDIAData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::_HArray& values ) = 0;
+
     /** Assign of matrix storage with any format or value type.
      *
      *  Format conversion and type conversion is done implicitly.
@@ -405,10 +453,26 @@ public:
      */
     virtual void assign( const _MatrixStorage& other ) = 0;
 
+    /** Vertical, row-wise concatenation of matrix storages
+     *
+     *  All storages in the vector must have the same number of columns.
+     *  The storages are concatenated rowwise vertically to this storage.
+     */
+    virtual void rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others ) = 0;
+
     /** The opposite routine to assign, for convenience as the other way around is
      *  sometimes more efficient
      */
     virtual void copyTo( _MatrixStorage& other ) const = 0;
+
+    /**
+     *  Extract a contiguous block of n rows in a new storage
+     *
+     *  @param[out] other  will contain the corresponding storage of n x mNumColumns
+     *  @param[in]  first  index of first row to extract
+     *  @param[in]  n      number of rows to extract
+     */
+    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const = 0;
 
     /** Override default assignment operator. */
 
@@ -486,19 +550,58 @@ public:
         IndexType vwgt[],
         const IndexType* globalRowIndexes ) const;
 
-    /******************************************************************
-     *   File I/O for MatrixStorage                                    *
-     ******************************************************************/
+    /**
+     * @brief read the matrix storage from an input file
+     *
+     * @param[in] fileName is the name of the input file (suffix must be added according to the file type)
+     * @param[in] firstRow is the first row to read
+     * @param[in] nRows    specifies the number of rows to read, defaults to number of rows of full storage - firstRow
+     *
+     * Note: default argument for nRows is nIndex as the number of rows in full storage might not be known
+     */
+    virtual void readFromFile(
+        const std::string& fileName,
+        const IndexType firstRow = 0,
+        const IndexType nRows = nIndex ) = 0;
+
+    /**
+     * @brief write the matrix storage to an output file
+     *
+     * @param[in] fileName  is the name of the output file (suffix must be added according to the file type)
+     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] dataType  representation type for output values, default is same type as matrix values
+     * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
+     * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
+     *
+     * If one of the arguments dataType, indexType or fileMode is set, it will overwrite
+     * any setting specified by the corresponding environment variables SCAI_IO_TYPE_DATA, SCAI_IO_TYPE_INDEX
+     * or SCAI_IO_BINARY
+     */
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeBinary = false ) const = 0;
+        const std::string& type = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
 
     virtual bool checkSymmetry() const = 0;
+
+    /** Swap data with other storage to avoid additional memory allocation.
+     *
+     *  @param[in,out] other storage for swapping, must have same value type and same format
+     *
+     *  This method allows swapping for storages where the value
+     *  type or the format is not known at compile time.
+     *
+     *  \code
+     *  _MatrixStorage& arg;
+     *  common::unique_ptr<_MatrixStorage> tmp( arg.newMatrixStorage() );
+     *  ...
+     *  arg.swap( tmp );   // is okay as they have same 'unknown' type and 'unknown' format
+     *  \endcode
+     */
+    virtual void swap( _MatrixStorage& other ) = 0;
 
 protected:
 
@@ -509,7 +612,7 @@ protected:
      *
      * @param[in,out] other the _MatrixStorage to swap this with
      */
-    void swap( _MatrixStorage& other );
+    void _swapMS( _MatrixStorage& other );
 
     virtual void _assignTranspose( const _MatrixStorage& other );
 
@@ -639,6 +742,24 @@ public:
         const IndexType* const ja,
         const OtherValueType* const values );
 
+    /**
+     * @brief fills matrix storage by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the offset array
+     * @param[in] values       raw pointer of the data array
+     */
+
+    template<typename OtherValueType>
+    void setRawDIAData(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const IndexType* const offsets,
+        const OtherValueType* const values );
+
     /** Join local and halo storage back into one storage as needed for NoDistribution.
      *  This matrix storage is used as output matrix.
      *
@@ -711,11 +832,25 @@ public:
     /** Get a value of the matrix.
      *
      * @param[in] i is the row index, 0 <= i < mNumRows
-     * @param[in] j is the colum index, 0 <= j < mNumRows
+     * @param[in] j is the colum index, 0 <= j < mNumColumns
      * @throw Exception out-of-range is enabled for ASSERT_LEVEL=DEBUG.
      */
 
     virtual ValueType getValue( const IndexType i, const IndexType j ) const = 0;
+
+    /** Set/update an existing value of the matrix.
+     *
+     *  @param[in] i is the row index, 0 <= i < mNumRows
+     *  @param[in] j is the col index, 0 <= j < mNumColumns
+     *  @param[in] val is the value to be set
+     *  @param[in] op specifies how to combine old and new value
+     *
+     *  @throw Exception if value is non-zero and sparse pattern does not contain element
+     */
+    virtual void setValue( const IndexType i,
+                           const IndexType j,
+                           const ValueType val,
+                           const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.
@@ -737,6 +872,16 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const;
 
+    /** Implmentation of _MatrixStorage::rowCat for typed storages. */
+
+    virtual void rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others );
+
+    /**
+     *  Implementation of _MatrixStorage::copyBlockTo
+     */
+    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const;
+
+    /** Override default assignment operator. */
     /** Transpose of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      *
@@ -798,29 +943,27 @@ public:
      */
     MatrixStorage& operator=( const _MatrixStorage& other );
 
-    /******************************************************************
-     *   File I/O for MatrixStorage                                    *
-     ******************************************************************/
+    /** Implementation of pure routine _MatrixStorage::writeToFile */
 
     virtual void writeToFile(
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeToFile = false ) const;
+        const std::string& fileType = "",
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void writeToFile(
         const PartitionId size,
         const PartitionId rank,
         const std::string& fileName,
-        const File::FileType fileType = File::SAMG_FORMAT,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
-        const common::scalar::ScalarType iaType = common::scalar::INDEX_TYPE,
-        const common::scalar::ScalarType jaType = common::scalar::INDEX_TYPE,
-        const bool writeToFile = false ) const;
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
-    virtual void readFromFile( const std::string& fileName );
+    virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = nIndex );
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /******************************************************************
      *   invert                                                        *
@@ -1081,7 +1224,7 @@ protected:
      * \endcode
      */
 
-    void swap( MatrixStorage<ValueType>& other );
+    void swapMS( MatrixStorage<ValueType>& other );
 
 public:
     static MatrixStorage<ValueType>* create( const MatrixStorageCreateKeyType key );
@@ -1135,6 +1278,26 @@ void MatrixStorage<ValueType>::setRawCSRData(
     // now set the data on the context of this storage via virtual method
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void MatrixStorage<ValueType>::setRawDIAData(
+    const IndexType numRows,
+    const IndexType numColumns,
+    const IndexType numDiagonals,
+    const IndexType* const offsets,
+    const OtherValueType* const values )
+{
+    // wrap the pointer data into LAMA arrays ( without copies )
+    hmemo::HArrayRef<IndexType> diaOffsets( numDiagonals, offsets );
+    hmemo::HArrayRef<OtherValueType> diaValues( numRows * numDiagonals, values );
+    // now set the data on the context of this storage via virtual method
+    setDIAData( numRows, numColumns, numDiagonals, diaOffsets, diaValues );
+}
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 MatrixStorage<ValueType>* MatrixStorage<ValueType>::create( const MatrixStorageCreateKeyType key )

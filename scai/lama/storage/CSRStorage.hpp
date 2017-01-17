@@ -2,7 +2,7 @@
  * @file CSRStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -114,6 +114,7 @@ public:
 
     explicit CSRStorage( const _MatrixStorage& other )
     {
+        _MatrixStorage::setContextPtr( other.getContextPtr() );
         assign( other );
     }
 
@@ -123,6 +124,7 @@ public:
 
         : CRTPMatrixStorage<CSRStorage<ValueType>, ValueType>()
     {
+        _MatrixStorage::setContextPtr( other.getContextPtr() );
         assign( other );
     }
 
@@ -136,6 +138,8 @@ public:
 
     CSRStorage<ValueType>& operator=( const _MatrixStorage& other )
     {
+        // the assignment operator does not change the context any more
+
         assign( other );
         return *this;
     }
@@ -203,6 +207,25 @@ public:
         const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
 
     /**
+     * @brief fills CSR sparse matrix by dia sparse data.
+     *
+     * @param[in] numRows      number of rows
+     * @param[in] numColumns   number of columns
+     * @param[in] numDiagonals the number of stored diagonals
+     * @param[in] offsets      raw pointer of the input csr sparse matrix
+     * @param[in] values       the data values of the input csr sparse matrix
+     * @param[in] loc          is the context where filling takes place
+     */
+    template<typename OtherValueType>
+    void setDIADataImpl(
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType numDiagonals,
+        const hmemo::HArray<IndexType>& offsets,
+        const hmemo::HArray<OtherValueType>& values,
+        const hmemo::ContextPtr loc ) __attribute__( ( noinline ) );
+
+    /**
      * @brief fills CSR sparse matrix with csr sparse data without a copy operation
      *
      * @param[in] numRows    number of rows
@@ -266,10 +289,34 @@ public:
      */
     void sortRows( bool diagonalProperty );
 
-    /** Template method for getting row. */
+    /** This method overrides _MatrixStorage::setDiagonalProperty
+     *
+     *  This routine only moves the diagonal elements at the beginning of each rows.
+     *  It throws an exception if there is no entry for the diagonal element.
+     */
+    virtual void setDiagonalProperty();
+
+    /** Template version of getRow */
 
     template<typename OtherType>
     void getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const;
+
+    /** Template version of setRow */
+
+    template<typename OtherType>
+    void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
+                     const utilskernel::binary::BinaryOp op );
+
+    /** Template version of getColumn */
+
+    template<typename OtherType>
+    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+
+    /** Template version of setColumn */
+
+    template<typename OtherType>
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
+                        const utilskernel::binary::BinaryOp op );
 
     /** Typed version of getDiagonal
      *
@@ -316,6 +363,11 @@ public:
 
     ValueType getValue( const IndexType i, const IndexType j ) const;
 
+    /** Implementation of pure method MatrixStorage<ValueType>::setValue for CSR storage */
+
+    void setValue( const IndexType i, const IndexType j, const ValueType val,
+                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+
     /** Initiate an asynchronous data transfer to a specified location. */
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
@@ -351,7 +403,9 @@ public:
      *  Note: swap is only possible for two storages of the same format and same type.
      */
 
-    void swap( CSRStorage<ValueType>& other );
+    void swapImpl( CSRStorage<ValueType>& other );
+
+    void swap( _MatrixStorage& other );
 
     /**
      * @brief Swap the CSR arrays with new arrays.
@@ -382,6 +436,11 @@ public:
      */
     virtual void copyTo( _MatrixStorage& other ) const;
 
+    /**
+     * @brief override MatrixStorage<ValueType>::copyBlockTo with a more efficient solution
+     */
+    virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const;
+
     /** Redistribution of CSR avoids unnecessary conversions. */
 
     virtual void redistributeCSR( const CSRStorage<ValueType>& other, const dmemo::Redistributor& redistributor );
@@ -409,6 +468,10 @@ public:
         hmemo::HArray<IndexType>* ja,
         hmemo::HArray<OtherValueType>* values,
         const hmemo::ContextPtr loc ) const;
+
+    /** Own implementation to get global owners of the row */
+
+    virtual void getFirstColumnIndexes( hmemo::HArray<IndexType>& colIndexes ) const;
 
     /**
      *   This routine builds compressed sparse column format data.
@@ -566,7 +629,7 @@ protected:
 
 private:
 
-    bool mSortedRows; //!< if true, all rows are sorted by column indexes
+    bool mSortedRows; //!< if true, the column indexes in each row are sorted
     /**
      * @brief checks if in each row the diagonal element is stored first.
      *

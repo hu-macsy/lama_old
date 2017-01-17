@@ -2,7 +2,7 @@
  * @file Criterion.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,13 +61,13 @@ Criterion::Criterion( const bool boolean )
 
 Criterion::Criterion( const Criterion& other )
     : Printable( other ), mLeftChild( other.mLeftChild ), mRightChild( other.mRightChild ), mOperation(
-          other.mOperation ), mModifier( false )
+        other.mOperation ), mModifier( false )
 {
 }
 
 Criterion::Criterion( const CriterionPtr other, const bool modifier )
     : mLeftChild( other->mLeftChild ), mRightChild( other->mRightChild ), mOperation( other->mOperation ), mModifier(
-          modifier == other->mModifier )
+        modifier == other->mModifier )
 {
 }
 

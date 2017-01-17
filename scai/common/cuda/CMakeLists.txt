@@ -2,7 +2,7 @@
  # @file CMakeLists.txt
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -34,7 +34,7 @@
 
 if    ( CUDA_FOUND AND USE_CUDA )
     set ( CUDACLASSES CUDAError CUDASettings CUDACtx CUDAAccess )
-    set ( CUDAHEADERS CUDATexVector )
+    set ( CUDAHEADERS CUDATexVector CUDAUtils )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 # add source and header files to the current project

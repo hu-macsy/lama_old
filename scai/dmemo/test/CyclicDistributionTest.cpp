@@ -2,7 +2,7 @@
  * @file CyclicDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Contains the implementation of the class CyclicDistributionTest.
- * @author Alexander Büchel, Thomas Brandes
+ * @author Thomas Brandes
  * @date 30.07.2012
  */
 
@@ -36,8 +36,10 @@
 #include <boost/mpl/list.hpp>
 
 #include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
-using namespace scai::dmemo;
+using namespace scai;
+using namespace dmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -101,38 +103,48 @@ BOOST_AUTO_TEST_CASE( cyclicComputeOwnersTest )
     std::vector<IndexType> localSizes;
     std::vector<PartitionId> theOwners; // used for verification
     CyclicDistribution distribution( globalSize, chunkSize, comm );
+
     IndexType chunkOffset = 0;
     IndexType chunkNr = 0;
 
     for ( IndexType i = 0; i < globalSize; i++ )
     {
-        PartitionId owner = chunkNr % size;
-        theOwners.push_back( owner );
+        theOwners.push_back( chunkNr );
+
         chunkOffset++;
 
         if ( chunkOffset == chunkSize )
         {
             chunkOffset = 0;
             chunkNr++;
+
+            if ( chunkNr == static_cast<IndexType>( size ) )
+            {
+                chunkNr = 0;
+            }
         }
     }
 
-    std::vector<IndexType> indexes;
+    using namespace utilskernel;
 
-    for ( IndexType i = 0; i < globalSize; i++ )
-    {
-        indexes.push_back( i );
-    }
+    LArray<IndexType> indexes;
+    HArrayUtils::setOrder( indexes, globalSize );
 
-    std::vector<PartitionId> owners;
-    distribution.computeOwners( indexes, owners );
-    BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( owners.size() ) );
+    LArray<PartitionId> owners;
+    distribution.computeOwners( owners, indexes );
+
+    BOOST_CHECK_EQUAL( owners.size(), indexes.size() );
+
+    hmemo::ReadAccess<PartitionId> rOwners( owners );
+
+    BOOST_CHECK_EQUAL( globalSize, owners.size() );
     BOOST_CHECK_EQUAL( globalSize, static_cast<IndexType>( theOwners.size() ) );
 
     // now check for correct owners
+
     for ( IndexType i = 0; i < globalSize; i++ )
     {
-        BOOST_CHECK_EQUAL( theOwners[i], owners[i] );
+        BOOST_CHECK_EQUAL( theOwners[i], rOwners[i] );
     }
 }
 

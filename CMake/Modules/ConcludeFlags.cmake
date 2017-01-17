@@ -81,15 +81,21 @@ set ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE "${SCAI_CODE_COVERAGE_FLAGS}" CACHE STR
 set ( ADDITIONAL_CXX_FLAGS_DEBUG         "${SCAI_CXX_FLAGS_DEBUG}"     CACHE STRING "Additional CXX compiler flags for Debug version" )
 set ( ADDITIONAL_CXX_FLAGS_NO_OFFLOAD    "${MIC_NO_OFFLOAD_FLAG}"      CACHE STRING "MIC no offload flag (only if MIC disabled)" )
 set ( ADDITIONAL_CXX_FLAGS_RELEASE       "${SCAI_CXX_FLAGS_RELEASE}"   CACHE STRING "Additional CXX compiler flags for Release version" )
+set ( ADDITIONAL_CXX_FLAGS_STATIC        "${SCAI_STATIC_FLAGS}"        CACHE STRING "Additional flags for static build, e.g. PIC" )
 set ( ADDITIONAL_LINKER_FLAGS            "${SCAI_LINKER_FLAGS}"        CACHE STRING "Additional linker flags" )
 set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STRING "Compilation flags concerning warnings" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBUG  ADDITIONAL_CXX_FLAGS_RELEASE
                    ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG   ADDITIONAL_CXX_FLAGS_OPENMP
                    ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS    ADDITIONAL_CXX_FLAGS
+                   ADDITIONAL_CXX_FLAGS_STATIC
                  )
 
 set ( CONCLUDE_CXX_FLAGS "${ADDITIONAL_CXX_FLAGS}" )
+
+if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
+    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_STATIC}" )
+endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 
 if    ( SCAI_COMMON_FOUND )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${SCAI_COMMON_FLAGS}")
@@ -137,6 +143,11 @@ string ( STRIP "${CMAKE_SHARED_LINKER_FLAGS}" CMAKE_SHARED_LINKER_FLAGS )
 
 if ( CUDA_FOUND AND USE_CUDA )
     
+    if    ( USE_CODE_COVERAGE )
+            string ( REGEX REPLACE " " "," CUDA_CC_FLAG ${ADDITIONAL_CXX_FLAGS_CODE_COVERAGE})
+            list ( APPEND SCAI_NVCC_FLAGS "-Xcompiler ${CUDA_CC_FLAG}" )
+    endif ( USE_CODE_COVERAGE )
+
     # TODO: determine cuda compute capability and use highest
     # with sm_20 no warnings about Cannot tell what pointer points to, assuming global memory space in Release build
     # We need at least compute capability 1.3, so if no architecture is specified set it here

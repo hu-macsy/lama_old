@@ -7,7 +7,8 @@ Here is the solution of task 4. The code demonstrate a CG-Solver running with MP
 
 .. literalinclude:: ../../../../solver/examples/lecture/task4.cpp 
    :language: c++
-   :emphasize-lines: 35,36,37,49
+   :lines: 37-101
+   :emphasize-lines: 34,35,36,47
 
 (1) Creating a CommunicationPointer to get access to a parallel environment.
 (2) Creating a DistributionPointer of a BlockDistribution.
