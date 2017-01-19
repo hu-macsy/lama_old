@@ -569,12 +569,13 @@ public:
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 
-    template<typename ValueType>
     static void buildSparseArray(
-        hmemo::HArray<ValueType>& sparseArray,
+        hmemo::_HArray& sparseArray,
         hmemo::HArray<IndexType>& sparseIndexes,
         const hmemo::_HArray& denseArray,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Build sparse indexes only, useful if sparseArray is not really needed */
 
     template<typename TargetType, typename SourceType>
     static void buildSparseArrayImpl(

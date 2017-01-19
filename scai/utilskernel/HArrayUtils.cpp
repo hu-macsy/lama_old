@@ -90,7 +90,7 @@ void HArrayUtils::setArray(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, op, prefLoc );
+    mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArray( target, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -158,7 +158,7 @@ void HArrayUtils::setArraySection(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArraySection(
+    mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArraySection(
         target, targetOffset, targetStride,
         source, sourceOffset, sourceStride,
         n, op, prefLoc );
@@ -216,7 +216,7 @@ void HArrayUtils::gather(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the gather version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::gather( target, source, indexes, op, prefLoc );
+    mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::gather( target, source, indexes, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -230,7 +230,7 @@ void HArrayUtils::scatter(
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::scatter( target, indexes, unique, source, op, prefLoc );
+    mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::scatter( target, indexes, unique, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1490,16 +1490,14 @@ void HArrayUtils::buildSparseIndexes(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
 void HArrayUtils::buildSparseArray(
-    hmemo::HArray<ValueType>& sparseArray,
+    hmemo::_HArray& sparseArray,
     hmemo::HArray<IndexType>& sparseIndexes,
     const hmemo::_HArray& denseArray,
     hmemo::ContextPtr prefLoc )
 {
-    // call buildSparseArrayImpl<ValueType, SourceType> with SourceType = denseArray.getValueType()
-
-    mepr::UtilsWrapperT< ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
+    mepr::UtilsWrapperTT< SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::
+        buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1587,33 +1585,40 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType> in
 
 /* --------------------------------------------------------------------------- */
 
-#define HARRAUTILS_SPECIFIER_LVL2( ValueType, OtherValueType )                                                    \
-    template void HArrayUtils::gatherImpl<ValueType, OtherValueType>(                                             \
-            hmemo::HArray<ValueType>&,                                                                            \
-            const hmemo::HArray<OtherValueType>&,                                                                 \
-            const hmemo::HArray<IndexType>&,                                                                      \
-            const binary::BinaryOp,                                                                               \
-            const hmemo::ContextPtr );                                                                            \
-    template void HArrayUtils::setArrayImpl<ValueType, OtherValueType>( hmemo::HArray<ValueType>&,                \
-            const hmemo::HArray<OtherValueType>&,                                                                 \
-            const binary::BinaryOp,                                                                               \
-            hmemo::ContextPtr );                                                                                  \
-    template void HArrayUtils::setArraySectionImpl<ValueType, OtherValueType>(                                    \
-            hmemo::HArray<ValueType>&, const IndexType, const IndexType,                                          \
-            const hmemo::HArray<OtherValueType>&, const IndexType, const IndexType,                               \
-            const IndexType,                                                                                      \
-            const binary::BinaryOp,                                                                               \
-            hmemo::ContextPtr );                                                                                  \
-    template void HArrayUtils::scatterImpl<ValueType, OtherValueType>(                                            \
-            hmemo::HArray<ValueType>&,                                                                            \
-            const hmemo::HArray<IndexType>&,                                                                      \
-            const bool,                                                                                           \
-            const hmemo::HArray<OtherValueType>&,                                                                 \
-            const binary::BinaryOp,                                                                               \
-            const hmemo::ContextPtr );
+/** Makro for the instantiation of routines with two template arguments for source and target type. */
 
-/*
-*/
+#define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
+    template void HArrayUtils::gatherImpl<TargetType, SourceType>(                   \
+            hmemo::HArray<TargetType>&,                                              \
+            const hmemo::HArray<SourceType>&,                                        \
+            const hmemo::HArray<IndexType>&,                                         \
+            const binary::BinaryOp,                                                  \
+            const hmemo::ContextPtr );                                               \
+    template void HArrayUtils::setArrayImpl<TargetType, SourceType>(                 \
+            hmemo::HArray<TargetType>&,                                              \
+            const hmemo::HArray<SourceType>&,                                        \
+            const binary::BinaryOp,                                                  \
+            hmemo::ContextPtr );                                                     \
+    template void HArrayUtils::setArraySectionImpl<TargetType, SourceType>(          \
+            hmemo::HArray<TargetType>&, const IndexType, const IndexType,            \
+            const hmemo::HArray<SourceType>&, const IndexType, const IndexType,      \
+            const IndexType,                                                         \
+            const binary::BinaryOp,                                                  \
+            hmemo::ContextPtr );                                                     \
+    template void HArrayUtils::scatterImpl<TargetType, SourceType>(                  \
+            hmemo::HArray<TargetType>&,                                              \
+            const hmemo::HArray<IndexType>&,                                         \
+            const bool,                                                              \
+            const hmemo::HArray<SourceType>&,                                        \
+            const binary::BinaryOp,                                                  \
+            const hmemo::ContextPtr );                                               \
+    template void HArrayUtils::buildSparseArrayImpl<TargetType, SourceType>(         \
+            hmemo::HArray<TargetType>&,                                              \
+            hmemo::HArray<IndexType>&,                                               \
+            const hmemo::HArray<SourceType>&,                                        \
+            hmemo::ContextPtr );                                                            
+
+/** Makro for the instantiation of routines with one template argument for the value type. */
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                   \
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                       \
@@ -1671,8 +1676,6 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType> in
     template void HArrayUtils::setSequence<ValueType>( hmemo::HArray<ValueType>&, ValueType, ValueType, IndexType,           \
             hmemo::ContextPtr );                                                                                             \
     template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );   \
-    template void HArrayUtils::buildSparseArray<ValueType>( hmemo::HArray<ValueType>&, hmemo::HArray<IndexType>&,            \
-            const hmemo::_HArray&, hmemo::ContextPtr );                                                            \
     \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 
