@@ -80,4 +80,88 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( CopyConstructorTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 20;   // let it really small, this test is very inefficient
+
+    utilskernel::LArray<ValueType> data;
+
+    std::srand( 13151 );   // This test only works if all processors have same random numbers
+
+    const float fillRate = 0.2;   // makes it worth to be sparse
+
+    utilskernel::HArrayUtils::setRandom( data, n, fillRate );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        utilskernel::LArray<ValueType> data1( n );
+
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> denseV( data );
+
+        denseV.redistribute( dist );
+
+        SparseVector<ValueType> sparseV( denseV );
+
+        // get each value from the distributed sparse vector
+
+        for ( IndexType k = 0; k < n; ++k )
+        {
+            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+        }
+
+        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( RedistributeTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 20;   // let it really small, this test is very inefficient
+
+    utilskernel::LArray<ValueType> data;
+
+    std::srand( 13151 );   // This test only works if all processors have same random numbers
+
+    const float fillRate = 0.2;   // makes it worth to be sparse
+
+    utilskernel::HArrayUtils::setRandom( data, n, fillRate );
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        utilskernel::LArray<ValueType> data1( n );
+
+        dmemo::DistributionPtr dist = dists[i];
+
+        SparseVector<ValueType> sparseV( data );
+
+        sparseV.redistribute( dist );
+
+        // get each value from the distributed sparse vector
+
+        for ( IndexType k = 0; k < n; ++k )
+        {
+            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+        }
+
+        BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

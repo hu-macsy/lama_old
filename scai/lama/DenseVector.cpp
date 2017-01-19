@@ -305,11 +305,23 @@ void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, con
 template<typename ValueType>
 DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution ) :
 
-    _DenseVector( distribution )
-
+    _DenseVector( distribution ),
+    mLocalValues( localValues )
 {
     SCAI_ASSERT_EQ_ERROR( localValues.size(), distribution->getLocalSize(), "size mismatch" )
-    HArrayUtils::assign( mLocalValues, localValues ); // can deal with type conversions
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const _HArray& values ) :
+
+    _DenseVector( DistributionPtr( new NoDistribution( values.size() ) ) ),
+    mLocalValues( values )
+
+{
+    SCAI_LOG_DEBUG( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() 
+                             << ">( HArray<" << values.getValueType() << ">, size = " << values.size() << " )" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -822,12 +834,25 @@ common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setValues( const _HArray& values )
+void DenseVector<ValueType>::setDenseValues( const _HArray& values )
 {
-    SCAI_ASSERT_ERROR(
-        values.size() == mLocalValues.size(),
-        "Size of values = " << values.size() << ", does not match local size of vector = " << mLocalValues.size() );
-    HArrayUtils::assign( mLocalValues, values );
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( localSize, values.size(), "size of array with local values does not match local size of distribution" )
+
+    HArrayUtils::assign( mLocalValues, values, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues )
+{
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    // Note: buildDenseArray checks for legal indexes, order of indexes does not matter
+
+    HArrayUtils::buildDenseArray( mLocalValues, localSize, nonZeroValues, nonZeroIndexes, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -989,14 +1014,69 @@ void DenseVector<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
+void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const Vector& x )
 {
-    const Expression_SV& exp1 = expression.getArg1();
-    const Expression_SV& exp2 = expression.getArg2();
-    const ValueType alpha = exp1.getArg1().getValue<ValueType>();
-    const Vector& x = exp1.getArg2();
-    const ValueType beta = exp2.getArg1().getValue<ValueType>();
-    const Vector& y = exp2.getArg2();
+    const ValueType alphaV = alpha.getValue<ValueType>();
+
+    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    {
+        assign( x );
+        HArrayUtils::setScalar( mLocalValues, alphaV, utilskernel::binary::MULT, mContext );
+        return;
+    }
+
+    // make sure that in case of alias x == *this we do not reallocate
+
+    if ( x.getDistribution() != getDistribution() )
+    {
+        allocate( x.getDistributionPtr() );
+    }
+
+    const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
+
+    SCAI_ASSERT_EQ_ERROR( mLocalValues.size(), denseX.mLocalValues.size(), "local size mismatch" )
+
+    SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
+
+    ValueType betaV = 0;
+
+    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseX.mLocalValues, mContext );
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector& x, const Scalar& beta, const Vector& y )
+{
+    // Query for alpha == 0 or beta == 0 as x and y might be undefined 
+
+    if ( alpha == Scalar( 0 ) )
+    {
+        assignScaledVector( beta, y );
+        return;
+    }
+
+    if ( beta == Scalar( 0 ) )
+    {
+        assignScaledVector( alpha, x );
+        return;
+    }
+
+    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    {
+        DenseVector<ValueType> xTmp( x );
+        vectorPlusVector( alpha, xTmp, beta, y );
+        return;
+    }
+
+    if ( y.getVectorKind() != DENSE || y.getValueType() != getValueType() )
+    {
+        DenseVector<ValueType> yTmp( y );
+        vectorPlusVector( alpha, x, beta, yTmp );
+        return;
+    }
+
+    const ValueType alphaV = alpha.getValue<ValueType>();
+    const ValueType betaV  = beta.getValue<ValueType>();
+
     SCAI_LOG_INFO( logger, "z = " << alpha << " * x + " << beta << " * y, with  x = " << x << ", y = " << y << ", z = " << *this )
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
@@ -1012,46 +1092,23 @@ void DenseVector<ValueType>::assign( const Expression_SV_SV& expression )
         allocate( x.getDistributionPtr() );
     }
 
-    if ( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
+    const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = dynamic_cast<const DenseVector<ValueType>&>( y );
+
+    if ( mLocalValues.size() != denseX.mLocalValues.size() )
     {
-        const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
-        const DenseVector<ValueType>& denseY = dynamic_cast<const DenseVector<ValueType>&>( y );
-
-        if ( mLocalValues.size() != denseX.mLocalValues.size() )
-        {
-            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
-            mLocalValues.clear();
-            WriteAccess<ValueType> localAccess( mLocalValues, mContext );
-            localAccess.resize( denseX.mLocalValues.size() );
-        }
-
-#ifdef NOT_SWITCHED_ON
-        {
-            // useful output to identify aliases between arguments, write should be the last one
-            ReadAccess<ValueType> rX( denseX.mLocalValues, mContext );
-            ReadAccess<ValueType> rY( denseY.mLocalValues, mContext );
-            WriteAccess<ValueType> rZ( mLocalValues, mContext );
-            SCAI_LOG_DEBUG( logger, " z = " << rZ.get() << ", x = " << rX.get() << ", y = " << rY.get() )
-        }
-#endif
-
-        SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
-        utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alpha, denseX.mLocalValues, beta, denseY.mLocalValues, mContext );
+        SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
+        mLocalValues.clear();
+        mLocalValues.resize( denseX.mLocalValues.size() );
     }
-    else
-    {
-        COMMON_THROWEXCEPTION(
-            "Can not calculate z = alpha * x + beta * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
-    }
+
+    SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
+    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseY.mLocalValues, mContext );
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assign( const Expression_SVV& expression )
+void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vector& x, const Vector& y )
 {
-    const ValueType alpha = expression.getArg1().getValue<ValueType>();
-    const Expression_VV& exp2 = expression.getArg2();
-    const Vector& x = exp2.getArg1();
-    const Vector& y = exp2.getArg2();
     SCAI_LOG_INFO( logger, "z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
     SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
     SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
@@ -1067,36 +1124,48 @@ void DenseVector<ValueType>::assign( const Expression_SVV& expression )
         allocate( x.getDistributionPtr() );
     }
 
-    if ( typeid( *this ) == typeid( x ) && typeid( *this ) == typeid( y ) )
+    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
     {
-        const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
-        const DenseVector<ValueType>& denseY = dynamic_cast<const DenseVector<ValueType>&>( y );
-
-        if ( mLocalValues.size() != denseX.mLocalValues.size() )
-        {
-            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
-            mLocalValues.clear();
-            WriteAccess<ValueType> localAccess( mLocalValues, mContext );
-            localAccess.resize( denseX.mLocalValues.size() );
-        }
-
-        SCAI_LOG_DEBUG( logger, "call arrayTimesArray" )
-        utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alpha, denseX.mLocalValues, denseY.mLocalValues, mContext );
+        DenseVector<ValueType> xTmp( x );
+        vectorTimesVector( alpha, xTmp, y );
+        return;
     }
-    else
+
+    if ( y.getVectorKind() != DENSE || y.getValueType() != getValueType() )
     {
-        COMMON_THROWEXCEPTION(
-            "Can not calculate  z = x * y, z = " << *this << ", x = " << x << ", y = " << y << " because of type mismatch." );
+        DenseVector<ValueType> yTmp( y );
+        vectorTimesVector( alpha, x, yTmp );
+        return;
     }
+
+    const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+    const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+
+    mLocalValues.resize( denseX.mLocalValues.size() );
+
+    SCAI_LOG_DEBUG( logger, "call arrayTimesArray" )
+
+    ValueType alphaV = alpha.getValue<ValueType>();
+
+    utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alphaV, denseX.mLocalValues, denseY.mLocalValues, mContext );
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
+void DenseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const Vector& x, const Scalar& beta )
 {
-    const Expression_SV& exp = expression.getArg1();
-    const ValueType alpha = exp.getArg1().getValue<ValueType>();
-    const Vector& x = exp.getArg2();
-    const ValueType beta = expression.getArg2().getValue<ValueType>();
+    if ( x.getVectorKind() != DENSE || x.getValueType() != getValueType() )
+    {
+        SCAI_LOG_WARN( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorAddScalar, uses tmp for x" )
+
+        DenseVector<ValueType> xTmp( x );
+        vectorPlusScalar( alpha, xTmp, beta );
+        return;
+    }
+
+    const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
+
+    const ValueType alphaV = alpha.getValue<ValueType>();
+    const ValueType betaV = beta.getValue<ValueType>();
 
     SCAI_LOG_INFO( logger, "z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha
                    << " , x = " << x << " , beta = " << beta )
@@ -1107,27 +1176,15 @@ void DenseVector<ValueType>::assign( const Expression_SV_S& expression )
         allocate( x.getDistributionPtr() );
     }
 
-    if ( typeid( *this ) == typeid( x ) )
+    if ( mLocalValues.size() != denseX.mLocalValues.size() )
     {
-        const DenseVector<ValueType>& denseX = dynamic_cast<const DenseVector<ValueType>&>( x );
-
-        if ( mLocalValues.size() != denseX.mLocalValues.size() )
-        {
-            SCAI_LOG_DEBUG( logger, "resize local values of z = this" )
-            mLocalValues.clear();
-            WriteAccess<ValueType> localAccess( mLocalValues, mContext );
-            localAccess.resize( denseX.mLocalValues.size() );
-        }
-
-        SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
-        utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alpha, denseX.mLocalValues, beta, mContext );
+        mLocalValues.clear();
+        mLocalValues.resize( denseX.mLocalValues.size() );
     }
-    else
-    {
-        COMMON_THROWEXCEPTION(
-            "Can not calculate  z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha
-            << ", x = " << x << " because of type mismatch." );
-    }
+
+    SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
+
+    utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alphaV, denseX.mLocalValues, betaV, mContext );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1232,7 +1289,9 @@ void DenseVector<ValueType>::gather(
 
     // required indexes were sorted according to perm, using inverse perm here via scatter
 
-    HArrayUtils::scatter( mLocalValues, perm, recvValues, op );
+    bool isUnique = false;
+
+    HArrayUtils::scatter( mLocalValues, perm, isUnique, recvValues, op );
 
     assign( mLocalValues, index.getDistributionPtr() );
 }
@@ -1245,6 +1304,8 @@ void DenseVector<ValueType>::scatter(
     const DenseVector<ValueType>& source,
     const utilskernel::binary::BinaryOp op )
 {
+    bool hasUniqueIndexes = false;
+
     SCAI_ASSERT_EQ_ERROR( source.getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
 
     // get the owners of my local index values, relevant is distribution of this target vector
@@ -1258,7 +1319,7 @@ void DenseVector<ValueType>::scatter(
     {
         // so all involved arrays are replicated, we can do it just locally
 
-        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), source.getLocalValues(), op );
+        HArrayUtils::scatter( mLocalValues, index.getLocalValues(), hasUniqueIndexes, source.getLocalValues(), op );
 
         return;
     }
@@ -1326,7 +1387,7 @@ void DenseVector<ValueType>::scatter(
 
     // Now scatter all received values
 
-    HArrayUtils::scatter( mLocalValues, recvIndexes, recvValues, op, source.getContextPtr() );
+    HArrayUtils::scatter( mLocalValues, recvIndexes, hasUniqueIndexes, recvValues, op, source.getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1363,7 +1424,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 }
 
 template<typename ValueType>
-DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
+void DenseVector<ValueType>::scale( const Vector& other )
 {
     SCAI_REGION( "Vector.Dense.scale" )
     SCAI_LOG_INFO( logger, "Scale " << *this << " with " << other )
@@ -1374,10 +1435,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
     }
 
     other.buildLocalValues( mLocalValues, utilskernel::binary::MULT, getContextPtr() );
-
-    return *this;
 }
-
 
 template<typename ValueType>
 void DenseVector<ValueType>::allocate( DistributionPtr distribution )
@@ -1398,16 +1456,6 @@ void DenseVector<ValueType>::allocate( const IndexType n )
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::assign( const Vector& other )
-{
-    setDistributionPtr( other.getDistributionPtr() );
-
-    // just copy the local values of the other vector
-
-    other.buildLocalValues( mLocalValues, utilskernel::binary::COPY, getContextPtr() ); 
-}
-
-template<typename ValueType>
 void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
@@ -1421,23 +1469,6 @@ void DenseVector<ValueType>::add( const Scalar value )
     SCAI_LOG_DEBUG( logger, *this << ": add " << value )
     // assign the scalar value on the home of this dense vector.
     HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::ADD, mContext );
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr dist )
-{
-    SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
-    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "size mismatch" )
-    setDistributionPtr( dist );
-    HArrayUtils::assign( mLocalValues, localValues );
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::assign( const _HArray& globalValues )
-{
-    SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
-    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
-    HArrayUtils::assign( mLocalValues, globalValues );
 }
 
 template<typename ValueType>

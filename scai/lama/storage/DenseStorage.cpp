@@ -146,6 +146,18 @@ void DenseStorage<ValueType>::setDiagonalImpl( const ValueType value )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    // ToDo: avoid temporary array row by new version buildSparseArray with offs and inc argument
+
+    HArray<ValueType> row;
+    getRowImpl( row, i );
+    HArrayUtils::buildSparseArray( values, jA, row, mContext );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void DenseStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType rowIndex ) const
 {

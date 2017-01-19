@@ -556,6 +556,30 @@ void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void ELLStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    const IndexType nrow  = mIA[i];       // number of non-zero entries in row
+    const IndexType offs  = i;            // first non-zero entry
+    const IndexType inc   = mNumRows;     // stride between two entries
+
+    // resize the output arrays, invalidate old data before
+
+    jA.clear();
+    jA.resize( nrow );
+    values.clear();
+    values.resize( nrow );
+
+    // just copy the corresponding parts of the csrJA and csrValues array
+
+    utilskernel::binary::BinaryOp op = utilskernel::binary::COPY;
+
+    HArrayUtils::setArraySection( jA, 0, 1, mJA, offs, inc, nrow, op, getContextPtr() );
+    HArrayUtils::setArraySection( values, 0, 1, mValues, offs, inc, nrow, op, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
@@ -611,7 +635,7 @@ void ELLStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
     // column[ row ] = mValues[ pos ];
 
     HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -312,6 +312,26 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
+void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    const IndexType nrow  = mIlg[i];       // number of non-zero entries in row
+
+    // const IndexType offs  = i;            // first non-zero entry
+    // const IndexType inc   = mNumRows;     // stride between two entries
+
+    // resize the output arrays, invalidate old data before
+
+    jA.clear();
+    jA.resize( nrow );
+    values.clear();
+    values.resize( nrow );
+
+    COMMON_THROWEXCEPTION( "not available yet: getSparseRow for JDS, requires new kernel" )
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const IndexType i ) const
 {
@@ -379,7 +399,7 @@ void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
     // column[ row ] = mValues[ pos ];
 
     HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -458,7 +478,7 @@ void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     //  mValues[ pos ] op= column[row]
 
     HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -479,7 +499,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
     ReadAccess<ValueType> rValues( mValues, loc );
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
-    setScatter[loc]( wDiagonal.get(), rPerm.get(), rValues.get(), utilskernel::binary::COPY, numDiagonal );
+    setScatter[loc]( wDiagonal.get(), rPerm.get(), true, rValues.get(), utilskernel::binary::COPY, numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -734,7 +754,7 @@ void JDSStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> wCsrIA( ia, loc, mNumRows + 1 );
     SCAI_CONTEXT_ACCESS( loc )
     // rowValues[ perm[i] ] = ilg[i]
-    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), rJdsILG.get(), utilskernel::binary::COPY, mNumRows );
+    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), true, rJdsILG.get(), utilskernel::binary::COPY, mNumRows );
 
     if ( ja == NULL || values == NULL )
     {

@@ -207,9 +207,32 @@ template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Vector& other, DistributionPtr distribution )
 
     : _SparseVector( other )
+
 {
     assign( other );
     redistribute( distribution );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) :
+
+    _SparseVector( distribution )
+
+{
+    setDenseValues( localValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues ) :
+
+    _SparseVector( DistributionPtr( new NoDistribution( localValues.size() ) ) )
+
+{
+    setDenseValues( localValues );   // builds the sparse version
 }
 
 /* ------------------------------------------------------------------------- */
@@ -238,7 +261,7 @@ void SparseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, co
 
     localValues.setRandom( localSize, fillRate, getContextPtr() );
 
-    HArrayUtils::buildSparseArray( mNonZeroValues, mNonZeroIndexes, localValues );
+    setDenseValues( localValues );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -273,10 +296,9 @@ template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_VV& expression )
 
     : _SparseVector( expression.getArg1() )
+
 {
-    SCAI_LOG_INFO( logger, "Constructor( x * y )" )
-    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
-    Vector::operator=( tmpExp );
+    Vector::operator=( expression );
 }
 
 // linear algebra expression: s*x*y
@@ -444,20 +466,47 @@ void SparseVector<ValueType>::buildLocalValues(
     else
     {
         SCAI_ASSERT_EQ_ERROR( values.size(), size, "size mismatch" )
-        HArrayUtils::scatter( values, mNonZeroIndexes, mNonZeroValues, op, loc );
+        HArrayUtils::scatter( values, mNonZeroIndexes, true, mNonZeroValues, op, loc );
     }
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setValues( const _HArray& values )
+void SparseVector<ValueType>::setDenseValues( const _HArray& values )
 {
     const IndexType size = getDistribution().getLocalSize();
 
     SCAI_ASSERT_EQ_ERROR( size, values.size(), "size of local values does not match local size of vector" )
 
     HArrayUtils::buildSparseArray( mNonZeroValues, mNonZeroIndexes, values, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues )
+{
+    const IndexType size = getDistribution().getLocalSize();
+
+    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, size, getContextPtr() );
+
+    if ( !isValid )
+    {
+        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
+    }
+
+    // we cannot check yet for double entries of one index, but for ascending order
+
+    bool isSorted = HArrayUtils::isSorted( nonZeroIndexes, true );
+
+    if ( !isSorted )
+    {
+        COMMON_THROWEXCEPTION( "indexes of non-zero values must be sorted" )
+    }
+
+    HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, utilskernel::binary::COPY, getContextPtr() );
+    HArrayUtils::setArray( mNonZeroValues, nonZeroValues, utilskernel::binary::COPY, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -473,7 +522,7 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
 
     FileIO::read( denseValues, fileName, common::scalar::INTERNAL, first, n );
 
-    setValues( denseValues );
+    setDenseValues( denseValues );
 
     return denseValues.size();
 }
@@ -674,79 +723,42 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 }
 
 template<typename ValueType>
-void SparseVector<ValueType>::assign( const Expression_SV_SV& expression )
+void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector& x, const Scalar& beta, const Vector& y )
 {
-    const Expression_SV& exp1 = expression.getArg1();
-    const Expression_SV& exp2 = expression.getArg2();
-    const ValueType alpha = exp1.getArg1().getValue<ValueType>();
-    const Vector& x = exp1.getArg2();
-    const ValueType beta = exp2.getArg1().getValue<ValueType>();
-    const Vector& y = exp2.getArg2();
-    SCAI_LOG_INFO( logger, "z = " << alpha << " * x + " << beta << " * y, with  x = " << x << ", y = " << y << ", z = " << *this )
-    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
-    SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
+    // just get it running: use DenseVector as temporary
 
-    if ( x.getDistribution() != y.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "distribution do not match for z = alpha * x + beta * y, z = " << *this << " , x = " << x << " , y = " << y )
-    }
+    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorPlusVector( " 
+                          << alpha << " * x + " << beta << " * y ) uses temporary dense vector" )
 
-    if ( x.getDistribution() != getDistribution() || x.size() != size() )
-    {
-        allocate( x.getDistributionPtr() );
-    }
-
-    COMMON_THROWEXCEPTION(
-            "Unsupported z = alpha * x + beta * y, z = " << *this << ", x = " << x << ", y = " << y << " because of sparse/type mismatch." );
+    DenseVector<ValueType> tmp;
+    tmp.vectorPlusVector( alpha, x, beta, y );
+    assign( tmp );
 }
 
 template<typename ValueType>
-void SparseVector<ValueType>::assign( const Expression_SVV& expression )
+void SparseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vector& x, const Vector& y )
 {
-    const ValueType alpha = expression.getArg1().getValue<ValueType>();
-    const Expression_VV& exp2 = expression.getArg2();
-    const Vector& x = exp2.getArg1();
-    const Vector& y = exp2.getArg2();
-    SCAI_LOG_INFO( logger, "z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
-    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
-    SCAI_LOG_DEBUG( logger, "dist of y = " << y.getDistribution() )
+    // just get it running: use DenseVector as temporary
 
-    if ( x.getDistribution() != y.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION(
-            "distribution do not match for z = x * y, z = " << *this << " , x = " << x << " , y = " << y )
-    }
+    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorTimesVector( " 
+                          << alpha << " * x * y ) uses temporary dense vector" )
 
-    if ( x.getDistribution() != getDistribution() || x.size() != size() )
-    {
-        allocate( x.getDistributionPtr() );
-    }
-
-    COMMON_THROWEXCEPTION(
-        "Can not calculate  z = " << alpha << " * x * y, z = " << *this << ", x = " << x << ", y = " << y << " because unsupported for sparse" );
+    DenseVector<ValueType> tmp;
+    tmp.vectorTimesVector( alpha, x, y );
+    assign( tmp );
 }
 
 template<typename ValueType>
-void SparseVector<ValueType>::assign( const Expression_SV_S& expression )
+void SparseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const Vector& x, const Scalar& beta )
 {
-    const Expression_SV& exp = expression.getArg1();
-    const ValueType alpha = exp.getArg1().getValue<ValueType>();
-    const Vector& x = exp.getArg2();
-    const ValueType beta = expression.getArg2().getValue<ValueType>();
+    // just get it running: use DenseVector as temporary
 
-    SCAI_LOG_INFO( logger, "z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha
-                   << " , x = " << x << " , beta = " << beta )
-    SCAI_LOG_DEBUG( logger, "dist of x = " << x.getDistribution() )
+    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorAddScalar( " 
+                          << alpha << " * x + " << beta << " ) uses temporary dense vector" )
 
-    if ( x.getDistribution() != getDistribution() || x.size() != size() )
-    {
-        allocate( x.getDistributionPtr() );
-    }
-
-    COMMON_THROWEXCEPTION(
-            "Can not calculate  z = alpha * x + beta, z = " << *this << ", alpha=  " << alpha
-            << ", x = " << x << " because of type mismatch." );
+    DenseVector<ValueType> tmp;
+    tmp.vectorPlusScalar( alpha, x, beta );
+    assign( tmp );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -784,22 +796,18 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
     return Scalar( dotProduct );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
-SparseVector<ValueType>& SparseVector<ValueType>::scale( const Vector& other )
+void SparseVector<ValueType>::scale( const Vector& other )
 {
-    SCAI_REGION( "Vector.Sparse.scale" )
-    SCAI_LOG_INFO( logger, "Scale " << *this << " with " << other )
+    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::scale( x )" 
+                           << " uses temporary dense vector" )
 
-    if ( getDistribution() != other.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
-    }
-
-    COMMON_THROWEXCEPTION( "scale for sparse vector not supported yet, other = " << other )
-
-    return *this;
+    DenseVector<ValueType> tmp( *this );
+    tmp.scale( other );
+    assign( tmp );
 }
-
 
 template<typename ValueType>
 void SparseVector<ValueType>::allocate( DistributionPtr distribution )
@@ -819,36 +827,20 @@ void SparseVector<ValueType>::allocate( const IndexType n )
 }
 
 template<typename ValueType>
-void SparseVector<ValueType>::assign( const Vector& other )
-{
-    setDistributionPtr( other.getDistributionPtr() );
-
-    switch ( other.getVectorKind() )
-    {
-        case Vector::DENSE:
-        {
-            const _DenseVector& denseOther = reinterpret_cast<const _DenseVector&>( other );
-            setValues( denseOther.getLocalValues() );
-            break;
-        }
-        case Vector::SPARSE:
-        {
-            const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
-            HArrayUtils::setArray( mNonZeroIndexes, sparseOther.getNonZeroIndexes() );
-            HArrayUtils::setArray( mNonZeroValues, sparseOther.getNonZeroValues() );
-            break;
-        }
-        default:
-            COMMON_THROWEXCEPTION( "illegal vector kind" )
-    }
-}
-
-template<typename ValueType>
 void SparseVector<ValueType>::assign( const Scalar value )
 {
-    SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
+    SCAI_LOG_INFO( logger, *this << ": assign " << value )
+
+    SCAI_UNSUPPORTED( "Assignment of scalar to a sparse vector not very useful" )
  
-    COMMON_THROWEXCEPTION( "assign scalar unsupported for sparse vector" )
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    HArrayUtils::setOrder( mNonZeroIndexes, localSize, getContextPtr() );
+
+    mNonZeroValues.clear();
+    mNonZeroValues.resize( localSize );
+
+    HArrayUtils::assignScalar( mNonZeroValues, value.getValue<ValueType>(), utilskernel::binary::COPY, getContextPtr() );
 }
 
 template<typename ValueType>
@@ -857,23 +849,6 @@ void SparseVector<ValueType>::add( const Scalar value )
     SCAI_LOG_DEBUG( logger, *this << ": add " << value )
 
     COMMON_THROWEXCEPTION( "add scalar ( = " << value << " ) unsupported for sparse vector" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::assign( const _HArray& localValues, DistributionPtr dist )
-{
-    SCAI_LOG_INFO( logger, "assign vector with localValues = " << localValues << ", dist = " << *dist )
-    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "size mismatch" )
-    setDistributionPtr( dist );
-    SparseVector<ValueType>::setValues( localValues );
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::assign( const _HArray& globalValues )
-{
-    SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
-    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
-    SparseVector<ValueType>::setValues( globalValues );
 }
 
 template<typename ValueType>
@@ -893,7 +868,14 @@ void SparseVector<ValueType>::wait() const
 template<typename ValueType>
 void SparseVector<ValueType>::invert()
 {
-    COMMON_THROWEXCEPTION( "invert not supported for sparse vectors" )
+    // invert not very useful on a sparse vector that usually has a lot of zero values
+
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    SCAI_ASSERT_EQ_ERROR( localSize, mNonZeroValues.size(), "invert on sparse vector with zero values" )
+    SCAI_ASSERT_EQ_ERROR( localSize, mNonZeroIndexes.size(), "invert on sparse vector with zero values" )
+
+    mNonZeroValues.invert();
 }
 
 template<typename ValueType>
@@ -905,7 +887,7 @@ void SparseVector<ValueType>::conj()
 template<typename ValueType>
 void SparseVector<ValueType>::exp()
 {
-    COMMON_THROWEXCEPTION( "exp not supported for sparse vectors" )
+    COMMON_THROWEXCEPTION( "log not supported for sparse vectors" )
 }
 
 template<typename ValueType>
@@ -1012,9 +994,96 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
         // we can keep local/global values, but just set dist pointer
         setDistributionPtr( distribution );
     }
-    else 
+    else if ( getDistribution().isReplicated() )
     {
-        COMMON_THROWEXCEPTION( "redistribute for sparse vector not supported yet" )
+        // each processor has all values, so just pick up the local values
+
+        SCAI_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
+
+        // we just compress the non-zero indexes/values owned by this process
+
+        IndexType oldSize = mNonZeroIndexes.size();
+
+        ContextPtr hostContext = Context::getHostPtr();
+
+        {
+            IndexType newSize = 0;
+
+            WriteAccess<IndexType> wNonZeroIndexes( mNonZeroIndexes, hostContext );
+            WriteAccess<ValueType> wNonZeroValues( mNonZeroValues, hostContext );
+
+            for ( IndexType i = 0; i < oldSize; ++i )
+            {
+                IndexType globalIndex = wNonZeroIndexes[i];
+
+                if ( distribution->isLocal( globalIndex ) )
+                {
+                    const IndexType localIndex = distribution->global2local( globalIndex );
+                    wNonZeroIndexes[newSize] = localIndex;
+                    wNonZeroValues[newSize] = wNonZeroValues[i];
+                    newSize++;
+                }
+            }
+            
+            wNonZeroIndexes.resize( newSize );
+            wNonZeroValues.resize( newSize );
+        }
+
+        setDistributionPtr( distribution );
+    }
+    else if ( distribution->isReplicated() )
+    {
+        // translate the local non-zero indexes to 'global' non-zero indexes
+
+        IndexType nLocalIndexes = mNonZeroIndexes.size();
+
+        const Distribution& currentDist = getDistribution();
+
+        ContextPtr hostContext = Context::getHostPtr();
+        {
+            WriteAccess<IndexType> wNonZeroIndexes( mNonZeroIndexes, hostContext );
+
+            for ( IndexType i = 0; i < nLocalIndexes; ++i )
+            {
+                wNonZeroIndexes[i] = currentDist.local2global( wNonZeroIndexes[i] );
+            }
+        }
+
+        IndexType globalSize = currentDist.getGlobalSize();
+
+        HArray<IndexType> allNonZeroIndexes;
+        HArray<ValueType> allNonZeroValues;
+
+        {
+            ReadAccess<IndexType> rNonZeroIndexes( mNonZeroIndexes, hostContext );
+            ReadAccess<ValueType> rNonZeroValues( mNonZeroValues, hostContext );
+
+            WriteOnlyAccess<IndexType> wAllNonZeroIndexes( mNonZeroIndexes, hostContext, globalSize );
+            WriteOnlyAccess<ValueType> wAllNonZeroValues( mNonZeroValues, hostContext, globalSize );
+
+            // Now replicate 
+
+            currentDist.replicate( wAllNonZeroIndexes.get(), rNonZeroIndexes.get() );
+            currentDist.replicate( wAllNonZeroValues.get(), rNonZeroValues.get() );
+        }
+
+        // sort the non-zero indexes ascending
+
+        mNonZeroIndexes.swap( allNonZeroIndexes );
+        mNonZeroValues.swap( allNonZeroValues );
+
+        setDistributionPtr( distribution );
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution )
+
+        DistributionPtr repDist ( new NoDistribution( getDistribution().getGlobalSize() ) );
+
+        redistribute( repDist );
+        redistribute( distribution );
+
+        // optimized pattern : shift all parts between all processors and pick up the new local ones
     }
 }
 

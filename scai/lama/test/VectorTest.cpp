@@ -104,7 +104,18 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         size_t size1 = v->getMemoryUsage();
 
-        BOOST_CHECK( size1 >= size0 + n * common::typeSize( v->getValueType() ) );
+        if ( v->getVectorKind() == Vector::DENSE )
+        {
+            // a dense vector allocates really memory
+
+            BOOST_CHECK( size1 >= size0 + n * common::typeSize( v->getValueType() ) );
+        }
+        else if ( v->getVectorKind() == Vector::SPARSE )
+        {
+            // a sparse vector does not allocate here memory
+
+            BOOST_CHECK_EQUAL( size1, size0 );
+        }
 
         *v = 1;
         v->redistribute( dist );

@@ -796,6 +796,25 @@ void SparseAssemblyStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    const IndexType nrow = i;
+
+    // resize the output arrays, invalidate old data before
+
+    jA.clear();
+    jA.resize( nrow );
+    values.clear();
+    values.resize( nrow );
+
+    COMMON_THROWEXCEPTION( "not available yet" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {

@@ -278,6 +278,15 @@ public:
      */
     virtual void getRow( hmemo::_HArray& row, const IndexType i ) const = 0;
 
+    /** This method returns the i-th row of the matrix as a sparse vector, i.e. indexes + values
+     *
+     * @param[out] jA are column positions with non-zero values
+     * @param[out] values are the values at the corresponding column positions.
+     * @param[in] i is the row index
+     *
+     */
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const = 0;
+
     virtual void setRow( const hmemo::_HArray& row, const IndexType i, utilskernel::binary::BinaryOp op ) = 0;
 
     virtual void setColumn( const hmemo::_HArray& column, const IndexType j,

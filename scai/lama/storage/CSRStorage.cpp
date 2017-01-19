@@ -916,7 +916,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
         ReadAccess<IndexType> csrIA( mIa, loc );
         WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
-        setScatter[loc]( wValues.get(), csrIA.get(), rDiagonal.get(), binary::COPY, numDiagonalElements );
+        setScatter[loc]( wValues.get(), csrIA.get(), true, rDiagonal.get(), binary::COPY, numDiagonalElements );
     }
 
     if ( SCAI_LOG_TRACE_ON( logger ) )
@@ -954,7 +954,36 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
 
-    setScatter[loc]( wRow.get(), ja.get() + n1, values.get() + n1, binary::COPY, nrow );
+    setScatter[loc]( wRow.get(), ja.get() + n1, true, values.get() + n1, binary::COPY, nrow );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    SCAI_REGION( "Storage.CSR.getSparseRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    IndexType offs  = mIa[i];
+    IndexType nrow  = mIa[i + 1] - offs;
+
+    // resize the output arrays, invalidate old data before
+
+    jA.clear();
+    jA.resize( nrow );
+    values.clear();
+    values.resize( nrow );
+
+    // just copy the corresponding parts of the csrJA and csrValues array
+
+    utilskernel::binary::BinaryOp op = utilskernel::binary::COPY;
+
+    const IndexType inc = 1;  // no strides
+
+    HArrayUtils::setArraySection( jA, 0, inc, mJa, offs, inc, nrow, op, getContextPtr() );
+    HArrayUtils::setArraySection( values, 0, inc, mValues, offs, inc, nrow, op, getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1036,7 +1065,7 @@ void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
     // column[ row ] = mValues[ pos ];
 
     HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1080,7 +1109,7 @@ void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     //  mValues[ pos ] op= column[row]
 
     HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */

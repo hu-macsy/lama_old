@@ -278,15 +278,29 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    explicit DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
+    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
      *
      * @param[in] localValues   the local values to initialize the new DenseVector with.
-     * @param[in] distribution  the distribution the
+     * @param[in] distribution  the distribution for the vector
+     *
+     * Note: localValues.size() == distribution->getLocalSize() must be valid.
      */
-    explicit DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+    DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+
+    /**
+     * @brief Constructor of a replicated DenseVector with local values
+     *
+     * Note: DenseVector( localValues ) is same as DenseVector( localValues, repDistribution )
+     *       with repDistributon = DistributionPtr( new NoDistribution( localValues.size() )
+     *
+     * Usually, a replicated vector has on multiple processes the same values on each processor.
+     * It might be used in a local mode where each processor has individual values but then it
+     * should never be used in operations that involve global communication.
+     */
+    explicit DenseVector( const hmemo::_HArray& localValues );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -407,6 +421,7 @@ public:
     // All other assignment operators are inherited from class Vector, but using is required
 
     using Vector::operator=;
+    using Vector::assign;
 
     /**
      * This method initializes a distributed vector with random numbers.
@@ -453,9 +468,14 @@ public:
     virtual common::scalar::ScalarType getValueType() const;
 
     /**
-     * Implementation of pure method.
+     * Implementation of pure method Vector::setDenseValues.
      */
-    virtual void setValues( const hmemo::_HArray& values );
+    virtual void setDenseValues( const hmemo::_HArray& values );
+
+    /**
+     * Implementation of pure method Vector::setSparseValues.
+     */
+    virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues );
 
     /**
      * Implementation of Vector::copy with covariant return type.
@@ -535,25 +555,27 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void assign( const Expression_SV_SV& expression );
+    /** Implementation of pure method Vector::vectorPlusVector */
 
-    virtual void assign( const Expression_SVV& expression );
+    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y );
 
-    virtual void assign( const Expression_SV_S& expression );
+    /** vectorPlusVector with one zero term */
+
+    void assignScaledVector( const Scalar& alpha, const Vector& x );
+
+    /** Implementation of pure method Vector::vectorTimesVector */
+
+    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y );
+
+    /** Implementation of pure method Vector::vectorPlusScalar */
+
+    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 
     virtual void assign( const Scalar value );
 
     virtual void add( const Scalar value );
-
-    /** Assign this vector with another vector, inherits size and distribution. */
-
-    virtual void assign( const Vector& other );
-
-    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr dist );
-
-    virtual void assign( const hmemo::_HArray& globalValues );
 
     /** Setting this vector by gathering vector elements from another vector.
      *
@@ -589,7 +611,9 @@ public:
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
-    virtual DenseVector& scale( const Vector& other );
+    /** Implementation of pure method Vector::scale */
+
+    virtual void scale( const Vector& other );
 
     using Vector::prefetch; // prefetch() with no arguments
 

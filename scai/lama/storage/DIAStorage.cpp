@@ -215,6 +215,27 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    SCAI_REGION( "Storage.DIA.getSparseRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    IndexType nrow  = 0;
+
+    // resize the output arrays, invalidate old data before
+
+    jA.clear();
+    jA.resize( nrow );
+    values.clear();
+    values.resize( nrow );
+
+    COMMON_THROWEXCEPTION( "getSparseRow for DIA not available yet" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {

@@ -301,14 +301,28 @@ public:
     const Scalar operator()( const IndexType i ) const;
 
     /**
-     * @brief Sets the local values of a vector by an array.
+     * @brief Sets the local values of a vector by a dense array.
      *
-     * @param[out] values    is the array with local vector values.
+     * @param[in] values    is the array with all local vector values.
      *
-     * Note: A conversion operator must be available for values.getValueType() to
-     *       the type of this vector.
+     * The size of the values array must be the same size as the local size of the distribution.
+     *
+     * Note: Implicit type conversion for the values is supported.
      */
-    virtual void setValues( const hmemo::_HArray& values ) = 0;
+    virtual void setDenseValues( const hmemo::_HArray& values ) = 0;
+
+    /**
+     * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
+     *
+     * @param[in] nonZeroIndexes   array with all local indexes that have a non-zero entry
+     * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
+     *
+     * The size of the both input arrays must be equal.
+     *
+     * Note: Implicit type conversion for the values is supported.
+     */
+
+    virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues ) = 0;
 
     /**
      * @brief Sets the local size of the vector to zero. 
@@ -509,20 +523,22 @@ public:
 
     /**
      *  @brief Assigns an arbitrary vector to this vector.
+     *
+     *  Common implementation for all vectors using virtual methods.
      */
-    virtual void assign( const Vector& other ) = 0;
+    void assign( const Vector& other );
 
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) = 0;
+    void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
     /**
      *  Define a non-distributed vector by an array with all its values.
      *
      *  Note: for a correct replication all processors must set the same values.
      */
-    virtual void assign( const hmemo::_HArray& globalValues ) = 0;
+    void assign( const hmemo::_HArray& globalValues );
 
     /**
      *  Builds an array with local values of a distributed vector.
@@ -555,13 +571,25 @@ public:
     virtual void add( const Scalar value ) = 0;
 
     /**
-     * @brief Assignment of a 'full' vector expression.
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
+     *
+     * Each vector class has to implement its own version of this assignment. 
      */
-    virtual void assign( const Expression_SV_SV& expression ) = 0;
+    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y ) = 0;
 
-    virtual void assign( const Expression_SVV& expression ) = 0;
+    /**
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * vectorY
+     *
+     * Each vector class has to implement its own version of this assignment. 
+     */
+    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y ) = 0;
 
-    virtual void assign( const Expression_SV_S& expression ) = 0;
+    /**
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * scalarBeta
+     *
+     * Each vector class has to implement its own version of this assignment. 
+     */
+    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS ) = 0;
 
     /**
      * @brief Returns the dot product of this and other.
@@ -572,12 +600,11 @@ public:
     virtual Scalar dotProduct( const Vector& other ) const = 0;
 
     /**
-     *  @brief Scale a Vector with another Vector.
+     *  @brief Scale this vector with another Vector.
      *
      *  @param[in] other   the other vector to scale this with
-     *  @return            reference to the scaled vector
      */
-    virtual Vector& scale( const Vector& other ) = 0;
+    virtual void scale( const Vector& other ) = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -798,9 +825,13 @@ private:
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
 IndexType Vector::size() const
 {
-    return getDistributionPtr()->getGlobalSize();
+    return getDistribution().getGlobalSize();
 }
 
 hmemo::ContextPtr Vector::getContextPtr() const

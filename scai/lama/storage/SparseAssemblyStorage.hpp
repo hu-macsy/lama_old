@@ -281,6 +281,10 @@ public:
      */
     void setNumColumns( const IndexType i );
 
+    /** Implementation of pure method MatrixStorage::getSparseRow */
+
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const;
+
     /** Template version of getRow */
 
     template<typename OtherType>

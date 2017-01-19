@@ -937,6 +937,46 @@ void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherType>& diagonal 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    SCAI_REGION( "Storage.COO.getSparseRow" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    // resize the output arrays, invalidate old data before
+
+    static LAMAKernel<COOKernelTrait::getValuePosRow> getValuePosRow;
+
+    ContextPtr loc = this->getContextPtr();
+    getValuePosRow.getSupportedContext( loc );
+
+    HArray<IndexType> valuePos;     // positions in the values array
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wColIndexes( jA, loc, mNumColumns );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumColumns );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosRow[loc]( wColIndexes.get(), wValuePos.get(), i,
+                                             rIA.get(), mNumColumns, rJA.get(), mNumValues );
+
+        wColIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    values.clear();
+    values.resize( valuePos.size());
+
+    HArrayUtils::gather( values, mValues, valuePos, utilskernel::binary::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const IndexType i ) const
 {
@@ -975,7 +1015,7 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
     // row[ colIndexes ] = mValues[ pos ];
 
     HArrayUtils::gatherImpl( rowValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( row, colIndexes, rowValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( row, colIndexes, true, rowValues, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1021,7 +1061,7 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
     // mValues[pos] = row[ colIndexes ]
 
     HArrayUtils::gatherImpl( rowValues, row, colIndexes, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, rowValues, op, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, true, rowValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1065,7 +1105,7 @@ void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
     // column[ row ] = mValues[ pos ];
 
     HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1087,7 +1127,7 @@ void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     getValuePosCol.getSupportedContext( loc );
 
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array
+    HArray<IndexType> valuePos;     // positions in the values array, are unique
     HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
     {
@@ -1109,7 +1149,7 @@ void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
     //  mValues[ pos ] op= column[ rowIndexes ]
 
     HArrayUtils::gatherImpl( colValues, column, rowIndexes, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( mValues, valuePos, colValues, op, loc );
+    HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
 }
 
 /* --------------------------------------------------------------------------- */

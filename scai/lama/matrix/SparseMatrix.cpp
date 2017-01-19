@@ -722,13 +722,13 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
     mLocalData->getRow( tmpRow, localRowIndex );
-    HArrayUtils::scatterImpl( row, localIndexes, tmpRow, utilskernel::binary::COPY );
+    HArrayUtils::scatterImpl( row, localIndexes, true, tmpRow, utilskernel::binary::COPY );
 
     // get halo part
 
     mHaloData->getRow( tmpRow, localRowIndex );
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::scatterImpl( row, haloIndexes, tmpRow, utilskernel::binary::COPY );
+    HArrayUtils::scatterImpl( row, haloIndexes, true, tmpRow, utilskernel::binary::COPY );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -836,10 +836,21 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
         COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
     }
 
-    HArray<ValueType> localDiagonal;
-    mLocalData->getDiagonal( localDiagonal );
-    diagonal.allocate( getRowDistributionPtr() ); // Give the diagonal the right distribution
-    diagonal.setValues( localDiagonal ); // Copy values, sizes will fit
+    diagonal.allocate( getRowDistributionPtr() );
+
+    if ( diagonal.getVectorKind() == Vector::DENSE )
+    {
+        // avoid temporary array by setting dense values directly
+
+        _DenseVector& denseDiagonal = reinterpret_cast<_DenseVector&>( diagonal );
+        mLocalData->getDiagonal( denseDiagonal.getLocalValues() );
+    }
+    else
+    {
+        HArray<ValueType> localDiagonal;
+        mLocalData->getDiagonal( localDiagonal );
+        diagonal.setDenseValues( localDiagonal );
+    }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1212,7 +1223,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
 
     if ( haloResult.size() > 0 )
     {
-        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), haloResult, utilskernel::binary::ADD );
+        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), false, haloResult, utilskernel::binary::ADD );
     }
 
     SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )

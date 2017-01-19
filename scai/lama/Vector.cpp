@@ -36,7 +36,9 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
+
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
@@ -177,7 +179,7 @@ Vector::Vector( const Vector& other )
 
 Vector::~Vector()
 {
-    SCAI_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
+    SCAI_LOG_DEBUG( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -390,10 +392,16 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
     SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
+
+    const Scalar& alpha = expression.getArg1().getArg1();
+    const Scalar& beta  = expression.getArg2().getArg1();
     const Vector& x = expression.getArg1().getArg2();
     const Vector& y = expression.getArg2().getArg2();
-    SCAI_ASSERT_EQ_ERROR( x.size(), y.size(), "size mismatch for the two vectors in a * x + b * y" );
-    assign( expression );
+
+    // Note: all checks are done the vector specific implementations
+
+    vectorPlusVector( alpha, x, beta, y );
+
     return *this;
 }
 
@@ -509,43 +517,57 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
 Vector& Vector::operator=( const Expression_SV& expression )
 {
-    SCAI_LOG_DEBUG( logger, "operator=, SV (  s * vector )  -> SV_SV ( s * vector  + 0 * vector )" )
-    Expression_SV_SV tmpExp( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
-    // calling operator=( tmpExp ) would imply unnecessary checks, so call assign directly
-    assign( tmpExp );
+    const Scalar& alpha = expression.getArg1();
+    const Vector& x = expression.getArg2();
+
+    vectorPlusVector( alpha, x, 0, x );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Expression_VV& expression )
 {
     SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
-    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
-    assign( tmpExp );
+
+    const Vector& x = expression.getArg1();
+    const Vector& y = expression.getArg2();
+
+    Scalar alpha( 1 );
+
+    vectorTimesVector( alpha, x, y );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Expression_SVV& expression )
 {
-    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> alpha * x * y" )
-    assign( expression );
+    const Scalar& alpha = expression.getArg1();
+
+    const Expression_VV& exp = expression.getArg2();
+    const Vector& x = exp.getArg1();
+    const Vector& y = exp.getArg2();
+
+    vectorTimesVector( alpha, x, y );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Vector& other )
 {
-    Distributed::operator=( other );
     assign( other );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Expression_SV_S& expression )
 {
-    SCAI_LOG_DEBUG( logger, "operator=, SV_V( alpha, x, beta ) -> alpha * x + beta, alpha="
-                    << expression.getArg1().getArg1() << " x=" << expression.getArg1().getArg2()
-                    << " y=" << expression.getArg2() )
+    const Expression_SV& exp = expression.getArg1();
+    const Scalar& alpha = exp.getArg1();
+    const Vector& x = exp.getArg2();
+    const Scalar& beta = expression.getArg2();
 
-    // Distributed::operator=( expression.getArg1().getArg2() );
-    assign( expression );
+    vectorPlusScalar( alpha, x, beta );
+
     return *this;
 }
 
@@ -566,7 +588,8 @@ Vector& Vector::operator*=( const Scalar value )
 
 Vector& Vector::operator*=( const Vector& other )
 {
-    return scale( other );
+    scale( other );
+    return *this;
 }
 
 Vector& Vector::operator/=( const Scalar value )
@@ -616,6 +639,50 @@ Vector& Vector::operator-=( const Expression_SMV& exp )
 Vector& Vector::operator-=( const Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   assign operations                                                                    */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::assign( const Vector& other )
+{
+    setDistributionPtr( other.getDistributionPtr() );
+
+    switch ( other.getVectorKind() )
+    {
+        case Vector::DENSE:
+        {
+            const _DenseVector& denseOther = reinterpret_cast<const _DenseVector&>( other );
+            setDenseValues( denseOther.getLocalValues() );
+            break;
+        }
+        case Vector::SPARSE:
+        {
+            const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
+            setSparseValues( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues() );
+            break;
+        }
+        default:
+
+            COMMON_THROWEXCEPTION( "illegal vector kind, other = " << other.getVectorKind() )
+    }
+}
+
+void Vector::assign( const _HArray& localValues, DistributionPtr dist )
+{
+    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "Mismatch local size of vecotr" )
+
+    setDistributionPtr( dist );
+    setDenseValues( localValues );
+}
+
+void Vector::assign( const _HArray& globalValues )
+{
+    SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
+
+    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
+    setDenseValues( globalValues );
 }
 
 /* ---------------------------------------------------------------------------------------*/

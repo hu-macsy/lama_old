@@ -449,7 +449,7 @@ public:
      * @param[out] row              is a replicated vector with all values of the row
      * @param[in]  globalRowIndex   global index of the row that should be extracted
      *
-     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
+     * - the vector row might be of any type but for efficiency it should have the same type, kind as the matrix
      *   (otherwise conversion)
      * - the output vector will always be replicated
      */
