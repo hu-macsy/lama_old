@@ -1269,6 +1269,7 @@ template<typename ValueType1, typename ValueType2>
 void OpenMPUtils::setScatter(
     ValueType1 out[],
     const IndexType indexes[],
+    const bool unique,
     const ValueType2 in[],
     const binary::BinaryOp op,
     const IndexType n )
@@ -1306,9 +1307,28 @@ void OpenMPUtils::setScatter(
             atomicAdd( out[indexes[i]], - static_cast<ValueType1>( in[i] ) );
         }
     }
-    else
+    else 
     {
-        COMMON_THROWEXCEPTION( "Unsupported reduce op " << op << " for setScatter" )
+        if ( unique )
+        {
+            // no double indexes, we can do it parallel
+
+            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[indexes[i]] = applyBinary( out[indexes[i]], op, static_cast<ValueType1>( in[i] ) );
+            }
+        }
+        else
+        {
+            // there might be double indexes, just do it serially
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                out[indexes[i]] = applyBinary( out[indexes[i]], op, static_cast<ValueType1>( in[i] ) );
+            }
+        }
     }
 }
 

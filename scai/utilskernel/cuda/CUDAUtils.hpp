@@ -165,6 +165,7 @@ public:
     static void setScatter(
         ValueType out[],
         const IndexType indexes[],
+        const bool unique,
         const otherValueType in[],
         const binary::BinaryOp op,
         const IndexType n );

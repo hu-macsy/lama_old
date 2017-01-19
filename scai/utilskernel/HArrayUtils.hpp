@@ -107,6 +107,7 @@ public:
     static void scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& index,
+        const bool unique,
         const hmemo::_HArray& source,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
@@ -120,6 +121,7 @@ public:
     static void scatterImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<IndexType>& index,
+        const bool unique,
         const hmemo::HArray<SourceValueType>& source,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
@@ -203,7 +205,7 @@ public:
         const ValueType beta,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Multiplication of two arrays: result = alpha * x * y
+    /** Element-wise multiplication of two arrays: result[i] = alpha * x[i] * y[i]
      *
      *  @param[out] result  output array
      *  @param[in]  alpha   scalar that is multiplied for each element

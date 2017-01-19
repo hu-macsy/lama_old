@@ -169,6 +169,7 @@ public:
     template<typename ValueType1, typename ValueType2>
     static void setScatter( ValueType1 out[],
                             const IndexType indexes[],
+                            const bool unique,
                             const ValueType2 in[],
                             const binary::BinaryOp op,
                             const IndexType n );

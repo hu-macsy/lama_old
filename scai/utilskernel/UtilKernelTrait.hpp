@@ -383,13 +383,14 @@ struct UtilKernelTrait
          *
          *  @param[in,out] out is the array in which values will be inserted
          *  @param[in]     indexes are the positions where values are written
+         *  @param[in]     unique if true no index appears twice
          *  @param[in]     in is the array with the output values.
          *  @param[in]     op specifies how the set element is combined with available element
          *  @param[in]     n is the number of values
          *
-         *  Note: Not all values might be set in 'out'. There should be no double
-         *        values in indexes as this might result in non-ambiguous results
-         *        by a parallel execution.
+         *  Note: If indexes are unique, the operation is done data parallel;
+         *        if they are not unique, a parallel execution is only possible if
+         *        the binary operation can be done via atomic updates.
          *
          *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1   for op == recution::COPY
          *  out[ indexes[i] ] += in [i] , i = 0, ..., n-1   for op == recution::ADD
@@ -399,6 +400,7 @@ struct UtilKernelTrait
         typedef void ( *FuncType ) (
             TargetValueType out[],
             const IndexType indexes[],
+            const bool unique,
             const SourceValueType in[],
             const binary::BinaryOp op,
             const IndexType n );

@@ -190,9 +190,9 @@ void binOpKernel( ValueType out[], const ValueType in1[], const binary::BinaryOp
 
 /** Special version of binOpKernel with op == binary::MULT */
 
-template<typename ValueType1, typename ValueType2>
+template<typename ValueType>
 __global__
-void multKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
+void multKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -204,9 +204,9 @@ void multKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[
 
 /** Special version of binOpKernel with op == binary::ADD */
 
-template<typename ValueType1, typename ValueType2>
+template<typename ValueType>
 __global__
-void addKernel( ValueType1 out[], const ValueType1 in1[], const ValueType2 in2[], const IndexType n )
+void addKernel( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -835,9 +835,9 @@ void CUDAUtils::setGather(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void scatter_kernel( ValueType* out, const IndexType* indexes, const OtherValueType* in, const IndexType n )
+void scatter_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -847,9 +847,9 @@ void scatter_kernel( ValueType* out, const IndexType* indexes, const OtherValueT
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void scatter_add_kernel( ValueType* out, const IndexType* indexes, const OtherValueType* in, const IndexType n )
+void scatter_add_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -859,9 +859,9 @@ void scatter_add_kernel( ValueType* out, const IndexType* indexes, const OtherVa
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void scatter_sub_kernel( ValueType* out, const IndexType* indexes, const OtherValueType* in, const IndexType n )
+void scatter_sub_kernel( ValueType out[], const IndexType indexes[], const SourceValueType in[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -871,8 +871,26 @@ void scatter_sub_kernel( ValueType* out, const IndexType* indexes, const OtherVa
     }
 }
 
+template<typename ValueType, typename SourceValueType>
+__global__
+void scatter_op_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n, const utilskernel::binary::BinaryOp op )
+{
+    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
+
+    if ( i < n )
+    {
+        out[indexes[i]] = applyBinary( out[indexes[i]], op, static_cast<ValueType>( in[i] ) );
+    }
+}
+
 template<typename ValueType1, typename ValueType2>
-void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const ValueType2 in[], const binary::BinaryOp op, const IndexType n )
+void CUDAUtils::setScatter( 
+    ValueType1 out[], 
+    const IndexType indexes[], 
+    const bool unique,
+    const ValueType2 in[], 
+    const binary::BinaryOp op, 
+    const IndexType n )
 {
     SCAI_REGION( "CUDA.Utils.setScatter" )
 
@@ -897,6 +915,14 @@ void CUDAUtils::setScatter( ValueType1 out[], const IndexType indexes[], const V
         else if ( op == binary::SUB )
         {
             scatter_sub_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
+        }
+        else if ( unique )
+        {
+            scatter_op_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n, op );
+        }
+        else
+        {
+            COMMON_THROWEXCEPTION( "setScatter with atomic update not supported for op = " << op )
         }
 
         SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
@@ -936,9 +962,9 @@ void CUDAUtils::scatterVal( ValueType out[], const IndexType indexes[], const Va
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void setKernelCopy( ValueType* out, const OtherValueType* in, const IndexType n )
+void setKernelCopy( ValueType* out, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -948,9 +974,9 @@ void setKernelCopy( ValueType* out, const OtherValueType* in, const IndexType n 
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void setKernelAdd( ValueType* out, const OtherValueType* in, const IndexType n )
+void setKernelAdd( ValueType* out, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -960,9 +986,9 @@ void setKernelAdd( ValueType* out, const OtherValueType* in, const IndexType n )
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void setKernelSub( ValueType* out, const OtherValueType* in, const IndexType n )
+void setKernelSub( ValueType* out, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -972,9 +998,9 @@ void setKernelSub( ValueType* out, const OtherValueType* in, const IndexType n )
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void setKernelMult( ValueType* out, const OtherValueType* in, const IndexType n )
+void setKernelMult( ValueType* out, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -984,9 +1010,9 @@ void setKernelMult( ValueType* out, const OtherValueType* in, const IndexType n 
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void setKernelDivide( ValueType* out, const OtherValueType* in, const IndexType n )
+void setKernelDivide( ValueType* out, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -996,9 +1022,9 @@ void setKernelDivide( ValueType* out, const OtherValueType* in, const IndexType 
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
-void setKernelPow( ValueType* out, const OtherValueType* in, const IndexType n )
+void setKernelPow( ValueType* out, const SourceValueType* in, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1008,13 +1034,13 @@ void setKernelPow( ValueType* out, const OtherValueType* in, const IndexType n )
     }
 }
 
-template<typename ValueType, typename OtherValueType>
-void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType n, const binary::BinaryOp op )
+template<typename ValueType, typename SourceValueType>
+void CUDAUtils::set( ValueType out[], const SourceValueType in[], const IndexType n, const binary::BinaryOp op )
 {
     SCAI_REGION( "CUDA.Utils.set" )
 
     SCAI_LOG_INFO( logger,
-                   "set<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id() << ">( ..., n = " << n << ")" )
+                   "set<" << TypeTraits<ValueType>::id() << "," << TypeTraits<SourceValueType>::id() << ">( ..., n = " << n << ")" )
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
 
     if ( n <= 0 )
@@ -1058,10 +1084,10 @@ void CUDAUtils::set( ValueType out[], const OtherValueType in[], const IndexType
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
 void setKernelCopySection( ValueType* out, const IndexType inc1,
-                           const OtherValueType* in, const IndexType inc2, const IndexType n )
+                           const SourceValueType* in, const IndexType inc2, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1071,10 +1097,10 @@ void setKernelCopySection( ValueType* out, const IndexType inc1,
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
 void setKernelAddSection( ValueType* out, const IndexType inc1,
-                          const OtherValueType* in, const IndexType inc2, const IndexType n )
+                          const SourceValueType* in, const IndexType inc2, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1084,10 +1110,10 @@ void setKernelAddSection( ValueType* out, const IndexType inc1,
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
 void setKernelSubSection( ValueType* out, const IndexType inc1,
-                          const OtherValueType* in, const IndexType inc2, const IndexType n )
+                          const SourceValueType* in, const IndexType inc2, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1097,10 +1123,10 @@ void setKernelSubSection( ValueType* out, const IndexType inc1,
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
 void setKernelMultSection( ValueType* out, const IndexType inc1,
-                           const OtherValueType* in, const IndexType inc2, const IndexType n )
+                           const SourceValueType* in, const IndexType inc2, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1110,10 +1136,10 @@ void setKernelMultSection( ValueType* out, const IndexType inc1,
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 __global__
 void setKernelDivideSection( ValueType* out, const IndexType inc1,
-                             const OtherValueType* in, const IndexType inc2, const IndexType n )
+                             const SourceValueType* in, const IndexType inc2, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1123,15 +1149,15 @@ void setKernelDivideSection( ValueType* out, const IndexType inc1,
     }
 }
 
-template<typename ValueType, typename OtherValueType>
+template<typename ValueType, typename SourceValueType>
 void CUDAUtils::setSection( ValueType out[], const IndexType inc1,
-                            const OtherValueType in[], const IndexType inc2,
+                            const SourceValueType in[], const IndexType inc2,
                             const IndexType n, const binary::BinaryOp op )
 {
     SCAI_REGION( "CUDA.Utils.setSection" )
 
     SCAI_LOG_INFO( logger,
-                   "setSection<" << TypeTraits<ValueType>::id() << "," << TypeTraits<OtherValueType>::id()
+                   "setSection<" << TypeTraits<ValueType>::id() << "," << TypeTraits<SourceValueType>::id()
                    << "> : out(:" << inc2 << ") <- in(:" << inc1 << "), n = " << n << ", op = " << op )
 
     SCAI_LOG_DEBUG( logger, "out = " << out << ", in = " << in )
@@ -1265,13 +1291,13 @@ void CUDAUtils::binaryOp(
     {
         case binary::ADD :
         {
-            addKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
+            addKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
             break;
         }
 
         case binary::MULT :
         {
-            multKernel<ValueType, ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
+            multKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
             break;
         }
 
@@ -1813,19 +1839,19 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar2<ValueType> >( binaryOpScalar2, ctx, flag );
 }
 
-template<typename ValueType, typename OtherValueType>
-void CUDAUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+template<typename ValueType, typename SourceValueType>
+void CUDAUtils::RegistratorVO<ValueType, SourceValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "registerVO UtilsKernel CUDA [" << flag
                     << "] --> ValueType = " << common::getScalarType<ValueType>()
-                    << ", OtherValueType = " << common::getScalarType<OtherValueType>() )
-    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::compress<ValueType, OtherValueType> >( compress, ctx, flag );
+                    << ", SourceValueType = " << common::getScalarType<SourceValueType>() )
+    KernelRegistry::set<UtilKernelTrait::setGather<ValueType, SourceValueType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, SourceValueType> >( setScatter, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::set<ValueType, SourceValueType> >( set, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setSection<ValueType, SourceValueType> >( setSection, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::compress<ValueType, SourceValueType> >( compress, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

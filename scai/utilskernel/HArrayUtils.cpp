@@ -224,12 +224,13 @@ void HArrayUtils::gather(
 void HArrayUtils::scatter(
     _HArray& target,
     const HArray<IndexType>& indexes,
+    const bool unique,
     const _HArray& source,
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
     // use metaprogramming to call the scatter version with the correct value types for target and source
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::scatter( target, indexes, source, op, prefLoc );
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::scatter( target, indexes, unique, source, op, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -292,6 +293,7 @@ template<typename TargetValueType, typename SourceValueType>
 void HArrayUtils::scatterImpl(
     HArray<TargetValueType>& target,
     const HArray<IndexType>& indexes,
+    const bool unique,
     const HArray<SourceValueType>& source,
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
@@ -325,7 +327,7 @@ void HArrayUtils::scatterImpl(
     ReadAccess<SourceValueType> rSource( source, loc );
     ReadAccess<IndexType> rIndexes( indexes, loc );
     //  target[ indexes[i] ] = source[i]
-    setScatter[loc] ( wTarget.get(), rIndexes.get(), rSource.get(), op, n );
+    setScatter[loc] ( wTarget.get(), rIndexes.get(), unique, rSource.get(), op, n );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1549,7 +1551,8 @@ void HArrayUtils::buildDenseArray(
     denseArray.clear();
     denseArray.resize( denseN );
     HArrayUtils::assignScalar( denseArray, 0.0, binary::COPY, prefLoc );
-    HArrayUtils::scatter( denseArray, sparseIndexes, sparseArray, binary::COPY, prefLoc );
+    bool unique = true;
+    HArrayUtils::scatter( denseArray, sparseIndexes, unique, sparseArray, binary::COPY, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1604,6 +1607,7 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType> in
     template void HArrayUtils::scatterImpl<ValueType, OtherValueType>(                                            \
             hmemo::HArray<ValueType>&,                                                                            \
             const hmemo::HArray<IndexType>&,                                                                      \
+            const bool,                                                                                           \
             const hmemo::HArray<OtherValueType>&,                                                                 \
             const binary::BinaryOp,                                                                               \
             const hmemo::ContextPtr );

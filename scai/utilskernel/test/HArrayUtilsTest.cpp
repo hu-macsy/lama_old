@@ -136,7 +136,8 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             HArrayUtils::gather( array2, array1, perm, binary::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
-            HArrayUtils::scatter( *tmp, perm, array1, binary::COPY, ctx );
+            bool unique = true;  // perm has unique indexes
+            HArrayUtils::scatter( *tmp, perm, unique, array1, binary::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -519,17 +520,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
         BOOST_REQUIRE( indexVals[i] < M );
     }
 
+    bool uniqueIndexes = true;
+
     // target = source[ indexes ]
     LArray<ValueType> source( N, sourceVals );
     LArray<IndexType> indexes( N, indexVals );
     BOOST_CHECK_THROW (
     {
         LArray<ValueType> target;
-        HArrayUtils::scatterImpl( target, indexes, source, binary::COPY );
+        HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, binary::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatterImpl( target, indexes, source, binary::COPY );
+    HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, binary::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {

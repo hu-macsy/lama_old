@@ -97,6 +97,7 @@ template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullT
     static void scatter(
         hmemo::HArray<ValueType>& target,
         const hmemo::HArray<IndexType>&,
+        const bool,
         const hmemo::_HArray& source,
         const binary::BinaryOp,
         const hmemo::ContextPtr )
@@ -167,6 +168,7 @@ template<typename TList> struct UtilsWrapperTT1<common::mepr::NullType, TList>
     static void scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& source,
+        const bool,
         const hmemo::_HArray&,
         const binary::BinaryOp,
         const hmemo::ContextPtr )
@@ -213,6 +215,7 @@ template<typename ValueType> struct UtilsWrapperTT2<ValueType, common::mepr::Nul
     static void scatter(
         hmemo::HArray<ValueType>& target,
         const hmemo::HArray<IndexType>&,
+        const bool,
         const hmemo::_HArray& source,
         const binary::BinaryOp,
         const hmemo::ContextPtr )
@@ -282,6 +285,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
     static void scatter(
         hmemo::HArray<ValueType>& target,
         const hmemo::HArray<IndexType>& indexes,
+        const bool unique,
         const hmemo::_HArray& source,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
@@ -289,11 +293,11 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
-            HArrayUtils::scatterImpl( target, indexes, typedSource, op, prefLoc );
+            HArrayUtils::scatterImpl( target, indexes, unique, typedSource, op, prefLoc );
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::scatter( target, indexes, source, op, prefLoc );
+            UtilsWrapperT< ValueType, T >::scatter( target, indexes, unique, source, op, prefLoc );
         }
     }
 
@@ -409,6 +413,7 @@ struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >
     static void scatter(
         hmemo::_HArray& target,
         const hmemo::HArray<IndexType>& indexes,
+        const bool unique,
         const hmemo::_HArray& source,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
@@ -416,11 +421,11 @@ struct UtilsWrapperTT1<common::mepr::TypeList<H, T>, TList2 >
         if ( common::getScalarType<H>() == target.getValueType() )
         {
             hmemo::HArray<H>& typedTarget = reinterpret_cast<hmemo::HArray<H>&>( target );
-            UtilsWrapperTT2<H, TList2>::scatter( typedTarget, indexes, source, op, prefLoc );
+            UtilsWrapperTT2<H, TList2>::scatter( typedTarget, indexes, unique, source, op, prefLoc );
         }
         else
         {
-            UtilsWrapperTT1<T, TList2>::scatter( target, indexes, source, op, prefLoc );
+            UtilsWrapperTT1<T, TList2>::scatter( target, indexes, unique, source, op, prefLoc );
         }
     }
 };
@@ -487,6 +492,7 @@ struct UtilsWrapperTT2<ValueType, common::mepr::TypeList<H, T> >
     static void scatter(
         hmemo::HArray<ValueType>& typedTarget,
         const hmemo::HArray<IndexType>& indexes,
+        const bool unique,
         const hmemo::_HArray& source,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc )
@@ -495,11 +501,11 @@ struct UtilsWrapperTT2<ValueType, common::mepr::TypeList<H, T> >
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
 
-            HArrayUtils::scatterImpl<ValueType, H>( typedTarget, indexes, typedSource, op, prefLoc );
+            HArrayUtils::scatterImpl<ValueType, H>( typedTarget, indexes, unique, typedSource, op, prefLoc );
         }
         else
         {
-            UtilsWrapperTT2<ValueType, T>::scatter( typedTarget, indexes, source, op, prefLoc );
+            UtilsWrapperTT2<ValueType, T>::scatter( typedTarget, indexes, unique, source, op, prefLoc );
         }
     }
 };
