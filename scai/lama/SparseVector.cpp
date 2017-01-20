@@ -466,7 +466,8 @@ void SparseVector<ValueType>::buildLocalValues(
     else
     {
         SCAI_ASSERT_EQ_ERROR( values.size(), size, "size mismatch" )
-        HArrayUtils::scatter( values, mNonZeroIndexes, true, mNonZeroValues, op, loc );
+        bool unique = true;   // no double entry in mNonZeroIndexes
+        HArrayUtils::scatter( values, mNonZeroIndexes, unique, mNonZeroValues, op, loc );
     }
 }
 
@@ -718,7 +719,7 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     const Distribution& dist = getDistribution();
 
-    stream << "SparseVector<" << getValueType() << ">" << "( size = " << size() << ", local = " << dist.getLocalSize()
+    stream << "SparseVector<" << getValueType() << ">" << "( size = " << size() << ", local nnz = " << mNonZeroIndexes.size()
            << ", dist = " << dist << ", loc  = " << *getContextPtr() << " )";
 }
 
@@ -767,23 +768,21 @@ template<typename ValueType>
 Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 {
     SCAI_REGION( "Vector.Sparse.dotP" )
-    SCAI_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
 
-    // add other->getVectorKind() == SPARSE, if sparse is also supported
+    SCAI_LOG_INFO( logger, "Calculating dot product: " << *this << " * " << other )
 
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(),
                           "dotProduct not supported for vectors with different distributions. "
                           << *this  << " x " << other )
 
     HArray<ValueType> otherLocalValues;
-
     other.buildLocalValues( otherLocalValues );
 
-    HArray<ValueType> otherNonZeroValues;
+    HArray<ValueType> otherNonZeroValues;   // get the values form other at my non-zero indexes
 
     utilskernel::HArrayUtils::gather( otherNonZeroValues, otherLocalValues, mNonZeroIndexes, utilskernel::binary::COPY );
-
-    SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
+ 
+    // now build dotproduct( mNonZeroValues, otherNonZeroValues )
 
     const ValueType localDotProduct = mNonZeroValues.dotProduct( otherNonZeroValues );
 
@@ -809,6 +808,8 @@ void SparseVector<ValueType>::scale( const Vector& other )
     assign( tmp );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void SparseVector<ValueType>::allocate( DistributionPtr distribution )
 {
@@ -816,6 +817,8 @@ void SparseVector<ValueType>::allocate( DistributionPtr distribution )
     mNonZeroValues.clear();
     mNonZeroIndexes.clear();
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::allocate( const IndexType n )
@@ -825,6 +828,8 @@ void SparseVector<ValueType>::allocate( const IndexType n )
     mNonZeroValues.clear();
     mNonZeroIndexes.clear();
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::assign( const Scalar value )
@@ -842,6 +847,8 @@ void SparseVector<ValueType>::assign( const Scalar value )
 
     HArrayUtils::assignScalar( mNonZeroValues, value.getValue<ValueType>(), utilskernel::binary::COPY, getContextPtr() );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::add( const Scalar value )
@@ -986,6 +993,8 @@ size_t SparseVector<ValueType>::getMemoryUsage() const
 template<typename ValueType>
 void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 {
+    SCAI_LOG_INFO( logger, *this << ", redistribute to dist = " << *distribution )
+
     SCAI_ASSERT_EQ_ERROR( size(), distribution->getGlobalSize(), "global size mismatch between old/new distribution" )
 
     if ( getDistribution() == *distribution )
@@ -998,7 +1007,7 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
     {
         // each processor has all values, so just pick up the local values
 
-        SCAI_LOG_INFO( logger, *this << ": replicated vector" << " will be localized to " << *distribution )
+        SCAI_LOG_DEBUG( logger, "localize replicated vector" )
 
         // we just compress the non-zero indexes/values owned by this process
 
@@ -1027,12 +1036,19 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
             
             wNonZeroIndexes.resize( newSize );
             wNonZeroValues.resize( newSize );
+        
         }
 
+        SCAI_LOG_DEBUG( logger, "Kept locally " << mNonZeroIndexes.size() << " of " << oldSize << " non-zero values" )
+
         setDistributionPtr( distribution );
+
+        SCAI_ASSERT( HArrayUtils::validIndexes( mNonZeroIndexes, distribution->getLocalSize(), getContextPtr() ), "serious" )
     }
     else if ( distribution->isReplicated() )
     {
+        SCAI_LOG_DEBUG( logger, "replicate distributed sparse vector" )
+
         // translate the local non-zero indexes to 'global' non-zero indexes
 
         IndexType nLocalIndexes = mNonZeroIndexes.size();
@@ -1049,6 +1065,8 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
             }
         }
 
+        SCAI_LOG_DEBUG( logger, "translated " << nLocalIndexes << " local indexes to global indexes" )
+
         IndexType globalSize = currentDist.getGlobalSize();
 
         HArray<IndexType> allNonZeroIndexes;
@@ -1058,8 +1076,8 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
             ReadAccess<IndexType> rNonZeroIndexes( mNonZeroIndexes, hostContext );
             ReadAccess<ValueType> rNonZeroValues( mNonZeroValues, hostContext );
 
-            WriteOnlyAccess<IndexType> wAllNonZeroIndexes( mNonZeroIndexes, hostContext, globalSize );
-            WriteOnlyAccess<ValueType> wAllNonZeroValues( mNonZeroValues, hostContext, globalSize );
+            WriteOnlyAccess<IndexType> wAllNonZeroIndexes( allNonZeroIndexes, hostContext, globalSize );
+            WriteOnlyAccess<ValueType> wAllNonZeroValues( allNonZeroValues, hostContext, globalSize );
 
             // Now replicate 
 
@@ -1073,10 +1091,12 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
         mNonZeroValues.swap( allNonZeroValues );
 
         setDistributionPtr( distribution );
+
+        SCAI_LOG_DEBUG( logger, "Here is the replicated sparse vector: " << *this )
     }
     else
     {
-        SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution )
+        SCAI_LOG_INFO( logger, *this << " will be redistributed to " << *distribution << " in two steps: replicate/localize" )
 
         DistributionPtr repDist ( new NoDistribution( getDistribution().getGlobalSize() ) );
 

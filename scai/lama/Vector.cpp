@@ -147,7 +147,7 @@ Vector* Vector::getDenseVector(
 
 Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
 
-    Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ),
+    Distributed( DistributionPtr( new NoDistribution( size ) ) ),
     mContext( context )
 {
     if ( !mContext )
@@ -463,12 +463,12 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     const Matrix& matrix = matrixTimesVectorExp.getArg1();
     const Vector& vectorX = matrixTimesVectorExp.getArg2();
     Vector* resultPtr = this;
-    common::shared_ptr<Vector> tmpResult;
+    VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -495,12 +495,12 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     const Vector& vectorX = vectorTimesMatrixExp.getArg1();
     const Matrix& matrix = vectorTimesMatrixExp.getArg2();
     Vector* resultPtr = this;
-    common::shared_ptr<Vector> tmpResult;
+    VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 

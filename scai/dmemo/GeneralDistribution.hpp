@@ -100,13 +100,19 @@ public:
 
     virtual ~GeneralDistribution();
 
+    /** Implementation of pure method Distribution::isLocal */
+
     virtual bool isLocal( const IndexType index ) const;
+
+    /** Implementation of pure method Distribution::getLocalSize */
 
     virtual IndexType getLocalSize() const;
 
-    // virtual std::vector<IndexType>& getLocalRows();
+    /** Implementation of pure method Distribution::local2global */
 
     virtual IndexType local2global( const IndexType localIndex ) const;
+
+    /** Implementation of pure method Distribution::global2local */
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
@@ -133,14 +139,15 @@ public:
 
     inline const hmemo::HArray<IndexType>& getMyIndexes() const;
 
-    virtual const char* getKind() const
-    {
-        return theCreateValue;
-    }
+    /** Implementation of pure method Distribution::getKind */
+
+    virtual inline const char* getKind() const;
 
 protected:
 
     static const char theCreateValue[];
+
+    /** This constructor might be called for derived classes that fill mGlobal2Local and mLocal2Global themselves. */
 
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
@@ -161,9 +168,18 @@ private:
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
 const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
 {
     return mLocal2Global;
+}
+
+const char* GeneralDistribution::getKind() const
+{
+    return theCreateValue;
 }
 
 } /* end namespace dmemo */

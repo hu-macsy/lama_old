@@ -661,6 +661,10 @@ protected:
 
 private:
 
+    /** Allocate local values array with correct size at right context */
+
+    void allocate();
+
     /** Static method for sorting of DenseVector */
 
     static void sortImpl(

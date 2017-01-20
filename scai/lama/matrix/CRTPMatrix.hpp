@@ -122,17 +122,46 @@ public:
             // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getColDistribution(), "mismatch distribution" )
-        SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getRowDistribution(), "mismatch distribution" )
-        const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
-        const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
-        DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
-        SCAI_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != getValueType() || &result == &x || x.getDistribution() != getColDistribution() )
+        {
+            SCAI_LOG_WARN( logger, "result = " << alpha << " * M<" << getValueType() << ">[" << getNumRows() << " x " << getNumColumns() << "]"
+                                   << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "] "
+                                   << ", temporary DenseVector<" << getValueType() << "> required for x" )
+
+            DenseVector<ValueType> tmpX( x, getColDistributionPtr() );
+            matrixTimesVector( result, alpha, tmpX, beta, y );
+            return;
+        }
+
+        const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+
         // Note: in case of beta == 0, we might skip this test
-        SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-        SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-        static_cast<const Derived*>( this )->matrixTimesVectorImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
-                beta.getValue<ValueType>(), *denseY );
+
+        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != getValueType() || y.getDistribution() != getRowDistribution() )
+        {
+            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for y in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpY( y, getRowDistributionPtr() );
+            matrixTimesVector( result, alpha, x, beta, tmpY );
+            return;
+        }
+
+        const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+
+        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != getValueType() )
+        {
+            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpResult( getRowDistributionPtr() );
+            matrixTimesVector( tmpResult, alpha, x, beta, y );
+            result = tmpResult;
+            return;
+        }
+
+        DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
+
+        const ValueType alphaV = alpha.getValue<ValueType>();
+        const ValueType betaV  = beta.getValue<ValueType>();
+
+        static_cast<const Derived*>( this )->matrixTimesVectorImpl( denseResult, alphaV, denseX, betaV, denseY );
     }
 
     void vectorTimesMatrix(
@@ -145,43 +174,59 @@ public:
         SCAI_REGION( "Mat.vectorTimes" )
         SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
+        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != getValueType() || &result == &x || x.getDistribution() != getRowDistribution() )
+        {
+            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for x in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpX( x, getRowDistributionPtr() );
+            vectorTimesMatrix( result, alpha, tmpX, beta, y );
+            return;
+        }
+
+        const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
+
+        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != getValueType() || y.getDistribution() != getColDistribution() )
+        {
+            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for y in alpha * x * M + beta * y" )
+            DenseVector<ValueType> tmpY( y, getColDistributionPtr() );
+            vectorTimesMatrix( result, alpha, x, beta, tmpY );
+            return;
+        }
+
+        const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
+
+        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != getValueType() )
+        {
+            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpResult( getColDistributionPtr() );
+            vectorTimesMatrix( tmpResult, alpha, x, beta, y );
+            result = tmpResult;
+            return;
+        }
+
         if ( &result == &y )
         {
             SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
         }
-        else if ( &result == &x )
-        {
-            COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
-        }
         else
         {
-            // we inherit the col distribution of this matrix to result
             result.allocate( getColDistributionPtr() );
-            // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
         }
 
-        SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getRowDistribution(), "" )
-        SCAI_ASSERT_EQ_ERROR( y.getDistribution(), getColDistribution(), "" )
-        const DenseVector<ValueType>* denseX = dynamic_cast<const DenseVector<ValueType>*>( &x );
-        const DenseVector<ValueType>* denseY = dynamic_cast<const DenseVector<ValueType>*>( &y );
-        DenseVector<ValueType>* denseResult = dynamic_cast<DenseVector<ValueType>*>( &result );
-        SCAI_ASSERT( denseX, x << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-        // Note: in case of beta == 0, we might skip this test
-        SCAI_ASSERT( denseY, y << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
-        SCAI_ASSERT( denseResult, result << ": must be DenseVector<" << common::getScalarType<ValueType>() << ">" )
+        DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
+
+        const ValueType alphaV = alpha.getValue<ValueType>();
+        const ValueType betaV  = beta.getValue<ValueType>();
 
         if ( getColDistribution().getCommunicator().getSize() == 1 )
         {
             // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
             // use routine provided by this CRTP
 
-            vectorTimesMatrixRepCols( *denseResult, alpha.getValue<ValueType>(), *denseX,
-                                      beta.getValue<ValueType>(), *denseY );
+            vectorTimesMatrixRepCols( denseResult, alphaV, denseX, betaV, denseY );
         }
         else
         {
-            static_cast<const Derived*>( this )->vectorTimesMatrixImpl( *denseResult, alpha.getValue<ValueType>(), *denseX,
-                    beta.getValue<ValueType>(), *denseY );
+            static_cast<const Derived*>( this )->vectorTimesMatrixImpl( denseResult, alphaV, denseX, betaV, denseY );
         }
     }
 

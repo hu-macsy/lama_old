@@ -67,10 +67,14 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
     const HArray<IndexType>& myIndexes,
-    const CommunicatorPtr communicator )
+    const CommunicatorPtr communicator ) : 
 
-    : Distribution( globalSize, communicator )
+    Distribution( globalSize, communicator )
+
 {
+    SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize 
+                            << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
+
     ReadAccess<IndexType> rIndexes( myIndexes );
 
     IndexType nLocal = myIndexes.size();
@@ -208,6 +212,8 @@ GeneralDistribution::GeneralDistribution( const Distribution& other ) :
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
 
 {
+    SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
+
     WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, other.getLocalSize() );
 
     for ( IndexType i = 0; i < getGlobalSize(); ++i )
@@ -228,6 +234,8 @@ GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
 
 {
+    SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
+
     mLocal2Global = other.mLocal2Global;
     mGlobal2Local = other.mGlobal2Local;
 }
@@ -238,13 +246,14 @@ GeneralDistribution::GeneralDistribution( const IndexType globalSize, const Comm
 
     Distribution( globalSize, communicator )
 {
+    SCAI_LOG_INFO( logger, "GeneralDistribuiton constructor only for derived classes" )
 }
 
 /* ---------------------------------------------------------------------- */
 
 GeneralDistribution::~GeneralDistribution()
 {
-    SCAI_LOG_INFO( logger, "~GeneralDistribution" )
+    SCAI_LOG_DEBUG( logger, "~GeneralDistribution" )
 }
 
 bool GeneralDistribution::isLocal( const IndexType index ) const

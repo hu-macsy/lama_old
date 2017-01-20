@@ -76,9 +76,9 @@ public:
 
             // Not yet: sparse vectors
 
-            // if ( vectorPtr->getVectorKind() == scai::lama::Vector::SPARSE )
+            // if ( vectorPtr->getVectorKind() == scai::lama::Vector::DENSE )
             // {
-            //     continue;
+                // continue;
             // }
 
             if ( ctx )
