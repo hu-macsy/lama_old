@@ -42,6 +42,21 @@ for a non C++11 capable compiler with a boost installation not in the system pat
 
     g++ -o simple simple.cpp -I${SCAI_ROOT}/include -I${BOOST_ROOT}/include -L${SCAI_ROOT}/lib -lscai_lama
 
+You may get DSO link-errors like:
+
+.. code-block:: bash
+
+    /usr/bin/ld: /tmp/cc4wul0P.o: undefined reference to symbol '_ZN4scai6common9PrintableD2Ev'
+    /usr/bin/ld: note: '_ZN4scai6common9PrintableD2Ev' is defined in DSO [SCAI_ROOT]/lib/libscai_common.so.1.0.0 so try adding it to the linker command line
+    [SCAI_ROOT]/lib/libscai_common.so.1.0.0: could not read symbols: Invalid operation
+    collect2: error: ld returned 1 exit status
+
+Then you need to define all scai libraries from the highest used scai_lib down to scai_common. When using all libs it is:
+
+.. code-block:: bash
+
+   -lscai_solver -lscai_lama -lscai_dmemo -lscai_sparsekernel -lscai_utilskernel -lscai_blaskernel -lscai_kregistry -lscai_hmemo -lscai_tasking -lscai_tracing -lscai_logging -lscai_common
+
 Execution
 ^^^^^^^^^
 
