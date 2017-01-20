@@ -53,17 +53,36 @@ namespace utilskernel
 namespace mepr
 {
 
-/*
- * Forward declartion
+/* ------------------------------------------------------------------------- */
+/*  Forward declaration of used structures                                   */
+/* ------------------------------------------------------------------------- */
+
+/** This struct is used as metaprogramming to call a routine for each type of a list
+ *
+ *  @tparam TList is a type list containing all types that will be considered.
  */
 template<typename TList> struct UtilsWrapper;
+
+/** This struct is used as metaprogramming to call a template routine for each type of a list
+ *
+ *  @tparam ValueType is an addition type used for the methods that will be called
+ *  @tparam TList is a type list containing all types that will be considered.
+ */
 template<typename ValueType, typename TList> struct UtilsWrapperT;
 
+/** This struct is as metaprogramm to call a template routine for each pair of types of two type lists.
+ *
+ *  @tparam TList1 is the first type list
+ *  @tparam TList2 is the seond type list
+ *
+ *  This routine traverses at first TList1 and calls for each type T UtilsWrapperT<T, TList2>.
+ */
 template<typename TList1, typename TList2> struct UtilsWrapperTT;
 
-/*
- * Termination
- */
+/* ------------------------------------------------------------------------- */
+/*  Termination                                                              */
+/* ------------------------------------------------------------------------- */
+
 template<> struct UtilsWrapper<common::mepr::NullType>
 {
     static void setRandom( hmemo::_HArray& array, IndexType, float, hmemo::ContextPtr )
@@ -72,7 +91,8 @@ template<> struct UtilsWrapper<common::mepr::NullType>
     }
 };
 
-template<typename ValueType> struct UtilsWrapperT<ValueType, common::mepr::NullType>
+template<typename ValueType> 
+struct UtilsWrapperT<ValueType, common::mepr::NullType>
 {
     static void setArray(
         hmemo::HArray<ValueType>& target,
@@ -200,28 +220,30 @@ struct UtilsWrapperTT<common::mepr::NullType, TList>
     }
 };
 
-/*
- * Step n
- */
+/* ------------------------------------------------------------------------- */
+/*  Termination                                                              */
+/* ------------------------------------------------------------------------- */
 
-template<typename H, typename T>
-struct UtilsWrapper<common::mepr::TypeList<H, T> >
+template<typename THead, typename TList>
+struct UtilsWrapper<common::mepr::TypeList<THead, TList> >
 {
     static void setRandom( hmemo::_HArray& array, IndexType n, float fillRate, hmemo::ContextPtr loc )
     {
-        if ( common::getScalarType<H>() ==  array.getValueType() )
+        if ( common::getScalarType<THead>() ==  array.getValueType() )
         {
-            HArrayUtils::setRandomImpl( reinterpret_cast<hmemo::HArray<H>&>( array ), n, fillRate, loc );
+            // now type of array is known, so we can make a safe cast
+            hmemo::HArray<THead>& typedArray = reinterpret_cast<hmemo::HArray<THead>&>( array );
+            HArrayUtils::setRandomImpl( typedArray, n, fillRate, loc );
         }
         else
         {
-            UtilsWrapper<T>::setRandom( array, n, fillRate, loc );
+            UtilsWrapper<TList>::setRandom( array, n, fillRate, loc );
         }
     }
 };
 
-template<typename ValueType, typename H, typename T>
-struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
+template<typename ValueType, typename H, typename Tail>
+struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
 {
     static void setArray(
         hmemo::HArray<ValueType>& target,
@@ -232,11 +254,11 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
             const hmemo::HArray<H>& typedSource = reinterpret_cast<const hmemo::HArray<H>&>( source );
-            HArrayUtils::setArray( target, typedSource, op, loc );
+            HArrayUtils::setArrayImpl( target, typedSource, op, loc );
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::setArray( target, source, op, loc );
+            UtilsWrapperT< ValueType, Tail >::setArray( target, source, op, loc );
         }
     }
 
@@ -255,7 +277,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            UtilsWrapperT<ValueType, T>::setArraySection( 
+            UtilsWrapperT<ValueType, Tail>::setArraySection( 
                 typedTarget, targetOffset, targetInc,
                 source, sourceOffset, sourceInc,
                 n, op, loc );
@@ -276,7 +298,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::gather( target, source, indexes, op, prefLoc );
+            UtilsWrapperT< ValueType, Tail >::gather( target, source, indexes, op, prefLoc );
         }
     }
 
@@ -295,7 +317,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::scatter( target, indexes, unique, source, op, prefLoc );
+            UtilsWrapperT< ValueType, Tail >::scatter( target, indexes, unique, source, op, prefLoc );
         }
     }
 
@@ -307,7 +329,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::setScalar( target, value, op, ctx );
+            UtilsWrapperT< ValueType, Tail >::setScalar( target, value, op, ctx );
         }
     }
 
@@ -321,7 +343,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::setValImpl( target, indexes, val );
+            UtilsWrapperT< ValueType, Tail >::setValImpl( target, indexes, val );
         }
     }
 
@@ -333,7 +355,7 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            return UtilsWrapperT< ValueType, T>::getValImpl( array, indexes );
+            return UtilsWrapperT< ValueType, Tail>::getValImpl( array, indexes );
         }
     }
 
@@ -350,13 +372,13 @@ struct UtilsWrapperT< ValueType, common::mepr::TypeList<H, T> >
         }
         else
         {
-            UtilsWrapperT< ValueType, T >::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
+            UtilsWrapperT< ValueType, Tail >::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
         }
     }
 };
 
-template<typename H, typename T, typename TList2>
-struct UtilsWrapperTT<common::mepr::TypeList<H, T>, TList2 >
+template<typename H, typename Tail, typename TList2>
+struct UtilsWrapperTT<common::mepr::TypeList<H, Tail>, TList2 >
 {
     static void setArray( hmemo::_HArray& target, const hmemo::_HArray& source, const binary::BinaryOp op, const hmemo::ContextPtr loc )
     {
@@ -366,7 +388,7 @@ struct UtilsWrapperTT<common::mepr::TypeList<H, T>, TList2 >
         }
         else
         {
-            UtilsWrapperTT<T, TList2>::setArray( target, source, op, loc );
+            UtilsWrapperTT<Tail, TList2>::setArray( target, source, op, loc );
         }
     }
 
@@ -384,7 +406,7 @@ struct UtilsWrapperTT<common::mepr::TypeList<H, T>, TList2 >
         }
         else
         {
-            UtilsWrapperTT<T, TList2>::setArraySection( target, targetOffset, targetInc,
+            UtilsWrapperTT<Tail, TList2>::setArraySection( target, targetOffset, targetInc,
                     source, sourceOffset, sourceInc,
                     n, op, loc );
         }
@@ -404,7 +426,7 @@ struct UtilsWrapperTT<common::mepr::TypeList<H, T>, TList2 >
         }
         else
         {
-            UtilsWrapperTT<T, TList2>::gather( target, source, indexes, op, prefLoc );
+            UtilsWrapperTT<Tail, TList2>::gather( target, source, indexes, op, prefLoc );
         }
     }
 
@@ -423,7 +445,7 @@ struct UtilsWrapperTT<common::mepr::TypeList<H, T>, TList2 >
         }
         else
         {
-            UtilsWrapperTT<T, TList2>::scatter( target, indexes, unique, source, op, prefLoc );
+            UtilsWrapperTT<Tail, TList2>::scatter( target, indexes, unique, source, op, prefLoc );
         }
     }
 
@@ -440,7 +462,7 @@ struct UtilsWrapperTT<common::mepr::TypeList<H, T>, TList2 >
         }
         else
         {
-            UtilsWrapperTT<T, TList2>::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
+            UtilsWrapperTT<Tail, TList2>::buildSparse( sparseArray, sparseIndexes, denseArray, prefLoc );
         }
     }
 };

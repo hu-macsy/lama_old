@@ -1276,9 +1276,9 @@ void OpenMPUtils::setScatter(
 {
     SCAI_REGION( "OpenMP.Utils.setScatter" )
 
-    SCAI_LOG_DEBUG( logger,
-                    "setScatter: out<" << TypeTraits<ValueType1>::id() << ">"
-                    << "[ indexes[" << n << "] ]" << op << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
+    SCAI_LOG_INFO( logger, "setScatter: out<" << TypeTraits<ValueType1>::id() << ">"
+                   << "[ indexes[" << n << "], unique = " << unique << " ]" 
+                   << op << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     if ( op == binary::COPY )
     {

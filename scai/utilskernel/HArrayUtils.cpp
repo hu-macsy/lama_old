@@ -306,12 +306,15 @@ void HArrayUtils::scatterImpl(
     SCAI_LOG_INFO( logger, "target[ indexes[ " << indexes.size() << " ] : " << target.size()
                    << " ] = source[ " << source.size() << " ]" )
 
-    SCAI_ASSERT(      ( op == binary::COPY )
-                      || ( op == binary::ADD )
-                      || ( op == binary::SUB ) , "Unsupported reduction op " << op  )
+    if ( !unique )
+    {
+        SCAI_ASSERT(  op == binary::COPY || op == binary::ADD || op == binary::SUB  , 
+                      "Unsupported reduction op " << op << " for not unique indexes" )
+    }
+    
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
+                       "illegal scatter index, target has size " << target.size() )
 
-    SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
-                 "illegal scatter index, target has size " << target.size() )
     static LAMAKernel<UtilKernelTrait::setScatter<TargetValueType, SourceValueType> > setScatter;
     ContextPtr loc = prefLoc;
 
