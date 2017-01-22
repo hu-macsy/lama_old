@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
     const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
     const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
 
-    // check for a correct provide plan
+    // check for a correct required plan
 
     IndexType offsetCheck = 0;
 

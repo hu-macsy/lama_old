@@ -168,6 +168,71 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     }
 }
 
+void HaloBuilder::build( const Distribution& distribution, const HArray<IndexType>& requiredIndexes, 
+    const HArray<IndexType>& providedIndexes, const PartitionId partner, Halo& halo)
+{
+    SCAI_REGION( "HaloBuilder.buildWithPartner" )
+    const PartitionId noPartitions = distribution.getNumPartitions();
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    //skip computation of owners
+
+    CommunicationPlan& requiredPlan = halo.mRequiredPlan;
+    IndexType nIndexes = requiredIndexes.size();
+    IndexType nProvidedIndexes = providedIndexes.size();
+    ReadAccess<IndexType> rIndexes( requiredIndexes, contextPtr );
+
+    HArray<PartitionId> owners;
+    owners.init(partner, nIndexes);
+
+    //allocate Required plan with the nodes, where we get data from
+    {
+        ReadAccess<PartitionId> rOwners( owners );
+        requiredPlan.allocate( noPartitions, rOwners.get(), owners.size() );
+    }
+    
+    std::vector<IndexType> counts( noPartitions, nIndex );  // initialize with illegal index
+    for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
+    {
+        counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
+    }
+
+    WriteAccess<IndexType> requiredIndexesByOwner( halo.mRequiredIndexes, contextPtr );
+    requiredIndexesByOwner.resize( requiredPlan.totalQuantity() );
+
+    for ( IndexType jj = 0; jj < requiredPlan.totalQuantity(); ++jj )
+    {
+        IndexType haloIndex = counts[partner];
+        requiredIndexesByOwner[haloIndex] = rIndexes[jj];
+        // define the corresponding global->local mapping
+        halo.setGlobal2Halo( rIndexes[jj], haloIndex );
+        ++counts[partner];
+    }
+    requiredIndexesByOwner.release();
+
+    CommunicationPlan& providesPlan = halo.mProvidesPlan;
+    HArray<PartitionId> targets;
+    targets.init(partner, nProvidedIndexes);
+
+    //allocate Required plan with the nodes, where we get data from
+    {
+        ReadAccess<PartitionId> rTargets( targets );
+        providesPlan.allocate( noPartitions, rTargets.get(), targets.size() );
+    }
+
+    SCAI_ASSERT( providesPlan.totalQuantity() == nProvidedIndexes,
+        "Provides plan has " << providesPlan.totalQuantity() << " entries, but " << nProvidedIndexes << " were given." )
+
+    WriteAccess<IndexType> providesIndexesAccess( halo.mProvidesIndexes, contextPtr );
+    ReadAccess<IndexType> pIndexes( providedIndexes, contextPtr );
+
+    providesIndexesAccess.resize( providesPlan.totalQuantity() );
+
+    for (IndexType i = 0; i < nProvidedIndexes; i++) {
+        providesIndexesAccess[i] = distribution.global2local( pIndexes[i] );
+    }
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */
