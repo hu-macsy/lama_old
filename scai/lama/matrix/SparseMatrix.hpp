@@ -575,6 +575,12 @@ public:
 
     void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
 
+    void getLocalRow1( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex );
+
+    /** Implementation of pure method Matrix::getRow */
+
+    virtual void getRow1( Vector& row, const IndexType globalRowIndex );
+
     /** Set a complete row of this matrix in its local part. */
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,

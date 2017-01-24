@@ -38,6 +38,7 @@
 // local library
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/SparseVector.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
@@ -729,6 +730,75 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
     mHaloData->getRow( tmpRow, localRowIndex );
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
     HArrayUtils::scatterImpl( row, haloIndexes, true, tmpRow, utilskernel::binary::COPY );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowIndex )
+{
+    SCAI_REGION( "Mat.Sp.getRow" )
+
+    const Distribution& dist = getRowDistribution();
+    const Communicator& comm = dist.getCommunicator();
+
+    // if v is not a sparse vector, use a temporary sparse vector
+
+    if ( row.getVectorKind() != Vector:: SPARSE || row.getValueType() != getValueType() )
+    {
+        SCAI_LOG_WARN( logger, "getRow requires temporary" )
+        SparseVector<ValueType> spRow;
+        getRow1( spRow, globalRowIndex );
+        row.assign( spRow );   // transform the sparse vector into dense vecotr
+        return;
+    }
+
+    // owner gets the sparse row locally and broadcasts it
+
+    IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+
+    PartitionId owner = getRowDistribution().findOwner( globalRowIndex );
+
+    SparseVector<ValueType>& spRow = reinterpret_cast<SparseVector<ValueType>&>( row );
+
+    spRow.allocate( getNumRows() );
+
+    HArray<IndexType>& indexes = const_cast<HArray<IndexType>&>( spRow.getNonZeroIndexes() );
+    HArray<ValueType>& values  = const_cast<HArray<ValueType>&>( spRow.getNonZeroValues() );
+
+    if ( localRowIndex != nIndex )
+    {
+        getLocalRow1( indexes, values, localRowIndex );
+    }
+
+    comm.bcastArray( indexes, owner );
+    comm.bcastArray( values, indexes.size(), owner );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::getLocalRow1( HArray<IndexType>& indexes, _HArray& values, const IndexType localRowIndex )
+{
+    SCAI_REGION( "Mat.Sp.getLocalRow" )
+
+    SCAI_LOG_INFO( logger, "getLocalRow( " << localRowIndex << " ) of this matrix: " << *this )
+
+    const Distribution& distributionCol = getColDistribution();
+
+    if ( distributionCol.isReplicated() )
+    {
+        mLocalData->getSparseRow( indexes, values, localRowIndex );
+        return;
+    }
+
+    COMMON_THROWEXCEPTION( "not supported yet" )
+
+    HArray<IndexType> indexes1;
+    HArray<ValueType> values1;
+    mHaloData->getSparseRow( indexes1, values1, localRowIndex );
+
+    // HArrayUtils::addSparse( indexes, values, indexes, values, indexes1, values1 );
 }
 
 /* -------------------------------------------------------------------------- */

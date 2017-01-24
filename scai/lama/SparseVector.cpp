@@ -649,6 +649,8 @@ Scalar SparseVector<ValueType>::max() const
 template<typename ValueType>
 Scalar SparseVector<ValueType>::l1Norm() const
 {
+    SCAI_REGION( "Vector.sparse.l1Norm" )
+
     ValueType localL1Norm = mNonZeroValues.l1Norm();
     return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
 }
@@ -666,6 +668,8 @@ Scalar SparseVector<ValueType>::sum() const
 template<typename ValueType>
 Scalar SparseVector<ValueType>::l2Norm() const
 {
+    SCAI_REGION( "Vector.sparse.l2Norm" )
+
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
     ValueType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
@@ -675,6 +679,8 @@ Scalar SparseVector<ValueType>::l2Norm() const
 template<>
 Scalar SparseVector<IndexType>::l2Norm() const
 {
+    SCAI_REGION( "Vector.sparse.l2Norm" )
+
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
     ScalarRepType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
@@ -687,6 +693,8 @@ Scalar SparseVector<IndexType>::l2Norm() const
 template<typename ValueType>
 Scalar SparseVector<ValueType>::maxNorm() const
 {
+    SCAI_REGION( "Vector.sparse.maxNorm" )
+
     ValueType localMaxNorm = mNonZeroValues.maxNorm();
     const Communicator& comm = getDistribution().getCommunicator();
     ValueType globalMaxNorm = comm.max( localMaxNorm );

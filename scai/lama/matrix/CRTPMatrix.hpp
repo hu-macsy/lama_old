@@ -238,6 +238,8 @@ public:
 
     void getRow( Vector& row, const IndexType globalRowIndex ) const
     {
+        SCAI_REGION( "Mat.getRow" )
+
         using namespace scai::hmemo;
 
         SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, getNumRows(), "illegal row index" )
@@ -326,6 +328,8 @@ public:
 
     void getColumn( Vector& column, const IndexType globalColIndex ) const
     {
+        SCAI_REGION( "Mat.getColumn" )
+
         using namespace scai::hmemo;
 
         SCAI_ASSERT_VALID_INDEX_ERROR( globalColIndex, getNumColumns(), "illegal column index" )
