@@ -298,20 +298,32 @@ void HArrayUtils::scatterImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
-                       op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
+    if ( unique )
+    {
+        // each supported binary operator can be used
+
+        SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
+                           op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
+    }
+    else
+    {
+        // only binary operators that allow atomic updates 
+
+        SCAI_ASSERT(  op == binary::COPY || op == binary::ADD || op == binary::SUB  , 
+                      "Unsupported reduction op " << op << " for not unique indexes" )
+    }
 
     SCAI_REGION( "HArray.scatter" )
 
     SCAI_LOG_INFO( logger, "target[ indexes[ " << indexes.size() << " ] : " << target.size()
                    << " ] = source[ " << source.size() << " ]" )
 
-    if ( !unique )
+    if ( target.size() == 0 )
     {
-        SCAI_ASSERT(  op == binary::COPY || op == binary::ADD || op == binary::SUB  , 
-                      "Unsupported reduction op " << op << " for not unique indexes" )
+        SCAI_ASSERT_EQ_ERROR( 0, indexes.size(), "scatter on empty array" )
+        return;
     }
-    
+
     SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                        "illegal scatter index, target has size " << target.size() )
 
