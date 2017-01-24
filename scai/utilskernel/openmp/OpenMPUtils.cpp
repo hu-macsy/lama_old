@@ -1280,6 +1280,8 @@ void OpenMPUtils::setScatter(
                    << "[ indexes[" << n << "], unique = " << unique << " ]" 
                    << op << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
+    SCAI_LOG_DEBUG( logger, "addresses: out = " << out << ", indexes = " << indexes << ", in = " << in )
+
     if ( op == binary::COPY )
     {
         #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)

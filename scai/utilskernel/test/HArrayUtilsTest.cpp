@@ -527,6 +527,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
     LArray<IndexType> indexes( N, indexVals );
     BOOST_CHECK_THROW (
     {
+        // scatter on an empty array with more than one index should always fail
+
         LArray<ValueType> target;
         HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, binary::COPY );
 
