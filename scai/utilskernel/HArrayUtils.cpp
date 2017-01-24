@@ -1588,6 +1588,53 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType> in
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void HArrayUtils::addSparse(
+    hmemo::HArray<IndexType>& resultIndexes,
+    hmemo::HArray<IndexType>& resultValues,
+    const hmemo::HArray<IndexType>& indexes1,
+    hmemo::HArray<IndexType>& values1,
+    const hmemo::HArray<IndexType>& indexes2,
+    hmemo::HArray<IndexType>& values2,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<UtilKernelTrait::countAddSparse> countAddSparse;
+    static LAMAKernel<UtilKernelTrait::addSparse<ValueType> > addSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes1.getValidContext();
+    }
+
+    addSparse.getSupportedContext( loc, countAddSparse );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIndexes1( indexes1, loc );
+    ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+    IndexType n1 = indexes1.size();
+    IndexType n2 = indexes2.size();
+
+    IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
+
+    WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
+    WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+
+    ReadAccess<ValueType> rValues1( values1, loc );
+    ReadAccess<ValueType> rValues2( values2, loc );
+
+    addSparse[loc]( wIndexes.get(), wValues.get(),
+                    rIndexes1.get(), rValues1.get(), n1,
+                    rIndexes2.get(), rValues2.get(), n2 );
+}
+
+/* --------------------------------------------------------------------------- */
+
 /** Makro for the instantiation of routines with two template arguments for source and target type. */
 
 #define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \

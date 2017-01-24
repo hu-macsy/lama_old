@@ -260,6 +260,27 @@ private:
         const IndexType n,
         const SourceType eps );
 
+    /** OpenMP implementation of UtilsKernelTrait::countAddSparse */
+
+    static IndexType countAddSparse(
+        const IndexType indexes1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const IndexType n2 );
+
+    /** OpenMP implementation of UtilsKernelTrait::addSparse */
+
+    template<typename ValueType>
+    static IndexType addSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const IndexType n2 );
+
     template<typename ValueType>
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
 

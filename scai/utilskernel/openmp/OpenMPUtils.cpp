@@ -1691,6 +1691,119 @@ void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
 }
 
 /* --------------------------------------------------------------------------- */
+
+IndexType OpenMPUtils::countAddSparse(
+    const IndexType indexes1[],
+    const IndexType n1, 
+    const IndexType indexes2[],
+    const IndexType n2 )
+{
+    IndexType n = 0;
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] == indexes2[i2] )
+        {
+            ++n;
+            ++i1;
+            ++i2;
+        } 
+        else if ( indexes1[i1] < indexes2[i2] )
+        {
+            ++n;
+            ++i1;
+        }
+        else 
+        {
+            ++n;
+            ++i2;
+        }
+    }
+
+    // add remaining indexes from array1 or array2 
+
+    n += ( n1 - i1 ) + ( n2 - i2 );
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType OpenMPUtils::addSparse(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const IndexType n1, 
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const IndexType n2 )
+{
+    IndexType n = 0;
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] == indexes2[i2] )
+        {
+            // entry at same position 
+
+            indexes[n] = indexes1[i1];
+            values[n]  = values1[i1] + values2[i2];
+            ++n;
+            ++i1;
+            ++i2;
+        } 
+        else if ( indexes1[i1] < indexes2[i2] )
+        {
+            // entry only in array1
+
+            indexes[n] = indexes1[i1];
+            values[n]  = values1[i1];
+            ++n;
+            ++i1;
+        }
+        else 
+        {
+            // entry only in array2
+
+            indexes[n] = indexes2[i2];
+            values[n]  = values2[i2];
+            ++n;
+            ++i2;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        indexes[n] = indexes1[i1];
+        values[n]  = values1[i1];
+        ++n;
+        ++i1;
+    }
+
+    while ( i2 < n2 )
+    {
+        indexes[n] = indexes2[i2];
+        values[n]  = values2[i2];
+        ++n;
+        ++i2;
+    }
+ 
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -1704,6 +1817,7 @@ void OpenMPUtils::BaseKernels::registerKernels( kregistry::KernelRegistry::Kerne
     KernelRegistry::set<UtilKernelTrait::countBuckets<IndexType> >( countBuckets, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sortInBuckets<IndexType> >( sortInBuckets, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::countAddSparse>( countAddSparse, ctx, flag );
 }
 
 template<typename ValueType>
@@ -1726,6 +1840,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );

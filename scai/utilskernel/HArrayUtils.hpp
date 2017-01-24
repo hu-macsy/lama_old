@@ -618,6 +618,22 @@ public:
      */
     static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType> indexes, const IndexType pos );
 
+    /** Add two sparse arrays 
+     *
+     *  @param[out] resultIndexes, resultValues for sparse result array
+     *  @param[in]  indexes1, values1 first sparse array
+     *  @param[in]  indexes1, values2 second sparse array
+     */
+    template<typename ValueType>
+    static void addSparse(
+        hmemo::HArray<IndexType>& resultIndexes,
+        hmemo::HArray<IndexType>& resultValues,
+        const hmemo::HArray<IndexType>& indexes1,
+        hmemo::HArray<IndexType>& values1,
+        const hmemo::HArray<IndexType>& indexes2,
+        hmemo::HArray<IndexType>& values2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
 private:
 
     template<typename ValueType>

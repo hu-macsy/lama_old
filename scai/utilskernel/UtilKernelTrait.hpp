@@ -634,6 +634,61 @@ struct UtilKernelTrait
             return "Utils.compress";
         }
     };
+
+    struct countAddSparse
+    {
+        /** Build sparse array and sparse indexes from dense array
+         *
+         *  @param[in]  indexes1   non-zero indexes first array
+         *  @param[in]  n1         number of non-zero indexes first arra1
+         *  @param[in]  indexes2   non-zero indexes first array
+         *  @param[in]  n2         number of non-zero indexes second array
+         *
+         */
+
+        typedef IndexType ( *FuncType ) (
+            const IndexType indexes1[],
+            const IndexType n1,
+            const IndexType indexes2[],
+            const IndexType n2 );
+
+        static const char* getId()
+        {
+            return "Utils.countAddSparse";
+        }
+    };
+
+    template<typename ValueType>
+    struct addSparse
+    {
+        /** Add two sparse arrays
+         *
+         *  @param[out] indexes    non-zero indexes result array
+         *  @param[out] values     non-zero values result array
+         *  @param[in]  indexes1   non-zero indexes first array
+         *  @param[in]  values1    non-zero values first array
+         *  @param[in]  n1         number of non-zero indexes first arra1
+         *  @param[in]  indexes2   non-zero indexes first array
+         *  @param[in]  values2    non-zero values second array
+         *  @param[in]  n2         number of non-zero indexes second array
+         *  @return     number of non-zero indexes in result array
+         */
+
+        typedef IndexType ( *FuncType ) (
+            IndexType indexes[],
+            ValueType values[],
+            const IndexType indexes1[],
+            const ValueType values1[],
+            const IndexType n1,
+            const IndexType indexes2[],
+            const ValueType values2[],
+            const IndexType n2 );
+
+        static const char* getId()
+        {
+            return "Utils.addSparse";
+        }
+    };
 };
 
 } /* end namespace utilskernel */
