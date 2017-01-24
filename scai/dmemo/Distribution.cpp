@@ -208,6 +208,29 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
 
 /* ---------------------------------------------------------------------- */
 
+PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
+{
+    // sum reduction required for owner as other processors do not know it
+
+    IndexType owner = 0;
+
+	IndexType localIndex = global2local( globalIndex );
+
+    if ( localIndex != nIndex )
+    {
+        SCAI_LOG_INFO( logger,
+                       mCommunicator << ": owner of " << globalIndex << ", local index = " << localIndex )
+
+        owner = mCommunicator->getRank() + 1;
+    }
+
+    mCommunicator->sum( owner );
+
+    return owner - 1;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) const
 {
     HArray<IndexType> indexes;

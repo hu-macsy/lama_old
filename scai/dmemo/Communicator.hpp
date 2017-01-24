@@ -669,6 +669,19 @@ public:
      *                                                                                    *
      *************************************************************************************/
 
+    /** Broadcast of a heterogeneous array */
+
+    template<typename ValueType>
+    void bcastArray( hmemo::HArray<ValueType>& array, const PartitionId root ) const;
+
+    /** Broadcast of a heterogeneous array with known size 
+     *
+     *  If the size of the array is known, an additional broadcast of the size is not required. 
+     */
+
+    template<typename ValueType>
+    void bcastArray( hmemo::HArray<ValueType>& array, const IndexType n, const PartitionId root ) const;
+
     /** exchangeByPlan for HArrays instead of usual array */
 
     template<typename ValueType>

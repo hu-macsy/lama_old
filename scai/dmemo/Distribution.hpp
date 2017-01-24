@@ -249,6 +249,14 @@ public:
      */
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
+    /**
+     * Get the owner of a global index, all processors call with same value.
+     *
+     *  @param[in] globalIndex index for which owner is required
+     *  @return id of the owner partition.
+     */
+    virtual PartitionId findOwner( const IndexType globalIndex ) const;
+
     /** Get the owners of all global indexes.
      *
      *  @param[out] owners owners[i] is owner of element i, 0 <= i < globalSize

@@ -498,6 +498,47 @@ void Communicator::shiftArray(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, const PartitionId root ) const
+{
+    ContextPtr commContext = getCommunicationContext( array );
+
+    SCAI_CONTEXT_ACCESS( commContext )
+
+    if ( root == getRank() )
+    {
+        SCAI_ASSERT_LE_ERROR( n, array.size(), "bcastArray: root has not enough values" )
+        WriteAccess<ValueType> wArray( array, commContext );
+        bcast( wArray.get(), n, root ); // bcast the row
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wArray( array, commContext, n );
+        bcast( wArray.get(), n, root ); // bcast the row
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root ) const
+{
+    ContextPtr commContext = getCommunicationContext( array );
+
+    IndexType n = 0;
+
+    if ( root == getRank() )
+    {   
+        n = array.size();
+    }
+
+    bcast( &n, 1, root );
+    
+    bcastArray( array, n, root );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SyncToken* Communicator::shiftAsync(
     HArray<ValueType>& recvArray,
     const HArray<ValueType>& sendArray,
@@ -1131,6 +1172,17 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
 #undef SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS
 
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::bcastArray(                                  \
+            HArray<_type>& array,                                   \
+            const PartitionId root ) const;                         \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::bcastArray(                                  \
+            HArray<_type>& array,                                   \
+            const IndexType n,                                      \
+            const PartitionId root ) const;                         \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
