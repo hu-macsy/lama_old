@@ -1603,7 +1603,7 @@ IndexType OpenMPUtils::compress(
 
             if ( sparseArray )
             {
-                sparseArray[k] = static_cast<SourceType>( denseArray[i] );
+                sparseArray[k] = static_cast<TargetType>( denseArray[i] );
             }
 
             if ( sparseIndexes )
