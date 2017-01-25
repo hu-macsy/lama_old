@@ -1517,16 +1517,16 @@ void HArrayUtils::buildSparseArray(
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType, typename OtherType>
+template<typename TargetType, typename SourceType>
 void HArrayUtils::buildSparseArrayImpl(
-    hmemo::HArray<ValueType>& sparseArray,
+    hmemo::HArray<TargetType>& sparseArray,
     hmemo::HArray<IndexType>& sparseIndexes,
-    const hmemo::HArray<OtherType>& denseArray,
+    const hmemo::HArray<SourceType>& denseArray,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
-    static LAMAKernel<UtilKernelTrait::countNonZeros<OtherType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<ValueType, OtherType> > compress;
+    static LAMAKernel<UtilKernelTrait::countNonZeros<SourceType> > countNonZeros;
+    static LAMAKernel<UtilKernelTrait::compress<TargetType, SourceType> > compress;
     ContextPtr loc = prefLoc;
 
     // default location for conversion: where we have the dense values
@@ -1538,11 +1538,11 @@ void HArrayUtils::buildSparseArrayImpl(
 
     compress.getSupportedContext( loc, countNonZeros );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType eps = common::TypeTraits<ValueType>::eps1();
-    ReadAccess<OtherType> rDenseArray( denseArray, loc );
+    SourceType eps = common::TypeTraits<SourceType>::eps1();
+    ReadAccess<SourceType> rDenseArray( denseArray, loc );
     // we count the non-zeros at first to have sizes for sparse data
     IndexType sparseN = countNonZeros[loc]( rDenseArray.get(), n, eps );
-    WriteOnlyAccess<ValueType> wSparseArray( sparseArray, loc, sparseN );
+    WriteOnlyAccess<TargetType> wSparseArray( sparseArray, loc, sparseN );
     WriteOnlyAccess<IndexType> wSparseIndexes( sparseIndexes, loc, sparseN );
     sparseN = compress[loc]( wSparseArray.get(), wSparseIndexes.get(), rDenseArray.get(), n, eps );
 }
