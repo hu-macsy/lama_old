@@ -37,7 +37,6 @@
 
 // local library
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-#include <scai/lama/mepr/DenseMatrixWrapper.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
@@ -651,56 +650,60 @@ void DenseMatrix<ValueType>::assignTransposeImpl( const DenseMatrix<ValueType>& 
 template<typename ValueType>
 void DenseMatrix<ValueType>::assign( const Matrix& other )
 {
-    SCAI_LOG_INFO( logger, "assign " << &other << " to " << this )
     SCAI_LOG_INFO( logger, "assign " << other << " to " << *this )
 
     if ( &other == this )
     {
         SCAI_LOG_INFO( logger, "self assign, is skpped" )
-        return;
     }
-
-    // assign will not take over sizes
-    Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
-
-    if ( other.getMatrixKind() == Matrix::DENSE )
+    else if ( other.getMatrixKind() == Matrix::DENSE )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
-        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDenseImpl( *this, other );
-        return;
+        assignSparse( other );                         // might be optimized, as replication is not really needed
     }
     else if ( other.getMatrixKind() == Matrix::SPARSE )
     {
         SCAI_LOG_INFO( logger, "copy sparse matrix" )
-        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignSparseImpl( *this, other );
-        return;
+        assignSparse( other );
     }
-
-    SCAI_LOG_TRACE( logger, "Unsupported assign" )
-    COMMON_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported: assign " << other << " to " << *this )
+    }
 }
 
 /* ------------------------------------------------------------------ */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType>& other )
+void DenseMatrix<ValueType>::assignSparse( const Matrix& other )
 {
-// @todo: this routine needs some redesign
+    // we need replicated column distribution to get this routine working
+
     if ( !other.getColDistribution().isReplicated() )
     {
         DistributionPtr repColDist( new NoDistribution( other.getNumColumns() ) );
-        CSRSparseMatrix<ValueType> otherCSR( other, other.getRowDistributionPtr(), repColDist );
-// assertion just to make sure that we do not end up in infinite recursion
-        SCAI_ASSERT_DEBUG( otherCSR.getColDistribution().isReplicated(), "otherCSR not replicated columns" )
-        assignSparse( otherCSR );
+
+        common::unique_ptr<Matrix> tmpOther( other.copy() );
+
+        tmpOther->redistribute( other.getRowDistributionPtr(), repColDist );
+
+        SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
+
+        assignSparse( *tmpOther );
+
+        SCAI_LOG_WARN( logger, "now assigned other matrix: " << *this )
+
         splitColumns( other.getColDistributionPtr() );
+
         return;
     }
 
-// replicated columns in sparse matrix, so we can assign local data
+    // replicated columns in sparse matrix, so we can assign local data
+
     Matrix::setDistributedMatrix( other.getRowDistributionPtr(), other.getColDistributionPtr() );
     mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( other.getLocalStorage() ) );
+
     computeOwners();
 }
 
@@ -1189,6 +1192,49 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
     SCAI_LOG_INFO( logger, "local row with joined column data: " << row )
 }
 
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowIndex )
+{
+    SCAI_REGION( "Mat.Dense.getRow" )
+
+    // if v is not a dense vector, use a temporary dense vector
+
+    if ( row.getVectorKind() != Vector:: DENSE || row.getValueType() != getValueType() )
+    {
+        SCAI_LOG_WARN( logger, "getRow requires temporary" )
+        DenseVector<ValueType> denseRow;
+        getRow1( denseRow, globalRowIndex );
+        row.assign( denseRow );   // transform the dense vector into sparse vector
+        return;
+    }
+
+    const Distribution& dist = getRowDistribution();
+    const Communicator& comm = dist.getCommunicator();
+
+    // owner gets the dense row locally and broadcasts it
+
+    IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+
+    PartitionId owner = getRowDistribution().findOwner( globalRowIndex );
+
+    DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
+
+    denseRow.allocate( getNumColumns() );   // replicated row
+
+    HArray<ValueType>& values  = denseRow.getLocalValues();
+
+    if ( localRowIndex != nIndex )
+    {
+        getLocalRow( values, localRowIndex );
+    }
+
+    comm.bcastArray( values, owner );
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalRow(
     const hmemo::HArray<ValueType>& row,
@@ -1344,16 +1390,6 @@ void DenseMatrix<ValueType>::setLocalColumn(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherValueType>
-void DenseMatrix<ValueType>::getDiagonalImpl( DenseVector<OtherValueType>& diagonal ) const
-{
-    diagonal.allocate( getRowDistributionPtr() );
-// const cast for local storage here is safe, otherwise we have to swap
-    HArray<OtherValueType>& localValues = diagonal.getLocalValues();
-    getLocalStorage().getDiagonal( localValues );
-}
-
-template<typename ValueType>
 void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
@@ -1361,20 +1397,23 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-// todo: if ( diagonal.getVectorKind() == Vector::DENSE        )
-
-    if ( true )
+    if ( diagonal.getVectorKind() != Vector::DENSE )
     {
-// Dense vector with this row distribution, so we do not need a temporary array
-        mepr::DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::getDiagonalImpl( *this, diagonal );
+        DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
+        getDiagonal( tmpDiagonal );
+        diagonal.assign( tmpDiagonal );
         return;
     }
 
-// Fallback solution with temporary arrays
-    HArray<ValueType> localDiagonal;
-    getLocalStorage().getDiagonal( localDiagonal );
-    diagonal.assign( localDiagonal, getRowDistributionPtr() );
+    // we can recast it now to dense vector, so we have access to its local values
+
+    _DenseVector& denseDiagonal = reinterpret_cast<_DenseVector&>( diagonal );
+
+    denseDiagonal.allocate( getRowDistributionPtr() );
+    getLocalStorage().getDiagonal( denseDiagonal.getLocalValues() );
 }
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )

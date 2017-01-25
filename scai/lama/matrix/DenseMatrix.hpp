@@ -363,7 +363,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType>& other );
+    void assignSparse( const Matrix& other );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -588,6 +588,10 @@ public:
     {
         return mOwners;
     }
+
+    /** Implementation of pure methode Matrix::getRow */
+
+    virtual void getRow1( Vector& row, const IndexType globalRowIndex );
 
     /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
 
