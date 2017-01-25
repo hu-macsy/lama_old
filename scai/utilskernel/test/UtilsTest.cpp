@@ -534,5 +534,82 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
     BOOST_CHECK( valuesSorted );
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    static LAMAKernel<UtilKernelTrait::countAddSparse > countAddSparse;
+    static LAMAKernel<UtilKernelTrait::addSparse<ValueType> > addSparse;
+
+    ContextPtr loc = testContext;
+    addSparse.getSupportedContext( loc, countAddSparse );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    const IndexType indexes1_values[]   = { 0, 2, 5, 7 };
+    const IndexType indexes2_values[]   = { 1, 2, 5, 8 };
+    const IndexType indexes_values[]    = { 0, 1, 2, 5, 7, 8 };
+
+    const ValueType values1_values[] = { 1, 2, 3, 4 };
+    const ValueType values2_values[] = { 5, 6, 7, 8 };
+    const ValueType values_values[]  = { 1, 5, 8, 10, 4, 8 };
+
+    IndexType n1 = sizeof( indexes1_values ) / sizeof( IndexType );
+    IndexType n2 = sizeof( indexes2_values ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( n1, sizeof( values1_values ) / sizeof( ValueType ), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( n2, sizeof( values2_values ) / sizeof( ValueType ), "size mismatch" )
+
+    HArray<IndexType> indexes1( n1, indexes1_values, testContext );
+    HArray<IndexType> indexes2( n2, indexes2_values, testContext );
+
+    HArray<ValueType> values1( n1, values1_values, testContext );
+    HArray<ValueType> values2( n2, values2_values, testContext );
+
+    HArray<IndexType> indexes;
+    HArray<ValueType> values;
+
+    {
+        SCAI_CONTEXT_ACCESS( loc );
+
+        ReadAccess<IndexType> rIndexes1( indexes1, loc );
+        ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+        IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
+
+        BOOST_CHECK_EQUAL( n, 6 );
+
+        ReadAccess<ValueType> rValues1( values1, loc );
+        ReadAccess<ValueType> rValues2( values2, loc );
+
+        WriteOnlyAccess<IndexType> wIndexes( indexes, loc, n );
+        WriteOnlyAccess<ValueType> wValues( values, loc, n );
+
+        IndexType nc = addSparse[loc]( wIndexes.get(), wValues.get(), 
+                                       rIndexes1.get(), rValues1.get(), n1,
+                                       rIndexes2.get(), rValues2.get(), n2 );
+
+        BOOST_CHECK_EQUAL( n, nc );
+    }
+
+    BOOST_CHECK_EQUAL( values.size(), indexes.size() );
+
+    {
+        ReadAccess<ValueType> rValues( values );
+        ReadAccess<IndexType> rIndexes( indexes );
+
+        for ( IndexType i = 0; i < values.size(); ++i )
+        {
+            BOOST_CHECK_EQUAL( indexes_values[i], rIndexes[i] );
+            BOOST_CHECK_EQUAL( values_values[i], rValues[i] );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+
 BOOST_AUTO_TEST_SUITE_END()
 

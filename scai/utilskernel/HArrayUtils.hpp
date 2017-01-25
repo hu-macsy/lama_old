@@ -623,6 +623,10 @@ public:
      *  @param[out] resultIndexes, resultValues for sparse result array
      *  @param[in]  indexes1, values1 first sparse array
      *  @param[in]  indexes1, values2 second sparse array
+     *  @param[in]  prefLoc is the context where operation should be done
+     *
+     *  Alias of any input array with the output array is not allowed, e.g. 
+     *  resultValues and values1 must not be the same array.
      */
     template<typename ValueType>
     static void addSparse(

@@ -637,13 +637,18 @@ struct UtilKernelTrait
 
     struct countAddSparse
     {
-        /** Build sparse array and sparse indexes from dense array
+        /** Count number of indexes for the union of two sparse index sets.
          *
          *  @param[in]  indexes1   non-zero indexes first array
          *  @param[in]  n1         number of non-zero indexes first arra1
          *  @param[in]  indexes2   non-zero indexes first array
          *  @param[in]  n2         number of non-zero indexes second array
+         *  @return number of indexes for the union of indexes1 and indexes2
          *
+         *  The returned value can be used to allocate the correct size for the sparse array when
+         *  two other sparse arrays are added.
+         *
+         *  It is assumed that the values in indexes1 and indexes2 are sorted in increasing order.
          */
 
         typedef IndexType ( *FuncType ) (
@@ -672,6 +677,9 @@ struct UtilKernelTrait
          *  @param[in]  values2    non-zero values second array
          *  @param[in]  n2         number of non-zero indexes second array
          *  @return     number of non-zero indexes in result array
+         *
+         *  The returned value must be exactly the same as countAddSparse( indexes1, n1, indexes2, n2 ).
+         *  The arrays indexes and values must have been allocated at least with this size.
          */
 
         typedef IndexType ( *FuncType ) (
