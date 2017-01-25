@@ -35,10 +35,14 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/DIASparseMatrix.hpp>
+#include <scai/lama/matrix/JDSSparseMatrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
+#include <scai/dmemo/NoDistribution.hpp>
 #include <scai/tracing.hpp>
 
 #include <scai/common/Walltime.hpp>
@@ -68,11 +72,19 @@ int main( int argc, const char* argv[] )
         omp_set_num_threads( nThreads );
     }
 
-    COOSparseMatrix<double> stencilMatrix;
+    CSRSparseMatrix<double> stencilMatrix;
 
-    MatrixCreator::buildPoisson( stencilMatrix, 3, 27, 35, 40, 35 );
+    MatrixCreator::buildPoisson( stencilMatrix, 3, 27, 30, 30, 30 );
 
-    cout << "getRow for this matrix: " << stencilMatrix << endl;
+    // make sure that columns are replicated, otherwise getRow is inefficient at all
+
+    if ( !stencilMatrix.getColDistribution().isReplicated() )
+    {
+        dmemo::DistributionPtr repDist( new dmemo::NoDistribution( stencilMatrix.getNumColumns() ) );
+        stencilMatrix.redistribute( stencilMatrix.getRowDistributionPtr(), repDist );
+    }
+
+    cout << "Poisson matrix: " << stencilMatrix << endl;
 
     double time1 = Walltime::get();
 
