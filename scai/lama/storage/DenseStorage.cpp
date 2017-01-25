@@ -513,14 +513,18 @@ void DenseStorage<ValueType>::setCSRDataImpl(
     static LAMAKernel<DenseKernelTrait::setCSRValues<ValueType, OtherValueType> > setCSRValues;
     static LAMAKernel<CSRKernelTrait::validOffsets> validOffsets;
     static LAMAKernel<UtilKernelTrait::validIndexes> validIndexes;
+
     // check if context provides all implementations, otherwise go back to Host
+
     ContextPtr loc = context;
-    setCSRValues.getSupportedContext( loc );
+    setCSRValues.getSupportedContext( loc, validOffsets, validIndexes );
+
     SCAI_LOG_INFO( logger,
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
     mNumRows = numRows;
     mNumColumns = numColumns;
     common::unique_ptr<HArray<IndexType> > tmpOffsets;
+
     const HArray<IndexType>* offsets = &ia;
 
     if ( ia.size() == numRows )
@@ -529,6 +533,10 @@ void DenseStorage<ValueType>::setCSRDataImpl(
         IndexType total = HArrayUtils::scan( *tmpOffsets, loc );
         SCAI_ASSERT_EQUAL( total, numValues, "sizes do not sum up correctly" )
         offsets = tmpOffsets.get();
+    }
+    else
+    {
+        SCAI_ASSERT_EQ_ERROR( ia.size(), numRows + 1, "size mismatch of csr IA array" )
     }
 
     {
@@ -1131,7 +1139,9 @@ void DenseStorage<ValueType>::assign( const _MatrixStorage& other )
     }
 
     SCAI_LOG_INFO( logger, *this << ": (dense) assign " << other )
-// In all other cases we use the fallback routine
+
+    // In all other cases we use the fallback routine
+
     MatrixStorage<ValueType>::assign( other );
 }
 

@@ -312,26 +312,6 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
-{
-    const IndexType nrow  = mIlg[i];       // number of non-zero entries in row
-
-    // const IndexType offs  = i;            // first non-zero entry
-    // const IndexType inc   = mNumRows;     // stride between two entries
-
-    // resize the output arrays, invalidate old data before
-
-    jA.clear();
-    jA.resize( nrow );
-    values.clear();
-    values.resize( nrow );
-
-    COMMON_THROWEXCEPTION( "not available yet: getSparseRow for JDS, requires new kernel" )
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
 template<typename OtherValueType>
 void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const IndexType i ) const
 {
@@ -350,6 +330,46 @@ void JDSStorage<ValueType>::getRowImpl( HArray<OtherValueType>& row, const Index
     WriteOnlyAccess<OtherValueType> wRow( row, loc, mNumColumns );
     SCAI_CONTEXT_ACCESS( loc )
     getRow[loc]( wRow.get(), i, mNumColumns, mNumRows, perm.get(), ilg.get(), dlg.get(), ja.get(), values.get() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    SCAI_REGION( "Storage.JDS.getSparseRow" )
+
+    SCAI_LOG_INFO( logger, "getSparseRow with i = " << i )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    static LAMAKernel<JDSKernelTrait::getValuePosRow> getValuePosRow;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosRow.getSupportedContext( loc );
+
+    HArray<IndexType> pos;  // positions in the array mJa, mValues
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wPos( pos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIlg( mIlg, loc );
+        ReadAccess<IndexType> rDlg( mDlg, loc );
+        ReadAccess<IndexType> rPerm( mPerm, loc );
+
+        IndexType cnt = getValuePosRow[loc]( wPos.get(), i, mNumRows,
+                                             rIlg.get(), rDlg.get(), rPerm.get() );
+
+        wPos.resize( cnt );
+    }
+
+    SCAI_LOG_INFO( logger, "getSparseRow( " << i << " ) has " << pos.size() << " non-zero entries" )
+
+    HArrayUtils::gatherImpl( jA, mJa, pos, utilskernel::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, pos, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */

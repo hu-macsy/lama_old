@@ -215,27 +215,6 @@ void DIAStorage<ValueType>::setDiagonalImpl( const ValueType value )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
-{
-    SCAI_REGION( "Storage.DIA.getSparseRow" )
-
-    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
-
-    IndexType nrow  = 0;
-
-    // resize the output arrays, invalidate old data before
-
-    jA.clear();
-    jA.resize( nrow );
-    values.clear();
-    values.resize( nrow );
-
-    COMMON_THROWEXCEPTION( "getSparseRow for DIA not available yet" )
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
@@ -264,6 +243,51 @@ void DIAStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
             wRow[j] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
         }
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    if ( values.getValueType() != this->getValueType() )
+    {
+        SCAI_LOG_WARN( logger, "use temporary HArray<" << this->getValueType() << ">"
+                               << " for getSparseRow with values : HArray<" << values.getValueType() << ">" )
+        HArray<ValueType> typedValues;
+        getSparseRow( jA, typedValues, i );
+        HArrayUtils::assign( values, typedValues );
+        return;
+    }
+
+    SCAI_REGION( "Storage.DIA.getSparseRow" )
+
+    HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>&>( values );
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    WriteOnlyAccess<IndexType> wJA( jA, mNumDiagonals );
+    WriteOnlyAccess<ValueType> wValues( typedValues, mNumDiagonals );
+
+    const ReadAccess<IndexType> offset( mOffset );
+    const ReadAccess<ValueType> dValues( mValues );
+
+    IndexType n = 0;  // count the real number of entries, might be lt mNumDiagonals 
+
+    for ( IndexType d = 0; d < mNumDiagonals; ++d )
+    {
+        IndexType j = i + offset[d];
+
+        if ( common::Utils::validIndex( j, mNumColumns ) )
+        {
+            wJA[n] = j;
+            wValues[n] = dValues[diaindex( i, d, mNumRows, mNumDiagonals )];
+            ++n;
+        }
+    }
+
+    wJA.resize( n );
+    wValues.resize( n );
 }
 
 /* --------------------------------------------------------------------------- */
