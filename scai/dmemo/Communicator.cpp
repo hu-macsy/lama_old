@@ -500,6 +500,8 @@ void Communicator::shiftArray(
 template<typename ValueType>
 void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, const PartitionId root ) const
 {
+    SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
+
     ContextPtr commContext = getCommunicationContext( array );
 
     SCAI_CONTEXT_ACCESS( commContext )
@@ -507,13 +509,19 @@ void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, cons
     if ( root == getRank() )
     {
         SCAI_ASSERT_LE_ERROR( n, array.size(), "bcastArray: root has not enough values" )
-        WriteAccess<ValueType> wArray( array, commContext );
-        bcast( wArray.get(), n, root ); // bcast the row
+        SCAI_LOG_INFO( logger, *this << ": bcast to all other procs, array = " << array )
+
+        ReadAccess<ValueType> rArray( array, commContext );   // WriteAccess might invalidate data
+
+        ValueType* arrayPtr = const_cast<ValueType*>( rArray.get() ); 
+
+        bcast( arrayPtr, n, root ); // bcast the array
     }
     else
     {
         WriteOnlyAccess<ValueType> wArray( array, commContext, n );
-        bcast( wArray.get(), n, root ); // bcast the row
+        bcast( wArray.get(), n, root ); // bcast the array
+        SCAI_LOG_INFO( logger, *this << ": bcast from root = " << root << ", array = " << array )
     }
 }
 
@@ -522,6 +530,8 @@ void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, cons
 template<typename ValueType>
 void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root ) const
 {
+    SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
+
     ContextPtr commContext = getCommunicationContext( array );
 
     IndexType n = 0;

@@ -219,14 +219,16 @@ PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
     if ( localIndex != nIndex )
     {
         SCAI_LOG_INFO( logger,
-                       mCommunicator << ": owner of " << globalIndex << ", local index = " << localIndex )
+                       *this << ": owner of " << globalIndex << ", local index = " << localIndex )
 
         owner = mCommunicator->getRank() + 1;
     }
 
-    mCommunicator->sum( owner );
+    owner = mCommunicator->sum( owner ) - 1;
 
-    return owner - 1;
+    SCAI_LOG_INFO( logger, *mCommunicator << ": owner of " << globalIndex << " = " << owner )
+
+    return owner;
 }
 
 /* ---------------------------------------------------------------------- */
