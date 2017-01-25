@@ -110,6 +110,16 @@ public:
         const IndexType perm[],
         const IndexType ja[] );
 
+    /** Implementation for JDSKernelTrait::getValuePosRow */
+
+    static IndexType getValuePosRow(
+        IndexType pos[],
+        const IndexType j,
+        const IndexType numRows,
+        const IndexType ilg[],
+        const IndexType dlg[],
+        const IndexType perm[] );
+
     /** Implementation for JDSKernelTrait::getValuePosCol */
 
     static IndexType getValuePosCol(

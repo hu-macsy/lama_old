@@ -247,6 +247,43 @@ IndexType OpenMPJDSUtils::getValuePosCol(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+IndexType OpenMPJDSUtils::getValuePosRow(
+    IndexType pos[],
+    const IndexType i,
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[] )
+{
+    SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
+
+    IndexType ii;
+
+    // check the permutation of row i
+
+    for ( ii = 0; ii < numRows; ii++ )
+    {
+        if ( perm[ii] == i )
+        {
+            break;
+        }
+    }
+
+    IndexType cnt = ilg[ii];
+
+    IndexType k = 0;
+
+    for ( IndexType jj = 0; jj < cnt; ++jj )
+    {
+        pos[jj] = ii + k;
+        k += dlg[jj];
+    }
+
+    return cnt;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 template<typename ValueType, typename OtherValueType>
 void OpenMPJDSUtils::scaleRows(
     ValueType jdsValues[],
@@ -778,6 +815,7 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePosRow>( getValuePosRow, ctx, flag );
 }
 
 template<typename ValueType>

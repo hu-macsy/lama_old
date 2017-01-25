@@ -310,6 +310,33 @@ struct JDSKernelTrait
         }
     };
 
+    struct getValuePosRow
+    {
+        /** This method returns for a certain row of the JDS matrix all
+         *  corresponding positions in the jdsJA/jdsValues array belonging to the row
+         *
+         *  @param[out] pos positions of entries with row = i 
+         *  @param[in] i is the row of which positions are required
+         *  @param[in] numRows is the number of rows
+         *  @param[in] ilg
+         *  @param[in] dlg
+         *  @param[in] perm
+         *  @returns  number of non-zero entries in row i
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType pos[],
+            const IndexType i,
+            const IndexType numRows,
+            const IndexType ilg[],
+            const IndexType dlg[],
+            const IndexType perm[] );
+
+        static const char* getId()
+        {
+            return "JDS.getValuePosRow";
+        }
+    };
+
     struct getValuePosCol
     {
         /** This method returns for a certain column of the JDS matrix all
