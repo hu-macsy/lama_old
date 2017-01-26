@@ -73,30 +73,9 @@ namespace lama
  */
 
 template<class Derived, typename ValueType>
-class CRTPMatrix: public Matrix
+class CRTPMatrix
 {
 public:
-
-    /** Default constructor. */
-
-    CRTPMatrix()
-        : Matrix()
-    {
-    }
-
-    /** Constructor for a replicated zero-matrix of a given shape. */
-
-    CRTPMatrix( const IndexType numRows, const IndexType numColumns )
-        : Matrix( numRows, numColumns )
-    {
-    }
-
-    /** Constructor for a distributed matrix. */
-
-    CRTPMatrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution )
-        : Matrix( rowDistribution, colDistribution )
-    {
-    }
 
     void matrixTimesVector(
         Vector& result,
@@ -105,27 +84,30 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
+        const Derived& m = reinterpret_cast<const Derived&>( *this );
+
         SCAI_REGION( "Mat.timesVector" )
 
-        SCAI_LOG_INFO( logger, "result = " << alpha << " * M<" << getValueType() << ">[" << getNumRows() << " x " << getNumColumns() << "]"
-                               << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "]" )
+        SCAI_LOG_INFO( Derived::logger, 
+                       "result = " << alpha << " * M<" << m.getValueType() << ">[" << m.getNumRows() << " x " << m.getNumColumns() << "]"
+                       << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "]" )
 
         if ( &result == &y )
         {
-            SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
+            SCAI_LOG_DEBUG( Derived::logger, "alias: result = y is well handled" )
         }
         else
         {
             // we inherit the row distribution of this matrix to result
-            result.allocate( getRowDistributionPtr() );
-            // no more to check: result.size() == mNumRows, getDistirubtion() == result.getDistribution()
+
+            result.allocate( m.getRowDistributionPtr() );
         }
 
-        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != getValueType() || &result == &x || x.getDistribution() != getColDistribution() )
+        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != m.getValueType() || &result == &x || x.getDistribution() != m.getColDistribution() )
         {
-            SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << getValueType() << ">" )
+            SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << m.getValueType() << ">" )
 
-            DenseVector<ValueType> tmpX( x, getColDistributionPtr() );
+            DenseVector<ValueType> tmpX( x, m.getColDistributionPtr() );
             matrixTimesVector( result, alpha, tmpX, beta, y );
             return;
         }
@@ -134,20 +116,20 @@ public:
 
         // Note: in case of beta == 0, we might skip this test
 
-        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != getValueType() || y.getDistribution() != getRowDistribution() )
+        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != m.getValueType() || y.getDistribution() != m.getRowDistribution() )
         {
-            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for y in alpha * M * x + beta * y" )
-            DenseVector<ValueType> tmpY( y, getRowDistributionPtr() );
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for y in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpY( y, m.getRowDistributionPtr() );
             matrixTimesVector( result, alpha, x, beta, tmpY );
             return;
         }
 
         const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != getValueType() )
+        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != m.getValueType() )
         {
-            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
-            DenseVector<ValueType> tmpResult( getRowDistributionPtr() );
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for result in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpResult( m.getRowDistributionPtr() );
             matrixTimesVector( tmpResult, alpha, x, beta, y );
             result = tmpResult;
             return;
@@ -158,7 +140,7 @@ public:
         const ValueType alphaV = alpha.getValue<ValueType>();
         const ValueType betaV  = beta.getValue<ValueType>();
 
-        static_cast<const Derived*>( this )->matrixTimesVectorImpl( denseResult, alphaV, denseX, betaV, denseY );
+        m.matrixTimesVectorImpl( denseResult, alphaV, denseX, betaV, denseY );
     }
 
     void vectorTimesMatrix(
@@ -168,33 +150,36 @@ public:
         const Scalar beta,
         const Vector& y ) const
     {
-        SCAI_REGION( "Mat.vectorTimes" )
-        SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+        const Derived& m = reinterpret_cast<const Derived&>( *this );
 
-        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != getValueType() || &result == &x || x.getDistribution() != getRowDistribution() )
+        SCAI_REGION( "Mat.vectorTimes" )
+
+        SCAI_LOG_INFO( Derived::logger, result << " = " << alpha << " * " << m << " * " << x << " + " << beta << " * " << y )
+
+        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != m.getValueType() || &result == &x || x.getDistribution() != m.getRowDistribution() )
         {
-            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for x in alpha * M * x + beta * y" )
-            DenseVector<ValueType> tmpX( x, getRowDistributionPtr() );
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for x in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpX( x, m.getRowDistributionPtr() );
             vectorTimesMatrix( result, alpha, tmpX, beta, y );
             return;
         }
 
         const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
 
-        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != getValueType() || y.getDistribution() != getColDistribution() )
+        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != m.getValueType() || y.getDistribution() != m.getColDistribution() )
         {
-            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for y in alpha * x * M + beta * y" )
-            DenseVector<ValueType> tmpY( y, getColDistributionPtr() );
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for y in alpha * x * M + beta * y" )
+            DenseVector<ValueType> tmpY( y, m.getColDistributionPtr() );
             vectorTimesMatrix( result, alpha, x, beta, tmpY );
             return;
         }
 
         const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != getValueType() )
+        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != m.getValueType() )
         {
-            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
-            DenseVector<ValueType> tmpResult( getColDistributionPtr() );
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for result in alpha * M * x + beta * y" )
+            DenseVector<ValueType> tmpResult( m.getColDistributionPtr() );
             vectorTimesMatrix( tmpResult, alpha, x, beta, y );
             result = tmpResult;
             return;
@@ -202,11 +187,11 @@ public:
 
         if ( &result == &y )
         {
-            SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
+            SCAI_LOG_DEBUG( Derived::logger, "alias: result = y is well handled" )
         }
         else
         {
-            result.allocate( getColDistributionPtr() );
+            result.allocate( m.getColDistributionPtr() );
         }
 
         DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
@@ -214,16 +199,16 @@ public:
         const ValueType alphaV = alpha.getValue<ValueType>();
         const ValueType betaV  = beta.getValue<ValueType>();
 
-        if ( getColDistribution().getCommunicator().getSize() == 1 )
+        if ( m.getColDistribution().getCommunicator().getSize() == 1 )
         {
             // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
             // use routine provided by this CRTP
 
-            vectorTimesMatrixRepCols( denseResult, alphaV, denseX, betaV, denseY );
+            m.vectorTimesMatrixRepCols( denseResult, alphaV, denseX, betaV, denseY );
         }
         else
         {
-            static_cast<const Derived*>( this )->vectorTimesMatrixImpl( denseResult, alphaV, denseX, betaV, denseY );
+            m.vectorTimesMatrixImpl( denseResult, alphaV, denseX, betaV, denseY );
         }
     }
 
@@ -235,11 +220,13 @@ public:
 
     void getColumn( Vector& column, const IndexType globalColIndex ) const
     {
+        const Derived& m = reinterpret_cast<const Derived&>( *this );
+
         SCAI_REGION( "Mat.getColumn" )
 
         using namespace scai::hmemo;
 
-        SCAI_ASSERT_VALID_INDEX_ERROR( globalColIndex, getNumColumns(), "illegal column index" )
+        SCAI_ASSERT_VALID_INDEX_ERROR( globalColIndex, m.getNumColumns(), "illegal column index" )
 
         common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
 
@@ -254,13 +241,13 @@ public:
 
         // allocate column with the row distribution of this matrix
 
-        typedCol->allocate( this->getRowDistributionPtr() );
+        typedCol->allocate( m.getRowDistributionPtr() );
 
         // each partition fills up its local part
 
         utilskernel::LArray<ValueType>& localValues = const_cast<utilskernel::LArray<ValueType>&>( typedCol->getLocalValues() );
 
-        static_cast<const Derived*>( this )->getLocalColumn( localValues, globalColIndex );
+        m.getLocalColumn( localValues, globalColIndex );
 
         if ( tmpVector.get() )
         {
@@ -275,9 +262,11 @@ public:
     void setRow( const Vector& row, const IndexType globalRowIndex,
                  const utilskernel::binary::BinaryOp op )
     {
+        Derived& m = reinterpret_cast<Derived&>( *this );
+
         using namespace scai::hmemo;
 
-        SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, getNumRows(), "illegal row index" )
+        SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, m.getNumRows(), "illegal row index" )
 
         // row should be a DenseVector of same type, otherwise use a temporary
 
@@ -296,15 +285,15 @@ public:
 
         SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
 
-        SCAI_ASSERT_EQ_ERROR( typedRow->size(), this->getNumColumns(), "row to set has wrong size" )
+        SCAI_ASSERT_EQ_ERROR( typedRow->size(), m.getNumColumns(), "row to set has wrong size" )
 
         // owner sets the row, maybe each processor for replicated row distribution
 
-        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+        IndexType localRowIndex = m.getRowDistribution().global2local( globalRowIndex );
 
         if ( localRowIndex != nIndex )
         {
-            static_cast<Derived*>( this )->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
+            m.setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
         }
     }
 
@@ -317,9 +306,11 @@ public:
                     const IndexType colIndex,
                     const utilskernel::binary::BinaryOp op )
     {
+        Derived& m = reinterpret_cast<Derived&>( *this );
+
         using namespace scai::hmemo;
 
-        SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, getNumColumns(), "illegal col index" )
+        SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, m.getNumColumns(), "illegal col index" )
 
         // col should be a DenseVector of same type, otherwise use a temporary
 
@@ -334,9 +325,9 @@ public:
             typedColumn = tmpVector.get();
         }
 
-        SCAI_ASSERT_EQ_ERROR( typedColumn->getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+        SCAI_ASSERT_EQ_ERROR( typedColumn->getDistribution(), m.getRowDistribution(), "distribution mismatch" )
 
-        static_cast<Derived*>( this )->setLocalColumn( typedColumn->getLocalValues(), colIndex, op );
+        m.setLocalColumn( typedColumn->getLocalValues(), colIndex, op );
     }
 
     /** This method is the same for dense/sparse matrices as column distribution is replicated */
@@ -348,6 +339,8 @@ public:
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const
     {
+        const Derived& m = reinterpret_cast<const Derived&>( *this );
+
         SCAI_REGION( "Mat.Sp.vectorTimesMatrixRepCols" )
 
         const hmemo::HArray<ValueType>& localY = denseY.getLocalValues();
@@ -355,13 +348,13 @@ public:
 
         hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
 
-        const dmemo::Distribution& colDist = getColDistribution();
+        const dmemo::Distribution& colDist = m.getColDistribution();
 
         // this routine is only for non-replicated columns, i.e. mHaloData is empty
 
         SCAI_ASSERT( 1, colDist.getNumPartitions() );
 
-        const dmemo::Distribution& rowDist = getRowDistribution();
+        const dmemo::Distribution& rowDist = m.getRowDistribution();
         const dmemo::Communicator& comm = rowDist.getCommunicator();
 
         const MatrixStorage<ValueType>& localData = static_cast<const Derived*>( this )->getLocalStorage();
@@ -383,20 +376,6 @@ public:
             comm.sumArray( localResult );
         }
     }
-
-    using Matrix::setIdentity;
-    using Matrix::operator=;
-
-protected:
-
-#ifndef SCAI_LOG_LEVEL_OFF
-
-    // here in CRTP we do not use an own logger, just take it from the corresponding matrix class
-
-    using Matrix::logger;
-
-#endif
-
 };
 
 } /* end namespace lama */

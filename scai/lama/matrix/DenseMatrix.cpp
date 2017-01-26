@@ -156,7 +156,7 @@ DenseMatrix<ValueType>::DenseMatrix()
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns ) :
 
-    CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
+    Matrix( numRows, numColumns )
 
 {
     computeOwners();
@@ -166,7 +166,7 @@ DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType nu
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist ) :
 
-    CRTPMatrix<DenseMatrix<ValueType>, ValueType>( rowDist, colDist )
+    Matrix( rowDist, colDist )
 
 {
     computeOwners();
@@ -282,7 +282,7 @@ template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
     :
 
-    CRTPMatrix<DenseMatrix<ValueType>, ValueType>()
+    Matrix()
 
 {
     SCAI_LOG_INFO( logger, "copy constructor( dense matrix, same value type) : " << other )

@@ -75,7 +75,11 @@ template<typename > class DenseMatrix;
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>, ValueType>
+class COMMON_DLL_IMPORTEXPORT SparseMatrix: 
+
+    public CRTPMatrix<SparseMatrix<ValueType>, ValueType>,
+    public Matrix
+
 {
 
 public:
@@ -225,7 +229,47 @@ public:
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setIdentity;
+    using Matrix::setIdentity;
+
+    virtual void matrixTimesVector(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
+    }
+
+    virtual void vectorTimesMatrix(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const 
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
+    }
+
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColumn( column, globalColIndex );
+    }
+
+    virtual void setRow( const Vector& row,
+                         const IndexType globalRowIndex,
+                         const utilskernel::binary::BinaryOp op )
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
+    }
+
+    virtual void setColumn(
+        const Vector& column,
+        const IndexType globalColIndex,
+        const utilskernel::binary::BinaryOp op )
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
+    }
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -545,18 +589,18 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::operator=; // make overloaded routines visible before overwriting one
+    using Matrix::operator=; // make overloaded routines visible before overwriting one
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getRowDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getRowDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setDistributionPtr;
+    using Matrix::getColDistribution;
+    using Matrix::getColDistributionPtr;
+    using Matrix::getRowDistribution;
+    using Matrix::getRowDistributionPtr;
+    using Matrix::setDistributionPtr;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getCommunicationKind;
+    using Matrix::getCommunicationKind;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getNumRows;
+    using Matrix::getNumColumns;
+    using Matrix::getNumRows;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
@@ -640,17 +684,20 @@ protected:
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mNumRows;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mColDistribution;
+    using Matrix::mNumRows;
+    using Matrix::mNumColumns;
+    using Matrix::mColDistribution;
+
+public:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
 
     /**
      * @brief Default constructor is disabled.
      */
     SparseMatrix();
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** This method sets a row-distributed matrix corresponding to the distribution of this matrix.
      *  ( no column distribution, no halo ).

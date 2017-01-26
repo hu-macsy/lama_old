@@ -72,6 +72,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseMatrix:
 
     public CRTPMatrix<DenseMatrix<ValueType>, ValueType>,
+    public Matrix,
     public Matrix::Register<DenseMatrix<ValueType> >    // register at factory
 {
 
@@ -263,7 +264,7 @@ public:
 
     virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setContextPtr; // setContextPtr( localContext, haloContext )
+    using Matrix::setContextPtr; // setContextPtr( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -272,11 +273,51 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setIdentity; // setIdentity( const IndexType n )
+    using Matrix::setIdentity; // setIdentity( const IndexType n )
 
     /** Implementation of pure method Matrix::setIdentity. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
+
+    virtual void matrixTimesVector(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
+    }
+
+    virtual void vectorTimesMatrix(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
+    }
+
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColumn( column, globalColIndex );
+    }
+
+    virtual void setRow( const Vector& row,
+                         const IndexType globalRowIndex,
+                         const utilskernel::binary::BinaryOp op )
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
+    }
+
+    virtual void setColumn(
+        const Vector& column,
+        const IndexType globalColIndex,
+        const utilskernel::binary::BinaryOp op )
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
+    }
 
     /** Implementation of pure Matrix::setDenseData */
 
@@ -576,13 +617,13 @@ public:
 
     std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getNumRows;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getNumColumns;
+    using Matrix::getNumRows;
+    using Matrix::getNumColumns;
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getRowDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getRowDistributionPtr;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistributionPtr;
+    using Matrix::getRowDistribution;
+    using Matrix::getRowDistributionPtr;
+    using Matrix::getColDistribution;
+    using Matrix::getColDistributionPtr;
 
     const utilskernel::LArray<PartitionId>& getOwners() const
     {
@@ -619,8 +660,8 @@ public:
 
 protected:
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumRows;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumColumns;
+    using Matrix::mNumRows;
+    using Matrix::mNumColumns;
 
     utilskernel::LArray<PartitionId> mOwners;
 
@@ -695,8 +736,6 @@ private:
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
     void    computeOwners();
 
     /** Special implementation of invert in place for a cyclic distributed matrix. */
@@ -706,6 +745,8 @@ private:
     static std::string initTypeName();
 
 public:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     // static methods, variables to register create routine in Matrix factory of base class.
 

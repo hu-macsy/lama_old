@@ -92,7 +92,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage ) :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType>( storage->getNumRows(), storage->getNumColumns() )
+    Matrix( storage->getNumRows(), storage->getNumColumns() )
 {
     mLocalData = storage;
 
@@ -107,7 +107,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType>(
+    Matrix(
         rowDist,
         DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
 
@@ -140,7 +140,7 @@ SparseMatrix<ValueType>::SparseMatrix(
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType>( rowDist, colDist )
+    Matrix( rowDist, colDist )
 {
     SCAI_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getGlobalSize() )
     mLocalData = localData;
@@ -171,10 +171,9 @@ SparseMatrix<ValueType>::SparseMatrix(
     common::shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
-    DistributionPtr colDist )
-    :
+    DistributionPtr colDist ) :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType>( rowDist, colDist )
+    Matrix( rowDist, colDist )
 {
     SCAI_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
     // TODO: asserts for correct sizes of all relevant sizes
@@ -246,7 +245,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
 
-    CRTPMatrix<SparseMatrix<ValueType>, ValueType>( other )
+    Matrix( other )
 
 {
     // instead of calling assign( other ), we copy directly to avoid type queries
