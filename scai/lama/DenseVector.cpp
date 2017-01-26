@@ -1102,6 +1102,8 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector
         return;
     }
 
+    SCAI_REGION( "Vector.Dense.VplusV" )
+
     const ValueType alphaV = alpha.getValue<ValueType>();
     const ValueType betaV  = beta.getValue<ValueType>();
 

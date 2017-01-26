@@ -1748,6 +1748,8 @@ IndexType OpenMPUtils::addSparse(
     const ValueType values2[],
     const IndexType n2 )
 {
+    SCAI_REGION( "OpenMP.Utils.addSparse" )
+
     IndexType n = 0;
 
     IndexType i1 = 0;

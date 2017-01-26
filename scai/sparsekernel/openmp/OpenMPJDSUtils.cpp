@@ -257,7 +257,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
 {
     SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
 
-    IndexType ii;
+    IndexType ii = nIndex;
 
     // check the permutation of row i
 
@@ -269,6 +269,8 @@ IndexType OpenMPJDSUtils::getValuePosRow(
         }
     }
 
+    SCAI_ASSERT_NE_ERROR( ii, numRows, "row " << i << " not found in perm array" );
+
     IndexType cnt = ilg[ii];
 
     IndexType k = 0;
@@ -277,6 +279,7 @@ IndexType OpenMPJDSUtils::getValuePosRow(
     {
         pos[jj] = ii + k;
         k += dlg[jj];
+        SCAI_LOG_TRACE( logger, "pos[" << jj << "] = " << pos[jj] << ", dlg[" << jj << "] = " << dlg[jj] )
     }
 
     return cnt;

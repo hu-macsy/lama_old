@@ -734,6 +734,22 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector& x, const Scalar& beta, const Vector& y )
 {
+    if ( x.getValueType() == getValueType() && x.getVectorKind() == Vector::SPARSE  )
+    {
+        const SparseVector<ValueType>& spX = reinterpret_cast<const SparseVector<ValueType>&>( x );
+
+        if ( y.getValueType() == getValueType() && y.getVectorKind() == Vector::SPARSE )
+        {
+            const SparseVector<ValueType>& spY = reinterpret_cast<const SparseVector<ValueType>&>( y );
+         
+            const ValueType alphaV = alpha.getValue<ValueType>();
+            const ValueType betaV = beta.getValue<ValueType>();
+ 
+            vectorPlusVectorImpl( alphaV, spX, betaV, spY );
+            return;
+        }
+    }
+
     // just get it running: use DenseVector as temporary
 
     SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorPlusVector( " 
@@ -742,6 +758,29 @@ void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vecto
     DenseVector<ValueType> tmp;
     tmp.vectorPlusVector( alpha, x, beta, y );
     assign( tmp );
+}
+
+template<typename ValueType>
+void SparseVector<ValueType>::vectorPlusVectorImpl( 
+    const ValueType alpha, const SparseVector<ValueType>& x, 
+    const ValueType beta, const SparseVector<ValueType>& y )
+{
+    SCAI_REGION( "Vector.Sparse.VplusV" )
+
+    SCAI_ASSERT_EQ_ERROR( x.getDistribution(), y.getDistribution(), "mismatch distribution" );
+
+    SCAI_ASSERT_NE_ERROR( &x, this, "alias result, x" )
+    SCAI_ASSERT_NE_ERROR( &y, this, "alias result, y" )
+    SCAI_ASSERT_EQ_ERROR( alpha, ValueType( 1 ), "only alpha = 1 supported" )
+    SCAI_ASSERT_EQ_ERROR( beta, ValueType( 1 ), "only beta = 1 supported" )
+
+    // Now we can just call addSparse for the local vectors
+
+    setDistributionPtr( x.getDistributionPtr() );
+
+    HArrayUtils::addSparse( mNonZeroIndexes, mNonZeroValues,
+                            x.getNonZeroIndexes(), x.getNonZeroValues(),
+                            y.getNonZeroIndexes(), y.getNonZeroValues(), this->getContextPtr() );
 }
 
 template<typename ValueType>

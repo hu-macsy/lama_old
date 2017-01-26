@@ -440,6 +440,11 @@ public:
 
     virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y );
 
+    /** Implmentation of vectorPlusVector for sparse vectors of same type */
+
+    void vectorPlusVectorImpl( const ValueType alpha, const SparseVector<ValueType>& x, 
+                               const ValueType beta, const SparseVector<ValueType>& y );
+
     /** Implementation of pure method Vector::vectorTimesVector */
 
     virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y );

@@ -57,26 +57,11 @@ using common::Walltime;
 
 /* ----------------------------------------------------------------------------- */
 
-int main( int argc, const char* argv[] )
+void benchGetRow()
 {
-    SCAI_REGION( "Main.bench" )
-
-    common::Settings::parseArgs( argc, argv );
-
-    // evaluate SCAI_NUM_THREADS
-
-    int nThreads;
-
-    if ( common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
-    {
-        omp_set_num_threads( nThreads );
-    }
-
     CSRSparseMatrix<double> stencilMatrix;
 
     MatrixCreator::buildPoisson( stencilMatrix, 3, 27, 30, 30, 30 );
-
-    // make sure that columns are replicated, otherwise getRow is inefficient at all
 
     if ( !stencilMatrix.getColDistribution().isReplicated() )
     {
@@ -116,7 +101,7 @@ int main( int argc, const char* argv[] )
 
         for ( IndexType i = 0; i < stencilMatrix.getNumRows(); ++i )
         {
-            stencilMatrix.getRow1( sparseV, i );
+            stencilMatrix.getRow( sparseV, i );
             Scalar s = sparseV.l2Norm();
             res2 += s.getValue<double>();
         }
@@ -127,4 +112,54 @@ int main( int argc, const char* argv[] )
     cout << "Result = " << res1 << ", " << res2  << endl;
 
     cout << "Runtime: dense = " << time1 << " seconds, sparse = " << time2 << " seconds" << endl;
+}
+
+void benchAdd()
+{
+    const IndexType n = 3000000;
+
+    dmemo::DistributionPtr dist( new dmemo::NoDistribution(  n  ) );
+
+    DenseVector<double> denseV;
+    DenseVector<double> denseV1;
+    DenseVector<double> denseV2;
+
+    float fillRate = 0.02;
+
+    denseV1.setRandom( dist, fillRate );
+    denseV2.setRandom( dist, fillRate );
+
+    SparseVector<double> sparseV;
+    SparseVector<double> sparseV1( denseV1 );
+    SparseVector<double> sparseV2( denseV2 );
+
+    sparseV = sparseV1 + sparseV2;
+    denseV = denseV1 + denseV2;
+
+    DenseVector<double> compareV( sparseV );
+
+    SCAI_ASSERT_EQ_ERROR( 0.0, compareV.getLocalValues().maxDiffNorm( denseV.getLocalValues() ), "sparse/dense have different result" );
+}
+
+int main( int argc, const char* argv[] )
+{
+    SCAI_REGION( "Main.bench" )
+
+    common::Settings::parseArgs( argc, argv );
+
+    // evaluate SCAI_NUM_THREADS
+
+    int nThreads;
+
+    if ( common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
+    if ( false )
+    {
+        benchGetRow();
+    }
+
+    benchAdd();
 }
