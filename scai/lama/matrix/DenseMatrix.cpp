@@ -77,6 +77,37 @@ namespace lama
 
 /* ========================================================================= */
 
+template<typename ValueType, typename TList>
+struct DenseMatrixWrapper;
+
+template<typename ValueType>
+struct DenseMatrixWrapper<ValueType, common::mepr::NullType>
+{
+    static void assignDense( DenseMatrix<ValueType>&, const Matrix& other )
+    {
+        COMMON_THROWEXCEPTION( "type dense matrix not supported --> " << other )
+    }
+};
+
+template<typename ValueType, typename H, typename T>
+struct DenseMatrixWrapper<ValueType, common::mepr::TypeList<H, T> >
+{
+    static void assignDense( DenseMatrix<ValueType>& obj, const Matrix& other )
+    {
+        if ( other.getValueType() == common::getScalarType<H>() )
+        {
+            obj.copyDenseMatrix( reinterpret_cast<const DenseMatrix<H>& >( other ) );
+        }
+        else
+        {
+            DenseMatrixWrapper<ValueType, T>::assignDense( obj, other );
+        }
+
+    }
+};
+
+/* ========================================================================= */
+
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DenseMatrix<ValueType>::logger, "Matrix.DenseMatrix" )
 
 /* ------------------------------------------------------------------------- */
@@ -659,7 +690,7 @@ void DenseMatrix<ValueType>::assign( const Matrix& other )
     else if ( other.getMatrixKind() == Matrix::DENSE )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
-        assignSparse( other );                         // might be optimized, as replication is not really needed
+        DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDense( *this, other );
     }
     else if ( other.getMatrixKind() == Matrix::SPARSE )
     {
@@ -683,15 +714,14 @@ void DenseMatrix<ValueType>::assignSparse( const Matrix& other )
     {
         DistributionPtr repColDist( new NoDistribution( other.getNumColumns() ) );
 
-        common::unique_ptr<Matrix> tmpOther( other.copy() );
+        // common::unique_ptr<Matrix> tmpOther( other.copy() );
+        // tmpOther->redistribute( other.getRowDistributionPtr(), repColDist );
+        // SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
+        // assignSparse( *tmpOther );
 
-        tmpOther->redistribute( other.getRowDistributionPtr(), repColDist );
+        CSRSparseMatrix<ValueType> repOther( other, other.getRowDistributionPtr(), repColDist );
 
-        SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
-
-        assignSparse( *tmpOther );
-
-        SCAI_LOG_WARN( logger, "now assigned other matrix: " << *this )
+        assignSparse( repOther );
 
         splitColumns( other.getColDistributionPtr() );
 
@@ -1195,7 +1225,7 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowIndex )
+void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
     SCAI_REGION( "Mat.Dense.getRow" )
 
@@ -1205,7 +1235,7 @@ void DenseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowInde
     {
         SCAI_LOG_WARN( logger, "getRow requires temporary" )
         DenseVector<ValueType> denseRow;
-        getRow1( denseRow, globalRowIndex );
+        getRow( denseRow, globalRowIndex );
         row.assign( denseRow );   // transform the dense vector into sparse vector
         return;
     }

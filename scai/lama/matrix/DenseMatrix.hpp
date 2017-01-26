@@ -591,7 +591,7 @@ public:
 
     /** Implementation of pure methode Matrix::getRow */
 
-    virtual void getRow1( Vector& row, const IndexType globalRowIndex );
+    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
 
     /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
 

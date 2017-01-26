@@ -573,13 +573,15 @@ public:
 
     /** Get a complete row of this matrix from its local part. */
 
-    void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
+    void getLocalRowDense( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
 
-    void getLocalRow1( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex );
+    /** Get a complete row of this matrix from its local part in sparse format */
+
+    void getLocalRowSparse( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex ) const;
 
     /** Implementation of pure method Matrix::getRow */
 
-    virtual void getRow1( Vector& row, const IndexType globalRowIndex );
+    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
 
     /** Set a complete row of this matrix in its local part. */
 

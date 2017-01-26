@@ -444,14 +444,16 @@ public:
      */
     virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
 
-    /** @brief This method returns one row of the matrix.
+    /** @brief This method returns one row of this matrix.
      *
-     * @param[out] row              is a replicated vector with all values of the row
+     * @param[out] row              is the vector that will contain the queried row of this matrix
      * @param[in]  globalRowIndex   global index of the row that should be extracted
      *
-     * - the vector row might be of any type but for efficiency it should have the same type, kind as the matrix
-     *   (otherwise conversion)
-     * - the output vector will always be replicated
+     * - The result vector will have the same distribution as the column distribution of this matrix
+     * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
+     * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
+     *   of a dense matrix and a sparse vector on a sparse matrix.
+     * - This method implies communication as one row resides only on one processor.
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 

@@ -700,11 +700,11 @@ SparseMatrix<ValueType>::~SparseMatrix()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexType localRowIndex ) const
+void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const IndexType localRowIndex ) const
 {
-    SCAI_REGION( "Mat.Sp.getLocalRow" )
+    SCAI_REGION( "Mat.Sp.getLocalRowDense" )
 
-    SCAI_LOG_INFO( logger, "getLocalRow( " << localRowIndex << " ) of this matrix: " << *this )
+    SCAI_LOG_INFO( logger, "getLocalRowDense( " << localRowIndex << " ) of this matrix: " << *this )
 
     const Distribution& distributionCol = getColDistribution();
 
@@ -735,7 +735,7 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowIndex )
+void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getRow" )
 
@@ -746,9 +746,9 @@ void SparseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowInd
 
     if ( row.getVectorKind() != Vector:: SPARSE || row.getValueType() != getValueType() )
     {
-        SCAI_LOG_WARN( logger, "getRow requires temporary" )
+        SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getRow( DenseVector, " << globalRowIndex << ") requires temporary" )
         SparseVector<ValueType> spRow;
-        getRow1( spRow, globalRowIndex );
+        getRow( spRow, globalRowIndex );
         row.assign( spRow );   // transform the sparse vector into dense vecotr
         return;
     }
@@ -761,14 +761,14 @@ void SparseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowInd
 
     SparseVector<ValueType>& spRow = reinterpret_cast<SparseVector<ValueType>&>( row );
 
-    spRow.allocate( getNumRows() );
+    spRow.allocate( getNumColumns() );   // by this way it gets the correct rep distribution
 
     HArray<IndexType>& indexes = const_cast<HArray<IndexType>&>( spRow.getNonZeroIndexes() );
     HArray<ValueType>& values  = const_cast<HArray<ValueType>&>( spRow.getNonZeroValues() );
 
     if ( localRowIndex != nIndex )
     {
-        getLocalRow1( indexes, values, localRowIndex );
+        getLocalRowSparse( indexes, values, localRowIndex );
     }
 
     comm.bcastArray( indexes, owner );
@@ -778,7 +778,7 @@ void SparseMatrix<ValueType>::getRow1( Vector& row, const IndexType globalRowInd
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getLocalRow1( HArray<IndexType>& indexes, _HArray& values, const IndexType localRowIndex )
+void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HArray& values, const IndexType localRowIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getLocalRow" )
 
@@ -792,13 +792,46 @@ void SparseMatrix<ValueType>::getLocalRow1( HArray<IndexType>& indexes, _HArray&
         return;
     }
 
-    COMMON_THROWEXCEPTION( "not supported yet" )
-
     HArray<IndexType> indexes1;
+    HArray<IndexType> indexes2;
+    HArray<IndexType> haloIndexes2;
+    HArray<ValueType> tmpValues;
     HArray<ValueType> values1;
-    mHaloData->getSparseRow( indexes1, values1, localRowIndex );
+    HArray<ValueType> values2;
 
-    // HArrayUtils::addSparse( indexes, values, indexes, values, indexes1, values1 );
+    mLocalData->getSparseRow( indexes1, values1, localRowIndex );
+
+    // translate local indexes to global indexes
+   
+    {
+        WriteAccess<IndexType> rIndexes( indexes1 );
+        for ( IndexType jj = 0; jj < indexes1.size(); ++jj )
+        {
+            rIndexes[jj] = distributionCol.local2global( rIndexes[jj] );
+        }
+    }
+
+    mHaloData->getSparseRow( haloIndexes2, values2, localRowIndex );
+
+    // translate halo indexes to global indexes
+
+    const HArray<IndexType>& haloGlobalIndexes = mHalo.getRequiredIndexes();
+
+    HArrayUtils::gather( indexes2, haloGlobalIndexes, haloIndexes2, utilskernel::binary::COPY );
+
+    HArrayUtils::addSparse( indexes, tmpValues, indexes1, values1, indexes2, values2 );
+
+    if ( values.getValueType() == tmpValues.getValueType() )
+    {
+        HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>& >( values );
+        typedValues.swap( tmpValues );
+    }
+    else
+    {
+        HArrayUtils::assign( values, tmpValues );
+    }
+
+    SCAI_LOG_INFO( logger, "getLocalRow( " << localRowIndex << " ) : values = " << values << ", indexes = " << indexes );
 }
 
 /* -------------------------------------------------------------------------- */
