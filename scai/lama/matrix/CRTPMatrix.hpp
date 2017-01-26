@@ -51,6 +51,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/macros/unsupported.hpp>
 
 namespace scai
 {
@@ -105,7 +106,9 @@ public:
         const Vector& y ) const
     {
         SCAI_REGION( "Mat.timesVector" )
-        SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
+
+        SCAI_LOG_INFO( logger, "result = " << alpha << " * M<" << getValueType() << ">[" << getNumRows() << " x " << getNumColumns() << "]"
+                               << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "]" )
 
         if ( &result == &y )
         {
@@ -124,9 +127,7 @@ public:
 
         if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != getValueType() || &result == &x || x.getDistribution() != getColDistribution() )
         {
-            SCAI_LOG_WARN( logger, "result = " << alpha << " * M<" << getValueType() << ">[" << getNumRows() << " x " << getNumColumns() << "]"
-                                   << " * x [ " << x.size() << "] + " << beta << " * y[ " << y.size() << "] "
-                                   << ", temporary DenseVector<" << getValueType() << "> required for x" )
+            SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << getValueType() << ">" )
 
             DenseVector<ValueType> tmpX( x, getColDistributionPtr() );
             matrixTimesVector( result, alpha, tmpX, beta, y );
@@ -139,7 +140,7 @@ public:
 
         if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != getValueType() || y.getDistribution() != getRowDistribution() )
         {
-            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for y in alpha * M * x + beta * y" )
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for y in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpY( y, getRowDistributionPtr() );
             matrixTimesVector( result, alpha, x, beta, tmpY );
             return;
@@ -149,7 +150,7 @@ public:
 
         if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != getValueType() )
         {
-            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpResult( getRowDistributionPtr() );
             matrixTimesVector( tmpResult, alpha, x, beta, y );
             result = tmpResult;
@@ -176,7 +177,7 @@ public:
 
         if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != getValueType() || &result == &x || x.getDistribution() != getRowDistribution() )
         {
-            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for x in alpha * M * x + beta * y" )
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for x in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpX( x, getRowDistributionPtr() );
             vectorTimesMatrix( result, alpha, tmpX, beta, y );
             return;
@@ -186,7 +187,7 @@ public:
 
         if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != getValueType() || y.getDistribution() != getColDistribution() )
         {
-            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for y in alpha * x * M + beta * y" )
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for y in alpha * x * M + beta * y" )
             DenseVector<ValueType> tmpY( y, getColDistributionPtr() );
             vectorTimesMatrix( result, alpha, x, beta, tmpY );
             return;
@@ -196,7 +197,7 @@ public:
 
         if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != getValueType() )
         {
-            SCAI_LOG_WARN( logger, "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
+            SCAI_UNSUPPORTED( "temporary DenseVector<" << getValueType() << "> required for result in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpResult( getColDistributionPtr() );
             vectorTimesMatrix( tmpResult, alpha, x, beta, y );
             result = tmpResult;
