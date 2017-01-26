@@ -114,10 +114,6 @@ public:
         {
             SCAI_LOG_DEBUG( logger, "alias: result = y is well handled" )
         }
-        else if ( &result == &x )
-        {
-            COMMON_THROWEXCEPTION( "alias: result = x is not handled, use temporary" )
-        }
         else
         {
             // we inherit the row distribution of this matrix to result
