@@ -631,11 +631,11 @@ public:
     template<typename ValueType>
     static void addSparse(
         hmemo::HArray<IndexType>& resultIndexes,
-        hmemo::HArray<IndexType>& resultValues,
+        hmemo::HArray<ValueType>& resultValues,
         const hmemo::HArray<IndexType>& indexes1,
-        hmemo::HArray<IndexType>& values1,
+        const hmemo::HArray<ValueType>& values1,
         const hmemo::HArray<IndexType>& indexes2,
-        hmemo::HArray<IndexType>& values2,
+        const hmemo::HArray<ValueType>& values2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:

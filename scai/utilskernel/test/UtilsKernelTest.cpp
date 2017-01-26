@@ -49,6 +49,7 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/logging.hpp>
+#include <scai/tracing.hpp>
 
 #include <iostream>
 
@@ -73,6 +74,7 @@ bool init_function()
 int main( int argc, char* argv[] )
 {
     SCAI_LOG_THREAD( "main" )
+    SCAI_REGION( "Main.UtilsKernelTest" )
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
     int rc = boost::unit_test::unit_test_main( &init_function, argc, argv );
     testContext.reset();   // frees the context

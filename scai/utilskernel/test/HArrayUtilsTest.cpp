@@ -1224,4 +1224,47 @@ BOOST_AUTO_TEST_CASE( findPosTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
+{
+    ContextPtr testContext = Context::getContextPtr();
+
+    const IndexType indexes1_values[]   = { 0, 2, 5, 7 };
+    const IndexType indexes2_values[]   = { 1, 2, 5, 8 };
+    const IndexType indexes_values[]    = { 0, 1, 2, 5, 7, 8 };
+
+    const ValueType values1_values[] = { 1, 2, 3, 4 };
+    const ValueType values2_values[] = { 5, 6, 7, 8 };
+    const ValueType values_values[]  = { 1, 5, 8, 10, 4, 8 };
+
+    IndexType n1 = sizeof( indexes1_values ) / sizeof( IndexType );
+    IndexType n2 = sizeof( indexes2_values ) / sizeof( IndexType );
+    IndexType n  = sizeof( indexes_values ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( n1, sizeof( values1_values ) / sizeof( ValueType ), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( n2, sizeof( values2_values ) / sizeof( ValueType ), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( n, sizeof( values_values ) / sizeof( ValueType ), "size mismatch" )
+
+    HArray<IndexType> indexes1( n1, indexes1_values, testContext );
+    HArray<IndexType> indexes2( n2, indexes2_values, testContext );
+
+    HArray<ValueType> values1( n1, values1_values, testContext );
+    HArray<ValueType> values2( n2, values2_values, testContext );
+
+    HArray<IndexType> indexes;
+    HArray<ValueType> values;
+
+    HArrayUtils::addSparse( indexes, values, indexes1, values1, indexes2, values2 );
+
+    BOOST_REQUIRE_EQUAL( n, indexes.size() );
+    BOOST_REQUIRE_EQUAL( n, values.size() );
+
+    LArray<IndexType> okayIndexes( n, indexes_values, testContext );
+    LArray<ValueType> okayValues( n, values_values, testContext );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
