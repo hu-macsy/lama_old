@@ -228,6 +228,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, SparseMatrixType
     MatrixType matrix1( globalStorage );
     matrix1.redistribute( rowDist, colDist );
 
+    SCAI_LOG_INFO( logger, "Test copy constructor SparseMatrix( matrix1 ), with matrix1 = " << matrix1 )
+
     SparseMatrix<ValueType> matrix2( matrix1 );
 
     const StorageType& localStorage1 = matrix1.getLocalStorage();
