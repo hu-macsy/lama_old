@@ -339,7 +339,7 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 {
     SCAI_REGION( "Storage.JDS.getSparseRow" )
 
-    SCAI_LOG_INFO( logger, "getSparseRow with i = " << i )
+    SCAI_LOG_INFO( logger, "getSparseRow( " << i << " of " << mNumRows << " )" )
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
@@ -354,7 +354,9 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wPos( pos, loc, mNumRows );
+        // start with maximal possible size, is number of columns, resize later
+
+        WriteOnlyAccess<IndexType> wPos( pos, loc, mNumColumns );  
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
@@ -366,10 +368,12 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
         wPos.resize( cnt );
     }
 
-    SCAI_LOG_INFO( logger, "getSparseRow( " << i << " ) has " << pos.size() << " non-zero entries" )
-
+    // with entries in pos we can gather the column indexes and the values from jdsJA, jdsValues
+ 
     HArrayUtils::gatherImpl( jA, mJa, pos, utilskernel::binary::COPY, loc );
     HArrayUtils::gather( values, mValues, pos, utilskernel::binary::COPY, loc );
+
+    SCAI_LOG_DEBUG( logger, "getSparseRow( " << i << " ) : jA = " << jA << ", values = " << values )
 }
 
 /* --------------------------------------------------------------------------- */

@@ -42,6 +42,7 @@
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/hmemo.hpp>
@@ -69,6 +70,7 @@ using tasking::SyncToken;
 
 using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
+using utilskernel::SparseKernelTrait;
 using utilskernel::HArrayUtils;
 using utilskernel::LArray;
 
@@ -942,8 +944,8 @@ void ELLStorage<ValueType>::buildRowIndexes( const ContextPtr context )
 
     // Get function pointers for needed kernel routines
 
-    static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<IndexType, IndexType> > compress;
+    static LAMAKernel<SparseKernelTrait::countNonZeros<IndexType> > countNonZeros;
+    static LAMAKernel<SparseKernelTrait::compress<IndexType, IndexType> > compress;
 
     // choose location where both routines are available
 
