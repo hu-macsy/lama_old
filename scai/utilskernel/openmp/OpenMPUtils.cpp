@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/SparseKernelTrait.hpp>
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -1819,7 +1820,7 @@ void OpenMPUtils::BaseKernels::registerKernels( kregistry::KernelRegistry::Kerne
     KernelRegistry::set<UtilKernelTrait::countBuckets<IndexType> >( countBuckets, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sortInBuckets<IndexType> >( sortInBuckets, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setInversePerm>( setInversePerm, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::countAddSparse>( countAddSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::countAddSparse>( countAddSparse, ctx, flag );
 }
 
 template<typename ValueType>
@@ -1841,8 +1842,8 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
@@ -1861,7 +1862,7 @@ void OpenMPUtils::BinOpKernels<ValueType, OtherValueType>::registerKernels( kreg
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::compress<ValueType, OtherValueType> >( compress, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::compress<ValueType, OtherValueType> >( compress, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

@@ -51,6 +51,7 @@
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/SparseKernelTrait.hpp>
 
 // thrust
 #include <thrust/device_vector.h>
@@ -1832,7 +1833,7 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar1<ValueType> >( binaryOpScalar1, ctx, flag );
@@ -1851,7 +1852,7 @@ void CUDAUtils::RegistratorVO<ValueType, SourceValueType>::registerKernels( kreg
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, SourceValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, SourceValueType> >( set, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSection<ValueType, SourceValueType> >( setSection, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::compress<ValueType, SourceValueType> >( compress, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::compress<ValueType, SourceValueType> >( compress, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

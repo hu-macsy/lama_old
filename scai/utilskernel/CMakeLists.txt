@@ -116,6 +116,7 @@ scai_project (
         LArray
         LArrayRef
         UtilKernelTrait
+        SparseKernelTrait
         BinaryOp
         UnaryOp
 )

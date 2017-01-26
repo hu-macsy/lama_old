@@ -40,6 +40,7 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/common/TypeTraits.hpp>
 
@@ -275,7 +276,7 @@ BOOST_AUTO_TEST_CASE( countNonZerosTest )
 {
     ContextPtr testContext = Context::getContextPtr();
 
-    static LAMAKernel<UtilKernelTrait::countNonZeros<IndexType> > countNonZeros;
+    static LAMAKernel<SparseKernelTrait::countNonZeros<IndexType> > countNonZeros;
 
     ContextPtr loc = Context::getContextPtr( countNonZeros.validContext( testContext->getType() ) );
 
@@ -310,7 +311,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 {
     ContextPtr testContext = Context::getContextPtr();
 
-    static LAMAKernel<UtilKernelTrait::compress<IndexType, IndexType> > compress;
+    static LAMAKernel<SparseKernelTrait::compress<IndexType, IndexType> > compress;
 
     ContextPtr loc = Context::getContextPtr( compress.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
@@ -540,8 +541,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();
 
-    static LAMAKernel<UtilKernelTrait::countAddSparse > countAddSparse;
-    static LAMAKernel<UtilKernelTrait::addSparse<ValueType> > addSparse;
+    static LAMAKernel<SparseKernelTrait::countAddSparse > countAddSparse;
+    static LAMAKernel<SparseKernelTrait::addSparse<ValueType> > addSparse;
 
     ContextPtr loc = testContext;
     addSparse.getSupportedContext( loc, countAddSparse );

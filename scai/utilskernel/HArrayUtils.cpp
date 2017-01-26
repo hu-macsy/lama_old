@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
+#include <scai/utilskernel/SparseKernelTrait.hpp>
 #include <scai/utilskernel/LAMAKernel.hpp>
 
 #include <scai/utilskernel/mepr/UtilsWrapper.hpp>
@@ -247,6 +248,14 @@ void HArrayUtils::gatherImpl(
     SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
                        op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
 
+    // check alias, only possible for same value type
+
+    if ( target.getValueType() == source.getValueType() )
+    {
+        const HArray<TargetValueType>& tsource = reinterpret_cast<const HArray<TargetValueType>&>( source );
+        SCAI_ASSERT_NE_ERROR( &target, &tsource, "gather: alias of source and target unsupported" )
+    }
+
     SCAI_REGION( "HArray.gather" )
 
     SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] " << op << " = source [ indexes [ "
@@ -267,11 +276,13 @@ void HArrayUtils::gatherImpl(
     if ( op == binary::COPY )
     {
         //  target[i] = source[ indexes[i] ]
+        //  alias of target and indexes is supported
 
-        WriteOnlyAccess<TargetValueType> wTarget( target, loc, n );
         SCAI_CONTEXT_ACCESS( loc )
         ReadAccess<SourceValueType> rSource( source, loc );
         ReadAccess<IndexType> rIndexes( indexes, loc );
+        WriteOnlyAccess<TargetValueType> wTarget( target, loc, n );
+
         setGather[loc] ( wTarget.get(), rSource.get(), rIndexes.get(), op, n );
     }
     else
@@ -1483,8 +1494,8 @@ void HArrayUtils::buildSparseIndexes(
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
-    static LAMAKernel<UtilKernelTrait::countNonZeros<ValueType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<ValueType, ValueType> > compress;
+    static LAMAKernel<SparseKernelTrait::countNonZeros<ValueType> > countNonZeros;
+    static LAMAKernel<SparseKernelTrait::compress<ValueType, ValueType> > compress;
     ContextPtr loc = prefLoc;
 
     // default location for conversion: where we have the dense values
@@ -1526,8 +1537,8 @@ void HArrayUtils::buildSparseArrayImpl(
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = denseArray.size();
-    static LAMAKernel<UtilKernelTrait::countNonZeros<SourceType> > countNonZeros;
-    static LAMAKernel<UtilKernelTrait::compress<TargetType, SourceType> > compress;
+    static LAMAKernel<SparseKernelTrait::countNonZeros<SourceType> > countNonZeros;
+    static LAMAKernel<SparseKernelTrait::compress<TargetType, SourceType> > compress;
     ContextPtr loc = prefLoc;
 
     // default location for conversion: where we have the dense values
@@ -1611,8 +1622,8 @@ void HArrayUtils::addSparse(
     const hmemo::HArray<ValueType>& values2,
     hmemo::ContextPtr prefLoc )
 {
-    static LAMAKernel<UtilKernelTrait::countAddSparse> countAddSparse;
-    static LAMAKernel<UtilKernelTrait::addSparse<ValueType> > addSparse;
+    static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
+    static LAMAKernel<SparseKernelTrait::addSparse<ValueType> > addSparse;
 
     ContextPtr loc = prefLoc;
 
