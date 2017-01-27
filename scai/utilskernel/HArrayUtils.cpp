@@ -1618,8 +1618,10 @@ void HArrayUtils::addSparse(
     hmemo::HArray<ValueType>& resultValues,
     const hmemo::HArray<IndexType>& indexes1,
     const hmemo::HArray<ValueType>& values1,
+    const ValueType alpha,
     const hmemo::HArray<IndexType>& indexes2,
     const hmemo::HArray<ValueType>& values2,
+    const ValueType beta,
     hmemo::ContextPtr prefLoc )
 {
     static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
@@ -1653,8 +1655,8 @@ void HArrayUtils::addSparse(
     ReadAccess<ValueType> rValues2( values2, loc );
 
     addSparse[loc]( wIndexes.get(), wValues.get(),
-                    rIndexes1.get(), rValues1.get(), n1,
-                    rIndexes2.get(), rValues2.get(), n2 );
+                    rIndexes1.get(), rValues1.get(), n1, alpha,
+                    rIndexes2.get(), rValues2.get(), n2, beta );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1807,8 +1809,10 @@ void HArrayUtils::addSparse(
             hmemo::HArray<ValueType>&,                                          \
             const hmemo::HArray<IndexType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
             const hmemo::HArray<IndexType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
             hmemo::ContextPtr );                                                \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 

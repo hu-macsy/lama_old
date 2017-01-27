@@ -622,7 +622,9 @@ public:
      *
      *  @param[out] resultIndexes, resultValues for sparse result array
      *  @param[in]  indexes1, values1 first sparse array
-     *  @param[in]  indexes1, values2 second sparse array
+     *  @param[in]  alpha scaling factor for values of first array
+     *  @param[in]  indexes2, values2 second sparse array
+     *  @param[in]  beta scaling factor for values of second array
      *  @param[in]  prefLoc is the context where operation should be done
      *
      *  Alias of any input array with the output array is not allowed, e.g. 
@@ -634,8 +636,10 @@ public:
         hmemo::HArray<ValueType>& resultValues,
         const hmemo::HArray<IndexType>& indexes1,
         const hmemo::HArray<ValueType>& values1,
+        const ValueType alpha,
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
+        const ValueType beta,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:

@@ -1744,9 +1744,11 @@ IndexType OpenMPUtils::addSparse(
     const IndexType indexes1[],
     const ValueType values1[],
     const IndexType n1, 
+    const ValueType alpha,
     const IndexType indexes2[],
     const ValueType values2[],
-    const IndexType n2 )
+    const IndexType n2,
+    const ValueType beta )
 {
     SCAI_REGION( "OpenMP.Utils.addSparse" )
 
@@ -1764,7 +1766,7 @@ IndexType OpenMPUtils::addSparse(
             // entry at same position 
 
             indexes[n] = indexes1[i1];
-            values[n]  = values1[i1] + values2[i2];
+            values[n]  = alpha * values1[i1] + beta * values2[i2];
             ++n;
             ++i1;
             ++i2;
@@ -1774,7 +1776,7 @@ IndexType OpenMPUtils::addSparse(
             // entry only in array1
 
             indexes[n] = indexes1[i1];
-            values[n]  = values1[i1];
+            values[n]  = alpha * values1[i1];
             ++n;
             ++i1;
         }
@@ -1783,7 +1785,7 @@ IndexType OpenMPUtils::addSparse(
             // entry only in array2
 
             indexes[n] = indexes2[i2];
-            values[n]  = values2[i2];
+            values[n]  = beta * values2[i2];
             ++n;
             ++i2;
         }
@@ -1792,7 +1794,7 @@ IndexType OpenMPUtils::addSparse(
     while ( i1 < n1 )
     {
         indexes[n] = indexes1[i1];
-        values[n]  = values1[i1];
+        values[n]  = alpha * values1[i1];
         ++n;
         ++i1;
     }
@@ -1800,7 +1802,7 @@ IndexType OpenMPUtils::addSparse(
     while ( i2 < n2 )
     {
         indexes[n] = indexes2[i2];
-        values[n]  = values2[i2];
+        values[n]  = beta * values2[i2];
         ++n;
         ++i2;
     }

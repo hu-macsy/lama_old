@@ -676,6 +676,8 @@ Scalar SparseVector<ValueType>::l2Norm() const
     return Scalar( common::Math::sqrt( globalDotProduct ) );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<>
 Scalar SparseVector<IndexType>::l2Norm() const
 {
@@ -722,6 +724,8 @@ void SparseVector<ValueType>::swap( Vector& other )
     mNonZeroIndexes.swap( otherPtr->mNonZeroIndexes );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
@@ -730,6 +734,8 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
     stream << "SparseVector<" << getValueType() << ">" << "( size = " << size() << ", local nnz = " << mNonZeroIndexes.size()
            << ", dist = " << dist << ", loc  = " << *getContextPtr() << " )";
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector& x, const Scalar& beta, const Vector& y )
@@ -760,6 +766,8 @@ void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vecto
     assign( tmp );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void SparseVector<ValueType>::vectorPlusVectorImpl( 
     const ValueType alpha, const SparseVector<ValueType>& x, 
@@ -771,17 +779,17 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
 
     SCAI_ASSERT_NE_ERROR( &x, this, "alias result, x" )
     SCAI_ASSERT_NE_ERROR( &y, this, "alias result, y" )
-    SCAI_ASSERT_EQ_ERROR( alpha, ValueType( 1 ), "only alpha = 1 supported" )
-    SCAI_ASSERT_EQ_ERROR( beta, ValueType( 1 ), "only beta = 1 supported" )
 
     // Now we can just call addSparse for the local vectors
 
     setDistributionPtr( x.getDistributionPtr() );
 
     HArrayUtils::addSparse( mNonZeroIndexes, mNonZeroValues,
-                            x.getNonZeroIndexes(), x.getNonZeroValues(),
-                            y.getNonZeroIndexes(), y.getNonZeroValues(), this->getContextPtr() );
+                            x.getNonZeroIndexes(), x.getNonZeroValues(), alpha, 
+                            y.getNonZeroIndexes(), y.getNonZeroValues(), beta, this->getContextPtr() );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vector& x, const Vector& y )
@@ -795,6 +803,8 @@ void SparseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const Vect
     tmp.vectorTimesVector( alpha, x, y );
     assign( tmp );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const Vector& x, const Scalar& beta )

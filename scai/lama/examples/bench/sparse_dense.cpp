@@ -133,8 +133,8 @@ void benchAdd()
     SparseVector<double> sparseV1( denseV1 );
     SparseVector<double> sparseV2( denseV2 );
 
-    sparseV = sparseV1 + sparseV2;
-    denseV = denseV1 + denseV2;
+    sparseV = sparseV1 + 2 * sparseV2;
+    denseV = denseV1 + 2 * denseV2;
 
     DenseVector<double> compareV( sparseV );
 

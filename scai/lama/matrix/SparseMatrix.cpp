@@ -818,7 +818,9 @@ void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HA
 
     HArrayUtils::gather( indexes2, haloGlobalIndexes, haloIndexes2, utilskernel::binary::COPY );
 
-    HArrayUtils::addSparse( indexes, tmpValues, indexes1, values1, indexes2, values2 );
+    ValueType one = 1;  // just union of entries, no scaling
+
+    HArrayUtils::addSparse( indexes, tmpValues, indexes1, values1, one, indexes2, values2, one );
 
     if ( values.getValueType() == tmpValues.getValueType() )
     {

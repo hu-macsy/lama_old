@@ -549,13 +549,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
 
-    const IndexType indexes1_values[]   = { 0, 2, 5, 7 };
-    const IndexType indexes2_values[]   = { 1, 2, 5, 8 };
-    const IndexType indexes_values[]    = { 0, 1, 2, 5, 7, 8 };
+    const IndexType indexes1_values[]   = { 0,    2,   5,  7     };
+    const IndexType indexes2_values[]   = {    1, 2,   5,      8 };
+    const IndexType indexes_values[]    = { 0, 1, 2,   5,  7,  8 };
 
-    const ValueType values1_values[] = { 1, 2, 3, 4 };
-    const ValueType values2_values[] = { 5, 6, 7, 8 };
-    const ValueType values_values[]  = { 1, 5, 8, 10, 4, 8 };
+    const ValueType values1_values[]    = { 1,       2,     3,    4 };
+    const ValueType values2_values[]    = {      5,  6,     7,         8 };
+    const ValueType values_values[]     = { -1, 10, 10,    11,   -4,  16 };
 
     IndexType n1 = sizeof( indexes1_values ) / sizeof( IndexType );
     IndexType n2 = sizeof( indexes2_values ) / sizeof( IndexType );
@@ -571,6 +571,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 
     HArray<IndexType> indexes;
     HArray<ValueType> values;
+
+    ValueType alpha = -1;
+    ValueType beta  = 2;
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -589,8 +592,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
         WriteOnlyAccess<ValueType> wValues( values, loc, n );
 
         IndexType nc = addSparse[loc]( wIndexes.get(), wValues.get(), 
-                                       rIndexes1.get(), rValues1.get(), n1,
-                                       rIndexes2.get(), rValues2.get(), n2 );
+                                       rIndexes1.get(), rValues1.get(), n1, alpha,
+                                       rIndexes2.get(), rValues2.get(), n2, beta );
 
         BOOST_CHECK_EQUAL( n, nc );
     }
