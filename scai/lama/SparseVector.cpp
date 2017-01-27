@@ -777,8 +777,17 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
 
     SCAI_ASSERT_EQ_ERROR( x.getDistribution(), y.getDistribution(), "mismatch distribution" );
 
-    SCAI_ASSERT_NE_ERROR( &x, this, "alias result, x" )
-    SCAI_ASSERT_NE_ERROR( &y, this, "alias result, y" )
+    if ( &x == this || &y == this )
+    {
+         SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << " * y, alias result = x or result = y" )
+
+         // alias of input and output array, needs a temporay for sparse vectors
+
+         SparseVector<ValueType> tmp( this->getContextPtr() );
+         tmp.vectorPlusVector( alpha, x, beta, y );
+         assign( tmp );
+         return;
+    }
 
     // Now we can just call addSparse for the local vectors
 
