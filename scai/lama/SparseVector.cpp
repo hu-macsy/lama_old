@@ -712,16 +712,16 @@ template<typename ValueType>
 void SparseVector<ValueType>::swap( Vector& other )
 {
     SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
-    SparseVector<ValueType>* otherPtr = dynamic_cast<SparseVector<ValueType>*>( &other );
 
-    if ( !otherPtr )
-    {
-        COMMON_THROWEXCEPTION( "Tried to swap with a Vector of a different type." )
-    }
+    SCAI_ASSERT_EQ_ERROR( getVectorKind(), other.getVectorKind(), "Swap only for same kind of vector allowed" )
+    SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(), "Swap only for same value type of vector allowed" )
 
-    Vector::swapVector( other );
-    mNonZeroValues.swap( otherPtr->mNonZeroValues );
-    mNonZeroIndexes.swap( otherPtr->mNonZeroIndexes );
+    SparseVector<ValueType>& typedOther = reinterpret_cast<SparseVector<ValueType>&>( other );
+
+    Vector::swapVector( other );   // swap sizes, distributions
+
+    mNonZeroValues.swap( typedOther.mNonZeroValues );
+    mNonZeroIndexes.swap( typedOther.mNonZeroIndexes );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -785,7 +785,7 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
 
          SparseVector<ValueType> tmp( this->getContextPtr() );
          tmp.vectorPlusVector( alpha, x, beta, y );
-         assign( tmp );
+         swap( tmp );
          return;
     }
 
