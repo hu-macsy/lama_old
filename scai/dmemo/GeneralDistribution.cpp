@@ -89,7 +89,7 @@ GeneralDistribution::GeneralDistribution(
 
     // Note: the constructor is completely local, but make some consistency check now 
 
-    SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
+    //SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
 
 GeneralDistribution::GeneralDistribution(
