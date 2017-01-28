@@ -2,7 +2,7 @@
  * @file common/config.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -36,39 +36,39 @@
 
 #ifdef WIN32
 
-    #ifdef min
-        #undef min
-    #endif //min
+#ifdef min
+#undef min
+#endif //min
 
-    #ifdef max
-        #undef max
-    #endif //max
-    
-    //Do not display warnings about dll-interface issues.
-    //TODO: How can we resolve these issues? Do we want to resolve these issues?
-    #pragma warning( disable : 4251 )
-    
-    #ifndef COMMON_DLL_IMPORTEXPORT
-        #ifdef COMMON_COMPILING_DLL
-            #define COMMON_DLL_IMPORTEXPORT   __declspec( dllexport )
-        #else //COMMON_COMPILING_DLL is defined
-            #define COMMON_DLL_IMPORTEXPORT   __declspec( dllimport )
-        #endif //COMMON_COMPILING_DLL
-    #endif //COMMON_DLL_IMPORTEXPORT
-    
+#ifdef max
+#undef max
+#endif //max
+
+//Do not display warnings about dll-interface issues.
+//TODO: How can we resolve these issues? Do we want to resolve these issues?
+#pragma warning( disable : 4251 )
+
+#ifndef COMMON_DLL_IMPORTEXPORT
+#ifdef COMMON_COMPILING_DLL
+#define COMMON_DLL_IMPORTEXPORT   __declspec( dllexport )
+#else //COMMON_COMPILING_DLL is defined
+#define COMMON_DLL_IMPORTEXPORT   __declspec( dllimport )
+#endif //COMMON_COMPILING_DLL
+#endif //COMMON_DLL_IMPORTEXPORT
+
 #else  //WIN32
 
-    // visibility can now be restricted in gnu compilers with -fvisibility=hidden
+// visibility can now be restricted in gnu compilers with -fvisibility=hidden
 
-    #ifndef COMMON_DLL_IMPORTEXPORT
+#ifndef COMMON_DLL_IMPORTEXPORT
 
-        #if __GNUC__ >= 4
-            #define COMMON_DLL_IMPORTEXPORT  __attribute__ ( ( visibility ( "default" ) ) )
-        #else
-            #define COMMON_DLL_IMPORTEXPORT
-        #endif
+#if __GNUC__ >= 4
+#define COMMON_DLL_IMPORTEXPORT  __attribute__ ( ( visibility ( "default" ) ) )
+#else
+#define COMMON_DLL_IMPORTEXPORT
+#endif
 
-    #endif
+#endif
 
 
 #endif //WIN32

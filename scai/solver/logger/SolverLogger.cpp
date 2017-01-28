@@ -2,7 +2,7 @@
  * @file SolverLogger.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -76,7 +76,7 @@ SolverLogger::SolverLogger(
     common::shared_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
-          ignoreRank )
+        ignoreRank )
 {
     SCAI_LOG_INFO( logger, "SolverLogger with timer created, id = " << mId << ", level = " << mLogLevel << ", writeBehaviour = "
                    << mWriteBehaviour << ", ignore rank = " << mIgnoreRank )
@@ -90,7 +90,7 @@ SolverLogger::SolverLogger(
     common::shared_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
-          ignoreRank )
+        ignoreRank )
 {
     FileLogger::getFileLogger().setLogFile( logFileName );
     SCAI_LOG_INFO( logger, "SolverLogger for file " << logFileName << " created, id = " << mId

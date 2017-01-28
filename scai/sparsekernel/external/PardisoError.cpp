@@ -2,7 +2,7 @@
  * @file PardisoError.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,41 +48,41 @@ const char* pardisoErrorString( int error )
             str = "Pardiso successful";
             break;
         case -1:
-        	str = "Pardiso: input inconsistent.";
-        	break;
-		case -2:
-        	str = "Pardiso: not enough memory.";
-        	break;
+            str = "Pardiso: input inconsistent.";
+            break;
+        case -2:
+            str = "Pardiso: not enough memory.";
+            break;
         case -3:
-        	str = "Pardiso: reordering problem.";
-        	break;
+            str = "Pardiso: reordering problem.";
+            break;
         case -4:
-        	str = "Pardiso: zero pivot, numerical factorization or iterative refinement problem.";
-        	break;
+            str = "Pardiso: zero pivot, numerical factorization or iterative refinement problem.";
+            break;
         case -5:
-        	str = "Pardiso: unclassified (internal) error.";
-        	break;
+            str = "Pardiso: unclassified (internal) error.";
+            break;
         case -6:
-        	str = "Pardiso: reordering failed (matrix types 11 and 13 only)";
-        	break;
-		case -7:
-        	str = "Pardiso: diagonal matrix is singular.";
-        	break;
+            str = "Pardiso: reordering failed (matrix types 11 and 13 only)";
+            break;
+        case -7:
+            str = "Pardiso: diagonal matrix is singular.";
+            break;
         case -8:
-        	str = "Pardiso: 32-bit integer overflow problem.";
-        	break;
+            str = "Pardiso: 32-bit integer overflow problem.";
+            break;
         case -9:
-        	str = "Pardiso: not enough memory for OOC.";
-        	break;
+            str = "Pardiso: not enough memory for OOC.";
+            break;
         case -10:
-        	str = "Pardiso: error opening OOC files.";
-        	break;
+            str = "Pardiso: error opening OOC files.";
+            break;
         case -11:
-        	str = "Pardiso: read/write error with OOC files.";
-        	break;
+            str = "Pardiso: read/write error with OOC files.";
+            break;
         case -12:
-        	str = "Pardiso: (pardiso_64 only) pardiso_64 called from 32-bit library.";
-        	break;
+            str = "Pardiso: (pardiso_64 only) pardiso_64 called from 32-bit library.";
+            break;
 
         default:
             str = "Unknown Pardiso error";

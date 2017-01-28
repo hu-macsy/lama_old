@@ -2,7 +2,7 @@
  * @file AllMatrixTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -601,8 +601,8 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
-                      matrix.getRow( *row, iRow );
-                      matrix.setRow( *row, iRow, utilskernel::binary::SUB );
+                    matrix.getRow( *row, iRow );
+                    matrix.setRow( *row, iRow, utilskernel::binary::SUB );
                 }
 
                 // the final matrix should be zero
@@ -703,7 +703,7 @@ BOOST_AUTO_TEST_CASE( getTest )
                 matrix = csr;
 
                 matrix.redistribute( rowDist, colDist );
- 
+
                 SCAI_LOG_DEBUG( logger, "getTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
 
                 // get each element and subract it
@@ -716,7 +716,7 @@ BOOST_AUTO_TEST_CASE( getTest )
                         Scalar s2 = csr.getValue( iRow, jCol );
 
                         Scalar diff = abs( s1 - s2 );
-  
+
                         BOOST_CHECK( diff < Scalar( 0.001 ) );
                     }
                 }
@@ -767,7 +767,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
                 }
 
                 matrix.redistribute( rowDist, colDist );
- 
+
                 SCAI_LOG_DEBUG( logger, "getSetTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
 
                 // get each element and subract it

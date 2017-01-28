@@ -2,7 +2,7 @@
  * @file MICJDSUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -160,6 +160,7 @@ IndexType MICJDSUtils::getValuePos(
         const IndexType* ja = reinterpret_cast<const IndexType*>( jaPtr );
 
         #pragma omp parallel for
+
         for ( IndexType ii = 0; ii < numRows; ii++ )
         {
             if ( perm[ii] == i )
@@ -219,6 +220,7 @@ IndexType MICJDSUtils::getValuePosCol(
         IndexType* pos = reinterpret_cast<IndexType*>( posPtr );
 
         #pragma omp parallel for
+
         for ( IndexType ii = 0; ii < numRows; ii++ )
         {
             IndexType k = 0;
@@ -226,7 +228,7 @@ IndexType MICJDSUtils::getValuePosCol(
             for ( IndexType jj = 0; jj < ilg[ii]; jj++ )
             {
                 IndexType p = ii + k;
-    
+
                 if ( ja[p] == j )
                 {
                     IndexType n;
@@ -317,8 +319,8 @@ bool MICJDSUtils::checkDiagonalProperty(
 
     if ( dlg0 < std::min( numDiagonals, numColumns ) )
     {
-         // not even one entry for each row / column
-            return false;
+        // not even one entry for each row / column
+        return false;
     }
 
     bool diagonalProperty = true;
@@ -327,7 +329,7 @@ bool MICJDSUtils::checkDiagonalProperty(
 
     int device = MICContext::getCurrentDevice();
 
-     #pragma offload target( mic : device ), in( jdsPermPtr, jaPtr, numRows, numColumns, dlg0 ), out( diagonalProperty )
+#pragma offload target( mic : device ), in( jdsPermPtr, jaPtr, numRows, numColumns, dlg0 ), out( diagonalProperty )
     {
         const IndexType* ja = reinterpret_cast<const IndexType*>( jaPtr );
         const IndexType* jdsPerm = reinterpret_cast<const IndexType*>( jdsPermPtr );
@@ -834,7 +836,7 @@ void MICJDSUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kre
     const common::context::ContextType ctx = common::context::MIC;
 
     SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
-                             common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+                    common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<JDSKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );

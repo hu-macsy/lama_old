@@ -2,7 +2,7 @@
  * @file DistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
         DistributionPtr dist = allDist[i];
- 
+
         const PartitionId rank = dist->getCommunicator().getRank();
         const PartitionId root = dist->getCommunicator().getSize() / 2;
 
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
 BOOST_AUTO_TEST_CASE( replicateTest )
 {
-    const IndexType N = 30;  // global size 
+    const IndexType N = 30;  // global size
 
     TestDistributions allDist( N );
 
@@ -304,10 +304,10 @@ BOOST_AUTO_TEST_CASE( replicateTest )
             for ( IndexType i = 0; i < localN; ++i )
             {
                 wLocalValues[i] = dist->local2global( i );
-            } 
+            }
         }
 
-        // Now replicate the local values 
+        // Now replicate the local values
 
         {
             hmemo::WriteOnlyAccess<IndexType> wAllValues( allValues, N );
@@ -355,12 +355,12 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
                 {
                     wLocalValues[ repN * i + k ] = val;
                 }
-            } 
+            }
         }
 
         hmemo::HArray<IndexType> allValues( repN * globalN, nIndex );
 
-        // Now replicate the local values 
+        // Now replicate the local values
 
         {
             hmemo::WriteAccess<IndexType> wAllValues( allValues );
@@ -380,10 +380,10 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
                 if ( i != rAllValues[ repN * i + k ] )
                 {
-                    SCAI_LOG_ERROR( logger, dist->getCommunicator() << ": dist = " << *dist << 
-                                            ", wrong at i = " << i << " of " << globalN << 
-                                            ", k = " << k << " of repN = " << repN << 
-                                            ", rAllValues [ " << repN * i + k << " ] = " << rAllValues[ repN * i + k ] )
+                    SCAI_LOG_ERROR( logger, dist->getCommunicator() << ": dist = " << *dist <<
+                                    ", wrong at i = " << i << " of " << globalN <<
+                                    ", k = " << k << " of repN = " << repN <<
+                                    ", rAllValues [ " << repN * i + k << " ] = " << rAllValues[ repN * i + k ] )
 
                 }
             }
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE( replicateNTest )
 
 BOOST_AUTO_TEST_CASE( replicateRaggedTest )
 {
-    const IndexType globalN = 17;  // global size 
+    const IndexType globalN = 17;  // global size
     const IndexType repN = 4;
 
     TestDistributions allDist( globalN );
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
                 {
                     wLocalValues[ repN * i + k ] = val;
                 }
-            } 
+            }
         }
 
         hmemo::HArray<IndexType> offsets( globalN, repN );
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
 
         hmemo::HArray<IndexType> allValues;  // result array for replicateRagged
 
-        // Now replicate the local values 
+        // Now replicate the local values
 
         {
             hmemo::WriteOnlyAccess<IndexType> wAllValues( allValues, repN * globalN );
@@ -468,7 +468,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
         out << *dist;
         BOOST_CHECK( out.str().length() > 0 );
 
-        // verify that a derived distribution class has overridden the 
+        // verify that a derived distribution class has overridden the
         // default implementation of the base class Distriution
 
         std::ostringstream outBaseClass;
@@ -490,7 +490,7 @@ BOOST_AUTO_TEST_CASE( equalTest )
         DistributionPtr dist1 = allDist1[i];
         DistributionPtr dist2 = allDist2[i];
         DistributionPtr dist3 = allDist3[i];
-       
+
         BOOST_CHECK_EQUAL( *dist1, *dist1 );  // pointer equality
         BOOST_CHECK_EQUAL( *dist1, *dist2 );  // same distibution
         BOOST_CHECK( *dist1 != *dist3 );      // must be different due to other global size

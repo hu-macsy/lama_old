@@ -2,7 +2,7 @@
  * @file CUDAError.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,11 +43,11 @@
 #include <cusparse_v2.h>
 
 #include <cuda_runtime_api.h>
- 
+
 #ifndef CUDART_VERSION
-    #error CUDART_VERSION Undefined!
+#error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
-    #include <cusolverSp.h>
+#include <cusolverSp.h>
 #endif
 
 namespace scai

@@ -2,7 +2,7 @@
  * @file CUSolverCSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -50,9 +50,9 @@
 #include <cuda_runtime_api.h>
 
 #ifndef CUDART_VERSION
-    #error CUDART_VERSION Undefined!
+#error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
-    #include <cusolverSp.h>
+#include <cusolverSp.h>
 
 namespace scai
 {
@@ -90,7 +90,7 @@ private:
 
     /** Struct for registration of methods with one template argument.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for each supported type
      */
 

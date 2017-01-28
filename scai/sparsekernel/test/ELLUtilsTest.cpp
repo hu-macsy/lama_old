@@ -2,7 +2,7 @@
  * @file ELLUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fillELlValuesTest, ValueType, scai_numeric_test_t
                 testVal += rValues[ pos ] * rX[ j ];
             }
         }
- 
+
         BOOST_CHECK_EQUAL( ValueType( 0 ), testVal );
     }
 }
@@ -1739,83 +1739,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types 
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( compress2Test, ValueType, scai_numeric_test_types )
-{
-    ContextPtr testContext = Context::getContextPtr();
-
-    kregistry::KernelTraitContextFunction<ELLKernelTrait::compressValues<ValueType> > compressValues;
-
-    ContextPtr loc = Context::getContextPtr( compressValues.validContext( testContext->getType() ) );
-
-    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
-
-    //    1.0   -   2.0  1.1         1.0  2.0  1.1
-    //    0.5  0.0   -    -    --->  0.5  0.0
-    //     -    -   3.0   -          3.0
-    //     -    -   4.0  0.0         4.0  0.0
-
-    const IndexType ia_original[]     = { 3, 2, 1, 2 };
-    const IndexType ja_original[]     = { 0, 0, 0, 0, 1, 1, 1, 2 };
-    const ValueType values_original[] = { 1.0, 0.5, 3.0, 4.0, 2.0, 0.0, 0.0, 1.1 };
-
-    //    1.0   -   2.0  1.1         1.0  2.0  1.1
-    //    0.5  0.0   -    -    --->  0.5
-    //     -    -   3.0   -          3.0
-    //     -    -   4.0  0.0         4.0
-
-    const IndexType ia_compress[]     = { 3, 1, 1, 1 };
-    const IndexType ja_compress[]     = { 0, 0, 0, 0, 1, 2 };
-    const ValueType values_compress[] = { 1.0, 0.5, 3.0, 4.0, 2.0, 1.1 };
-
-    const IndexType numRows = 4;
-    const IndexType oldNumValues = 8;
-    const IndexType newNumValues = 6;
-
-    const IndexType oldNumValuesPerRow = 3;
-    const IndexType newNumValuesPerRow = 3;
-
-    HArray<IndexType> oldIA( numRows, ia_original, testContext );
-    HArray<IndexType> oldJA( oldNumValues, ja_original, testContext );
-    HArray<ValueType> oldValues( oldNumValues, values_original, testContext );
-
-    HArray<IndexType> newIA( numRows, ia_compress, testContext );
-    HArray<IndexType> newJA;
-    HArray<ValueType> newValues;
-
-    {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        ReadAccess<IndexType> roIA( oldIA, loc );
-        ReadAccess<IndexType> roJA( oldJA, loc );
-        ReadAccess<ValueType> roValues( oldValues, loc );
-
-        ReadAccess<IndexType> rnIA( newIA, loc );
-        WriteOnlyAccess<IndexType> wnJA( newJA, loc, newNumValues );
-        WriteOnlyAccess<ValueType> wnValues( newValues, loc, newNumValues );
-
-        // bool diagonalFlag = false;
-        double eps = 0.000001;
-
-        compressValues[loc->getType()]( roIA.get(), roJA.get(), roValues.get(), numRows, oldNumValuesPerRow, eps,
-                                        newNumValuesPerRow, wnJA.get(), wnValues.get() );
-    }
-
-    // now check that non-zero values are at the right place
-    {
-        ReadAccess<IndexType> rJA( newJA );
-        ReadAccess<ValueType> rValues( newValues );
-
-        for ( IndexType k = 0; k < newNumValues; ++k )
-        {
-            std::cout << "value " << k << ": " << rJA[k] << ":" << rValues[k] 
-                                    << ", expected " << ja_compress[k] << ":" << values_compress[k] << std::endl;
-
-            BOOST_CHECK_EQUAL( rJA[k], ja_compress[k] );
-            BOOST_CHECK_EQUAL( rValues[k], values_compress[k] );
-        }
-    }
-}
-
 /* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
@@ -2048,8 +1971,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( numRows, res_values, testContext );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
-                                << ", with x = " << x
-                                << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
+                       << ", with x = " << x
+                       << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -2063,8 +1986,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
 
             sparseGEMV[loc]( wResult.get(),
                              alpha, rX.get(),
-                             numRows, numValuesPerRow, 
-                             numNonEmptyRows, rIndexes.get(), 
+                             numRows, numValuesPerRow,
+                             numNonEmptyRows, rIndexes.get(),
                              rIA.get(), rJA.get(), rValues.get() );
         }
 
@@ -2142,8 +2065,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( numColumns, res_values, testContext );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
-                                << ", with x = " << x
-                                << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
+                       << ", with x = " << x
+                       << ", CSR: ia = " << ellIA << ", ja = " << ellJA << ", values = " << ellValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -2156,8 +2079,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
             WriteAccess<ValueType> wResult( res, loc );
 
             sparseGEVM[loc]( wResult.get(), alpha, rX.get(),
-                             numRows, numColumns, numValuesPerRow, 
-                             numNonEmptyRows, rIndexes.get(), 
+                             numRows, numColumns, numValuesPerRow,
+                             numNonEmptyRows, rIndexes.get(),
                              rIA.get(), rJA.get(), rValues.get() );
         }
 
@@ -2324,7 +2247,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
             WriteAccess<ValueType> wSolution( solution, loc, numColumns );
 
             jacobiHalo[loc]( wSolution.get(), numRows, rDiag.get(),
-                             numValuesPerRow, rIA.get(), rJA.get(), rValues.get(), 
+                             numValuesPerRow, rIA.get(), rJA.get(), rValues.get(),
                              rIndexes.get(), numNonEmptyRows,
                              rOld.get(), omega );
         }

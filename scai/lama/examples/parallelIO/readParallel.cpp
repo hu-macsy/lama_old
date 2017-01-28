@@ -1,8 +1,8 @@
 /**
- * @file writeParallel.cpp
+ * @file lama/examples/parallelIO/readParallel.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,7 +45,7 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 
-#include "utility.hpp" 
+#include "utility.hpp"
 
 using namespace std;
 
@@ -68,15 +68,17 @@ int main( int argc, const char* argv[] )
         cout << "   Supported types: ";
         vector<common::scalar::ScalarType> dataTypes;
         hmemo::_HArray::getCreateValues( dataTypes );
+
         for ( size_t i = 0; i < dataTypes.size(); ++i )
-        { 
+        {
             cout << dataTypes[i] << " ";
         }
+
         cout << endl;
         return -1;
     }
 
-    // take double as default 
+    // take double as default
 
     common::scalar::ScalarType type = getType();
 
@@ -97,7 +99,7 @@ int main( int argc, const char* argv[] )
     }
 
     // whatever the distribution may be, we write it in a single file
- 
+
     matrix.writeToFile( argv[2] );
 
     cout << "written CSR matrix : " << matrix << endl;

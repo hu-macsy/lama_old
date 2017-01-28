@@ -2,7 +2,7 @@
  * @file common/unique_ptr.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -41,21 +41,21 @@ namespace scai
 
 namespace common
 {
-    using std::unique_ptr;
+using std::unique_ptr;
 
-    /** C++11: here we can use unique_ptr for a scoped array */
+/** C++11: here we can use unique_ptr for a scoped array */
 
-    template<typename T>
-    class scoped_array : public std::unique_ptr<T[]>
+template<typename T>
+class scoped_array : public std::unique_ptr<T[]>
+{
+public:
+    scoped_array( T* ptr ) : std::unique_ptr<T[]>( ptr )
     {
-    public:
-        scoped_array( T* ptr ) : std::unique_ptr<T[]>( ptr )
-        {
-        }
-        scoped_array() : std::unique_ptr<T[]>()
-        {
-        }
-    };
+    }
+    scoped_array() : std::unique_ptr<T[]>()
+    {
+    }
+};
 } /* end namespace common */
 
 } /* end namespace scai */

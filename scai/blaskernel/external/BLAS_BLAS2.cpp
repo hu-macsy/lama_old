@@ -2,7 +2,7 @@
  * @file BLAS_BLAS2.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -151,16 +151,16 @@ void BLAS_BLAS2::gemv(
         }
         else
         {
-            BLASWrapper<ValueType>::gemv( ta, 
-                                          static_cast<BLASTrait::BLASIndexType>( n ), 
-                                          static_cast<BLASTrait::BLASIndexType>( m ), 
-                                          alpha, 
-                                          a, 
-                                          static_cast<BLASTrait::BLASIndexType>( lda ), 
-                                          x, 
-                                          static_cast<BLASTrait::BLASIndexType>( incX ), 
-                                          beta, 
-                                          y, 
+            BLASWrapper<ValueType>::gemv( ta,
+                                          static_cast<BLASTrait::BLASIndexType>( n ),
+                                          static_cast<BLASTrait::BLASIndexType>( m ),
+                                          alpha,
+                                          a,
+                                          static_cast<BLASTrait::BLASIndexType>( lda ),
+                                          x,
+                                          static_cast<BLASTrait::BLASIndexType>( incX ),
+                                          beta,
+                                          y,
                                           static_cast<BLASTrait::BLASIndexType>( incY ) );
         }
     }
@@ -196,7 +196,7 @@ void BLAS_BLAS2::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegi
     }
 
     SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS2 wrapper routines for Host at kernel registry: " <<
-                            "T = " << common::TypeTraits<ValueType>::id() )
+                    "T = " << common::TypeTraits<ValueType>::id() )
 
     KernelRegistry::set<BLASKernelTrait::gemv<ValueType> >( BLAS_BLAS2::gemv, ctx, flag );
 }

@@ -2,7 +2,7 @@
  * @file BenchSort.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -121,7 +121,7 @@ int main( int argc, const char* argv[] )
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     const IndexType N = 10 * 1000 * 1000;
- 
+
     // sort<double>( N );
     // sort<IndexType>( N );
     bucketSort( N );

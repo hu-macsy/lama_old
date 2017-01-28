@@ -2,7 +2,7 @@
  * @file kregistry/mepr/Registrator.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,19 +48,19 @@ namespace mepr
 
 /**
  * Instantiate the Registrator for one template-parameter with different kind of ValueTypes
- * 
+ *
  * @tparam R is the name of the Registrator class with one template argument, must have method registerKernels
  * @tparam TLIST is the list of types, for each type R<type>::registerKernels is called
  */
-template<template<typename> class R, typename TList> 
+template<template<typename> class R, typename TList>
 struct RegistratorV;
 
-template<template<typename> class R> 
+template<template<typename> class R>
 struct RegistratorV<R, common::mepr::NullType>
 {
-    // Dummy call for empty typelist 
+    // Dummy call for empty typelist
 
-    static void registerKernels( const KernelRegistry::KernelRegistryFlag ) 
+    static void registerKernels( const KernelRegistry::KernelRegistryFlag )
     {
     }
 };
@@ -86,7 +86,7 @@ struct RegistratorV< R, common::mepr::TypeList<H, T> >
  * _RegistratorVO
  */
 
-template<template<typename, typename> class R, typename ValueType, typename TList> 
+template<template<typename, typename> class R, typename ValueType, typename TList>
 struct _RegistratorVO;
 
 template<template<typename, typename> class R, typename TList>

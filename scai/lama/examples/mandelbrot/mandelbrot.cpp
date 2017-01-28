@@ -2,7 +2,7 @@
  * @file mandelbrot.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -74,7 +74,7 @@ struct Type_rgb
 * pixel variable contain the value of the color pixel in
 * the picture.
 */
-struct Type_rgb pixels[DIMy * DIMx];
+struct Type_rgb pixels[DIMy* DIMx];
 
 /*
 * function mandelbrotset find where the number is in

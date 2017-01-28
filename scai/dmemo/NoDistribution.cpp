@@ -2,7 +2,7 @@
  * @file NoDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -62,7 +62,7 @@ NoDistribution::NoDistribution( const IndexType globalSize )
 NoDistribution::~NoDistribution()
 {
 }
- 
+
 /* ---------------------------------------------------------------------- */
 
 bool NoDistribution::isLocal( const IndexType /* index */ ) const
@@ -127,7 +127,7 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
     PartitionId root = 0;
-    owners.init( root, indexes.size() ); 
+    owners.init( root, indexes.size() );
 }
 
 /* ---------------------------------------------------------------------------------*

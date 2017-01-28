@@ -2,7 +2,7 @@
  * @file blaskernel/cuda/CUBLASWrapper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,10 +61,10 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
     class COMMON_DLL_IMPORTEXPORT CUBLASWrapper<ValueType>                                                                  \
     {                                                                                                                       \
     public:                                                                                                                 \
-                                                                                                                            \
+        \
         typedef CUBLASTrait::BLASIndexType BLASIndexType;                                                                   \
         typedef CUBLASTrait::BLASTrans BLASTrans;                                                                           \
-                                                                                                                            \
+        \
         static void scal( cublasHandle_t handle, const IndexType n, const ValueType alpha,                                  \
                           ValueType* x, const IndexType incX )                                                              \
         {                                                                                                                   \
@@ -72,11 +72,11 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
             BLASIndexType b_incX = static_cast<BLASIndexType>( incX );                                                      \
             const CUBLASValueType* b_alpha = reinterpret_cast<const CUBLASValueType*>( &alpha );                            \
             CUBLASValueType* b_x = reinterpret_cast<CUBLASValueType*>( x );                                                 \
-                                                                                                                            \
+            \
             SCAI_CUBLAS_CALL( CUBLAS_BLAS_NAME( scal, prefix1 )( handle, b_n, b_alpha, b_x, b_incX),                        \
                               "CUBLASWrapper::scal<" #ValueType ">()" );                                                    \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static ValueType nrm2( cublasHandle_t handle, const IndexType n, const ValueType *x, const IndexType incX )         \
         {                                                                                                                   \
             common::TypeTraits<ValueType>::AbsType nrm2 = 0;                                                                \
@@ -88,7 +88,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               "CUBLASWrapper::nrm2<" #ValueType ">");                                                       \
             return nrm2;                                                                                                    \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static ValueType asum( cublasHandle_t handle, const IndexType n, const ValueType *x, IndexType incX)                \
         {                                                                                                                   \
             common::TypeTraits<ValueType>::AbsType asum = 0;                                                                \
@@ -100,7 +100,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               "CUBLASWrapper::asum<" #ValueType ">");                                                       \
             return asum;                                                                                                    \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static BLASIndexType iamax( cublasHandle_t handle, const IndexType n, const ValueType *x, const IndexType incX)     \
         {                                                                                                                   \
             BLASIndexType iamax;                                                                                            \
@@ -111,7 +111,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                              "CUBLASWrapper::iamax<" #ValueType ">");                                                       \
             return iamax;                                                                                                   \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static void swap( cublasHandle_t handle, const BLASIndexType n, ValueType *x, const IndexType incX, ValueType *y,   \
                           const IndexType incY)                                                                             \
         {                                                                                                                   \
@@ -123,7 +123,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               reinterpret_cast<CUBLASValueType*>(y), b_incY ),                                              \
                               "CUBLASWrapper::swap<" #ValueType ">");                                                       \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static void copy( cublasHandle_t handle, const IndexType n, const ValueType *x, const IndexType incX,               \
                           ValueType *y, const IndexType incY)                                                               \
         {                                                                                                                   \
@@ -135,7 +135,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               reinterpret_cast<CUBLASValueType*>(y), b_incY ),                                              \
                               "CUBLASWrapper::copy<" #ValueType ">");                                                       \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static void axpy( cublasHandle_t handle, const IndexType n, const ValueType alpha,                                  \
                           const ValueType *x, const IndexType incX, ValueType *y, const IndexType incY)                     \
         {                                                                                                                   \
@@ -148,7 +148,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               b_incX, reinterpret_cast<CUBLASValueType*>(y), b_incY),                                       \
                               "CUBLASWrapper::axpy<" #ValueType ">");                                                       \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static ValueType dot( cublasHandle_t handle, const IndexType n, const ValueType *x,                                 \
                               const IndexType incX, const ValueType *y, const IndexType incY)                               \
         {                                                                                                                   \
@@ -163,7 +163,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               "CUBLASWrapper::dot<" #ValueType ">");                                                        \
             return dot;                                                                                                     \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static void gemv(  cublasHandle_t handle, const BLASTrans transA, const IndexType m, const IndexType n,             \
                            const ValueType alpha, const ValueType* A, const IndexType lda, const ValueType* x,              \
                            const IndexType incX, const ValueType beta, ValueType* y, const IndexType incY)                  \
@@ -180,7 +180,7 @@ class COMMON_DLL_IMPORTEXPORT CUBLASWrapper;
                               reinterpret_cast<const CUBLASValueType*>(&beta), reinterpret_cast<CUBLASValueType*>(y),       \
                               b_incY), "CUBLASWrapper::gemv<" #ValueType ">");                                              \
         }                                                                                                                   \
-                                                                                                                            \
+        \
         static void gemm(  cublasHandle_t handle, const BLASTrans transA, const BLASTrans transB,                           \
                            const IndexType m, const IndexType n, const IndexType k,                                         \
                            const ValueType alpha, const ValueType* A, const IndexType lda, const ValueType* B,              \

@@ -2,7 +2,7 @@
  * @file OpenMPJDSUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -206,10 +206,10 @@ IndexType OpenMPJDSUtils::getValuePos(
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IndexType OpenMPJDSUtils::getValuePosCol( 
-    IndexType row[], 
+IndexType OpenMPJDSUtils::getValuePosCol(
+    IndexType row[],
     IndexType pos[],
-    const IndexType j, 
+    const IndexType j,
     const IndexType numRows,
     const IndexType ilg[],
     const IndexType dlg[],
@@ -235,9 +235,9 @@ IndexType OpenMPJDSUtils::getValuePosCol(
                 IndexType n = atomicInc( cnt );
                 row[n] = perm[ii];
                 pos[n] = p;
-                break;    
+                break;
             }
-  
+
             k += dlg[jj];
         }
     }
@@ -516,7 +516,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
-    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );  
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
 
     if ( ndlg == 0 )
     {
@@ -623,7 +623,7 @@ void OpenMPJDSUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.JDS.normalGEVM" )
 
-        #pragma omp for 
+        #pragma omp for
 
         for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {

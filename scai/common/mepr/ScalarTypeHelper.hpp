@@ -2,7 +2,7 @@
  * @file common/mepr/ScalarTypeHelper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -74,7 +74,7 @@ struct ScalarTypeHelper<NullType>
 
     static int precision( const scalar::ScalarType )
     {
-        // no type T available with TypeTraits<T>::stype 
+        // no type T available with TypeTraits<T>::stype
         return 0;
     }
 

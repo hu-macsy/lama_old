@@ -2,7 +2,7 @@
  * @file OpenMPDIAUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -69,7 +69,7 @@ SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPDIAUtils::getValuePos( const IndexType i, 
+IndexType OpenMPDIAUtils::getValuePos( const IndexType i,
                                        const IndexType j,
                                        const IndexType numRows,
                                        const IndexType diaOffsets[],
@@ -227,6 +227,7 @@ void OpenMPDIAUtils::getCSRValues(
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
+
                 bool nonZero = common::Math::abs( value ) > eps;
 
                 if ( nonZero )
@@ -438,7 +439,7 @@ void OpenMPDIAUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.DIA.normalGEVM" )
 
-        #pragma omp for 
+        #pragma omp for
 
         for ( IndexType j = 0; j < numColumns; j++ )
         {

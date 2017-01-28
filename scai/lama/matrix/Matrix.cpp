@@ -2,7 +2,7 @@
  * @file Matrix.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -197,8 +197,8 @@ Matrix::Matrix( DistributionPtr distribution )
 
 Matrix::Matrix()
     : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
-          DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
-      mNumColumns( 0 )
+        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
+    mNumColumns( 0 )
 {
     setDefaultKind();
 }
@@ -213,18 +213,18 @@ Matrix::SyncKind Matrix::getDefaultSyncKind()
     static bool computed = false;
 
     static SyncKind syncKind = ASYNCHRONOUS;
-   
+
     if ( !computed )
     {
         bool isAsync = true;
 
         common::Settings::getEnvironment( isAsync, "SCAI_ASYNCHRONOUS" );
-       
+
         if ( !isAsync )
         {
             syncKind = SYNCHRONOUS;
         }
-    } 
+    }
 
     return syncKind;
 }
@@ -776,7 +776,7 @@ void Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
 
     _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( getLocalStorage() );
 
-    bool errorFlag = false;   
+    bool errorFlag = false;
 
     IndexType localSize = 0;
 
@@ -845,7 +845,7 @@ void Matrix::resetRowDistributionByFirstColumn()
 
     CommunicatorPtr comm = getRowDistribution().getCommunicatorPtr();
 
-    // catch local exceptions and throw later a global exception 
+    // catch local exceptions and throw later a global exception
 
     try
     {
@@ -895,39 +895,39 @@ void Matrix::readFromFile( const std::string& matrixFileName, const std::string&
     }
     else if ( distributionFileName == "BLOCK" )
     {
-         CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-         DistributionPtr rowDist;
+        DistributionPtr rowDist;
 
-         // for a single file we set a BlockDistribution
+        // for a single file we set a BlockDistribution
 
-         if ( matrixFileName.find( "%r" ) == std::string::npos )
-         {
-             PartitionId root = 0;
+        if ( matrixFileName.find( "%r" ) == std::string::npos )
+        {
+            PartitionId root = 0;
 
-             IndexType numRows = nIndex;
+            IndexType numRows = nIndex;
 
-             if ( comm->getRank() == root )
-             {
-                 numRows = FileIO::getStorageSize( matrixFileName );
-             }
+            if ( comm->getRank() == root )
+            {
+                numRows = FileIO::getStorageSize( matrixFileName );
+            }
 
-             comm->bcast( &numRows, 1, root );
+            comm->bcast( &numRows, 1, root );
 
-             rowDist.reset( new BlockDistribution( numRows, comm ) );
+            rowDist.reset( new BlockDistribution( numRows, comm ) );
         }
 
         readFromFile( matrixFileName, rowDist );
     }
     else
     {
-         // read the distribution
+        // read the distribution
 
-         CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-         DistributionPtr rowDist = PartitionIO::readDistribution( distributionFileName, comm );
- 
-         readFromFile( matrixFileName, rowDist );
+        DistributionPtr rowDist = PartitionIO::readDistribution( distributionFileName, comm );
+
+        readFromFile( matrixFileName, rowDist );
     }
 }
 
@@ -951,8 +951,8 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
     PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
 
-    SCAI_LOG_INFO( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read " 
-                            << newFileName << ", partitioned = " << isPartitioned );
+    SCAI_LOG_INFO( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read "
+                   << newFileName << ", partitioned = " << isPartitioned );
 
     if ( !isPartitioned )
     {

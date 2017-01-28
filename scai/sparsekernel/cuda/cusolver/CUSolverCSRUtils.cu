@@ -2,7 +2,7 @@
  * @file CUSolverCSRUtils.cu
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -99,11 +99,12 @@ void CUSolverCSRUtils::decomposition(
     // note: SCAI_CHECK_CUDA_ACCESS not required due to getCurrentCUDACtx
     cusolverSpHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSolverSpHandle();
 
-	cusparseMatDescr_t descrA;
+    cusparseMatDescr_t descrA;
     SCAI_CUSPARSE_CALL( cusparseCreateMatDescr( &descrA ), "cusparseCreateMatDescr" )
-    if( isSymmetic )
+
+    if ( isSymmetic )
     {
-        if( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+        if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
         {
             cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_HERMITIAN );
         }
@@ -142,8 +143,8 @@ void CUSolverCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kern
 
     const common::context::ContextType ctx = common::context::CUDA;
 
-    SCAI_LOG_INFO( logger, "register CUSolverCSRUtils CUSolver-routines for CUDA at kernel registry [" 
-                            << flag << " --> " << common::getScalarType<ValueType>() << "]" )
+    SCAI_LOG_INFO( logger, "register CUSolverCSRUtils CUSolver-routines for CUDA at kernel registry ["
+                   << flag << " --> " << common::getScalarType<ValueType>() << "]" )
 
     KernelRegistry::set<CSRKernelTrait::decomposition<ValueType> >( decomposition, ctx, flag );
 }

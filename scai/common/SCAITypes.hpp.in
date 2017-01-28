@@ -2,7 +2,7 @@
  * @file SCAITypes.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -97,7 +97,7 @@ typedef IndexType PartitionId;
 COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER extern const PartitionId nPartition;
 
 /*
- * Lists of all supported numeric types 
+ * Lists of all supported numeric types
  */
 
 #ifdef SCAI_COMPLEX_SUPPORTED

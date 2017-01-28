@@ -2,7 +2,7 @@
  * @file SegmentData.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -170,7 +170,7 @@ void SegmentData::release()
 
 void SegmentData::writeAt( std::ostream& stream ) const
 {
-    stream << "Segment<" << mScalarType<< ">( id = " << static_cast<int>( mId )
+    stream << "Segment<" << mScalarType << ">( id = " << static_cast<int>( mId )
            << ", offs = " << mOffsetBytes << ", ptr = " << mPtr << " )";
 }
 

@@ -2,7 +2,7 @@
  * @file MICCOOUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -146,7 +146,7 @@ private:
 
     /** Struct for registration of methods with one template argument.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for each supported type
      */
 
@@ -158,7 +158,7 @@ private:
 
     /** Struct for registration of methods with two template arguments.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for all supported types.
      */
 

@@ -1,5 +1,3 @@
-#!/bin/bash
-
 if ((BASH_VERSINFO[0] < 4))
 then
 	echo "For testing logging you need bash version 4 or newer"
@@ -10,7 +8,7 @@ fi
  # @file scai/logging/test/test.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #

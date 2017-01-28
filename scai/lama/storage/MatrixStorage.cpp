@@ -2,7 +2,7 @@
  * @file MatrixStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -90,7 +90,7 @@ SCAI_LOG_DEF_LOGGER( _MatrixStorage::logger, "MatrixStorage" )
 _MatrixStorage::_MatrixStorage()
 
     : mNumRows( 0 ), mNumColumns( 0 ), mRowIndexes(), mCompressThreshold( 0.0f ), mDiagonalProperty(
-          false ), mContext( Context::getHostPtr() )
+        false ), mContext( Context::getHostPtr() )
 {
     SCAI_LOG_DEBUG( logger, "constructed MatrixStorage()" )
 }
@@ -321,9 +321,13 @@ void _MatrixStorage::offsets2sizes( HArray<IndexType>& sizes, const HArray<Index
     }
 
     const IndexType n = offsets.size() - 1;
+
     ReadAccess<IndexType> readOffsets( offsets );
+
     WriteAccess<IndexType> writeSizes( sizes );
+
     writeSizes.clear(); // old values are not used
+
     writeSizes.resize( n );
 
     for ( IndexType i = 0; i < n; i++ )
@@ -581,7 +585,7 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
 
     SCAI_LOG_INFO( logger, "copyBlockTo : first = " << first << ", n = " << n << ", from this : " << *this )
 
-    // copy out the corresponding sections, ia needs a shifting to zero 
+    // copy out the corresponding sections, ia needs a shifting to zero
 
     LArray<IndexType> blockIA( n + 1 );
     HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, binary::COPY, loc );
@@ -636,7 +640,7 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
     LArray<IndexType> csrJA( numValues );
     LArray<ValueType> csrValues( numValues );
 
-    IndexType lb     = 0;   
+    IndexType lb     = 0;
     IndexType offset = 0;
 
     ContextPtr ctx = this->getContextPtr();
@@ -1088,7 +1092,7 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const HArray<ValueType>&,
         const ValueType,
         const HArray<ValueType>& ) const
-        = &MatrixStorage<ValueType>::matrixTimesVector;
+    = &MatrixStorage<ValueType>::matrixTimesVector;
     using common::bind;
     using common::ref;
     using common::cref;
@@ -1113,7 +1117,7 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const HArray<ValueType>&,
         const ValueType,
         const HArray<ValueType>& ) const
-        = &MatrixStorage<ValueType>::vectorTimesMatrix;
+    = &MatrixStorage<ValueType>::vectorTimesMatrix;
     using common::bind;
     using common::ref;
     using common::cref;
@@ -1149,7 +1153,7 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const HArray<ValueType>&,
         const HArray<ValueType>&,
         const ValueType ) const
-        = &MatrixStorage<ValueType>::jacobiIterate;
+    = &MatrixStorage<ValueType>::jacobiIterate;
     using common::bind;
     using common::cref;
     using common::ref;
@@ -1313,20 +1317,31 @@ void MatrixStorage<ValueType>::redistribute( const _MatrixStorage& other, const 
     }
 
     const IndexType numColumns = other.getNumColumns(); // does not change
+
     // check that source distribution fits with storage
     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // get the matrix data from other in CSR format
     HArray<IndexType> sourceIA;
+
     HArray<IndexType> sourceJA;
+
     HArray<ValueType> sourceValues;
+
     other.buildCSRData( sourceIA, sourceJA, sourceValues );
+
     HArray<IndexType> targetIA;
+
     HArray<IndexType> targetJA;
+
     HArray<ValueType> targetValues;
+
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, sourceIA, sourceJA, sourceValues,
             redistributor );
+
     const IndexType targetNumRows = targetIA.size() - 1;
+
     const IndexType targetNumValues = targetJA.size();
+
     setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
 }
 
@@ -1360,16 +1375,23 @@ void MatrixStorage<ValueType>::redistributeCSR( const CSRStorage<ValueType>& oth
     }
 
     const IndexType numColumns = other.getNumColumns(); // does not change
+
     // check that source distribution fits with storage
     SCAI_ASSERT_EQUAL_ERROR( other.getNumRows(), sourceDistribution.getLocalSize() )
     // it is not necessary to convert the other storage to CSR
     HArray<IndexType> targetIA;
+
     HArray<IndexType> targetJA;
+
     HArray<ValueType> targetValues;
+
     StorageMethods<ValueType>::redistributeCSR( targetIA, targetJA, targetValues, other.getIA(), other.getJA(),
             other.getValues(), redistributor );
+
     const IndexType targetNumRows = targetIA.size() - 1;
+
     const IndexType targetNumValues = targetJA.size();
+
     setCSRData( targetNumRows, numColumns, targetNumValues, targetIA, targetJA, targetValues );
 }
 
@@ -1481,7 +1503,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
     SCAI_REGION( "Storage.readFromFile" )
 
     std::string suffix = FileIO::getSuffix( fileName );
-   
+
     // Note: reading does not care about binary argument, just read as it is
 
     if ( FileIO::canCreate( suffix ) )
@@ -1491,7 +1513,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
         common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         // For reading we expect here that the file data type matches the storage type
-        // so SCAI_IO_TYPE_DATA should be ignored for reading 
+        // so SCAI_IO_TYPE_DATA should be ignored for reading
 
         fileIO->setDataType( common::scalar::INTERNAL );
 

@@ -2,7 +2,7 @@
  * @file Matrix.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -211,7 +211,7 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
 
-    /** Set matrix to a (replicated) identity matrix with same row and column distribution. 
+    /** Set matrix to a (replicated) identity matrix with same row and column distribution.
      *
      *  \code
      *    m.setIdentitiy( n ) ->  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
@@ -224,7 +224,7 @@ public:
      * This method sets a matrix by reading its values from one or multiple files.
      *
      * @param[in] filename      the filename to read from
-     * @param[in] rowDist       optional, if set it is the distribution of the matrix 
+     * @param[in] rowDist       optional, if set it is the distribution of the matrix
      *
      *   \code
      *      CSRSparseMatrix<double> matrix;
@@ -252,8 +252,8 @@ public:
      */
     void readFromFile( const std::string& matrixFileName, const std::string& distributionFileName );
 
-    /** This method resorts column indexes in such a way that the diagonal element is always the 
-     *  first one in a row. 
+    /** This method resorts column indexes in such a way that the diagonal element is always the
+     *  first one in a row.
      *
      *  This method throws an exception if row and column distribution are not equal. Furhtermore
      *  it throws an exception, if a diagonal element is zero, i.e. there is no entry for the diagonal
@@ -476,7 +476,7 @@ public:
      *   (otherwise conversion)
      * - this method throws an exception for a sparse matrix if the pattern must be changed
      */
-    virtual void setRow( const Vector& row, 
+    virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,
                          const utilskernel::binary::BinaryOp op ) = 0;
 
@@ -491,8 +491,8 @@ public:
      * - the distribution of col must be the same as the row distribution of the matrix
      * - this method does not change the pattern of a sparse matrix, so throws an exception if it is insufficient
      */
-    virtual void setColumn( 
-        const Vector& column, 
+    virtual void setColumn(
+        const Vector& column,
         const IndexType globalColIndex,
         const utilskernel::binary::BinaryOp op ) = 0;
 
@@ -560,20 +560,20 @@ public:
      */
     virtual Scalar getValue( IndexType i, IndexType j ) const = 0;
 
-    /** 
+    /**
      * @brief Update of an (existing ) element in a matrix
      *
      * @param[in] i   the global row index
      * @param[in] j   the global column index
      * @param[in] val value used for update
-     * @param[in] op  binary operation used to combine new and old value, default is COPY 
+     * @param[in] op  binary operation used to combine new and old value, default is COPY
      *
      * Note: this method will never change the pattern of a sparse matrix.
      */
-    virtual void setValue( 
-        const IndexType i, 
-        const IndexType j, 
-        const Scalar val, 
+    virtual void setValue(
+        const IndexType i,
+        const IndexType j,
+        const Scalar val,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
@@ -1138,7 +1138,7 @@ protected:
     void readFromSingleFile( const std::string& fileName );
 
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr distribution );
- 
+
     void readFromPartitionedFile( const std::string& fileName );
 
     void resetRowDistribution( dmemo::DistributionPtr distribution );

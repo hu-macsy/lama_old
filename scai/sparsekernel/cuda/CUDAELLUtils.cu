@@ -2,7 +2,7 @@
  * @file CUDAELLUtils.cu
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -498,12 +498,12 @@ void CUDAELLUtils::setCSRValues(
 {
     SCAI_REGION( "CUDA.ELL.setCSR" )
     SCAI_LOG_INFO( logger,
-                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" 
-                    << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
+                   "set CSRValues<" << TypeTraits<ELLValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">"
+                   << ", #rows = " << numRows << ", #values/row = " << numValuesPerRow )
 
     SCAI_LOG_DEBUG( logger,
-                    "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes 
-                     << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
+                    "ellJA = " << ellJA << ", ellValues = " << ellValues << ", ellSizes = " << ellSizes
+                    << ", csrIA = " << csrIA << ", csrJA = " << csrJA << ", csrValues = " << csrValues )
 
     if ( numRows == 0 )
     {
@@ -841,9 +841,13 @@ void CUDAELLUtils::normalGEMV(
     }
 
     const int blockSize = CUDASettings::getBlockSize();
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
     bool useTexture = CUDASettings::useTexture();
+
     SCAI_LOG_INFO( logger, "Start normal_gemv_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< blockSize = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ">>>" )
@@ -1094,7 +1098,7 @@ void CUDAELLUtils::normalGEVM(
 
     CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
 
-    SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">");
+    SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 
     normal_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream>>> (
         result, x, alpha, ellSizes, ellJA, ellValues, numRows );
@@ -1208,8 +1212,11 @@ void CUDAELLUtils::sparseGEMV(
     }
 
     const IndexType blockSize = CUDASettings::getBlockSize( numNonZeroRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
+
     bool useTexture = CUDASettings::useTexture();
 
     if ( useTexture )
@@ -1306,11 +1313,13 @@ void CUDAELLUtils::sparseGEVM(
     }
 
     const IndexType blockSize = CUDASettings::getBlockSize( numNonZeroRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numNonZeroRows, dimBlock.x );
 
     sparse_gevm_kernel<ValueType> <<< dimGrid, dimBlock, 0, stream >>>
-        ( result, x, alpha, ellSizes, ellJA, ellValues, numRows, rowIndexes, numNonZeroRows );
+    ( result, x, alpha, ellSizes, ellJA, ellValues, numRows, rowIndexes, numNonZeroRows );
 
     if ( !syncToken )
     {
@@ -1394,8 +1403,11 @@ void CUDAELLUtils::jacobi(
     }
 
     const IndexType blockSize = CUDASettings::getBlockSize( numRows );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
+
     SCAI_LOG_INFO( logger, "Start ell_jacobi_kernel<" << TypeTraits<ValueType>::id()
                    << "> <<< block size = " << blockSize << ", stream = " << stream
                    << ", useTexture = " << useTexture << ">>>" );
@@ -1478,6 +1490,7 @@ void ell_jacobi_halo_kernel(
         }
 
         const ValueType diag = diagonal[i];
+
         solution[i] -= temp * omega / diag;
     }
 }
@@ -1613,7 +1626,7 @@ void ell_compressValues_kernel(
     {
         IndexType* gaps = new IndexType[numValuesPerRow];
 
-        for( IndexType j = 0; j < numValuesPerRow; ++j )
+        for ( IndexType j = 0; j < numValuesPerRow; ++j )
         {
             gaps[j] = 0;
         }
@@ -1630,6 +1643,7 @@ void ell_compressValues_kernel(
 
         IndexType totalGaps = 0;
         IndexType lastNewPos = -1;
+
         for ( IndexType j = 0; j < IA[i]; j++ )
         {
             totalGaps += gaps[j];
@@ -1642,6 +1656,7 @@ void ell_compressValues_kernel(
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
+
             lastNewPos = newpos;
         }
 
@@ -1653,6 +1668,7 @@ void ell_compressValues_kernel(
             newValues[newpos] = 0;
             newJA[newpos] = 0;
         }
+
         delete gaps;
     }
 }
@@ -1680,7 +1696,7 @@ void CUDAELLUtils::compressValues(
     dim3 dimGrid = makeGrid( numRows, dimBlock.x );
 
     ell_compressValues_kernel <<< dimGrid, dimBlock>>>( IA, JA, values, numRows, numValuesPerRow, eps,
-                                                        newNumValuesPerRow, newJA, newValues );
+            newNumValuesPerRow, newJA, newValues );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "compress" )
 }
@@ -1705,7 +1721,7 @@ void CUDAELLUtils::RegistratorV<ValueType>::registerKernels( kregistry::KernelRe
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
-                             << " --> " << common::getScalarType<ValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
@@ -1723,7 +1739,7 @@ void CUDAELLUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kr
     using kregistry::KernelRegistry;
     const common::context::ContextType ctx = common::context::CUDA;
     SCAI_LOG_DEBUG( logger, "register ELLUtils CUDA-routines for CUDA at kernel registry [" << flag
-                      << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<ELLKernelTrait::scaleValue<ValueType, OtherValueType> >( scaleValue, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::getRow<ValueType, OtherValueType> >( getRow, ctx, flag );
     KernelRegistry::set<ELLKernelTrait::setCSRValues<ValueType, OtherValueType> >( setCSRValues, ctx, flag );

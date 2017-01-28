@@ -2,7 +2,7 @@
  * @file HArrayUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -102,7 +102,7 @@ void HArrayUtils::setArrayImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
                        op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
 
     // set should be available on interface for each loc
@@ -114,12 +114,12 @@ void HArrayUtils::setArrayImpl(
     if ( !loc )
     {
         if ( op == binary::COPY )
-        {   
+        {
             // if no context is given we assign where source has a valid copy available
             loc = source.getValidContext();
         }
         else
-        {   
+        {
             // if no context is given we assign where target has a valid copy available
             loc = target.getValidContext();
         }
@@ -158,7 +158,7 @@ void HArrayUtils::setArraySection(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArraySection( 
+    mepr::UtilsWrapperTT1<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::setArraySection(
         target, targetOffset, targetStride,
         source, sourceOffset, sourceStride,
         n, op, prefLoc );
@@ -178,7 +178,7 @@ void HArrayUtils::setArraySectionImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
                        op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
 
     // in contrary to setArray we assume correctly allocated target
@@ -193,7 +193,7 @@ void HArrayUtils::setArraySectionImpl(
 
         loc = source.getValidContext();
     }
- 
+
     setSection.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
@@ -202,7 +202,7 @@ void HArrayUtils::setArraySectionImpl(
     WriteAccess<TargetValueType> targetVals( target, loc );
 
     setSection[loc]( targetVals.get() + targetOffset, targetStride,
-                     sourceVals.get() + sourceOffset, sourceStride, 
+                     sourceVals.get() + sourceOffset, sourceStride,
                      n, op );
 }
 
@@ -242,13 +242,13 @@ void HArrayUtils::gatherImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
                        op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
 
     SCAI_REGION( "HArray.gather" )
 
-    SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] " << op << " = source [ indexes [ " 
-                            << indexes.size() << " ] : " << source.size() << " ]" )
+    SCAI_LOG_INFO( logger, "target[ " << target.size() << " ] " << op << " = source [ indexes [ "
+                   << indexes.size() << " ] : " << source.size() << " ]" )
 
     // choose location for the operation where source array is currently valid
     static LAMAKernel<UtilKernelTrait::setGather<TargetValueType, SourceValueType> > setGather;
@@ -261,7 +261,7 @@ void HArrayUtils::gatherImpl(
 
     setGather.getSupportedContext( loc );
     const IndexType n = indexes.size();
- 
+
     if ( op == binary::COPY )
     {
         //  target[i] = source[ indexes[i] ]
@@ -296,17 +296,17 @@ void HArrayUtils::scatterImpl(
     const binary::BinaryOp op,
     const ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<TargetValueType>( op ),
                        op << " not supported for " << common::TypeTraits<TargetValueType>::id() )
 
     SCAI_REGION( "HArray.scatter" )
 
-    SCAI_LOG_INFO( logger, "target[ indexes[ " << indexes.size() << " ] : " << target.size() 
-                            << " ] = source[ " << source.size() << " ]" )
+    SCAI_LOG_INFO( logger, "target[ indexes[ " << indexes.size() << " ] : " << target.size()
+                   << " ] = source[ " << source.size() << " ]" )
 
-    SCAI_ASSERT(      ( op == binary::COPY ) 
-                   || ( op == binary::ADD )
-                   || ( op == binary::SUB ) , "Unsupported reduction op " << op  )
+    SCAI_ASSERT(      ( op == binary::COPY )
+                      || ( op == binary::ADD )
+                      || ( op == binary::SUB ) , "Unsupported reduction op " << op  )
 
     SCAI_ASSERT( HArrayUtils::validIndexes( indexes, target.size(), prefLoc ),
                  "illegal scatter index, target has size " << target.size() )
@@ -349,7 +349,7 @@ void HArrayUtils::setScalar(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( op ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( op ),
                        op << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;
@@ -401,12 +401,12 @@ void HArrayUtils::setValImpl(
     const ValueType val,
     const binary::BinaryOp op )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( op ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( op ),
                        op << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     // setting single value will directly copy to the device with the valid incarnation
 
-    ContextPtr loc = target.getValidContext();  
+    ContextPtr loc = target.getValidContext();
 
     if ( op == binary::COPY )
     {
@@ -526,7 +526,7 @@ ValueType HArrayUtils::absMaxDiffVal(
     // is just a special case of a reduction with two combined arrays
 
     return reduce2( array1, array2, binary::SUB, binary::ABS_MAX, prefLoc );
-} 
+}
 
 /* --------------------------------------------------------------------------- */
 
@@ -538,7 +538,7 @@ ValueType HArrayUtils::reduce2(
     const binary::BinaryOp redOp,
     ContextPtr prefLoc )
 {
-    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( binOp ), 
+    SCAI_ASSERT_ERROR( isBinarySupported<ValueType>( binOp ),
                        binOp << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     ValueType zero = zeroBinary<ValueType>( redOp ); // checks also for valid op
@@ -565,11 +565,11 @@ ValueType HArrayUtils::reduce2(
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    ValueType redVal = reduce2[loc]( readArray1.get(), 
-                                     readArray2.get(), 
+    ValueType redVal = reduce2[loc]( readArray1.get(),
+                                     readArray2.get(),
                                      n,
-                                     binOp, 
-                                     zero, 
+                                     binOp,
+                                     zero,
                                      redOp );
     return redVal;
 }
@@ -663,6 +663,7 @@ void HArrayUtils::arrayPlusArray(
         {
             binaryOpScalar1( result, alpha, x, binary::MULT, prefLoc );
         }
+
         return;
     }
 
@@ -712,8 +713,8 @@ void HArrayUtils::arrayPlusScalar(
     hmemo::ContextPtr prefLoc )
 {
     // operation is result = alpha * x + b (elementwise)
-    SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << ", x = " << x 
-                           << ", result = " << result )
+    SCAI_LOG_INFO( logger, "result = " << alpha << " * x + " << beta << ", x = " << x
+                   << ", result = " << result )
 
     // check for zero terms as we do not need read access and assert correct sizes
 
@@ -746,6 +747,7 @@ void HArrayUtils::arrayPlusScalar(
         {
             binaryOpScalar1( result, alpha, x, binary::MULT, prefLoc );
         }
+
         return;
     }
 
@@ -786,7 +788,7 @@ void HArrayUtils::arrayTimesArray(
 {
     SCAI_ASSERT_EQUAL( x.size(), y.size(), "size mismatch" )
     const IndexType n = x.size();
-    
+
     if ( alpha == common::constants::ZERO )
     {
         setScalar( result, ValueType( 0 ), binary::COPY, prefLoc );
@@ -827,7 +829,7 @@ void HArrayUtils::unaryOp(
     const unary::UnaryOp op,
     ContextPtr prefLoc )
 {
-    SCAI_ASSERT( isUnarySupported<ValueType>( op ), 
+    SCAI_ASSERT( isUnarySupported<ValueType>( op ),
                  op << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     const IndexType n = x.size();
@@ -865,7 +867,7 @@ void HArrayUtils::binaryOp(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
-    SCAI_ASSERT( isBinarySupported<ValueType>( op ), 
+    SCAI_ASSERT( isBinarySupported<ValueType>( op ),
                  op << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     const IndexType n = x.size();
@@ -906,7 +908,7 @@ void HArrayUtils::binaryOpScalar1(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
-    SCAI_ASSERT( isBinarySupported<ValueType>( op ), 
+    SCAI_ASSERT( isBinarySupported<ValueType>( op ),
                  op << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     const IndexType n = y.size();
@@ -914,7 +916,7 @@ void HArrayUtils::binaryOpScalar1(
     static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binaryOpScalar1;
 
     ContextPtr loc = prefLoc;
-    
+
     // default location for check: where we have valid entries
 
     if ( loc == ContextPtr() )
@@ -932,7 +934,7 @@ void HArrayUtils::binaryOpScalar1(
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
     binaryOpScalar1[loc]( wResult.get(), x, rY.get(), n, op );
-}   
+}
 
 /* --------------------------------------------------------------------------- */
 
@@ -944,7 +946,7 @@ void HArrayUtils::binaryOpScalar2(
     const binary::BinaryOp op,
     ContextPtr prefLoc )
 {
-    SCAI_ASSERT( isBinarySupported<ValueType>( op ), 
+    SCAI_ASSERT( isBinarySupported<ValueType>( op ),
                  op << " not supported for " << common::TypeTraits<ValueType>::id() )
 
     const IndexType n = x.size();
@@ -1190,7 +1192,7 @@ void HArrayUtils::sort(
     if ( n == 0 )
     {
         if ( perm )
-        { 
+        {
             perm->clear();
         }
 
@@ -1273,11 +1275,11 @@ void HArrayUtils::bucketSort(
 
     ReadAccess<BucketType> bucketMap( array, loc );
     WriteOnlyAccess<IndexType> sizes( offsets, loc, static_cast<IndexType>( nb + 1 ) );
-    
+
     countBuckets[loc]( sizes.get(), nb, bucketMap, n );
     IndexType total = scan[loc]( sizes.get(), nb );
 
-    // Note: total can be < n if array contains values < 0 or >= nb 
+    // Note: total can be < n if array contains values < 0 or >= nb
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, total );
     sortInBuckets[loc]( wPerm, sizes, nb, bucketMap, n );
@@ -1368,12 +1370,12 @@ void HArrayUtils::mergeSortOptional(
 
     // we need a (writeable) copy of the offset array for running offsets
 
-    HArray<IndexType> copyOffsets( offsets ); 
+    HArray<IndexType> copyOffsets( offsets );
 
     // Temporary array required for the sorted values, in-place not supported
 
-    HArray<ValueType> sorted; 
-    HArray<IndexType> newPerm; 
+    HArray<ValueType> sorted;
+    HArray<IndexType> newPerm;
 
     {
         WriteAccess<IndexType> wOffsets( copyOffsets );
@@ -1393,12 +1395,12 @@ void HArrayUtils::mergeSortOptional(
         for ( IndexType i = 0; i < n; ++i )
         {
             // find the next minimal element
- 
+
             IndexType nextIndex = nIndex;
 
             for ( IndexType k = 0; k < nb; ++k )
             {
-                if ( wOffsets[k] == rOffsets[k+1] )
+                if ( wOffsets[k] == rOffsets[k + 1] )
                 {
                     continue;  // no more values in subarray k
                 }
@@ -1421,8 +1423,8 @@ void HArrayUtils::mergeSortOptional(
 
             IndexType& pos = wOffsets[nextIndex];
 
-            SCAI_LOG_DEBUG( logger, "Next elem in subarray = " << nextIndex 
-                                    << ", pos = " << pos << ", val = " << rValues[pos] );
+            SCAI_LOG_DEBUG( logger, "Next elem in subarray = " << nextIndex
+                            << ", pos = " << pos << ", val = " << rValues[pos] );
 
             // sort in the next minimal element
 
@@ -1430,7 +1432,7 @@ void HArrayUtils::mergeSortOptional(
 
             if ( perm )
             {
-                (*wPerm)[i] = (*rPerm)[pos];
+                ( *wPerm )[i] = ( *rPerm )[pos];
             }
 
             pos++;
@@ -1439,8 +1441,8 @@ void HArrayUtils::mergeSortOptional(
         // Proof: wOffsets[k] == rOffsets[k+1]
 
         for ( IndexType k = 0; k < nb; ++k )
-        { 
-            SCAI_ASSERT_EQ_ERROR( rOffsets[k+1], wOffsets[k], "serious problem during mergesort" )
+        {
+            SCAI_ASSERT_EQ_ERROR( rOffsets[k + 1], wOffsets[k], "serious problem during mergesort" )
         }
     }
 
@@ -1569,13 +1571,13 @@ void HArrayUtils::buildDenseArray(
 #define HARRAYUTILS_SPECIFIER( ValueType )                                                                                   \
     template void HArrayUtils::setVal<ValueType>( hmemo::_HArray&, const IndexType, const ValueType );                       \
     template void HArrayUtils::setValImpl<ValueType>( hmemo::HArray<ValueType>&, const IndexType, const ValueType,           \
-                                                      const binary::BinaryOp );                                              \
+            const binary::BinaryOp );                                              \
     template ValueType HArrayUtils::getVal<ValueType>( const hmemo::_HArray&, const IndexType );                             \
     template ValueType HArrayUtils::getValImpl<ValueType>( const hmemo::HArray<ValueType>&, const IndexType );               \
     template void HArrayUtils::assignScalar<ValueType>( hmemo::_HArray&, const ValueType,                                    \
-                                                        const binary::BinaryOp, hmemo::ContextPtr);                          \
+            const binary::BinaryOp, hmemo::ContextPtr);                          \
     template void HArrayUtils::setScalar<ValueType>( hmemo::HArray<ValueType>&, const ValueType,                             \
-                                                     const binary::BinaryOp, hmemo::ContextPtr);                             \
+            const binary::BinaryOp, hmemo::ContextPtr);                             \
     template ValueType HArrayUtils::reduce<ValueType>( const hmemo::HArray<ValueType>&,                                      \
             const binary::BinaryOp, hmemo::ContextPtr );                                                                     \
     template ValueType HArrayUtils::reduce2<ValueType>(                                                                      \
@@ -1603,22 +1605,22 @@ void HArrayUtils::buildDenseArray(
     template ValueType HArrayUtils::scan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                         \
     template ValueType HArrayUtils::unscan<ValueType>( hmemo::HArray<ValueType>&, hmemo::ContextPtr );                       \
     template void HArrayUtils::sort<ValueType>(                                                                              \
-        hmemo::HArray<IndexType>*,                                                                                           \
-        hmemo::HArray<ValueType>*,                                                                                           \
-        const hmemo::HArray<ValueType>&,                                                                                     \
-        const bool,                                                                                                          \
-        hmemo::ContextPtr );                                                                                                 \
+            hmemo::HArray<IndexType>*,                                                                                           \
+            hmemo::HArray<ValueType>*,                                                                                           \
+            const hmemo::HArray<ValueType>&,                                                                                     \
+            const bool,                                                                                                          \
+            hmemo::ContextPtr );                                                                                                 \
     template void HArrayUtils::mergeSort<ValueType>(                                                                         \
-        hmemo::HArray<ValueType>&,                                                                                           \
-        const hmemo::HArray<IndexType>&,                                                                                     \
-        const bool,                                                                                                          \
-        hmemo::ContextPtr );                                                                                                 \
+            hmemo::HArray<ValueType>&,                                                                                           \
+            const hmemo::HArray<IndexType>&,                                                                                     \
+            const bool,                                                                                                          \
+            hmemo::ContextPtr );                                                                                                 \
     template void HArrayUtils::mergeSort<ValueType>(                                                                         \
-        hmemo::HArray<ValueType>&,                                                                                           \
-        hmemo::HArray<IndexType>&,                                                                                           \
-        const hmemo::HArray<IndexType>&,                                                                                     \
-        const bool,                                                                                                          \
-        hmemo::ContextPtr );                                                                                                 \
+            hmemo::HArray<ValueType>&,                                                                                           \
+            hmemo::HArray<IndexType>&,                                                                                           \
+            const hmemo::HArray<IndexType>&,                                                                                     \
+            const bool,                                                                                                          \
+            hmemo::ContextPtr );                                                                                                 \
     template void HArrayUtils::setSequence<ValueType>( hmemo::HArray<ValueType>&, ValueType, ValueType, IndexType,           \
             hmemo::ContextPtr );                                                                                             \
     template void HArrayUtils::setRandomImpl<ValueType>( hmemo::HArray<ValueType>&, IndexType, float, hmemo::ContextPtr );   \
@@ -1627,7 +1629,7 @@ void HArrayUtils::buildDenseArray(
     template void HArrayUtils::buildDenseArray<ValueType>( hmemo::HArray<ValueType>&, const IndexType,                       \
             const hmemo::HArray<ValueType>&,                                                                                 \
             const hmemo::HArray<IndexType>&, hmemo::ContextPtr );                                                            \
-                                                                                                                             \
+    \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 
 SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
@@ -1641,29 +1643,29 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                    \
     template void HArrayUtils::unaryOp<ValueType>(            \
-        hmemo::HArray<ValueType>&,                            \
-        const hmemo::HArray<ValueType>&,                      \
-        const unary::UnaryOp, hmemo::ContextPtr);             \
+            hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<ValueType>&,                      \
+            const unary::UnaryOp, hmemo::ContextPtr);             \
     template void HArrayUtils::binaryOp<ValueType>(           \
-        hmemo::HArray<ValueType>&,                            \
-         const hmemo::HArray<ValueType>&,                     \
-         const hmemo::HArray<ValueType>&,                     \
-         const binary::BinaryOp,                              \
-         hmemo::ContextPtr);                                  \
+            hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<ValueType>&,                     \
+            const hmemo::HArray<ValueType>&,                     \
+            const binary::BinaryOp,                              \
+            hmemo::ContextPtr);                                  \
     template void HArrayUtils::binaryOpScalar1<ValueType>(    \
-        hmemo::HArray<ValueType>&,                            \
-        const ValueType,                                      \
-        const hmemo::HArray<ValueType>&,                      \
-        const binary::BinaryOp,                               \
-        hmemo::ContextPtr);                                   \
+            hmemo::HArray<ValueType>&,                            \
+            const ValueType,                                      \
+            const hmemo::HArray<ValueType>&,                      \
+            const binary::BinaryOp,                               \
+            hmemo::ContextPtr);                                   \
     template void HArrayUtils::binaryOpScalar2<ValueType>(    \
-        hmemo::HArray<ValueType>&,                            \
-        const hmemo::HArray<ValueType>&,                      \
-        const ValueType,                                      \
-        const binary::BinaryOp,                               \
-        hmemo::ContextPtr);   
+            hmemo::HArray<ValueType>&,                            \
+            const hmemo::HArray<ValueType>&,                      \
+            const ValueType,                                      \
+            const binary::BinaryOp,                               \
+            hmemo::ContextPtr);
 
-// Note: it is now safe to instantiate unary/binary kernels also for IndexType 
+// Note: it is now safe to instantiate unary/binary kernels also for IndexType
 
 SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
 

@@ -2,7 +2,7 @@
  * @file GenBlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( genBlockComputeOwnersTest )
 {
     utilskernel::LArray<IndexType> indexes;
     utilskernel::LArray<PartitionId> owners;
-  
+
     utilskernel::HArrayUtils::setOrder( indexes, globalSize );
 
     dist->computeOwners( owners, indexes );

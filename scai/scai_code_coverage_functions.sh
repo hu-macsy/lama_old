@@ -1,10 +1,8 @@
-#!/bin/bash
-
 ###
  # @file scai_code_coverage_functions.sh
  #
  # @license
- # Copyright (c) 2009-2016
+ # Copyright (c) 2009-2017
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #

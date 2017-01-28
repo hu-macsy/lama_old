@@ -2,7 +2,7 @@
  * @file JDSKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -317,7 +317,7 @@ struct JDSKernelTrait
          *  in the jdsJA/jdsValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[out] pos positions of entries with col = j in csrJA,
          *  @param[in] j is the column of which positions are required
          *  @param[in] numRows is the number of rows
          *  @param[in] ilg
@@ -345,12 +345,12 @@ struct JDSKernelTrait
     template<typename ValueType, typename OtherValueType>
     struct scaleRows
     {
-        /** This method scales each row of the matrix with a certain value 
+        /** This method scales each row of the matrix with a certain value
          *
          * @param[in]     numRows    is the number of rows
          * @param[in]     perm       perm[i] is the original position of row i
          * @param[in]     ilg        ilg[i] number of entries in row i
-         * @param[in]     dlg        diagonals 
+         * @param[in]     dlg        diagonals
          * @param[in,out] jdsValues  array containing all non-zero values, are scaled row-wise
          * @param[in]     rowValues  rowvalues[i] is used to scale row i
          */

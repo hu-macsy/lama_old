@@ -76,6 +76,7 @@ set ( WHITELIST
         # USE
         USE_CODE_COVERAGE
         USE_OPENMP             # put this here, because OpenMP is used with 'common' in each subproject
+        USE_JAVA               # make it availabe in sub project
     )
     
 set ( BOOST_WHITELIST

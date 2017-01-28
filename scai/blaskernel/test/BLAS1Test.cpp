@@ -2,7 +2,7 @@
  * @file BLAS1Test.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -78,10 +78,10 @@ BOOST_AUTO_TEST_CASE( asumOpenMPTest )
         ReadAccess<ValueType> rAValues( AValues );
 
         ValueType sum = OpenMPBLAS1::asum( 0, rAValues.get(), incX1 );
-        BOOST_CHECK_EQUAL( sum, ValueType( 0 ));
+        BOOST_CHECK_EQUAL( sum, ValueType( 0 ) );
 
         sum = OpenMPBLAS1::asum( 3, rAValues.get(), 0 );
-        BOOST_CHECK_EQUAL( sum, ValueType( 0 ));
+        BOOST_CHECK_EQUAL( sum, ValueType( 0 ) );
 
         sum = OpenMPBLAS1::asum( 6, rAValues.get(), incX1 );
         BOOST_CHECK_EQUAL( sum, result1 );
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( asumOpenMPTest )
         BOOST_CHECK_EQUAL( sum, result2 );
     }
 
-} 
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
     ContextPtr loc = Context::getContextPtr( axpy.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "axpy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-    
+
     IndexType lenx = 6;
     IndexType leny = 9;
 
@@ -149,8 +149,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -179,8 +179,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         HArray<ValueType> Ax( lenx, x, testContext );
         HArray<ValueType> Ay( leny, y, testContext );
@@ -209,9 +209,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         ValueType* y = new ValueType[leny];
         ValueType* yResult = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
-        std::copy( yResult_int, yResult_int+leny, yResult );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
+        std::copy( yResult_int, yResult_int + leny, yResult );
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
     ContextPtr loc = Context::getContextPtr( copy.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "copy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-    
+
     int lenx = 6;
     int leny = 9;
 
@@ -257,8 +257,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -289,8 +289,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         const IndexType incX = 0;
         const IndexType incY = 0;
@@ -323,9 +323,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
         ValueType* y = new ValueType[leny];
         ValueType* yResult = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
-        std::copy( yResult_int, yResult_int+leny, yResult );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
+        std::copy( yResult_int, yResult_int + leny, yResult );
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -525,7 +525,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
     ContextPtr loc = Context::getContextPtr( sum.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "sum< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-    
+
     int len = 5;
 
     // check with n == 0
@@ -539,9 +539,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         ValueType* y = new ValueType[len];
         ValueType* z = new ValueType[len];
 
-        std::copy( x_int, x_int+len, x );
-        std::copy( y_int, y_int+len, y );
-        std::copy( z_int, z_int+len, z );
+        std::copy( x_int, x_int + len, x );
+        std::copy( y_int, y_int + len, y );
+        std::copy( z_int, z_int + len, z );
 
         HArray<ValueType> Ax( len, x, testContext );
         HArray<ValueType> Ay( len, y, testContext );
@@ -570,8 +570,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[len];
         ValueType* y = new ValueType[len];
 
-        std::copy( x_int, x_int+len, x );
-        std::copy( y_int, y_int+len, y );
+        std::copy( x_int, x_int + len, x );
+        std::copy( y_int, y_int + len, y );
 
         HArray<ValueType> Ax( len, x, testContext );
         HArray<ValueType> Ay( len, y, testContext );
@@ -603,7 +603,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
     ContextPtr loc = Context::getContextPtr( swap.validContext( testContext->getType() ) );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "swap< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
-    
+
     int lenx = 5;
     int leny = 7;
 
@@ -615,8 +615,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -647,8 +647,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         const IndexType nValues = 3;
         HArray<ValueType> Ax( lenx, x, testContext );
@@ -680,8 +680,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
         ValueType* x = new ValueType[lenx];
         ValueType* y = new ValueType[leny];
 
-        std::copy( x_int, x_int+lenx, x );
-        std::copy( y_int, y_int+leny, y );
+        std::copy( x_int, x_int + lenx, x );
+        std::copy( y_int, y_int + leny, y );
 
         const IndexType nValues = 3;
         const IndexType incX = 2;

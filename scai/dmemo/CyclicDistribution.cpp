@@ -2,7 +2,7 @@
  * @file CyclicDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -211,23 +211,23 @@ IndexType CyclicDistribution::global2local( const IndexType globalIndex ) const
 /* ---------------------------------------------------------------------- */
 
 void CyclicDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
-{   
+{
     ContextPtr ctx = Context::getHostPtr();    // currently only available @ Host
-    
+
     const IndexType n = indexes.size();
     const IndexType size = mCommunicator->getSize();
-    
+
     SCAI_LOG_INFO( logger, *this << ": compute owners, n = " << n << ", size = " << size )
 
     ReadAccess<IndexType> rIndexes( indexes, ctx );
     WriteOnlyAccess<PartitionId> wOwners( owners, ctx, n );
-    
+
     // ToDo: call a kernel and allow arbitrary context
 
     #pragma omp parallel for
 
     for ( IndexType i = 0; i < n; i++ )
-    {   
+    {
         wOwners[i] = ( rIndexes[i] / mChunkSize ) % size;   // see getOwner( i )
     }
 }
@@ -270,7 +270,7 @@ void CyclicDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 /* ---------------------------------------------------------------------- */
 
 IndexType CyclicDistribution::getBlockDistributionSize() const
-{   
+{
     const PartitionId nPartitions = getCommunicator().getSize();
 
     if ( nPartitions == 1 )
@@ -295,16 +295,16 @@ IndexType CyclicDistribution::getBlockDistributionSize() const
 bool CyclicDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;
-    
+
     bool proven = proveEquality( isSame, other );
-    
+
     if ( proven )
-    {   
+    {
         return isSame;
     }
-    
+
     if ( other.getKind() == getKind() )
-    {   
+    {
         const CyclicDistribution& cycOther = reinterpret_cast<const CyclicDistribution&>( other );
 
         isSame = chunkSize() == cycOther.chunkSize();

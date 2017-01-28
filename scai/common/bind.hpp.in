@@ -2,7 +2,7 @@
  * @file common/bind.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -42,10 +42,10 @@ namespace scai
 
 namespace common
 {
-    using std::bind;
-    using std::ref;
-    using std::cref;
-    using namespace std::placeholders;
+using std::bind;
+using std::ref;
+using std::cref;
+using namespace std::placeholders;
 
 } /* end namespace common */
 

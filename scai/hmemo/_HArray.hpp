@@ -2,7 +2,7 @@
  * @file _HArray.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -207,7 +207,7 @@ public:
 
     void clear();
 
-    /** Swap data with other array to avoid additional memory allocation. 
+    /** Swap data with other array to avoid additional memory allocation.
      *
      *  @param[in,out] other array for swapping, must have same value type.
      *

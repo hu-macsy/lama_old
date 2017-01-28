@@ -2,7 +2,7 @@
  * @file MATIOStream.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -68,7 +68,7 @@ public:
 
     void writeMATFileHeader();
 
-    /** Read one complete data element from a MATLAB file in a string. 
+    /** Read one complete data element from a MATLAB file in a string.
      *
      *  @param[out] dataElement new allocated char array with the element data
      *  @return     number of bytes allocated for the read element
@@ -78,8 +78,8 @@ public:
 
     uint32_t readDataElement( common::scoped_array<char>& dataElement );
 
-    /** 
-     * @param[in] buffer is the string that contains the data element 
+    /**
+     * @param[in] buffer is the string that contains the data element
      * @param[out] dataType is the type of the element
      * @param[out] nBytes is the number of bytes used for the data element
      * @param[out] wBytes is the total number of written bytes for the element incl header
@@ -89,7 +89,8 @@ public:
 
     uint32_t writeDataElementHeader( const uint32_t dataType, const uint32_t nBytes, bool dryRun );
 
-    enum {
+    enum
+    {
         MAT_INT8       = 1,
         MAT_UINT8      = 2,
         MAT_INT16      = 3,
@@ -108,7 +109,8 @@ public:
         MAT_UTF32      = 18
     };
 
-    typedef enum {
+    typedef enum
+    {
         MAT_CELL_CLASS     = 1,
         MAT_STRUCT_CLASS   = 2,
         MAT_OBJECT_CLASS   = 3,
@@ -151,7 +153,7 @@ public:
         const uint32_t nBytes,
         bool isComplex,
         bool dryRun );
-    
+
     uint32_t writeDenseHeader(
         const IndexType m,
         const IndexType n,
@@ -205,7 +207,7 @@ uint32_t MATIOStream::getData( ValueType* data, uint32_t size, const char* buffe
 
     const char* dataPtr = readDataElementHeader( dataType, nBytes, wBytes, buffer );
 
-    SCAI_ASSERT_EQ_ERROR( nBytes, size * sizeof( ValueType), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( nBytes, size * sizeof( ValueType ), "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
 
     ::memcpy( data, dataPtr, nBytes );

@@ -2,7 +2,7 @@
  * @file LAPACKTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( getrif2Test )
     {
         const CBLAS_ORDER order = iorder == 0 ? CblasRowMajor : CblasColMajor;
 
-        // matrices get a border to check for working lda 
+        // matrices get a border to check for working lda
 
         HArray<ValueType> a( lda * lda, x, testContext );
         HArray<ValueType> b( lda * lda, x, testContext );
@@ -167,17 +167,17 @@ BOOST_AUTO_TEST_CASE( getrif2Test )
         {
             WriteAccess<ValueType> wA( a, loc );
             WriteAccess<IndexType> wPermutation( permutation, loc );
-            ValueType* aData = wA.get() + border * lda + border; 
+            ValueType* aData = wA.get() + border * lda + border;
             getrf[loc->getType()]( order, n, n, aData, lda, wPermutation.get() );
             getri[loc->getType()]( order, n, aData, lda, wPermutation.get() );
         }
-    
+
         // now check for correct results
-    
+
         {
             ReadAccess<ValueType> rA( a, hostContext );
             ReadAccess<ValueType> rB( b, hostContext );
-    
+
             for ( IndexType k = 0; k <  lda * lda; ++k )
             {
                 BOOST_CHECK_EQUAL( rA[k], rB[k] );
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getrifTest, ValueType, test_types )
         static IndexType n_b = sizeof( bvalues ) / sizeof( ValueType );
 
         SCAI_ASSERT_EQ_ERROR( n_a, n_b, "avalues and bvalues must have same number of entries" )
-        SCAI_ASSERT_EQ_ERROR( n_a, n * n, "number of a_values does not match matrix size n = " << n )
+        SCAI_ASSERT_EQ_ERROR( n_a, n* n, "number of a_values does not match matrix size n = " << n )
 
         HArray<ValueType> a( n * n, avalues, testContext );
         HArray<IndexType> permutation( n );

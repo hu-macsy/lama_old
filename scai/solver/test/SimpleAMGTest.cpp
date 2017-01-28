@@ -2,7 +2,7 @@
  * @file SimpleAMGTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
     LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toFileOnly, pLoggerFileName, timer ) );
     SimpleAMG simpleAMGSolver( "SimpleAMGSolver", slogger );
 
-    simpleAMGSolver.initialize( coefficients ); 
+    simpleAMGSolver.initialize( coefficients );
 
     for ( unsigned int i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
     {
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
         BOOST_CHECK_EQUAL( restriction.getNumRows(), interpol.getNumColumns() );
         BOOST_CHECK_EQUAL( interpol.getNumRows(), restriction.getNumColumns() );
 
-        // smoother must be an iterative solver 
+        // smoother must be an iterative solver
 
         BOOST_CHECK( dynamic_cast<const IterativeSolver*>( &smoother ) );
     }
@@ -166,10 +166,10 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
 
     rhs = ValueType( 1 );
     x = ValueType( 0 );
-    
+
     simpleAMGSolver.solve( x, rhs );
 
-    // check that timing works 
+    // check that timing works
 
     BOOST_CHECK( simpleAMGSolver.getAverageSmootherTime() > 0.0 );
     BOOST_CHECK( simpleAMGSolver.getAverageTransferTime() > 0.0 );

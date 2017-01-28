@@ -2,7 +2,7 @@
  * @file OpenMP.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -131,7 +131,7 @@ inline int atomicInc( int& var )
 
 /** This routine computes within a parallel region a contiguous block for each thread
  *
- *  @param[in] n the range 0 <= i < n is distributed 
+ *  @param[in] n the range 0 <= i < n is distributed
  *  @param[out] lb, ub is the range belonging to this thread, lb <= i < ub
  *
  *  This routine corresponds the static worksharing of a for( i = 0; i < N; ++i ) loop
@@ -145,8 +145,9 @@ inline void omp_get_my_range( IndexType& lb, IndexType& ub, const IndexType n )
     IndexType blockSize = ( n + nthreads - 1 ) / nthreads;
     lb = rank * blockSize;
     ub = ( rank + 1 ) * blockSize;
+
     if ( ub >= n )
-    { 
+    {
         ub = n;
     }
 }

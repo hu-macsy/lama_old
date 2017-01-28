@@ -2,7 +2,7 @@
  * @file Constants.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -103,7 +103,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
         }
         else
         {
-            // complex data, do not use operator < 
+            // complex data, do not use operator <
 
             AbsType i = Math::imag( x );
 
@@ -115,7 +115,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
     else
     {
         AbsType r = Math::real( x );
- 
+
         bool isRealOne = Math::abs( r - AbsType( 1 ) ) < TypeTraits<ValueType>::eps1();
 
         if ( typeid( AbsType ) == typeid( ValueType ) )

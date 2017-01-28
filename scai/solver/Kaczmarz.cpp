@@ -2,7 +2,7 @@
  * @file Kaczmarz.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -108,8 +108,11 @@ void Kaczmarz::iterate()
     }
 
     const Matrix& A = *runtime.mCoefficients;
+
     const Vector& b = *runtime.mRhs;
+
     Vector& x = *runtime.mSolution;
+
     Vector& z = *runtime.mRow;
 
     SCAI_LOG_INFO( logger, "Iteration " << iter )

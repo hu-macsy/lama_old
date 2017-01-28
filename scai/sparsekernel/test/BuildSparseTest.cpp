@@ -1,8 +1,8 @@
 /**
- * @file BuildSpareTest.cpp
+ * @file sparsekernel/test/BuildSparseTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,13 +63,13 @@ BOOST_AUTO_TEST_CASE( buildSparseIndexesTest )
 {
     BuildSparseIndexes myIndexes( 10 );
 
-    BOOST_CHECK_EQUAL( 0, myIndexes.getLength() );    
-    BOOST_CHECK( myIndexes.isEmpty() );    
+    BOOST_CHECK_EQUAL( 0, myIndexes.getLength() );
+    BOOST_CHECK( myIndexes.isEmpty() );
 
     myIndexes.pushIndex( 3 );
 
-    BOOST_CHECK_EQUAL( 1, myIndexes.getLength() );    
-    BOOST_CHECK( !myIndexes.isEmpty() );    
+    BOOST_CHECK_EQUAL( 1, myIndexes.getLength() );
+    BOOST_CHECK( !myIndexes.isEmpty() );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -78,13 +78,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
 {
     BuildSparseVector<ValueType> myVector( 10 );
 
-    BOOST_CHECK_EQUAL( 0, myVector.getLength() );    
-    BOOST_CHECK( myVector.isEmpty() );    
+    BOOST_CHECK_EQUAL( 0, myVector.getLength() );
+    BOOST_CHECK( myVector.isEmpty() );
 
     myVector.push( 1, 5 );
 
-    BOOST_CHECK_EQUAL( 1, myVector.getLength() );    
-    BOOST_CHECK( !myVector.isEmpty() );    
+    BOOST_CHECK_EQUAL( 1, myVector.getLength() );
+    BOOST_CHECK( !myVector.isEmpty() );
 
     IndexType i;
     ValueType v;
@@ -94,8 +94,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
     BOOST_CHECK_EQUAL( static_cast<IndexType>( 1 ), i );
     BOOST_CHECK_EQUAL( static_cast<ValueType>( 5 ), v );
 
-    BOOST_CHECK_EQUAL( 0, myVector.getLength() );    
-    BOOST_CHECK( myVector.isEmpty() );    
+    BOOST_CHECK_EQUAL( 0, myVector.getLength() );
+    BOOST_CHECK( myVector.isEmpty() );
 }
 
 /* ------------------------------------------------------------------------------------- */

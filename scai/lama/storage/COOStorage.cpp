@@ -2,7 +2,7 @@
  * @file COOStorage.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -1018,7 +1018,7 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
         wValuePos.resize( cnt );
     }
 
-    // mValues[pos] = row[ colIndexes ] 
+    // mValues[pos] = row[ colIndexes ]
 
     HArrayUtils::gatherImpl( rowValues, row, colIndexes, utilskernel::binary::COPY, loc );
     HArrayUtils::scatterImpl( mValues, valuePos, rowValues, op, loc );
@@ -1073,7 +1073,7 @@ void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-                                           const utilskernel::binary::BinaryOp op )
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "Storage.COO.setCol" )
 
@@ -1297,10 +1297,10 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void COOStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-                                                     const utilskernel::binary::BinaryOp );                          \
+            const utilskernel::binary::BinaryOp );                          \
     template void COOStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void COOStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-                                                        const utilskernel::binary::BinaryOp );                       \
+            const utilskernel::binary::BinaryOp );                       \
     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

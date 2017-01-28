@@ -19,10 +19,11 @@ OPTIONS="--style=ansi \
 --pad-oper \
 --pad-header \
 --pad-paren-in \
---delete-empty-lines \
 --add-brackets \
 --align-pointer=type"
 
+# The following options are no more used:
+# --delete-empty-lines \
 # --keep-one-line-statements \
 
 CMD="$ASTYLE $OPTIONS $@"

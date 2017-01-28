@@ -67,7 +67,7 @@ include ( Summaries/Modules/Graphpartitioning )
 include ( Summaries/Modules/ZLIB )
 
 heading ( "Optional components:" "" )
-heading3 ( "Java:" "JAVA_FOUND" )
+heading3 ( "Java:" "USE_JAVA" )
     found_message ( "Java Exexutable" "JAVA_FOUND" "OPTIONAL" "with ${Java_JAVAC_EXECUTABLE}" )
 
 include ( Summaries/Modules/Build )

@@ -2,7 +2,7 @@
  * @file DecompositionSolverTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -93,7 +93,7 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types )
 {
     if ( TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE ||
-         TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE_COMPLEX )
+            TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE_COMPLEX )
     {
         // skip because not supported by pardiso or cuSolver
         return;
@@ -111,7 +111,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
     const ValueType values[] = { 3.0,  4.0, -5.0,  6.0,
                                  6.0,  5.0, -6.0, 5.0,
                                  9.0, -4.0,  2.0, 3.0,
-                                       2.0, -3.0, 1.0 };
+                                 2.0, -3.0, 1.0
+                               };
     const ValueType rhsValues[] = { 39.0, 43.0, 6.0, 13.0 };
     const ValueType solValues[] = { 1.0, 2.0, -2.0, 3.0 };
     const IndexType numRows = 4;
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    if ( comm->getSize() > 1 ) 
+    if ( comm->getSize() > 1 )
     {
         return;   // DecompositionSolver not yet parallel
     }
@@ -145,6 +146,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
     {
         ContextPtr host = Context::getHostPtr();
         ReadAccess<ValueType> rSol( solution.getLocalValues(), host );
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             ValueType x = rSol[i] - solValues[i];

@@ -2,7 +2,7 @@
  * @file matrixRepartition.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,21 +57,21 @@ using namespace lama;
 
 typedef common::shared_ptr<_MatrixStorage> StoragePtr;
 
-static common::scalar::ScalarType getType() 
+static common::scalar::ScalarType getType()
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-    
+
     string val;
-    
+
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {   
+    {
         scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-        
+
         if ( env_type == scai::common::scalar::UNKNOWN )
-        {   
+        {
             cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << endl;
         }
-        
+
         type = env_type;
     }
 
@@ -95,14 +95,16 @@ void printHelp( const char* cmd )
     cout << "   Supported types: ";
     vector<common::scalar::ScalarType> dataTypes;
     hmemo::_HArray::getCreateValues( dataTypes );
+
     for ( size_t i = 0; i < dataTypes.size(); ++i )
-    { 
+    {
         cout << dataTypes[i] << " ";
     }
+
     cout << endl;
 }
 
-/** Read in a matrix from multiple files, each containing a contiguous block of rows. 
+/** Read in a matrix from multiple files, each containing a contiguous block of rows.
  *
  *  @param[out] storage is the vertical (row) concatenation of the matrices read from multiple file
  *  @param[in]  inFileName name of the input file, must contain a "%r" to have unique file name for each block
@@ -146,8 +148,8 @@ void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, cons
 }
 
 /** The following method is a special case where the input file contains the full matrix
- *  and where the matrix should be saved into multiple partions 
- * 
+ *  and where the matrix should be saved into multiple partions
+ *
  *  Important: this algorithm does not require memory for the full matrix
  */
 void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
@@ -188,9 +190,9 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
     }
 }
 
-/** This method saves a matrix into multiple files each file containing a contiguous block of rows. 
+/** This method saves a matrix into multiple files each file containing a contiguous block of rows.
  *
- *  @param[in] storage is the matrix that is written 
+ *  @param[in] storage is the matrix that is written
  *  @param[in] outFileName name of output file, must contain "%r" as placeholder for block id
  *  @param[in] np_out number of blocks to write
  *
@@ -208,7 +210,7 @@ void writeStorageBlocked( const _MatrixStorage& storage, const string& outFileNa
     for ( PartitionId ip = 0; ip < np; ++ip )
     {
         string outFileNameBlock = outFileName;
-  
+
         bool isPartitioned;  // here used as dummy
 
         PartitionIO::getPartitionFileName( outFileNameBlock, isPartitioned, ip, np );
@@ -218,8 +220,8 @@ void writeStorageBlocked( const _MatrixStorage& storage, const string& outFileNa
 
         dmemo::BlockDistribution::getLocalRange( lb, ub, numRows, ip, np );
 
-        cout << "Matrix block " << ip << " has range " << lb << " - " << ub 
-                  << ", write to file " << outFileNameBlock << endl;
+        cout << "Matrix block " << ip << " has range " << lb << " - " << ub
+             << ", write to file " << outFileNameBlock << endl;
 
         if ( np == 1 )
         {
@@ -259,7 +261,7 @@ int main( int argc, const char* argv[] )
     // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
     // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
 
-    // take double as default 
+    // take double as default
 
     string inFileName  = argv[1];
     string outFileName = argv[3];
@@ -270,9 +272,9 @@ int main( int argc, const char* argv[] )
     istringstream input1( argv[2] );
 
     input1 >> np_in;
- 
+
     SCAI_ASSERT( !input1.fail(), "illegal: np_in=" << argv[2] << " in argument list" )
- 
+
     istringstream input2( argv[4] );
 
     input2 >> np_out;

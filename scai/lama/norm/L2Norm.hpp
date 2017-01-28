@@ -2,7 +2,7 @@
  * @file L2Norm.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -50,7 +50,7 @@ namespace lama
  * @brief L2Norm is a functor specialization of Norm that calculates the l2 norm
  *        for the passed values.
  */
-class COMMON_DLL_IMPORTEXPORT L2Norm: 
+class COMMON_DLL_IMPORTEXPORT L2Norm:
 
     public Norm,
     public Norm::Register<L2Norm>

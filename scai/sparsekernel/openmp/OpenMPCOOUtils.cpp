@@ -2,7 +2,7 @@
  * @file OpenMPCOOUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,7 +63,7 @@ SCAI_LOG_DEF_LOGGER( OpenMPCOOUtils::logger, "OpenMP.COOUtils" )
 
 /* --------------------------------------------------------------------------- */
 
-IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j, 
+IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
                                        const IndexType cooIA[], const IndexType cooJA[],
                                        const IndexType numValues )
 {
@@ -84,9 +84,9 @@ IndexType OpenMPCOOUtils::getValuePos( const IndexType i, const IndexType j,
 /* --------------------------------------------------------------------------- */
 
 IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
-                                          const IndexType j,
-                                          const IndexType cooIA[], const IndexType,
-                                          const IndexType cooJA[], const IndexType numValues )
+        const IndexType j,
+        const IndexType cooIA[], const IndexType,
+        const IndexType cooJA[], const IndexType numValues )
 {
     SCAI_REGION( "OpenMP.COOUtils.getValuePosCol" )
 
@@ -100,7 +100,7 @@ IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
         {
             // found a new entry for column j, save its position and row index
 
-            IndexType k = atomicInc( cnt ); 
+            IndexType k = atomicInc( cnt );
 
             row[k] = cooIA[n];
             pos[k] = n;
@@ -113,9 +113,9 @@ IndexType OpenMPCOOUtils::getValuePosCol( IndexType row[], IndexType pos[],
 /* --------------------------------------------------------------------------- */
 
 IndexType OpenMPCOOUtils::getValuePosRow( IndexType col[], IndexType pos[],
-                                          const IndexType i,
-                                          const IndexType cooIA[], const IndexType numColumns,
-                                          const IndexType cooJA[], const IndexType numValues )
+        const IndexType i,
+        const IndexType cooIA[], const IndexType numColumns,
+        const IndexType cooJA[], const IndexType numValues )
 {
     SCAI_REGION( "OpenMP.COOUtils.getValuePosRow" )
 

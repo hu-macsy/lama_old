@@ -2,7 +2,7 @@
  * @file BlockDistributionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -111,9 +111,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     const IndexType globalSize = 17;
 
     BOOST_CHECK_THROW(
-    { 
+    {
         BlockDistribution bdist( globalSize, comm );
-    }, 
+    },
     common::Exception );
 }
 
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
 
     LArray<IndexType> indexes;
     HArrayUtils::setOrder( indexes, size * blockSize );
-   
+
     LArray<PartitionId> owners;
     dist->computeOwners( owners, indexes );
 
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( blockComputeOwnersTest )
     BOOST_CHECK_EQUAL( owners.size(), indexes.size() );
 
     hmemo::ReadAccess<PartitionId> rOwners( owners );
- 
+
     for ( PartitionId p = 0; p < size; ++p )
     {
         for ( IndexType i = 0; i < blockSize; ++i )

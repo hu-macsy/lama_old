@@ -2,7 +2,7 @@
  * @file HArrayUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -113,7 +113,7 @@ public:
 
     /**
      *  @brief Scatter (unstructured write of values) with HArrays, template typed version
-     * 
+     *
      *  target[index[i]] = source[i]
      */
     template<typename TargetValueType, typename SourceValueType>
@@ -238,7 +238,7 @@ public:
         const binary::BinaryOp op = binary::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
-    /** General version for setting sectioned arrays. 
+    /** General version for setting sectioned arrays.
      *
      *  @param target is the target array
      *  @param targetOffset is the offset in the target array
@@ -442,9 +442,9 @@ public:
      *  @param[out]    inValues   array with the values to be sorted
      *  @param[in]     ascending  sort ascending (true) or descending (false)
      *  @param[in]     prefLoc    is the preferred context where computation should be done
-     * 
+     *
      *  Note: outValues = inValues[ perm ]
-     *        i.e.: perm[i] contains the original position 
+     *        i.e.: perm[i] contains the original position
      */
     template<typename ValueType>
     static void sort(
@@ -462,7 +462,7 @@ public:
      *  @param[in] array contains bucket indexes, 0 <= array[i] < nb
      *  @param[in] prefLoc is the preferred context where computation should be done
      *
-     *  Note: the sorted array is given by array[perm] 
+     *  Note: the sorted array is given by array[perm]
      *  Note: perm.size() == array.size() if all values of array are correct bucket indexes
      *        otherwise perm.size() < array.size(), can still be used to get legal sorted buckets
      *  Note: in contrary to sort the array remains unchanged
@@ -485,14 +485,14 @@ public:
         const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Sorting of an array where its subarrays are already sorted 
+    /** Sorting of an array where its subarrays are already sorted
      *
      *  @param[in,out] values array to be sorted
      *  @param[in,out] perm array where values reorded in the same way as values
-     *  @param[in]     offsets array with offsets that specify the sorted subarrays 
+     *  @param[in]     offsets array with offsets that specify the sorted subarrays
      *  @param[in]     ascending true for ascending sort, false for descending
      *  @param[in]     prefLoc context where merging should take place
-     *  
+     *
      *  Note: offset[0] == 0, offset[ offset.size() ] == array.size() must be valid
      *
      *  Each array[offset[i]::offset[i+1]] must already be sorted.
@@ -531,11 +531,11 @@ public:
      */
 
     template<typename ValueType>
-    static void setSequence( 
-        hmemo::HArray<ValueType>& array, 
-        ValueType startValue, 
-        ValueType inc, 
-        IndexType n, 
+    static void setSequence(
+        hmemo::HArray<ValueType>& array,
+        ValueType startValue,
+        ValueType inc,
+        IndexType n,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Set an array with random values, untyped version.

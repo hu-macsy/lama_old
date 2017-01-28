@@ -2,7 +2,7 @@
  * @file MICUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -67,9 +67,9 @@ public:
     /** MIC implementation for UtilKernelTrait::reduce */
 
     template<typename ValueType>
-    static ValueType reduce( 
-        const ValueType array[], 
-        const IndexType n, 
+    static ValueType reduce(
+        const ValueType array[],
+        const IndexType n,
         const ValueType zero,
         const binary::BinaryOp op );
 

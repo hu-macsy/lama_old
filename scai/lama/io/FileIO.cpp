@@ -2,7 +2,7 @@
  * @file FileIO.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -80,7 +80,7 @@ FileIO::FileIO() :
     if ( common::Settings::getEnvironment( datatype, "SCAI_IO_TYPE_DATA" ) )
     {
         mScalarTypeData = common::str2ScalarType( datatype.c_str() );
-        
+
         if ( common::scalar::UNKNOWN == mScalarTypeData )
         {
             COMMON_THROWEXCEPTION( "Not a known value type: SCAI_IO_TYPE_DATA="  << datatype )
@@ -145,12 +145,12 @@ void FileIO::writeMode( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
-void FileIO::setIndexType( common::scalar::ScalarType type ) 
+void FileIO::setIndexType( common::scalar::ScalarType type )
 {
     mScalarTypeIndex = type;
 }
 
-void FileIO::setDataType( common::scalar::ScalarType type ) 
+void FileIO::setDataType( common::scalar::ScalarType type )
 {
     mScalarTypeData = type;
 }
@@ -160,7 +160,7 @@ void FileIO::setMode( const FileMode mode )
     mFileMode = mode;
 }
 
-void FileIO::enableAppendMode( bool flag ) 
+void FileIO::enableAppendMode( bool flag )
 {
     mAppendMode = flag;
 }
@@ -183,7 +183,7 @@ int FileIO::getDataPrecision( common::scalar::ScalarType stype )
     // user can have redefined the precision
 
     common::Settings::getEnvironment( prec, "SCAI_IO_PRECISION" );
-  
+
     return prec;
 }
 
@@ -248,9 +248,9 @@ int FileIO::removeFile( const std::string& fileName )
 
 /* -------------------------------------------------------------------------- */
 
-void FileIO::write( 
-    const hmemo::_HArray& array, 
-    const std::string& outFileName, 
+void FileIO::write(
+    const hmemo::_HArray& array,
+    const std::string& outFileName,
     const common::scalar::ScalarType dataType )
 {
     std::string suffix = getSuffix( outFileName );
@@ -268,19 +268,19 @@ void FileIO::write(
 
 /* -------------------------------------------------------------------------- */
 
-void FileIO::read( 
-   hmemo::_HArray& array, 
-   const std::string& inFileName, 
-   const common::scalar::ScalarType dataType,
-   const IndexType first, 
-   const IndexType n )
+void FileIO::read(
+    hmemo::_HArray& array,
+    const std::string& inFileName,
+    const common::scalar::ScalarType dataType,
+    const IndexType first,
+    const IndexType n )
 {
     std::string suffix = getSuffix( inFileName );
 
     if ( !canCreate( suffix ) )
     {
         SCAI_THROWEXCEPTION( common::IOException, "ERROR: read from file " << inFileName <<
-                                                  ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
+                             ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
     common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
@@ -298,7 +298,7 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
     if ( !canCreate( suffix ) )
     {
         SCAI_THROWEXCEPTION( common::IOException, "ERROR: read from file " << inFileName <<
-                                                  ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
+                             ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
     common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );

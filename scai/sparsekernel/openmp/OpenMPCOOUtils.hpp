@@ -2,7 +2,7 @@
  * @file OpenMPCOOUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -63,10 +63,10 @@ public:
 
     /** OpenMP implementation for COOKernelTrait::getValuePos */
 
-    static IndexType getValuePos( 
-        const IndexType i, 
+    static IndexType getValuePos(
+        const IndexType i,
         const IndexType j,
-        const IndexType cooIA[], 
+        const IndexType cooIA[],
         const IndexType cooJA[],
         const IndexType numValues );
 
@@ -204,7 +204,7 @@ private:
 
     /** Struct for registration of methods with one template argument.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for each supported type
      */
 
@@ -216,7 +216,7 @@ private:
 
     /** Struct for registration of methods with two template arguments.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for all supported types.
      */
 

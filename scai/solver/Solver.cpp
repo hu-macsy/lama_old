@@ -2,7 +2,7 @@
  * @file Solver.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -58,9 +58,9 @@ using lama::Scalar;
 
 Solver::Solver( const std::string& id )
     : mId( id ), mLogger(
-          new CommonLogger( "dummyLog", LogLevel::noLogging,
-                            LoggerWriteBehaviour::toConsoleOnly,
-                            common::shared_ptr<Timer>( new Timer() ) ) )
+        new CommonLogger( "dummyLog", LogLevel::noLogging,
+                          LoggerWriteBehaviour::toConsoleOnly,
+                          common::shared_ptr<Timer>( new Timer() ) ) )
 {
     SCAI_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }
@@ -150,14 +150,14 @@ const Vector& Solver::getResidual() const
     if ( runtime.mResidual.get() )
     {
         SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty()
-                                << ", runtime.mResidual = " << *runtime.mResidual )
+                        << ", runtime.mResidual = " << *runtime.mResidual )
     }
     else
     {
         SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", residual not available yet" )
     }
 
-    // initialize and solveInit must have been called before 
+    // initialize and solveInit must have been called before
 
     SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
@@ -172,7 +172,7 @@ const Vector& Solver::getResidual() const
         if ( !runtime.mResidual.get() )
         {
             // VERY IMPORTANT: newVector makes sure that residual has same context
-            //                 otherwise: many unnecessary data movements !!! 
+            //                 otherwise: many unnecessary data movements !!!
 
             runtime.mResidual.reset( runtime.mRhs->newVector() );
         }

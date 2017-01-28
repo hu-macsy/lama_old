@@ -2,7 +2,7 @@
  * @file SparseMatrix.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -107,8 +107,8 @@ template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
 
     CRTPMatrix<SparseMatrix<ValueType>, ValueType>(
-       rowDist, 
-       DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
+        rowDist,
+        DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
 
 {
     mLocalData = storage;
@@ -734,9 +734,9 @@ void SparseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTy
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row, 
-                                           const IndexType localRowIndex,
-                                           const utilskernel::binary::BinaryOp op )
+void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
+        const IndexType localRowIndex,
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "Mat.Sp.setLocalRow" )
 
@@ -797,9 +797,9 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column, 
-                                              const IndexType colIndex,
-                                              const utilskernel::binary::BinaryOp op )
+void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
+        const IndexType colIndex,
+        const utilskernel::binary::BinaryOp op )
 {
     SCAI_REGION( "Mat.Sp.setLocalCol" )
 
@@ -1189,9 +1189,9 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
         SCAI_REGION( "Mat.Sp.syncLocal" )
 
         SCAI_LOG_INFO( logger,
-                       comm << ": synchronous computation localResult[ " << localResult.size() << "]" << 
-                               " = localF( localMatrix, localX[ " << localX.size() << "] )" << 
-                               " on " << * ( mLocalData->getContextPtr() ) )
+                       comm << ": synchronous computation localResult[ " << localResult.size() << "]" <<
+                       " = localF( localMatrix, localX[ " << localX.size() << "] )" <<
+                       " on " << * ( mLocalData->getContextPtr() ) )
 
         localF( mLocalData.get(), localResult, localX );
     }
@@ -1371,7 +1371,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     const DenseVector<ValueType>& denseY ) const
 {
     SCAI_LOG_INFO( logger, "result = " << alphaValue << " * x * A + " << betaValue << " * y"
-                            ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
+                   ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
 
     HArray<ValueType>& localResult = denseResult.getLocalValues();
 
@@ -1497,7 +1497,9 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
     }
 
     const Communicator& comm = getRowDistribution().getCommunicator();
+
     ValueType allMax = comm.max( myMax );
+
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
     return Scalar( allMax );
 }

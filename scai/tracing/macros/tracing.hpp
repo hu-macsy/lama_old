@@ -2,7 +2,7 @@
  * @file macros/tracing.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,6 +61,7 @@
 #define SCAI_REGION_END( name )
 #define SCAI_REGION_N( name, n )
 #define SCAI_TRACE_SCOPE( flag )
-#error "Must define SCAI_TRACE_xxx with xxx = ON, or OFF"
+// turned off for master branch
+// #pragma message("Must define SCAI_TRACE_xxx with xxx = ON, or OFF")
 
 #endif

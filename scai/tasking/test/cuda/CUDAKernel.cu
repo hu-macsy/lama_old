@@ -2,7 +2,7 @@
  * @file tasking/test/cuda/CUDAKernel.cu
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -79,8 +79,11 @@ void init( float array[], const int n, const float value )
     }
 
     const int blockSize = common::CUDASettings::getBlockSize( n );
+
     dim3 dimBlock( blockSize, 1, 1 );
+
     dim3 dimGrid = makeGrid( n, dimBlock.x );
+
     initKernel <<< dimGrid, dimBlock, 0, stream>>>( array, n, value );
 }
 

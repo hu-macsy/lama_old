@@ -1,8 +1,8 @@
 /**
- * @file unary.cpp
+ * @file utilskernel/test/UnaryOpTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -43,6 +43,7 @@ using namespace utilskernel;
 BOOST_AUTO_TEST_CASE( UnaryOpTest )
 {
     int count = 0;
+
     for ( int type = 0; type < unary::MAX_UNARY_OP; ++type )
     {
         std::ostringstream s;
@@ -56,56 +57,67 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
             BOOST_CHECK_EQUAL( s.str(), "CONJ" );
             count++;
         }
+
         if ( type == unary::MINUS )
         {
             BOOST_CHECK_EQUAL( s.str(), "MINUS" );
             count++;
         }
+
         if ( type == unary::ABS )
         {
             BOOST_CHECK_EQUAL( s.str(), "ABS" );
             count++;
         }
+
         if ( type == unary::EXP )
         {
             BOOST_CHECK_EQUAL( s.str(), "EXP" );
             count++;
         }
+
         if ( type == unary::SQRT )
         {
             BOOST_CHECK_EQUAL( s.str(), "SQRT" );
             count++;
         }
+
         if ( type == unary::SIN )
         {
             BOOST_CHECK_EQUAL( s.str(), "SIN" );
             count++;
         }
+
         if ( type == unary::COS )
         {
             BOOST_CHECK_EQUAL( s.str(), "COS" );
             count++;
         }
+
         if ( type == unary::TAN )
         {
             BOOST_CHECK_EQUAL( s.str(), "TAN" );
             count++;
         }
+
         if ( type == unary::ATAN )
         {
             BOOST_CHECK_EQUAL( s.str(), "ATAN" );
             count++;
         }
+
         if ( type == unary::LOG )
         {
             BOOST_CHECK_EQUAL( s.str(), "LOG" );
             count++;
         }
+
         if ( type == unary::FLOOR )
         {
             BOOST_CHECK_EQUAL( s.str(), "FLOOR" );
             count++;
         }
+
         if ( type == unary::CEIL )
         {
             BOOST_CHECK_EQUAL( s.str(), "CEIL" );

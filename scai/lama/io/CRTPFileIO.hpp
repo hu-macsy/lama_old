@@ -2,7 +2,7 @@
  * @file CRTPFileIO.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -48,7 +48,7 @@ namespace lama
 /* --------------------------------------------------------------------------------- */
 
 /** This help class uses the CRTP pattern to provide for all derived FileIO classes
- *  methods that are implemented in the same way. 
+ *  methods that are implemented in the same way.
  *
  *  - call typed version of writeStorage and readStorage
  *  - get default routines for file suffixes
@@ -150,11 +150,11 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void readStorageImpl( 
-        Derived& io, 
-        _MatrixStorage& storage, 
-        const std::string& fileName, 
-        const IndexType offsetRow, 
+    static void readStorageImpl(
+        Derived& io,
+        _MatrixStorage& storage,
+        const std::string& fileName,
+        const IndexType offsetRow,
         const IndexType nRows )
     {
         if ( storage.getValueType() == common::getScalarType<ValueType>() )
@@ -179,11 +179,11 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void readArrayImpl( 
-        Derived& io, 
-        hmemo::_HArray& array, 
+    static void readArrayImpl(
+        Derived& io,
+        hmemo::_HArray& array,
         const std::string& fileName,
-        const IndexType offset, 
+        const IndexType offset,
         const IndexType n )
     {
         if ( array.getValueType() == common::getScalarType<ValueType>() )
@@ -215,8 +215,8 @@ void CRTPFileIO<Derived>::writeStorage( const _MatrixStorage& storage, const std
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
-void CRTPFileIO<Derived>::readStorage( 
-    _MatrixStorage& storage, 
+void CRTPFileIO<Derived>::readStorage(
+    _MatrixStorage& storage,
     const std::string& fileName,
     const IndexType offsetRow,
     const IndexType nRows )
@@ -226,7 +226,7 @@ void CRTPFileIO<Derived>::readStorage(
     SCAI_ASSERT( FileIO::hasSuffix( fileName, getMatrixFileSuffix() ),
                  fileName << " illegal, must have suffix " << getMatrixFileSuffix() )
 
-    // just call the corresponding typed routine 
+    // just call the corresponding typed routine
 
     FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName, offsetRow, nRows );
 }
@@ -242,7 +242,7 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
                  fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
-    
+
     FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
@@ -256,7 +256,7 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
     SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
                  fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
 
-    // just call the corresponding typed routine 
+    // just call the corresponding typed routine
 
     FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, offset, n );
 }

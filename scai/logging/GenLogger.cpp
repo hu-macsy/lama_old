@@ -2,7 +2,7 @@
  * @file GenLogger.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -65,7 +65,7 @@ bool GenLogger::sFlush = false;
 
 std::vector<std::string> GenLogger::formatTokens;
 
-void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void ( * ) ( const char* format, ... ) )& printf ;
+void ( *GenLogger::myPrintf ) ( const char* format, ... ) = ( void (* ) ( const char* format, ... ) )& printf ;
 
 /********************************************************************
  *  Static variable: rootLogger for generic logging                  *

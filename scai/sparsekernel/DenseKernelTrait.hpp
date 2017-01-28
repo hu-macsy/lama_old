@@ -2,7 +2,7 @@
  * @file DenseKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -154,9 +154,9 @@ struct DenseKernelTrait
     template<typename DenseValueType1, typename DenseValueType2>
     struct set
     {
-        /** Set values of dense matrix with other matrix; supports also conversion. 
+        /** Set values of dense matrix with other matrix; supports also conversion.
          *
-         *  This routine is exactly the same as UtilskernelTrait::set with n = numRows * numColumns. 
+         *  This routine is exactly the same as UtilskernelTrait::set with n = numRows * numColumns.
          *  The only difference is that OpenMP parallelization is only for rows and not the whole vector.
          */
         typedef void ( *FuncType ) ( DenseValueType1 out[],

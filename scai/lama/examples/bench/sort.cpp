@@ -2,7 +2,7 @@
  * @file sort.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -57,13 +57,13 @@ using namespace std;
 using common::Walltime;
 
 #define HOST_PRINT( rank, msg )   \
-{                                 \
-    if ( rank == 0 )              \
-    {                             \
-        cout << msg << endl;      \
-    }                             \
-}                                 \
-
+    {                                 \
+        if ( rank == 0 )              \
+        {                             \
+            cout << msg << endl;      \
+        }                             \
+    }                                 \
+     
 /** Generic routine for benchmarking sort routine.
  *
  *  @tparam    ValueType type of values to be sorted
@@ -104,7 +104,7 @@ static void bench( const IndexType N )
 
     HOST_PRINT( rank, "Sort time (  NO  perm) : " << tmpTime << " seconds" )
 
-    X = Xsave;  // restore old values 
+    X = Xsave;  // restore old values
 
     tmpTime = Walltime::get();
 
@@ -249,7 +249,7 @@ int main( int argc, const char* argv[] )
     string typeString;
 
     common::scalar::ScalarType dataType = common::scalar::DOUBLE;
- 
+
     if ( common::Settings::getEnvironment( typeString, "SCAI_TYPE" ) )
     {
         dataType = common::str2ScalarType( typeString.c_str() );

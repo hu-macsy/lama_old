@@ -2,7 +2,7 @@
  * @file NoCommunicator.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -129,7 +129,7 @@ public:
     void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const;
 
     /** Implementation of Communicator::supportsLocReduction */
- 
+
     virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const;
 
     void swapImpl( void* val, const IndexType n, const PartitionId partner, common::scalar::ScalarType stype ) const;

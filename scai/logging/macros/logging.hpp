@@ -2,7 +2,7 @@
  * @file macros/logging.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -162,8 +162,9 @@
  *   DEFAULT: The Default SCAI_LOG_FATAL_ENABLED is enabled *
  *******************************************************/
 
-#pragma message("Please define SCAI_LOG_LEVEL_xxx with xxx = TRACE, DEBUG, INFO, WARN, ERROR, FATAL, or OFF")
-#pragma message("Will use default SCAI_LOG_LEVEL_FATAL")
+// turned off for master branch
+// #pragma message("Please define SCAI_LOG_LEVEL_xxx with xxx = TRACE, DEBUG, INFO, WARN, ERROR, FATAL, or OFF") 
+// #pragma message("Will use default SCAI_LOG_LEVEL_FATAL")
 
 #undef SCAI_LOG_DEBUG_ENABLED
 #undef SCAI_LOG_TRACE_ENABLED
@@ -252,7 +253,7 @@
 #define SCAI_LOG_TRACE( logger, msg )                       \
     {                                                       \
         scai::logging::Logger& cLogger = logger;            \
-                                                            \
+        \
         if ( cLogger.isTraceEnabled() )                     \
         {                                                   \
             std::ostringstream omsg;                        \

@@ -2,7 +2,7 @@
  * @file CUSparseCSRUtils.cu
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -135,9 +135,12 @@ void CUSparseCSRUtils::normalGEMV(
     cusparseSetMatIndexBase( descrCSR, CUSPARSE_INDEX_BASE_ZERO );
     CUDAStreamSyncToken* syncToken = CUDAStreamSyncToken::getCurrentSyncToken();
 
+    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
+
     if ( syncToken )
     {
         stream = syncToken->getCUDAStream();
+        SCAI_CUSPARSE_CALL( cusparseSetStream( handle, stream ), "cusparseSetStream" )
     }
 
     if ( y != result && beta != 0.0f )
@@ -149,7 +152,6 @@ void CUSparseCSRUtils::normalGEMV(
     // call result = alpha * op(A) * x + beta * result of cusparse
     // Note: alpha, beta are passed as pointers
     SCAI_LOG_INFO( logger, "Start cusparseXcsrmv, stream = " << stream )
-    cusparseHandle_t handle = common::CUDAAccess::getCurrentCUDACtx().getcuSparseHandle();
     CUSPARSEWrapper<ValueType>::csrmv( handle, CUSPARSE_OPERATION_NON_TRANSPOSE,
                                        numRows, numColumns, nnz, &alpha, descrCSR,
                                        csrValues, csrIA, csrJA, x, &beta, result );
@@ -157,8 +159,7 @@ void CUSparseCSRUtils::normalGEMV(
     if ( syncToken )
     {
         // set back stream for cusparse
-        SCAI_CUSPARSE_CALL( cusparseSetStream( handle, 0 ),
-                            "cusparseSetStream" )
+        SCAI_CUSPARSE_CALL( cusparseSetStream( handle, 0 ), "cusparseSetStream" )
     }
     else
     {
@@ -388,7 +389,7 @@ CUSparseCSRUtils::CUSparseCSRUtils()
     bool useCUSparse = true;
     common::Settings::getEnvironment( useCUSparse, "SCAI_CUDA_USE_CUSPARSE" );
 
-    // replace the own CUDA kernels as cuSPARSE library might be more efficient 
+    // replace the own CUDA kernels as cuSPARSE library might be more efficient
 
     if ( useCUSparse )
     {

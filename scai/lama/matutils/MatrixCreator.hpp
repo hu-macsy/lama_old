@@ -2,7 +2,7 @@
  * @file MatrixCreator.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -148,12 +148,12 @@ public:
      *  @param[in] nRepeat number of repitions in the diagonals
      *
      *  \code
-     *     storage :   3  0  1  0 
+     *     storage :   3  0  1  0
      *                 0  1  0  -1
      *
      *     buildReplicatedDiag( matrix, storage, 2 )
      *
-     *     matrix  :   3  0  1  0   0  0  0  0  
+     *     matrix  :   3  0  1  0   0  0  0  0
      *                 0  1  0  -1  0  0  0  0
      *                 0  0  0   0  3  0  1  0
      *                 0  0  0   0  0  1  0  -1
@@ -165,7 +165,7 @@ public:
                                      const MatrixStorage<ValueType>& storage,
                                      const IndexType nRepeat );
 
-    /** Build a (distributed) sparse matrix from a (replicated) sparse storage by 
+    /** Build a (distributed) sparse matrix from a (replicated) sparse storage by
      *  replicating it m times in the rows and n times in the columns
      *
      *  @param[out] matrix is the generated distributed matrix
@@ -174,12 +174,12 @@ public:
      *  @param[in] nRepeatCol number of repitions in the columns
      *
      *  \code
-     *     storage :   3  0  1  0 
+     *     storage :   3  0  1  0
      *                 0  1  0  -1
      *
      *     buildReplicated( matrix, storage, 3, 2 )
      *
-     *     matrix  :   3  0  1  0   0  0  0  0  
+     *     matrix  :   3  0  1  0   0  0  0  0
      *                 0  1  0  -1  0  0  0  0
      *                 3  0  1   0  3  0  1  0
      *                 0  1  0  -1  0  1  0  -1

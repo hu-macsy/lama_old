@@ -2,7 +2,7 @@
  * @file MMIOTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -75,13 +75,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
 
     {
         using namespace std;
-    
+
         fstream myFile;
 
         myFile.open( fileName.c_str(), ios::out );
         myFile << header << endl;
         myFile << m << " " << n << endl;
-    
+
         for ( IndexType i = 0; i < m * n; ++i )
         {
             myFile << vals[i] << endl;
@@ -101,6 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
     {
         const HArray<ValueType>& data = denseStorage.getData();
         ReadAccess<ValueType> rVals( data );
+
         for ( IndexType i = 0; i < m; ++i )
         {
             for ( IndexType j = 0; j < n; ++j )
@@ -143,13 +144,13 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
             fstream myFile;
             IndexType zero = 0;    // used to write sizes
 
-		    myFile.open( fileName.c_str(), ios::out );
+            myFile.open( fileName.c_str(), ios::out );
             myFile << header[icase] << endl;
             myFile << zero << " " << zero << endl;
         }
 
         MatrixMarketIO reader;
-     
+
         BOOST_CHECK_THROW(
         {
             IndexType N = 0;
@@ -188,19 +189,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_t
 
     {
         using namespace std;
-    
+
         fstream myFile;
 
         myFile.open( fileName.c_str(), ios::out );
         myFile << header << endl;
         myFile << n << " " << n << endl;
-    
+
         for ( IndexType i = 0; i < n_vals; ++i )
         {
             myFile << vals[i] << endl;
         }
     }
-  
+
     DenseStorage<ValueType> denseStorage;
 
     MatrixMarketIO reader;
@@ -221,7 +222,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_t
         {
             for ( IndexType j = i; j < n; ++j )
             {
-                //  upper and lower must be same 
+                //  upper and lower must be same
 
                 BOOST_CHECK_EQUAL( rVals[i * n + j ], vals[ k ] );
                 BOOST_CHECK_EQUAL( rVals[j * n + i ], vals[ k ] );

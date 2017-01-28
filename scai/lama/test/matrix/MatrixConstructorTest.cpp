@@ -2,7 +2,7 @@
  * @file test/matrix/MatrixConstructorTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -69,13 +69,13 @@ typedef RealType ValueType;
 
 /** Define a list of all matrix types. */
 
-typedef boost::mpl::list<CSRSparseMatrix<ValueType>,
-                         DIASparseMatrix<ValueType>,
-                         COOSparseMatrix<ValueType>,
-                         JDSSparseMatrix<ValueType>,
-                         ELLSparseMatrix<ValueType>,
-                         DenseMatrix<ValueType>
-                        > MatrixTypes;
+typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
+        DIASparseMatrix<ValueType>,
+        COOSparseMatrix<ValueType>,
+        JDSSparseMatrix<ValueType>,
+        ELLSparseMatrix<ValueType>,
+        DenseMatrix<ValueType>
+        > MatrixTypes;
 
 /* ------------------------------------------------------------------------- */
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
     {
         SparseMatrix<ValueType>& spMatrix = reinterpret_cast<SparseMatrix<ValueType>& >( matrix );
         spMatrix.prefetch();
-    } 
+    }
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), local.getNumRows() );
 }
@@ -151,14 +151,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( distConstructorTest, MatrixType, MatrixTypes )
         {
             dmemo::DistributionPtr rowDist = rowDists[irow];
             dmemo::DistributionPtr colDist = colDists[icol];
-         
+
             MatrixType matrix( rowDist, colDist );
-    
+
             SCAI_LOG_INFO( logger, "Matrix constructed with distributions: " << matrix )
 
             // check correct sizes, distributions
 
-            BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() ); 
+            BOOST_CHECK_EQUAL( numRows, matrix.getNumRows() );
             BOOST_CHECK_EQUAL( numCols, matrix.getNumColumns() );
 
             const _MatrixStorage& localStorage = matrix.getLocalStorage();
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
             otherMatrix.assign( globalStorage );
 
             otherMatrix.redistribute( dist, dist );
- 
+
             MatrixType matrix1( otherMatrix );  // copy constructor arbitrary matrix
 
             MatrixType matrix2( otherMatrix, dist, dist ); // same as before but with redist
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpTest, MatrixType, MatrixTypes )
             matrix1.redistribute( rowDist, colDist );
 
             MatrixType matrix2;
-  
+
             matrix2 = matrix1;
 
             const StorageType& localStorage1 = matrix1.getLocalStorage();
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
             MatrixType matrix1( globalStorage );
             matrix1.redistribute( rowDist, colDist );
             bool transposeFlag = true;
- 
+
             SCAI_LOG_INFO( logger, "transposeConstructorTest with matrix1 = " << matrix1 )
 
             MatrixType matrix2( matrix1, transposeFlag );
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
         // virtual default constructor generates default matrix
 
         common::unique_ptr<MatrixType> newMatrix( matrix.newMatrix() );
-   
+
         const StorageType& newLocalStorage = newMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumRows() );
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
 {
-    // Note: here we only test constructor MatrixType( "fileName" ) 
+    // Note: here we only test constructor MatrixType( "fileName" )
     //       as readFromFile is already tested in PartitionIO
 
     typedef typename MatrixType::StorageType StorageType;
@@ -599,7 +599,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
     BOOST_CHECK_EQUAL( numRows, matrix1.getNumRows() );
     BOOST_CHECK( matrix1.getNumColumns() <= numCols );
 
-    matrix1.redistribute( rowDist, colDist );   
+    matrix1.redistribute( rowDist, colDist );
 
     MatrixType matrix2( globalStorage );
 
@@ -629,7 +629,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, MatrixType, MatrixTypes )
     MatrixType matrix1;
     MatrixCreator::buildPoisson2D( matrix1, 5, n1, n1 );
 
-    MatrixType matrix0;   
+    MatrixType matrix0;
 
     matrix0.swap( matrix1 );
 

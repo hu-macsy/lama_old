@@ -2,7 +2,7 @@
  * @file MaxNorm.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT MaxNorm: 
+class COMMON_DLL_IMPORTEXPORT MaxNorm:
 
     public Norm,
     public Norm::Register<MaxNorm>

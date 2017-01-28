@@ -2,7 +2,7 @@
  * @file MatrixCreator.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -209,7 +209,7 @@ static inline IndexType getNStencilValues(
     }
 
     // std::cout << "getNStencilValues( idX = " << idX << ", idY = " << idY << ", idZ = " << idZ
-    //                         << ", dimX = " << dimX << ", dimY = " << dimY << ", dimZ = " << dimZ 
+    //                         << ", dimX = " << dimX << ", dimY = " << dimY << ", dimZ = " << dimZ
     //                         << ", len = " << length << ", maxDist = " << maxDistance  << " ) -> " << numValues << std::endl;
 
     return numValues;
@@ -258,7 +258,7 @@ static inline void getStencil(
 
             for ( int dx = -leftX; dx <= rightX; ++dx )
             {
-                IndexType distXYZ = distYZ + common::Math::abs( dx);
+                IndexType distXYZ = distYZ + common::Math::abs( dx );
 
                 if ( distXYZ > maxDistance )
                 {
@@ -322,10 +322,10 @@ void MatrixCreator::buildPoisson(
     }
 
     SCAI_LOG_INFO( logger,
-                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2] 
-                    << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2] 
-                    << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2] 
-                    << "] of " << dimX << " x " << dimY << " x " << dimZ )
+                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2]
+                   << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2]
+                   << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2]
+                   << "] of " << dimX << " x " << dimY << " x " << dimZ )
 
     IndexType globalSize = dimX * dimY * dimZ; // number of rows, columns of full matrix
     std::vector<IndexType> myGlobalIndexes; // row indexes of this processor
@@ -389,7 +389,7 @@ void MatrixCreator::buildPoisson(
         ia[0] = 0;
 
         std::vector<IndexType> colIndexes;
-        std::vector<int> colValues;     
+        std::vector<int> colValues;
 
         colIndexes.reserve( stencilType );
         colValues.reserve( stencilType );
@@ -433,7 +433,7 @@ void MatrixCreator::buildPoisson(
     matrix.assign( localMatrix, distribution, distribution ); // builds also halo
 
     // but now the local part of matrixA should have the diagonal property as global column // indexes have been localized
-    // is not for each storage format the case 
+    // is not for each storage format the case
     // SCAI_ASSERT_DEBUG( matrix.getLocalStorage().hasDiagonalProperty(), "local storage data has not diagonal property: " << matrix )
 
     SCAI_LOG_INFO( logger, "built matrix A = " << matrix )
@@ -523,7 +523,7 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
     // draw the non-zero values, now with fill rate 1.0f
 
     utilskernel::HArrayUtils::setRandom( values, numValues, 1.0f );
-    
+
     // some tricky stuff to avoid an additional copy
 
     _MatrixStorage& localMatrix = const_cast<_MatrixStorage&>( matrix.getLocalStorage() );
@@ -538,7 +538,7 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
     // The new matrix data has the same row distribution as the input
     // matrix, also take over the original column distribution to build halo
 
-    matrix.assign( localMatrix, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() ); 
+    matrix.assign( localMatrix, matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -559,7 +559,7 @@ void MatrixCreator::buildRandom(
 /** Help routine to replicate matrix storage in diagonal blocks. */
 
 template<typename ValueType>
-static void replicateStorageDiag( 
+static void replicateStorageDiag(
     MatrixStorage<ValueType>& out,
     const MatrixStorage<ValueType>& in,
     const IndexType nRepeat )
@@ -626,7 +626,7 @@ static void replicateStorageDiag(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-static void replicateStorage( 
+static void replicateStorage(
     MatrixStorage<ValueType>& out,
     const MatrixStorage<ValueType>& in,
     const IndexType nRepeatRow,
@@ -671,7 +671,7 @@ static void replicateStorage(
                 wIA[ iRepeat * nRows + i ] = offset;   // the current row offset
 
                 IndexType rowOffset  = rIA[i];
-                IndexType nRowValues = rIA[i+1] - rIA[i];
+                IndexType nRowValues = rIA[i + 1] - rIA[i];
 
                 IndexType colOffset = 0;
 
@@ -701,7 +701,7 @@ static void replicateStorage(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixCreator::buildReplicatedDiag( 
+void MatrixCreator::buildReplicatedDiag(
     SparseMatrix<ValueType>& matrix,
     const MatrixStorage<ValueType>& storage,
     const IndexType nRepeat )
@@ -717,7 +717,7 @@ void MatrixCreator::buildReplicatedDiag(
 
     IndexType nChunks;  // will be number of chunks for this processor
 
-    // this replication will never split any of the storages 
+    // this replication will never split any of the storages
     // bit tricky: use a cyclic( 1 ) distribution of nrepeat to get the local size of this processor
 
     {
@@ -758,9 +758,9 @@ void MatrixCreator::buildReplicatedDiag(
 
 template<typename ValueType>
 void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,
-        const MatrixStorage<ValueType>& storage,
-        const IndexType nRepeatRow,
-        const IndexType nRepeatCol )
+                                     const MatrixStorage<ValueType>& storage,
+                                     const IndexType nRepeatRow,
+                                     const IndexType nRepeatCol )
 {
     using namespace dmemo;
 
@@ -813,12 +813,12 @@ void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,
 
 #define MATRIX_CREATOR_SPECIFIER( ValueType )                                                  \
     template void MatrixCreator::buildReplicated( SparseMatrix<ValueType>& matrix,             \
-                                                  const MatrixStorage<ValueType>& storage,     \
-                                                  const IndexType nRepeatRow,                  \
-                                                  const IndexType nRepeatCol );                \
+            const MatrixStorage<ValueType>& storage,     \
+            const IndexType nRepeatRow,                  \
+            const IndexType nRepeatCol );                \
     template void MatrixCreator::buildReplicatedDiag( SparseMatrix<ValueType>& matrix,         \
-                                                      const MatrixStorage<ValueType>& storage, \
-                                                      const IndexType nRepeat ) ;
+            const MatrixStorage<ValueType>& storage, \
+            const IndexType nRepeat ) ;
 
 SCAI_COMMON_LOOP( MATRIX_CREATOR_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 

@@ -2,7 +2,7 @@
  * @file SAMGIO.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,8 +47,8 @@
 #include <cstring>
 
 /** SAMG file suffixes
- * 
- *  Note: static variables can cause problems as values are already needed during static initialization. 
+ *
+ *  Note: static variables can cause problems as values are already needed during static initialization.
  */
 
 #define SAMG_MAT_HEADER_SUFFIX ".frm"
@@ -72,7 +72,7 @@ std::string SAMGIO::getVectorFileSuffix() const
 {
     return SAMG_VEC_HEADER_SUFFIX;
 }
-    
+
 std::string SAMGIO::getMatrixFileSuffix() const
 {
     return SAMG_MAT_HEADER_SUFFIX;
@@ -113,18 +113,18 @@ bool SAMGIO::isSupportedMode( const FileMode ) const
 
 /* --------------------------------------------------------------------------------- */
 
-/** Help routine to get data file name by header file name 
+/** Help routine to get data file name by header file name
  *
  *  @param[in] headerFileName is the file name of header file
  *  @return    name of the data file
  *
- *  Note: returns same name if no distinction between header and data 
+ *  Note: returns same name if no distinction between header and data
  */
 static std::string getDataFileName( const std::string& headerFileName )
 {
     std::string result = headerFileName;
 
-    if ( FileIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX) )
+    if ( FileIO::hasSuffix( headerFileName, SAMG_MAT_HEADER_SUFFIX ) )
     {
         size_t len = strlen( SAMG_MAT_HEADER_SUFFIX );
         result.replace( result.length() - len, len, SAMG_MAT_DATA_SUFFIX );
@@ -144,23 +144,23 @@ SCAI_LOG_DEF_LOGGER( SAMGIO::logger, "FileIO.SAMGIO" )
 
 /* --------------------------------------------------------------------------------- */
 
-SAMGIO::SAMGIO() 
+SAMGIO::SAMGIO()
 {
     if ( common::Settings::getEnvironment( mAppendMode, "SCAI_IO_APPEND" ) )
     {
         if ( mAppendMode )
         {
-            SCAI_LOG_WARN( logger, "SAMG format does not support append mode" ) 
+            SCAI_LOG_WARN( logger, "SAMG format does not support append mode" )
         }
     }
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::writeVectorHeader( 
+void SAMGIO::writeVectorHeader(
     const IndexType n,
     const IndexType typeSize,
-    const bool binary, 
+    const bool binary,
     const std::string& fileName )
 {
     char fileType = binary ? 'b' : 'f';
@@ -181,7 +181,7 @@ void SAMGIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    // needed for header file: type size is size of data type used in output 
+    // needed for header file: type size is size of data type used in output
 
     int typeSize = sizeof( ValueType );
 
@@ -190,7 +190,7 @@ void SAMGIO::writeArrayImpl(
         typeSize = common::typeSize( mScalarTypeData );
     }
 
-    bool binary = mFileMode != FORMATTED; 
+    bool binary = mFileMode != FORMATTED;
 
     writeVectorHeader( array.size(), typeSize, binary, fileName );
 
@@ -206,7 +206,7 @@ void SAMGIO::writeArrayImpl(
     std::string dataFileName = getDataFileName( fileName );
 
     IOStream outFile( dataFileName, flags );
- 
+
     if ( binary )
     {
         outFile.writeBinary( array, mScalarTypeData );
@@ -279,13 +279,13 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
     bool binary = false;
 
     // start with reading the *.frv header file
- 
+
     readVectorHeader( size, dataTypeSize, binary, fileName );
 
     if ( ! common::Utils::validIndex( first, size ) )
     {
-        array.clear();  
-        return;        
+        array.clear();
+        return;
     }
 
     IndexType nEntries = n;
@@ -308,8 +308,8 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
         dataType = common::TypeTraits<ValueType>::stype;
     }
 
-    SCAI_ASSERT_EQUAL( dataTypeSize, (IndexType) common::typeSize( dataType ), 
-                       "SAMG vector file has type size " << dataTypeSize 
+    SCAI_ASSERT_EQUAL( dataTypeSize, ( IndexType ) common::typeSize( dataType ),
+                       "SAMG vector file has type size " << dataTypeSize
                        << ", does not match to expected data type " << dataType )
 
     std::ios::openmode flags = std::ios::in;
@@ -341,10 +341,10 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
 
 /* --------------------------------------------------------------------------------- */
 
-void SAMGIO::writeMatrixHeader( 
-    const IndexType numRows, 
-    const IndexType numValues, 
-    const bool binary, 
+void SAMGIO::writeMatrixHeader(
+    const IndexType numRows,
+    const IndexType numValues,
+    const bool binary,
     const std::string& fileName )
 {
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
@@ -382,15 +382,15 @@ void SAMGIO::writeStorageImpl(
     const IndexType numRows = csrIA.size() - 1;
     const IndexType numValues = csrJA.size();
 
-    csrIA += 1;    
-    csrJA += 1;     
+    csrIA += 1;
+    csrJA += 1;
 
     bool binary = ( mFileMode != FORMATTED );
 
     writeMatrixHeader( numRows, numValues, binary, fileName );
 
     SCAI_LOG_INFO( logger, *this << ": writeCSRData( " << fileName << " )" << ", #rows = " << csrIA.size() - 1
-                            << ", #values = " << csrJA.size() )
+                   << ", #values = " << csrJA.size() )
 
     std::ios::openmode flags = std::ios::out | std::ios::trunc;
 
@@ -408,7 +408,7 @@ void SAMGIO::writeStorageImpl(
         // take care of file type conversions as specified
 
         outFile.writeBinary( csrIA, mScalarTypeIndex );
-        outFile.writeBinary( csrJA, mScalarTypeIndex ); 
+        outFile.writeBinary( csrJA, mScalarTypeIndex );
 
         if ( mScalarTypeData != common::scalar::PATTERN )
         {
@@ -417,7 +417,7 @@ void SAMGIO::writeStorageImpl(
     }
     else
     {
-        int precIndex = 0;  
+        int precIndex = 0;
         int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
         // no conversions for formmatted write, but take care of precision
@@ -440,8 +440,8 @@ void SAMGIO::readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& b
 {
     IOStream inFile( fileName, std::ios::in );
 
-    int  iversion; 
-    char fileType = '!'; 
+    int  iversion;
+    char fileType = '!';
 
     IndexType id;
     IndexType size;
@@ -459,10 +459,10 @@ void SAMGIO::readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& b
     {
         binary = false;
     }
-    else 
-    {   
-        COMMON_THROWEXCEPTION( "Invalid file type = " << fileType << " in  SAMG header file " 
-                                << fileName << ", must be either f or b" )
+    else
+    {
+        COMMON_THROWEXCEPTION( "Invalid file type = " << fileType << " in  SAMG header file "
+                               << fileName << ", must be either f or b" )
     }
 
     SCAI_ASSERT_EQUAL( SAMG_IVERSION, iversion, "SAMG version mismatch in SAMG file" << fileName )
@@ -472,12 +472,12 @@ void SAMGIO::readMatrixHeader( IndexType& numRows, IndexType& numValues, bool& b
 
     inFile >> id;
     inFile >> size;
-    inFile >> rank; 
+    inFile >> rank;
 
     inFile.close(); // explicitly, otherwise done by destructor
 
     SCAI_LOG_DEBUG( logger, "Info from header file " << fileName << ": #rows = " << numRows
-                           << ", #values = " << numValues << ", type = " << fileType  )
+                    << ", #values = " << numValues << ", type = " << fileType  )
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -500,7 +500,7 @@ void SAMGIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName,
     const IndexType firstRow,
-    const IndexType nRows ) 
+    const IndexType nRows )
 {
     IndexType numRows;   // SAMG always assumes square matrices
     IndexType numValues; // number of non-zero entries
@@ -512,7 +512,7 @@ void SAMGIO::readStorageImpl(
     readMatrixHeader( numRows, numValues, binary, fileName );
 
     SCAI_LOG_INFO( logger, "Info from header file " << fileName << ": #rows = " << numRows
-                           << ", #values = " << numValues << ", binary = " << binary )
+                   << ", #values = " << numValues << ", binary = " << binary )
 
     if ( !common::Utils::validIndex( firstRow, numRows ) )
     {
@@ -562,8 +562,8 @@ void SAMGIO::readStorageImpl(
 
         size_t expectedSize = ( numRows + 1 + numValues ) * indexTypeSize + numValues * valueTypeSize;
 
-        SCAI_LOG_INFO( logger, "expected size = " << expectedSize << ", type size = " << valueTypeSize 
-                               << ", index size = " << indexTypeSize )
+        SCAI_LOG_INFO( logger, "expected size = " << expectedSize << ", type size = " << valueTypeSize
+                       << ", index size = " << indexTypeSize )
 
         inFile.seekg( 0, std::ios::end );
         size_t realSize = inFile.tellg();
@@ -571,10 +571,10 @@ void SAMGIO::readStorageImpl(
 
         if ( expectedSize != realSize )
         {
-            SCAI_LOG_WARN( logger, "Binary file " << fileName << ": real size = " << realSize << 
-                                    ", expected size = " << expectedSize << ", #rows = " << numRows << ", #nnz = " << numValues <<
-                                    ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData <<
-                                    ", ValueType = " << common::TypeTraits<ValueType>::id() );
+            SCAI_LOG_WARN( logger, "Binary file " << fileName << ": real size = " << realSize <<
+                           ", expected size = " << expectedSize << ", #rows = " << numRows << ", #nnz = " << numValues <<
+                           ", IndexType = " << mScalarTypeIndex << ", DataType = " << mScalarTypeData <<
+                           ", ValueType = " << common::TypeTraits<ValueType>::id() );
         }
     }
 
@@ -600,7 +600,7 @@ void SAMGIO::readStorageImpl(
     offsetBlock -= IndexType( 1 );        // SAMG indexing starts with 1, deal correctly for reading ja, values
 
     IndexType numBlockValues   = csrIA[numBlockRows];
- 
+
     SCAI_LOG_DEBUG( logger, "ia        : read, offset = " << firstRow << ", numBlockRows = " << numBlockRows << " of " << numRows )
     SCAI_LOG_DEBUG( logger, "ja, values: read, offset = " << offsetBlock << ", numBlockValues = " << numBlockValues << " of " << numValues )
 
@@ -643,12 +643,12 @@ void SAMGIO::readStorageImpl(
     SCAI_LOG_INFO( logger, "CSR data: ia = " << csrIA << ", ja = " << csrJA << ", valaues = " << csrValues )
 
     IndexType numColumns = numRows;  // Usuallly, SAMG expects always square matrices
-    
+
     if ( maxColumn > numColumns )
     {
         numColumns = maxColumn;      // but might be bigger for partitioned data
     }
- 
+
     storage.setCSRData( numBlockRows, numColumns, numBlockValues, csrIA, csrJA, csrValues );
 }
 
@@ -685,7 +685,7 @@ int SAMGIO::deleteFile( const std::string& fileName )
         SCAI_LOG_WARN( logger, *this << ", unsupported suffix for file " << fileName )
     }
 
-    if ( rc != 0 ) 
+    if ( rc != 0 )
     {
         return rc;
     }

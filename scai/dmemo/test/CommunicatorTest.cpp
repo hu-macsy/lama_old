@@ -2,7 +2,7 @@
  * @file CommunicatorTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
     IndexType n = 17;
- 
+
     LArray<IndexType> localIndexes;
 
     IndexType first = static_cast<IndexType>( rank ) * n;
@@ -127,8 +127,8 @@ BOOST_AUTO_TEST_CASE( computeOwnersTest )
             }
         }
     }
-   
-    BOOST_CHECK_EQUAL( pos, nonLocalIndexes.size() ); 
+
+    BOOST_CHECK_EQUAL( pos, nonLocalIndexes.size() );
 
     LArray<PartitionId> owners;
 
@@ -508,6 +508,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
         HArrayUtils::setRandom( vals, N, 1.0f );
         ValueType localMax = vals[0];
         IndexType localMaxLoc = 0;
+
         for ( IndexType i = 0; i < N; ++i )
         {
             ValueType v = vals[i];
@@ -518,14 +519,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
                 localMaxLoc = i;
             }
         }
-    
+
         SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, local " << localMax << " @ " << localMaxLoc )
 
 
         ValueType globalMax1 = comm->max( localMax );
 
         BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
-    
+
         IndexType globalMaxLoc = localMaxLoc;
         ValueType globalMax    = localMax;
 
@@ -543,7 +544,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
         bool any = globalMaxLoc == localMaxLoc;
 
         any = comm->any( any );
-    
+
         BOOST_CHECK( any );
     }
 }
@@ -567,6 +568,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
         HArrayUtils::setRandom( vals, N, 1.0f );
         ValueType localMin = vals[0];
         IndexType localMinLoc = 0;
+
         for ( IndexType i = 0; i < N; ++i )
         {
             ValueType v = vals[i];
@@ -577,7 +579,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
                 localMinLoc = i;
             }
         }
-    
+
         SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, local " << localMin << " @ " << localMinLoc )
 
         ValueType globalMin1 = comm->min( localMin );
@@ -587,7 +589,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
         BOOST_CHECK( !error1 );
 
         // BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
-    
+
         IndexType globalMinLoc = localMinLoc;
         ValueType globalMin = localMin;
 
@@ -607,7 +609,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
         bool any = globalMinLoc == localMinLoc;
 
         any = comm->any( any );
-    
+
         BOOST_CHECK( any );
     }
 }
@@ -626,6 +628,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
     LArray<ValueType> vals;
     HArrayUtils::setRandom( vals, N, 1.0f );
     ValueType localMin = vals[0];
+
     for ( IndexType i = 0; i < N; ++i )
     {
         ValueType v = Math::abs( vals[i] );
@@ -661,7 +664,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
 
     saveVals *= size;
 
-    BOOST_CHECK( vals.maxDiffNorm( saveVals) < 0.0001 );
+    BOOST_CHECK( vals.maxDiffNorm( saveVals ) < 0.0001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -783,7 +786,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     BOOST_CHECK( outDerived.str().length() > 0 );
 
-    // verify that a derived communicator class has overridden the 
+    // verify that a derived communicator class has overridden the
     // default implementation of the base class Distriution
 
     std::ostringstream outBase;
@@ -804,7 +807,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     bool replace = true;
 
     common::Settings::putEnvironment( "SCAI_NP", "1x3x2", replace );
-    
+
     Communicator::getUserProcArray( procArray );
 
     BOOST_CHECK_EQUAL( procArray[0], PartitionId( 1 ) );
@@ -812,7 +815,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     BOOST_CHECK_EQUAL( procArray[2], PartitionId( 2 ) );
 
     common::Settings::putEnvironment( "SCAI_NP", "2", replace );
-    
+
     Communicator::getUserProcArray( procArray );
 
     BOOST_CHECK_EQUAL( procArray[0], PartitionId( 2 ) );
@@ -820,7 +823,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     BOOST_CHECK_EQUAL( procArray[2], PartitionId( 0 ) );
 
     common::Settings::putEnvironment( "SCAI_NP", "5_1", replace );
-    
+
     Communicator::getUserProcArray( procArray );
 
     BOOST_CHECK_EQUAL( procArray[0], PartitionId( 5 ) );
@@ -830,7 +833,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     common::Settings::putEnvironment( "SCAI_NP", "", replace );
 
     comm->factorize2( procArray, 16, 1 );
-    
+
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] );
 
     if ( comm->getSize() < 5 )
@@ -848,7 +851,7 @@ BOOST_AUTO_TEST_CASE( procArrayTest )
     BOOST_CHECK_EQUAL( nPartition, posArray[2] );
 
     comm->factorize3( procArray, 1, 16, 1 );
-    
+
     BOOST_CHECK_EQUAL( comm->getSize(), procArray[0] * procArray[1] * procArray[2] );
 
     if ( comm->getSize() < 5 )

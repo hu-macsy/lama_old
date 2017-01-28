@@ -2,7 +2,7 @@
  * @file OpenMPLAPACK.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -127,7 +127,7 @@ void OpenMPLAPACK::getrf(
 
         for ( IndexType i = 0; i < m; i++ )
         {
-            // pivoting over ( i:n, i ) 
+            // pivoting over ( i:n, i )
 
             index = i;
 

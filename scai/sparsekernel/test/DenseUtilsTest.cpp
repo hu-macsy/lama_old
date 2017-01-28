@@ -2,7 +2,7 @@
  * @file DenseUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( nonZeroValuesTest, ValueType, scai_numeric_test_t
     const IndexType numColumns = 3;
 
     const IndexType dense_n = sizeof( dense_values ) / sizeof( ValueType );
- 
+
     BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
 
     HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( nonZeroValuesTest, ValueType, scai_numeric_test_t
     // all values are less than 10
 
     BOOST_CHECK_EQUAL( count, 0 );
-} 
+}
 
 /* ------------------------------------------------------------------------------------- */
 
@@ -123,10 +123,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
 
     SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
 
-    const ValueType dense_values[] = { 1, 0, 2, 
-                                      -3, 1, 0,
-                                       0, 0, -5, 
-                                       6, 0, 1 };
+    const ValueType dense_values[] = { 1, 0, 2,
+                                       -3, 1, 0,
+                                       0, 0, -5,
+                                       6, 0, 1
+                                     };
 
     const IndexType ia_values[]  = { 2, 2, 1, 2 };
     const IndexType ja_values[]  = { 0, 2, 0, 1, 2, 0, 2 };
@@ -220,9 +221,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
     SCAI_LOG_INFO( logger, "getCSRSizes/getCSRValues test for " << *testContext << " on " << *loc )
 
     const ValueType dense_values[] = { 1, 0, 2, 3,
-                                      -3, 0, 1, 2,
+                                       -3, 0, 1, 2,
                                        0, -5, 0, 4,
-                                       6, 0, 0, 6 };
+                                       6, 0, 0, 6
+                                     };
 
     const IndexType ia_values[]  = { 3,        4,           3,       2 };
     const IndexType ja_values[]  = { 0, 2, 3,  1, 0, 2, 3,  2, 1, 3,  3,  0 };
@@ -319,10 +321,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setCSRTest, ValueType, scai_numeric_test_types )
 
     // convert the above RAW CSR data and compare it later with thise RAW dense data
 
-    const ValueType dense_values[] = { 1, 0, 2, 
-                                      -3, 1, 0,
-                                       0, 0, -5, 
-                                       6, 0, 1 };
+    const ValueType dense_values[] = { 1, 0, 2,
+                                       -3, 1, 0,
+                                       0, 0, -5,
+                                       6, 0, 1
+                                     };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
@@ -386,15 +389,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
 
     SCAI_LOG_INFO( logger, "set test for " << *testContext << " on " << *loc )
 
-    const ValueType dense_values[] = { 1, 1, 2, 
+    const ValueType dense_values[] = { 1, 1, 2,
                                        3, 1, 3,
-                                       2, 4, 5, 
-                                       6, 9, 1 };
+                                       2, 4, 5,
+                                       6, 9, 1
+                                     };
 
-    const RealType dense_values1[] = { 1, 1, 2, 
-                                        2, 1, 1,
-                                        1, 1, 1, 
-                                        2, 2, 2 };
+    const RealType dense_values1[] = { 1, 1, 2,
+                                       2, 1, 1,
+                                       1, 1, 1,
+                                       2, 2, 2
+                                     };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
@@ -449,10 +454,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
     SCAI_LOG_INFO( logger, "setValue test for " << *testContext << " on " << *loc )
 
-    const ValueType dense_values[] = { 1, 1, 2, 
+    const ValueType dense_values[] = { 1, 1, 2,
                                        3, 1, 3,
-                                       2, 4, 5, 
-                                       6, 9, 1 };
+                                       2, 4, 5,
+                                       6, 9, 1
+                                     };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
@@ -506,15 +512,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setDiagonalValueTest, ValueType, scai_numeric_tes
 
     SCAI_LOG_INFO( logger, "setDiagonalValue test for " << *testContext << " on " << *loc )
 
-    const ValueType dense_values[] = { 1, 1, 2, 
+    const ValueType dense_values[] = { 1, 1, 2,
                                        3, 1, 3,
-                                       2, 4, 5, 
-                                       6, 9, 1 };
+                                       2, 4, 5,
+                                       6, 9, 1
+                                     };
 
-    const ValueType dense1_values[] = { 0, 1, 2, 
+    const ValueType dense1_values[] = { 0, 1, 2,
                                         3, 0, 3,
-                                        2, 4, 0, 
-                                        6, 9, 1 };
+                                        2, 4, 0,
+                                        6, 9, 1
+                                      };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;
@@ -562,17 +570,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
     SCAI_LOG_INFO( logger, "scaleRows test for " << *testContext << " on " << *loc )
 
-    const ValueType dense_values[] = { 1, 1, 2, 
+    const ValueType dense_values[] = { 1, 1, 2,
                                        3, 1, 3,
-                                       2, 4, 5, 
-                                       6, 9, 1 };
+                                       2, 4, 5,
+                                       6, 9, 1
+                                     };
 
     const ValueType row_values[] = { 1, 2, 0, 1 };
 
-    const ValueType dense1_values[] = { 1, 1, 2, 
+    const ValueType dense1_values[] = { 1, 1, 2,
                                         6, 2, 6,
-                                        0, 0, 0, 
-                                        6, 9, 1 };
+                                        0, 0, 0,
+                                        6, 9, 1
+                                      };
 
     const IndexType numRows    = 4;
     const IndexType numColumns = 3;

@@ -2,7 +2,7 @@
  * @file MICMemory.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -104,10 +104,10 @@ void* MICMemory::allocate( const size_t size ) const
     {
         pointer = ::malloc( size );
 
-        success = (pointer != NULL);
+        success = ( pointer != NULL );
     }
 
-    if( !success )
+    if ( !success )
     {
         SCAI_THROWEXCEPTION( MemoryException, "malloc failed for size = " << size )
     }

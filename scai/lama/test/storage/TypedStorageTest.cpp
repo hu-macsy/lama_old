@@ -2,7 +2,7 @@
  * @file TypedStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    TypedStorages<ValueType> allMatrixStorages( context );    
+    TypedStorages<ValueType> allMatrixStorages( context );
 
     SCAI_LOG_INFO( logger, "Test " << allMatrixStorages.size() << "  storages assign dense data" )
 
@@ -328,11 +328,11 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
         LArray<IndexType> firstColIndexes2;
 
         if (     storage.getFormat() == _MatrixStorage::DENSE
-             ||  storage.getFormat() == _MatrixStorage::DIA  )
+                 ||  storage.getFormat() == _MatrixStorage::DIA  )
         {
             BOOST_CHECK_THROW(
-               { storage.getFirstColumnIndexes( firstColIndexes1 ); },
-               common::Exception );
+            { storage.getFirstColumnIndexes( firstColIndexes1 ); },
+            common::Exception );
             continue;
         }
 
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
 
         BOOST_REQUIRE_EQUAL( numRows, firstColIndexes1.size() );
         BOOST_REQUIRE_EQUAL( numRows, firstColIndexes2.size() );
-    
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             BOOST_CHECK_EQUAL( firstColIndexes1[i], firstCols[i] );
@@ -1111,7 +1111,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
             for ( IndexType j = 0; j < numColumns; ++j )
             {
                 // std::cout << i << ":" << j << " = " << denseValues[i * numColumns + j] << std::endl;
-                BOOST_CHECK_EQUAL( storage.getValue(i,j), storageDense->getValue(i,j) );                
+                BOOST_CHECK_EQUAL( storage.getValue( i, j ), storageDense->getValue( i, j ) );
             }
         }
 
@@ -1127,14 +1127,14 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         nonzeroValues = 12; // 12 without explicit '0' on the diagonal
 
         const ValueType values2[] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-                                     0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0,
-                                     0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 2.0,
-                                     0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0,
-                                     0.0, 7.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-                                     6.0, 0.0, 9.0, 3.0, 0.0, 0.0, 0.0,
-                                     0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0,
-                                     4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                   };
+                                      0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0,
+                                      0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 2.0,
+                                      0.0, 0.0, 0.0, 5.0, 0.0, 0.0, 0.0,
+                                      0.0, 7.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                                      6.0, 0.0, 9.0, 3.0, 0.0, 0.0, 0.0,
+                                      0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0,
+                                      4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                    };
         const IndexType n2 = sizeof( values2 ) / sizeof( ValueType );
         BOOST_CHECK_EQUAL( n2, totalNumValues );
 

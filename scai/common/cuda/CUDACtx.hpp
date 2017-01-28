@@ -2,7 +2,7 @@
  * @file CUDACtx.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,13 +45,13 @@
 #include <cublas_v2.h>
 #include <cusparse.h>
 
- #include <cuda_runtime_api.h>
- 
+#include <cuda_runtime_api.h>
+
 #ifndef CUDART_VERSION
-    #error CUDART_VERSION Undefined!
+#error CUDART_VERSION Undefined!
 #elif ( CUDART_VERSION >= 7050 )
-    #include <cusolverDn.h>
-    #include <cusolverSp.h>
+#include <cusolverDn.h>
+#include <cusolverSp.h>
 #endif
 
 #include <vector>

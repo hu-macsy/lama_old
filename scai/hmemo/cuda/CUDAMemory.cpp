@@ -2,7 +2,7 @@
  * @file CUDAMemory.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -300,7 +300,7 @@ SyncToken* CUDAMemory::memcpyAsyncToHost( void* dst, const void* src, const size
 
 void CUDAMemory::memcpyFromCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyFastHToD")
+    SCAI_REGION( "CUDA.Memory.memcpyFastHToD" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (host) to " << dst << " (device) " )
     SCAI_CUDA_DRV_CALL( cuMemcpyHtoD( ( CUdeviceptr ) dst, src, size ),
@@ -324,7 +324,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromCUDAHost( void* dst, const void* src, cons
 
 void CUDAMemory::memcpyToCUDAHost( void* dst, const void* src, const size_t size ) const
 {
-    SCAI_REGION( "CUDA.Memory.memcpyFastDToH")
+    SCAI_REGION( "CUDA.Memory.memcpyFastDToH" )
     SCAI_CONTEXT_ACCESS( mCUDAContext )
     SCAI_LOG_INFO( logger, "copy " << size << " bytes from " << src << " (device) to " << dst << " (cuda host) " )
     SCAI_CUDA_DRV_CALL( cuMemcpyDtoH( dst, ( CUdeviceptr ) src, size ),

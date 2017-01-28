@@ -2,7 +2,7 @@
  * @file UtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -321,17 +321,17 @@ BOOST_AUTO_TEST_CASE( compressTest )
     const IndexType nSparse = 5;
 
     HArray<IndexType> denseArray( nDense, theValues, testContext );
-    HArray<IndexType> sparseIndexes( nDense, IndexType( 0 ), testContext );  
+    HArray<IndexType> sparseIndexes( nDense, IndexType( 0 ), testContext );
 
     {
         ReadAccess<IndexType> rArray( denseArray, loc );
         WriteAccess<IndexType> wSparseIndexes( sparseIndexes, loc );
         SCAI_CONTEXT_ACCESS( loc );
         IndexType cnt = compress[loc]( NULL, wSparseIndexes.get(), rArray.get(), nDense, 0 );
-   
+
         BOOST_REQUIRE_EQUAL( nSparse, cnt );
     }
-  
+
     // sparseIndexes are sorted
 
     {
@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE( setInversePermTest )
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
- 
+
 BOOST_AUTO_TEST_CASE( sortIndexesTest )
 {
     ContextPtr testContext = Context::getContextPtr();
@@ -439,17 +439,17 @@ BOOST_AUTO_TEST_CASE( sortIndexesTest )
         HArray<IndexType> unsortedArray( n, valuesArr, testContext );
         HArray<IndexType> sortedArray;
 
-        {   
+        {
             WriteOnlyAccess<IndexType> wOut( sortedArray, loc, n );
             ReadAccess<IndexType> rIn( unsortedArray, loc );
             SCAI_CONTEXT_ACCESS( loc );
             sort[loc]( NULL, wOut.get(), rIn.get(), n, ascending );
         }
-        
+
         ReadAccess<IndexType> rArr( sortedArray );
-        
+
         for ( IndexType i = 0; i < n; i++ )
-        {   
+        {
             BOOST_CHECK_EQUAL( expectedArr[i], rArr[i] );
         }
     }

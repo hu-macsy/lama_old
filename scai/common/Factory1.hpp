@@ -2,7 +2,7 @@
  * @file Factory1.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -202,7 +202,7 @@ OutputType Factory1<InputType, ValueType, OutputType>::create( const InputType t
 /* -----------------------------------------------------------------------------*/
 
 template<typename InputType, typename ValueType, typename OutputType>
-std::map<InputType, OutputType( * )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
+std::map<InputType, OutputType(* )( ValueType ) >& Factory1<InputType, ValueType, OutputType>::getFactory()
 {
     // Factory might be already used during static initialization, so dynamic allocation is needed
     // Factory might be used at program exit, so it is never deleted

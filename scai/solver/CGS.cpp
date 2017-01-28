@@ -2,7 +2,7 @@
  * @file CGS.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -160,8 +160,8 @@ void CGS::iterate()
         alpha = innerProdRes / innerProduct;
     }
 
-    SCAI_LOG_INFO( logger, "vecQ = vecU - " << alpha << " vecT, normRes = " << normRes 
-                           << ", innerProdRes = " << innerProdRes << ", innerProduct = " << innerProduct )
+    SCAI_LOG_INFO( logger, "vecQ = vecU - " << alpha << " vecT, normRes = " << normRes
+                   << ", innerProdRes = " << innerProdRes << ", innerProduct = " << innerProduct )
 
     vecQ = vecU - alpha * vecT;
 

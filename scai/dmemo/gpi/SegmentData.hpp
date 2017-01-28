@@ -2,7 +2,7 @@
  * @file SegmentData.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -184,7 +184,7 @@ private:
     const GPICommunicator* mComm;
 
     common::scalar::ScalarType mScalarType;
- 
+
     IndexType mTypeSize;
 
     gaspi_pointer_t    mPtr;    // pointer to the allocated segment data

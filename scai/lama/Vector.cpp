@@ -2,7 +2,7 @@
  * @file Vector.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -122,8 +122,8 @@ Vector* Vector::getVector( const VectorKind kind, const common::scalar::ScalarTy
     return Vector::create( vectype );
 }
 
-Vector* Vector::getDenseVector( 
-    const common::scalar::ScalarType valueType, 
+Vector* Vector::getDenseVector(
+    const common::scalar::ScalarType valueType,
     DistributionPtr distribution,
     ContextPtr context )
 {
@@ -231,7 +231,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
         readFromSingleFile( fileName );
         return;
     }
-   
+
     const IndexType n = distribution->getBlockDistributionSize();
 
     if ( n == nIndex )
@@ -345,25 +345,25 @@ void Vector::readFromFile( const std::string& vectorFileName, const std::string&
 
     if ( distributionFileName == "BLOCK" )
     {
-         // for a single file we set a BlockDistribution
+        // for a single file we set a BlockDistribution
 
-         if ( vectorFileName.find( "%r" ) == std::string::npos )
-         {
-             PartitionId root = 0;
+        if ( vectorFileName.find( "%r" ) == std::string::npos )
+        {
+            PartitionId root = 0;
 
-             IndexType numRows = nIndex;
+            IndexType numRows = nIndex;
 
-             if ( comm->getRank() == root )
-             {
-                 numRows = FileIO::getStorageSize( vectorFileName );
-             }
+            if ( comm->getRank() == root )
+            {
+                numRows = FileIO::getStorageSize( vectorFileName );
+            }
 
-             comm->bcast( &numRows, 1, root );
+            comm->bcast( &numRows, 1, root );
 
-             distribution.reset( new BlockDistribution( numRows, comm ) );
+            distribution.reset( new BlockDistribution( numRows, comm ) );
         }
 
-        // for a partitioned file general block distribution is default 
+        // for a partitioned file general block distribution is default
     }
     else
     {

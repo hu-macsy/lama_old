@@ -2,7 +2,7 @@
  * @file ContextDataManager.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -493,6 +493,7 @@ ContextPtr ContextDataManager::getFirstTouchContextPtr() const
     }
 
     const ContextData& entry = mContextData[0];
+
     return entry.getMemory().getContextPtr();
 }
 
@@ -504,7 +505,7 @@ ContextDataIndex ContextDataManager::acquireAccess( ContextPtr context, Context:
     SCAI_ASSERT( context, "NULL pointer for context" )
     lockAccess( kind, context );
     SCAI_LOG_DEBUG( logger, "acquire access on " << *context << ", kind = " << kind
-                             << ", allocSize = " << allocSize << ", validSize = " << validSize )
+                    << ", allocSize = " << allocSize << ", validSize = " << validSize )
     ContextDataIndex index = getContextData( context );
     ContextData& data = ( *this )[index];
     wait();
@@ -599,18 +600,18 @@ SyncToken* ContextDataManager::fetchAsync( ContextData& target, const ContextDat
     catch ( common::Exception& ex )
     {
         SCAI_LOG_ERROR( logger, target << " async copy from " << source << " to " << target
-                                << " not supported, or has thrown exception" )
+                        << " not supported, or has thrown exception" )
 
         ContextPtr hostContextPtr = Context::getHostPtr();
 
-        if (     target.getMemory().getType() == memtype::HostMemory 
-             ||  source.getMemory().getType() == memtype::HostMemory )
+        if (     target.getMemory().getType() == memtype::HostMemory
+                 ||  source.getMemory().getType() == memtype::HostMemory )
         {
-            COMMON_THROWEXCEPTION( "copyAsync from " << source << " to " << target 
-                                    << " must be supported with HostMemory, exception = " << ex.what() )
+            COMMON_THROWEXCEPTION( "copyAsync from " << source << " to " << target
+                                   << " must be supported with HostMemory, exception = " << ex.what() )
         }
 
-        // as neither source nor target are HostMemory, try it via host 
+        // as neither source nor target are HostMemory, try it via host
 
         ContextData& hostEntry = ( *this )[hostContextPtr];
 

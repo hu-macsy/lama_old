@@ -2,7 +2,7 @@
  * @file GenBlockDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -87,7 +87,7 @@ public:
      *  @param[in] globalSize is the number of elements to distribute
      *  @param[in] firstGlobalIdx is the smallest global index in partition
      *  @param[in] lastGlobalIdx is the largest global index in partition
-     *  @param[in] dummy bool value 
+     *  @param[in] dummy bool value
      *  @param[in] communicator specifies the communicator used for this distribution
      *
      */
@@ -124,9 +124,9 @@ public:
 
     virtual ~GenBlockDistribution();
 
-    /** Get the local range of the calling partition. 
+    /** Get the local range of the calling partition.
      *
-     *  @param[out] lb, ub is the local range, i.e all elements i with lb <= i < ub 
+     *  @param[out] lb, ub is the local range, i.e all elements i with lb <= i < ub
      *
      *  Note: lb == ub stands for zero size, ub < lb can never happen
      *
@@ -213,7 +213,7 @@ const char* GenBlockDistribution::getKind() const
     return getId();
 }
 
-const char* GenBlockDistribution::getId() 
+const char* GenBlockDistribution::getId()
 {
     return "GEN_BLOCK";
 }

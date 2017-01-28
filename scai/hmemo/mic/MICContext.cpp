@@ -2,7 +2,7 @@
  * @file MICContext.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -96,13 +96,13 @@ MICContext::MICContext( int deviceNr )
 
     if ( common::Settings::getEnvironment( numCores, "SCAI_MIC_NUM_THREADS" ) )
     {
-        #pragma offload target( mic: mDeviceNr ) in( numCores )
+#pragma offload target( mic: mDeviceNr ) in( numCores )
         {
             omp_set_num_threads( numCores );
         }
     }
 
-    #pragma offload target( mic: mDeviceNr ) out( numCores )
+#pragma offload target( mic: mDeviceNr ) out( numCores )
     {
         #pragma omp parallel
         {

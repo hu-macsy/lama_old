@@ -2,7 +2,7 @@
  * @file BlockDistribution.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -130,7 +130,7 @@ public:
 
     static const char* getId()
     {
-        return "BLOCK";    
+        return "BLOCK";
     }
 
 protected:

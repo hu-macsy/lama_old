@@ -2,7 +2,7 @@
  * @file ELLStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -286,7 +286,7 @@ public:
     /** Template version of setColumn */
 
     template<typename OtherType>
-    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j, 
+    void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
                         const utilskernel::binary::BinaryOp op );
 
     /** This method returns the diagonal

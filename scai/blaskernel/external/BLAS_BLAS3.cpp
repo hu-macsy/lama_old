@@ -2,7 +2,7 @@
  * @file BLAS_BLAS3.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -159,7 +159,7 @@ void BLAS_BLAS3::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegi
     }
 
     SCAI_LOG_DEBUG( logger, "register[" << flag << "] BLAS3 wrapper routines for Host at kernel registry: " <<
-                            "T = " << common::TypeTraits<ValueType>::id() )
+                    "T = " << common::TypeTraits<ValueType>::id() )
 
     KernelRegistry::set<BLASKernelTrait::gemm<ValueType> >( BLAS_BLAS3::gemm, ctx, flag );
 }

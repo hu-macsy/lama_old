@@ -2,7 +2,7 @@
  * @file L2Norm.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -54,16 +54,16 @@ L2Norm::~L2Norm()
 
 std::string L2Norm::createValue()
 {
-   return "L2";
+    return "L2";
 }
 
 Norm* L2Norm::create()
 {
-   return new L2Norm();
+    return new L2Norm();
 }
 
 void L2Norm::writeAt( std::ostream& stream ) const
-{   
+{
     stream << "L2Norm";
 }
 

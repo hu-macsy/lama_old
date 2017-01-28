@@ -2,7 +2,7 @@
  * @file TestVectors.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,10 +47,10 @@ namespace lama
 
 /** Class for a list of vectors, one for each supported
  *  vector storage format and each supported arithmetic type.
- *  
- *  Note: Currently only DENSE vectors are supported, but SPARSE might be 
+ *
+ *  Note: Currently only DENSE vectors are supported, but SPARSE might be
  *        supported in future releases.
- *  
+ *
  */
 
 class TestVectors : public std::vector<scai::lama::VectorPtr>

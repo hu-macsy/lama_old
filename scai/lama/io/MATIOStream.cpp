@@ -2,7 +2,7 @@
  * @file lama/io/MATIOStream.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -272,7 +272,7 @@ uint32_t MATIOStream::writeDataElementHeader( const uint32_t dataType, const uin
     // Note: currently we do not support the short data element format for writing
 
     SCAI_LOG_DEBUG( logger, "Write: DataElementHeader, type = " << dataType << " " << matlabType2ScalarType( dataType )
-                             << ", #bytes = " << nBytes )
+                    << ", #bytes = " << nBytes )
 
     char buffer[8];
 
@@ -472,8 +472,8 @@ uint32_t MATIOStream::writeDenseHeader(
     headerBytes[0] = static_cast<char>( matClass );                      // class
     headerBytes[1] = static_cast<char>( isComplex ? ( 1 << 3 ) : 0 ) ;   // array flags
 
-    SCAI_LOG_INFO( logger, "Array flags, class = " << ( int ) headerBytes[0] 
-                            << ", flags = " << ( int ) headerBytes[1] )
+    SCAI_LOG_INFO( logger, "Array flags, class = " << ( int ) headerBytes[0]
+                   << ", flags = " << ( int ) headerBytes[1] )
 
     wBytes += writeData( header, 2, dryRun );
 
@@ -499,7 +499,7 @@ uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], Inde
 
     uint32_t header[2];
     int32_t  mdims[2];
-   
+
     uint8_t* headerFlags = reinterpret_cast<uint8_t*>( header );
 
     elementPtr += getData( header, 2, elementPtr );
@@ -517,15 +517,15 @@ uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], Inde
 
     if ( isCell )
     {
-        SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1] 
-                                << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
+        SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1]
+                       << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
     }
     else
     {
         elementPtr += getString( nameData, 128, elementPtr );
 
-        SCAI_LOG_INFO( logger, "read info of matrix " << nameData << ", " << dims[0] << " x " << dims[1] 
-                                << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
+        SCAI_LOG_INFO( logger, "read info of matrix " << nameData << ", " << dims[0] << " x " << dims[1]
+                       << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
     }
 
     return elementPtr - data;      // read bytes

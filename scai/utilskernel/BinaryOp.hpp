@@ -2,7 +2,7 @@
  * @file BinaryOp.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Enumeration type for the different binary operators 
+ * @brief Enumeration type for the different binary operators
  * @author Thomas Brandes
  * @date 15.01.2016
  */
@@ -93,18 +93,30 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
 {
     switch ( op )
     {
-        case binary::COPY:      return x2;
-        case binary::ADD:       return x1 + x2;
-        case binary::SUB:       return x1 - x2;
-        case binary::MULT:      return x1 * x2;
-        case binary::DIVIDE:    return x1 / x2;
-        case binary::MODULO:    return common::Math::mod( x1, x2 );
-        case binary::COPY_SIGN: return common::Math::copysign( x1, x2 );
-        case binary::POW:       return common::Math::pow( x1, x2 );
-        case binary::MIN:       return common::Math::min( x1, x2 );
-        case binary::MAX:       return common::Math::max( x1, x2 );
-        case binary::ABS_MAX:   return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
-        default:                return ValueType( 0 );
+        case binary::COPY:
+            return x2;
+        case binary::ADD:
+            return x1 + x2;
+        case binary::SUB:
+            return x1 - x2;
+        case binary::MULT:
+            return x1 * x2;
+        case binary::DIVIDE:
+            return x1 / x2;
+        case binary::MODULO:
+            return common::Math::mod( x1, x2 );
+        case binary::COPY_SIGN:
+            return common::Math::copysign( x1, x2 );
+        case binary::POW:
+            return common::Math::pow( x1, x2 );
+        case binary::MIN:
+            return common::Math::min( x1, x2 );
+        case binary::MAX:
+            return common::Math::max( x1, x2 );
+        case binary::ABS_MAX:
+            return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
+        default:
+            return ValueType( 0 );
     }
 }
 
@@ -115,20 +127,30 @@ inline IndexType applyBinary( const IndexType& x1, const binary::BinaryOp op, co
 {
     switch ( op )
     {
-        case binary::COPY:      return x2;
-        case binary::ADD:       return x1 + x2;
-        case binary::SUB:       return x1 - x2;
-        case binary::MULT:      return x1 * x2;
-        case binary::DIVIDE:    return x1 / x2;
-        case binary::MODULO:    return x1 % x2;
-        case binary::MIN:       return common::Math::min( x1, x2 );
-        case binary::MAX:       return common::Math::max( x1, x2 );
-        case binary::ABS_MAX:   return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
-        default:                return IndexType( 0 );
+        case binary::COPY:
+            return x2;
+        case binary::ADD:
+            return x1 + x2;
+        case binary::SUB:
+            return x1 - x2;
+        case binary::MULT:
+            return x1 * x2;
+        case binary::DIVIDE:
+            return x1 / x2;
+        case binary::MODULO:
+            return x1 % x2;
+        case binary::MIN:
+            return common::Math::min( x1, x2 );
+        case binary::MAX:
+            return common::Math::max( x1, x2 );
+        case binary::ABS_MAX:
+            return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
+        default:
+            return IndexType( 0 );
     }
 }
 
-/** 
+/**
  * Predicate to check whether a binary op is supported for a certain value type.
  *
  * @tparam   ValueType specifies the type for which check is done
@@ -145,7 +167,7 @@ inline bool isBinarySupported( const binary::BinaryOp op )
 
 template <>
 inline bool isBinarySupported<IndexType>( const binary::BinaryOp op )
-{   
+{
     return op <= binary::ABS_MAX;
 }
 
@@ -159,12 +181,15 @@ inline bool isBinarySupported<IndexType>( const binary::BinaryOp op )
 template <typename ValueType>
 inline ValueType zeroBinary( const binary::BinaryOp op )
 {
-    switch( op ) 
+    switch ( op )
     {
-        case binary::ADD: 
-        case binary::ABS_MAX:   return ValueType( 0 );
-        case binary::MIN:       return common::TypeTraits<ValueType>::getMax();
-        case binary::MAX:       return common::TypeTraits<ValueType>::getMin();
+        case binary::ADD:
+        case binary::ABS_MAX:
+            return ValueType( 0 );
+        case binary::MIN:
+            return common::TypeTraits<ValueType>::getMax();
+        case binary::MAX:
+            return common::TypeTraits<ValueType>::getMin();
         default:
         {
             COMMON_THROWEXCEPTION( "Illegal reduction operator: " << op )

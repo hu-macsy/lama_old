@@ -2,7 +2,7 @@
  * @file PartitionIOTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,7 +61,7 @@ using namespace dmemo;
 
 /* ------------------------------------------------------------------------- */
 
-/** This function removes for a parallel execution all replicated distributions. 
+/** This function removes for a parallel execution all replicated distributions.
  *
  *  Read/write of replicated data should be done more carefully.
  */
@@ -212,11 +212,15 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
+        SCAI_LOG_DEBUG( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
+
         DenseVector<ValueType> vector;
 
         float fillRate = 1;
 
         vector.setRandom( dist, fillRate );
+
+        // now write the distributed vector and its distribution, each to a single file
 
         vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *dist, distFileName );
@@ -226,6 +230,9 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
         // read vector and reconstruct its old distribution
 
         readVector.readFromFile( vectorFileName, distFileName );
+
+        SCAI_LOG_DEBUG( logger, "Read vector from file " << vectorFileName << ", dist = " << distFileName 
+                                << ", read vector = " << readVector );
 
         // The local parts of the two vectors must be exactly the same
 
@@ -238,12 +245,14 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         BOOST_CHECK( diff == ValueType( 0 ) );
 
+        // remove the files for vector data + distribution
+
         int rc = PartitionIO::removeFile( vectorFileName, *comm );
-        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_REQUIRE_EQUAL( 0, rc );
         BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
 
         rc = PartitionIO::removeFile( distFileName, *comm );
-        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_REQUIRE_EQUAL( 0, rc );
         BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
     }
 }
@@ -281,15 +290,15 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         }
 
         vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
-        
+
         DenseVector<ValueType> readVector;
 
         if ( withDist )
         {
             readVector.readFromFile( vectorFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName 
-                                    << " ) with dist ( " << distFileName << " ): " << readVector )
+            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
+                           << " ) with dist ( " << distFileName << " ): " << readVector )
         }
         else
         {
@@ -360,7 +369,7 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 
         matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *rowDist, distFileName );
-        
+
         CSRSparseMatrix<ValueType> readMatrix;
 
         // read matrix and reconstruct its old distribution
@@ -425,7 +434,7 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
         {
             PartitionIO::write( *rowDist, distFileName );
         }
-        
+
         SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file " << distFileName )
 
         CSRSparseMatrix<ValueType> readMatrix;
@@ -434,8 +443,8 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
         {
             readMatrix.readFromFile( matrixFileName, distFileName );
 
-            SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName 
-                                    << " ) with dist ( " << distFileName << " ): " << readMatrix )
+            SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName
+                           << " ) with dist ( " << distFileName << " ): " << readMatrix )
         }
         else
         {
@@ -509,7 +518,7 @@ BOOST_AUTO_TEST_CASE( MatrixColPartitionIO )
 
         CSRSparseMatrix<ValueType> readMatrix;
 
-        // read partitioned matrix and its distribution from first column indexes 
+        // read partitioned matrix and its distribution from first column indexes
 
         readMatrix.readFromFile( matrixFileName, "" );
 

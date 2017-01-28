@@ -2,7 +2,7 @@
  * @file AllStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
         {
             storage.getColumn( col1, j );
             denseStorage.getColumn( col2, j );
- 
+
             BOOST_CHECK( col1.maxDiffNorm( col2 ) < ValueType( 0.0001 ) );
         }
     }

@@ -2,7 +2,7 @@
  * @file GenBlockDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -206,7 +206,7 @@ bool GenBlockDistribution::isLocal( const IndexType globalIndex ) const
 
 void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
 {
-    // keep in mind that lb == ub implies zero range, ub < lb can never happen 
+    // keep in mind that lb == ub implies zero range, ub < lb can never happen
 
     lb = mLB;
     ub = mUB;
@@ -216,7 +216,7 @@ void GenBlockDistribution::getLocalRange( IndexType& lb, IndexType& ub ) const
 
 PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
 {
-    // owner of an index can be computed by each processor without communication 
+    // owner of an index can be computed by each processor without communication
 
     PartitionId first = 0;
     PartitionId last  = mCommunicator->getSize() - 1;

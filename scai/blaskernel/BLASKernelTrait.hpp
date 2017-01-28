@@ -2,7 +2,7 @@
  * @file BLASKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -52,8 +52,8 @@ namespace blaskernel
 
 /** Struct with all LAMA kernel traits for BLAS and LAPACK routines currently used.
  *
- *  Syntax of the LAMA kernel definitions are nearly the same as used for the 
- *  corresponing BLAS and LAPACK routines. 
+ *  Syntax of the LAMA kernel definitions are nearly the same as used for the
+ *  corresponing BLAS and LAPACK routines.
  *
  *  It could have been just a namespace but struct disables
  *  'using namespace BLASKerneltrait'.
@@ -613,7 +613,7 @@ struct BLASKernelTrait
          *  where op(A) is either A, AT or AH;
          *  and B is a matrix of right hand sides and will contain the solution of all
          *  equations on output.
-         
+
          * @param[in] order   Specifies, whether the matrix is stored in column major
          *                    order (i.e. CblasColMajor) or in row major order (i.e.
          *                    CblasRowMajor).

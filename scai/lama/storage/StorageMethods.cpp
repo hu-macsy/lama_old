@@ -2,7 +2,7 @@
  * @file StorageMethods.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -295,8 +295,8 @@ void StorageMethods<ValueType>::splitCSR(
 
     IndexType numRows = csrIA.size() - 1;
 
-    SCAI_LOG_INFO( logger, "splitCSR( #rows = " << numRows << ", #values = " << csrJA.size() 
-                            << ", colDist = " << colDist << " ) on " << *ctx )
+    SCAI_LOG_INFO( logger, "splitCSR( #rows = " << numRows << ", #values = " << csrJA.size()
+                   << ", colDist = " << colDist << " ) on " << *ctx )
 
     if ( rowDist )
     {
@@ -308,20 +308,21 @@ void StorageMethods<ValueType>::splitCSR(
     WriteOnlyAccess<IndexType> wLocalIA( localIA, ctx, numRows + 1 );
     WriteOnlyAccess<IndexType> wHaloIA( haloIA, ctx, numRows + 1 );
 
-    #pragma omp parallel 
+    #pragma omp parallel
     {
         SCAI_REGION( "Storage.splitCount" )
 
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+
         for ( IndexType i = 0; i < numRows; i++ )
         {
             IndexType globalI = i;
-    
+
             if ( rowDist )
             {
                 globalI = rowDist->local2global( i );
             }
-    
+
             IndexType localNonZeros = 0;
             IndexType haloNonZeros = 0;
 
@@ -358,8 +359,8 @@ void StorageMethods<ValueType>::splitCSR(
 
     ReadAccess<ValueType> values( csrValues, ctx );
 
-    #pragma omp parallel 
-    { 
+    #pragma omp parallel
+    {
         SCAI_REGION( "Storage.splitTransfer" )
         #pragma omp for schedule( SCAI_OMP_SCHEDULE )
 
@@ -371,17 +372,17 @@ void StorageMethods<ValueType>::splitCSR(
             {
                 globalI = rowDist->local2global( i );
             }
-    
+
             IndexType localOffset = wLocalIA[i];
             IndexType haloOffset = wHaloIA[i];
 
             SCAI_LOG_TRACE( logger, "fill local row " << i << " from " << localOffset << " to " << wLocalIA[i + 1] )
             SCAI_LOG_TRACE( logger, "fill halo row " << i << " from " << haloOffset << " to " << wHaloIA[i + 1] )
-    
+
             for ( IndexType jj = ia[globalI]; jj < ia[globalI + 1]; ++jj )
             {
                 const IndexType jLocal = colDist.global2local( ja[jj] );
-    
+
                 if ( jLocal != nIndex )
                 {
                     // local column index, will be used in local JA
@@ -390,7 +391,7 @@ void StorageMethods<ValueType>::splitCSR(
                     wLocalValues[localOffset] = values[jj];
 
                     SCAI_LOG_TRACE( logger,
-                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj] 
+                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj]
                                     << " is local " << " local offset = " << localOffset )
 
                     ++localOffset;
@@ -403,12 +404,12 @@ void StorageMethods<ValueType>::splitCSR(
                     wHaloValues[haloOffset] = values[jj];
 
                     SCAI_LOG_TRACE( logger,
-                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj] 
+                                    "row " << i << " (global = " << globalI << ": j = " << ja[jj]
                                     << " is not local " << " halo offset = " << haloOffset )
                     ++haloOffset;
                 }
             }
-    
+
             SCAI_ASSERT_EQ_DEBUG( localOffset, wLocalIA[i + 1], "serious mismatch to previsous counting" )
             SCAI_ASSERT_EQ_DEBUG( haloOffset, wHaloIA[i + 1], "serious mitmatch to previous counting" )
         }
@@ -442,7 +443,7 @@ void _StorageMethods::buildHalo(
     haloIndexes.resize( it - haloIndexes.begin() );
     SCAI_LOG_DEBUG( logger,
                     "Eliminating multiple global indexes, " << haloNumValues << " are shrinked to " << haloIndexes.size() << " values, is halo size" )
-    
+
     {
         HArrayRef<IndexType> requiredIndexes( haloIndexes );
         HaloBuilder::build( colDist, requiredIndexes, halo );

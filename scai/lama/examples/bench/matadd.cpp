@@ -2,7 +2,7 @@
  * @file lama/examples/bench/matadd.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -97,15 +97,24 @@ static void bench( IndexType size, double fillRate )
     }
 
     const int precision = 1;
+
     cout << "Size = " << size << ", rate = " << ( fillRate * 100 )
          << "%, type = " << scai::common::getScalarType<ValueType>() << endl;
+
     cout << "===================================" << endl;
+
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
+
     cout << "time host = " << setw( 6 ) << timeHost * 1000.0 << endl;
+
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
+
     cout << "time cuda = " << setw( 6 ) << timeGPU * 1000.0 << endl;
+
     cout << setiosflags( std::ios::fixed ) << std::setprecision( precision );
+
     cout << "speedup   = " << setw( 6 ) << ( timeHost / timeGPU ) << endl;;
+
     cout << endl;
 }
 

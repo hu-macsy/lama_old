@@ -2,7 +2,7 @@
  * @file lama/io/IOStream.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -109,6 +109,7 @@ void IOStream::endianConvert( char* out, const char* in, const IndexType n, cons
     {
         char* out_s = out + offs;
         const char* in_s = in + offs;
+
         if ( size == 1 )
         {
             out_s[0] = in_s[0];
@@ -118,6 +119,7 @@ void IOStream::endianConvert( char* out, const char* in, const IndexType n, cons
             out_s[0] = in_s[1];
             out_s[1] = in_s[0];
         }
+
         if ( size == 4 )
         {
             out_s[0] = in_s[3];
@@ -139,7 +141,7 @@ void IOStream::endianConvert( char* out, const char* in, const IndexType n, cons
         }
         else if ( size == 16 )
         {
-            // long double 
+            // long double
             out_s[0] = in_s[15];
             out_s[1] = in_s[14];
             out_s[2] = in_s[13];
@@ -159,8 +161,9 @@ void IOStream::endianConvert( char* out, const char* in, const IndexType n, cons
         }
         else
         {
-             COMMON_THROWEXCEPTION( "unsupported size for endianConvert, size = " << size )
+            COMMON_THROWEXCEPTION( "unsupported size for endianConvert, size = " << size )
         }
+
         offs += size;
     }
 }

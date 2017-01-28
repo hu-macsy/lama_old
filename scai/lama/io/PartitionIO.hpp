@@ -2,7 +2,7 @@
  * @file PartitionIO.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -67,8 +67,8 @@ public:
      *
      *  The global size of the distribution is given by the number of entries in the file.
      *  All owners must be values between 0 and size-1 where size is the size of comm.
-     * 
-     *  If the owners are sorted, a general block distribution is returned, otherwise a 
+     *
+     *  If the owners are sorted, a general block distribution is returned, otherwise a
      *  general distribution.
      */
     static dmemo::DistributionPtr readSDistribution( const std::string& inFileName, dmemo::CommunicatorPtr comm );

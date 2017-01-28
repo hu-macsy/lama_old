@@ -2,7 +2,7 @@
  * @file solver/examples/solver/complex_convert.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -152,13 +152,14 @@ int main( int argc, const char* argv[] )
     common::scalar::ScalarType valueType = TypeTraits<RealValueType>::stype;
     common::scalar::ScalarType indexType = TypeTraits<IndexType>::stype;
 
-    if ( argc != 3 ) 
+    if ( argc != 3 )
     {
         cerr << "Usage: complex_convert complex_infile_name real_outfile_name" << endl;
         return -1;
     }
 
     const char* in_filename = argv[1];
+
     const char* out_filename = argv[2];
 
     HArray<ComplexValueType> values;
@@ -188,7 +189,7 @@ int main( int argc, const char* argv[] )
         COOStorage<ComplexValueType> coo;
 
         coo.readFromFile( in_filename );
-    
+
         int numRows = coo.getNumRows();
         numColumns  = coo.getNumColumns();
 
@@ -197,7 +198,7 @@ int main( int argc, const char* argv[] )
         const HArray<IndexType>& ia = coo.getIA();
         const HArray<IndexType>& ja = coo.getJA();
         const HArray<ComplexValueType> values = coo.getValues();
-    
+
         cout << "coo::ia = " << ia << endl;
         cout << "coo::ja = " << ja << endl;
         cout << "coo::values = " << values << endl;
@@ -207,11 +208,11 @@ int main( int argc, const char* argv[] )
         HArray<RealValueType> newValues;
 
         convertCmplx2Real( newIA, newJA, newValues, ia, ja, values );
-    
+
         cout << "new::ia = " << newIA << endl;
         cout << "new::ja = " << newJA << endl;
         cout << "new::values = " << newValues << endl;
-    
+
         COOStorage<double> newCOO( 2 * numRows, 2 * numColumns, newIA, newJA, newValues );
 
         newCOO.writeToFile( out_filename, fileType, valueType, indexType, indexType, binary );

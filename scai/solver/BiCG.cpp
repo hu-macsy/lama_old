@@ -2,7 +2,7 @@
  * @file BiCG.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -187,10 +187,10 @@ void BiCG::iterate()
     const Scalar pqProd = p2.dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-    if( pqProd == Scalar( 0.0 ) )
+/*    if ( pqProd == Scalar( 0.0 ) )
     {
         COMMON_THROWEXCEPTION( "Diverging due to indefinite matrix. You might try another start solution, better an adequate solver." )
-    }
+    }*/
 
     Scalar alpha = pScalar / pqProd;
 

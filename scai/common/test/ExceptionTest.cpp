@@ -2,7 +2,7 @@
  * @file ExceptionTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -94,10 +94,10 @@ BOOST_AUTO_TEST_CASE( UnsupportedTest )
 
     BOOST_CHECK_EQUAL( UnsupportedException::getUnsupportedSetting(),
                        UnsupportedException::UNSUPPORTED_ERROR );
-    
+
     BOOST_CHECK_THROW(
     {
-       SCAI_UNSUPPORTED( "Fail for this stuff here" )
+        SCAI_UNSUPPORTED( "Fail for this stuff here" )
     }, UnsupportedException );
 
     Settings::putEnvironment( var, "IGNORE", replace );
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE( UnsupportedTest )
 
     BOOST_CHECK_EQUAL( UnsupportedException::getUnsupportedSetting(),
                        UnsupportedException::UNSUPPORTED_IGNORE );
-    
+
     SCAI_UNSUPPORTED( "This stuff is now ignored" )
 
     Settings::putEnvironment( var, "WARN", replace );
@@ -115,9 +115,9 @@ BOOST_AUTO_TEST_CASE( UnsupportedTest )
 
     BOOST_CHECK_EQUAL( UnsupportedException::getUnsupportedSetting(),
                        UnsupportedException::UNSUPPORTED_WARN );
-    
+
     if ( wasSet )
-    { 
+    {
         Settings::putEnvironment( var, savedValue.c_str(), replace );
     }
     else

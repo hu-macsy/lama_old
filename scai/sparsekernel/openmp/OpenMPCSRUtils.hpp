@@ -2,7 +2,7 @@
  * @file OpenMPCSRUtils.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -67,11 +67,11 @@ public:
 
     /** Implementation for CSRKernelTrait::getValuePosCol */
 
-    static IndexType getValuePosCol( 
-        IndexType row[], 
+    static IndexType getValuePosCol(
+        IndexType row[],
         IndexType pos[],
-        const IndexType j, 
-        const IndexType csrIA[], 
+        const IndexType j,
+        const IndexType csrIA[],
         const IndexType numRows,
         const IndexType csrJA[],
         const IndexType numValues );
@@ -414,7 +414,7 @@ private:
 
     /** Struct for registration of methods with one template argument.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for each supported type
      */
 
@@ -426,7 +426,7 @@ private:
 
     /** Struct for registration of methods with two template arguments.
      *
-     *  Registration function is wrapped in struct/class that can be used as template 
+     *  Registration function is wrapped in struct/class that can be used as template
      *  argument for metaprogramming classes to expand for all supported types.
      */
 

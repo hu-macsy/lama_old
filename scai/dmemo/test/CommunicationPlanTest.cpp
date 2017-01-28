@@ -2,7 +2,7 @@
  * @file CommunicationPlanTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -59,7 +59,7 @@ static IndexType required( const PartitionId rankRequires, const PartitionId ran
 {
     if ( rankRequires == rankProvides )
     {
-       return 0;
+        return 0;
     }
 
     return 2 * rankProvides + rankRequires;
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( allocatePlanByOffsetTest )
     bool compressFlag = true;
 
     CommunicationPlan requiredPlan;
-   
+
     requiredPlan.allocateByOffsets( &offsets[0], quantities.size(), compressFlag );
 
     BOOST_CHECK( requiredPlan.compressed() );
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
     CommunicationPlan requiredPlan2( comm->getSize(), &reqOwners[0], static_cast<IndexType>( reqOwners.size() ) );
 
     BOOST_CHECK_EQUAL( requiredPlan2.totalQuantity(), static_cast<IndexType>( reqOwners.size() ) );
-  
+
     CommunicationPlan requiredPlan1( &reqQuantities[0], reqQuantities.size() );
 
     // verify that both plans are same
@@ -204,15 +204,15 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( writeTest )
-{   
+{
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-    
+
     std::vector<IndexType> reqQuantities;
-    
+
     setQuantities( reqQuantities, *comm );
-    
+
     CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size() );
-    
+
     std::ostringstream out;
 
     out << requiredPlan;

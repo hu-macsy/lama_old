@@ -2,7 +2,7 @@
  * @file CSRUtilsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE( validOffsetsTest )
         ReadAccess<IndexType> rIA( csrIA, loc );
         okay = validOffsets[loc]( rIA.get(), numRows, total );
     }
- 
+
     BOOST_CHECK( okay );
 
     {
@@ -144,12 +144,13 @@ BOOST_AUTO_TEST_CASE( offsets2sizesTest )
 
     {
         ReadAccess<IndexType> rSizes( csrSizes );
+
         for ( IndexType i = 0; i < numRows; ++i )
         {
             BOOST_CHECK_EQUAL( sizes[i], rSizes[i] );
         }
     }
- 
+
     LAMAKernel<CSRKernelTrait::offsets2sizesGather> offsets2sizesGather;
 
     loc = testContext;
@@ -178,8 +179,8 @@ BOOST_AUTO_TEST_CASE( offsets2sizesTest )
         }
     }
 }
- 
- 
+
+
 /* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
@@ -205,7 +206,7 @@ BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
         ReadAccess<IndexType> rIA( csrIA, loc );
         nonEmptyRows = countNonEmptyRowsByOffsets[loc]( rIA.get(), numRows );
     }
- 
+
     const IndexType expectedNonEmptyRows = sizeof( rows ) / sizeof( IndexType );
 
     BOOST_REQUIRE_EQUAL( expectedNonEmptyRows, nonEmptyRows );
@@ -217,7 +218,7 @@ BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
     loc = testContext;
     setNonEmptyRowsByOffsets.getSupportedContext( loc );
 
-    {   
+    {
         SCAI_CONTEXT_ACCESS( loc );
         ReadAccess<IndexType> rIA( csrIA, loc );
         WriteOnlyAccess<IndexType> wIndexes( rowIndexes, loc, nonEmptyRows );
@@ -233,7 +234,7 @@ BOOST_AUTO_TEST_CASE( nonEmptyRowsTest )
         }
     }
 }
- 
+
 /* ------------------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( hasDiagonalPropertyTest, ValueType, scai_numeric_test_types )
@@ -341,7 +342,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absMaxDiffValTest, ValueType, scai_numeric_test_t
     ReadAccess<ValueType> rCSRValues2( csrValues2, loc );
     SCAI_CONTEXT_ACCESS( loc );
     ValueType maxVal = absMaxDiffVal[loc]( numRows, false, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
-                       rCSRJA2.get(), rCSRValues2.get() );
+                                           rCSRJA2.get(), rCSRValues2.get() );
     BOOST_CHECK_EQUAL( 3, maxVal );
     // rows are sorted, so we can also apply sortFlag = true
     maxVal = absMaxDiffVal[loc]( numRows, true, rCSRIA1.get(), rCSRJA1.get(), rCSRValues1.get(), rCSRIA2.get(),
@@ -408,7 +409,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleRowsTest, ValueType, scai_numeric_test_types
 
         for ( IndexType i = 0; i < numRows; ++ i )
         {
-            for ( IndexType jj = rIA[i]; jj < rIA[i+1]; ++jj )
+            for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
             {
                 BOOST_CHECK_EQUAL( rRows[i] * rSavedValues[jj], rValues[jj] );
             }
@@ -505,7 +506,7 @@ BOOST_AUTO_TEST_CASE( sortRowTest )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    //    1.0   -   2.0  1.1 
+    //    1.0   -   2.0  1.1
     //    0.5  0.3   -    -
     //     -    -   3.0   -
     //     -    -   4.0   1.5
@@ -593,7 +594,7 @@ BOOST_AUTO_TEST_CASE( countNonZeroTest )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    //    1.0   -   2.0  1.1 
+    //    1.0   -   2.0  1.1
     //    0.5  0.0   -    -
     //     -    -   3.0   -
     //     -    -   4.0  0.0
@@ -655,7 +656,7 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    //    1.0   -   2.0  1.1 
+    //    1.0   -   2.0  1.1
     //    0.5  0.0   -    -
     //     -    -   3.0   -
     //     -    -   4.0  0.0
@@ -705,8 +706,8 @@ BOOST_AUTO_TEST_CASE( compressTest )
 
         for ( IndexType k = 0; k < newNumValues; ++k )
         {
-            SCAI_LOG_TRACE( logger, "value " << k << ": " << rJA[k] << ":" << rValues[k] 
-                                    << ", expected " << ja_compress[k] << ":" << values_compress[k] )
+            SCAI_LOG_TRACE( logger, "value " << k << ": " << rJA[k] << ":" << rValues[k]
+                            << ", expected " << ja_compress[k] << ":" << values_compress[k] )
 
             BOOST_CHECK_EQUAL( rJA[k], ja_compress[k] );
             BOOST_CHECK_EQUAL( rValues[k], values_compress[k] );
@@ -790,9 +791,9 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
 
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // give warning if other context is selected
 
-    //    1.0   -   2.0      
-    //    0.5  0.3   -       
-    //     -    -   3.0      
+    //    1.0   -   2.0
+    //    0.5  0.3   -
+    //     -    -   3.0
 
     const IndexType ia[] = { 0, 2, 4, 5 };
     const IndexType ja[] = { 0, 2, 0, 1, 2 };
@@ -803,7 +804,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
     HArray<IndexType> csrIA( numRows + 1, ia, testContext );
     HArray<IndexType> csrJA( numValues, ja, testContext );
 
-    HArray<IndexType> row;   // result for rowIndexes 
+    HArray<IndexType> row;   // result for rowIndexes
     HArray<IndexType> pos;   // result for positions
 
     IndexType cnt;
@@ -855,7 +856,7 @@ BOOST_AUTO_TEST_CASE( getValuePosColTest )
             IndexType i = rRow[k];
             BOOST_CHECK_EQUAL( rJA[ p ], columnIndex );
             BOOST_CHECK( rIA[i] <= p );
-            BOOST_CHECK( p < rIA[i+1] );
+            BOOST_CHECK( p < rIA[i + 1] );
         }
     }
 }
@@ -903,7 +904,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
         WriteOnlyAccess<IndexType> wCSCJA( cscJA, loc, numValues );
         WriteOnlyAccess<ValueType> wCSCValues( cscValues, loc, numValues );
         SCAI_CONTEXT_ACCESS( loc );
-        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(), 
+        convertCSR2CSC[loc]( wCSCIA.get(), wCSCJA.get(), wCSCValues.get(),
                              rCSRIA.get(), rCSRJA.get(), rCSRValues.get(), numRows,
                              numColumns, numValues );
     }
@@ -945,7 +946,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
 
     data1::getCSCTestData( numRows1, numColumns1, numValues1, expIA, expJA, expValues );
 
-    // test cscIA = expJA, cscJA = expIA, cscValues = expValues 
+    // test cscIA = expJA, cscJA = expIA, cscValues = expValues
 
     BOOST_REQUIRE_EQUAL( expJA.size(), cscIA.size() );
     BOOST_CHECK_EQUAL( 0, expJA.maxDiffNorm( cscIA ) );
@@ -991,7 +992,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
     const ValueType values[] = { 3.0,  4.0, -5.0,  6.0,
                                  6.0,  5.0, -6.0, 5.0,
                                  9.0, -4.0,  2.0, 3.0,
-                                       2.0, -3.0, 1.0 };
+                                 2.0, -3.0, 1.0
+                               };
     const ValueType rhsValues[] = { 39.0, 43.0, 6.0, 13.0 };
     const ValueType solValues[] = { 1.0, 2.0, -2.0, 3.0 };
     const IndexType numRows = 4;
@@ -1012,7 +1014,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( decompositionTest, ValueType, scai_numeric_test_t
         WriteOnlyAccess<ValueType> wSol( solution, loc, numRows );
         SCAI_CONTEXT_ACCESS( loc );
         decomposition[loc]( wSol.get(), rCSRIA.get(), rCSRJA.get(), rCSRValues.get(),
-            rRHS.get(), numRows, nnz, false );
+                            rRHS.get(), numRows, nnz, false );
     }
 
     {
@@ -1043,7 +1045,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
     SCAI_LOG_INFO( logger, "matmul< " << TypeTraits<ValueType>::id() << "> non-square test" )
 
-    // REMARK: test with explicit zeros because cusparse often has problem with it 
+    // REMARK: test with explicit zeros because cusparse often has problem with it
     //       array 1             array 2
     //    1.0   -   2.0       1.0  0.5  0.0  4.0
     //    0.5  0.3   -         -   0.3  0.0  1.5
@@ -1061,9 +1063,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
     // REMARK: explicit zeros are also in result, when no compress is called
     //       array3 ( 4 x 4 )
     //
-    //     5.0  0.5   6.0  4.0 
+    //     5.0  0.5   6.0  4.0
     //     0.5  0.34  0.0  2.45
-    //     6.0   -    9.0   - 
+    //     6.0   -    9.0   -
     //     4.0  2.45  0.0  18.25
 
     const IndexType ia3[] = { 0, 4, 8, 10, 14 };
@@ -1106,7 +1108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matMulTest, ValueType, scai_numeric_test_types )
 
         WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
 
-        nnz3 = matrixMultiplySizes[loc]( wSizes.get(), n1, n3, n2, diagonalProperty, 
+        nnz3 = matrixMultiplySizes[loc]( wSizes.get(), n1, n3, n2, diagonalProperty,
                                          rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
     }
 
@@ -1212,7 +1214,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
     //       array 1                array 2
     //    1.0   -   2.0  -         1.0  0.5   -   -
-    //    0.5  0.3   -   0.5        -    -    -   0.5 
+    //    0.5  0.3   -   0.5        -    -    -   0.5
     //     -    -   3.0  -        2.0   -   1.0   0.5
 
     const IndexType ia1[]     = { 0,        2,             5, 6 };
@@ -1226,7 +1228,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
     //       array3 = array 1 + array 2
     //
     //     2.0  0.5  2.0  -
-    //     0.5  0.3   -   1.0  
+    //     0.5  0.3   -   1.0
     //     2.0   -   4.0  0.5
 
     const IndexType ia3[]     = { 0,             3,             6,            9 };
@@ -1268,7 +1270,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
         WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
 
-        nnz3 = matrixAddSizes[loc]( wSizes.get(), n1, n2, diagonalProperty, 
+        nnz3 = matrixAddSizes[loc]( wSizes.get(), n1, n2, diagonalProperty,
                                     rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
 
     }
@@ -1309,7 +1311,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
         SCAI_CONTEXT_ACCESS( loc );
 
-        matrixAdd[loc]( wCJA.get(), wCValues.get(), 
+        matrixAdd[loc]( wCJA.get(), wCValues.get(),
                         rCIA.get(), n1, n2, diagonalProperty,
                         one, rAIA.get(), rAJA.get(), rAValues.get(),
                         one, rBIA.get(), rBJA.get(), rBValues.get() );
@@ -1400,24 +1402,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( testContext );
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * CSR * x + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
             ReadAccess<IndexType> rIA( csrIA, loc );
             ReadAccess<IndexType> rJA( csrJA, loc );
             ReadAccess<ValueType> rValues( csrValues, loc );
-    
+
             ReadAccess<ValueType> rX( x, loc );
-            ReadAccess<ValueType> rY( y, loc ); 
+            ReadAccess<ValueType> rY( y, loc );
             WriteOnlyAccess<ValueType> wResult( res, loc, numRows );
-    
+
             normalGEMV[loc]( wResult.get(),
                              alpha, rX.get(), beta, rY.get(),
                              numRows, numColumns, numValues, rIA.get(), rJA.get(), rValues.get() );
         }
-    
+
         HArray<ValueType> expectedRes;
 
         data1::getGEMVResult( expectedRes, alpha, x, beta, y );
@@ -1491,8 +1493,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( testContext );
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x * CSR + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -1581,8 +1583,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( numRows, res_values, testContext );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
-                                << ", with x = " << x
-                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+                       << ", with x = " << x
+                       << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -1590,16 +1592,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
             ReadAccess<IndexType> rJA( csrJA, loc );
             ReadAccess<ValueType> rValues( csrValues, loc );
             ReadAccess<IndexType> rIndexes( rowIndexes, loc );
-    
+
             ReadAccess<ValueType> rX( x, loc );
             WriteAccess<ValueType> wResult( res, loc );
-    
+
             sparseGEMV[loc]( wResult.get(),
                              alpha, rX.get(),
                              numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get() );
 
         }
-    
+
         HArray<ValueType> expectedRes( numRows, res_values );
 
         ValueType beta = 1;  // res = alpha * A * x + 1 * res <-> res += alpha * A * x
@@ -1674,8 +1676,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
         HArray<ValueType> res( numColumns, res_values, testContext );
 
         SCAI_LOG_INFO( logger, "compute res += " << alpha << " * CSR * x "
-                                << ", with x = " << x
-                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+                       << ", with x = " << x
+                       << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
@@ -1683,16 +1685,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
             ReadAccess<IndexType> rJA( csrJA, loc );
             ReadAccess<ValueType> rValues( csrValues, loc );
             ReadAccess<IndexType> rIndexes( rowIndexes, loc );
-    
+
             ReadAccess<ValueType> rX( x, loc );
             WriteAccess<ValueType> wResult( res, loc );
-    
+
             sparseGEVM[loc]( wResult.get(),
                              alpha, rX.get(),
                              numColumns, numNonEmptyRows, rIndexes.get(), rIA.get(), rJA.get(), rValues.get() );
 
         }
-    
+
         HArray<ValueType> expectedRes( numColumns, res_values );
 
         ValueType beta = 1;  // res = alpha * x * A + 1 * res <-> res += alpha * x * A
@@ -1749,9 +1751,11 @@ BOOST_AUTO_TEST_CASE( gemmTest )
     const IndexType nVectors = 2;  // gemm is optimized for nVectors * gemv
 
     const ValueType y_values[]   = { 1, -1, 2, -2, 1, 1, -1 ,
-                                     2, -3, 4,  1, 5, 3,  2 };
+                                     2, -3, 4,  1, 5, 3,  2
+                                   };
     const ValueType x_values[]   = { 3, -3, 2, -2,
-                                     2, -1, 1,  2 };
+                                     2, -1, 1,  2
+                                   };
 
     const IndexType n_x   = sizeof( x_values ) / sizeof( ValueType );
     const IndexType n_y   = sizeof( y_values ) / sizeof( ValueType );
@@ -1790,25 +1794,25 @@ BOOST_AUTO_TEST_CASE( gemmTest )
         HArray<ValueType> res( testContext );
 
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * CSR * x + " << beta << " * y "
-                                << ", with x = " << x << ", y = " << y
-                                << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
+                       << ", with x = " << x << ", y = " << y
+                       << ", CSR: ia = " << csrIA << ", ja = " << csrJA << ", values = " << csrValues )
         {
             SCAI_CONTEXT_ACCESS( loc );
 
             ReadAccess<IndexType> rIA( csrIA, loc );
             ReadAccess<IndexType> rJA( csrJA, loc );
             ReadAccess<ValueType> rValues( csrValues, loc );
-    
+
             ReadAccess<ValueType> rX( x, loc );
-            ReadAccess<ValueType> rY( y, loc ); 
+            ReadAccess<ValueType> rY( y, loc );
 
             WriteOnlyAccess<ValueType> wResult( res, loc, nVectors * numRows );
-    
+
             gemm[loc]( wResult.get(),
                        alpha, rX.get(), beta, rY.get(),
                        numRows, nVectors, numColumns, rIA.get(), rJA.get(), rValues.get() );
         }
-    
+
         HArray<ValueType> expectedRes1;
         HArray<ValueType> expectedRes2;
 
@@ -1883,7 +1887,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiTest, ValueType, scai_numeric_test_types )
             ReadAccess<ValueType> rRhs( rhs, loc );
             WriteOnlyAccess<ValueType> wSolution( res, loc, numColumns );
 
-            jacobi[loc]( wSolution.get(), 
+            jacobi[loc]( wSolution.get(),
                          rIA.get(), rJA.get(), rValues.get(),
                          rOld.get(), rRhs.get(), omega, numRows );
         }
@@ -1976,9 +1980,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
             ReadAccess<ValueType> rOld( oldSolution, loc );
             ReadAccess<IndexType> rIADummy( iaDummy, loc );
             ReadAccess<ValueType> rDiag( diag, loc );
-            WriteAccess<ValueType> wSolution( solution, loc, numColumns ); 
+            WriteAccess<ValueType> wSolution( solution, loc, numColumns );
 
-            jacobiHalo[loc]( wSolution.get(), 
+            jacobiHalo[loc]( wSolution.get(),
                              rIADummy.get(), rDiag.get(),
                              rIA.get(), rJA.get(), rValues.get(), rIndexes.get(),
                              rOld.get(), omega, numNonEmptyRows );
@@ -2066,9 +2070,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloDiagTest, ValueType, scai_numeric_test_
 
             ReadAccess<ValueType> rOld( oldSolution, loc );
             ReadAccess<ValueType> rDiag( diag, loc );
-            WriteAccess<ValueType> wSolution( solution, loc, numColumns ); 
+            WriteAccess<ValueType> wSolution( solution, loc, numColumns );
 
-            jacobiHaloWithDiag[loc]( wSolution.get(), 
+            jacobiHaloWithDiag[loc]( wSolution.get(),
                                      rDiag.get(),
                                      rIA.get(), rJA.get(), rValues.get(), rIndexes.get(),
                                      rOld.get(), omega, numNonEmptyRows );

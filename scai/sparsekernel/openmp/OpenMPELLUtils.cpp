@@ -2,7 +2,7 @@
  * @file OpenMPELLUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -271,16 +271,16 @@ IndexType OpenMPELLUtils::getValuePos(
             break;
         }
     }
-  
+
     return vPos;
 }
 
 /* --------------------------------------------------------------------------- */
 
 IndexType OpenMPELLUtils::getValuePosCol( IndexType row[], IndexType pos[],
-                                          const IndexType j,
-                                          const IndexType ellIA[], const IndexType numRows,
-                                          const IndexType ellJA[], const IndexType numValuesPerRow )
+        const IndexType j,
+        const IndexType ellIA[], const IndexType numRows,
+        const IndexType ellJA[], const IndexType numValuesPerRow )
 {
     SCAI_REGION( "OpenMP.ELLUtils.getValuePosCol" )
 
@@ -500,9 +500,11 @@ void OpenMPELLUtils::compressValues(
         {
             IndexType gap = 0;
 
-            for ( IndexType j = 0; j < IA[i]; j++ )
+            for ( IndexType jj = 0; jj < IA[i]; jj++ )
             {
-                IndexType pos = ellindex( i, j, numRows, numValuesPerRow );
+                IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
+
+                // delete it if zero and not diagonal entry
 
                 if ( common::Math::abs( values[pos] ) <= common::Math::real( eps ) && JA[pos] != i )
                 {
@@ -510,16 +512,18 @@ void OpenMPELLUtils::compressValues(
                     continue;
                 }
 
-                IndexType newpos = ellindex( i, j - gap, numRows, newNumValuesPerRow );
+                // move entry gap positions back in this row
+
+                IndexType newpos = ellindex( i, jj - gap, numRows, newNumValuesPerRow );
                 newValues[newpos] = values[pos];
                 newJA[newpos] = JA[pos];
             }
 
             // fill up to top
 
-            for (  IndexType j = IA[i] - gap; j < newNumValuesPerRow; j++ )
+            for (  IndexType jj = IA[i] - gap; jj < newNumValuesPerRow; jj++ )
             {
-                IndexType newpos = ellindex( i, j, numRows, newNumValuesPerRow );
+                IndexType newpos = ellindex( i, jj, numRows, newNumValuesPerRow );
                 newValues[newpos] = 0;
                 newJA[newpos] = 0;
             }
@@ -779,7 +783,7 @@ void OpenMPELLUtils::sortRowElements(
             for ( IndexType jj = start; jj < end; ++jj )
             {
                 IndexType pos  = ellindex( i, jj, numRows, numValuesPerRow );
-                IndexType pos1 = ellindex( i, jj+1, numRows, numValuesPerRow );
+                IndexType pos1 = ellindex( i, jj + 1, numRows, numValuesPerRow );
 
                 bool swapIt = false;
 
@@ -1031,6 +1035,7 @@ void OpenMPELLUtils::jacobiHalo(
             }
 
             const ValueType diag = diagonal[i];
+
             solution[i] -= temp * ( omega / diag );
         }
     }
@@ -1229,7 +1234,7 @@ void OpenMPELLUtils::normalGEVM(
     }
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
-    
+
     utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
 
     #pragma  omp parallel
@@ -1245,7 +1250,7 @@ void OpenMPELLUtils::normalGEVM(
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 IndexType j   = ellJA[pos];
                 ValueType v   = alpha * ellValues[pos] * x[i];
-         
+
                 atomicAdd( result[j], v );
             }
         }
@@ -1291,7 +1296,7 @@ void OpenMPELLUtils::sparseGEVM(
     {
         SCAI_REGION( "OpenMP.ELL.sparseGEVM" )
 
-        #pragma omp for 
+        #pragma omp for
 
         for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
@@ -1302,7 +1307,7 @@ void OpenMPELLUtils::sparseGEVM(
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
                 IndexType j   = ellJA[pos];
                 ValueType v   = alpha * ellValues[pos] * x[i];
-         
+
                 atomicAdd( result[j], v );
             }
         }

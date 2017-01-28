@@ -2,7 +2,7 @@
  * @file MICDIAUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -210,6 +210,7 @@ void MICDIAUtils::getCSRValues(
                 }
 
                 const DIAValueType value = diaValues[i + ii * numRows];
+
                 bool nonZero = std::abs( value ) > eps;
 
                 if ( nonZero )

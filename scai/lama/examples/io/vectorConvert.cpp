@@ -2,7 +2,7 @@
  * @file vectorConvert.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -45,21 +45,21 @@ using namespace scai;
 using namespace lama;
 using namespace hmemo;
 
-static common::scalar::ScalarType getType() 
+static common::scalar::ScalarType getType()
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
-    
+
     std::string val;
-    
+
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
-    {   
+    {
         scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
-        
+
         if ( env_type == scai::common::scalar::UNKNOWN )
-        {   
+        {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }
-        
+
         type = env_type;
     }
 
@@ -81,15 +81,17 @@ int main( int argc, const char* argv[] )
         cout << "   Supported types: ";
         vector<common::scalar::ScalarType> dataTypes;
         hmemo::_HArray::getCreateValues( dataTypes );
+
         for ( size_t i = 0; i < dataTypes.size(); ++i )
         {
             cout << dataTypes[i] << " ";
         }
+
         cout << endl;
         return -1;
     }
 
-    // take double as default 
+    // take double as default
 
     common::scalar::ScalarType type = getType();
 

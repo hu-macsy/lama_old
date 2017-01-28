@@ -2,7 +2,7 @@
  * @file CSRStorageTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -138,8 +138,8 @@ BOOST_AUTO_TEST_CASE( compressTest )
     /*   matrix:
 
           1  -   -
-          -  1   - 
-          -  0   1  
+          -  1   -
+          -  0   1
      */
 
     const IndexType ia[]     = { 0, 1, 2,    4 };
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE( getFirstColTest )
     const IndexType numValues = ia[numRows];
     LArray<IndexType> csrIA( numRows + 1, ia, context );
     LArray<IndexType> csrJA( numValues, ja, context );
-    LArray<ValueType> csrValues( numValues, ValueType( 1 ), context );  
+    LArray<ValueType> csrValues( numValues, ValueType( 1 ), context );
     CSRStorage<ValueType> csrStorage;
     csrStorage.setContextPtr( context );
     csrStorage.allocate( numRows, numColumns );

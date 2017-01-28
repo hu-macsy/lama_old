@@ -2,7 +2,7 @@
  * @file TextIO.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -46,7 +46,7 @@
 
 #include <sstream>
 
-#define MATLAB_SUFFIX ".txt" 
+#define MATLAB_SUFFIX ".txt"
 
 using namespace std;
 
@@ -98,7 +98,7 @@ void TextIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
-/** Method to count number of lines of a text file and the maximal number of entries in one line 
+/** Method to count number of lines of a text file and the maximal number of entries in one line
  *
  *  @param[out]  nLines is number of lines the file has
  *  @param[out]  nEntries is maximal number of entries
@@ -177,7 +177,7 @@ void TextIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName,
     const IndexType first,
-    const IndexType n ) 
+    const IndexType n )
 {
     IndexType size;   // number of lines, size of array
     IndexType k;      // number of entries in one line
@@ -193,7 +193,7 @@ void TextIO::readArrayImpl(
         array.clear();
         return;
     }
-    
+
     IndexType nEntries = n;
 
     if ( n == nIndex )
@@ -205,7 +205,7 @@ void TextIO::readArrayImpl(
         // give useful error message as this is a typical error if wrong file is specified
 
         SCAI_ASSERT_LE_ERROR( first + n, size, "Read array block( offset = " << first << ", n = " << nEntries << ") failed: "
-                                                << "size of array in file " << fileName << " is " << size )
+                              << "size of array in file " << fileName << " is " << size )
     }
 
     // use local arrays instead of heteregeneous arrays as we want ops on them
@@ -232,7 +232,7 @@ void TextIO::readArrayImpl(
 template<typename ValueType>
 void TextIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
-    const std::string& fileName ) 
+    const std::string& fileName )
 {
     SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
 
@@ -260,9 +260,9 @@ void TextIO::writeStorageImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void TextIO::readData( 
-    HArray<IndexType>& ia, 
-    HArray<IndexType>& ja, 
+void TextIO::readData(
+    HArray<IndexType>& ia,
+    HArray<IndexType>& ja,
     HArray<ValueType>* values,
     const IndexType nnz,
     const std::string& fileName )
@@ -330,13 +330,13 @@ template<typename ValueType>
 void TextIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName,
-    const IndexType firstRow, 
+    const IndexType firstRow,
     const IndexType nRows )
 {
     // binary mode does not matter as we have always formatted output
 
     // read coo entries lines by line, similiar to MatrixMarket
-    // i , j, val     
+    // i , j, val
 
     IndexType nnz;
     IndexType k;
@@ -353,7 +353,7 @@ void TextIO::readStorageImpl(
 
     bool readPattern = mScalarTypeData == common::scalar::PATTERN;
 
-    IndexType nEntries = 2;   
+    IndexType nEntries = 2;
 
     if ( !readPattern )
     {

@@ -2,7 +2,7 @@
  * @file BuildSparseIndexes.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,7 +47,7 @@ namespace scai
 namespace sparsekernel
 {
 
-/** Data structure that is used to build a sparse vector (or sparse row or col in sparse matrix). 
+/** Data structure that is used to build a sparse vector (or sparse row or col in sparse matrix).
  *
  *  This data structure is similiar to a stack of indexes.
  *  Indexes already inserted are ignored and this data structure has been optimized for this purpose.
@@ -86,10 +86,10 @@ public:
         return mLength;
     }
 
-    IndexType popIndex() 
+    IndexType popIndex()
     {
         IndexType saveIndex = mFirstIndex;
-        
+
         mFirstIndex = mIndexList[saveIndex];
         mIndexList[saveIndex] = NINIT;
 
@@ -107,12 +107,12 @@ public:
     {
         while ( !isEmpty() )
         {
-           popIndex();
+            popIndex();
         }
     }
 
 private:
- 
+
     common::scoped_array<IndexType> mIndexList;
 
     IndexType NINIT;
@@ -126,7 +126,7 @@ class COMMON_DLL_IMPORTEXPORT BuildSparseVector : public BuildSparseIndexes
 {
 public:
 
-    BuildSparseVector( const IndexType n ) : 
+    BuildSparseVector( const IndexType n ) :
 
         BuildSparseIndexes( n ),
         mValueList( new ValueType[n] )

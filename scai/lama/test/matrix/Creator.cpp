@@ -2,11 +2,11 @@
  * @file lama/test/matrix/Creator.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * This file is part of the Library of Accelerated Math Applications (LAMA).
+ * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free
@@ -20,6 +20,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Create distributed matrices
@@ -70,7 +75,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.Create" );
 
 BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     typedef SCAI_TEST_TYPE ValueType;
 
@@ -85,8 +90,8 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
     MatrixCreator::buildReplicatedDiag( matrix, storage, repN );
 
-    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix 
-                           << " from rep = " << repN << " x " << storage )
+    SCAI_LOG_INFO( logger, matrix.getRowDistribution().getCommunicator() << ": buildReplicatedDiag: " << matrix
+                   << " from rep = " << repN << " x " << storage )
 
     const IndexType nRows = storage.getNumRows();
     const IndexType nCols = storage.getNumColumns();
@@ -113,15 +118,15 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
                     Scalar s = matrix.getValue( i, j );
                     ValueType v = s.getValue<ValueType>();
-    
+
                     SCAI_LOG_TRACE( logger, "i = " << i << " ( " << i1 << " * " << nRows << " + " << i2 << " )"
-                                           << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
-                                           << ", v = " << v )
+                                    << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"
+                                    << ", v = " << v )
 
                     if ( i1 != j1 )
                     {
                         // not a diagonal block, so it must be all 0
-        
+
                         BOOST_CHECK_EQUAL( v, 0.0 );
                     }
                     else
@@ -138,7 +143,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
 
 BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 {
-    // it should be okay just to test one ValueType 
+    // it should be okay just to test one ValueType
 
     typedef SCAI_TEST_TYPE ValueType;
 
@@ -178,7 +183,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedTest )
 
                     Scalar s = matrix.getValue( i, j );
                     ValueType v = s.getValue<ValueType>();
-    
+
                     BOOST_CHECK_EQUAL( v, storage.getValue( i2, j2 ) );
                 }
             }

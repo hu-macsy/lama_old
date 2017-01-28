@@ -2,7 +2,7 @@
  * @file Distribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -349,7 +349,7 @@ void Distribution::replicateN( T1* allValues, const T2* localValues, const Index
     IndexType maxLocalSize = comm.max( currentSize );
 
     SCAI_LOG_INFO( logger,
-                   comm << ": replicateN, n = " << n << 
+                   comm << ": replicateN, n = " << n <<
                    ", localValues<" << common::getScalarType<T2>() << ">[ " << currentSize << "]" <<
                    ", max = " << maxLocalSize << " ] " << " to allValues<" << common::getScalarType<T1>() << ">[ " << getGlobalSize() << " ]" )
 

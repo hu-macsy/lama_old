@@ -2,7 +2,7 @@
  * @file EquationHelper.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -71,11 +71,11 @@ public:
     static EquationSystem<ValueType> get8x8EmptyDiagonal();
 
     template<typename T>
-    static const std::vector<EquationSystem<T> ( * )()>& getFunctions();
+    static const std::vector<EquationSystem<T> (* )()>& getFunctions();
 };
 
 template<typename T>
-const std::vector<EquationHelper::EquationSystem<T> ( * )()>& EquationHelper::getFunctions()
+const std::vector<EquationHelper::EquationSystem<T> (* )()>& EquationHelper::getFunctions()
 {
     typedef EquationSystem<T> ( *t_system )();
     static const t_system t_arr[] =

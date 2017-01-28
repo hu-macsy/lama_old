@@ -2,7 +2,7 @@
  * @file SparseMatrix.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -577,8 +577,8 @@ public:
 
     /** Set a complete row of this matrix in its local part. */
 
-    void setLocalRow( const hmemo::HArray<ValueType>& row, 
-                      const IndexType localRowIndex, 
+    void setLocalRow( const hmemo::HArray<ValueType>& row,
+                      const IndexType localRowIndex,
                       const utilskernel::binary::BinaryOp op  );
 
     /** Get the local part of a col of this matrix */
@@ -587,7 +587,7 @@ public:
 
     /** Set the local col of this matrix */
 
-    void setLocalColumn( const hmemo::HArray<ValueType>& column, 
+    void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
                          const utilskernel::binary::BinaryOp op  );
 

@@ -2,7 +2,7 @@
  * @file ScalarType.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -143,7 +143,7 @@ int precision( const scalar::ScalarType stype )
 
     SCAI_ASSERT( stype != scalar::INTERNAL, "precision of INTERNAL unknown" )
 
-    // loop over all supported types and query its precision 
+    // loop over all supported types and query its precision
 
     return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::precision( stype );
 }

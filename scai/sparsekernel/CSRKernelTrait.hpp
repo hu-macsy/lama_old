@@ -2,7 +2,7 @@
  * @file CSRKernelTrait.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -81,7 +81,7 @@ struct CSRKernelTrait
          *  in the csrJA/csrValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA, 
+         *  @param[out] pos positions of entries with col = j in csrJA,
          *  @param[in] j is the column of which positions are required
          *  @param[in] csrIA is the CSR offset array
          *  @param[in] numRows is the number of rows
@@ -291,13 +291,13 @@ struct CSRKernelTrait
          *
          *  @param[out] sizes will contain the sizes (e.g. for each row ), has numRows entries
          *  @param[in] offsets contains the offsets, has numRows + 1 entries
-         *  @param[in] rows only sizes of these rows are needed              
+         *  @param[in] rows only sizes of these rows are needed
          *  @param[in] n is size of array sizes and pos
          *
          *  \code
          *           offsets :   0   5  11   16  19  19  21  23
          *           pos     :   0   2  4   6
-         *           sizes   :   5   5  0   2   
+         *           sizes   :   5   5  0   2
          *  \endcode
          *
          */

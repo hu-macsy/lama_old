@@ -2,7 +2,7 @@
  * @file MPICommunicator.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -84,7 +84,7 @@ MPI_Op MPICommunicator::mMinComplexLongDouble = 0;
 
 SCAI_LOG_DEF_LOGGER( MPICommunicator::logger, "Communicator.MPICommunicator" )
 
-MPICommunicator::MPICommunicator( int& argc, char**& argv, const CommunicatorKind& type )
+MPICommunicator::MPICommunicator( int& argc, char** & argv, const CommunicatorKind& type )
     : Communicator( type ),
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
@@ -104,7 +104,7 @@ MPICommunicator::MPICommunicator()
     initialize( argc, argv );
 }
 
-MPICommunicator::MPICommunicator( int& argc, char**& argv )
+MPICommunicator::MPICommunicator( int& argc, char** & argv )
     : Communicator( MPI ),
       mMainThread( common::Thread::getSelf() ),
       mThreadSafetyLevel( Communicator::Funneled )
@@ -113,7 +113,7 @@ MPICommunicator::MPICommunicator( int& argc, char**& argv )
     initialize( argc, argv );
 }
 
-void MPICommunicator::initialize( int& argc, char**& argv )
+void MPICommunicator::initialize( int& argc, char** & argv )
 {
     int initialized = 0;
     SCAI_MPICALL( logger, MPI_Initialized( &initialized ), "MPI_Initialized" )
@@ -233,7 +233,7 @@ void MPICommunicator::initialize( int& argc, char**& argv )
         SCAI_LOG_DEBUG( logger, "MPI_Op_create for min complex long double" )
     }
 
-    if( mComplexLongDoubleType == 0 )
+    if ( mComplexLongDoubleType == 0 )
     {
         SCAI_MPICALL( logger, MPI_Type_contiguous( 2, MPI_LONG_DOUBLE, &mComplexLongDoubleType ), "Call init of MPI_Datatype for ComplexLongDouble" )
         SCAI_MPICALL( logger, MPI_Type_commit( &mComplexLongDoubleType ), "Register ComplexLongDouble MPI_Datatype" )
@@ -410,7 +410,7 @@ MPI_Request MPICommunicator::startsend( const void* buffer, int count, int targe
 
     MPI_Datatype commType = getMPIType( stype );
 
-    void *sBuffer = const_cast<void*>( buffer );  // MPI is not const aware
+    void* sBuffer = const_cast<void*>( buffer );  // MPI is not const aware
 
     SCAI_MPICALL( logger,
                   MPI_Isend( sBuffer, count, commType, target, defaultTag, selectMPIComm(), &request ),
@@ -448,6 +448,31 @@ void MPICommunicator::all2all( IndexType recvSizes[], const IndexType sendSizes[
                   MPI_Alltoall( const_cast<IndexType*>( sendSizes ), 1, commType, recvSizes,
                                 1, commType, selectMPIComm() ),
                   "MPI_Alltoall" )
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+/** The following method returns the memory of the actual context.
+ *
+ *  This memory is required for send/recv communication on the same processor
+ *  where memcpy is called to do this instead of send/recv. As memcpy is not
+ *  CUDA-aware we must use the routine of the corresponding device memory.
+ *
+ *  This is safe, as source and target are always in the same memory and not
+ *  in different memories; otherwise memory transfer between different memories would
+ *  be required.
+ */
+
+static inline hmemo::Memory& getActualMemory()
+{
+    const hmemo::Context* ctx = hmemo::Context::getCurrentContext();
+
+    if ( ctx == NULL )
+    {
+        ctx = hmemo::Context::getHostPtr().get();
+    }
+
+    return *ctx->getMemoryPtr();
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -519,7 +544,7 @@ void MPICommunicator::exchangeByPlanImpl(
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
-            memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
+            getActualMemory().memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
         }
     }
 
@@ -591,7 +616,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
             SCAI_LOG_DEBUG( logger, "self-exchange of " << quantity << " elements" )
             SCAI_ASSERT_DEBUG( quantity == recvDataForMeSize, "size mismatch for self exchange" )
 
-            memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
+            getActualMemory().memcpy( recvDataForMe, sendDataForI, recvDataForMeSize * typeSize );
         }
     }
 
@@ -634,8 +659,8 @@ void MPICommunicator::bcastImpl( void* val, const IndexType n, const PartitionId
 /*           all2allv                                                                 */
 /* ---------------------------------------------------------------------------------- */
 
-void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[], 
-                                    void* sendBuffer[], IndexType sendCount[], 
+void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
+                                    void* sendBuffer[], IndexType sendCount[],
                                     common::scalar::ScalarType stype ) const
 {
     SCAI_REGION( "Communicator.MPI.all2allv" )
@@ -696,7 +721,7 @@ IndexType MPICommunicator::shiftImpl(
 
     int count = 0;
 
-    SCAI_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ), 
+    SCAI_MPICALL( logger, MPI_Get_count( &mpiStatus, commType, &count ),
                   "MPI_Get_count<" << stype << ">" )
 
     SCAI_LOG_DEBUG( logger, "received from " << source << " #values = " << count << ", max was " << recvSize )
@@ -911,7 +936,7 @@ void MPICommunicator::gatherImpl(
 
     void* sendbuf = const_cast<void*>( myVals );  // MPI interface is not const aware
 
-    SCAI_MPICALL( logger, 
+    SCAI_MPICALL( logger,
                   MPI_Gather( sendbuf, n, commType, allVals, n, commType, root, selectMPIComm() ),
                   "MPI_Gather<" << stype << ">" )
 }
@@ -992,10 +1017,12 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
 
     void* expectedLoc = reinterpret_cast<char*>( val ) + typeSize;
 
-    SCAI_ASSERT_EQ_ERROR( expectedLoc, location, 
-                          "val and loc not contiguously in memory" 
+    SCAI_ASSERT_EQ_ERROR( expectedLoc, location,
+                          "val and loc not contiguously in memory"
                           << ": val type = " << stype << ", size = " << typeSize
                           << ", index type = " << common::TypeTraits<IndexType>::id() << ", size = " << sizeof( IndexType ) )
+
+    // only on Host
 
     common::scoped_array<char> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
@@ -1020,10 +1047,12 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 
     void* expectedLoc = reinterpret_cast<char*>( val ) + typeSize;
 
-    SCAI_ASSERT_EQ_ERROR( expectedLoc, location, 
-                          "val and loc not contiguously in memory" 
+    SCAI_ASSERT_EQ_ERROR( expectedLoc, location,
+                          "val and loc not contiguously in memory"
                           << ": val type = " << stype << ", size = " << typeSize
                           << ", index type = " << common::TypeTraits<IndexType>::id() << ", size = " << sizeof( IndexType ) )
+
+    // only on host
 
     common::scoped_array<char> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
@@ -1047,10 +1076,14 @@ bool MPICommunicator::supportsLocReduction( common::scalar::ScalarType vType, co
 
     switch ( vType )
     {
-        case common::scalar::INT       : return true;
-        case common::scalar::FLOAT     : return true;
-        case common::scalar::DOUBLE    : return true;
-        default                        : return false;
+        case common::scalar::INT       :
+            return true;
+        case common::scalar::FLOAT     :
+            return true;
+        case common::scalar::DOUBLE    :
+            return true;
+        default                        :
+            return false;
     }
 }
 
@@ -1066,6 +1099,8 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
     }
 
     SCAI_REGION( "Communicator.MPI.swap" )
+
+    // only on host
 
     common::scoped_array<char> tmp ( new char[ n * common::typeSize( stype ) ] );
 

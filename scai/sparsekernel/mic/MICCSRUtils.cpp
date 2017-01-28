@@ -2,7 +2,7 @@
  * @file MICCSRUtils.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -1766,8 +1766,8 @@ void MICCSRUtils::RegistratorVO<ValueType, OtherValueType>::registerKernels( kre
 
     const common::context::ContextType ctx = common::context::MIC;
 
-    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " << 
-                            common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
+    SCAI_LOG_DEBUG( logger, "register[flag=" << flag << "]: TT " <<
+                    common::TypeTraits<ValueType>::id() << ", " << common::TypeTraits<OtherValueType>::id() )
 
     KernelRegistry::set<CSRKernelTrait::scaleRows<ValueType, OtherValueType> >( scaleRows, ctx, flag );
 }

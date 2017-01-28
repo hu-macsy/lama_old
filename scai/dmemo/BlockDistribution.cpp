@@ -2,7 +2,7 @@
  * @file BlockDistribution.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -196,7 +196,7 @@ bool BlockDistribution::isEqual( const Distribution& other ) const
         isSame = true;
     }
 
-    // we know already that global size and communicator are equal 
+    // we know already that global size and communicator are equal
 
     return isSame;
 }

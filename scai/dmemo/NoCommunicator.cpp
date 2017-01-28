@@ -2,7 +2,7 @@
  * @file NoCommunicator.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -204,7 +204,7 @@ void NoCommunicator::minlocImpl( void*, IndexType*, PartitionId root, common::sc
 
 bool NoCommunicator::supportsLocReduction( common::scalar::ScalarType, common::scalar::ScalarType ) const
 {
-    return true;  
+    return true;
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -286,7 +286,7 @@ void NoCommunicator::getProcessorName( char* name ) const
 
     memset( name, 0, len * sizeof( char ) );
 
-    gethostname( name,len );
+    gethostname( name, len );
 }
 
 size_t NoCommunicator::maxProcessorName() const

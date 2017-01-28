@@ -1,8 +1,8 @@
 /**
- * @file vector_generator.cpp
+ * @file solver/examples/solver/vectorGenerator.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -210,7 +210,7 @@ void printUsage( const char* progName )
 {
     cout << "Usage: " << progName << " [--SCAI_var=val] outfile_name <size> <val> [matrix_filename]" << endl;
     cout << "   outfile_name is filename for vector output" << endl;
-    cout << "    --SCAI_IO_BINARY=0|1 force formatted or binary output" << endl; 
+    cout << "    --SCAI_IO_BINARY=0|1 force formatted or binary output" << endl;
     cout << "    --SCAI_TYPE=float|double|LongDouble|ComplexFloat|ComplexDouble|ComplexLong value type" << endl;
     cout << "   size is the number of elements in the vector" << endl;
     cout << "   val is the value for each entry" << endl;

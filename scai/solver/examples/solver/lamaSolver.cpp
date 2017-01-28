@@ -2,7 +2,7 @@
  * @file lamaSolver.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -77,15 +77,17 @@ static bool isNumeric( double& val, const string& str )
     for ( std::string::const_iterator p = str.begin(); str.end() != p; ++p )
     {
         if ( isdigit( *p ) )
-        {  
+        {
             continue;
         }
+
         if ( *p == '-' )
-        {  
+        {
             continue;
         }
+
         if ( *p == '.' )
-        {  
+        {
             continue;
         }
 
@@ -219,7 +221,7 @@ int main( int argc, const char* argv[] )
                 // this filename can also be taken for vector
 
                 rhsFilename = matrixFilename.substr( 0, matrixFilename.size() - 4 ) + ".frv";
-            
+
                 if ( ! FileIO::fileExists( rhsFilename ) )
                 {
                     HOST_PRINT( myRank, "rhs file " << rhsFilename << " does not exist, take default rhs" )
@@ -276,7 +278,7 @@ int main( int argc, const char* argv[] )
             // only square matrices are accetpted
 
             SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch: #rows of matrix must be equal size of rhs" )
-            SCAI_ASSERT_EQUAL( inMatrix.getNumColumns(), solution.size(), 
+            SCAI_ASSERT_EQUAL( inMatrix.getNumColumns(), solution.size(),
                                "size mismatch: #cols of matrix must be equal size of initial solution" )
         }
 

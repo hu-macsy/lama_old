@@ -2,7 +2,7 @@
  * @file COOStorage.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -428,7 +428,7 @@ public:
     /**
      * @brief Swap the COO arrays with new arrays.
      *
-     * This routine is helpful to get temporay write access to COO arrays. 
+     * This routine is helpful to get temporay write access to COO arrays.
      *
      * This routine can be used to build a COO storage with new values. Other member variables
      * will be defined correctly.

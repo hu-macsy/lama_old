@@ -2,7 +2,7 @@
  * @file TypeTraits.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -61,7 +61,7 @@ namespace common
  *  AbsType small();              // accepted tolerance for comparisons of results
  *  ValueType min();              // used as neutral element for max reduction
  *  ValueType max();              // used as neutral element for min reduction
- *  int precision();              // number of relevant digits if printed 
+ *  int precision();              // number of relevant digits if printed
  * /endcode
  */
 template<typename ValueType>
@@ -167,7 +167,7 @@ public:
 
     static inline char getMin() // with C++11: use lowest instead
     {
-        return static_cast<char> (- std::numeric_limits<char>::max() );
+        return static_cast<char> ( - std::numeric_limits<char>::max() );
     }
 
     static const scalar::ScalarType stype = scalar::CHAR;

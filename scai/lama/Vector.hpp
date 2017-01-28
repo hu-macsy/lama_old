@@ -2,7 +2,7 @@
  * @file Vector.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -135,8 +135,8 @@ public:
      *  @param[in] distribution becomes the distribution of the new vector
      *  @param[in] context optional, becomes the context of the new vector
      */
-    static Vector* getDenseVector( 
-        const common::scalar::ScalarType valueType, 
+    static Vector* getDenseVector(
+        const common::scalar::ScalarType valueType,
         dmemo::DistributionPtr distribution,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
@@ -320,8 +320,8 @@ public:
     virtual void setValues( const hmemo::_HArray& values ) = 0;
 
     /**
-     * This method initializes a (distributed) vector with random numbers. 
-     * 
+     * This method initializes a (distributed) vector with random numbers.
+     *
      * @param[in] distribution specifies the distribution of the vector
      * @param[in] fillRate for the number of non-zeros
      */
@@ -349,7 +349,7 @@ public:
      * This method sets a vector by reading its values from one or multiple files.
      *
      * @param[in] fileName      the filename to read from
-     * @param[in] distribution  optional, if set it is the distribution of the vector 
+     * @param[in] distribution  optional, if set it is the distribution of the vector
      *
      *   \code
      *      DenseVector<double> vector;
@@ -458,7 +458,7 @@ public:
 
     /**
      *  Method to create a new vector of the same kind and same type
-     *   
+     *
      *  /code
      *    const Vector& old = ...
      *    Vector* new = Vector::create( old.getCreateValue() );
@@ -481,7 +481,7 @@ public:
      *    // is same as
      *
      *    Vector* new = Vector::create( old.getCreateValue() );
-     *    new->setContextPtr( new.getContextPtr() ); 
+     *    new->setContextPtr( new.getContextPtr() );
      *  /endcode
      *
      *  The new vector is a zero vector, not allocated, not initialized.

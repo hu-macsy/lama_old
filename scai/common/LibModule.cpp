@@ -2,7 +2,7 @@
  * @file LibModule.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -90,6 +90,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
+
     std::string slash;
 
     if ( *directory.rbegin() != '/' )
@@ -183,6 +184,7 @@ static void getFilesFromDirectory( const char* dir, const char* suffix, std::vec
     }
 
     const std::string directory( dir );
+
     std::string slash;
 
     if ( *directory.rbegin() != '/' )

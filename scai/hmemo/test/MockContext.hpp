@@ -2,7 +2,7 @@
  * @file MockContext.hpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -95,8 +95,10 @@ public:
         }
 
         const MockMemory* mockMemory = dynamic_cast<const MockMemory*>( &memory );
+
         SCAI_ASSERT( mockMemory, "NULL mock memory" )
         return mockMemory->getDeviceNr() == mDeviceNr;
+
         // return &memory == getMemory().get();
     }
 

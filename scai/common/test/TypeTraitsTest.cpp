@@ -2,7 +2,7 @@
  * @file TypeTraitsTest.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -88,27 +88,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsComplexTest, ValueType, TraitTypes )
     bool v1 = isComplex( stype );
 
     std::ostringstream out;
-    
+
     out << stype;
 
-    std::size_t pos = out.str().find( "omplex");
+    std::size_t pos = out.str().find( "omplex" );
 
     bool v2 = pos != std::string::npos;
 
-    BOOST_CHECK_EQUAL( v1, v2);
+    BOOST_CHECK_EQUAL( v1, v2 );
 }
 
 /* -----------------------------------------------------------------------------*/
 
 static int goodStrings( const std::string& str1, const std::string& str2 )
 {
-    // returns 3 if str1 = "0.333...33" and  str2 = "0.66...67" 
+    // returns 3 if str1 = "0.333...33" and  str2 = "0.66...67"
 
     int val = 0;
 
     size_t p1 = str1.find_first_not_of( "3", 3 );
 
-    // okay if there is nothing else than 3 after 0.3 
+    // okay if there is nothing else than 3 after 0.3
 
     if ( p1 == std::string::npos )
     {
@@ -157,14 +157,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_numeric_test_types
     out1 << std::setprecision( precision - 1 ) << x1;
     out2 << std::setprecision( precision - 1 ) << x2;
 
-    // okay:  "0.333333" or "0.3333333333" or "0.333333333333333" 
-    // okay:  "0.666667" or "0.6666666667" or "0.66666666666667x" 
+    // okay:  "0.333333" or "0.3333333333" or "0.333333333333333"
+    // okay:  "0.666667" or "0.6666666667" or "0.66666666666667x"
 
     // if this test fails, output precision is too high
 
     BOOST_CHECK_EQUAL( goodStrings( out1.str(), out2.str() ), 3 );
 
-    // remove content 
+    // remove content
 
     out1.str( "" );
     out2.str( "" );

@@ -2,7 +2,7 @@
  * @file PETScIO.cpp
  *
  * @license
- * Copyright (c) 2009-2016
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
@@ -47,7 +47,7 @@
 
 /** Internal id as specified by PETSc */
 
-#define MAT_FILE_CLASSID 1211216 
+#define MAT_FILE_CLASSID 1211216
 
 /** Internal id as specified by PETSc */
 
@@ -72,7 +72,7 @@ SCAI_LOG_DEF_LOGGER( PETScIO::logger, "FileIO.PETScIO" )
 FileIO* PETScIO::create()
 {
     return new PETScIO();
-}   
+}
 
 std::string PETScIO::createValue()
 {
@@ -106,7 +106,7 @@ void PETScIO::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
-PETScIO::PETScIO() 
+PETScIO::PETScIO()
 {
 }
 
@@ -180,7 +180,7 @@ template<typename ValueType>
 void PETScIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const std::string& fileName,
-    const IndexType first, 
+    const IndexType first,
     const IndexType n )
 {
     // int    VEC_FILE_CLASSID
@@ -189,8 +189,8 @@ void PETScIO::readArrayImpl(
 
     std::ios::openmode flags = std::ios::in | std::ios::binary;
 
-    SCAI_LOG_INFO( logger, "Read array<" << common::TypeTraits<ValueType>::id() 
-                           << "> from file " << fileName << ", type = " << mScalarTypeData )
+    SCAI_LOG_INFO( logger, "Read array<" << common::TypeTraits<ValueType>::id()
+                   << "> from file " << fileName << ", type = " << mScalarTypeData )
 
     IOStream inFile( fileName, flags, IOStream::BIG );
 
@@ -225,7 +225,7 @@ void PETScIO::readArrayImpl(
     // check if the specified data size fits the expected data type
 
     inFile.readBinary( array, size, mScalarTypeData );
- 
+
     inFile.close();
 
     if ( nEntries != array.size() )
@@ -300,9 +300,9 @@ void PETScIO::writeStorageImpl(
 
     outFile.writeBinary( headValues, mScalarTypeIndex );
     outFile.writeBinary( csrIA, mScalarTypeIndex );
-    outFile.writeBinary( csrJA , mScalarTypeIndex ); 
+    outFile.writeBinary( csrJA , mScalarTypeIndex );
 
-    // output of values is skipped for PATTERN 
+    // output of values is skipped for PATTERN
 
     if ( mScalarTypeData != common::scalar::PATTERN )
     {
@@ -340,7 +340,7 @@ void PETScIO::readStorageImpl(
     MatrixStorage<ValueType>& storage,
     const std::string& fileName,
     const IndexType firstRow,
-    const IndexType nRows ) 
+    const IndexType nRows )
 {
     // int    MAT_FILE_CLASSID
     // int    number of rows
@@ -364,8 +364,8 @@ void PETScIO::readStorageImpl(
     IndexType numCols   = headerVals[2];
     IndexType nnz     = headerVals[3];
 
-    SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << numRows 
-                           << ", #cols = " << numCols << ", #nnz = " << nnz )
+    SCAI_LOG_INFO( logger, "Read: id = " << MAT_FILE_CLASSID << ", #rows = " << numRows
+                   << ", #cols = " << numCols << ", #nnz = " << nnz )
 
     SCAI_ASSERT_EQUAL( MAT_FILE_CLASSID, classid, "illegal MAT_FILE_CLASSID" )
 
