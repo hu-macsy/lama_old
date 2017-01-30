@@ -127,6 +127,7 @@ scai_project (
         HaloBuilder
         NoDistribution
         Redistributor
+        SingleDistribution
 
         ${METISDISTRIBUTION}
 
