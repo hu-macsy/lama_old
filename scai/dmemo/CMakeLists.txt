@@ -123,6 +123,7 @@ scai_project (
         Distribution
         GenBlockDistribution
         GeneralDistribution
+        GridDistribution
         Halo
         HaloBuilder
         NoDistribution

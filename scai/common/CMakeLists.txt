@@ -191,6 +191,7 @@ set ( COMMON_HEADERS
         Constants
         Factory
         Factory1
+        Grid
         Math
         OpenMP
         NonCopyable

@@ -42,6 +42,7 @@ set ( CXX_SOURCES
       FactoryTest  
       Factory1Test  
       FactoryTest
+      GridTest
       LibModuleTest
       MathTest
       ptrTest

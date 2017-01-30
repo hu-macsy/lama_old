@@ -58,6 +58,7 @@ scai_project (
         CyclicDistributionTest
         GenBlockDistributionTest
         GeneralDistributionTest
+        GridDistributionTest
         SingleDistributionTest
         ${MetisDistributionTest}
 
