@@ -555,7 +555,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 
     const ValueType values1_values[]    = { 1,       2,     3,    4 };
     const ValueType values2_values[]    = {      5,  6,     7,         8 };
-    const ValueType values_values[]     = { -1, 10, 10,    11,   -4,  16 };
+    const ValueType values_values[]     = { 1,  10, 14,    17,    4,  16 };
 
     IndexType n1 = sizeof( indexes1_values ) / sizeof( IndexType );
     IndexType n2 = sizeof( indexes2_values ) / sizeof( IndexType );
@@ -572,7 +572,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
     HArray<IndexType> indexes;
     HArray<ValueType> values;
 
-    ValueType alpha = -1;
+    ValueType alpha = 1;
     ValueType beta  = 2;
 
     {
