@@ -57,6 +57,19 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( validTest )
+{
+    Grid grid3( 2, 3, 2 );
+
+    IndexType p1[] = { 1, 2, 1 };
+    IndexType p2[] = { 1, 2, 2 };
+
+    BOOST_CHECK( grid3.validPos( p1 ) );
+    BOOST_CHECK( !grid3.validPos( p2 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( pos2Test )
 {
     const IndexType n1 = 10;
@@ -69,6 +82,8 @@ BOOST_AUTO_TEST_CASE( pos2Test )
     IndexType p1[] = { 3, 5 };
     IndexType p2[] = { 3, 6 };
     IndexType p3[] = { 4, 5 };
+
+    BOOST_CHECK_EQUAL( grid.linearPos( p1), grid.linearPos( p1[0], p1[1] ) );
 
     // verify row-major ordering
 
@@ -116,6 +131,10 @@ BOOST_AUTO_TEST_CASE( pos3Test )
     IndexType p2[] = { 3, 2, 2  };
     IndexType p3[] = { 4, 1, 2 };
 
+    // linearPos( x, y, z ) == linearPos( { x, y, z } )
+
+    BOOST_CHECK_EQUAL( grid.linearPos( p1), grid.linearPos( p1[0], p1[1], p1[2] ) );
+
     // verify row-major ordering
 
     BOOST_CHECK_EQUAL( grid.linearPos( p0 ) + 1, grid.linearPos( p1 ) );
@@ -145,6 +164,52 @@ BOOST_AUTO_TEST_CASE( pos3Test )
             }
         }
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( posNTest )
+{
+    const IndexType ndims = SCAI_GRID_MAX_DIMENSION;
+
+    IndexType sizes[ SCAI_GRID_MAX_DIMENSION ];
+
+    for ( IndexType i = 0; i < ndims; ++i )
+    {
+        // sizes = { 2, 3, 2, 3, 2, 3, .. };
+
+        sizes[i] = ( i % 2 ) == 0 ? 2 : 3;
+    }
+
+    Grid grid( ndims, sizes );
+
+    IndexType n = grid.size();
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType pos[SCAI_GRID_MAX_DIMENSION];
+        grid.gridPos( pos, i );
+        BOOST_CHECK_EQUAL( i, grid.linearPos( pos ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( writeTest )
+{
+    std::ostringstream f;
+
+    Grid grid( 5, 2, 4 );
+
+    f << grid;
+
+    const std::string& fstr = f.str();
+
+    BOOST_CHECK( fstr.length() > 7 );
+
+    BOOST_CHECK( fstr.find( "5" ) != std::string::npos );
+    BOOST_CHECK( fstr.find( "3" ) != std::string::npos ); // 3-dim grid
+    BOOST_CHECK( fstr.find( "4" ) != std::string::npos );
 }
 
 /* --------------------------------------------------------------------- */
