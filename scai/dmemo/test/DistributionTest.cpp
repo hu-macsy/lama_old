@@ -56,7 +56,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.DistributionTest" )
 
 BOOST_AUTO_TEST_CASE( localSizeTest )
 {
-    TestDistributions allDist( 17 );
+    TestDistributions allDist( 16 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
 
 BOOST_AUTO_TEST_CASE( maxLocalSizeTest )
 {
-    TestDistributions allDist( 17 );
+    TestDistributions allDist( 16 );
 
     for ( size_t i = 0; i < allDist.size(); ++i )
     {

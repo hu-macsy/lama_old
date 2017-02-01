@@ -50,6 +50,14 @@ namespace dmemo
 
 /** Grid distribution stands for a block distribution in multiple dimensions.
  *
+ *  For a one-dimensional grid, this distribution is exactly the same as a block distribution.
+ *  Compared to a GeneralDistribution that might also be used for the distributon of matrices and vectors
+ *  it offers some advantages:
+ *
+ *  - ownership can be calculated by closed formulas, i.e. each processor can determine directly without
+ *    communication the owning processor of each grid element
+ *  - This distribution delivers a 'local' grid with the local dimensions on each processor that might
+ *    be used to allocate local data for distributed grids
  */
 class COMMON_DLL_IMPORTEXPORT GridDistribution:
 
@@ -69,21 +77,62 @@ public:
      */
     GridDistribution( const common::Grid& globalGrid, const CommunicatorPtr communicator, const common::Grid& procGrid );
 
+    /** Construct a grid distribution
+     *
+     *  @param[in] globalGrid specifies the problem grid to be distributed
+     *  @param[in] communicator used for the partitions onto which grid is distributed
+     *
+     *  Note: Here the processor grid is determined by a good factorization of the available processors in the communicator.
+     *  The size of the grid can be set by the environment variable SCAI_NP, e.g. SCAI_NP=3x3x3
+     */
+    GridDistribution( const common::Grid& globalGrid, const CommunicatorPtr communicator );
+
     virtual ~GridDistribution();
 
     virtual bool isLocal( const IndexType index ) const;
 
+    /** Overrides the default implementation of Distribution::findOwner 
+     *
+     *  Note: In contrary to the default implemantion here no communication is needed. 
+     */
     virtual PartitionId findOwner( const IndexType globalIndex ) const;
 
+    /** Implementation of pure method Distribution::getLocalSize */
+
     virtual IndexType getLocalSize() const;
+
+    /** Get access to the local grid, helpful for traversing */
+
+    const common::Grid& getLocalGrid() const;
+
+    /** Get access to the global grid, helpful for traversing */
+
+    const common::Grid& getGlobalGrid() const;
 
     /** Override default implementation Distribution::getMaxLocalSize() */
 
     virtual IndexType getMaxLocalSize() const;
 
+    /** Implementation of pure method Distribution::local2global */
+
     virtual IndexType local2global( const IndexType localIndex ) const;
 
+    /** This method does the local2global calculation with the grid positions. */
+
+    void local2global( IndexType globalGridPos[], const IndexType localGridPos[] ) const;
+
+    /** Implementation of pure method Distribution::global2local */
+
     virtual IndexType global2local( const IndexType globalIndex ) const;
+
+    /** This method does the global to local calculation with the grid positions. 
+     *
+     *  @param[in] globalGridPos global position in the grid
+     *  @param[out] localGridPos  local position in the grid (undefined if not local)
+     *  @return     true if the global position is owned by this processor
+     */
+
+    bool global2local( IndexType localGridPos[], const IndexType globalGridPos[] ) const;
 
     /** Implementation of pure function Distribution::getBlockDistributionSize
      *
@@ -130,10 +179,12 @@ private:
 
     GridDistribution(); // disable default constructor as it has no size
 
-    common::Grid mGlobalGrid;
-    common::Grid mLocalGrid;
+    void localize();    // help routine to compute block sizes and local dimensions
 
-    common::Grid mProcGrid;
+    common::Grid mGlobalGrid;  // class keeps an own copy with the shape of the global grid
+    common::Grid mLocalGrid;   // class keeps an own copy with the shape of the local grid
+
+    common::Grid mProcGrid;    // class keeps an own copy with the shape of the processor grid
 
     // block distribution in each dimension
 
@@ -142,6 +193,16 @@ private:
     IndexType mLB[ SCAI_GRID_MAX_DIMENSION];
     IndexType mUB[ SCAI_GRID_MAX_DIMENSION];
 };
+
+const common::Grid& GridDistribution::getLocalGrid() const
+{
+    return mLocalGrid;
+}
+
+const common::Grid& GridDistribution::getGlobalGrid() const
+{
+    return mGlobalGrid;
+}
 
 } /* end namespace dmemo */
 

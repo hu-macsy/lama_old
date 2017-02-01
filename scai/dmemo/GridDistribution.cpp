@@ -50,6 +50,8 @@ namespace dmemo
 
 SCAI_LOG_DEF_LOGGER( GridDistribution::logger, "Distribution.GridDistribution" )
 
+/* ---------------------------------------------------------------------- */
+
 GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPtr communicator, const Grid& procGrid ) :
  
     Distribution( globalGrid.size(), communicator ),
@@ -61,24 +63,74 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
     SCAI_ASSERT_EQ_ERROR( procGrid.ndims(), globalGrid.ndims(), "Global grid and processor grid must have same number of dims" )
     SCAI_ASSERT_LE_ERROR( procGrid.size(), communicator->getSize(), "processor array too big" )
 
-    // determine my rank
+    localize();
+}
 
-    PartitionId pRank = communicator->getRank();
+/* ---------------------------------------------------------------------- */
 
-    for ( int idim = 0; idim < globalGrid.ndims(); ++idim )
+GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPtr communicator ) :
+ 
+    Distribution( globalGrid.size(), communicator ),
+
+    mGlobalGrid( globalGrid ),
+    mLocalGrid( globalGrid ),
+    mProcGrid( globalGrid )
+{
+    // Build a correct processor grid by the communicator
+
+    IndexType ndims = globalGrid.ndims();
+
+    if ( ndims == 1 )
     {
-        mBlockSize[idim] = ( globalGrid.size( idim ) + procGrid.size( idim ) - 1 ) / procGrid.size( idim );
+        mProcGrid.setSize( 0, communicator->getSize() );
+    }
+    else 
+    {
+        PartitionId procGrid[2];
+        double weight[2] = { globalGrid.size( 0 ), globalGrid.size( 1 ) };
+
+        communicator->factorize2( procGrid, weight[0], weight[1] );
+
+        mProcGrid.setSize( 0, procGrid[0] );
+        mProcGrid.setSize( 1, procGrid[1] );
+
+        // set the remaining dimensions to 1 
+
+        for ( IndexType i = 2; i < ndims; ++i )
+        {
+            mProcGrid.setSize( i, 1 );
+        }
     }
 
-    if ( pRank < procGrid.size() )
+    localize(); // compute mBlockSize, mLB, mUB, mRank, m
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GridDistribution::localize()
+{
+    // compute the block sizes for each grid dimension
+
+    for ( int idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    {
+        IndexType nProcs = mProcGrid.size( idim );  // number of procs for this dimension
+
+        mBlockSize[idim] = ( mGlobalGrid.size( idim ) + nProcs - 1 ) / nProcs;
+    }
+
+    PartitionId pRank = mCommunicator->getRank();
+
+    // determine my grid position in procGrid 
+
+    if ( pRank < mProcGrid.size() )
     {
         mProcGrid.gridPos( mRank, pRank );
     
         // compute block sizes and local ranges
 
-        for ( int idim = 0; idim < globalGrid.ndims(); ++idim )
+        for ( int idim = 0; idim < mGlobalGrid.ndims(); ++idim )
         {
-            BlockDistribution::getLocalRange( mLB[idim], mUB[idim], globalGrid.size( idim ), mRank[idim], procGrid.size( idim ) );
+            BlockDistribution::getLocalRange( mLB[idim], mUB[idim], mGlobalGrid.size( idim ), mRank[idim], mProcGrid.size( idim ) );
 
             if ( mLB[idim] <= mUB[idim] )
             {
@@ -94,7 +146,7 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
     {
          // set some convenient default values for rank, lb, ub, and mLocalGrid
 
-        for ( int idim = 0; idim < globalGrid.ndims(); ++idim )
+        for ( int idim = 0; idim < mGlobalGrid.ndims(); ++idim )
         {
             mRank[ idim ] = nIndex;
             mLB[ idim ]   = 0;
@@ -103,8 +155,6 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
             mLocalGrid.setSize( idim, 0 );
         }
     }
-
-    // be careful: size of local grid might be 0
 }
 
 /* ---------------------------------------------------------------------- */
@@ -213,6 +263,16 @@ IndexType GridDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+void GridDistribution::local2global( IndexType globalGridPos[], const IndexType localGridPos[] ) const
+{
+    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    {
+        globalGridPos[idim] = mLB[idim] + localGridPos[idim];
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
 IndexType GridDistribution::local2global( const IndexType localIndex ) const
 {
     IndexType localGridPos[SCAI_GRID_MAX_DIMENSION];
@@ -221,12 +281,29 @@ IndexType GridDistribution::local2global( const IndexType localIndex ) const
 
     IndexType globalGridPos[SCAI_GRID_MAX_DIMENSION];
 
-    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
-    {
-        globalGridPos[idim] = mLB[idim] + localGridPos[idim];
-    }
+    local2global( globalGridPos, localGridPos );
 
     return mGlobalGrid.linearPos( globalGridPos );
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool GridDistribution::global2local( IndexType localGridPos[], const IndexType globalGridPos[] ) const
+{
+    bool isLocal = true;
+
+    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    { 
+        if ( globalGridPos[idim] < mLB[idim ] || globalGridPos[idim] >= mUB[idim] )
+        {
+            isLocal = false;
+            break;
+        }
+
+        localGridPos[idim] = globalGridPos[idim] - mLB[idim];
+    }
+
+    return isLocal;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -239,21 +316,11 @@ IndexType GridDistribution::global2local( const IndexType globalIndex ) const
 
     IndexType localGridPos[SCAI_GRID_MAX_DIMENSION];
 
-    bool nonLocal = false;
+    bool isLocal = global2local( localGridPos, globalGridPos );
 
-    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
-    {   
-        if ( globalGridPos[idim] < mLB[idim ] || globalGridPos[idim] >= mUB[idim] )
-        {
-            nonLocal = true;
-            break;
-        }
-
-        localGridPos[idim] = globalGridPos[idim] - mLB[idim];
-    }
-
-    if ( nonLocal )
+    if ( !isLocal )
     {
+        SCAI_LOG_DEBUG( logger, "globalIndex = " << globalIndex << " not local, dist = " << *this )
         return nIndex;
     }
 
@@ -326,7 +393,7 @@ void GridDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
 
-    stream << "GridDistribution( comm = " << *mCommunicator << ", grid )";
+    stream << "GridDistribution( comm = " << *mCommunicator << ", grid = " << mGlobalGrid << " onto " << mProcGrid;
 }
 
 /* ---------------------------------------------------------------------------------*
@@ -344,7 +411,41 @@ Distribution* GridDistribution::create( const DistributionArguments arg )
 
     // Note: weight argument is not used here
 
-    return new GridDistribution( Grid( arg.globalSize ), arg.communicator, Grid( arg.communicator->getSize() ) );
+    IndexType globalSize = arg.globalSize;
+
+    IndexType size1 = 1;
+    IndexType size2 = globalSize;
+
+    // try a factorization in 2 arguments
+
+    for ( IndexType i1 = 2; i1 < globalSize; i1++ )
+    {
+        IndexType i2 = globalSize / i1;
+
+        if ( i2 < i1 )
+        {
+            break;   // makes sure that loop runs only up to sqrt( globalSize )
+        }
+
+        if ( i1 * i2  != globalSize )
+        {
+            continue;
+        }
+
+        // i1 * i2 == size, i1 <= i2 , is a good factorization
+
+        size1 = i1;
+        size2 = i2;
+    }
+
+    if ( size1 == 1 )
+    {
+        return new GridDistribution( Grid( globalSize ), arg.communicator );
+    }
+    else
+    {
+        return new GridDistribution( Grid( size1, size2 ), arg.communicator );
+    }
 }
 
 } /* end namespace dmemo */
