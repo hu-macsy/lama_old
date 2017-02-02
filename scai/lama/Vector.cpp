@@ -41,7 +41,7 @@
 #include <scai/lama/SparseVector.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Distribution.hpp>
@@ -211,9 +211,11 @@ void Vector::readFromSingleFile( const std::string& fileName )
         clearValues();
     }
 
-    DistributionPtr distribution( new CyclicDistribution( globalSize, globalSize, comm ) );
+    DistributionPtr distribution( new SingleDistribution( globalSize, comm, MASTER ) );
 
     setDistributionPtr( distribution );
+
+    SCAI_LOG_INFO( logger, "readFromSingleFile, vector = " << *this )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -224,6 +226,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
 {
     if ( distribution.get() == NULL )
     {
+        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << ", master only" )
         readFromSingleFile( fileName );
         return;
     }
@@ -232,6 +235,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
 
     if ( n == nIndex )
     {
+        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), master only + redistribute" )
         readFromSingleFile( fileName );
         redistribute( distribution );
         return;
@@ -247,6 +251,9 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
     }
 
     bool error = false;
+
+    SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), block dist = " << *distribution 
+                           << ", read my block, first = " << first << ", n = " << n )
 
     try
     {
@@ -265,6 +272,8 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
     {
         COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
     }
+
+    setDistributionPtr( distribution );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -359,8 +368,7 @@ void Vector::readFromFile( const std::string& vectorFileName, const std::string&
 
 void Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": readFromFile( " << fileName << " )" )
+    SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
 
     std::string newFileName = fileName;
 
