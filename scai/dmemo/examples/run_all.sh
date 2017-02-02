@@ -66,6 +66,7 @@ i=0
 
 # run examples
 RUN 1 DemoDistribution.exe
+RUN 1 DemoGeneralDistribution.exe
 
 
 # check if there are unkown examples

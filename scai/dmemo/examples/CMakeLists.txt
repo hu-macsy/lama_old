@@ -32,7 +32,7 @@
  # @date 16.06.2015
 ###
 
-foreach ( executable DemoDistribution )
+foreach ( executable DemoDistribution DemoGeneralDistribution )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
