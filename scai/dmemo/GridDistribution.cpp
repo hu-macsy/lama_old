@@ -87,9 +87,13 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
     else 
     {
         PartitionId procGrid[2];
-        double weight[2] = { globalGrid.size( 0 ), globalGrid.size( 1 ) };
 
-        communicator->factorize2( procGrid, weight[0], weight[1] );
+        double size = globalGrid.size( 0 ) + globalGrid.size( 1 );
+
+        double w1 = globalGrid.size( 0 ) / size;
+        double w2 = globalGrid.size( 1 ) / size;
+
+        communicator->factorize2( procGrid, w1, w2 );
 
         mProcGrid.setSize( 0, procGrid[0] );
         mProcGrid.setSize( 1, procGrid[1] );
