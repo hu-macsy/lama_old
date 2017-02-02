@@ -39,7 +39,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
@@ -698,7 +698,7 @@ void Matrix::readFromSingleFile( const std::string& fileName )
         localMatrix.allocate( localNumRows, dims[1] );
     }
 
-    DistributionPtr rowDist( new CyclicDistribution( dims[0], dims[0], comm ) );
+    DistributionPtr rowDist( new SingleDistribution( dims[0], comm, MASTER ) );
     DistributionPtr colDist( new NoDistribution( dims[1] ) );
 
     // works fine as assign can deal with alias, i.e. localMatrix und getLocalStorage() are same

@@ -46,7 +46,6 @@
 
 // scai internal libraries
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/Redistributor.hpp>
 
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
