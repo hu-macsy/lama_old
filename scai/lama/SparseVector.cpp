@@ -516,15 +516,16 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
 {
     SCAI_LOG_INFO( logger, "read local array from file " << fileName )
 
-    // sparse vector read not supported yet, so read a dense array
+    IndexType localN;   // for local size of the array data
 
-    LArray<ValueType> denseValues;
+    FileIO::read( localN, mNonZeroIndexes, mNonZeroValues, fileName );
 
-    FileIO::read( denseValues, fileName, common::scalar::INTERNAL, first, n );
+    // ToDo: read block from sparse array
 
-    setDenseValues( denseValues );
+    SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
+    SCAI_ASSERT_EQ_ERROR( nIndex, n, "block read not supported for sparse data" )
 
-    return denseValues.size();
+    return localN;
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1209,13 +1210,11 @@ void SparseVector<ValueType>::writeLocalToFile(
             fileIO->setMode( fileMode );
         }
 
-        // build dense local vector data for output
+        // write the sparse data
 
-        HArray<ValueType> denseLocalValues;
+        const IndexType size = getDistribution().getLocalSize();
 
-        buildLocalValues( denseLocalValues );
-
-        fileIO->writeArray( denseLocalValues, fileName );
+        fileIO->writeSparse( size, mNonZeroIndexes, mNonZeroValues, fileName );
     }
     else
     {

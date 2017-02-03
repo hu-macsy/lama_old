@@ -175,29 +175,14 @@ public:
      * @param[in] distribution  the distribution to use for the new vector.
      * @param[in] context  the context to use for the new vector.
      */
-    SparseVector ( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
+    SparseVector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
 
-    /**
-     * @brief creates a replicated SparseVector of the passed size initilized a sequence of values
-     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
-     *
-     * @param[in] size       the size of the new SparseVector.
-     * @param[in] startValue the first value of the new SparseVector
-     * @param[in] inc        the increment for the sequence of values
-     * @param[in] context    specifies optionally the context where sparse vector should reside
-     */
-    SparseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
-
-    /**
-     * @brief creates a distributed SparseVector of the passed size initilized a sequence of values
-     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
-     *
-     * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] startValue    the first value of the new SparseVector
-     * @param[in] inc           the increment for the sequence of values
-     * @param[in] context    specifies optionally the context where sparse vector should reside
-     */
-    SparseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    template<typename OtherValueType>
+    SparseVector(
+        const IndexType size,
+        const IndexType nz,
+        const IndexType nonZeroIndexes[],
+        const OtherValueType nonZeroValues[] );
 
     /**
      * Override the default copy constructor to guarantee a deep copy.
@@ -548,6 +533,28 @@ public:
 
     virtual VectorCreateKeyType getCreateValue() const;
 };
+
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline constructors                                    */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+SparseVector<ValueType>::SparseVector(
+    const IndexType size,
+    const IndexType nz,
+    const IndexType nonZeroIndexes[],
+    const OtherValueType nonZeroValues[] ) :
+
+    _SparseVector( size )
+{
+    // use LAMA array reference to avoid copy of the raw data
+
+    hmemo::HArrayRef<OtherValueType> values( nz, nonZeroValues );
+    hmemo::HArrayRef<IndexType> indexes( nz, nonZeroIndexes );
+
+    setSparseValues( indexes, values );
+}
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
