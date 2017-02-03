@@ -114,11 +114,23 @@ public:
     using common::Factory<common::scalar::ScalarType, _HArray*>::create;
 
     /**
-     *  Each derived class must provide a copy function. This will
-     *  allow writing general routines that require temporary data.
+     *  @brief Create a new empty array with same value type.
+     *
+     *  Each derived class must provide a constructor function to create
+     *  a new array of the same type. This allows writing general routines that 
+     *  require temporary arrays of the same type.
      *
      *  Note: derived class might implement this routine by using covariant return types.
      *  Note: will be the same as _HArray::create( this->getValueType() )
+     */
+
+    virtual _HArray* newArray() const = 0;
+
+    /**
+     *  @brief Create a copy of this array.
+     *
+     *  Similiar to newArray, but here the copy constructor is called, i.e. the
+     *  new array will have the same size and same values as the calling object.
      */
 
     virtual _HArray* copy() const = 0;
