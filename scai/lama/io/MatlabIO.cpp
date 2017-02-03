@@ -304,6 +304,24 @@ void MatlabIO::readArrayImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatlabIO::readSparseImpl(
+    IndexType& size,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse array not supported for this file format, uses a temporary dense array of same type
+
+    HArray<ValueType> denseArray;
+
+    readArray( denseArray, fileName, 0, nIndex );
+    size = denseArray.size();
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>& array, bool dryRun )
 {
     uint32_t wBytes = 0;
@@ -398,6 +416,22 @@ void MatlabIO::writeArrayImpl(
     IndexType dims[2] = { array.size(), 1 };
 
     writeDenseArray( outFile, array, dims );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeSparseImpl(
+    const IndexType size,
+    const HArray<IndexType>& indexes,
+    const HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse unsupported for this file format, write it dense
+
+    HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    writeArrayImpl( denseArray, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

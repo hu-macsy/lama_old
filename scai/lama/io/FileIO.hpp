@@ -111,7 +111,7 @@ public:
 
     virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName ) = 0;
 
-    /** Write array of arbitrary type into a file.
+    /** Write 'dense' array of arbitrary type into a file.
      *
      *  @param[in] array is the (local) array data that is written
      *  @param[in] fileName is the name of the output file
@@ -119,8 +119,20 @@ public:
      *  - mBinary if true data is written binary
      *  - mDataType output format used for non-zero values
      */
-
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName ) = 0;
+
+    /** Write 'sparse' array of arbitrary type into a file.
+     *
+     *  @param[in] size is the full size of the array
+     *  @param[in] indexes are the positions of the array with non-zero values
+     *  @param[in] values are the values for the positions specified by indexes
+     *  @param[in] fileName is the name of the output file
+     */
+    virtual void writeSparse( 
+        const IndexType size, 
+        const hmemo::HArray<IndexType>& indexes, 
+        const hmemo::_HArray& values, 
+        const std::string& fileName ) = 0;
 
     /** Get info about the storage stored in a file.
      *
@@ -182,7 +194,7 @@ public:
      *  type of the array argument unless the environment variable ``SCAI_IO_TYPE`` has been set.
      */
 
-    /** Read in an array block from a file in the corresponding format.
+    /** Read in a 'dense' array block from a file in the corresponding format.
      *
      *  @param[out] array    will contain the corresponding array values
      *  @param[in]  fileName name of the input file with array data
@@ -197,6 +209,21 @@ public:
         const std::string& fileName,
         const IndexType offset = 0,
         const IndexType n = nIndex ) = 0;
+
+    /** Read in a 'sparse' array from a file in the corresponding format.
+     *
+     *  @param[out] size is the size of the array
+     *  @param[out] indexes are the positions with non-zero values
+     *  @param[out] values are the values at the corresponding positions.
+     *  @param[in]  name of the input file with array data.
+     *
+     *  This method must be implemented by each derived class. 
+     */
+    virtual void readSparse( 
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::_HArray& values,
+        const std::string& fileName ) = 0;
 
     /** File suffix can be used to decide about choice of FileIO class */
 
@@ -248,7 +275,7 @@ public:
      */
     static int removeFile( const std::string& fileName );
 
-    /** Static method to write an array into a file.
+    /** Static method to write a dense array into a file.
      *
      *  @param[in] array     is the array that is saved
      *  @param[in] fileName  is the name of output file, suffix decides about Handler
@@ -258,6 +285,21 @@ public:
      */
     static void write(
         const hmemo::_HArray& array,
+        const std::string& fileName,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+
+    /** Static method to write a sparse array into a file.
+     *
+     *  @param[in] size, values, indexes represent the sparse array
+     *  @param[in] fileName  is the name of output file, suffix decides about Handler
+     *  @param[in] dataType  specifies the type to be used for representation in output file
+     *
+     *  If the optional argument dataType is not set, array.getValueType() is used.
+     */
+    static void write(
+        const IndexType size,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::_HArray& values,
         const std::string& fileName,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
 
@@ -282,6 +324,13 @@ public:
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
         const IndexType first = 0,
         const IndexType n = nIndex );
+
+    static void read(
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::_HArray& array,
+        const std::string& fileName,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
 
     /** Return the size of an array saved in a file. */
 

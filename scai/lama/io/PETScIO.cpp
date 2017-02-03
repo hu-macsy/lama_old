@@ -151,6 +151,22 @@ void PETScIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void PETScIO::writeSparseImpl(
+    const IndexType size,
+    const HArray<IndexType>& indexes,
+    const HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse unsupported for this file format, write it dense
+
+    HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    writeArrayImpl( denseArray, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
     // int    VEC_FILE_CLASSID
@@ -239,6 +255,24 @@ void PETScIO::readArrayImpl(
 
         array.swap( block );
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::readSparseImpl(
+    IndexType& size,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse array not supported for this file format, uses a temporary dense array of same type
+
+    HArray<ValueType> denseArray;
+
+    readArray( denseArray, fileName, 0, nIndex );
+    size = denseArray.size();
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
 
 /* --------------------------------------------------------------------------------- */

@@ -75,6 +75,14 @@ public:
 
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
 
+    /** Implementation of pure virtual method FileIO::writeSparse  */
+
+    virtual void writeSparse( 
+        const IndexType size, 
+        const hmemo::HArray<IndexType>& indexes, 
+        const hmemo::_HArray& array, 
+        const std::string& fileName );
+
     /** Implementation of pure virtual method FileIO::readArray using same defaults */
 
     virtual void readArray(
@@ -82,6 +90,17 @@ public:
         const std::string& fileName,
         const IndexType offset = 0,
         const IndexType n = nIndex );
+
+    /** Implementation of pure virtual method FileIO::readSparse 
+     *
+     *  This CRTP class calls Derived::readSparseImpl with a typed value array.
+     */
+
+    virtual void readSparse(
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::_HArray& values,
+        const std::string& fileName );
 
     /** Default implementation for removeFile */
 
@@ -126,9 +145,19 @@ struct FileIOWrapper<Derived, common::mepr::NullType>
         COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
     }
 
+    static void writeSparseImpl( Derived&, const IndexType, const hmemo::HArray<IndexType>&, const hmemo::_HArray& array, const std::string& )
+    {
+        COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
+    }
+
     static void readArrayImpl( Derived&, hmemo::_HArray& array, const std::string&, const IndexType, const IndexType )
     {
         COMMON_THROWEXCEPTION( "readArray " << array << " unsupported, unknown type." )
+    }
+
+    static void readSparseImpl( Derived&, IndexType&, hmemo::HArray<IndexType>&, hmemo::_HArray& array, const std::string& )
+    {
+        COMMON_THROWEXCEPTION( "readSparse unsupported, " << array.getValueType() << " not in SCAI_ARRAY_TYPES"  )
     }
 };
 
@@ -179,6 +208,23 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
+    static void writeSparseImpl( 
+        Derived& io, 
+        const IndexType size, 
+        const hmemo::HArray<IndexType>& indexes, 
+        const hmemo::_HArray& values, 
+        const std::string& fileName )
+    {
+        if ( values.getValueType() == common::getScalarType<ValueType>() )
+        {
+            io.writeSparseImpl( size, indexes, reinterpret_cast<const hmemo::HArray<ValueType>& >( values ), fileName );
+        }
+        else
+        {
+            FileIOWrapper<Derived, TailTypes>::writeSparseImpl( io, size, indexes, values, fileName );
+        }
+    }
+
     static void readArrayImpl(
         Derived& io,
         hmemo::_HArray& array,
@@ -193,6 +239,23 @@ struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         else
         {
             FileIOWrapper<Derived, TailTypes>::readArrayImpl( io, array, fileName, offset, n );
+        }
+    }
+
+    static void readSparseImpl(
+        Derived& io,
+        IndexType& size, 
+        hmemo::HArray<IndexType>& indexes, 
+        hmemo::_HArray& values, 
+        const std::string& fileName )
+    {
+        if ( values.getValueType() == common::getScalarType<ValueType>() )
+        {
+            io.readSparseImpl( size, indexes, reinterpret_cast< hmemo::HArray<ValueType>& >( values ), fileName );
+        }
+        else
+        {
+            FileIOWrapper<Derived, TailTypes>::readSparseImpl( io, size, indexes, values, fileName );
         }
     }
 };
@@ -249,6 +312,21 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 /* --------------------------------------------------------------------------------- */
 
 template<class Derived>
+void CRTPFileIO<Derived>::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
+                 fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
+
+    // now call the corresponding typed routine, use meta-programming to get the correct type
+
+    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( Derived& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
 void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
 {
     SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
@@ -259,6 +337,21 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
     // just call the corresponding typed routine
 
     FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, offset, n );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<class Derived>
+void CRTPFileIO<Derived>::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    SCAI_ASSERT( fileName.size() > 0 , "Error: fileName should not be empty" )
+
+    SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ),
+                 fileName << " illegal file name for array, must have suffix " << this->getVectorFileSuffix() )
+
+    // just call the corresponding typed routine
+
+    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( Derived& ) *this, size, indexes, values, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
