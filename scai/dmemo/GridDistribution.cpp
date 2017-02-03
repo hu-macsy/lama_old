@@ -115,7 +115,7 @@ void GridDistribution::localize()
 {
     // compute the block sizes for each grid dimension
 
-    for ( int idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
     {
         IndexType nProcs = mProcGrid.size( idim );  // number of procs for this dimension
 
@@ -132,7 +132,7 @@ void GridDistribution::localize()
     
         // compute block sizes and local ranges
 
-        for ( int idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+        for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
         {
             BlockDistribution::getLocalRange( mLB[idim], mUB[idim], mGlobalGrid.size( idim ), mRank[idim], mProcGrid.size( idim ) );
 
@@ -150,7 +150,7 @@ void GridDistribution::localize()
     {
          // set some convenient default values for rank, lb, ub, and mLocalGrid
 
-        for ( int idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+        for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
         {
             mRank[ idim ] = nIndex;
             mLB[ idim ]   = 0;
