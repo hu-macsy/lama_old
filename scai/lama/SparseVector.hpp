@@ -371,15 +371,13 @@ public:
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    virtual const hmemo::HArray<ValueType>& getNonZeroValues() const
-    {
-        return mNonZeroValues;
-    }
+    /** Implementation of _SpaseVector::getNonZeroValues */
 
-    virtual const hmemo::HArray<IndexType>& getNonZeroIndexes() const
-    {
-        return mNonZeroIndexes;
-    }
+    virtual const hmemo::HArray<ValueType>& getNonZeroValues() const;
+
+    /** Implementation of _SpaseVector::getNonZeroIndexes */
+
+    virtual const hmemo::HArray<IndexType>& getNonZeroIndexes() const;
 
     /**
      * Implementation of pure method Vector::setDenseValues.
@@ -563,6 +561,18 @@ SparseVector<ValueType>::SparseVector(
 Vector::VectorKind _SparseVector::getVectorKind() const
 {
     return Vector::SPARSE;
+}
+
+template<typename ValueType>
+const hmemo::HArray<ValueType>& SparseVector<ValueType>::getNonZeroValues() const
+{
+    return mNonZeroValues;
+}
+
+template<typename ValueType>
+const hmemo::HArray<IndexType>& SparseVector<ValueType>::getNonZeroIndexes() const
+{
+    return mNonZeroIndexes;
 }
 
 } /* end namespace lama */

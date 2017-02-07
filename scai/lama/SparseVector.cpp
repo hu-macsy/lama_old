@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementations and instantiations for class SparseVector.
- * @author Jiri Kraus
- * @date 22.02.2011
+ * @brief Implementations of constructors/methods for class SparseVector.
+ * @author Thomas Brandes
+ * @date 16.01.2017
  */
 
 // hpp
@@ -78,11 +78,11 @@ using namespace dmemo;
 namespace lama
 {
 
+SCAI_LOG_DEF_LOGGER( _SparseVector::logger, "Vector.SparseVector" )
+
 /* ------------------------------------------------------------------------- */
 /*  Implementation of methods/constructors for _SparseVector                 */
 /* ------------------------------------------------------------------------- */
-
-SCAI_LOG_DEF_LOGGER( _SparseVector::logger, "Vector.SparseVector" )
 
 _SparseVector::_SparseVector( const IndexType n ) :
 
@@ -120,6 +120,10 @@ _SparseVector::_SparseVector( const Vector& other ) :
 {
 }
 
+/* ------------------------------------------------------------------------- */
+/*  Implementation of methods/constructors for _SparseVector                 */
+/* ------------------------------------------------------------------------- */
+
 _SparseVector* _SparseVector::create( common::scalar::ScalarType type )
 {
     // There is only one factor for all vectors
@@ -130,6 +134,10 @@ _SparseVector* _SparseVector::create( common::scalar::ScalarType type )
 
     return reinterpret_cast<_SparseVector*>( v );
 }
+
+/* ------------------------------------------------------------------------- */
+/*  Implementation of constructors for SparseVector                         */
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector() :
@@ -175,8 +183,7 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution ) :
     mNonZeroValues()
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector, size = " << distribution->getGlobalSize()
-                   // << ", type = " << typename(ValueType)
-                   << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
+                         << ", distribution = " << *distribution << ", all zero" )
 }
 
 template<typename ValueType>
@@ -188,14 +195,13 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, ContextPtr 
 
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector on context = " << context << ", size = " << distribution->getGlobalSize()
-                   // << ", type = " << typename(ValueType)
-                   << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
+                         << ", distribution = " << *distribution << ", all zero" )
 }
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Vector& other )
+SparseVector<ValueType>::SparseVector( const Vector& other ) : 
 
-    : _SparseVector( other )
+    _SparseVector( other )
 
 {
     allocate( getDistributionPtr() );
@@ -237,9 +243,10 @@ SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const std::string& filename ) 
+SparseVector<ValueType>::SparseVector( const std::string& filename ) : 
 
-    : _SparseVector( 0 )
+    _SparseVector( 0 )
+
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector from file " << filename )
     readFromFile( filename );
@@ -514,6 +521,8 @@ void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroI
 template<typename ValueType>
 IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
 {
+    SCAI_REGION( "Vector.sparse.readLocal" )
+
     SCAI_LOG_INFO( logger, "read local array from file " << fileName )
 
     IndexType localN;   // for local size of the array data
