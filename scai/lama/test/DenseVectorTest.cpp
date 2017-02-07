@@ -393,8 +393,8 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
     x1.swap( x2 );
 
-    BOOST_CHECK_EQUAL( x1( 8 ), ValueType( 2 ) );
-    BOOST_CHECK_EQUAL( x2( 1 ), ValueType( 1 ) );
+    BOOST_CHECK_EQUAL( x1.getValue( 8 ), ValueType( 2 ) );
+    BOOST_CHECK_EQUAL( x2.getValue( 1 ), ValueType( 1 ) );
 
     BOOST_CHECK_EQUAL( x1.getLocalValues().size(), dist2->getLocalSize() );
     BOOST_CHECK_EQUAL( x2.getLocalValues().size(), dist1->getLocalSize() );
