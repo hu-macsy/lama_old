@@ -240,7 +240,7 @@ void BiCG::print( lama::Vector& vec, size_t n )
 
     for ( size_t i = 0; i < n; ++i )
     {
-        std::cout << vec( i ) << " ";
+        std::cout << vec.getValue( i ) << " ";
     }
 
     std::cout << "\n";
