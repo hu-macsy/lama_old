@@ -533,7 +533,7 @@ void MatrixMarketIO::writeSparseImpl(
 
 void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
-    SCAI_REGION( "IO.MM.readArray" )
+    SCAI_REGION( "IO.MM.readArrayInfo" )
 
     Symmetry symmetry;
     common::scalar::ScalarType mmType;
@@ -550,12 +550,6 @@ void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName
     if ( !isVector )
     {
         SCAI_LOG_WARN( logger, "Matrix Market file " << fileName << ", contains matrix and not vector" )
-    }
-
-    if ( numValues != nIndex )
-    {
-        SCAI_THROWEXCEPTION( common::IOException,
-                             "Matrix Market file " << fileName << ": coordinate not allowed for reading a vector" )
     }
 
     size = numRows * numColumns;
