@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
     const char header_wrong1[] = "%%MatMarket matrix array real general";
     const char header_wrong2[] = "%%MatrixMarket mat array real general";
     const char header_wrong3[] = "%%MatrixMarket vector coordinat real symmetric";
-    const char header_wrong4[] = "%%MatrixMarket matrix coordinate double general";
+    const char header_wrong4[] = "%%MatrixMarket matrix coordinate doubl general";
     const char header_wrong5[] = "%%MatrixMarket matrix coordinate real hermitan";
 
     const char* header[] = { header_wrong1, header_wrong2, header_wrong3, header_wrong4, header_wrong5 };
@@ -150,6 +150,8 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
         }
 
         MatrixMarketIO reader;
+ 
+        SCAI_LOG_INFO( logger, "Test this header: " << header[icase] )
 
         BOOST_CHECK_THROW(
         {
