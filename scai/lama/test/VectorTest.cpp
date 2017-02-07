@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         *v = 1;
         v->redistribute( dist );
-        BOOST_CHECK_EQUAL( ( *v )( n - 1 ), Scalar( 1 ) );
+        BOOST_CHECK_EQUAL( v->getValue( n - 1 ), Scalar( 1 ) );
 
         BOOST_CHECK_THROW(
         {
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         continue;
 
-        BOOST_CHECK_EQUAL( ( *v )( n - 1 ), Scalar( 2 ) );
+        BOOST_CHECK_EQUAL( v->getValue( n - 1 ), Scalar( 2 ) );
     }
 }
 
