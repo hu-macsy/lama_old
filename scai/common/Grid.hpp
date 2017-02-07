@@ -109,6 +109,10 @@ public:
 
     IndexType linearPos( const IndexType gridPos[] ) const;
 
+    /** More convenient call of linearPos on one-dimensional grid */
+
+    IndexType linearPos( const IndexType pos1 ) const;
+
     /** More convenient call of linearPos on two-dimensional grids */
 
     IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
@@ -124,6 +128,10 @@ public:
     /** Compares two grids for equality. */
 
     bool operator==( const Grid& other ) const;
+
+    /** Compares two grids for inequality. */
+
+    bool operator!=( const Grid& other ) const;
 
 private:
 
@@ -210,23 +218,26 @@ bool Grid::validPos( const IndexType gridPos[] ) const
     return isValid;
 }
 
+/* ------------------------------------------------------------------------------------ */
+
 IndexType Grid::linearPos( const IndexType gridPos[] ) const
 {
-    if ( mNDims == 1 )
-    {
-        return gridPos[0];
-    }
-    else 
-    {
-        IndexType pos = gridPos[0];
+    IndexType pos = gridPos[0];
 
-        for ( IndexType i = 1; i < mNDims; ++i )
-        {  
-            pos = pos * mSize[i] + gridPos[i];
-        }
-
-        return pos;
+    for ( IndexType i = 1; i < mNDims; ++i )
+    {  
+        pos = pos * mSize[i] + gridPos[i];
     }
+
+    return pos;
+}
+
+IndexType Grid::linearPos( const IndexType pos0 ) const
+
+{
+    SCAI_ASSERT_EQ_DEBUG( 1, mNDims, "linearPos with 1 value, but grid has " << mNDims << " dimensions" )
+
+    return pos0;
 }
 
 IndexType Grid::linearPos( const IndexType pos0, const IndexType pos1 ) const
@@ -243,6 +254,8 @@ IndexType Grid::linearPos( const IndexType pos0, const IndexType pos1, const Ind
 
     return ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2;
 }
+
+/* ------------------------------------------------------------------------------------ */
 
 /*  Help routine to get the position in the last dimension */
 
@@ -292,6 +305,11 @@ bool Grid::operator==( const Grid& other ) const
     }
 
     return true;
+}
+
+bool Grid::operator!=( const Grid& other ) const
+{
+    return ! operator==( other );
 }
 
 IndexType Grid::size( IndexType dim ) const

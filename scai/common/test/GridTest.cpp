@@ -101,9 +101,8 @@ BOOST_AUTO_TEST_CASE( pos2Test )
     {
         for ( IndexType i2 = 0; i2 < n2; ++i2 )
         {
-            IndexType pos[] = { i1, i2 };
-            IndexType linearPos = grid.linearPos( pos );
-            IndexType newPos[2];
+            IndexType linearPos = grid.linearPos( i1, i2 );
+            IndexType newPos[SCAI_GRID_MAX_DIMENSION];
             grid.gridPos( newPos, linearPos );
             BOOST_CHECK_EQUAL( i1, newPos[0] );
             BOOST_CHECK_EQUAL( i2, newPos[1] );
@@ -131,7 +130,7 @@ BOOST_AUTO_TEST_CASE( pos3Test )
     IndexType p2[] = { 3, 2, 2  };
     IndexType p3[] = { 4, 1, 2 };
 
-    // linearPos( x, y, z ) == linearPos( { x, y, z } )
+    // verify linearPos( x, y, z ) == linearPos( { x, y, z } )
 
     BOOST_CHECK_EQUAL( grid.linearPos( p1), grid.linearPos( p1[0], p1[1], p1[2] ) );
 
@@ -154,8 +153,7 @@ BOOST_AUTO_TEST_CASE( pos3Test )
         {
             for ( IndexType i3 = 0; i3 < n3; ++i3 )
             {
-                IndexType pos[] = { i1, i2, i3 };
-                IndexType linearPos = grid.linearPos( pos );
+                IndexType linearPos = grid.linearPos( i1, i2, i3 );
                 IndexType newPos[3];
                 grid.gridPos( newPos, linearPos );
                 BOOST_CHECK_EQUAL( i1, newPos[0] );
@@ -191,6 +189,20 @@ BOOST_AUTO_TEST_CASE( posNTest )
         grid.gridPos( pos, i );
         BOOST_CHECK_EQUAL( i, grid.linearPos( pos ) );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( equalTest )
+{
+    Grid grid1( 5 );
+    Grid grid2a( 5, 3 );
+    Grid grid2b( 3, 5 );
+    Grid grid2c( 5, 3 );
+
+    BOOST_CHECK( ! ( grid1 == grid2a ) );
+    BOOST_CHECK( grid2a != grid2b );
+    BOOST_CHECK_EQUAL( grid2a, grid2c );
 }
 
 /* --------------------------------------------------------------------- */
