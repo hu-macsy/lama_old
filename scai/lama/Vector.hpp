@@ -125,6 +125,51 @@ class COMMON_DLL_IMPORTEXPORT Vector:
 {
 public:
 
+    /** Help class to observe the further use of operator[] for Vector */
+
+    class IndexProxy
+    {
+    public:
+
+        /** Proxy constructed by ref to the array and the index value. */
+
+        IndexProxy( Vector& vector, const IndexType i ) :
+
+            mVector( vector ),
+            mIndex( i )
+        {
+        }
+
+        /** indexed value proxy can be used to get its value */
+
+        operator Scalar() const
+        {
+            return mVector.getValue( mIndex );
+        }
+
+        /** indexed value proxy can be assigned a scalar */
+
+        IndexProxy& operator= ( Scalar val )
+        {
+            mVector.setValue( mIndex, val );
+            return *this;
+        }
+
+        /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
+
+        IndexProxy& operator= ( const IndexProxy& other )
+        {
+            Scalar tmp = other.mVector.getValue( other.mIndex );
+            mVector.setValue( mIndex, tmp );
+            return *this;
+        }
+
+    private:
+
+        Vector& mVector;
+        IndexType mIndex;
+    };
+
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
     static Vector* getVector( const VectorKind format, const common::scalar::ScalarType valueType );
@@ -298,7 +343,20 @@ public:
      *
      * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
      */
-    const Scalar operator()( const IndexType i ) const;
+    Scalar operator()( const IndexType i ) const
+    {
+        return getValue( i );
+    }
+
+    IndexProxy operator[]( const IndexType i )
+    {
+        return IndexProxy( *this, i );
+    }
+
+    Scalar operator[]( const IndexType i ) const
+    {
+        return getValue( i );
+    }
 
     /**
      * @brief Sets the local values of a vector by a dense array.

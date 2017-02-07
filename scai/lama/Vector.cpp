@@ -795,11 +795,6 @@ void Vector::writeToFile(
 /*   Miscellaneous                                                                        */
 /* ---------------------------------------------------------------------------------------*/
 
-const Scalar Vector::operator()( const IndexType i ) const
-{
-    return getValue( i );
-}
-
 void Vector::swapVector( Vector& other )
 {
     // swaps only on this base class, not whole vectors
