@@ -95,7 +95,6 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 
 BOOST_AUTO_TEST_CASE( createTest )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     const IndexType globalSize = 5;
 
     DistributionPtr bdist ( GridDistribution::create( DistributionArguments( comm, globalSize, NULL, 1.0 ) ) );
@@ -108,14 +107,115 @@ BOOST_AUTO_TEST_CASE( createTest )
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
+    // do not use the global comm variable here
+
     CommunicatorPtr comm;
+
     const IndexType globalSize = 17;
+
+    Grid globalGrid( globalSize, globalSize );
+
+    // constructor must fail for empty communicator
 
     BOOST_CHECK_THROW(
     {
-        GridDistribution bdist( Grid( globalSize ), comm, Grid( 1 ) );
+        GridDistribution bdist( globalGrid, comm, Grid( 1 ) );
     },
     common::Exception );
+
+    comm = Communicator::getCommunicatorPtr();
+
+    GridDistribution bdist( globalGrid, comm );
+
+    BOOST_CHECK_EQUAL( bdist.getGlobalSize(), globalSize * globalSize );
+
+    BOOST_CHECK_EQUAL( globalGrid, bdist.getGlobalGrid() );
+
+    const Grid& localGrid = bdist.getLocalGrid();
+
+    // local grid must be subgrid
+
+    BOOST_CHECK_EQUAL( globalGrid.ndims(), localGrid.ndims() );
+
+    for ( IndexType idim = 0; idim < globalGrid.ndims(); ++ idim )
+    {
+        BOOST_CHECK( localGrid.size( idim ) <= globalGrid.size( idim ) );
+    }
+
+    if ( comm->getSize() == 1 )
+    {
+        // only one processor available, local and global grid must be same
+
+        BOOST_CHECK_EQUAL( globalGrid, localGrid );
+    }
+    else
+    {
+        // grid is distributed in any case
+
+        BOOST_CHECK( globalGrid != localGrid );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( constructor1Test )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    const IndexType N1 = 1;
+    const IndexType N2 = 2;
+
+    Grid globalGrid( N1, N2 );
+    Grid procGrid( 1, 1 );
+
+    GridDistribution myGridDistribution( globalGrid, comm, procGrid );
+
+    const Grid& localGrid = myGridDistribution.getLocalGrid();
+
+    if ( comm->getRank() == 0 )
+    {
+        BOOST_CHECK_EQUAL( localGrid, globalGrid );
+    }
+    else
+    {
+        BOOST_CHECK_EQUAL( localGrid, Grid( 0, 0 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( constructor2Test )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    const IndexType globalSize = 17;
+
+    Grid globalGrid( globalSize, globalSize, globalSize );
+    Grid procGrid( comm->getSize(), 1, 1 );
+
+    GridDistribution myGridDistribution( globalGrid, comm, procGrid );
+
+    const Grid& localGrid = myGridDistribution.getLocalGrid();
+
+    BOOST_CHECK_EQUAL( globalGrid.ndims(), localGrid.ndims() );
+
+    if ( comm->getSize() == 1 )
+    {
+        BOOST_CHECK_EQUAL( localGrid.size( 0 ), globalGrid.size( 0 ) );
+    }
+    else
+    {
+        // first dimension must be distributed
+
+        BOOST_CHECK( localGrid.size( 0 ) < globalGrid.size( 0 ) );
+    }
+
+    for ( IndexType idim = 1; idim < globalGrid.ndims(); ++ idim )
+    {
+        // all other dimensions are not distributed at all
+
+        BOOST_CHECK_EQUAL( localGrid.size( idim ), globalGrid.size( idim ) );
+    }
 }
 
 /* --------------------------------------------------------------------- */

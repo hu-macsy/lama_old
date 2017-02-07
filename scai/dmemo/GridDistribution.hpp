@@ -161,15 +161,13 @@ public:
 
     static std::string createValue();
 
-    virtual const char* getKind() const
-    {
-        return getId();
-    }
+    /** Implementation of pure method Distribution::getKind for this class.  */
 
-    static const char* getId()
-    {
-        return "GRID";
-    }
+    virtual const char* getKind() const;
+
+    /** static method to get kind of this class. */
+
+    static const char* getId();
 
 protected:
 
@@ -202,6 +200,16 @@ const common::Grid& GridDistribution::getLocalGrid() const
 const common::Grid& GridDistribution::getGlobalGrid() const
 {
     return mGlobalGrid;
+}
+
+const char* GridDistribution::getKind() const
+{
+    return getId();
+}
+
+const char* GridDistribution::getId()
+{
+    return "GRID";
 }
 
 } /* end namespace dmemo */
