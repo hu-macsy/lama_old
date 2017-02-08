@@ -157,13 +157,6 @@ public:
         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::setColumnImpl( static_cast<Derived*>( this ), column, j, op );
     }
 
-    /** Common implementation for MatrixStorage::getColumn via getColumnImpl */
-
-    void getColumn( hmemo::_HArray& column, const IndexType j ) const
-    {
-        mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::getColumnImpl( static_cast<const Derived*>( this ), column, j );
-    }
-
     void getDiagonal( hmemo::_HArray& diagonal ) const
     {
         if ( !this->hasDiagonalProperty() )

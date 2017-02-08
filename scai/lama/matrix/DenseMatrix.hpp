@@ -299,11 +299,6 @@ public:
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
     }
 
-    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColumn( column, globalColIndex );
-    }
-
     virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,
                          const utilskernel::binary::BinaryOp op )
@@ -634,6 +629,10 @@ public:
 
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
 
+    /** Implementation of pure methode Matrix::getColumn */
+
+    virtual void getColumn( Vector& col, const IndexType globalColIndex ) const;
+
     /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
 
     void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType iLocal ) const;
@@ -641,8 +640,6 @@ public:
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
                       const utilskernel::binary::BinaryOp op  );
-
-    void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,

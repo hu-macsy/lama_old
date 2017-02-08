@@ -560,6 +560,8 @@ void ELLStorage<ValueType>::setDiagonalImpl( const HArray<OtherType>& diagonal )
 template<typename ValueType>
 void ELLStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
 {
+    SCAI_REGION( "Storage.ELL.getSparseRow" )
+
     const IndexType nrow  = mIA[i];       // number of non-zero entries in row
     const IndexType offs  = i;            // first non-zero entry
     const IndexType inc   = mNumRows;     // stride between two entries
@@ -577,6 +579,44 @@ void ELLStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 
     HArrayUtils::setArraySection( jA, 0, 1, mJA, offs, inc, nrow, op, getContextPtr() );
     HArrayUtils::setArraySection( values, 0, 1, mValues, offs, inc, nrow, op, getContextPtr() );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void ELLStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const
+{   
+    SCAI_REGION( "Storage.ELL.getSparseCol" )
+    
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+    
+    static LAMAKernel<ELLKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> valuePos;     // positions in the values array
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIA( mIA, loc );
+        ReadAccess<IndexType> rJA( mJA, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), mNumRows, rJA.get(), mNumValuesPerRow );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    // column_values = mValues[ pos ];
+
+    HArrayUtils::gather( values, mValues, valuePos, utilskernel::binary::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -601,43 +641,16 @@ void ELLStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void ELLStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void ELLStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
 {
     SCAI_REGION( "Storage.ELL.getCol" )
 
-    static LAMAKernel<ELLKernelTrait::getValuePosCol> getValuePosCol;
-
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosCol.getSupportedContext( loc );
-
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array
     HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
-    {
-        SCAI_CONTEXT_ACCESS( loc )
+    getSparseColumn( rowIndexes, colValues, j );
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
-
-        ReadAccess<IndexType> rIA( mIA, loc );
-        ReadAccess<IndexType> rJA( mJA, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), mNumRows, rJA.get(), mNumValuesPerRow );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
-
-    column.init( ValueType( 0 ), mNumRows );
-
-    // column[ row ] = mValues[ pos ];
-
-    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2069,7 +2082,6 @@ SCAI_COMMON_INST_CLASS( ELLStorage, SCAI_NUMERIC_TYPES_HOST )
     template void ELLStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void ELLStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
             const utilskernel::binary::BinaryOp );                          \
-    template void ELLStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void ELLStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
             const utilskernel::binary::BinaryOp );                       \
     template void ELLStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \

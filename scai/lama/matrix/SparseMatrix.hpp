@@ -251,10 +251,11 @@ public:
         CRTPMatrix<SparseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
     }
 
-    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const
-    {
-        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColumn( column, globalColIndex );
-    }
+    /** @brief Implementation of pure method Matrix::getColumn 
+     *
+     *  It is recommended to call getColumn with a SparseVector for a sparse matrix.
+     */
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const;
 
     virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,

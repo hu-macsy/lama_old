@@ -46,6 +46,8 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <scai/common/OpenMP.hpp>
+
 namespace scai
 {
 
@@ -427,16 +429,16 @@ ValueType SparseAssemblyStorage<ValueType>::operator()( const IndexType i, const
 
     const std::vector<IndexType>& rJA = mRows[i].ja;
 
-    for ( size_t k = 0; k < mRows[i].ja.size(); ++k )
+    for ( size_t jj = 0; jj < mRows[i].ja.size(); ++jj )
     {
-        if ( j == rJA[k] )
+        if ( j == rJA[jj] )
         {
             const std::vector<ValueType>& rValues = mRows[i].values;
-            return rValues[k];
+            return rValues[jj];
         }
     }
 
-    return static_cast<ValueType>( 0.0 );
+    return static_cast<ValueType>( 0 );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -815,6 +817,61 @@ void SparseAssemblyStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& j
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseAssemblyStorage<ValueType>::getSparseColumn( 
+     hmemo::HArray<IndexType>& iA, 
+     hmemo::_HArray& values, 
+    const IndexType j ) const
+{   
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+    
+    if ( values.getValueType() != this->getValueType() )
+    {
+        SCAI_LOG_WARN( logger, "use temporary HArray<" << this->getValueType() << ">"
+                               << " for getSparseCol with values : HArray<" << values.getValueType() << ">" )
+        HArray<ValueType> typedValues;
+        getSparseColumn( iA, typedValues, j );
+        HArrayUtils::assign( values, typedValues );
+        return;
+    }
+
+    HArray<ValueType>& typedValues = reinterpret_cast<HArray<ValueType>&>( values );
+
+    ContextPtr loc = Context::getHostPtr();  // only on host here
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
+        WriteOnlyAccess<ValueType> wValues( typedValues, loc, mNumRows );
+
+        IndexType cnt = 0;
+
+        #pragma omp parallel for
+
+        for ( IndexType i = 0; i < mNumRows; ++i )
+        {
+            const Row& row = mRows[i];
+
+            for ( size_t jj = 0; jj < row.ja.size(); ++jj )
+            {
+                if ( row.ja[jj] == j )
+                {
+                    IndexType k = atomicInc( cnt );
+
+                    wRowIndexes[ k ] = i;
+                    wValues[ k ] = row.values[jj];
+                }
+            }
+        }
+
+        wRowIndexes.resize( cnt );
+        wValues.resize( cnt );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType i ) const
 {
@@ -844,19 +901,14 @@ void SparseAssemblyStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void SparseAssemblyStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void SparseAssemblyStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
-    // ToDo write more efficient kernel routine for getting a column
+    getSparseColumn( rowIndexes, colValues, j );
 
-    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
-
-    for ( IndexType i = 0; i < mNumRows; ++i )
-    {
-        wColumn[i] = static_cast<OtherType>( getValue( i, j ) );
-    }
+    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
 }
 
 /* --------------------------------------------------------------------------- */

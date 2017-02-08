@@ -1067,27 +1067,24 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
-{
-    SCAI_REGION( "Storage.COO.getCol" )
-
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
-
+void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const
+{   
+    SCAI_REGION( "Storage.COO.getSparseCol" )
+    
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+    
     static LAMAKernel<COOKernelTrait::getValuePosCol> getValuePosCol;
 
     ContextPtr loc = this->getContextPtr();
 
     getValuePosCol.getSupportedContext( loc );
 
-    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
     HArray<IndexType> valuePos;     // positions in the values array
-    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
         WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
 
         ReadAccess<IndexType> rIA( mIA, loc );
@@ -1100,12 +1097,24 @@ void COOStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
         wValuePos.resize( cnt );
     }
 
-    column.init( ValueType( 0 ), mNumRows );
-
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, utilskernel::binary::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void COOStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
+{
+    SCAI_REGION( "Storage.COO.getDenseCol" )
+
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    getSparseColumn( rowIndexes, colValues, j );
+
+    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1338,7 +1347,6 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void COOStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
             const utilskernel::binary::BinaryOp );                          \
-    template void COOStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void COOStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
             const utilskernel::binary::BinaryOp );                       \
     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \

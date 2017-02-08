@@ -293,6 +293,52 @@ void DIAStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DIAStorage<ValueType>::getSparseColumn(
+    hmemo::HArray<IndexType>& iA,
+    hmemo::_HArray& values,
+    const IndexType j ) const
+{
+    SCAI_REGION( "Storage.DIA.getSparseCol" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+
+    ContextPtr loc = Context::getHostPtr();  // only on host here
+
+    HArray<IndexType> valuePos;     // positions in the values array
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        const ReadAccess<IndexType> offset( mOffset );
+        const ReadAccess<ValueType> values( mValues );
+
+        IndexType cnt = 0;
+
+        for ( IndexType d = 0; d < mNumDiagonals; ++d )
+        {
+            IndexType i = j - offset[d];
+
+            if ( common::Utils::validIndex( i, mNumRows ) )
+            {
+                wRowIndexes[ cnt ] = i;
+                wValuePos  [ cnt ] = diaindex( i, d, mNumRows, mNumDiagonals );
+                cnt++;
+            }
+        }
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    HArrayUtils::gather( values, mValues, valuePos, utilskernel::binary::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
                                         const utilskernel::binary::BinaryOp op )
@@ -343,34 +389,16 @@ void DIAStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void DIAStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void DIAStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
 {
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+    SCAI_REGION( "Storage.DIA.getDenseCol" )
 
-    WriteOnlyAccess<OtherType> wColumn( column, mNumRows );
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
-    const ReadAccess<IndexType> offset( mOffset );
-    const ReadAccess<ValueType> values( mValues );
+    getSparseColumn( rowIndexes, colValues, j );
 
-    #pragma omp parallel for
-
-    for ( IndexType i = 0; i < mNumRows; ++i )
-    {
-        wColumn[i] = static_cast<OtherType>( 0 );
-    }
-
-    #pragma omp parallel for
-
-    for ( IndexType d = 0; d < mNumDiagonals; ++d )
-    {
-        IndexType i = j - offset[d];
-
-        if ( common::Utils::validIndex( i, mNumRows ) )
-        {
-            wColumn[i] = static_cast<OtherType>( values[diaindex( i, d, mNumRows, mNumDiagonals )] );
-        }
-    }
+    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1379,7 +1407,6 @@ SCAI_COMMON_INST_CLASS( DIAStorage, SCAI_NUMERIC_TYPES_HOST )
     template void DIAStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void DIAStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
             const utilskernel::binary::BinaryOp );                          \
-    template void DIAStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void DIAStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
             const utilskernel::binary::BinaryOp );                       \
     template void DIAStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \

@@ -1225,8 +1225,6 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 template<typename ValueType>
 void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
-    SCAI_REGION( "Mat.Dense.getRow" )
-
     // if v is not a dense vector, use a temporary dense vector
 
     if ( row.getVectorKind() != Vector:: DENSE || row.getValueType() != getValueType() )
@@ -1237,6 +1235,8 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
         row.assign( denseRow );   // transform the dense vector into sparse vector
         return;
     }
+
+    SCAI_REGION( "Mat.Dense.getRow" )
 
     const Distribution& dist = getRowDistribution();
     const Communicator& comm = dist.getCommunicator();
@@ -1259,6 +1259,92 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
     }
 
     comm.bcastArray( values, owner );
+}
+
+/* -------------------------------------------------------------------------- */
+
+static IndexType getLocalIndex( const IndexType globalIndex, const Distribution& dist, const PartitionId owners[] )
+{
+    if ( dist.getNumPartitions() == 1 )
+    {
+        return globalIndex;
+    }
+
+    if ( dist.isLocal( globalIndex ) )
+    {
+        return dist.global2local( globalIndex );
+    }
+
+    // up to know no efficient way to get local index
+
+    IndexType localIndex = 0;
+    PartitionId owner = owners[globalIndex];
+
+    for ( PartitionId k = 0; k < globalIndex; ++k )
+    {
+        if ( owner == owners[k] )
+        {
+            ++localIndex;
+        }
+    }
+
+    return localIndex;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColIndex ) const
+{
+    // if col is not a dense vector, use a temporary dense vector
+
+    if ( col.getVectorKind() != Vector:: DENSE )
+    {
+        SCAI_LOG_WARN( logger, "getCol requires temporary, use DenseVector on DenseMatrix" )
+        DenseVector<ValueType> denseColumn;
+        getColumn( denseColumn, globalColIndex );
+        col.assign( denseColumn );   // transform the dense vector into sparse vector
+        return;
+    }
+
+    SCAI_REGION( "Mat.Dense.getColumn" )
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<_DenseVector*>( &col ), "col not _DenseVector" )
+
+    _DenseVector& denseCol = reinterpret_cast<_DenseVector&>( col );
+
+    // result vector inherits the row distribution 
+
+    denseCol.allocate( getRowDistributionPtr() );
+
+    // find the owner and local column index of col
+
+    PartitionId owner         = 0;
+    IndexType   localColIndex = globalColIndex;
+
+    const Distribution& colDist = getColDistribution();
+
+    if ( !colDist.isReplicated() )
+    {
+        // determine the owner and local index 
+
+        ReadAccess<IndexType> rOwners( mOwners );
+        owner = rOwners[ globalColIndex ];
+        localColIndex = getLocalIndex( globalColIndex, colDist, rOwners.get() );
+    }
+
+    SCAI_ASSERT_DEBUG( mData[owner], "No data for owner = " << owner )
+
+    SCAI_LOG_INFO( logger, "getColumn( " << globalColIndex << " ) : owner = " << owner
+                           << ", local col = " << localColIndex << ", mData = " << *mData[owner] )
+
+    _HArray& values = denseCol.getLocalValues();
+
+    mData[owner]->getColumn( values, localColIndex );
+
+    // verify that local size of data matches local size of distribution, so we have consistency
+
+    SCAI_ASSERT_EQ_DEBUG( values.size(), denseCol.getDistribution().getLocalSize(), "serious mismatch" );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1319,67 +1405,6 @@ void DenseMatrix<ValueType>::setLocalRow(
 
         mData[ip]->setRowImpl( rowPartition, localRowIndex, op );
     }
-}
-
-/* -------------------------------------------------------------------------- */
-
-static IndexType getLocalIndex( const IndexType globalIndex, const Distribution& dist, const PartitionId owners[] )
-{
-    if ( dist.getNumPartitions() == 1 )
-    {
-        return globalIndex;
-    }
-
-    if ( dist.isLocal( globalIndex ) )
-    {
-        return dist.global2local( globalIndex );
-    }
-
-    // up to know no efficient way to get local index
-
-    IndexType localIndex = 0;
-    PartitionId owner = owners[globalIndex];
-
-    for ( PartitionId k = 0; k < globalIndex; ++k )
-    {
-        if ( owner == owners[k] )
-        {
-            ++localIndex;
-        }
-    }
-
-    return localIndex;
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void DenseMatrix<ValueType>::getLocalColumn( hmemo::HArray<ValueType>& column, const IndexType colIndex ) const
-{
-    SCAI_REGION( "Mat.Dense.getLocalColumn" )
-
-    // find the owner and local column index of col
-
-    PartitionId owner         = 0;
-    IndexType   localColIndex = colIndex;
-
-    const Distribution& colDist = getColDistribution();
-
-    if ( !colDist.isReplicated() )
-    {
-        SCAI_ASSERT_VALID_INDEX_DEBUG( colIndex, mOwners.size(), "column index out of range" )
-
-        ReadAccess<IndexType> rOwners( mOwners );
-        owner = rOwners[ colIndex ];
-        localColIndex = getLocalIndex( colIndex, colDist, rOwners.get() );
-    }
-
-    SCAI_ASSERT_ERROR( mData[owner], "No data for owner = " << owner )
-
-    SCAI_LOG_INFO( logger, "getLocalColumn( " << colIndex << " ) : owner = " << owner
-                   << ", local col = " << localColIndex << ", mData = " << *mData[owner] )
-
-    mData[owner]->getColumnImpl( column, localColIndex );
 }
 
 /* -------------------------------------------------------------------------- */

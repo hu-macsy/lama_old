@@ -212,49 +212,6 @@ public:
         }
     }
 
-    /** @brief Common implementation for of Matrix::getColumn for all matrix types
-     *
-     *  @param[out] column will contain the values of the queried col of this matrix
-     *  @param[in]  globalColIndex is the (global) index of the row to access
-     */
-
-    void getColumn( Vector& column, const IndexType globalColIndex ) const
-    {
-        const Derived& m = reinterpret_cast<const Derived&>( *this );
-
-        SCAI_REGION( "Mat.getColumn" )
-
-        using namespace scai::hmemo;
-
-        SCAI_ASSERT_VALID_INDEX_ERROR( globalColIndex, m.getNumColumns(), "illegal column index" )
-
-        common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
-
-        DenseVector<ValueType>* typedCol = dynamic_cast<DenseVector<ValueType>*>( &column );
-
-        if ( !typedCol )
-        {
-            // so we create a temporaray DenseVector of same type, has already correct size
-            tmpVector.reset( new DenseVector<ValueType>() );
-            typedCol = tmpVector.get();
-        }
-
-        // allocate column with the row distribution of this matrix
-
-        typedCol->allocate( m.getRowDistributionPtr() );
-
-        // each partition fills up its local part
-
-        utilskernel::LArray<ValueType>& localValues = const_cast<utilskernel::LArray<ValueType>&>( typedCol->getLocalValues() );
-
-        m.getLocalColumn( localValues, globalColIndex );
-
-        if ( tmpVector.get() )
-        {
-            column = *tmpVector;   // implicit conversion
-        }
-    }
-
     /** Implementation of Matrix::setRow for all typed matrices
      *
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )

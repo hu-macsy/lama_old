@@ -379,29 +379,26 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
-{
+void JDSStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const
+{   
+    SCAI_REGION( "Storage.JDS.getSparseCol" )
+    
     SCAI_LOG_INFO( logger, "getColumn( " << j << " ) of : " << *this )
 
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
-
-    SCAI_REGION( "Storage.JDS.getCol" )
-
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+    
     static LAMAKernel<JDSKernelTrait::getValuePosCol> getValuePosCol;
 
     ContextPtr loc = this->getContextPtr();
 
     getValuePosCol.getSupportedContext( loc );
 
-    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
     HArray<IndexType> valuePos;     // positions in the values array
-    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
     {
         SCAI_CONTEXT_ACCESS( loc )
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
         WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
 
         ReadAccess<IndexType> rIlg( mIlg, loc );
@@ -416,14 +413,22 @@ void JDSStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const Inde
         wValuePos.resize( cnt );
     }
 
-    SCAI_LOG_INFO( logger, "getColumn( " << j << " ) with " << valuePos.size() << " non-zero entries" )
+    HArrayUtils::gather( values, mValues, valuePos, utilskernel::binary::COPY, loc );
+}
 
-    column.init( ValueType( 0 ), mNumRows );
+/* --------------------------------------------------------------------------- */
 
-    // column[ row ] = mValues[ pos ];
+template<typename ValueType>
+void JDSStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
+{
+    SCAI_REGION( "Storage.JDS.getDenseCol" )
 
-    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
+    HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
+    HArray<ValueType> colValues;    // contains the values of entries belonging to column j
+
+    getSparseColumn( rowIndexes, colValues, j );
+
+    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1656,7 +1661,6 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void JDSStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
             const utilskernel::binary::BinaryOp );                          \
-    template void JDSStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void JDSStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
             const utilskernel::binary::BinaryOp );                       \
     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \

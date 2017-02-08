@@ -158,6 +158,16 @@ void DenseStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo:
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const
+{
+    HArray<ValueType> col;
+    getColumn( col, j );
+    HArrayUtils::buildSparseArray( values, iA, col, mContext );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void DenseStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType rowIndex ) const
 {
@@ -202,8 +212,7 @@ void DenseStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const In
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void DenseStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void DenseStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
 
@@ -1422,7 +1431,6 @@ SCAI_COMMON_INST_CLASS( DenseStorage, SCAI_NUMERIC_TYPES_HOST )
     template void DenseStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;      \
     template void DenseStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,        \
             const utilskernel::binary::BinaryOp );                  \
-    template void DenseStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;   \
     template void DenseStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,     \
             const utilskernel::binary::BinaryOp );               \
     template void DenseStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                  \

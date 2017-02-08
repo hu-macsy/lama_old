@@ -776,6 +776,54 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColIndex ) const
+{
+    SCAI_REGION( "Mat.Sp.getCol" )
+
+    // if col is not a sparse vector use a temporary sparse vector
+
+    if ( col.getVectorKind() != Vector:: SPARSE )
+    {
+        SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex << ") requires temporary" )
+        SparseVector<ValueType> spCol;
+        getColumn( spCol, globalColIndex );
+        col.assign( spCol );           // type conversion or sparse/dense conversion
+        return;
+    }
+
+    _SparseVector& spCol = reinterpret_cast<_SparseVector&>( col );
+
+    spCol.allocate( getRowDistributionPtr() );   // resizes local arrays to 0
+
+    IndexType jLocal = getColDistribution().global2local( globalColIndex );
+
+    if ( nIndex != jLocal )
+    {
+        // const_cast: we know what we do
+        mLocalData->getSparseColumn( const_cast<HArray<IndexType>&>( spCol.getNonZeroIndexes() ), 
+                                     const_cast<_HArray&>( spCol.getNonZeroValues() ), jLocal );
+    }
+    else
+    {
+        IndexType jHalo = mHalo.global2halo( globalColIndex );
+
+        if ( nIndex != jHalo )
+        {
+            // const_cast: we know what we do
+            mHaloData->getSparseColumn( const_cast<HArray<IndexType>&>( spCol.getNonZeroIndexes() ), 
+                                        const_cast<_HArray&>( spCol.getNonZeroValues() ), jLocal );
+        }
+        else
+        {
+            SCAI_ASSERT_EQ_DEBUG( 0, spCol.getNonZeroIndexes().size(), "serious mismatch" );
+            SCAI_ASSERT_EQ_DEBUG( 0, spCol.getNonZeroValues().size(), "serious mismatch" );
+        }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HArray& values, const IndexType localRowIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getLocalRow" )

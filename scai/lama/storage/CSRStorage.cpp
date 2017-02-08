@@ -989,6 +989,47 @@ void CSRStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::getSparseColumn( 
+    hmemo::HArray<IndexType>& iA, 
+    hmemo::_HArray& values, 
+    const IndexType j ) const
+{
+    SCAI_REGION( "Storage.CSR.getSparseCol" )
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "col index out of range" )
+
+    static LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
+
+    ContextPtr loc = this->getContextPtr();
+
+    getValuePosCol.getSupportedContext( loc );
+
+    HArray<IndexType> valuePos;     // positions in the values array
+
+    {
+        SCAI_CONTEXT_ACCESS( loc )
+
+        WriteOnlyAccess<IndexType> wRowIndexes( iA, loc, mNumRows );
+        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
+
+        ReadAccess<IndexType> rIA( mIa, loc );
+        ReadAccess<IndexType> rJA( mJa, loc );
+
+        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
+                                             rIA.get(), mNumRows, rJA.get(), mNumValues );
+
+        wRowIndexes.resize( cnt );
+        wValuePos.resize( cnt );
+    }
+
+    // values = mValues[ pos ];
+
+    HArrayUtils::gather( values, mValues, valuePos, utilskernel::binary::COPY, loc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 template<typename OtherType>
 void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
                                         const utilskernel::binary::BinaryOp op )
@@ -1027,45 +1068,16 @@ void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-template<typename OtherType>
-void CSRStorage<ValueType>::getColumnImpl( HArray<OtherType>& column, const IndexType j ) const
+void CSRStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) const
 {
-    SCAI_REGION( "Storage.CSR.getCol" )
-
-    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
-
-    static LAMAKernel<CSRKernelTrait::getValuePosCol> getValuePosCol;
-
-    ContextPtr loc = this->getContextPtr();
-
-    getValuePosCol.getSupportedContext( loc );
+    SCAI_REGION( "Storage.CSR.getDenseCol" )
 
     HArray<IndexType> rowIndexes;   // row indexes that have entry for column j
-    HArray<IndexType> valuePos;     // positions in the values array
     HArray<ValueType> colValues;    // contains the values of entries belonging to column j
 
-    {
-        SCAI_CONTEXT_ACCESS( loc )
+    getSparseColumn( rowIndexes, colValues, j );
 
-        WriteOnlyAccess<IndexType> wRowIndexes( rowIndexes, loc, mNumRows );
-        WriteOnlyAccess<IndexType> wValuePos( valuePos, loc, mNumRows );
-
-        ReadAccess<IndexType> rIA( mIa, loc );
-        ReadAccess<IndexType> rJA( mJa, loc );
-
-        IndexType cnt = getValuePosCol[loc]( wRowIndexes.get(), wValuePos.get(), j,
-                                             rIA.get(), mNumRows, rJA.get(), mNumValues );
-
-        wRowIndexes.resize( cnt );
-        wValuePos.resize( cnt );
-    }
-
-    column.init( ValueType( 0 ), mNumRows );
-
-    // column[ row ] = mValues[ pos ];
-
-    HArrayUtils::gatherImpl( colValues, mValues, valuePos, utilskernel::binary::COPY, loc );
-    HArrayUtils::scatterImpl( column, rowIndexes, true, colValues, utilskernel::binary::COPY, loc );
+    HArrayUtils::buildDenseArray( column, mNumRows, colValues, rowIndexes );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2506,7 +2518,6 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
     template void CSRStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void CSRStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
             const utilskernel::binary::BinaryOp );                          \
-    template void CSRStorage<ValueType>::getColumnImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;           \
     template void CSRStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
             const utilskernel::binary::BinaryOp );                       \
     template void CSRStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
