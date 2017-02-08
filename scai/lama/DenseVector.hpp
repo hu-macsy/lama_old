@@ -179,11 +179,26 @@ public:
     explicit DenseVector( hmemo::ContextPtr context );
 
     /**
+     * @brief creates a not initialized replicated DenseVector of the passed global size.
+     *
+     * @param[in] size  is the global size of the vector
+     */
+    explicit DenseVector( const IndexType size );
+
+    /**
      * @brief creates a not initialized distributed DenseVector of the passed global size.
      *
      * @param[in] distribution  the distribution to use for the new vector.
      */
     explicit DenseVector( dmemo::DistributionPtr distribution );
+
+    /**
+     * @brief create a not initialized replicated DenseVector with a given context
+     *
+     * @param[in] size  is the global size of the vector
+     * @param[in] context  the context to use for the new vector.
+     */
+    DenseVector ( const IndexType size, hmemo::ContextPtr context );
 
     /**
      * @brief creates a not initialized distributed DenseVector of the passed global size.
@@ -493,20 +508,14 @@ public:
      * @return  a non constant reference to the local values of this.
      */
 
-    utilskernel::LArray<ValueType>& getLocalValues()
-    {
-        return mLocalValues;
-    }
+    inline utilskernel::LArray<ValueType>& getLocalValues();
 
     /**
      * @brief get a constant reference to local values of this Dense Vector.
      *
      * @return  a constant reference to the local values of this.
      */
-    const utilskernel::LArray<ValueType>& getLocalValues() const
-    {
-        return mLocalValues;
-    }
+    inline const utilskernel::LArray<ValueType>& getLocalValues() const;
 
     /**
      * @brief Get a reference to the halo temp array of this Dense Vector.
@@ -517,10 +526,7 @@ public:
      * processors. It avoids reallocation of memory for the values.
      */
 
-    utilskernel::LArray<ValueType>& getHaloValues() const
-    {
-        return mHaloValues;
-    }
+    inline utilskernel::LArray<ValueType>& getHaloValues() const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -713,6 +719,26 @@ public:
 Vector::VectorKind _DenseVector::getVectorKind() const
 {
     return Vector::DENSE;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues()
+{
+    return mLocalValues;
+}
+
+template<typename ValueType>
+const utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues() const
+{
+    return mLocalValues;
+}
+
+template<typename ValueType>
+utilskernel::LArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
+{
+    return mHaloValues;
 }
 
 /* ------------------------------------------------------------------------- */

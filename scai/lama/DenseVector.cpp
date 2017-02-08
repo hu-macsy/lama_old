@@ -148,14 +148,35 @@ DenseVector<ValueType>::DenseVector( ContextPtr context ) :
 }
 
 template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const IndexType size ) :
+
+    _DenseVector( size ), 
+    mLocalValues( size )
+
+{
+    SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( size = " 
+                            << size << " ), undefined values" )
+}
+
+template<typename ValueType>
 DenseVector<ValueType>::DenseVector( DistributionPtr distribution ) :
 
     _DenseVector( distribution ), 
     mLocalValues( distribution->getLocalSize() )
 {
-    SCAI_LOG_INFO( logger, "Construct dense vector, size = " << distribution->getGlobalSize()
-                   // << ", type = " << typename(ValueType)
-                   << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
+    SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( dist = " 
+                   << *distribution << "), undefined values" )
+}
+
+template<typename ValueType>
+DenseVector<ValueType>::DenseVector( const IndexType size, ContextPtr context ) : 
+
+    _DenseVector( size, context ), 
+    mLocalValues( size )
+
+{
+    SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( size = " 
+                            << size << " ), undefined values, @ctx = " << *mContext )
 }
 
 template<typename ValueType>
@@ -165,9 +186,8 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, ContextPtr co
     mLocalValues( distribution->getLocalSize() )
 
 {
-    SCAI_LOG_INFO( logger, "Construct dense vector on context = " << context << ", size = " << distribution->getGlobalSize()
-                   // << ", type = " << typename(ValueType)
-                   << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", no initialization" )
+    SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( dist = " 
+                   << *distribution << "), undefined values, @ctx = " << *mContext )
 }
 
 template<typename ValueType>
