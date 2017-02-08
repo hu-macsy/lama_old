@@ -114,6 +114,65 @@ void benchGetRow()
     cout << "Runtime: dense = " << time1 << " seconds, sparse = " << time2 << " seconds" << endl;
 }
 
+/* ----------------------------------------------------------------------------- */
+
+void benchGetCol()
+{
+    ELLSparseMatrix<double> stencilMatrix;
+
+    MatrixCreator::buildPoisson( stencilMatrix, 3, 27, 30, 30, 30 );
+
+    if ( !stencilMatrix.getColDistribution().isReplicated() )
+    {
+        dmemo::DistributionPtr repDist( new dmemo::NoDistribution( stencilMatrix.getNumColumns() ) );
+        stencilMatrix.redistribute( stencilMatrix.getRowDistributionPtr(), repDist );
+    }
+
+    cout << "Poisson matrix: " << stencilMatrix << endl;
+
+    double time1 = Walltime::get();
+
+    DenseVector<double> denseV;
+
+    double res1 = 0;
+
+    { 
+        SCAI_REGION( "Main.Dense" )
+
+        for ( IndexType i = 0; i < stencilMatrix.getNumRows(); ++i )
+        {
+            stencilMatrix.getColumn( denseV, i );
+            Scalar s = denseV.l2Norm();
+            res1 += s.getValue<double>();
+        }
+    }
+
+    time1 = Walltime::get() - time1;
+
+    double time2 = Walltime::get();
+
+    SparseVector<double> sparseV;
+
+    double res2 = 0;
+
+    { 
+        SCAI_REGION( "Main.Sparse" )
+
+        for ( IndexType i = 0; i < stencilMatrix.getNumRows(); ++i )
+        {
+            stencilMatrix.getColumn( sparseV, i );
+            Scalar s = sparseV.l2Norm();
+            res2 += s.getValue<double>();
+        }
+    }
+
+    time2 = Walltime::get() - time2;
+
+    SCAI_ASSERT_EQUAL( res1, res2, "Different results when using dense/sparse vector for getCol" )
+
+    cout << "Runtime: dense = " << time1 << " seconds, sparse = " << time2 << " seconds" << endl;
+}
+
 void benchAdd()
 {
     const IndexType n = 3000000;
@@ -161,5 +220,13 @@ int main( int argc, const char* argv[] )
         benchGetRow();
     }
 
-    benchAdd();
+    if ( true )
+    {
+        benchGetCol();
+    }
+
+    if ( false )
+    {
+        benchAdd();
+    }
 }
