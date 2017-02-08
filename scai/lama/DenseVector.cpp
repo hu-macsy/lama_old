@@ -564,6 +564,7 @@ void DenseVector<ValueType>::sortImpl(
 
     HArray<ValueType>& sortedValues = out->getLocalValues();
 
+    SCAI_REGION_START("DenseVector.sort.initialLocalSort")
     utilskernel::HArrayUtils::sort( localPerm, &sortedValues, inValues, ascending );
 
     if ( localPerm )
@@ -587,11 +588,13 @@ void DenseVector<ValueType>::sortImpl(
             SCAI_LOG_TRACE( logger, "localPerm[" << i << "] = " << rPerm[i] )
         }
     }
+    SCAI_REGION_END("DenseVector.sort.initialLocalSort")
 
     // Determine the splitting values
 
     PartitionId nPartitions = comm.getSize();
 
+    SCAI_REGION_START("DenseVector.sort.determineSplittingValues")
     common::scoped_array<ValueType> splitValues( new ValueType[ nPartitions + 1 ] );
 
     {
@@ -599,6 +602,7 @@ void DenseVector<ValueType>::sortImpl(
         getSplitValues( splitValues.get(), comm, rSortedValues.get(), sortedValues.size(), ascending );
     }
 
+    SCAI_REGION_END("DenseVector.sort.determineSplittingValues")
     common::scoped_array<IndexType> quantities( new IndexType[ nPartitions ] );
 
     // Determine quantities for each processor
@@ -637,6 +641,7 @@ void DenseVector<ValueType>::sortImpl(
     }
 
     // make communication plans for sending data and receiving data
+    SCAI_REGION_START("DenseVector.sort.createCommunicationPlans")
 
     dmemo::CommunicationPlan sendPlan;
 
@@ -651,7 +656,9 @@ void DenseVector<ValueType>::sortImpl(
     LArray<ValueType> newValues;
 
     IndexType newLocalSize = recvPlan.totalQuantity();
+    SCAI_REGION_END("DenseVector.sort.createCommunicationPlans")
 
+    SCAI_REGION_START("DenseVector.sort.exchangeByPlan")
     {
         WriteOnlyAccess<ValueType> recvVals( newValues, newLocalSize );
         ReadAccess<ValueType> sendVals( sortedValues );
@@ -681,9 +688,11 @@ void DenseVector<ValueType>::sortImpl(
             SCAI_LOG_TRACE( logger, comm << ": newPerm[" << i << "] = " << rPerm[i] )
         }
     }
+    SCAI_REGION_END("DenseVector.sort.exchangeByPlan")
 
     // Merge the values received from other processors
 
+    SCAI_REGION_START("DenseVector.sort.mergeReceivedValues")
     HArray<IndexType> mergeOffsets;   // offsets for sorted subarrays in mergesort
 
     {
@@ -707,9 +716,11 @@ void DenseVector<ValueType>::sortImpl(
     {
         utilskernel::HArrayUtils::mergeSort( newValues, mergeOffsets, ascending );
     }
+    SCAI_REGION_END("DenseVector.sort.mergeReceivedValues")
 
     // Create the new general block distribution
 
+    SCAI_REGION_START("DenseVector.sort.newDistributionAndOutput")
     DistributionPtr newDist( new dmemo::GenBlockDistribution( distribution.getGlobalSize(), newLocalSize, distribution.getCommunicatorPtr() ) );
 
     if ( out )
@@ -721,6 +732,7 @@ void DenseVector<ValueType>::sortImpl(
     {
         perm->swap( *localPerm, newDist );
     }
+    SCAI_REGION_END("DenseVector.sort.newDistributionAndOutput")
 }
 
 /* ------------------------------------------------------------------------- */
