@@ -73,7 +73,6 @@ typedef common::shared_ptr<class Vector> VectorPtr;
 
 struct _Vector
 {
-
     /**
      * @brief VectorKind describes if a vector is dense or sparse.
      */
@@ -127,42 +126,27 @@ public:
 
     /** Help class to observe the further use of operator[] for Vector */
 
-    class IndexProxy
+    class VectorElemProxy
     {
     public:
 
         /** Proxy constructed by ref to the array and the index value. */
 
-        IndexProxy( Vector& vector, const IndexType i ) :
+        inline VectorElemProxy( Vector& vector, const IndexType i );
 
-            mVector( vector ),
-            mIndex( i )
-        {
-        }
-
-        /** indexed value proxy can be used to get its value */
-
-        operator Scalar() const
-        {
-            return mVector.getValue( mIndex );
-        }
+        /** Proxy for a vector element can be used to get its value, type conversion to Scalar
+         *
+         *  @returns current value of the vector element as a Scalar
+         */
+        inline operator Scalar() const;
 
         /** indexed value proxy can be assigned a scalar */
 
-        IndexProxy& operator= ( Scalar val )
-        {
-            mVector.setValue( mIndex, val );
-            return *this;
-        }
+        inline VectorElemProxy& operator= ( Scalar val );
 
         /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
 
-        IndexProxy& operator= ( const IndexProxy& other )
-        {
-            Scalar tmp = other.mVector.getValue( other.mIndex );
-            mVector.setValue( mIndex, tmp );
-            return *this;
-        }
+        inline VectorElemProxy& operator= ( const VectorElemProxy& other );
 
     private:
 
@@ -348,9 +332,9 @@ public:
         return getValue( i );
     }
 
-    IndexProxy operator[]( const IndexType i )
+    VectorElemProxy operator[]( const IndexType i )
     {
-        return IndexProxy( *this, i );
+        return VectorElemProxy( *this, i );
     }
 
     Scalar operator[]( const IndexType i ) const
@@ -576,6 +560,8 @@ public:
      * have the same value type.
      */
     virtual void swap( Vector& other ) = 0;
+
+    /** Override default implementation of Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -886,6 +872,32 @@ private:
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */
+
+Vector::VectorElemProxy::VectorElemProxy( Vector& vector, const IndexType i ) :
+
+    mVector( vector ),
+    mIndex( i )
+
+{
+}
+
+Vector::VectorElemProxy::operator Scalar() const
+{
+    return mVector.getValue( mIndex );
+}
+
+Vector::VectorElemProxy& Vector::VectorElemProxy::operator= ( Scalar val )
+{
+    mVector.setValue( mIndex, val );
+    return *this;
+}
+
+Vector::VectorElemProxy& Vector::VectorElemProxy::operator= ( const Vector::VectorElemProxy& other )
+{
+    Scalar tmp = other.mVector.getValue( other.mIndex );
+    mVector.setValue( mIndex, tmp );
+    return *this;
+}
 
 IndexType Vector::size() const
 {
