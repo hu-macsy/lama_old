@@ -487,6 +487,26 @@ public:
         const BucketType nb,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Determine the inverse of a permutation
+     *  
+     *  @param[in] perm is a permutation of the index values 0, .., n-1 
+     *  @param[out] invPerm contains the inverse permutation 
+     *  @param[in] prefLoc is the preferred context where computation should be done
+     *  
+     *  This routine throws an exception, if perm is not a valid permutation
+     *
+     *  \code
+     *     perm    = { 0, 1, 3, 2, 5, 6, 7, 4 } ;
+     *     invPerm = { 0, 1, 3, 2, 7, 4, 5, 6 } ;
+     *     perm[invPerm] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+     *     invPerm[perm] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+     *  \endcode
+     */
+    static void inversePerm( 
+        hmemo::HArray<IndexType>& invPerm,
+        const hmemo::HArray<IndexType>& perm,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Sorting of an array where its subarrays are already sorted
      *
      *  @param[in,out] values array to be sorted

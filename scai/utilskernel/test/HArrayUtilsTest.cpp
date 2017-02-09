@@ -651,6 +651,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( inversePermTest )
+{
+    IndexType valuesPerm[]   = { 1, 0, 3, 2, 5, 6, 7, 4 };
+    IndexType expectedPerm[] = { 1, 0, 3, 2, 7, 4, 5, 6 };
+
+    ContextPtr loc = Context::getContextPtr();
+
+    const IndexType n = sizeof( valuesPerm ) / sizeof( IndexType );
+    LArray<IndexType> perm( n, valuesPerm, loc );
+    LArray<IndexType> expectedInvPerm( n, expectedPerm, loc );
+    
+    LArray<IndexType> invPerm;
+
+    HArrayUtils::inversePerm( invPerm, perm, loc );
+    BOOST_CHECK_EQUAL( expectedInvPerm.maxDiffNorm( invPerm ), IndexType( 0 ) );
+
+    perm[0] = 0;
+
+    // now is perm no more a permutation
+
+    BOOST_CHECK_THROW (
+    {
+        HArrayUtils::inversePerm( invPerm, perm, loc );
+    }, 
+    common::Exception );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();

@@ -1358,6 +1358,51 @@ void HArrayUtils::bucketCount(
 
 /* --------------------------------------------------------------------------- */
 
+void HArrayUtils::inversePerm(
+    hmemo::HArray<IndexType>& invPerm,
+    const hmemo::HArray<IndexType>& perm,
+    hmemo::ContextPtr prefLoc )
+{
+    IndexType n = perm.size();
+
+    if ( n == 0 )
+    {
+        invPerm.clear();  // reset it to zero, done
+        return;
+    }
+
+    SCAI_ASSERT_NE_ERROR( &invPerm, &perm, "inversePerm: alias not supported" )
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = perm.getValidContext();
+    }
+
+    static LAMAKernel<UtilKernelTrait::setInversePerm> setInversePerm;
+    static LAMAKernel<UtilKernelTrait::setVal<IndexType> > setVal;
+    static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
+
+    setInversePerm.getSupportedContext( loc, setVal, reduce );
+
+    // it is also checked that perm is really a permutation, otherwise invPerm would contain strange values
+
+    {
+        WriteOnlyAccess<IndexType> wInversePerm( invPerm, loc, n );
+        ReadAccess<IndexType> rPerm( perm, loc );
+        SCAI_CONTEXT_ACCESS( loc )
+        setVal[loc]( wInversePerm.get(), n, n, utilskernel::binary::COPY );
+        setInversePerm[loc]( wInversePerm.get(), rPerm.get(), n );
+        IndexType maxIndex = reduce[loc]( wInversePerm.get(), n, 0, utilskernel::binary::MAX );
+        SCAI_ASSERT_ERROR( maxIndex < n, "Perm array does not cover all row indexes, #n = " << n );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void HArrayUtils::mergeSort(
     hmemo::HArray<ValueType>& values,
