@@ -78,6 +78,10 @@ public:
 
     Grid( const IndexType n1, const IndexType n2, const IndexType n3 );
 
+    /** Constructor of a four-dimensional grid. */
+
+    Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
+
     /** Constructor of a n-dimensioal grid.
      *
      *  @param[in] ndims is the number of dimensions
@@ -175,6 +179,16 @@ Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3 )
     mSize[0] = n1;
     mSize[1] = n2;
     mSize[2] = n3;
+}
+
+Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 )
+{
+    mNDims = 4;
+
+    mSize[0] = n1;
+    mSize[1] = n2;
+    mSize[2] = n3;
+    mSize[3] = n4;
 }
 
 Grid::Grid( const IndexType nDims, const IndexType size[] )
