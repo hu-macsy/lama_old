@@ -780,28 +780,41 @@ void SparseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColI
 {
     SCAI_REGION( "Mat.Sp.getCol" )
 
+    SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex << " )" )
+
     // if col is not a sparse vector use a temporary sparse vector
 
     if ( col.getVectorKind() != Vector:: SPARSE )
     {
-        SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex << ") requires temporary" )
+        SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex 
+                               << ") requires temporary vector for col, kind = " << col.getVectorKind() )
         SparseVector<ValueType> spCol;
         getColumn( spCol, globalColIndex );
         col.assign( spCol );           // type conversion or sparse/dense conversion
         return;
     }
 
+    SCAI_ASSERT_DEBUG( dynamic_cast<_SparseVector*>( &col ), "col not _SparseVector" )
+
     _SparseVector& spCol = reinterpret_cast<_SparseVector&>( col );
 
     spCol.allocate( getRowDistributionPtr() );   // resizes local arrays to 0
+
+    // const_cast is safe here as we guarantee consistency with size/distriubiton of spCol
+
+    HArray<IndexType>& rowIndexes = const_cast<HArray<IndexType>&>( spCol.getNonZeroIndexes() );
+    _HArray&           rowValues  = const_cast<_HArray&>( spCol.getNonZeroValues() );
+
+    SCAI_ASSERT_EQ_DEBUG( 0, rowIndexes.size(), "allocate of spCol did not clear" );
+    SCAI_ASSERT_EQ_DEBUG( 0, rowValues.size(), "allocate of spCol did not clear" );
 
     IndexType jLocal = getColDistribution().global2local( globalColIndex );
 
     if ( nIndex != jLocal )
     {
-        // const_cast: we know what we do
-        mLocalData->getSparseColumn( const_cast<HArray<IndexType>&>( spCol.getNonZeroIndexes() ), 
-                                     const_cast<_HArray&>( spCol.getNonZeroValues() ), jLocal );
+        // column belongs to local storage
+
+        mLocalData->getSparseColumn( rowIndexes, rowValues, jLocal );
     }
     else
     {
@@ -809,14 +822,9 @@ void SparseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColI
 
         if ( nIndex != jHalo )
         {
-            // const_cast: we know what we do
-            mHaloData->getSparseColumn( const_cast<HArray<IndexType>&>( spCol.getNonZeroIndexes() ), 
-                                        const_cast<_HArray&>( spCol.getNonZeroValues() ), jLocal );
-        }
-        else
-        {
-            SCAI_ASSERT_EQ_DEBUG( 0, spCol.getNonZeroIndexes().size(), "serious mismatch" );
-            SCAI_ASSERT_EQ_DEBUG( 0, spCol.getNonZeroValues().size(), "serious mismatch" );
+            // column belongs to halo storage
+
+            mHaloData->getSparseColumn( rowIndexes, rowValues, jHalo );
         }
     }
 }
