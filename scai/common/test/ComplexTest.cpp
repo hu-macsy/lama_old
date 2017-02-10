@@ -62,14 +62,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructor, ValueType, scai_complex_test_types )
 {
     ValueType assignee( 2 );
     ComplexFloat f( assignee );
-    BOOST_CHECK_CLOSE( f.real(), 2, TypeTraits<float>::eps1() );
-    BOOST_CHECK_CLOSE( f.imag(), 0, TypeTraits<float>::eps1() );
+    BOOST_CHECK_CLOSE( f.real(), 2, 0.01 );
+    BOOST_CHECK_SMALL( f.imag(), TypeTraits<float>::eps1() );
     ComplexDouble d( assignee );
-    BOOST_CHECK_CLOSE( d.real(), 2, TypeTraits<double>::eps1() );
-    BOOST_CHECK_CLOSE( d.imag(), 0, TypeTraits<double>::eps1() );
+    BOOST_CHECK_CLOSE( d.real(), 2, 0.00001 );
+    BOOST_CHECK_SMALL( d.imag(), TypeTraits<double>::eps1() );
     ComplexLongDouble l( assignee );
-    BOOST_CHECK_CLOSE( l.real(), 2, TypeTraits<long double>::eps1() );
-    BOOST_CHECK_CLOSE( l.imag(), 0, TypeTraits<long double>::eps1() );
+    BOOST_CHECK_CLOSE( l.real(), 2, 0.000001 );
+    BOOST_CHECK_SMALL( l.imag(), TypeTraits<long double>::eps1() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -79,16 +79,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, ValueType, scai_complex_test_types )
     ValueType assignee( 2 );
     ComplexFloat f( 3 );
     f = assignee;
-    BOOST_CHECK_CLOSE( f.real(), 2, TypeTraits<float>::eps1() );
-    BOOST_CHECK_CLOSE( f.imag(), 0, TypeTraits<float>::eps1() );
+    BOOST_CHECK_CLOSE( f.real(), 2, 0.001 );
+    BOOST_CHECK_SMALL( f.imag(), TypeTraits<float>::eps1() );
     ComplexDouble d( 4 );
     d = assignee;
-    BOOST_CHECK_CLOSE( d.real(), 2, TypeTraits<double>::eps1() );
-    BOOST_CHECK_CLOSE( d.imag(), 0, TypeTraits<double>::eps1() );
+    BOOST_CHECK_CLOSE( d.real(), 2, 0.00001 );
+    BOOST_CHECK_SMALL( d.imag(), TypeTraits<double>::eps1() );
     ComplexLongDouble l( 5 );
     l = assignee;
-    BOOST_CHECK_CLOSE( l.real(), 2, TypeTraits<long double>::eps1() );
-    BOOST_CHECK_CLOSE( l.imag(), 0, TypeTraits<long double>::eps1() );
+    BOOST_CHECK_CLOSE( l.real(), 2, 0.0000001 );
+    BOOST_CHECK_SMALL( l.imag(), TypeTraits<long double>::eps1() );
 }
 
 /* --------------------------------------------------------------------- */
@@ -201,11 +201,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( div, ValueType, scai_complex_test_types )
     y = ValueType( c, d );
     // operator /
     r = x / y;
-    BOOST_CHECK_CLOSE( r.real(), re, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( r.imag(), im, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( r.real(), re, 0.000001 );
+    BOOST_CHECK_CLOSE( r.imag(), im, 0.000001 );
     // operator /=
     x /= y;
-    BOOST_CHECK( r == x );
+    BOOST_CHECK_CLOSE( r.real(), x.real(), 0.0000001 );
+    BOOST_CHECK_CLOSE( r.imag(), x.imag(), 0.0000001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -215,7 +216,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( output, ValueType, scai_complex_test_types )
     ValueType x( 2, -3 );
     std::stringstream s;
     s << x;
-    BOOST_CHECK( s.str() == "2 -3" );
+    BOOST_CHECK_EQUAL( s.str(), "2 -3" );
 }
 
 /* --------------------------------------------------------------------- */
@@ -227,13 +228,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( input, ValueType, scai_complex_test_types )
     // real and imaginary part set
     std::stringstream s1( "14 -893" );
     s1 >> x;
-    BOOST_CHECK_CLOSE( x.real(), 14, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( x.imag(), -893, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( x.real(), 14, 0.00001 );
+    BOOST_CHECK_CLOSE( x.imag(), -893, 0.00001 );
     // just real part set
     std::stringstream s2( "23" );
     s2 >> x;
-    BOOST_CHECK_CLOSE( x.real(), 23, TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( x.imag(), 0, TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( x.real(), 23, 0.00001 );
+    BOOST_CHECK_EQUAL( x.imag(), AbsType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -246,14 +247,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conj, ValueType, scai_complex_test_types )
     x = ValueType( 2, -3 );
     r = ValueType( 2, 3 );
     x = Math::conj( x );
-    BOOST_CHECK_CLOSE( x.real(), r.real(), TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( x.imag(), r.imag(), TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( x.real(), r.real(), 0.00001 );
+    BOOST_CHECK_CLOSE( x.imag(), r.imag(), 0.00001 );
     // negativ real, negativ imag
     r = ValueType( -14, -3 );
     x = ValueType( -14, 3 );
     x = Math::conj( x );
-    BOOST_CHECK_CLOSE( x.real(), r.real(), TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( x.imag(), r.imag(), TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( x.real(), r.real(), 0.00001 );
+    BOOST_CHECK_CLOSE( x.imag(), r.imag(), 0.00001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -266,7 +267,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( abs, ValueType, scai_complex_test_types )
     AbsType xa = 3;
     AbsType xb = -4;
     AbsType r = Math::sqrt( xa * xa + xb * xb );
-    BOOST_CHECK_CLOSE( abs_val, r, TypeTraits<ValueType>::eps1() );
+    BOOST_CHECK_CLOSE( abs_val, r, 0.00001 );
 }
 
 /* --------------------------------------------------------------------- */
@@ -279,20 +280,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrt, ValueType, scai_complex_test_types )
     x = ValueType( -1, 0 );
     sqrt_val = Math::sqrt( x );
     r = ValueType( 0, 1 );
-    BOOST_CHECK_CLOSE( sqrt_val.real(), r.real(), TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( sqrt_val.imag(), r.imag(), TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_SMALL( sqrt_val.real(), TypeTraits<AbsType>::small() );
+    BOOST_CHECK_CLOSE( sqrt_val.imag(), r.imag(), 0.00001 );
     // sqrt from 1 --> 1
     x = ValueType( 1, 0 );
     sqrt_val = Math::sqrt( x );
     r = ValueType( 1, 0 );
-    BOOST_CHECK_CLOSE( sqrt_val.real(), r.real(), TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( sqrt_val.imag(), r.imag(), TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( sqrt_val.real(), r.real(), 0.00001 );
+    BOOST_CHECK_SMALL( sqrt_val.imag(), TypeTraits<AbsType>::small() );
     // sqrt from 3 + 4i --> 1
     x = ValueType( 3, 4 );
     sqrt_val = Math::sqrt( x );
     r = ValueType( 2, 1 );
-    BOOST_CHECK_CLOSE( sqrt_val.real(), r.real(), TypeTraits<AbsType>::eps1() );
-    BOOST_CHECK_CLOSE( sqrt_val.imag(), r.imag(), TypeTraits<AbsType>::eps1() );
+    BOOST_CHECK_CLOSE( sqrt_val.real(), r.real(), 0.000001 );
+    BOOST_CHECK_CLOSE( sqrt_val.imag(), r.imag(), 0.000001 );
 }
 
 /* --------------------------------------------------------------------- */
