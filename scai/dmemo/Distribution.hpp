@@ -282,6 +282,65 @@ public:
      */
     virtual IndexType getBlockDistributionSize() const = 0;
 
+    /** 
+     * @brief This method sets up local data structures in such a way that afterwards on each 
+     *        partition/processor it is possible to get any owner/local index for any global index
+     *        without communication.
+     *
+     * Most distributions can do any addressing by closed formulas ( block, cyclic, grid distributions )
+     * but general distributions have no information about the ownership of global indexes that are not
+     * local. If a general distribution is used in dense matrices for the column distribution it is essential 
+     * to know for all indexes where the data is mapped to.
+     */
+    virtual void enableAnyAddressing() const = 0;
+
+    /** Get the local size of any partititon. */
+
+    virtual IndexType getAnyLocalSize( const PartitionId partition ) const = 0;
+
+    /** Get the owner for any global index, same as findOwner but here no communication is guaranteed */
+
+    virtual IndexType getAnyOwner( const IndexType globalIndex ) const = 0;
+
+    /** Get the local index for any global index, owner is not really required but might be helpful if already available. */
+
+    virtual IndexType getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const = 0;
+
+    /** Get the global index for any local index on any partition */
+
+    virtual IndexType getAnyGlobalIndex( const IndexType locaIndex, const PartitionId owner ) const = 0;
+
+    /** This method returns the permutation of global indexes that sorts them by the different owners
+     *  (same as bucket sort of array with all owners).
+     *
+     *  @param[out] offsets local sizes of all partitions as offset array, size is number of partitions + 1
+     *  @param[out] perm  contains all global indexes sorted by the owners
+     *
+     *  /code
+     *     PartitionId p = ... // some partition
+     *     // traverse all global indexes belonging to partition p
+     *     for ( IndexType k = offsets[p]; k < offsets[p+1]; ++k )
+     *     {  
+     *         IndexType localIndex = k - offsets[p];
+     *         IndexType globalIndex = perm[k];  
+     *         ....
+     *     }
+     *  /endcode
+     *
+     *  \code
+     *     getAnyGlobalIndex( localIndex, owner ) == perm[ offsets[owner] + localIndex]
+     *  \endcode
+     *
+     *  Furthermore, with these arrays it is easy to implement getAnyLocalIndex:
+     * 
+     *  \code
+     *     getAnyLocalIndex( globalIndex, owner ) == perm[globalIndex] - offsets[owner]
+     *  \endcode
+     */
+    virtual void local2GlobalPerm( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm ) const;
+
+    virtual void global2LocalPerm( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm ) const;
+
     /**
      * Virtual method to check two distributions for equality.
      *

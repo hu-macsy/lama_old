@@ -111,6 +111,43 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
 
 /* ---------------------------------------------------------------------- */
 
+void GridDistribution::setLocalGrid( Grid& localGrid, const PartitionId rank ) const
+{
+    localGrid = mGlobalGrid;
+
+    if ( rank < mProcGrid.size() )
+    {
+        IndexType procPos[SCAI_GRID_MAX_DIMENSION];
+
+        mProcGrid.gridPos( procPos, rank );
+
+        for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+        {
+            IndexType lb, ub;
+
+            BlockDistribution::getLocalRange( lb, ub, mGlobalGrid.size( idim ), procPos[idim], mProcGrid.size( idim ) );
+
+            if ( lb <= ub )
+            {
+                localGrid.setSize( idim, ub - lb );
+            }
+            else
+            {
+                localGrid.setSize( idim, 0 );
+            }
+        }
+    }
+    else
+    {
+        for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+        {
+            localGrid.setSize( idim, 0 );
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
 void GridDistribution::localize()
 {
     // compute the block sizes for each grid dimension
@@ -364,6 +401,84 @@ void GridDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexe
     {
         wGlobalIndexes[i] = local2global( i );
     }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GridDistribution::enableAnyAddressing() const
+{
+    // nothing to do, we have closed formulas
+}
+
+IndexType GridDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    Grid localGrid( mProcGrid );
+
+    setLocalGrid( localGrid, rank );
+
+    return localGrid.size();
+}
+
+PartitionId GridDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    // same as findOwner
+
+    IndexType globalGridPos[ SCAI_GRID_MAX_DIMENSION ];
+
+    mGlobalGrid.gridPos( globalGridPos, globalIndex );
+
+    IndexType gridOwner[ SCAI_GRID_MAX_DIMENSION ];
+
+    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    {
+        gridOwner[idim] = globalGridPos[idim] / mBlockSize[ idim ];
+    }
+
+    IndexType owner = mProcGrid.linearPos( gridOwner );
+
+    return owner;
+}
+
+IndexType GridDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
+{
+    IndexType gridPos[ SCAI_GRID_MAX_DIMENSION ];
+
+    mGlobalGrid.gridPos( gridPos, globalIndex );
+
+    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    {   
+        gridPos[idim] = gridPos[idim] % mBlockSize[ idim ];
+    }
+
+    Grid localGrid( mGlobalGrid );
+
+    setLocalGrid( localGrid, owner );
+
+    IndexType localIndex = localGrid.linearPos( gridPos );
+
+    return localIndex;
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType GridDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner) const
+{
+    Grid localGrid( mGlobalGrid );
+
+    setLocalGrid( localGrid, owner );
+
+    IndexType gridPos[ SCAI_GRID_MAX_DIMENSION ];
+    IndexType gridRank[ SCAI_GRID_MAX_DIMENSION ];
+
+    localGrid.gridPos( gridPos, localIndex );
+    mProcGrid.gridPos( gridRank, owner );
+
+    for ( IndexType idim = 0; idim < mGlobalGrid.ndims(); ++idim )
+    {   
+        gridPos[idim] = gridPos[idim] + mBlockSize[idim] * gridRank[idim];
+    }
+
+    return mGlobalGrid.linearPos( gridPos );
 }
 
 /* ---------------------------------------------------------------------- */

@@ -292,6 +292,42 @@ IndexType CyclicDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+void CyclicDistribution::enableAnyAddressing() const
+{
+    // nothing to do as we can compute owners, local indexes by closed formulas
+}
+
+IndexType CyclicDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    return getPartitionSize( rank );
+}
+
+PartitionId CyclicDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    return getOwner( globalIndex );
+}
+
+IndexType CyclicDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId ) const
+{
+    IndexType size = mCommunicator->getSize();
+    IndexType globalChunkIndex = globalIndex / mChunkSize;
+    IndexType localChunkIndex = globalChunkIndex / size;
+    IndexType localIndex = localChunkIndex * mChunkSize + globalIndex % mChunkSize;
+    return localIndex;
+}
+
+IndexType CyclicDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
+{
+    IndexType size = mCommunicator->getSize();
+
+    IndexType localChunk  = localIndex / mChunkSize;
+    IndexType chunkPos    = localIndex - mChunkSize * localChunk; // pos in chunk
+    IndexType globalChunk = localChunk * size + owner;
+    return globalChunk + chunkPos;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool CyclicDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;

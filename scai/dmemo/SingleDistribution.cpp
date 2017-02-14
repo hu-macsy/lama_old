@@ -170,6 +170,36 @@ void SingleDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInde
 
 /* ---------------------------------------------------------------------- */
 
+void SingleDistribution::enableAnyAddressing() const
+{
+    // nothing to do, there are simple formulas to compute it
+}
+
+IndexType SingleDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    return rank == mOwner ? getGlobalSize() : 0;
+}
+
+PartitionId SingleDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, getGlobalSize(), "illegal globalIndex" )
+    return mOwner;
+}
+
+IndexType SingleDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId ) const
+{
+    return globalIndex;
+}
+
+IndexType SingleDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId rank ) const
+{
+    SCAI_ASSERT_EQ_DEBUG( rank, mOwner, "only elements @ partition " << mOwner << ", is single owner" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, getGlobalSize(), "illegal local index" )
+    return localIndex;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool SingleDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;

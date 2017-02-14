@@ -133,6 +133,26 @@ public:
         return "BLOCK";
     }
 
+    /** Implementation of pure method Distribution::enableAnyAddressing */
+
+    virtual void enableAnyAddressing() const;
+
+    /** Implementation of pure method Distribution::getAnyLocalSize */
+
+    virtual IndexType getAnyLocalSize( const PartitionId partition ) const;
+
+    /** Implementation of pure method Distribution::getAnyOwner */
+
+    virtual PartitionId getAnyOwner( const IndexType globalIndex ) const;
+
+    /** Implementation of pure method Distribution::getAnyLocalIndex */
+
+    virtual IndexType getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const;
+
+    /** Implementation of pure method Distribution::getAnyGlobalIndex */
+
+    virtual IndexType getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const;
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

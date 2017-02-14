@@ -179,6 +179,98 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( anyAddressingTest )
+{
+    TestDistributions allDist( 12 );   // allows for grid 2 x 2 x 3
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        DistributionPtr dist = allDist[i];
+
+        dist->enableAnyAddressing();
+
+        IndexType nGlobal = dist->getGlobalSize();
+        IndexType nP      = dist->getCommunicator().getSize();
+
+        // own counter array to check for good local indexes on each partition
+
+        common::scoped_array<IndexType> counts( new IndexType[nP] );
+ 
+        for ( IndexType iP = 0; iP < nP; ++iP )
+        {
+            counts[iP] = 0;
+        }
+
+        for ( IndexType globalIndex = 0; globalIndex < nGlobal; ++globalIndex )
+        {
+            PartitionId owner = dist->getAnyOwner( globalIndex );
+            BOOST_CHECK( owner < nP );
+            PartitionId localIndex = dist->getAnyLocalIndex( globalIndex, owner );
+            BOOST_CHECK_EQUAL( counts[owner], localIndex );
+            counts[owner]++;
+            PartitionId globalIndex1 = dist->getAnyGlobalIndex( localIndex, owner );
+            BOOST_CHECK_EQUAL( globalIndex, globalIndex1 );
+        }
+
+        for ( IndexType iP = 0; iP < nP; ++iP )
+        {
+            BOOST_CHECK_EQUAL( counts[iP], dist->getAnyLocalSize( iP ) );
+        }
+
+        // now check for correct permutations
+
+        utilskernel::LArray<IndexType> offsets;
+        utilskernel::LArray<IndexType> perm;
+
+        dist->global2LocalPerm( offsets, perm );
+
+        BOOST_REQUIRE_EQUAL( nP + 1, offsets.size() );
+        BOOST_REQUIRE_EQUAL( nGlobal, perm.size() );
+
+        for ( IndexType iP = 0; iP < nP; ++iP )
+        {
+            BOOST_CHECK_EQUAL( counts[iP], offsets[iP + 1] - offsets[iP] );
+        }
+
+        for ( IndexType globalIndex = 0; globalIndex < nGlobal; ++globalIndex )
+        {
+            PartitionId owner = dist->getAnyOwner( globalIndex );
+            IndexType localIndex1 = dist->getAnyLocalIndex( globalIndex, owner );
+            IndexType localIndex2 = perm[ globalIndex ] - offsets[owner];
+            SCAI_LOG_TRACE( logger, "Global index = " << globalIndex << ", owner = " << owner 
+                               << ", local1 = " << localIndex1 << ", local2 = " << localIndex2 )
+            BOOST_CHECK_EQUAL( localIndex1, localIndex2 );
+        }
+
+        BOOST_REQUIRE_EQUAL( nP + 1, offsets.size() );
+        BOOST_REQUIRE_EQUAL( nGlobal, perm.size() );
+
+        dist->local2GlobalPerm( offsets, perm );
+
+        for ( IndexType iP = 0; iP < nP; ++iP )
+        {
+            BOOST_CHECK_EQUAL( counts[iP], offsets[iP + 1] - offsets[iP] );
+        }
+
+        for ( IndexType iP = 0; iP < nP; ++iP )
+        {
+            IndexType nLocal = dist->getAnyLocalSize( iP );
+            IndexType offset = offsets[iP];
+
+            for ( IndexType localIndex = 0; localIndex < nLocal; ++localIndex )
+            {
+                IndexType globalIndex1 = dist->getAnyGlobalIndex( localIndex, iP );
+                IndexType globalIndex2 = perm[localIndex + offset];
+                SCAI_LOG_TRACE( logger, "iP = " << iP << ", local index = " << localIndex
+                                    << ", global1 = " << globalIndex1 << ", global2 = " << globalIndex2 )
+                BOOST_CHECK_EQUAL( globalIndex1, globalIndex2 );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( computeOwnersTest )
 {
     TestDistributions allDist( 17 );

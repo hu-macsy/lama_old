@@ -153,6 +153,26 @@ public:
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
+    /** Implementation of pure method Distribution::enableAnyAddressing */
+
+    virtual void enableAnyAddressing() const;
+
+    /** Implementation of pure method Distribution::getAnyLocalSize */
+
+    virtual IndexType getAnyLocalSize( const PartitionId partition ) const;
+
+    /** Implementation of pure method Distribution::getAnyOwner */
+
+    virtual PartitionId getAnyOwner( const IndexType globalIndex ) const;
+
+    /** Implementation of pure method Distribution::getAnyLocalIndex */
+
+    virtual IndexType getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const;
+
+    /** Implementation of pure method Distribution::getAnyGlobalIndex */
+
+    virtual IndexType getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const;
+
     /** Static method required for create to use in Distribution::Register */
 
     static Distribution* create( const DistributionArguments args );
@@ -176,6 +196,10 @@ protected:
 private:
 
     GridDistribution(); // disable default constructor as it has no size
+
+    // Method to determine the local grid for any processor rank
+
+    void setLocalGrid( common::Grid& localGrid, const PartitionId rank ) const;
 
     void localize();    // help routine to compute block sizes and local dimensions
 

@@ -69,23 +69,25 @@ void GenBlockDistribution::setOffsets(
     const PartitionId numPartitions,
     const IndexType localSizes[] )
 {
-    mOffsets.reset( new IndexType[numPartitions] );
+    mOffsets.reset( new IndexType[numPartitions + 1] );
     IndexType sumSizes = 0;
+
+    mOffsets[0] = 0;   // just filling element for more convenient use of offset array
 
     for ( PartitionId p = 0; p < numPartitions; p++ )
     {
         sumSizes += localSizes[p];
-        mOffsets[p] = sumSizes;
+        mOffsets[p + 1] = sumSizes;
         SCAI_LOG_TRACE( logger,
-                        "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p] )
+                        "Partition " << p << ": local size =  " << localSizes[p] << ", offset = " << mOffsets[p + 1] )
     }
 
     SCAI_ASSERT_EQUAL( sumSizes, getGlobalSize(), "sum over local sizes must be global size" )
 
     // mUB is first element not in the local range
 
-    mUB = mOffsets[rank];
-    mLB = mOffsets[rank] - localSizes[rank];
+    mUB = mOffsets[rank + 1];
+    mLB = mOffsets[rank];
 }
 
 /* ---------------------------------------------------------------------- */
@@ -105,9 +107,9 @@ void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const std::vector<IndexType>& localSizes,
-    const CommunicatorPtr communicator )
+    const CommunicatorPtr communicator ) : 
 
-    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] )
+    Distribution( globalSize, communicator )
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
@@ -124,9 +126,10 @@ GenBlockDistribution::GenBlockDistribution(
     const IndexType firstGlobalIdx,
     const IndexType lastGlobalIdx,
     bool,
-    const CommunicatorPtr communicator )
+    const CommunicatorPtr communicator ) : 
 
-    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] )
+    Distribution( globalSize, communicator ) 
+
 {
     SCAI_ASSERT_LE_ERROR( firstGlobalIdx, lastGlobalIdx, "illegal local range" )
 
@@ -143,8 +146,10 @@ GenBlockDistribution::GenBlockDistribution(
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const IndexType localSize,
-    const CommunicatorPtr communicator )
-    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] )
+    const CommunicatorPtr communicator ) : 
+
+    Distribution( globalSize, communicator )
+
 {
     int size = mCommunicator->getSize();
     int rank = mCommunicator->getRank();
@@ -156,9 +161,10 @@ GenBlockDistribution::GenBlockDistribution(
 GenBlockDistribution::GenBlockDistribution(
     const IndexType globalSize,
     const float weight,
-    const CommunicatorPtr communicator )
+    const CommunicatorPtr communicator ) : 
 
-    : Distribution( globalSize, communicator ), mOffsets( new IndexType[mCommunicator->getSize()] )
+    Distribution( globalSize, communicator )
+
 {
     PartitionId size = mCommunicator->getSize();
     PartitionId rank = mCommunicator->getRank();
@@ -179,22 +185,20 @@ GenBlockDistribution::GenBlockDistribution(
 
     SCAI_LOG_INFO( logger,
                    "GenBlockDistribution of " << getGlobalSize() << " elements" << ", total weight = " << totalWeight )
-    mOffsets.reset( new IndexType[size] );
+
+    mOffsets.reset( new IndexType[size+1] );
     float sumWeight = 0.0f;
+
+    mOffsets[0] = 0;
 
     for ( PartitionId p = 0; p < size; p++ )
     {
         sumWeight += allWeights[p];
-        mOffsets[p] = static_cast<IndexType>( sumWeight / totalWeight * globalSize + 0.5 );
+        mOffsets[p + 1] = static_cast<IndexType>( sumWeight / totalWeight * globalSize + 0.5 );
     }
 
-    mLB = 0;
-    mUB = mOffsets[rank];
-
-    if ( rank > 0 )
-    {
-        mLB = mOffsets[rank - 1];
-    }
+    mLB = mOffsets[rank];
+    mUB = mOffsets[rank + 1];
 
     SCAI_LOG_INFO( logger, *this << " constructed by weight factors" )
 }
@@ -218,8 +222,8 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
 {
     // owner of an index can be computed by each processor without communication
 
-    PartitionId first = 0;
-    PartitionId last  = mCommunicator->getSize() - 1;
+    PartitionId first = 1;
+    PartitionId last  = mCommunicator->getSize();
 
     if ( ! common::Utils::validIndex( globalIndex, mOffsets[last] ) )
     {
@@ -247,7 +251,7 @@ PartitionId GenBlockDistribution::getOwner( const IndexType globalIndex ) const
         }
     }
 
-    return first;
+    return first - 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -326,6 +330,41 @@ IndexType GenBlockDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+void GenBlockDistribution::enableAnyAddressing() const
+{
+    // done, here we have closed formulas
+}
+
+IndexType GenBlockDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rank, mCommunicator->getSize(), "illegal rank" )
+
+    return mOffsets[rank + 1 ] - mOffsets[rank];
+}
+
+PartitionId GenBlockDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    return getOwner( globalIndex );
+}
+
+IndexType GenBlockDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, mGlobalSize, "illegal index for distribution" )
+
+    // here the owner is very helpful
+
+    return globalIndex - mOffsets[ owner ];
+}
+
+IndexType GenBlockDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId rank ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, getAnyLocalSize( rank ), "Illegal local index for rank = " << rank )
+
+    return localIndex + mOffsets[ rank ];
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool GenBlockDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;
@@ -346,7 +385,7 @@ bool GenBlockDistribution::isEqual( const Distribution& other ) const
 
     bool equal = true;
 
-    for ( PartitionId p = 0; p < mCommunicator->getSize(); ++p )
+    for ( PartitionId p = 0; p < mCommunicator->getSize() + 1; ++p )
     {
         if ( mOffsets[p] != otherBlock.mOffsets[p] )
         {

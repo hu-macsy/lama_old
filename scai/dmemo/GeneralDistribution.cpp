@@ -463,6 +463,56 @@ void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInd
     utilskernel::HArrayUtils::assign( myGlobalIndexes, mLocal2Global );
 }
 
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::enableAnyAddressing() const
+{
+    // compute mAllOwners
+
+    HArray<IndexType> indexes;   // will contain all column indexes to get all owners
+  
+    utilskernel::HArrayUtils::setOrder( indexes, mGlobalSize );
+
+    Distribution::computeOwners( mAllOwners, indexes );
+
+    // bucket sort the owners, gives offsets and permutation to block values according to owners
+
+    utilskernel::HArrayUtils::bucketSort( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
+    utilskernel::HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
+}
+
+IndexType GeneralDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    SCAI_ASSERT( mAllLocalOffsets.size() > 0, "any addressing not enabled" )
+
+    return mAllLocalOffsets[ rank + 1] - mAllLocalOffsets[rank];
+}
+
+PartitionId GeneralDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    SCAI_ASSERT( mAllOwners.size() > 0, "any addressing not enabled" )
+
+    return mAllOwners[ globalIndex ];
+}
+
+IndexType GeneralDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+
+    // here the owner is important as local index  requires size offsets
+
+    return mAllGlobal2Local[ globalIndex ] - mAllLocalOffsets[ owner ];
+}
+
+IndexType GeneralDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+
+    // here the owner is important as local index  requires size offsets
+
+    return mAllLocal2Global[ localIndex + mAllLocalOffsets[ owner ] ];
+}
+
 } /* end namespace dmemo */
 
 } /* end namespace scai */

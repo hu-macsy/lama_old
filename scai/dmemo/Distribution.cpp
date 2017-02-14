@@ -280,6 +280,32 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
 
 /* ---------------------------------------------------------------------- */
 
+void Distribution::local2GlobalPerm( HArray<IndexType>& offsets, HArray<IndexType>& perm ) const
+{
+    HArray<PartitionId> owners;
+
+    IndexType n = getGlobalSize();
+
+    {
+        WriteOnlyAccess<IndexType> wOwners( owners, n );
+        for ( IndexType i = 0; i < getGlobalSize(); ++i )
+        {
+            wOwners[i] = getAnyOwner( i );
+        }
+    }
+
+    utilskernel::HArrayUtils::bucketSort( offsets, perm, owners, mCommunicator->getSize() );
+}
+
+void Distribution::global2LocalPerm( HArray<IndexType>& offsets, HArray<IndexType>& perm ) const
+{
+    HArray<IndexType> invPerm;
+    local2GlobalPerm( offsets, invPerm );
+    utilskernel::HArrayUtils::inversePerm( perm, invPerm );
+}
+
+/* ---------------------------------------------------------------------- */
+
 template<typename T1, typename T2>
 void Distribution::replicate( T1* allValues, const T2* localValues ) const
 {
