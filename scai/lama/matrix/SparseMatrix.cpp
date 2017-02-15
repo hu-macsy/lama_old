@@ -215,6 +215,12 @@ void SparseMatrix<ValueType>::checkSettings()
 template<typename ValueType>
 bool SparseMatrix<ValueType>::isConsistent() const
 {
+    return true;
+
+    const Communicator& comm = getRowDistribution().getCommunicator();
+
+    SCAI_LOG_ERROR( logger, comm << ": check for consistency: " << *this )
+
     IndexType consistencyErrors = 0;
 
     // ToDo: this implementation should use a corresponding predicate of MatrixStorage
@@ -227,6 +233,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
         mLocalData->check( "check for consistency" );
         mHaloData->check( "check for consistency" );
         // ToDo: check Halo
+        SCAI_LOG_ERROR( logger, comm << ": is consistent : " << *this )
     }
     catch ( common::Exception& e )
     {
@@ -235,7 +242,13 @@ bool SparseMatrix<ValueType>::isConsistent() const
     }
 
     // use communicator for global reduction to make sure that all processors return same value.
+
+    SCAI_LOG_ERROR( logger, comm << ": local consistency errors = " << consistencyErrors )
+
     consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
+
+    SCAI_LOG_ERROR( logger, comm << ": global consistency errors = " << consistencyErrors )
+
     return 0 == consistencyErrors;
 }
 

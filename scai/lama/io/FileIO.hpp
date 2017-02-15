@@ -215,7 +215,7 @@ public:
      *  @param[out] size is the size of the array
      *  @param[out] indexes are the positions with non-zero values
      *  @param[out] values are the values at the corresponding positions.
-     *  @param[in]  name of the input file with array data.
+     *  @param[in]  fileName of the input file with array data.
      *
      *  This method must be implemented by each derived class. 
      */

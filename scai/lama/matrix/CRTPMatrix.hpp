@@ -46,6 +46,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/Scalar.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
 #include <scai/tracing.hpp>
@@ -221,6 +222,35 @@ public:
     {
         Derived& m = reinterpret_cast<Derived&>( *this );
 
+        SCAI_ASSERT_EQ_ERROR( row.size(), m.getNumColumns(), "row size mismatch" )
+
+        bool needsTmp = false;
+
+        if ( row.getValueType() != m.getValueType() )
+        {
+            needsTmp = true;
+            SCAI_UNSUPPORTED( "setRow, matrix has type " << m.getValueType() 
+                               << ", row has type " << row.getValueType() << ", use temporary" )
+        }
+        if ( ! row.getDistribution().isReplicated() )
+        {
+            needsTmp = true;
+            SCAI_UNSUPPORTED( "setRow, row is not replicated, use temporary" )
+        }
+        if ( ! row.getVectorKind() == Vector::DENSE )
+        {
+            needsTmp = true;
+            SCAI_UNSUPPORTED( "setRow, row is not DENSE vector" )
+        }
+
+        if ( needsTmp )
+        {
+            DenseVector<ValueType> tmpRow( row );
+            tmpRow.replicate();
+            setRow( tmpRow, globalRowIndex, op );
+            return;
+        }
+
         using namespace scai::hmemo;
 
         SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, m.getNumRows(), "illegal row index" )
@@ -231,14 +261,7 @@ public:
 
         const DenseVector<ValueType>* typedRow = dynamic_cast<const DenseVector<ValueType>*>( &row );
 
-        if ( !typedRow )
-        {
-            // so we create a temporaray DenseVector of same type, has already correct size
-
-            tmpVector.reset( new DenseVector<ValueType>( row ) );
-
-            typedRow = tmpVector.get();
-        }
+        SCAI_ASSERT_ERROR( typedRow, "illegal dynamic cast" )
 
         SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
 

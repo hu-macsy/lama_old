@@ -1192,7 +1192,7 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 template<typename ValueType>
 void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
-    // if v is not a dense vector, use a temporary dense vector
+    // if v is not a dense vector or not of same type, use a temporary dense vector
 
     if ( row.getVectorKind() != Vector:: DENSE || row.getValueType() != getValueType() )
     {
@@ -1205,27 +1205,87 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
 
     SCAI_REGION( "Mat.Dense.getRow" )
 
-    const Distribution& dist = getRowDistribution();
-    const Communicator& comm = dist.getCommunicator();
-
-    // owner gets the dense row locally and broadcasts it
-
-    IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
-
-    PartitionId owner = getRowDistribution().findOwner( globalRowIndex );
-
     DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
 
-    denseRow.allocate( getNumColumns() );   // replicated row
+    denseRow.allocate( getColDistributionPtr() );   // same dist as column dist
 
-    HArray<ValueType>& values  = denseRow.getLocalValues();
+    HArray<ValueType>& values = denseRow.getLocalValues();  // be careful to guarantee consistency
 
-    if ( localRowIndex != nIndex )
+    if ( getRowDistribution().isReplicated() )
     {
-        getLocalRow( values, localRowIndex );
+        SCAI_LOG_INFO( logger, "getRow with replicated row distribution" )
+
+        // each processor has all data, just pick up my local part
+
+        const Communicator& comm = getColDistribution().getCommunicator();
+
+        PartitionId colRank = comm.getRank();
+
+        mData[ colRank ]->getRow( values, globalRowIndex );
+
+        SCAI_ASSERT_EQ_ERROR( values.size(), getColDistribution().getLocalSize(), "serious mismatch" )
+
+        return;
     }
 
-    comm.bcastArray( values, owner );
+    const Communicator& comm = getRowDistribution().getCommunicator();
+
+    // Note: for the row distribution any owner might not be enabled
+
+    PartitionId rowOwner = getRowDistribution().findOwner( globalRowIndex );
+
+    SCAI_LOG_INFO( logger, "row dist = " << getRowDistribution() 
+                            << ", owner = " << rowOwner << " for row " << globalRowIndex )
+
+    PartitionId np = getColDistribution().getNumPartitions();
+
+    if ( np == 1 )
+    {
+        SCAI_LOG_DEBUG( logger, "getRow with replicated col distribution, row owner = " << rowOwner )
+
+        // owner gets the dense row locally and broadcasts it
+
+        if ( rowOwner == comm.getRank() )
+        {
+            IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+            mData[0]->getRow( values, localRowIndex );
+        }
+
+        getRowDistribution().getCommunicator().bcastArray( values, rowOwner );
+
+        return;
+    }
+
+    SCAI_LOG_DEBUG( logger, comm << ": bcast chunks for this col dist = " << getColDistribution() )
+
+    HArray<ValueType> commBuffer;
+
+    if ( rowOwner == comm.getRank() )
+    {
+        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+
+        SCAI_ASSERT_EQ_ERROR( static_cast<IndexType>( mData.size() ), np, "illegal column data" )
+
+        for ( PartitionId p = 0; p < comm.getSize(); ++p )
+        {
+            HArray<ValueType>& buffer( p == comm.getRank() ? values : commBuffer );
+
+            mData[p]->getRow( buffer, localRowIndex );
+            comm.bcastArray( buffer, rowOwner );
+        }
+    }
+    else
+    {
+        for ( PartitionId p = 0; p < comm.getSize(); ++p )
+        {
+            HArray<ValueType>& buffer( p == comm.getRank() ? values : commBuffer );
+            comm.bcastArray( buffer, rowOwner );
+        }
+    }
+
+    // guarantee consistency in the dense vector for the local data
+
+    SCAI_ASSERT_EQ_ERROR( values.size(), getColDistribution().getLocalSize(), "serious mismatch" )
 }
 
 /* -------------------------------------------------------------------------- */

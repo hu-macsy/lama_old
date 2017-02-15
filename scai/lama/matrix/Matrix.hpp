@@ -453,7 +453,8 @@ public:
      * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
      * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
      *   of a dense matrix and a sparse vector on a sparse matrix.
-     * - This method implies communication as one row resides only on one processor.
+     * - This method implies communication as one row resides only on one processor but here the communication
+     *   pattern for sparse or dense matrices are exploited.
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
 
