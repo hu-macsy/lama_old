@@ -652,9 +652,6 @@ public:
 
 protected:
 
-    using Matrix::mNumRows;
-    using Matrix::mNumColumns;
-
     /**
      * @brief Set this matrix = alpha * A + beta * B
      *
@@ -782,7 +779,7 @@ DenseMatrix<ValueType>::DenseMatrix(
     : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
 {
     mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( mNumRows, mNumColumns ) );
+    mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );
     mData[0]->setCSRData( numNoneZeros, ia, ja, values );
     computeOwners();
 }

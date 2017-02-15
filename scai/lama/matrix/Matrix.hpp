@@ -1150,10 +1150,6 @@ protected:
 
     dmemo::DistributionPtr mColDistribution;
 
-    // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
-    IndexType mNumRows;
-    IndexType mNumColumns;
-
 protected:
 
     void checkSettings() const; // check valid member variables
@@ -1163,6 +1159,11 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
+
+    IndexType mNumRows;
+    IndexType mNumColumns;
 
     using Distributed::getDistribution;
 

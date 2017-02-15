@@ -508,7 +508,7 @@ void DenseMatrix<ValueType>::setCSRDataLocal(
     const _HArray& rowValues ) const
 {
     // build DenseStorage from the CSR data
-    mData[0]->setCSRData( rowIA.size() + 1, mNumColumns, rowJA.size(), rowIA, rowJA, rowValues );
+    mData[0]->setCSRData( rowIA.size() + 1, getNumColumns(), rowJA.size(), rowIA, rowJA, rowValues );
     // ToDo: split up mData[0] according to column distribution
 }
 
@@ -804,7 +804,7 @@ void DenseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
     {
         // temporary local storage with joined columns needed before
         const IndexType numLocalRows = getRowDistribution().getLocalSize();
-        DenseStorage<ValueType> denseStorage( numLocalRows, mNumColumns );
+        DenseStorage<ValueType> denseStorage( numLocalRows, getNumColumns() );
         joinColumnData( denseStorage.getData(), 0, numLocalRows );
         storage = denseStorage;
     }
@@ -875,7 +875,7 @@ void DenseMatrix<ValueType>::allocateData()
 {
     const Distribution& colDist = getColDistribution();
 
-    SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, colDist.getGlobalSize() )
+    SCAI_ASSERT_EQUAL_DEBUG( getNumColumns(), colDist.getGlobalSize() )
 
     const PartitionId numChunks = colDist.getCommunicator().getSize();
 
@@ -890,12 +890,12 @@ void DenseMatrix<ValueType>::allocateData()
         if ( mData[0] )
         {
             // just reallocate the storage
-            mData[0]->allocate( numLocalRows, mNumColumns );
+            mData[0]->allocate( numLocalRows, getNumColumns() );
         }
         else
         {
             // first time allocation
-            mData[0].reset( new DenseStorage<ValueType>( numLocalRows, mNumColumns ) );
+            mData[0].reset( new DenseStorage<ValueType>( numLocalRows, getNumColumns() ) );
         }
 
         return;
@@ -912,7 +912,7 @@ void DenseMatrix<ValueType>::allocateData()
         mData[p].reset( new DenseStorage<ValueType>( numLocalRows, numLocalColumns ) );
     }
 
-    SCAI_ASSERT_EQ_ERROR( count, mNumColumns, "Illegal owners." )
+    SCAI_ASSERT_EQ_ERROR( count, getNumColumns(), "Illegal owners." )
 }
 
 /* ------------------------------------------------------------------ */
@@ -1036,7 +1036,7 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
     Matrix::setDistributedMatrix( getRowDistributionPtr(), colDistribution );
     computeOwners(); // compute mapping column index -> chunk
     SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), oldStorage->getNumRows() )
-    SCAI_ASSERT_EQUAL_ERROR( mNumColumns, oldStorage->getNumColumns() )
+    SCAI_ASSERT_EQUAL_ERROR( getNumColumns(), oldStorage->getNumColumns() )
     splitColumnData( mData, *oldStorage, *colDistribution );
 // old storage will be freed here at end of scope
 }
@@ -1125,7 +1125,7 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
     if ( rowDistribution->getNumPartitions() == 1 )
     {
 // replicate the distributed matrix
-        DenseStorage<ValueType> newLocalData( mNumRows, nCols );
+        DenseStorage<ValueType> newLocalData( getNumRows(), nCols );
         DenseStorage<ValueType>& oldLocalData = getLocalStorage();
 // replicate all rows according to the current row distribution
         replicate( newLocalData, oldLocalData, getRowDistribution() );
@@ -1294,7 +1294,7 @@ void DenseMatrix<ValueType>::setLocalRow(
     SCAI_REGION( "Mat.Dense.setLocalRow" )
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( localRowIndex, getRowDistribution().getLocalSize(), "illegal local row index" )
-    SCAI_ASSERT_EQ_DEBUG( row.size(), mNumColumns, "size of row illegal" )
+    SCAI_ASSERT_EQ_DEBUG( row.size(), getNumColumns(), "size of row illegal" )
 
     const PartitionId numColPartitions = static_cast<PartitionId>( mData.size() );
 
@@ -1997,7 +1997,7 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
 {
-    if ( !( ( mNumColumns == other.getNumColumns() ) && ( mNumRows == other.getNumRows() ) ) )
+    if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {
         COMMON_THROWEXCEPTION( "maxDiffNorm requires matrices of same format" );
     }
@@ -2109,7 +2109,7 @@ template<typename ValueType>
 IndexType DenseMatrix<ValueType>::getLocalNumValues() const
 {
     // only locally stored number of values
-    return getRowDistribution().getLocalSize() * mNumColumns;
+    return getRowDistribution().getLocalSize() * getNumColumns();
 }
 
 template<typename ValueType>
@@ -2156,7 +2156,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
     common::scalar::ScalarType type = common::getScalarType<ValueType>();
-    stream << "DenseMatrix<" << type << ">( size = " << mNumRows << " x " << mNumColumns << ", rowdist = "
+    stream << "DenseMatrix<" << type << ">( size = " << getNumRows() << " x " << getNumColumns() << ", rowdist = "
            << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
 }
 

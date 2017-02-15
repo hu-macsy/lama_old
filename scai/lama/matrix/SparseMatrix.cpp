@@ -260,8 +260,7 @@ SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
 template<typename ValueType>
 void SparseMatrix<ValueType>::clear()
 {
-    mNumRows = 0;
-    mNumColumns = 0;
+    Matrix::setReplicatedMatrix( 0, 0 );
     mLocalData->clear();
     mHaloData->clear();
     mHalo.clear();
@@ -272,9 +271,7 @@ void SparseMatrix<ValueType>::clear()
 template<typename ValueType>
 void SparseMatrix<ValueType>::purge()
 {
-    // Note: purge will free the memory and not only reset sizes
-    mNumRows = 0;
-    mNumColumns = 0;
+    Matrix::setReplicatedMatrix( 0, 0 );
     mLocalData->purge();
     mHaloData->purge();
     mHalo.clear();
@@ -443,7 +440,7 @@ void SparseMatrix<ValueType>::assignTransposeImpl( const SparseMatrix<ValueType>
         // Now this partition has all sparse data from other partitions to build my new halo
         mHaloData->setCompressThreshold( 1.0f ); // halo rows might be compressed
         _MatrixStorage::sizes2offsets( haloRowSizes );
-        mHaloData->setCSRData( mNumLocalRows, mNumColumns, haloJA.size(), haloRowSizes, haloJA, haloValues );
+        mHaloData->setCSRData( mNumLocalRows, getNumColumns(), haloJA.size(), haloRowSizes, haloJA, haloValues );
         // Now build a new halo and localize columns in mHaloData
         mHaloData->buildHalo( mHalo, getColDistribution() );
     }
@@ -582,10 +579,10 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     SCAI_LOG_INFO( logger,
                    "redistribute " << *this << ": new row dist = " << *rowDistributionPtr << ", new col dist = " << *colDistributionPtr )
 
-    SCAI_ASSERT_EQ_ERROR( rowDistributionPtr->getGlobalSize(), mNumRows,
+    SCAI_ASSERT_EQ_ERROR( rowDistributionPtr->getGlobalSize(), getNumRows(),
                           "size of new row distribution mismatches #rows" );
 
-    SCAI_ASSERT_EQ_ERROR( colDistributionPtr->getGlobalSize(), mNumColumns,
+    SCAI_ASSERT_EQ_ERROR( colDistributionPtr->getGlobalSize(), getNumColumns(),
                           "size of new col distribution mismatches #colunns" );
 
     // Save the current distribution of this matrix; use shared pointers to avoid freeing
@@ -712,7 +709,7 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
         return;
     }
 
-    row.init( ValueType( 0 ), mNumColumns );
+    row.init( ValueType( 0 ), getNumColumns() );
 
     HArray<ValueType> tmpRow;  // used for row of local, halo data
 
@@ -1195,7 +1192,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
     Matrix::setDistributedMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() );
     mLocalData->matrixPlusMatrix( alpha, *A.mLocalData, beta, *B.mLocalData );
     // replicated columns, so no halo needed
-    mHaloData->allocate( mNumRows, 0 );
+    mHaloData->allocate( getNumRows(), 0 );
     mHalo.clear();
 }
 
@@ -1243,7 +1240,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     }
 
     // replicated columns, so no halo
-    mHaloData->allocate( mNumRows, 0 );
+    mHaloData->allocate( getNumRows(), 0 );
     mHalo.clear();
     SCAI_LOG_DEBUG( logger, "Context lhs after mult " << * ( mLocalData->getContextPtr() ) )
 }
@@ -1871,7 +1868,7 @@ const Halo& SparseMatrix<ValueType>::getHalo() const
 template<typename ValueType>
 void SparseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << getTypeName() << "( size = " << mNumRows << " x " << mNumColumns << ", local = " << *mLocalData
+    stream << getTypeName() << "( size = " << getNumRows() << " x " << getNumColumns() << ", local = " << *mLocalData
            << ", halo = " << *mHaloData << ", rowdist = " << getRowDistribution() << ", coldist = "
            << getColDistribution() << ")";
 }

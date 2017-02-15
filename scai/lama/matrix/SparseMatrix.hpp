@@ -685,8 +685,6 @@ protected:
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
 
-    using Matrix::mNumRows;
-    using Matrix::mNumColumns;
     using Matrix::mColDistribution;
 
 public:
