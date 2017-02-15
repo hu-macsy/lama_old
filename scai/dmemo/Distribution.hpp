@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Definition of abstract base class for a one-dimensional distribution.
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 22.02.2011
  */
 
@@ -177,16 +177,18 @@ public:
 
     CommunicatorPtr getCommunicatorPtr() const;
 
-    /** Query for the number of partitions onto which the distribution is done. */
+    /** Query for the number of processors/partitions onto which the distribution is done. */
 
     PartitionId getNumPartitions() const;
 
-    /** Query whether the distribution is a replication. */
+    /** Query whether the distribution is a replication, i.e. each processor is owner of all data 
+     *
+     *  same as getNumPartitions() == 1, always true for NoDistribution, always true when running
+     *  an application on a single processor.
+     */
+    inline bool isReplicated() const;
 
-    bool isReplicated() const
-    {
-        return getNumPartitions() == 1;
-    }
+    /** Each derived class has to return a specific kind string to specify its kind. */
 
     virtual const char* getKind() const = 0;
 
@@ -470,9 +472,18 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/* ======================================================================== */
+/*             Inline methods                                               */
+/* ======================================================================== */
+
 IndexType Distribution::getGlobalSize() const
 {
     return mGlobalSize;
+}
+
+inline bool Distribution::isReplicated() const
+{
+    return getNumPartitions() == 1;
 }
 
 } /* end namespace dmemo */
