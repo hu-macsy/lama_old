@@ -620,11 +620,6 @@ public:
     using Matrix::getColDistribution;
     using Matrix::getColDistributionPtr;
 
-    const utilskernel::LArray<PartitionId>& getOwners() const
-    {
-        return mOwners;
-    }
-
     /** Implementation of pure methode Matrix::getRow */
 
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
@@ -660,8 +655,6 @@ protected:
     using Matrix::mNumRows;
     using Matrix::mNumColumns;
 
-    utilskernel::LArray<PartitionId> mOwners;
-
     /**
      * @brief Set this matrix = alpha * A + beta * B
      *
@@ -687,8 +680,6 @@ private:
      *  @param[out]  result     will be the joined data
      *  @param[in]   firstRow   first local row
      *  @param[in]   nRows      number of rows to join
-     *
-     *  Note: the column distribution is taken from the values of mOwners
      */
     void joinColumnData( scai::hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
 
@@ -700,14 +691,15 @@ private:
      *
      *  @param[out]  chunks        vector of shared pointer to the new allocated chunks
      *  @param[in]   columnData    is the dense storage to split
-     *  @param[in]   numChunks     is the number of chunks, same as number of partitions of distribution
-     *  @param[in]   columnOwners  owner for each column
+     *  @param[in]   columnDist    is the distribution used for splitting global data to local data
+     *
+     *  Note:  columnData.getNumColumns() == columnDist.getGlobalSize()
+     *  After: chunks.size() == columnDist.getNumPartitions()
      */
     static void splitColumnData(
         std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
-        const PartitionId numChunks,
-        const hmemo::HArray<PartitionId>& columnOwners );
+        const dmemo::Distribution& columnDist );
 
     /** Restrict dense storage of a replicated matrix to its local part according to row distribution.
      *
@@ -775,8 +767,6 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
         SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
         mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
     }
-
-    mOwners = other.getOwners();
 }
 
 template<typename ValueType>

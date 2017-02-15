@@ -1162,7 +1162,7 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
     using Distributed::getDistribution;
 
@@ -1218,13 +1218,11 @@ inline Matrix::SyncKind Matrix::getCommunicationKind() const
 
 inline const dmemo::Distribution& Matrix::getColDistribution() const
 {
-    SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return *mColDistribution;
 }
 
 inline dmemo::DistributionPtr Matrix::getColDistributionPtr() const
 {
-    SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;
 }
 
