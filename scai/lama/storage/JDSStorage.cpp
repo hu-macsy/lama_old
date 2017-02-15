@@ -669,17 +669,12 @@ void JDSStorage<ValueType>::check( const char* msg ) const
     if ( mNumRows > 0 ) // very important as maxval would not work
     {
         ContextPtr loc = getContextPtr();
-        // temporary array for inverse permutation, initialize with mNumRows
-        HArray<IndexType> invPermArray( mNumRows, mNumRows );
-        static LAMAKernel<UtilKernelTrait::setInversePerm> setInversePerm;
-        static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
-        ReadAccess<IndexType> rPerm( mPerm, loc );
-        WriteAccess<IndexType> wInversePerm( invPermArray, loc );
-        SCAI_CONTEXT_ACCESS( loc )
-        // set inverse permutation, should overwrite all values 'mNumRows'
-        setInversePerm[loc]( wInversePerm.get(), rPerm.get(), mNumRows );
-        IndexType maxIndex = reduce[loc]( wInversePerm.get(), mNumRows, 0, utilskernel::binary::MAX );
-        SCAI_ASSERT_ERROR( maxIndex < mNumRows, "Perm array does not cover all row indexes, #rows = " << mNumRows );
+
+        HArray<IndexType> invPermArray;
+
+        // this operation fails if perm is invalid
+
+        HArrayUtils::inversePerm( invPermArray, mPerm );
     }
 
     // Note: check is not exhaustive, e.g. it does not check for same column index in one row
