@@ -712,6 +712,11 @@ public:
      */
     virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
 
+    /** 
+     * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
+     */
+    void replicate();
+
     /**
      * @brief This method inverts all elements of the vector and is completely local.
      */

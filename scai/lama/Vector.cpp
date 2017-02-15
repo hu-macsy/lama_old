@@ -733,6 +733,18 @@ void Vector::writeToSingleFile(
 
 /* ---------------------------------------------------------------------------------------*/
 
+void Vector::replicate()
+{
+    if ( getDistribution().isReplicated() )
+    {
+        return;
+    }
+
+    redistribute( DistributionPtr( new NoDistribution( size() ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
 void Vector::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
