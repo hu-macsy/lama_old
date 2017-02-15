@@ -195,10 +195,10 @@ public:
     /** Query if the given global index is local for the calling rank
      *                          (e.g. process for an MPI Communicator)
      *
-     * @param[in]    index the global index to query for locality to the calling rank
-     * @return       if the passed global index is local to the calling rank
+     * @param[in]    globalIndex the global index to query for locality to the calling rank
+     * @return       true if this processor/partition  is owner 
      */
-    virtual bool isLocal( const IndexType index ) const = 0;
+    virtual bool isLocal( const IndexType globalIndex ) const = 0;
 
     /** Getter for the global number of elements that are distributed. */
 

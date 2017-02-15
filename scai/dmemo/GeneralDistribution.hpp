@@ -44,10 +44,6 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 
-// std
-#include <vector>
-#include <map>
-
 namespace scai
 {
 
@@ -102,7 +98,7 @@ public:
 
     /** Implementation of pure method Distribution::isLocal */
 
-    virtual bool isLocal( const IndexType index ) const;
+    virtual bool isLocal( const IndexType globalIndex ) const;
 
     /** Implementation of pure method Distribution::getLocalSize */
 
@@ -171,11 +167,7 @@ protected:
 
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
-    typedef std::map<IndexType, IndexType> Global2LocalMapType;
-
-    Global2LocalMapType mGlobal2Local;
-
-    utilskernel::LArray<IndexType> mLocal2Global;
+    utilskernel::LArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
  
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed
