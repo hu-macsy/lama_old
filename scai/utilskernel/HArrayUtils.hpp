@@ -517,7 +517,7 @@ public:
      *
      *  Note: offset[0] == 0, offset[ offset.size() ] == array.size() must be valid
      *
-     *  Each array[offset[i]::offset[i+1]] must already be sorted.
+     *  Each array[offset[i] : offset[i+1]] must already be sorted.
      */
     template<typename ValueType>
     static void mergeSort(
@@ -633,10 +633,16 @@ public:
     /** Find an index in an array of sorted indexes 
      *
      *  @param[in] indexes is an array of sorted indexes
-     *  @param[in] index is the index to be found in indexes
+     *  @param[in] index is the value to be found in indexes array
      *  @return position of index in indexes if found, nIndex otherwise
+     *
+     *  \code
+     *     HArray<IndexType> indexes ( 5, { 0, 5, 11, 18, 19 } );
+     *     findPosInSortedIndexes( indexes, 5  ) -> 1
+     *     findPosInSortedIndexes( indexes, 31 ) -> nIndex
+     *  \endcode
      */
-    static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType> indexes, const IndexType pos );
+    static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType pos );
 
     /** Add two sparse arrays 
      *
