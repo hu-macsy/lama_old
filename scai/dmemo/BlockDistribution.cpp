@@ -228,7 +228,16 @@ IndexType BlockDistribution::getAnyLocalSize( const PartitionId rank ) const
 
     getLocalRange( lb, ub, getGlobalSize(), rank, nP );
 
-    return ub - lb;
+    // Attention:  lb = 14 > ub = 12 might be possible
+
+    if ( lb < ub )
+    { 
+        return ub - lb;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 PartitionId BlockDistribution::getAnyOwner( const IndexType globalIndex ) const
