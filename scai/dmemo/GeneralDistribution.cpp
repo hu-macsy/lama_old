@@ -467,6 +467,18 @@ void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalInd
 
 void GeneralDistribution::enableAnyAddressing() const
 {
+    if ( mAllOwners.size() > 0 ) 
+    {
+        // already computed, but just verify correct sizes
+
+        SCAI_ASSERT_EQ_DEBUG( mAllOwners.size(), getGlobalSize(), "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getNumPartitions() + 1, "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllLocal2Global.size(), getGlobalSize(), "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllGlobal2Local.size(), getGlobalSize(), "serious mismatch" )
+
+        return;   // already done
+    }
+
     // compute mAllOwners
 
     HArray<IndexType> indexes;   // will contain all column indexes to get all owners

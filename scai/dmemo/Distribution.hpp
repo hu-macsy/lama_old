@@ -314,7 +314,13 @@ public:
      *  (same as bucket sort of array with all owners).
      *
      *  @param[out] offsets local sizes of all partitions as offset array, size is number of partitions + 1
-     *  @param[out] perm  contains all global indexes sorted by the owners
+     *  @param[out] local2global contains all global indexes sorted by the owners, is permutation
+     *
+     *  With the output arrays, the call of getAnyGlobalIndex can be done directly on heterorgeneous arrays
+     *
+     *  \code
+     *     getAnyGlobalIndex( localIndex, owner ) == local2global[ offsets[owner] + localIndex]
+     *  \endcode
      *
      *  /code
      *     PartitionId p = ... // some partition
@@ -322,24 +328,22 @@ public:
      *     for ( IndexType k = offsets[p]; k < offsets[p+1]; ++k )
      *     {  
      *         IndexType localIndex = k - offsets[p];
-     *         IndexType globalIndex = perm[k];  
+     *         IndexType globalIndex = local2global[k];  
      *         ....
      *     }
      *  /endcode
      *
-     *  \code
-     *     getAnyGlobalIndex( localIndex, owner ) == perm[ offsets[owner] + localIndex]
-     *  \endcode
+     *  Note: If this distribution is a block distribution, the permutation is the identitiy.
+     */
+    virtual void getAnyLocal2Global( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& local2global ) const;
+
+    /** This method returns the inverse permutation as called by getAnyLocal2Global.
      *
-     *  Furthermore, with these arrays it is easy to implement getAnyLocalIndex:
-     * 
      *  \code
-     *     getAnyLocalIndex( globalIndex, owner ) == perm[globalIndex] - offsets[owner]
+     *     getAnyLocalIndex( globalIndex, owner ) == global2local[globalIndex] - offsets[owner]
      *  \endcode
      */
-    virtual void local2GlobalPerm( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm ) const;
-
-    virtual void global2LocalPerm( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& perm ) const;
+    virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2local ) const;
 
     /**
      * Virtual method to check two distributions for equality.

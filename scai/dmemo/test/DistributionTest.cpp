@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
         utilskernel::LArray<IndexType> offsets;
         utilskernel::LArray<IndexType> perm;
 
-        dist->global2LocalPerm( offsets, perm );
+        dist->getAnyGlobal2Local( offsets, perm );
 
         BOOST_REQUIRE_EQUAL( nP + 1, offsets.size() );
         BOOST_REQUIRE_EQUAL( nGlobal, perm.size() );
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
         BOOST_REQUIRE_EQUAL( nP + 1, offsets.size() );
         BOOST_REQUIRE_EQUAL( nGlobal, perm.size() );
 
-        dist->local2GlobalPerm( offsets, perm );
+        dist->getAnyLocal2Global( offsets, perm );
 
         for ( IndexType iP = 0; iP < nP; ++iP )
         {

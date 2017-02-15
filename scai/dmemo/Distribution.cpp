@@ -280,7 +280,7 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
 
 /* ---------------------------------------------------------------------- */
 
-void Distribution::local2GlobalPerm( HArray<IndexType>& offsets, HArray<IndexType>& perm ) const
+void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexType>& local2global ) const
 {
     HArray<PartitionId> owners;
 
@@ -294,14 +294,16 @@ void Distribution::local2GlobalPerm( HArray<IndexType>& offsets, HArray<IndexTyp
         }
     }
 
-    utilskernel::HArrayUtils::bucketSort( offsets, perm, owners, mCommunicator->getSize() );
+    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, mCommunicator->getSize() );
 }
 
-void Distribution::global2LocalPerm( HArray<IndexType>& offsets, HArray<IndexType>& perm ) const
+/* ---------------------------------------------------------------------- */
+
+void Distribution::getAnyGlobal2Local( HArray<IndexType>& offsets, HArray<IndexType>& global2local ) const
 {
-    HArray<IndexType> invPerm;
-    local2GlobalPerm( offsets, invPerm );
-    utilskernel::HArrayUtils::inversePerm( perm, invPerm );
+    HArray<IndexType> local2global;              // temporary array to keep the inverse permutation
+    getAnyLocal2Global( offsets, local2global );
+    utilskernel::HArrayUtils::inversePerm( global2local, local2global );
 }
 
 /* ---------------------------------------------------------------------- */
