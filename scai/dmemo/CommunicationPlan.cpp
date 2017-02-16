@@ -352,6 +352,26 @@ void CommunicationPlan::compress()
 
 /* ----------------------------------------------------------------------- */
 
+void CommunicationPlan::getInfo( IndexType& quantity, IndexType& offset, PartitionId p ) const
+{
+    // set initial values in case we do not find an entry for p
+
+    quantity = 0;
+    offset   = 0;
+
+    for ( PartitionId pid = 0; pid < size(); pid++ )
+    {
+        if ( mEntries[pid].partitionId == p )
+        {
+            quantity = mEntries[pid].quantity;
+            offset = mEntries[pid].offset;
+            break;
+        }
+    }
+}
+
+/* ----------------------------------------------------------------------- */
+
 void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const Communicator& comm )
 {
     SCAI_ASSERT( plan.allocated(), "plan to reverse not allocated" )
