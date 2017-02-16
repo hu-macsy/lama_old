@@ -80,6 +80,61 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( consistencyTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    // create distributed sparse vector, initialized with 0
+
+    SparseVector<ValueType> v( dist );
+
+    BOOST_CHECK( v.isConsistent() );
+
+    // usually it is not simple to make a vector inconsistent
+
+    hmemo::HArray<IndexType>& indexes = const_cast<hmemo::HArray<IndexType>&>( v.getNonZeroIndexes() );
+
+    // make it inconsistent on one processor only, isConsistent can deal with it
+
+    if ( comm->getRank() == ( comm->getSize() / 2 ) )
+    {
+        indexes.resize( 1 );
+    }
+
+    // consistency check fails on all processors
+
+    BOOST_CHECK( ! v.isConsistent() );
+
+    hmemo::HArray<ValueType>& values = const_cast<hmemo::HArray<ValueType>&>( v.getNonZeroValues() );
+
+    if ( dist->getLocalSize() > 0 )
+    {
+        indexes.init( IndexType( 0 ), 1 );
+        values.init( ValueType( 3 ), 1 );
+    }
+    else
+    {
+        indexes.clear();
+        values.clear();
+    }
+
+    BOOST_CHECK( v.isConsistent() );
+
+    if ( dist->getLocalSize() > 0 )
+    {
+        indexes.init( 1, IndexType( dist->getLocalSize() ) );
+    }
+
+    BOOST_CHECK( ! v.isConsistent() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 {
     // Note: it is sufficient to consider one value type

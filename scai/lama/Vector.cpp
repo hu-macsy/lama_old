@@ -724,9 +724,8 @@ void Vector::writeToSingleFile(
     {
         // writing a distributed vector into a single file requires redistributon
 
-        DistributionPtr dist( new NoDistribution( size() ) );
         common::unique_ptr<Vector> repV( copy() );
-        repV->redistribute( dist );
+        repV->replicate();
         repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
     }
 }

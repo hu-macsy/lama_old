@@ -131,6 +131,11 @@ public:
 
     using Vector::operator=;
 
+    /**
+     * @brief Implementation of pure method Vector::isConsistent 
+     */
+    virtual bool isConsistent() const;
+
 protected:
 
     // All constructors here just call the corresponing constructors of Vector 

@@ -77,6 +77,39 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( consistencyTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    // create distributed dense vector
+
+    DenseVector<ValueType> v( dist, ValueType( 1 ) );
+
+    BOOST_CHECK( v.isConsistent() );
+
+    // usually it is not simple to make a vector inconsistent
+
+    hmemo::HArray<ValueType>& localData = v.getLocalValues();
+
+    // make it inconsistent on one processor only, isConsistent can deal with it
+
+    if ( comm->getRank() == ( comm->getSize() / 2 ) )
+    {
+        localData.resize( 17 );
+    }
+ 
+    // consistency check fails on all processors
+
+    BOOST_CHECK( ! v.isConsistent() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( SetGetValueTest )
 {
     // Note: it is sufficient to consider one value type

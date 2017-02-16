@@ -170,6 +170,23 @@ public:
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
+     * @brief Checks for this vector whether the content of its data is sound.
+     *
+     * @return false if any of the internal data structures is not okay
+     *
+     * This method returns the same value on all processors.
+     *
+     * If any inconsistency has been found an error message should be logged, but it should
+     * not throw an exception. This might be done by the caller of this routine to avoid
+     * working with inconsistent vectors.
+     *
+     * \code
+     * SCAI_ASSERT_DEBUG( a.isConsistent(), a << ": is invalid matrix after reading" )
+     * \endcode
+     */
+    virtual bool isConsistent() const = 0;
+
+    /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
      */
     typedef const Vector& ExpressionMemberType;

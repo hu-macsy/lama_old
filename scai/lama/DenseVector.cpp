@@ -505,6 +505,31 @@ DenseVector<ValueType>& DenseVector<ValueType>::operator=( const Scalar value )
 
 /* ------------------------------------------------------------------------- */
 
+bool _DenseVector::isConsistent() const
+{
+    // for a dense vector we just have to check that the locally allocated
+    // data has the same size as the local size of the distribution
+
+    const Distribution& dist = getDistribution();
+
+    IndexType consistencyErrors = 0;
+
+    const IndexType localSize = dist.getLocalSize();
+
+    if ( getLocalValues().size() != localSize )
+    {
+        consistencyErrors++;
+    }
+
+    // use communicator for global reduction to make sure that all processors return same value.
+
+    consistencyErrors = dist.getCommunicator().sum( consistencyErrors );
+
+    return 0 == consistencyErrors;
+}
+
+/* ------------------------------------------------------------------------- */
+
 /** Determine splitting values for sorting distributed values.
  *
  *  A value v belongs to partition p if splitValues[p] <= v < splitValues[p+1]

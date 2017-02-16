@@ -402,6 +402,58 @@ SparseVector<ValueType>& SparseVector<ValueType>::operator=( const SparseVector<
 
 /* ------------------------------------------------------------------------- */
 
+bool _SparseVector::isConsistent() const
+{
+    // for a dense vector we just have to check that the locally allocated
+    // data has the same size as the local size of the distribution
+
+    const Distribution& dist = getDistribution();
+
+    IndexType consistencyErrors = 0;
+
+    const IndexType localSize = dist.getLocalSize();
+
+    const HArray<IndexType>& nonZeroIndexes = getNonZeroIndexes();
+
+    if ( getNonZeroValues().size() != nonZeroIndexes.size() )
+    {
+        consistencyErrors++;
+    }
+
+    if ( nonZeroIndexes.size() > dist.getLocalSize() )
+    {
+        consistencyErrors++;
+    }
+
+    {
+        ReadAccess<IndexType> rIndexes( nonZeroIndexes );
+
+        for ( IndexType i = 0; i < rIndexes.size(); ++i )
+        {
+            if ( !common::Utils::validIndex( rIndexes[i], localSize ) )
+            {
+                consistencyErrors++;
+            }
+        }
+    }
+
+    // indexes for the non-zero values must be sorted
+
+    if ( !HArrayUtils::isSorted( nonZeroIndexes, true ) )
+    {
+        SCAI_LOG_ERROR( logger, "sparse indexes not sorted" )
+        // consistencyErrors++;
+    }
+
+    // not checked: there should be no double values in indexes
+
+    // use communicator for global reduction to make sure that all processors return same value.
+
+    consistencyErrors = dist.getCommunicator().sum( consistencyErrors );
+
+    return 0 == consistencyErrors;
+}
+
 /** Determine splitting values for sorting distributed values.
  *
  *  A value v belongs to partition p if splitValues[p] <= v < splitValues[p+1]
@@ -1142,28 +1194,27 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         SCAI_LOG_DEBUG( logger, "translated " << nLocalIndexes << " local indexes to global indexes" )
 
-        IndexType globalSize = currentDist.getGlobalSize();
-
         HArray<IndexType> allNonZeroIndexes;
         HArray<ValueType> allNonZeroValues;
 
-        {
-            ReadAccess<IndexType> rNonZeroIndexes( mNonZeroIndexes, hostContext );
-            ReadAccess<ValueType> rNonZeroValues( mNonZeroValues, hostContext );
-
-            WriteOnlyAccess<IndexType> wAllNonZeroIndexes( allNonZeroIndexes, hostContext, globalSize );
-            WriteOnlyAccess<ValueType> wAllNonZeroValues( allNonZeroValues, hostContext, globalSize );
-
-            // Now replicate 
-
-            currentDist.replicate( wAllNonZeroIndexes.get(), rNonZeroIndexes.get() );
-            currentDist.replicate( wAllNonZeroValues.get(), rNonZeroValues.get() );
-        }
+        getDistribution().getCommunicator().joinArray( allNonZeroIndexes, mNonZeroIndexes );
+        getDistribution().getCommunicator().joinArray( allNonZeroValues, mNonZeroValues );
 
         // sort the non-zero indexes ascending
 
-        mNonZeroIndexes.swap( allNonZeroIndexes );
-        mNonZeroValues.swap( allNonZeroValues );
+        bool ascending = true;
+
+        HArray<IndexType> perm;
+        HArray<IndexType> sortedNonZeroIndexes;
+        HArray<ValueType> sortedNonZeroValues;
+
+        HArrayUtils::sort( &perm, &sortedNonZeroIndexes, allNonZeroIndexes, ascending );
+
+        // perm is used to sort the values in same order
+        HArrayUtils::gather( sortedNonZeroValues, allNonZeroValues, perm, utilskernel::binary::COPY );
+
+        mNonZeroIndexes.swap( sortedNonZeroIndexes );
+        mNonZeroValues.swap( sortedNonZeroValues );
 
         setDistributionPtr( distribution );
 

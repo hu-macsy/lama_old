@@ -89,6 +89,11 @@ public:
     virtual const hmemo::HArray<IndexType>& getNonZeroIndexes() const = 0;
 
     /**
+     * @brief Implementation of pure method Vector::isConsistent 
+     */
+    virtual bool isConsistent() const;
+
+    /**
      * @brief Create a new sparse vector of a certain type 
      *
      * @param type is the value type of the vector
