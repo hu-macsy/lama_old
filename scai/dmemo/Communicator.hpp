@@ -736,9 +736,12 @@ public:
     template<typename ValueType>
     void shiftArray( hmemo::HArray<ValueType>& recv, const hmemo::HArray<ValueType>& send, const int direction ) const;
 
+    template<typename ValueType>
+    void joinArray( hmemo::HArray<ValueType>& global, const hmemo::HArray<ValueType>& local ) const;
+
     /** @brief Asychronous shift on LAMA arrays.
      *
-     *  @tparam     ValueType           TODO[doxy] Complete Description.
+     *  @tparam     ValueType   stands for the data type of the arrays
      *  @param[out] recvArray   array to receive for this partition
      *  @param[in]  sendArray   array to send from this partition
      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1

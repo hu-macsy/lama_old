@@ -215,6 +215,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( shiftTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    BOOST_REQUIRE( comm );
+
+    PartitionId rank = comm->getRank();
+    PartitionId size = comm->getSize();
+
+    ValueType val = rank;
+
+    HArray<ValueType> localArray( IndexType( rank ) + 1, val );
+    HArray<ValueType> globalArray;
+
+    comm->joinArray( globalArray, localArray );
+
+    // globalArray: 0 1 1 2 2 2 3 3 3 3 4 4 4 4 4 ...
+
+    IndexType expectedSize = comm->getSize();
+    expectedSize = expectedSize * ( expectedSize + 1 ) / 2;
+
+    BOOST_REQUIRE_EQUAL( expectedSize, globalArray.size() );
+
+    ReadAccess<ValueType> rGlobal( globalArray );
+
+    IndexType pos = 0;
+
+    for ( IndexType rank = 0; rank < size; ++rank )
+    {
+        ValueType val = rank;
+
+        for ( IndexType k = 0; k <= rank; ++k )
+        {
+            BOOST_CHECK_EQUAL( val, rGlobal[pos] );
+            pos++;
+        }
+    }
+ 
+    BOOST_CHECK_EQUAL( pos, expectedSize );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( shiftAsyncTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();

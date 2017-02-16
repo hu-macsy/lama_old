@@ -498,6 +498,48 @@ void Communicator::shiftArray(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::joinArray(
+    HArray<ValueType>& globalArray,
+    const HArray<ValueType>& localArray ) const
+{
+    // ToDo: make this routine more efficient, can use gatherAll if sizes are known before
+
+    HArray<ValueType> bufferArray;
+
+    globalArray.clear();
+
+    IndexType currentSize = 0;
+
+    for ( PartitionId p = 0; p < getSize(); ++p )
+    {
+        if ( p == getRank() )
+        {
+            // my turn for broadcast
+
+            utilskernel::HArrayUtils::assign( bufferArray, localArray );
+        }
+
+        bcastArray( bufferArray, p );
+
+        // append the local part to the global array
+
+        {
+            WriteAccess<ValueType> wGlobal( globalArray );
+            ReadAccess<ValueType> rLocal( bufferArray );
+            wGlobal.resize( currentSize + rLocal.size() );
+            for ( IndexType i = 0; i < rLocal.size(); ++i )
+            {
+                wGlobal[currentSize + i] = rLocal[i];
+            }
+        }
+
+        currentSize += bufferArray.size();
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, const PartitionId root ) const
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
@@ -1199,6 +1241,11 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::joinArray(                                   \
+            HArray<_type>& globalArray,                             \
+            const HArray<_type>& localArray ) const;                \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \
