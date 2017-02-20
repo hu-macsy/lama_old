@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
 
-    ValueType val = rank;
+    ValueType val = static_cast<ValueType>( rank );
 
     HArray<ValueType> localArray( IndexType( rank ) + 1, val );
     HArray<ValueType> globalArray;
