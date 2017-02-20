@@ -194,6 +194,15 @@ public:
         const IndexType n,
         const bool ascending );
 
+    /** OpenMP implementation for UtilKernelTrait::sortInPlace */
+
+    template<typename ValueType>
+    static void sortInPlace(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType n,
+        const bool ascending );
+
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
@@ -285,6 +294,9 @@ private:
 
     template<typename ValueType>
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
+
+    template<typename KeyType, typename ValueType>
+    static void qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 

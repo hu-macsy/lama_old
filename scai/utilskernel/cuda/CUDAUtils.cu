@@ -1645,6 +1645,39 @@ void CUDAUtils::sort(
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void CUDAUtils::sortInPlace(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType n,
+    bool ascending )
+{
+    SCAI_REGION( "CUDA.Utils.sort" )
+
+    SCAI_LOG_INFO( logger, "sort " << n << " values, ascending = " << ascending )
+
+    if ( n <= 1 )
+    {
+        return;
+    }
+
+    SCAI_CHECK_CUDA_ACCESS
+
+    thrust::device_ptr<IndexType> array_d( indexes );
+    thrust::device_ptr<ValueType> values_d( values );
+
+    if ( ascending )
+    {
+        thrust::sort_by_key( array_d, array_d + n, values_d, thrust::less<IndexType>() );
+    }
+    else
+    {
+        thrust::sort_by_key( array_d, array_d + n, values_d, thrust::greater<IndexType>() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 /*                                                  setInversePerm                                                    */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -1832,6 +1865,7 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::scaleVectorAddScalar<ValueType> >( scaleVectorAddScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sortInPlace<ValueType> >( sortInPlace, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );

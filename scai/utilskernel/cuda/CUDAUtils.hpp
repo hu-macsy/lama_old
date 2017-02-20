@@ -190,6 +190,15 @@ public:
         const IndexType n,
         const bool ascending );
 
+    /** CUDA implementation for UtilKernelTrait::sortInPlace */
+
+    template<typename ValueType>
+    static void sortInPlace(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType n,
+        const bool ascending );
+
     /** CUDA implementation for UtilKernelTrait::setInversePerm */
 
     static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );

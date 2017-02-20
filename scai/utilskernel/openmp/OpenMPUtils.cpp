@@ -1558,6 +1558,66 @@ void OpenMPUtils::sort(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename KeyType, typename ValueType>
+void OpenMPUtils::qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right )
+{
+    SCAI_LOG_DEBUG( logger, "qsort( " << left << " : " << right << " )" )
+
+    if ( left + 1 >= right - 1  )
+    {
+        return;
+    }
+
+    IndexType i = left;
+    IndexType j = right - 1;
+    IndexType pivot = keys[ ( left + right ) / 2 ];
+
+    SCAI_LOG_TRACE( logger, "pivot = " << pivot << " from pos " << ( left + right ) / 2 )
+
+    while( true )
+    {
+        while ( i < right && keys[i] < pivot ) ++i;
+        while ( j > left && keys[j] > pivot ) --j;
+
+        if ( i < j )
+        {
+            SCAI_LOG_TRACE( logger, "swap i = " << i << ", j = " << j << ", " << keys[i] << ", " << keys[j] )
+            std::swap( keys[i], keys[j] );
+            std::swap( values[i], values[j] );
+            i++;
+            j--;
+        }
+        else
+        {
+            break;
+        }
+    }
+ 
+    qsort( keys, values, left, j + 1 );
+    qsort( keys, values, i, right );
+}
+
+template<typename ValueType>
+void OpenMPUtils::sortInPlace(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType n,
+    const bool ascending )
+{
+    SCAI_REGION( "OpenMP.Utils.sortInPlace" )
+
+    if ( ascending )
+    {
+        qsort( indexes, values, 0, n );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "ascending = false not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
 {
@@ -1846,6 +1906,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::scan<ValueType> >( scan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unscan<ValueType> >( unscan, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::sort<ValueType> >( sort, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::sortInPlace<ValueType> >( sortInPlace, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
 

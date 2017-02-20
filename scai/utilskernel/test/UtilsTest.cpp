@@ -537,6 +537,71 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( sortInPlaceTest )
+{
+    typedef RealType ValueType;
+
+    ContextPtr testContext = Context::getContextPtr();
+    static LAMAKernel<UtilKernelTrait::sortInPlace<ValueType> > sortInPlace;
+    ContextPtr loc = Context::getContextPtr( sortInPlace.validContext( testContext->getType() ) );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    // just one simple example of a typical sort with permutation
+
+    {
+        bool ascending = true;
+
+        IndexType indexesArr[]  = { 10, 5, 13, 1, 3, 0 };
+        ValueType valuesArr[]   = {  1, 2, 3, 4, 5, 6  };
+
+        IndexType expectedIndexesArr[]  = { 0, 1, 3, 5, 10, 13 };
+        ValueType expectedValuesArr[]   = { 6, 4, 5, 2,  1,  3  };
+
+        const IndexType n = sizeof( indexesArr ) / sizeof( IndexType );
+
+        HArray<IndexType> indexes( n, indexesArr, testContext );
+        HArray<ValueType> values( n, valuesArr, testContext );
+
+        {
+            WriteAccess<IndexType> wIndexes( indexes, loc );
+            WriteAccess<ValueType> wValues( values, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sortInPlace[loc]( wIndexes.get(), wValues.get(), n, ascending );
+        }
+
+        {
+            ReadAccess<IndexType> rIndexes( indexes );
+            ReadAccess<ValueType> rValues( values );
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                BOOST_CHECK_EQUAL( expectedIndexesArr[i], rIndexes[i] );
+                BOOST_CHECK_EQUAL( expectedValuesArr[i], rValues[i] );
+            }
+        }
+
+        {
+            WriteAccess<IndexType> wIndexes( indexes, loc );
+            WriteAccess<ValueType> wValues( values, loc );
+            SCAI_CONTEXT_ACCESS( loc );
+            sortInPlace[loc]( wIndexes.get(), wValues.get(), n, ascending );
+        }
+
+        {
+            ReadAccess<IndexType> rIndexes( indexes );
+            ReadAccess<ValueType> rValues( values );
+
+            for ( IndexType i = 0; i < n; i++ )
+            {
+                BOOST_CHECK_EQUAL( expectedIndexesArr[i], rIndexes[i] );
+                BOOST_CHECK_EQUAL( expectedValuesArr[i], rValues[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 {
     ContextPtr testContext = Context::getContextPtr();

@@ -504,6 +504,36 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename ValueType>
+    struct sortInPlace
+    {
+        /** Sorting of values
+         *
+         *  @param[in,out] indexes
+         *  @param[in,out] values
+         *  @param[in]   n is the number of values to be sorted
+         *  @param[in]   ascending if true sort in ascending order, descending otherwise
+         *
+         *  \code
+         *         indexes  =     8   3    1   5
+         *         values   =   1.0  2.0  3.0  4.0
+         *
+         *         indexes  =     1   3    5    8
+         *         values   =   3.0  2.0  4.0  1.0
+         *  \endcode
+         */
+        typedef void ( *FuncType ) (
+            IndexType indexes[],
+            ValueType values[],
+            const IndexType n,
+            const bool ascending );
+
+        static const char* getId()
+        {
+            return "Utils.sortInPlace";
+        }
+    };
+
     template<typename BucketType>
     struct countBuckets
     {

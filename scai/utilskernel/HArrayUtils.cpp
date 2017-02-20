@@ -1267,6 +1267,44 @@ void HArrayUtils::sort(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void HArrayUtils::sortSparseEntries(
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<ValueType>& values,
+    const bool ascending,
+    hmemo::ContextPtr prefLoc )
+{
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "keys and values must have same number of entries" )
+
+    const IndexType n = indexes.size();
+
+    if ( n < 2 )
+    {
+        return;
+    }
+
+    static LAMAKernel<UtilKernelTrait::sortInPlace<ValueType> > sortInPlace;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = sortInPlace.getValidContext();
+    }
+
+    sortInPlace.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wIndexes( indexes, loc );
+    WriteAccess<IndexType> wValues( values, loc );
+    sortInPlace[loc]( wIndexes.get(), wValues.get(), n, ascending );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename BucketType>
 void HArrayUtils::bucketSort(
     hmemo::HArray<IndexType>& offsets,

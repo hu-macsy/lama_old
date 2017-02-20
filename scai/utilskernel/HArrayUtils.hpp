@@ -456,6 +456,21 @@ public:
         const bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Sort an array of keys( index type ) and values in-place
+     *
+     *  @param[in,out] indexes    specify the keys used for sorting
+     *  @param[in,out] values     sorted values
+     *  @param[in]     ascending  sort ascending (true) or descending (false)
+     *  @param[in]     prefLoc    is the preferred context where computation should be done
+     *
+     */
+    template<typename ValueType>
+    static void sortSparseEntries(
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<ValueType>& values,
+        const bool ascending,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Bucket sort of an array with integer values
      *
      *  @param[out] perm is permutation to get array sorted
