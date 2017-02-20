@@ -243,11 +243,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( joinTest, ValueType, scai_numeric_test_types )
 
     for ( IndexType rank = 0; rank < size; ++rank )
     {
-        ValueType val = rank;
+        ValueType expectedVal= static_cast<ValueType>( rank );
 
         for ( IndexType k = 0; k <= rank; ++k )
         {
-            BOOST_CHECK_EQUAL( val, rGlobal[pos] );
+            BOOST_CHECK_EQUAL( expectedVal, rGlobal[pos] );
             pos++;
         }
     }
