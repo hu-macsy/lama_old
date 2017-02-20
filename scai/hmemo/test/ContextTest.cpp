@@ -34,6 +34,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/hmemo/Context.hpp>
+#include <scai/hmemo/ContextAccess.hpp>
 #include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
@@ -76,6 +77,22 @@ BOOST_AUTO_TEST_CASE( getContextText )
     ContextPtr ctx1 = Context::getContextPtr( ctx->getType() );
     // equality of devices checked by pointer equality
     BOOST_CHECK_EQUAL( ctx.get(), ctx1.get() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( currentContextTest )
+{
+    ContextPtr ctx = Context::getContextPtr();
+
+    BOOST_CHECK( Context::getCurrentContext() == NULL );
+
+    {
+        SCAI_CONTEXT_ACCESS( ctx )
+        BOOST_CHECK( Context::getCurrentContext() == ctx.get() );
+    }
+
+    BOOST_CHECK( Context::getCurrentContext() == NULL );
 }
 
 /* --------------------------------------------------------------------- */
