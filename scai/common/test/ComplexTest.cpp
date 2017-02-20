@@ -241,20 +241,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( input, ValueType, scai_complex_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( conj, ValueType, scai_complex_test_types )
 {
-    typedef typename TypeTraits<ValueType>::AbsType AbsType;
-    ValueType x, r;
     // positiv real, negativ imag
-    x = ValueType( 2, -3 );
-    r = ValueType( 2, 3 );
+
+    ValueType x( 2, -3 );
+    ValueType r( 2, 3 );
+
     x = Math::conj( x );
-    BOOST_CHECK_CLOSE( x.real(), r.real(), 0.00001 );
-    BOOST_CHECK_CLOSE( x.imag(), r.imag(), 0.00001 );
+
+    BOOST_CHECK_CLOSE( x.real(), r.real(), 0.1 );
+    BOOST_CHECK_CLOSE( x.imag(), r.imag(), 0.1 );
+
     // negativ real, negativ imag
+
     r = ValueType( -14, -3 );
     x = ValueType( -14, 3 );
     x = Math::conj( x );
-    BOOST_CHECK_CLOSE( x.real(), r.real(), 0.00001 );
-    BOOST_CHECK_CLOSE( x.imag(), r.imag(), 0.00001 );
+    BOOST_CHECK_CLOSE( x.real(), r.real(), 0.1 );
+    BOOST_CHECK_CLOSE( x.imag(), r.imag(), 0.1 );
 }
 
 /* --------------------------------------------------------------------- */
