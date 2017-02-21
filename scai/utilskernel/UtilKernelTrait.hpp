@@ -138,11 +138,11 @@ struct UtilKernelTrait
          *
          *  @param[in] array values to be checked
          *  @param[in] n number of values to check
-         *  @param[in] ascending if true check for ascending order, otherwise for descending
+         *  @param[in] op specifies comparison operator that must hold for each neighbored pair 
          *  @returns true iff \f$ a[i] \le a[i+1] \f$ (ascending=true) or \f$ a[i] \ge a[i+1] \f$ (ascending=false)
          */
 
-        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const bool ascending );
+        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const binary::CompareOp op );
         static const char* getId()
         {
             return "Util.isSorted";

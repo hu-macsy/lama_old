@@ -188,21 +188,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rValues2( valueArray2, loc );
         ReadAccess<ValueType> rValues3( valueArray3, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        // values1 are sorted, ascending = true
-        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, true ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, false ) );
+        // values1 are sorted, operator = LE
+        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, binary::LE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, binary::GE ) );
         // values2 are sorted, ascending = false
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, false ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, true ) );
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, binary::GE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, binary::LE ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, binary::LE ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, true ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, binary::LE ) );
         // only first two values are sorted
         // values3 are not sorted, neither ascending nor descending
-        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, false ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, true ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, binary::GE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, binary::LE ) );
     }
 }
 
@@ -530,7 +530,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
     SCAI_CONTEXT_ACCESS( loc );
 
     sort[loc]( wPerm.get(), wValues.get(), wValues.get(), n, ascending );
-    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending );
+    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending ? binary::LE : binary::GE );
 
     BOOST_CHECK( valuesSorted );
 }

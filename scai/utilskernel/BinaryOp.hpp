@@ -77,6 +77,15 @@ struct binary
         COPY_SIGN,    //!< for operator magnitude(x) * sign(y)
         MAX_BINARY_OP //!< for internal use only
     } BinaryOp;
+
+    typedef enum
+    {
+        LT,            //!< for less than
+        LE,            //!< for less equal
+        GE,            //!< for greater equal
+        GT,            //!< for greater than
+        MAX_COMPARE_OP //!< for internal use only
+    } CompareOp;
 };
 
 /** Method that applies a binary operation for two operands.
@@ -117,6 +126,25 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
             return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
         default:
             return ValueType( 0 );
+    }
+}
+
+template <typename ValueType>
+MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
+inline bool applyBinary( const ValueType& x1, const binary::CompareOp op, const ValueType& x2 )
+{
+    switch ( op )
+    {
+        case binary::LT:
+            return x1 < x2;
+        case binary::LE:
+            return x1 < x2 || x1 == x2;
+        case binary::GE:
+            return x1 > x2 || x1 == x2;
+        case binary::GT:
+            return x1 > x2;
+        default:
+            return false;
     }
 }
 
@@ -251,6 +279,38 @@ inline std::ostream& operator<<( std::ostream& stream, const binary::BinaryOp& o
 
         default:
             stream << "<unknown_binary_op>";
+            break;
+    }
+
+    return stream;
+}
+
+/*
+ * Output of CompareOp in stream by writing strings instead of numbers
+ */
+
+inline std::ostream& operator<<( std::ostream& stream, const binary::CompareOp& op )
+{
+    switch ( op )
+    {
+        case binary::LE:
+            stream << "LE";
+            break;
+
+        case binary::LT:
+            stream << "LT";
+            break;
+
+        case binary::GE:
+            stream << "GE";
+            break;
+
+        case binary::GT:
+            stream << "GT";
+            break;
+
+        default:
+            stream << "<unknown_compare_op>";
             break;
     }
 

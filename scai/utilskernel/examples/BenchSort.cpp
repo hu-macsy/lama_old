@@ -54,8 +54,6 @@ void bucketSort( const IndexType N )
 
     HArrayUtils::setScalar( values, nBuckets, binary::MODULO );
 
-    bool ascending = true;
-
     HArray<IndexType> offsets;
     HArray<IndexType> perm;
 
@@ -70,7 +68,7 @@ void bucketSort( const IndexType N )
 
     cout << "Bucket sort of " << N << " values took " << time1 << " seconds." << endl;
 
-    bool isSorted = HArrayUtils::isSorted( sortedValues, ascending );
+    bool isSorted = HArrayUtils::isSorted( sortedValues, binary::LE );
 
     if ( isSorted )
     {

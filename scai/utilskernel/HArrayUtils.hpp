@@ -403,10 +403,18 @@ public:
 
     static bool validIndexes( const hmemo::HArray<IndexType>& array, const IndexType size, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Check whether values in array are sorted ascending or descending. */
-
+    /** Check whether values in array are sorted  
+     *
+     *  @param[in] array
+     *  @param[in] op
+     *  @param[in] prefloc 
+     *  @returns   true if a[i] op a[i+1] is true for all neighbored pairs
+     */
     template<typename ValueType>
-    static bool isSorted( const hmemo::HArray<ValueType>& array, const bool isAscending, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static bool isSorted( 
+        const hmemo::HArray<ValueType>& array, 
+        const binary::CompareOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build the running sums for an array; note that result array will contain one element more.
      *

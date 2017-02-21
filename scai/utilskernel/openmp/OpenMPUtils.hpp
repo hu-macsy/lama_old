@@ -111,7 +111,7 @@ public:
     /** OpenMP implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
-    static bool isSorted( const ValueType array[], const IndexType n, bool acending );
+    static bool isSorted( const ValueType array[], const IndexType n, const binary::CompareOp op );
 
     /** OpenMP implementation for UtilKernelTrait::set */
 
@@ -296,7 +296,7 @@ private:
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
 
     template<typename KeyType, typename ValueType>
-    static void qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right );
+    static void qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right, bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 

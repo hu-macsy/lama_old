@@ -1033,7 +1033,7 @@ bool HArrayUtils::validIndexes(
 template<typename ValueType>
 bool HArrayUtils::isSorted(
     const hmemo::HArray<ValueType>& array,
-    const bool ascending,
+    const binary::CompareOp op,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
@@ -1050,7 +1050,7 @@ bool HArrayUtils::isSorted(
     isSorted.getSupportedContext( loc );
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<ValueType> rValues( array, loc );
-    bool sorted = isSorted[loc]( rValues.get(), n, ascending );
+    bool sorted = isSorted[loc]( rValues.get(), n, op );
     return sorted;
 }
 
@@ -1291,15 +1291,15 @@ void HArrayUtils::sortSparseEntries(
 
     if ( loc == ContextPtr() )
     {
-        loc = sortInPlace.getValidContext();
+        loc = indexes.getValidContext();
     }
 
     sortInPlace.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
-    WriteAccess<ValueType> wIndexes( indexes, loc );
-    WriteAccess<IndexType> wValues( values, loc );
+    WriteAccess<IndexType> wIndexes( indexes, loc );
+    WriteAccess<ValueType> wValues( values, loc );
     sortInPlace[loc]( wIndexes.get(), wValues.get(), n, ascending );
 }
 
@@ -1854,7 +1854,8 @@ void HArrayUtils::addSparse(
             hmemo::ContextPtr );                                                \
     template bool HArrayUtils::isSorted<ValueType>(                             \
             const hmemo::HArray<ValueType>&,                                    \
-            const bool, hmemo::ContextPtr );                                    \
+            const binary::CompareOp,                                            \
+            hmemo::ContextPtr );                                                \
     template ValueType HArrayUtils::scan<ValueType>(                            \
             hmemo::HArray<ValueType>&, hmemo::ContextPtr );                     \
     template ValueType HArrayUtils::unscan<ValueType>(                          \
@@ -1863,6 +1864,11 @@ void HArrayUtils::addSparse(
             hmemo::HArray<IndexType>*,                                          \
             hmemo::HArray<ValueType>*,                                          \
             const hmemo::HArray<ValueType>&,                                    \
+            const bool,                                                         \
+            hmemo::ContextPtr );                                                \
+    template void HArrayUtils::sortSparseEntries<ValueType>(                    \
+            hmemo::HArray<IndexType>&,                                          \
+            hmemo::HArray<ValueType>&,                                          \
             const bool,                                                         \
             hmemo::ContextPtr );                                                \
     template void HArrayUtils::mergeSort<ValueType>(                            \

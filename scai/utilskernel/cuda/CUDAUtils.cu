@@ -644,36 +644,25 @@ ValueType CUDAUtils::getValue( const ValueType* array, const IndexType i )
 /* --------------------------------------------------------------------------- */
 
 // template argument ascending: make two instantiations of kernel to avoid bool test
-template<typename ValueType, bool ascending>
+template<typename ValueType>
 __global__
-void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values )
+void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values, const binary::CompareOp op )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
     if ( i < numValues )
     {
-        if ( ascending )
-        {
-            // not possible, <= not defined on complex
-            // ToDo: warp divergence possible?
-//            result[i] = values[i] <= values[i + 1];
-            result[i] = values[i] < values[i + 1] || values[i] == values[i + 1];
-        }
-        else
-        {
-//            result[i] = values[i] >= values[i + 1];
-            result[i] = values[i] > values[i + 1] || values[i] == values[i + 1];
-        }
+        result[i] = applyBinary( values[i], op, values[i + 1] );
     }
 }
 
 template<typename ValueType>
-bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
+bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, const binary::CompareOp op )
 {
     SCAI_REGION( "CUDA.Utils.isSorted" )
 
     SCAI_LOG_INFO( logger, "isSorted<" << TypeTraits<ValueType>::id() << ">, n = " << n
-                   << ", ascending = " << ascending )
+                           << ", op = " << op )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -689,14 +678,7 @@ bool CUDAUtils::isSorted( const ValueType array[], const IndexType n, bool ascen
     dim3 dimBlock( blockSize, 1, 1 );
     dim3 dimGrid = makeGrid( n - 1, dimBlock.x );
 
-    if ( ascending )
-    {
-        isSortedKernel<ValueType, true> <<< dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
-    }
-    else
-    {
-        isSortedKernel<ValueType, false> <<< dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array );
-    }
+    isSortedKernel<ValueType> <<< dimGrid, dimBlock>>> ( resultRawPtr, n - 1, array, op );
 
     cudaStreamSynchronize( 0 );
     SCAI_CHECK_CUDA_ERROR

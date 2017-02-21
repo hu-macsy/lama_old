@@ -651,6 +651,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( sortSparseTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    IndexType raw_indexes[] = { 13, 5, 14, 2, 1, 9, 16, 31, 32, 17 };
+    ValueType raw_vals[] = { 13, 5, 14, 2, 1, 9, 16, 31, 32, 17 };
+
+    const IndexType n = sizeof( raw_vals ) / sizeof( ValueType );
+
+    LArray<IndexType> indexes( n, raw_indexes, loc );
+    LArray<ValueType> values( n, raw_vals, loc );
+
+    for ( IndexType i = 0; i < 2; ++i )
+    { 
+        bool ascending = i == 0 ? false : true;
+        binary::CompareOp op = ascending ? binary::LE : binary::GE;
+
+        HArrayUtils::sortSparseEntries( indexes, values, ascending );
+
+        BOOST_CHECK( HArrayUtils::isSorted( indexes, op ) );
+        BOOST_CHECK( HArrayUtils::isSorted( values, op ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( inversePermTest )
 {
     IndexType valuesPerm[]   = { 1, 0, 3, 2, 5, 6, 7, 4 };
@@ -693,7 +719,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
     LArray<ValueType> array( n, vals, loc );
 
     HArrayUtils::sort( NULL, &array, array, descending );
-    BOOST_CHECK( HArrayUtils::isSorted( array, descending ) );
+    BOOST_CHECK( HArrayUtils::isSorted( array, binary::GE ) );
 
     ValueType expectedVals[] = { 1, 2,  2, 5, 8, 13, 14 };
     LArray<ValueType> array1( n, expectedVals, loc );
@@ -733,7 +759,7 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
 
     LArray<IndexType> sortedArray;
     HArrayUtils::gatherImpl( sortedArray, array, perm, binary::COPY );
-    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, true, loc ) );
+    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, binary::LE, loc ) );
 
     // number of buckets = 1, so only two values array[i] == 0 are taken
 
@@ -802,7 +828,7 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
 
     HArrayUtils::mergeSort( array, sortOffsets, ascending );
 
-    BOOST_CHECK( HArrayUtils::isSorted( array, ascending, loc ) );
+    BOOST_CHECK( HArrayUtils::isSorted( array, binary::LE, loc ) );
 
     array.init( vals, n );
 
@@ -1197,8 +1223,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
     HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, denseArray, loc );
     BOOST_CHECK_EQUAL( sparseArray.size(), IndexType( 7 ) );
     BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
-    // The spare indexes must be sorted, ascending = true
-    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, true, loc ) );
+    // The sparse indexes must be sorted, no doubles
+    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, binary::LT, loc ) );
     denseArray.purge();  // will also reset size
     HArrayUtils::buildDenseArray( denseArray, n, sparseArray, sparseIndexes, loc );
     BOOST_REQUIRE_EQUAL( denseArray.size(), n );

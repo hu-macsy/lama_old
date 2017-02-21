@@ -540,19 +540,33 @@ void OpenMPUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, const binary::CompareOp op )
+bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, bool ascending )
 {
     SCAI_REGION( "OpenMP.Utils.isSorted" )
     SCAI_LOG_INFO( logger,
-                   "isSorted<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", op = " << op )
+                   "isSorted<" << TypeTraits<ValueType>::id() << ">, n = " << n << ", ascending = " << ascending )
     bool sorted = true; //!< will be set to false at violations
 
-    for ( IndexType i = 1; i < n; i++ )
+    if ( ascending )
     {
-        if ( !applyBinary( array[i - 1], op, array[i] ) )
+        for ( IndexType i = 1; i < n; i++ )
         {
-            sorted = false;
-            break;
+            if ( array[i - 1] > array[i] )
+            {
+                sorted = false;
+                break;
+            }
+        }
+    }
+    else
+    {
+        for ( IndexType i = 1; i < n; i++ )
+        {
+            if ( array[i - 1] < array[i] )
+            {
+                sorted = false;
+                break;
+            }
         }
     }
 
@@ -1264,7 +1278,7 @@ void OpenMPUtils::setScatter(
     SCAI_REGION( "OpenMP.Utils.setScatter" )
 
     SCAI_LOG_INFO( logger, "setScatter: out<" << TypeTraits<ValueType1>::id() << ">"
-                   << "[ indexes[" << n << "], unique = " << unique << " ]"
+                   << "[ indexes[" << n << "], unique = " << unique << " ]" 
                    << op << " = in<" << TypeTraits<ValueType2>::id() << ">[" << n << "]" )
 
     SCAI_LOG_DEBUG( logger, "addresses: out = " << out << ", indexes = " << indexes << ", in = " << in )
@@ -1296,7 +1310,7 @@ void OpenMPUtils::setScatter(
             atomicAdd( out[indexes[i]], - static_cast<ValueType1>( in[i] ) );
         }
     }
-    else
+    else 
     {
         if ( unique )
         {
@@ -1545,9 +1559,9 @@ void OpenMPUtils::sort(
 /* --------------------------------------------------------------------------- */
 
 template<typename KeyType, typename ValueType>
-void OpenMPUtils::qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right, bool ascending )
+void OpenMPUtils::qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right )
 {
-    SCAI_LOG_INFO( logger, "qsort( " << left << " : " << right << " )" )
+    SCAI_LOG_ERROR( logger, "qsort( " << left << " : " << right << " )" )
 
     if ( left >= right )
     {
@@ -1560,57 +1574,27 @@ void OpenMPUtils::qsort( KeyType keys[], ValueType values[], IndexType left, Ind
 
     KeyType pivot = keys[ m ];
 
-    while ( i <= j )
-    {
-        if ( ascending ) 
-        {
-            while ( keys[i] < pivot )
-            {
-                ++i;
-            }
-            while ( keys[j] > pivot )
-            {
-                --j;
-            }
-        }
-        else
-        {
-            while ( keys[i] > pivot )
-            {
-                ++i;
-            }
-            while ( keys[j] < pivot )
-            {
-                --j;
-            }
-        }
+    SCAI_LOG_ERROR( logger, "pivot = " << pivot << " from pos " << m )
 
-        if ( i < j )
+    while( i <= j )
+    {
+        while ( keys[i] < pivot ) ++i;
+        while ( keys[j] > pivot ) --j;
+
+        if ( i <= j )
         {
-            SCAI_LOG_TRACE( logger, "swap i = " << i << ", j = " << j << ", " << keys[i] << ", " << keys[j] )
+            SCAI_LOG_ERROR( logger, "swap i = " << i << ", j = " << j << ", " << keys[i] << ", " << keys[j] )
             std::swap( keys[i], keys[j] );
             std::swap( values[i], values[j] );
             i++;
             j--;
-        } 
-        else if ( i == j )
-        {
-            // no swap, just to finish the loop with the right partition index
-            i++;
         }
     }
+ 
+    SCAI_LOG_ERROR( logger, "partition index i = " << i )
 
-    SCAI_LOG_TRACE( logger, "partition index i = " << i )
-
-    if ( left < i - 1 )
-    {
-        qsort( keys, values, left, i - 1, ascending );
-    }
-
-    if ( i < right )
-    {
-        qsort( keys, values, i, right, ascending );
-    }
+    if ( left < i - 1 ) qsort( keys, values, left, i-1 );
+    if ( i < right ) qsort( keys, values, i, right );
 }
 
 template<typename ValueType>
@@ -1622,7 +1606,28 @@ void OpenMPUtils::sortInPlace(
 {
     SCAI_REGION( "OpenMP.Utils.sortInPlace" )
 
-    qsort( indexes, values, 0, n - 1, ascending );
+    if ( ascending )
+    {
+        std::cout << "qsort start: ";
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            std::cout << " " << indexes[i];
+        }
+        std::cout << std::endl;
+
+        qsort( indexes, values, 0, n-1 );
+
+        std::cout << "qsort ready: ";
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            std::cout << " " << indexes[i];
+        }
+        std::cout << std::endl;
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "ascending = false not supported yet" )
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1766,7 +1771,7 @@ void OpenMPUtils::sortInBuckets( IndexType sortedIndexes[],
 
 IndexType OpenMPUtils::countAddSparse(
     const IndexType indexes1[],
-    const IndexType n1,
+    const IndexType n1, 
     const IndexType indexes2[],
     const IndexType n2 )
 {
@@ -1784,20 +1789,20 @@ IndexType OpenMPUtils::countAddSparse(
             ++n;
             ++i1;
             ++i2;
-        }
+        } 
         else if ( indexes1[i1] < indexes2[i2] )
         {
             ++n;
             ++i1;
         }
-        else
+        else 
         {
             ++n;
             ++i2;
         }
     }
 
-    // add remaining indexes from array1 or array2
+    // add remaining indexes from array1 or array2 
 
     n += ( n1 - i1 ) + ( n2 - i2 );
 
@@ -1812,7 +1817,7 @@ IndexType OpenMPUtils::addSparse(
     ValueType values[],
     const IndexType indexes1[],
     const ValueType values1[],
-    const IndexType n1,
+    const IndexType n1, 
     const ValueType alpha,
     const IndexType indexes2[],
     const ValueType values2[],
@@ -1832,14 +1837,14 @@ IndexType OpenMPUtils::addSparse(
     {
         if ( indexes1[i1] == indexes2[i2] )
         {
-            // entry at same position
+            // entry at same position 
 
             indexes[n] = indexes1[i1];
             values[n]  = alpha * values1[i1] + beta * values2[i2];
             ++n;
             ++i1;
             ++i2;
-        }
+        } 
         else if ( indexes1[i1] < indexes2[i2] )
         {
             // entry only in array1
@@ -1849,7 +1854,7 @@ IndexType OpenMPUtils::addSparse(
             ++n;
             ++i1;
         }
-        else
+        else 
         {
             // entry only in array2
 
@@ -1875,7 +1880,7 @@ IndexType OpenMPUtils::addSparse(
         ++n;
         ++i2;
     }
-
+ 
     return n;
 }
 
