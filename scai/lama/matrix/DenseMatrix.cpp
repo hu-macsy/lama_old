@@ -1258,29 +1258,54 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
 
     SCAI_LOG_DEBUG( logger, comm << ": bcast chunks for this col dist = " << getColDistribution() )
 
-    HArray<ValueType> commBuffer;
-
     if ( rowOwner == comm.getRank() )
     {
         IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
 
         SCAI_ASSERT_EQ_ERROR( static_cast<IndexType>( mData.size() ), np, "illegal column data" )
 
+        HArray<ValueType> sendBuffer;
+        HArray<ValueType> recvBuffer;
+
+        CommunicationPlan sendPlan;
+        CommunicationPlan recvPlan( NULL, 0 );  // nothing to receive
+
         for ( PartitionId p = 0; p < comm.getSize(); ++p )
         {
-            HArray<ValueType>& buffer( p == comm.getRank() ? values : commBuffer );
+            if ( p == comm.getRank() )
+            {
+                // pick up the local values
 
-            mData[p]->getRow( buffer, localRowIndex );
-            comm.bcastArray( buffer, rowOwner );
+                mData[p]->getRow( values, localRowIndex );
+            }
+            else
+            {
+                mData[p]->getRow( sendBuffer, localRowIndex );
+             
+                if ( sendBuffer.size() )
+                {
+                    sendPlan.singleEntry( p, sendBuffer.size() );
+                    comm.exchangeByPlan( recvBuffer, recvPlan, sendBuffer, sendPlan );
+                }
+            }
         }
     }
     else
     {
-        for ( PartitionId p = 0; p < comm.getSize(); ++p )
-        {
-            HArray<ValueType>& buffer( p == comm.getRank() ? values : commBuffer );
-            comm.bcastArray( buffer, rowOwner );
-        }
+        HArray<ValueType> dummySend;
+
+        // Not owner, build recv plan
+
+        IndexType size = getColDistribution().getLocalSize();
+
+        CommunicationPlan sendPlan( NULL, 0 );
+        CommunicationPlan recvPlan( NULL, 0 );
+
+        recvPlan.singleEntry( rowOwner, size );
+
+        SCAI_LOG_DEBUG( logger, comm << ": getRow, recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
+
+        comm.exchangeByPlan( values, recvPlan, dummySend, sendPlan );
     }
 
     // guarantee consistency in the dense vector for the local data

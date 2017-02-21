@@ -632,11 +632,10 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        bool ascending = false; // check for descending
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), mNumRows, ascending ),
-                           *this << " @ " << msg << ": not descending values in ILG" )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), mNumDiagonals, ascending ),
-                           *this << " @ " << msg << ": not descending values in DLG" )
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), mNumRows, utilskernel::binary::GE ),
+                           *this << " @ " << msg << ": not decreasing values in ILG" )
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), mNumDiagonals, utilskernel::binary::GE ),
+                           *this << " @ " << msg << ": not decreasing values in DLG" )
     }
     // both, ILG and DLG, must sum up to mNumValues
     {

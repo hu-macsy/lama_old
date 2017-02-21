@@ -861,7 +861,7 @@ void Matrix::resetRowDistributionByFirstColumn()
 
         // if storage has not the global column index of diagonal first, this test is likely to fail
 
-        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, /* ascending = */ true ),
+        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, utilskernel::binary::LE ),
                            "first column indexes are not sorted, cannot be global indexes" )
 
         // otherwise building the distribution will fail

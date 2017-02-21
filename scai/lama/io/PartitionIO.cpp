@@ -246,7 +246,7 @@ DistributionPtr PartitionIO::readSDistribution( const string& inFileName, Commun
             SCAI_LOG_ERROR( logger, "Reading distribution from file " << inFileName << " failed: " << e.what() )
         }
 
-        bool isAscending = utilskernel::HArrayUtils::isSorted( owners, true );
+        bool isAscending = utilskernel::HArrayUtils::isSorted( owners, utilskernel::binary::LE );
 
         if ( isAscending )
         {

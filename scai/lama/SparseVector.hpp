@@ -395,6 +395,16 @@ public:
     virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues );
 
     /**
+     * Set local sparse values of the sparse vector by swapping with existing arrays.
+     *
+     *  @param[in, out] nonZeroIndexes in the new indexes, out the old indexes
+     *  @param[in, out] nonZeroValues in the new values, out the old values
+     *
+     * The new sparse entries will be sorted in any case.
+     */
+    void swapSparseValues( hmemo::HArray<IndexType>& nonZeroIndexes, hmemo::HArray<ValueType>& nonZeroValues );
+
+    /**
      * Implementation of Vector::copy with covariant return type.
      */
     virtual SparseVector* copy() const;

@@ -183,12 +183,11 @@ void CSRStorage<ValueType>::check( const char* msg ) const
         isSorted.getSupportedContext( loc, getValue );
         ReadAccess<IndexType> csrIA( mIa, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        bool ascending = true; // check for ascending
         IndexType numValues = getValue[ loc ]( csrIA.get(), mNumRows );
         SCAI_ASSERT_ERROR(
             numValues == mNumValues,
             "ia[" << mNumRows << "] = " << numValues << ", expected " << mNumValues << ", msg = " << msg )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), mNumRows + 1, ascending ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), mNumRows + 1, utilskernel::binary::LE ),
                            *this << " @ " << msg << ": IA is illegal offset array" )
     }
     // check column indexes in JA
@@ -291,8 +290,7 @@ void CSRStorage<ValueType>::setCSRDataImpl(
     }
     else if ( ia.size() == numRows + 1 )
     {
-        bool ascending = true; // check increasing, ia[i] <= ia[i+1]
-        SCAI_ASSERT( HArrayUtils::isSorted( ia, ascending ), "ia is invalid offset array, entries not ascending" )
+        SCAI_ASSERT( HArrayUtils::isSorted( ia, utilskernel::binary::LE ), "ia is invalid offset array, entries not ascending" )
         SCAI_ASSERT_EQUAL( numValues, HArrayUtils::getValImpl( ia, numRows ), "last entry in offsets must be numValues" );
     }
     else

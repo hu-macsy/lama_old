@@ -602,7 +602,7 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     const HArray<ValueType>& localValues = getLocalValues();
 
-    bool is = HArrayUtils::isSorted( localValues, ascending );
+    bool is = HArrayUtils::isSorted( localValues, ascending ? utilskernel::binary::LE : utilskernel::binary::GE );
 
     if ( size == 1 )
     {
@@ -615,10 +615,13 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     ValueType tmp;
 
+    const int toRight = 1;
+    const int toLeft  = -1;
+
     if ( n == 0 )
     {
-        comm.shift( &tmp, IndexType( 1 ), &tmp, IndexType( 0 ), 1 );
-        comm.shift( &tmp, IndexType( 1 ), &tmp, IndexType( 0 ), -1 );
+        comm.shift( &tmp, IndexType( 1 ), &tmp, IndexType( 0 ), toRight );
+        comm.shift( &tmp, IndexType( 1 ), &tmp, IndexType( 0 ), toLeft );
 
         is = comm.all( is );
 
@@ -629,7 +632,7 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     // send right value to right neighbor
 
-    IndexType nt = comm.shift( &tmp, IndexType( 1 ), &rLocalValues[n - 1], IndexType( 1 ), 1 );
+    IndexType nt = comm.shift( &tmp, IndexType( 1 ), &rLocalValues[n - 1], IndexType( 1 ), toRight );
 
     if ( nt && rank > 0 )
     {
@@ -653,7 +656,7 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     // send left value to left neighbor
 
-    nt = comm.shift( &tmp, IndexType( 1 ), &rLocalValues[0], IndexType( 1 ), -1 );
+    nt = comm.shift( &tmp, IndexType( 1 ), &rLocalValues[0], IndexType( 1 ), toLeft );
 
     if ( nt && rank < size - 1 )
     {

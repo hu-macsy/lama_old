@@ -667,7 +667,7 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL( ja.size(), numValues, "size misamtch" );
     SCAI_ASSERT_EQUAL( values.size(), numValues, "size misamtch" );
     SCAI_ASSERT_EQUAL( ia.size(), numRows + 1, "size misamtch" );
-    SCAI_ASSERT( HArrayUtils::isSorted( ia, true, prefLoc ),
+    SCAI_ASSERT( HArrayUtils::isSorted( ia, utilskernel::binary::LE, prefLoc ),
                  "illegal offset array, not ascending entries" );
     SCAI_ASSERT_EQUAL( HArrayUtils::getValImpl( ia, numRows ), numValues,
                        "illegal offset array, not ascending entries" );

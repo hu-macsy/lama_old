@@ -715,7 +715,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     sortVector.redistribute( repDist );
     perm.redistribute( repDist );
 
-    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), ascending ) );
+    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), utilskernel::binary::LE ) );
 
     hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
     hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );

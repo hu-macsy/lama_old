@@ -219,7 +219,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    SCAI_LOG_ERROR( logger, comm << ": check for consistency: " << *this )
+    SCAI_LOG_INFO( logger, comm << ": check for consistency: " << *this )
 
     IndexType consistencyErrors = 0;
 
@@ -233,21 +233,17 @@ bool SparseMatrix<ValueType>::isConsistent() const
         mLocalData->check( "check for consistency" );
         mHaloData->check( "check for consistency" );
         // ToDo: check Halo
-        SCAI_LOG_ERROR( logger, comm << ": is consistent : " << *this )
+        SCAI_LOG_DEBUG( logger, comm << ": is consistent : " << *this )
     }
     catch ( common::Exception& e )
     {
-        SCAI_LOG_ERROR( logger, *this << " not consistent: " << e.what() )
+        SCAI_LOG_INFO( logger, *this << " not consistent: " << e.what() )
         consistencyErrors = 1;
     }
 
     // use communicator for global reduction to make sure that all processors return same value.
 
-    SCAI_LOG_ERROR( logger, comm << ": local consistency errors = " << consistencyErrors )
-
     consistencyErrors = getRowDistribution().getCommunicator().sum( consistencyErrors );
-
-    SCAI_LOG_ERROR( logger, comm << ": global consistency errors = " << consistencyErrors )
 
     return 0 == consistencyErrors;
 }
@@ -761,26 +757,121 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
         return;
     }
 
-    // owner gets the sparse row locally and broadcasts it
-
-    IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
-
-    PartitionId owner = getRowDistribution().findOwner( globalRowIndex );
-
     SparseVector<ValueType>& spRow = reinterpret_cast<SparseVector<ValueType>&>( row );
 
-    spRow.allocate( getNumColumns() );   // by this way it gets the correct rep distribution
+    spRow.allocate( getColDistributionPtr() );   // by this way it gets the correct rep distribution
 
-    HArray<IndexType>& indexes = const_cast<HArray<IndexType>&>( spRow.getNonZeroIndexes() );
-    HArray<ValueType>& values  = const_cast<HArray<ValueType>&>( spRow.getNonZeroValues() );
+    HArray<IndexType> indexes;   // temporary array for non-zero indexes
+    HArray<ValueType> values;    // temporary array for non-zero values
 
-    if ( localRowIndex != nIndex )
+    if ( getRowDistribution().isReplicated() )
     {
-        getLocalRowSparse( indexes, values, localRowIndex );
+        // just pick up my sparse entries from the local part
+
+        mLocalData->getSparseRow( indexes, values, globalRowIndex );
+        spRow.swapSparseValues( indexes, values );
+        return;
     }
 
-    comm.bcastArray( indexes, owner );
-    comm.bcastArray( values, indexes.size(), owner );
+    PartitionId owner = getRowDistribution().findOwner( globalRowIndex );
+    
+    if ( getColDistribution().isReplicated() )
+    {
+        SCAI_LOG_INFO( logger, "distributed rows, replicated cols, owner = " << owner << " bcasts row" )
+
+        if ( owner == comm.getRank() )
+        {
+            // owner gets the sparse row from local data (no halo data) and broadcasts it
+
+            IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+            mLocalData->getSparseRow( indexes, values, localRowIndex );
+        }
+
+        comm.bcastArray( indexes, owner );  // first call will also bcast the size
+        comm.bcastArray( values, indexes.size(), owner );   // 2nd call knows already the size
+
+        spRow.swapSparseValues( indexes, values );
+
+        return;
+    }
+
+    // use halo communication 
+
+    if ( owner == comm.getRank() )
+    {
+        IndexType localRowIndex = getRowDistribution().global2local( globalRowIndex );
+
+        HArray<ValueType> sendData;
+        HArray<ValueType> recvData; 
+
+        mHaloData->getRow( sendData, localRowIndex );
+
+        SCAI_LOG_DEBUG( logger, comm << ": as owner send halo row = " << sendData )
+
+        // communicate halo row to other processors corresponding schedule
+        // is inverse halo exchange
+
+        const CommunicationPlan recvPlan( NULL, 0 );                  // empty, nothing to receive
+        const CommunicationPlan& sendPlan = mHalo.getRequiredPlan();  // only this matters here
+
+        SCAI_LOG_DEBUG( logger, comm << ": owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
+
+        comm.exchangeByPlan( recvData, recvPlan, sendData, sendPlan );
+
+        // copy my local part
+
+        mLocalData->getSparseRow( indexes, values, localRowIndex );
+
+        SCAI_LOG_DEBUG( logger, comm << ": as owner take local row: " << indexes << ", " << values )
+    }
+    else
+    {
+        SCAI_LOG_INFO( logger, comm << ": not owner, fill dummy halo, halo size = " << mHaloData->getNumColumns() )
+
+        HArray<ValueType> sendData;   // zero-sized array
+        HArray<ValueType> recvData; 
+
+        CommunicationPlan recvPlan;
+        recvPlan.extractPlan( mHalo.getProvidesPlan(), owner );
+        CommunicationPlan sendPlan( NULL, 0 );                    // empty, nothing to send
+
+        SCAI_LOG_DEBUG( logger, comm << ": not owner recvPlan = " << recvPlan << ", sendPlan = " << sendPlan )
+
+        comm.exchangeByPlan( recvData, recvPlan, sendData, sendPlan );
+        
+        // only the data received from owner processor is needed
+
+        IndexType n;
+        IndexType offset;
+
+        mHalo.getProvidesPlan().getInfo( n, offset, owner );
+
+        {
+            WriteOnlyAccess<IndexType> wIndexes( indexes, n );
+            WriteOnlyAccess<ValueType> wValues( values, n );
+            ReadAccess<IndexType> rIndexes( mHalo.getProvidesIndexes() );
+            ReadAccess<ValueType> rData( recvData );
+          
+            IndexType count = 0;  // counts the non-zero values only
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                SCAI_LOG_TRACE( logger, comm << ": got index = " << rIndexes[offset + i] << ", val = " << rData[offset + i ] )
+
+                if ( rData[i + offset] != common::constants::ZERO )
+                {
+                    wIndexes[count] = rIndexes[offset + i];
+                    wValues[count] = rData[offset + i];
+                    count++;
+                }
+            }
+
+            wIndexes.resize( count );
+            wValues.resize( count );
+        }
+    }
+
+    spRow.swapSparseValues( indexes, values );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1137,7 +1228,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
         ValueType betaVal = beta.getValue<ValueType>();
         const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
 
-        if ( betaVal != scai::common::constants::ZERO )
+        if ( betaVal != common::constants::ZERO )
         {
             SCAI_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
         }
@@ -1230,7 +1321,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     // already verified
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getRowDistribution() )
 
-    if ( beta != scai::common::constants::ZERO )
+    if ( beta != common::constants::ZERO )
     {
         SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), A.getRowDistribution(), "distribution/size mismatch" )
         SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "distribution/size mismatch" )

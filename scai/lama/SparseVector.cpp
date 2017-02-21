@@ -404,8 +404,8 @@ SparseVector<ValueType>& SparseVector<ValueType>::operator=( const SparseVector<
 
 bool _SparseVector::isConsistent() const
 {
-    // for a dense vector we just have to check that the locally allocated
-    // data has the same size as the local size of the distribution
+    // for a spare vector we have to check that the nonZeroIndexes are 
+    // all legal and well sorted (strongly increasing).
 
     const Distribution& dist = getDistribution();
 
@@ -417,32 +417,22 @@ bool _SparseVector::isConsistent() const
 
     if ( getNonZeroValues().size() != nonZeroIndexes.size() )
     {
+        SCAI_LOG_INFO( logger, "sizes of nonZeroValues/nonZeroIndexes do not match" )
         consistencyErrors++;
     }
 
-    if ( nonZeroIndexes.size() > dist.getLocalSize() )
+    if ( !HArrayUtils::validIndexes( nonZeroIndexes, localSize ) )
     {
+        SCAI_LOG_INFO( logger, "sparse indexes not valid for localSize = " << localSize )
         consistencyErrors++;
-    }
-
-    {
-        ReadAccess<IndexType> rIndexes( nonZeroIndexes );
-
-        for ( IndexType i = 0; i < rIndexes.size(); ++i )
-        {
-            if ( !common::Utils::validIndex( rIndexes[i], localSize ) )
-            {
-                consistencyErrors++;
-            }
-        }
     }
 
     // indexes for the non-zero values must be sorted
 
-    if ( !HArrayUtils::isSorted( nonZeroIndexes, true ) )
+    if ( !HArrayUtils::isSorted( nonZeroIndexes, utilskernel::binary::LT ) )
     {
-        SCAI_LOG_ERROR( logger, "sparse indexes not sorted" )
-        // consistencyErrors++;
+        SCAI_LOG_INFO( logger, "sparse indexes not strong increasing" )
+        consistencyErrors++;
     }
 
     // not checked: there should be no double values in indexes
@@ -544,6 +534,30 @@ void SparseVector<ValueType>::setDenseValues( const _HArray& values )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseVector<ValueType>::swapSparseValues( HArray<IndexType>& nonZeroIndexes, HArray<ValueType>& nonZeroValues )
+{
+    SCAI_ASSERT_EQ_ERROR( nonZeroIndexes.size(), nonZeroValues.size(), "size mismatch for arrays with non-zero indexes/values" )
+
+    const IndexType size = getDistribution().getLocalSize();
+
+    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, size, getContextPtr() );
+
+    if ( !isValid )
+    {
+        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
+    }
+
+    mNonZeroIndexes.swap( nonZeroIndexes );
+    mNonZeroValues.swap( nonZeroValues );
+
+    HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
+
+    SCAI_ASSERT_DEBUG( HArrayUtils::isSorted( mNonZeroIndexes, utilskernel::binary::LT ), "sort sparse entries failed" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues )
 {
     const IndexType size = getDistribution().getLocalSize();
@@ -555,17 +569,10 @@ void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroI
         COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
     }
 
-    // we cannot check yet for double entries of one index, but for ascending order
-
-    bool isSorted = HArrayUtils::isSorted( nonZeroIndexes, true );
-
-    if ( !isSorted )
-    {
-        COMMON_THROWEXCEPTION( "indexes of non-zero values must be sorted" )
-    }
-
     HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, utilskernel::binary::COPY, getContextPtr() );
     HArrayUtils::setArray( mNonZeroValues, nonZeroValues, utilskernel::binary::COPY, getContextPtr() );
+
+    HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -580,6 +587,8 @@ IndexType SparseVector<ValueType>::readLocalFromFile( const std::string& fileNam
     IndexType localN;   // for local size of the array data
 
     FileIO::read( localN, mNonZeroIndexes, mNonZeroValues, fileName );
+
+    HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 
     // ToDo: read block from sparse array
 
@@ -1194,6 +1203,8 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         SCAI_LOG_DEBUG( logger, "translated " << nLocalIndexes << " local indexes to global indexes" )
 
+        // ToDo: actually this is merge of sorted arrays
+
         HArray<IndexType> allNonZeroIndexes;
         HArray<ValueType> allNonZeroValues;
 
@@ -1202,19 +1213,10 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
 
         // sort the non-zero indexes ascending
 
-        bool ascending = true;
+        HArrayUtils::sortSparseEntries( allNonZeroIndexes, allNonZeroValues, true, getContextPtr() );
 
-        HArray<IndexType> perm;
-        HArray<IndexType> sortedNonZeroIndexes;
-        HArray<ValueType> sortedNonZeroValues;
-
-        HArrayUtils::sort( &perm, &sortedNonZeroIndexes, allNonZeroIndexes, ascending );
-
-        // perm is used to sort the values in same order
-        HArrayUtils::gather( sortedNonZeroValues, allNonZeroValues, perm, utilskernel::binary::COPY );
-
-        mNonZeroIndexes.swap( sortedNonZeroIndexes );
-        mNonZeroValues.swap( sortedNonZeroValues );
+        mNonZeroIndexes.swap( allNonZeroIndexes );
+        mNonZeroValues.swap( allNonZeroValues );
 
         setDistributionPtr( distribution );
 
