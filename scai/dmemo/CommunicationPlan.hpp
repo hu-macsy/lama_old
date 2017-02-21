@@ -255,6 +255,10 @@ public:
 
     void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
 
+    /** @brief build a communication plan with a single entry only */
+
+    void singleEntry( const PartitionId p, const IndexType quantity );
+
 private:
 
     bool mAllocated; //!< true, if plan has been allocated

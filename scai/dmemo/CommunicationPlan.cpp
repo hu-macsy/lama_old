@@ -406,10 +406,37 @@ void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const Par
 
         if ( entry.partitionId == p  && entry.quantity > 0 )
         {
-            mEntries.push_back( entry );
+            Entry newEntry( entry );
+            newEntry.offset = 0;
+
+            mEntries.push_back( newEntry );
         }
 
         mQuantity += entry.quantity;
+    }
+
+    mAllocated = true;
+    mCompressed = true;
+}
+
+/* ----------------------------------------------------------------------- */
+
+void CommunicationPlan::singleEntry( const PartitionId p, const IndexType quantity )
+{
+    mEntries.clear();
+    mQuantity = 0;
+
+    if ( quantity > 0 )
+    {
+        Entry entry;
+
+        entry.partitionId = p;
+        entry.quantity    = quantity;
+        entry.offset      = 0;
+
+        mQuantity += quantity;
+
+        mEntries.push_back( entry );
     }
 
     mAllocated = true;
