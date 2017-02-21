@@ -251,6 +251,10 @@ public:
      */
     void getInfo( IndexType& quantity, IndexType& offsets, PartitionId p ) const;
 
+    /** @brief build a communnication plan from existing one for one processor only */
+
+    void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
+
 private:
 
     bool mAllocated; //!< true, if plan has been allocated

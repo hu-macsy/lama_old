@@ -395,6 +395,29 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
 
 /* ----------------------------------------------------------------------- */
 
+void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const PartitionId p )
+{
+    mEntries.clear();
+    mQuantity = 0;
+
+    for ( PartitionId pid = 0; pid < oldPlan.size(); pid++ )
+    {
+        const Entry& entry = oldPlan.mEntries[pid];
+
+        if ( entry.partitionId == p  && entry.quantity > 0 )
+        {
+            mEntries.push_back( entry );
+        }
+
+        mQuantity += entry.quantity;
+    }
+
+    mAllocated = true;
+    mCompressed = true;
+}
+
+/* ----------------------------------------------------------------------- */
+
 void CommunicationPlan::writeAt( std::ostream& stream ) const
 {
     // stream output of a communication plan
