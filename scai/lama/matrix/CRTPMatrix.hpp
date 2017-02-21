@@ -237,7 +237,7 @@ public:
             needsTmp = true;
             SCAI_UNSUPPORTED( "setRow, row is not replicated, use temporary" )
         }
-        if ( ! row.getVectorKind() == Vector::DENSE )
+        if ( row.getVectorKind() != Vector::DENSE )
         {
             needsTmp = true;
             SCAI_UNSUPPORTED( "setRow, row is not DENSE vector" )
