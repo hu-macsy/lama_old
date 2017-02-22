@@ -52,6 +52,8 @@ using namespace scai::dmemo;
 
 int main()
 {
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
     SCAI_REGION( "main.Kacmarz" )
 
     CSRSparseMatrix<double> matrix( "matrix.frm" );
@@ -60,15 +62,16 @@ int main()
 
     IndexType size = matrix.getNumRows();
 
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
     DistributionPtr blockDist( new BlockDistribution( size, comm ) );
+    DistributionPtr repDist( new NoDistribution( size ) );
 
     matrix.redistribute( blockDist, blockDist );
 
+    std::cout << "Matrix = " << matrix << std::endl;
+
     DenseVector<double> b( blockDist, 1.0 );
     DenseVector<double> x( blockDist, 0.0 );
-    DenseVector<double> rowDotP( blockDist, 0.0 );
+    DenseVector<double> rowDotP( size, 0.0 );
 
     DenseVector<double> row;
 
@@ -83,9 +86,11 @@ int main()
         }
     }
 
+    std::cout << "built dotp of each row, now start" << std::endl;
+
     // x = x + ( b(i) - < matrix(i,:) * x(:)> / 
 
-    const IndexType maxIter = 1000;
+    const IndexType maxIter = 1;
 
     Scalar s1, s2, bi, alpha;
 
@@ -101,11 +106,18 @@ int main()
                 s2 = rowDotP[i];
                 bi = b[i];
                 alpha = ( bi - s1 ) / s2;
+                if ( i > 650 && i < 700 )
+                {
+                    std::cout << "Iter = " << i << " update: alpha = " << alpha << ", bi = " << bi 
+                              << ", s1 = " << s1 << ", s2 = " << s2 << std::endl;
+                }
                 x += alpha * row;
             }
         }
 
-        if ( ( iter + 1 ) % 50 == 0 )
+        std::cout << "x norm = " << x.l2Norm() << std::endl;
+
+        // if ( ( iter + 1 ) % 50 == 0 )
         {
             SCAI_REGION( "main.Residual" )
 
