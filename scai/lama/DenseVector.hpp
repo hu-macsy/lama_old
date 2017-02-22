@@ -574,6 +574,10 @@ public:
 
     void assignScaledVector( const Scalar& alpha, const Vector& x );
 
+    /** vectorPlusVector with aliased */
+
+    void axpy( const Scalar& alpha, const Vector& x );
+
     /** Implementation of pure method Vector::vectorTimesVector */
 
     virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y );

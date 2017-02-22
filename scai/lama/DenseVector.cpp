@@ -34,6 +34,7 @@
 
 // hpp
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
@@ -1114,10 +1115,74 @@ void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const Vect
     utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseX.mLocalValues, mContext );
 }
 
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
+{
+    SCAI_LOG_INFO( logger, "axpy: this += " << alpha << " * x, with x = " << x << ", this = " << *this )
+
+    SCAI_ASSERT_EQ_ERROR( x.getDistribution(), getDistribution(), "distribution mismatch for axpy vector" )
+
+    const ValueType alphaV = alpha.getValue<ValueType>();
+
+    if ( x.getVectorKind() == SPARSE )
+    {
+        SCAI_REGION( "Vector.Dense.axpySparse" )
+
+        SCAI_ASSERT_DEBUG( dynamic_cast<const _SparseVector*>( &x ), "illegal cast" );
+
+        const _SparseVector& sparseX = reinterpret_cast<const _SparseVector&>( x );
+
+        const HArray<IndexType>& nonZeroIndexes = sparseX.getNonZeroIndexes();
+        const _HArray& nonZeroValues  = sparseX.getNonZeroValues();
+
+        const bool unique = true;  // non-zero indexes in sparse vectors are always unique
+
+        if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::constants::ONE )
+        {
+            const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( nonZeroValues );
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, utilskernel::binary::ADD, getContextPtr());
+        }
+        else
+        {
+            // ToDo: if there is scatter with scaling factor for the scattered values, employ it here
+
+            HArray<ValueType> typedValues;
+            HArrayUtils::assign( typedValues, nonZeroValues, mContext );
+            HArrayUtils::binaryOpScalar1( typedValues, alphaV, typedValues, utilskernel::binary::MULT, mContext );
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, utilskernel::binary::ADD, mContext );
+        }
+    }
+    else
+    {
+        SCAI_REGION( "Vector.Dense.axpyDense" )
+
+        const _DenseVector& denseX = reinterpret_cast<const _DenseVector&>( x );
+
+        const _HArray& xValues = denseX.getLocalValues();
+
+        if ( xValues.getValueType() == getValueType() )
+        {
+            const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( xValues );
+            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, typedValues, mContext );
+        }
+        else
+        {
+            HArray<ValueType> typedValues;
+            utilskernel::HArrayUtils::assign( typedValues, xValues );
+            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, typedValues, mContext );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector& x, const Scalar& beta, const Vector& y )
 {
-    SCAI_LOG_INFO( logger, "vectorPlusVector: z = " << alpha << " * x + " << beta << " * y, with  x = " << x << ", y = " << y << ", z = " << *this )
+    SCAI_LOG_INFO( logger, "vectorPlusVector: z = " << alpha << " * x + " << beta << " * y"
+                             << ", with  x = " << x << ", y = " << y << ", z = " << *this )
 
     // Query for alpha == 0 or beta == 0 as x and y might be undefined 
 
@@ -1130,6 +1195,18 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const Vector
     if ( beta == Scalar( 0 ) )
     {
         assignScaledVector( alpha, x );
+        return;
+    }
+
+    if ( alpha == Scalar( 1 ) && ( &x == this ) )
+    {
+        axpy( beta, y );
+        return;
+    }
+
+    if ( beta == Scalar( 1 ) && ( &y == this ) )
+    {
+        axpy( alpha, x );
         return;
     }
 
