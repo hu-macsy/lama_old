@@ -303,7 +303,7 @@ void Grid::gridPos( IndexType pos[], const IndexType gridPos ) const
 
 bool Grid::operator==( const Grid& other ) const
 {
-    if ( other.ndims() != mNDims ) 
+    if ( other.mNDims != mNDims ) 
     {
         return false;
     }
@@ -312,7 +312,7 @@ bool Grid::operator==( const Grid& other ) const
 
     for ( IndexType i = 0; i < mNDims; ++i )
     {
-        if ( other.size( i ) != mSize[i] )
+        if ( other.mSize[i] != mSize[i] )
         {
             return false;
         }
