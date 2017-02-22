@@ -303,16 +303,19 @@ void Grid::gridPos( IndexType pos[], const IndexType gridPos ) const
 
 bool Grid::operator==( const Grid& other ) const
 {
-    if ( other.ndims() != mNDims ) 
+    if ( mNDims != other.mNDims )
     {
         return false;
     }
 
-    // same number of dimensions, now we can compare the sizes
-
-    for ( IndexType i = 0; i < mNDims; ++i )
+    for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
     {
-        if ( other.size( i ) != mSize[i] )
+        if ( i >= mNDims ) 
+        {
+            break;
+        }
+
+        if ( mSize[i] != other.mSize[i] ) 
         {
             return false;
         }
