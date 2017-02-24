@@ -844,7 +844,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
         IndexType n;
         IndexType offset;
 
-        mHalo.getProvidesPlan().getInfo( n, offset, owner );
+        recvPlan.getInfo( n, offset, owner );
 
         {
             WriteOnlyAccess<IndexType> wIndexes( indexes, n );
