@@ -407,12 +407,13 @@ void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const Par
         if ( entry.partitionId == p  && entry.quantity > 0 )
         {
             Entry newEntry( entry );
+
             newEntry.offset = 0;
 
             mEntries.push_back( newEntry );
+        
+            mQuantity += entry.quantity;
         }
-
-        mQuantity += entry.quantity;
     }
 
     mAllocated = true;
