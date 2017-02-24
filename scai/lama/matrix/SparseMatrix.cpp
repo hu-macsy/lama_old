@@ -842,9 +842,9 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
         // only the data received from owner processor is needed
 
         IndexType n;
-        IndexType offset;
+        IndexType offset;   // for haloIndexes belonging to owner partition
 
-        recvPlan.getInfo( n, offset, owner );
+        mHalo.getProvidesPlan().getInfo( n, offset, owner );
 
         {
             WriteOnlyAccess<IndexType> wIndexes( indexes, n );
@@ -856,12 +856,12 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 
             for ( IndexType i = 0; i < n; ++i )
             {
-                SCAI_LOG_TRACE( logger, comm << ": got index = " << rIndexes[offset + i] << ", val = " << rData[offset + i ] )
+                SCAI_LOG_TRACE( logger, comm << ": got index = " << rIndexes[offset + i] << ", val = " << rData[ i ] )
 
-                if ( rData[i + offset] != common::constants::ZERO )
+                if ( rData[i] != common::constants::ZERO )
                 {
                     wIndexes[count] = rIndexes[offset + i];
-                    wValues[count] = rData[offset + i];
+                    wValues[count] = rData[i];
                     count++;
                 }
             }
