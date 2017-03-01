@@ -970,6 +970,10 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 template<typename ValueType>
 void SparseVector<ValueType>::scale( const Vector& other )
 {
+    SCAI_REGION( "Vector.Sparse.scale" )
+
+    SCAI_LOG_INFO( logger, "scale " << *this << " with " << other )
+
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "vector scale only with same distributions supported" );
 
     HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
