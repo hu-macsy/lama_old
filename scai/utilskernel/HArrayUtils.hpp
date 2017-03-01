@@ -84,7 +84,15 @@ public:
     static void gather(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
-        const hmemo::HArray<IndexType>& index,
+        const hmemo::HArray<IndexType>& indexes,
+        const binary::BinaryOp op,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    static void sparseGather(
+        hmemo::_HArray& target,
+        const hmemo::_HArray& sourceNonZeroValues,
+        const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
+        const hmemo::HArray<IndexType>& indexes,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -95,6 +103,18 @@ public:
     static void gatherImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
+        const hmemo::HArray<IndexType>& indexes,
+        const binary::BinaryOp op,
+        const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /**
+     *  @brief Gathering (unstructured read of values) for sparse data, typed version
+     */
+    template<typename TargetValueType, typename SourceValueType>
+    static void sparseGatherImpl(
+        hmemo::HArray<TargetValueType>& target,
+        const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
+        const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
         const binary::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );

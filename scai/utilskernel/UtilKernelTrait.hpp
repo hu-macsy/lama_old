@@ -349,6 +349,26 @@ struct UtilKernelTrait
         }
     };
 
+    template<typename TargetValueType, typename SourceValueType>
+    struct setGatherSparse
+    {
+        /** setGather where in is a sparse array */
+
+        typedef void ( *FuncType ) (
+            TargetValueType out[],
+            const SourceValueType inNonZeroValues[],
+            const IndexType inNonZeroIndexes[],
+            const IndexType nnz,
+            const IndexType indexes[],
+            const binary::BinaryOp op,
+            const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.setGatherSparse";
+        }
+    };
+
     template<typename ValueType>
     struct scatterVal
     {

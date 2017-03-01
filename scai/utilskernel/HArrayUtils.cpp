@@ -223,6 +223,73 @@ void HArrayUtils::gather(
 
 /* --------------------------------------------------------------------------- */
 
+void HArrayUtils::sparseGather(
+    _HArray& target,
+    const _HArray& sourceNonZeroValues,
+    const HArray<IndexType>& sourceNonZeroIndexes,
+    const HArray<IndexType>& indexes,
+    const binary::BinaryOp op,
+    const ContextPtr prefLoc )
+{
+    // use metaprogramming to call the gather version with the correct value types for target and source
+    mepr::UtilsWrapperTT<SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::
+        sparseGather( target, sourceNonZeroValues, sourceNonZeroIndexes, indexes, op, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename TargetValueType, typename SourceValueType>
+void HArrayUtils::sparseGatherImpl(
+    hmemo::HArray<TargetValueType>& target,
+    const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
+    const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
+    const hmemo::HArray<IndexType>& indexes,
+    const binary::BinaryOp op,
+    const hmemo::ContextPtr prefLoc )
+{
+    SCAI_LOG_INFO( logger, "sparseGather<" << common::TypeTraits<TargetValueType>::id()
+                            << ", " << common::TypeTraits<SourceValueType>::id() << ">" )
+
+    const IndexType n = indexes.size();   // number of values to access
+
+    // choose location for the operation where source array is currently valid
+
+    static LAMAKernel<UtilKernelTrait::setGatherSparse<TargetValueType, SourceValueType> > setGatherSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default: assume that we need the target values where the indexes are
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes.getValidContext();
+    }
+
+    setGatherSparse.getSupportedContext( loc );
+
+    if ( op == utilskernel::binary::COPY )
+    {
+        target.init( TargetValueType( 0 ), n );    // initialize with zero as default
+    }
+    else
+    {
+        SCAI_ASSERT_EQ_ERROR( target.size(), indexes.size(), "size mismatch" )
+    }
+
+    SCAI_ASSERT_EQ_ERROR( sourceNonZeroValues.size(), sourceNonZeroIndexes.size(), "serious size mismatch" )
+
+    const IndexType nnz = sourceNonZeroValues.size();
+
+    WriteAccess<TargetValueType> wTarget( target, loc );
+    ReadAccess<SourceValueType> rSourceVals( sourceNonZeroValues, loc );
+    ReadAccess<IndexType> rSourceIndexes( sourceNonZeroIndexes, loc );
+    ReadAccess<IndexType> rIndexes( indexes, loc );
+
+    setGatherSparse[loc] ( wTarget.get(), rSourceVals.get(), rSourceIndexes.get(), nnz, rIndexes.get(), op, n );
+}
+
+/* --------------------------------------------------------------------------- */
+
 void HArrayUtils::scatter(
     _HArray& target,
     const HArray<IndexType>& indexes,

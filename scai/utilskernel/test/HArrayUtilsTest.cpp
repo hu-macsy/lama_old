@@ -506,6 +506,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_types )
+{
+    // Define the sparse array, IA, VA, nnz 
+
+    ValueType sourceVA_vals[] = { 3, 1, 4, 2 };
+    ValueType sourceIA_vals[] = { 0, 1, 5, 7 };
+
+    const IndexType M = 9;
+    const IndexType nnz = sizeof( sourceVA_vals ) / sizeof( ValueType );
+    const IndexType nnz1 = sizeof( sourceIA_vals ) / sizeof( ValueType );
+
+    LArray<ValueType> sourceVA( nnz, sourceVA_vals );
+    LArray<IndexType> sourceIA( nnz1, sourceIA_vals );
+
+    BOOST_CHECK_EQUAL( sourceVA.size(), sourceIA.size() );
+
+    IndexType indexes_vals[]  = { 0, 2, 1, 2, 7, 5 };
+    IndexType target_vals[]   = { 3, 0, 1, 0, 2, 4 };   // expected
+
+    const IndexType N = sizeof( indexes_vals ) / sizeof( IndexType );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        BOOST_REQUIRE( indexes_vals[i] < M );
+    }
+
+    // target = sourceSparse[ indexes ]
+
+    LArray<IndexType> indexes( N, indexes_vals );
+
+    LArray<ValueType> target;
+
+    HArrayUtils::sparseGather( target, sourceVA, sourceIA, indexes, binary::COPY );
+
+    BOOST_REQUIRE_EQUAL( target.size(), indexes.size() );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType t = target[i];
+        BOOST_CHECK_EQUAL( t, target_vals[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
 {
     ValueType sourceVals[] = { 3, 1, 4, 2 };

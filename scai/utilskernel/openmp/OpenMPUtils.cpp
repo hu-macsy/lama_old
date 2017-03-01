@@ -1235,6 +1235,73 @@ void OpenMPUtils::setGather(
 
 /* --------------------------------------------------------------------------- */
 
+static IndexType binarySearch( const IndexType indexes[], const IndexType n, const IndexType pos )
+{
+    IndexType first = 0;
+    IndexType last  = n;
+
+    while ( first < last )
+    {
+        IndexType middle = first + ( last - first ) / 2;
+
+        if ( indexes[middle] == pos )
+        {
+            return middle;
+        }
+        else if ( indexes[middle] > pos )
+        {
+            last = middle;
+        }
+        else
+        {
+            first = middle + 1;
+        }
+    }
+
+    return nIndex;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType1, typename ValueType2>
+void OpenMPUtils::setGatherSparse(
+    ValueType1 target[],
+    const ValueType2 sourceNonZeroValues[],
+    const IndexType sourceNonZeroIndexes[],
+    const IndexType sourceNNZ,
+    const IndexType indexes[],
+    const utilskernel::binary::BinaryOp op,
+    const IndexType n )
+{
+    SCAI_REGION( "OpenMP.Utils.setGatherSparse" )
+
+    SCAI_LOG_INFO( logger,
+                   "setGatherSparse: target<" << TypeTraits<ValueType1>::id() << ">[" << n << "] "
+                    << op << " = sourceSparse<" << TypeTraits<ValueType2>::id() << ">[ indexes[" << n << "] ]" )
+
+    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+    for ( IndexType i = 0; i < n; i++ )
+    {
+        // Binary search possible as source index array must be sorted
+
+        IndexType k = binarySearch( sourceNonZeroIndexes, sourceNNZ, indexes[i] );
+
+        SCAI_LOG_TRACE( logger, "binarySearch( " << indexes[i] << " ) -> " << k )
+
+        ValueType1 sourceVal = 0;   // default value if value not availabe in sparse input array
+
+        if ( k != nIndex )
+        {
+            sourceVal = static_cast<ValueType1>( sourceNonZeroValues[k] );
+        }
+
+        target[i] = applyBinary( target[i], op, sourceVal );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPUtils::scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n )
 {
@@ -1933,6 +2000,7 @@ void OpenMPUtils::BinOpKernels<ValueType, OtherValueType>::registerKernels( kreg
     SCAI_LOG_DEBUG( logger, "register UtilsKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
     KernelRegistry::set<UtilKernelTrait::setGather<ValueType, OtherValueType> >( setGather, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::setGatherSparse<ValueType, OtherValueType> >( setGatherSparse, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setScatter<ValueType, OtherValueType> >( setScatter, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::set<ValueType, OtherValueType> >( set, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSection<ValueType, OtherValueType> >( setSection, ctx, flag );

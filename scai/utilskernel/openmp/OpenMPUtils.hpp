@@ -159,6 +159,18 @@ public:
         const binary::BinaryOp op,
         const IndexType n );
 
+    /** OpenMP implementation for UtilKernelTrait::setGatherSparse */
+
+    template<typename ValueType1, typename ValueType2>
+    static void setGatherSparse(
+        ValueType1 target[],
+        const ValueType2 sourceNonZeroValues[],
+        const IndexType sourceNonZeroIndexes[],
+        const IndexType sourceNNZ,
+        const IndexType indexes[],
+        const binary::BinaryOp op,
+        const IndexType n );
+
     /** OpenMP implementation for UtilKernelTrait::scatterVal */
 
     template<typename ValueType>
