@@ -536,8 +536,6 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
             SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName << " ): " << readMatrix )
         }
 
-        SCAI_LOG_ERROR( logger, "read matrix ( withDist = " << withDist << " ): " << readMatrix )
-
         BOOST_REQUIRE_EQUAL( numRows, readMatrix.getNumRows() );
 
         // It might happen that the read matrix has less columns if last columns have only zeros

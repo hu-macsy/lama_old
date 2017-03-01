@@ -178,6 +178,32 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( SparseConstructorTest )
+{
+    typedef RealType ValueType;
+
+    ValueType values_raw[] = { 3, 4, 3, 1, 2 };
+    IndexType indexes_raw[] = { 7, 3, 11, 13, 5 };
+
+    IndexType nnz = sizeof( values_raw ) / sizeof( ValueType );
+    IndexType n   = 20;
+
+    hmemo::HArray<ValueType> values( nnz, values_raw );
+    hmemo::HArray<IndexType> indexes( nnz, indexes_raw );
+
+    dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
+
+    // The constructor copies the arrays and sorts the entries
+
+    SparseVector<ValueType> s( indexes, values, dist );
+
+    const hmemo::HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
+
+    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, utilskernel::binary::LT ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( RedistributeTest )
 {
     // Note: it is sufficient to consider one value type

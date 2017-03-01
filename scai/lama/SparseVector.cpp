@@ -243,6 +243,20 @@ SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+SparseVector<ValueType>::SparseVector( 
+    const hmemo::HArray<IndexType>& indexes, 
+    const hmemo::_HArray& values, 
+    dmemo::DistributionPtr distribution ) :
+
+    _SparseVector( distribution )
+
+{
+    setSparseValues( indexes, values );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const std::string& filename ) : 
 
     _SparseVector( 0 )
