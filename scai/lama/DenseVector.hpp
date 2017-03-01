@@ -619,8 +619,23 @@ public:
         const DenseVector<ValueType>& source,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
 
+    /**
+     * @brief Implementation of pure method Vector::buildLocalValues.
+     */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
+
+    /**
+     * @brief Implementation of pure method Vector::gatherLocalValues.
+     *
+     * For a dense vector this is just a corresponding gather of the HArray containing
+     * all local values.
+     */
+    virtual void gatherLocalValues(
+        hmemo::_HArray& localValues,
+        const hmemo::HArray<IndexType>& localIndexes,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 

@@ -628,6 +628,10 @@ public:
 
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
 
+    /** Implementation of pure method Matrix::getRowLocal */
+
+    virtual void getRowLocal( Vector& row, const IndexType localRowIndex ) const;
+
     /** Set a complete row of this matrix in its local part. */
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,

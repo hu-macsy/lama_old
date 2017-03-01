@@ -367,12 +367,25 @@ public:
     virtual common::scalar::ScalarType getValueType() const;
 
     /**
-     * Implementation of pure method.
+     * @brief Implementation of pure method Vector::buildLocalValues.
      * 
-     * Note: this routine builds the dense local part of this sparse vector.
+     * For a sparse vector this routine builds a dense local part (COPY) or
+     * it scatters its values in the localValues array corresponding to op.
      */
     virtual void buildLocalValues(
         hmemo::_HArray& localValues,
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
+
+    /**
+     * @brief Implementation of pure method Vector::gatherLocalValues.
+     * 
+     * For a sparse vector each of the required indexes must be searched in the
+     * nonZeroIndexes. The corresponding position can be used to get the required value.
+     */
+    virtual void gatherLocalValues(
+        hmemo::_HArray& localValues,
+        const hmemo::HArray<IndexType>& localIndexes,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 

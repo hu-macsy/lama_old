@@ -1,5 +1,5 @@
 /**
- * @file kaczmarz.cpp
+ * @file kaczmarzPar.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Kaczmarz method with sparse vector
+ * @brief Kaczmarz method with full matrix vector operations
  * @author Thomas Brandes
  * @date 23.02.2017
  */
@@ -41,6 +41,7 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/common/Walltime.hpp>
 
@@ -51,7 +52,6 @@ using namespace scai;
 using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
-
 
 int main( int argc, const char* argv[] )
 {
@@ -79,13 +79,11 @@ int main( int argc, const char* argv[] )
     DistributionPtr blockDist( new BlockDistribution( size, comm ) );
     DistributionPtr repDist( new NoDistribution( size ) );
 
-    matrix.redistribute( blockDist, blockDist );
+    matrix.redistribute( blockDist, repDist );
 
     std::cout << "Matrix = " << matrix << std::endl;
 
-    DenseVector<double> b( blockDist, 1.0 );
-    DenseVector<double> x( blockDist, 0.0 );
-    DenseVector<double> rowDotP( size, 0.0 );
+    DenseVector<double> rowDotP( blockDist, 0.0 );
 
     SparseVector<double> row;
 
@@ -94,49 +92,71 @@ int main( int argc, const char* argv[] )
 
         double time = common::Walltime::get();
 
+        const Distribution& rowDist = matrix.getRowDistribution();
+
+        HArray<double>& localRowDot = rowDotP.getLocalValues();
+
         for ( IndexType i = 0; i < size; ++i )
         {
-            matrix.getRow( row, i );
+            IndexType localI = rowDist.global2local( i );
+
+            if ( localI == nIndex )
+            {
+                continue;
+            }
+
+            matrix.getRowLocal( row, localI );
+
             Scalar dotP = row.dotProduct( row );
-            rowDotP[i]  = dotP.getValue<double>();
+
+            utilskernel::HArrayUtils::setVal( localRowDot, localI, 1.0 / dotP.getValue<double>() );
         }
 
         time = common::Walltime::get() - time;
 
         std::cout << "Row norm calculation took " << time << " seconds." << std::endl;
     }
+ 
+    std::cout << "Norms: min = " << rowDotP.min() << ", max = " << rowDotP.max() << std::endl;
+
+    matrix.redistribute( blockDist, blockDist );
+
+    DenseVector<double> b( matrix.getRowDistributionPtr(), 1.0 );
+    DenseVector<double> x( matrix.getColDistributionPtr(), 0.0 );
 
     std::cout << "built dotp of each row, now start" << std::endl;
 
     // x = x + ( b(i) - < matrix(i,:) * x(:)> / 
 
-    const IndexType printIter = 1;
+    const IndexType printIter = 2;
 
-    Scalar s1, s2, bi, alpha;
+    DenseVector<double> res;
+
+    double omega = 0.1;  // underrelaxation required
 
     for ( IndexType iter = 0; iter < maxIter; ++iter )
     {
         {
             SCAI_REGION( "main.FullIter" )
 
-            for ( IndexType i = 0; i < size; ++i )
-            {
-                matrix.getRow( row, i );
-                s1 = row.dotProduct( x );
-                s2 = rowDotP[i];
-                bi = b[i];
-                alpha = ( bi - s1 ) / s2;
-                x += alpha * row;
-            }
+            res = b - matrix * x;
+            res *= rowDotP;
+            x += omega * res * matrix;
+
         }
 
         if ( ( iter + 1 ) % printIter == 0 )
         {
             SCAI_REGION( "main.Residual" )
 
-            DenseVector<double> y( matrix * x );
-            DenseVector<double> res( y - b );
-            std::cout << "Iter = " << ( iter + 1 ) << ", res = " << res.l2Norm() << std::endl;
+            DenseVector<double> res( matrix * x - b );
+
+            Scalar norm = res.l2Norm();
+
+            if ( comm->getRank() == 0 )
+            {
+                std::cout << "Iter = " << ( iter + 1 ) << ", res = " << norm << std::endl;
+            }
         } 
     }
 }

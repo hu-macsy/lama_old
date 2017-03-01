@@ -602,20 +602,39 @@ public:
     void assign( const hmemo::_HArray& globalValues );
 
     /**
-     *  Builds an array with local values of a distributed vector.
+     *  Build an array with all local values of a distributed vector.
      *
      *  @param[in,out] localValues   will be an array that contains local values of the vector
-     *  @param[in]     op            is the binary operation 
+     *  @param[in]     op            specifies how to combine with existing values in localValues
      *  @param[in]     prefLoc       is the location where the values are needed
      *
      *  For different value types, implicit format conversion will be done.
-     *  A sparse vector generates an array with all local values.
+     *  A sparse vector might generate an array with all local values.
      *
      *  If op is not COPY, the binary operation op is applied to existing values in localValues. In this
      *  case, the array localValues must have the local size of the distribution.
      */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues, 
+        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
+
+    /**
+     *  Gather certain local values of a distributed vector.
+     *
+     *  @param[in,out] localValues   array for the gather values
+     *  @param[in]     localIndexes  are the indexes to be gathered
+     *  @param[in]     op            specifies how to combine with existing values in localValues
+     *  @param[in]     prefLoc       is the location where the values are needed
+     *
+     *  For different value types, implicit format conversion will be done.
+     *
+     *  If op is not COPY, the binary operation op is applied to existing values in localValues. In this
+     *  case, the array localValues must have the same size as localIndexes.
+     */
+    virtual void gatherLocalValues( 
+        hmemo::_HArray& localValues, 
+        const hmemo::HArray<IndexType>& localIndexes,
         const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 

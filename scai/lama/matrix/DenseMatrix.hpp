@@ -624,6 +624,10 @@ public:
 
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
 
+    /** Implementation of pure methode Matrix::getRowLocal */
+
+    virtual void getRowLocal( Vector& row, const IndexType globalRowIndex ) const;
+
     /** Implementation of pure methode Matrix::getColumn */
 
     virtual void getColumn( Vector& col, const IndexType globalColIndex ) const;

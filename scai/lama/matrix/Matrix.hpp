@@ -439,8 +439,11 @@ public:
 
     /** @brief This method allows any arbitrary redistribution of the matrix.
      *
-     *  @param[in] rowDistribution is new distribution of rows, global size must be mNumRows
-     *  @param[in] colDistribution is new distribution of columns, global size must be mNumColumns
+     *  @param[in] rowDistribution is new distribution of rows, global size must be getNumRows()
+     *  @param[in] colDistribution is new distribution of columns, global size must be getNumColumns()
+     *
+     *  For sparse matrices it might be allowed that the new number of columns might become larger with the
+     *  new column distribution. 
      */
     virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
 
@@ -457,6 +460,20 @@ public:
      *   pattern for sparse or dense matrices are exploited.
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
+
+    /** @brief This method returns a row of this matrix locally for one processor.
+     *
+     * @param[out] row            is the vector that will contain the queried row of this matrix
+     * @param[in]  localRowIndex  local index of the row that should be extracted
+     *
+     * - The result vector is not distributed, only valid results on the corresponding partition
+     * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
+     * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
+     *   of a dense matrix and a sparse vector on a sparse matrix.
+     * - This method is completely local, no communication
+     *   pattern for sparse or dense matrices are exploited.
+     */
+    virtual void getRowLocal( Vector& row, const IndexType localRowIndex ) const = 0;
 
     /** @brief This method returns one column of the matrix.
      *
@@ -1161,11 +1178,6 @@ protected:
 
 private:
 
-    // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
-
-    IndexType mNumRows;
-    IndexType mNumColumns;
-
     using Distributed::getDistribution;
 
     using Distributed::getDistributionPtr;
@@ -1203,14 +1215,12 @@ private:
 
 inline IndexType Matrix::getNumRows() const
 {
-    //return getRowDistributionPtr().get()->getGlobalSize();
-    return mNumRows;
+    return getDistribution().getGlobalSize();
 }
 
 inline IndexType Matrix::getNumColumns() const
 {
-    //return getColDistributionPtr().get()->getGlobalSize();
-    return mNumColumns;
+    return mColDistribution->getGlobalSize();
 }
 
 inline Matrix::SyncKind Matrix::getCommunicationKind() const

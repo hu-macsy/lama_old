@@ -591,8 +591,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     SCAI_ASSERT_EQ_ERROR( rowDistributionPtr->getGlobalSize(), getNumRows(),
                           "size of new row distribution mismatches #rows" );
 
-    SCAI_ASSERT_EQ_ERROR( colDistributionPtr->getGlobalSize(), getNumColumns(),
-                          "size of new col distribution mismatches #colunns" );
+    SCAI_ASSERT_ERROR( colDistributionPtr->getGlobalSize() >= getNumColumns(),
+                       "size of new col distribution must be >= #colunns" );
 
     // Save the current distribution of this matrix; use shared pointers to avoid freeing
 
@@ -612,7 +612,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
         return;
     }
 
-    //mLocalData and mHaloData might be recreated so we save theire contextes here to restore them later
+    // mLocalData and mHaloData might be recreated so we save their contextes here to restore them later
+
     ContextPtr localCtx = mLocalData->getContextPtr();
     ContextPtr haloCtx = mHaloData->getContextPtr();
 
@@ -629,6 +630,10 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
         mHalo.clear();
         SCAI_LOG_INFO( logger, "removed column distribution / halo, local data = " << *mLocalData )
     }
+
+    // Now we can also increase the number of columns, is tricky here, should be done better
+
+    mLocalData->setDimension( mLocalData->getNumRows(), getNumColumns() );
 
     // assign the old local data redistributed to this matrix.
     set( *mLocalData, oldRowDistributionPtr );
@@ -734,6 +739,33 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
     mHaloData->getRow( tmpRow, localRowIndex );
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
     HArrayUtils::scatterImpl( row, haloIndexes, true, tmpRow, utilskernel::binary::COPY );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::getRowLocal( Vector& row, const IndexType localRowIndex ) const
+{
+    SCAI_ASSERT_EQ_ERROR( row.getValueType(), getValueType(), "type mismatch" )
+
+    if ( row.getVectorKind() == Vector::SPARSE )
+    {
+        SparseVector<ValueType>& sparseRow = reinterpret_cast<SparseVector<ValueType>&>( row );
+
+        sparseRow.allocate( getNumColumns() );
+
+        HArray<ValueType> values;
+        HArray<IndexType> indexes;
+        getLocalRowSparse( indexes, values, localRowIndex );
+
+        sparseRow.swapSparseValues( indexes, values );
+    }
+    else
+    {
+        DenseVector<ValueType>& denseRow = reinterpret_cast<DenseVector<ValueType>&>( row );
+        denseRow.allocate( getNumColumns() );
+        getLocalRowDense( denseRow.getLocalValues(), localRowIndex );
+    }
 }
 
 /* -------------------------------------------------------------------------- */

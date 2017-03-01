@@ -522,6 +522,18 @@ void SparseVector<ValueType>::buildLocalValues(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseVector<ValueType>::gatherLocalValues(
+    _HArray& values,
+    const HArray<IndexType>& indexes,
+    const utilskernel::binary::BinaryOp op,
+    ContextPtr loc ) const
+{
+    HArrayUtils::sparseGather( values, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseVector<ValueType>::setDenseValues( const _HArray& values )
 {
     const IndexType size = getDistribution().getLocalSize();
@@ -911,16 +923,24 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
                           "dotProduct not supported for vectors with different distributions. "
                           << *this  << " x " << other )
 
-    HArray<ValueType> otherLocalValues;
-    other.buildLocalValues( otherLocalValues );
+    ValueType localDotProduct;
 
-    HArray<ValueType> otherNonZeroValues;   // get the values form other at my non-zero indexes
+    if ( &other == this )
+    {
+        // dot product with this sparse vector
 
-    utilskernel::HArrayUtils::gather( otherNonZeroValues, otherLocalValues, mNonZeroIndexes, utilskernel::binary::COPY );
- 
-    // now build dotproduct( mNonZeroValues, otherNonZeroValues )
+        localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    }
+    else 
+    {
+        HArray<ValueType> otherNonZeroValues;  //  the values form other at my non-zero indexes
 
-    const ValueType localDotProduct = mNonZeroValues.dotProduct( otherNonZeroValues );
+        other.gatherLocalValues( otherNonZeroValues, mNonZeroIndexes );
+
+        // now build dotproduct( mNonZeroValues, otherNonZeroValues )
+
+        localDotProduct = mNonZeroValues.dotProduct( otherNonZeroValues );
+    }
 
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
 

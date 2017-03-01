@@ -1820,6 +1820,13 @@ void HArrayUtils::addSparse(
             const hmemo::HArray<IndexType>&,                                         \
             const binary::BinaryOp,                                                  \
             const hmemo::ContextPtr );                                               \
+    template void HArrayUtils::sparseGatherImpl<TargetType, SourceType>(             \
+            hmemo::HArray<TargetType>&,                                              \
+            const hmemo::HArray<SourceType>&,                                        \
+            const hmemo::HArray<IndexType>&,                                         \
+            const hmemo::HArray<IndexType>&,                                         \
+            const binary::BinaryOp,                                                  \
+            const hmemo::ContextPtr );                                               \
     template void HArrayUtils::setArrayImpl<TargetType, SourceType>(                 \
             hmemo::HArray<TargetType>&,                                              \
             const hmemo::HArray<SourceType>&,                                        \

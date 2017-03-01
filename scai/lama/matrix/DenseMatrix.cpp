@@ -1190,6 +1190,14 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::getRowLocal( Vector&, const IndexType ) const
+{
+    COMMON_THROWEXCEPTION( "not available yet" )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
 {
     // if v is not a dense vector or not of same type, use a temporary dense vector

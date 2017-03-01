@@ -1558,14 +1558,29 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
                           "dotProduct not supported for vectors with different distributions. "
                           << *this  << " x " << other )
 
-    const DenseVector<ValueType>* denseOther = dynamic_cast<const DenseVector<ValueType>*>( &other );
+    ValueType localDotProduct;
 
-    SCAI_ASSERT_ERROR( denseOther, "dynamic_cast failed for other = " << other )
+    if ( other.getVectorKind() == Vector::DENSE )
+    {
+        SCAI_ASSERT_DEBUG( dynamic_cast<const DenseVector<ValueType>*>( &other ), "dynamic cast failed, other = " << other )
 
-    SCAI_LOG_DEBUG( logger, "Calculating local dot product at " << *mContext )
-    const IndexType localSize = mLocalValues.size();
-    SCAI_ASSERT_EQ_DEBUG( localSize, getDistribution().getLocalSize(), "size mismatch" )
-    const ValueType localDotProduct = mLocalValues.dotProduct( denseOther->mLocalValues );
+        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+
+        localDotProduct = mLocalValues.dotProduct( denseOther.getLocalValues() );
+    }
+    else
+    {
+        SCAI_ASSERT_DEBUG( dynamic_cast<const SparseVector<ValueType>*>( &other ), "dynamic cast failed, other = " << other )
+
+        const SparseVector<ValueType>& sparseOther = reinterpret_cast<const SparseVector<ValueType>&>( other );
+    
+        LArray<ValueType> myValues;   // build values at same position as sparse vector
+
+        gatherLocalValues( myValues, sparseOther.getNonZeroIndexes(), utilskernel::binary::COPY, getContextPtr() );
+
+        localDotProduct = myValues.dotProduct( sparseOther.getNonZeroValues() );
+    }
+
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
     ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
@@ -1641,6 +1656,17 @@ void DenseVector<ValueType>::buildLocalValues(
         SCAI_ASSERT_EQ_ERROR( localValues.size(), mLocalValues.size(), "size mismatch" )
         HArrayUtils::setArray( localValues, mLocalValues, op, prefLoc );
     }
+}
+
+template<typename ValueType>
+void DenseVector<ValueType>::gatherLocalValues(
+
+     _HArray& localValues,
+     const HArray<IndexType>& indexes,
+     const utilskernel::binary::BinaryOp op,
+     ContextPtr prefLoc ) const
+{
+    HArrayUtils::gather( localValues, mLocalValues, indexes, op, prefLoc );
 }
 
 template<typename ValueType>

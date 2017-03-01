@@ -32,7 +32,7 @@
  # @date 02.12.2015
 ###
 
-foreach ( executable kaczmarz )
+foreach ( executable kaczmarz kaczmarz1 kaczmarzPar runtest )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

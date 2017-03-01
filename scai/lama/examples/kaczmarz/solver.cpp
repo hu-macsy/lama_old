@@ -42,35 +42,21 @@
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/common/Walltime.hpp>
 
 #include <iostream>
 #include <stdlib.h>
 
-using namespace scai;
-using namespace hmemo;
-using namespace lama;
-using namespace dmemo;
+using namespace scai::hmemo;
+using namespace scai::lama;
+using namespace scai::dmemo;
 
-
-int main( int argc, const char* argv[] )
+int main()
 {
-    if ( argc != 3 )
-    {
-        std::cout << "Correct call: " << argv[0] << " <filename> <n_iter>" << std::endl;
-        return -1;
-    }
-
-    std::string filename = argv[1];
-    IndexType maxIter = atoi( argv[2] );
-
-    std::cout << "Run " << argv[0] << " " << filename << ", #iter = " << maxIter << std::endl;
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     SCAI_REGION( "main.Kacmarz" )
 
-    CSRSparseMatrix<double> matrix( filename );
+    CSRSparseMatrix<double> matrix( "matrix.frm" );
 
     SCAI_ASSERT_EQ_ERROR( matrix.getNumRows(), matrix.getNumColumns(), "example only for square matrices" )
 
@@ -87,12 +73,10 @@ int main( int argc, const char* argv[] )
     DenseVector<double> x( blockDist, 0.0 );
     DenseVector<double> rowDotP( size, 0.0 );
 
-    SparseVector<double> row;
+    DenseVector<double> row;
 
     {
         SCAI_REGION( "main.RowDotp" )
-
-        double time = common::Walltime::get();
 
         for ( IndexType i = 0; i < size; ++i )
         {
@@ -100,17 +84,13 @@ int main( int argc, const char* argv[] )
             Scalar dotP = row.dotProduct( row );
             rowDotP[i]  = dotP.getValue<double>();
         }
-
-        time = common::Walltime::get() - time;
-
-        std::cout << "Row norm calculation took " << time << " seconds." << std::endl;
     }
 
     std::cout << "built dotp of each row, now start" << std::endl;
 
     // x = x + ( b(i) - < matrix(i,:) * x(:)> / 
 
-    const IndexType printIter = 1;
+    const IndexType maxIter = 1;
 
     Scalar s1, s2, bi, alpha;
 
@@ -126,11 +106,18 @@ int main( int argc, const char* argv[] )
                 s2 = rowDotP[i];
                 bi = b[i];
                 alpha = ( bi - s1 ) / s2;
+                if ( i > 650 && i < 700 )
+                {
+                    std::cout << "Iter = " << i << " update: alpha = " << alpha << ", bi = " << bi 
+                              << ", s1 = " << s1 << ", s2 = " << s2 << std::endl;
+                }
                 x += alpha * row;
             }
         }
 
-        if ( ( iter + 1 ) % printIter == 0 )
+        std::cout << "x norm = " << x.l2Norm() << std::endl;
+
+        // if ( ( iter + 1 ) % 50 == 0 )
         {
             SCAI_REGION( "main.Residual" )
 

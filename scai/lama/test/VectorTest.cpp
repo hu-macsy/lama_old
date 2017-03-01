@@ -383,50 +383,62 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    // we want to compare all combination of sparse/dense vectors
+
+    TestVectors vectors1;
+    TestVectors vectors2;
 
     dmemo::TestDistributions dists( n );
 
     std::srand( 1311 );   // same random numbers on all processors
 
-    for ( size_t i = 0; i < vectors.size(); ++i )
+    for ( size_t i = 0; i < vectors1.size(); ++i )
     {
-        VectorPtr v1 = vectors[i];
-
-        if ( ! common::isNumeric( v1->getValueType() ) )
+        for ( size_t j = 0; j < vectors2.size(); ++j )
         {
-            continue;   // this test does not work for int, uint, ....
-        }
+            VectorPtr v1 = vectors1[i];
+            VectorPtr v2 = vectors2[j];
 
-        VectorPtr v2( v1->newVector() );
+            if ( ! common::isNumeric( v1->getValueType() ) )
+            {
+                continue;   // this test does not work for int, uint, ....
+            }
 
-        // generate two arrays of same value type with random numbers
+            if ( v1->getValueType() != v2->getValueType() )
+            {
+                continue;   // not yet: v1 and v2 must have same type
+            }
 
-        common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-        common::shared_ptr<_HArray> data2( _HArray::create( v1->getValueType() ) );
+            // generate two arrays of same value type with random numbers
 
-        utilskernel::HArrayUtils::setRandom( *data1, n );
-        utilskernel::HArrayUtils::setRandom( *data2, n );
+            common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
+            common::shared_ptr<_HArray> data2( _HArray::create( v2->getValueType() ) );
 
-        v1->assign( *data1 );
-        v2->assign( *data2 );
+            utilskernel::HArrayUtils::setRandom( *data1, n );
+            utilskernel::HArrayUtils::setRandom( *data2, n );
 
-        Scalar dotp = v1->dotProduct( *v2 );  // replicated computation
+            v1->assign( *data1 );
+            v2->assign( *data2 );
 
-        for ( size_t j = 0; j < dists.size(); ++j )
-        {
-            // now compute the dot product with distributed vectors
+            SCAI_LOG_DEBUG( logger, "dotProduct, v1 = " << *v1 << ", v2 = " << *v2 );
 
-            dmemo::DistributionPtr dist = dists[j];
+            Scalar dotp = v1->dotProduct( *v2 );  // replicated computation
 
-            v1->redistribute( dist );
-            v2->redistribute( dist );
+            for ( size_t j = 0; j < dists.size(); ++j )
+            {
+                // now compute the dot product with distributed vectors
 
-            Scalar distDotp = v1->dotProduct( *v2 );
+                dmemo::DistributionPtr dist = dists[j];
 
-            // we cannot check for equality due to different rounding errors
+                v1->redistribute( dist );
+                v2->redistribute( dist );
 
-            SCAI_CHECK_CLOSE( dotp, distDotp, 0.001 );
+                Scalar distDotp = v1->dotProduct( *v2 );
+
+                // we cannot check for equality due to different rounding errors
+
+                SCAI_CHECK_CLOSE( dotp, distDotp, 0.001 );
+            }
         }
     }
 }
