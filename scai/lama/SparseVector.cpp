@@ -970,31 +970,15 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 template<typename ValueType>
 void SparseVector<ValueType>::scale( const Vector& other )
 {
-    // Note: scaling of a sparse vector scales only its non-zero values
+    SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "vector scale only with same distributions supported" );
 
-    if ( other.getVectorKind() == Vector::DENSE && other.getDistribution() == getDistribution() )
-    {
-        SCAI_LOG_INFO( logger, "sparseVector *= denseVector, scales only nonZeroValues" )
+    HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
 
-        // scale locally: mNonZeroValues *= other.mValues[ mNonZeroIndexes ] 
+    other.gatherLocalValues( otherValues, mNonZeroIndexes, utilskernel::binary::COPY, getContextPtr() );
 
-        const _DenseVector& denseOther = reinterpret_cast<const _DenseVector&>( other );
+    HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, utilskernel::binary::MULT, getContextPtr() );
 
-        HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
-
-        HArrayUtils::gather( otherValues, denseOther.getLocalValues(), mNonZeroIndexes, utilskernel::binary::COPY, getContextPtr() );
-
-        HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, utilskernel::binary::MULT, getContextPtr() );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::scale( x )" 
-                               << " uses temporary dense vector" )
-
-        DenseVector<ValueType> tmpOther( other, getDistributionPtr() );
-
-        scale( tmpOther );  // now it is dense and has same distribution
-    }
+    // ToDo: compress sparse entries as there might be some values sparse now, especially if other is sparse
 }
 
 /* ------------------------------------------------------------------------- */
