@@ -1589,7 +1589,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::scale( const Vector& other )
+DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
 {
     SCAI_REGION( "Vector.Dense.scale" )
     SCAI_LOG_INFO( logger, "Scale " << *this << " with " << other )
@@ -1600,6 +1600,8 @@ void DenseVector<ValueType>::scale( const Vector& other )
     }
 
     other.buildLocalValues( mLocalValues, utilskernel::binary::MULT, getContextPtr() );
+
+    return *this;
 }
 
 template<typename ValueType>

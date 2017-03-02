@@ -683,8 +683,15 @@ public:
      *  @brief Scale this vector with another Vector.
      *
      *  @param[in] other   the other vector to scale this with
+     *  @returns this vector so it can be used in further operations
+     *
+     *  \code
+     *    DenseVector<double> v;
+     *    SparseVector<double> update, density;
+     *    v += update.scale( density );
+     *  \endcode
      */
-    virtual void scale( const Vector& other ) = 0;
+    virtual Vector& scale( const Vector& other ) = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.

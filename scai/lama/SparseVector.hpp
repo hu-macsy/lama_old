@@ -476,7 +476,7 @@ public:
 
     /** Implementation of pure method Vector::scale */
 
-    virtual void scale( const Vector& other );
+    virtual SparseVector<ValueType>& scale( const Vector& other );
 
     using Vector::prefetch; // prefetch() with no arguments
 

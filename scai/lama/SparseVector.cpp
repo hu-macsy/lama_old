@@ -968,7 +968,7 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::scale( const Vector& other )
+SparseVector<ValueType>& SparseVector<ValueType>::scale( const Vector& other )
 {
     SCAI_REGION( "Vector.Sparse.scale" )
 
@@ -983,6 +983,8 @@ void SparseVector<ValueType>::scale( const Vector& other )
     HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, utilskernel::binary::MULT, getContextPtr() );
 
     // ToDo: compress sparse entries as there might be some values sparse now, especially if other is sparse
+
+    return *this;
 }
 
 /* ------------------------------------------------------------------------- */
