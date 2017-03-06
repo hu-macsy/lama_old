@@ -10,6 +10,8 @@ VERSION 2.2.0 (in preparation):
  * Grid added as data structure for multidimensional indexing
  * GridDistribution added for mapping of data grids to processor grids
  * SingleDistribution added to map data to one single processor only
+ * dmemo::Distribution: routines added to query ownership and local indexes for each partition
+ * DenseMatrix: owner array for column distribution removed
 
 VERSION 2.1.0 (11.01.2017):
 

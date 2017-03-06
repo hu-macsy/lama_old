@@ -754,16 +754,6 @@ public:
     virtual void setContextPtr( const hmemo::ContextPtr context ) = 0;
 
     /**
-     * @brief Set individual context for local and halo part of the matrix.
-     *
-     * @param[in] localContext   context for local part
-     * @param[in] haloContext    context for non-local part
-     *
-     *  Note: Only sparse matrices will override this method, others will ignore second argument.
-     */
-    virtual void setContextPtr( const hmemo::ContextPtr localContext, const hmemo::ContextPtr haloContext );
-
-    /**
      *  @brief Getter routine for the context.
      *
      *  Note: Only for SparseMatrix the context of the halo can be queried.

@@ -275,23 +275,6 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setContextPtr( hmemo::ContextPtr localContext, hmemo::ContextPtr haloContext )
-{
-    SCAI_ASSERT_DEBUG( localContext, "localContext == NULL" )
-    SCAI_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
-
-    // default implementation for matrices that do not support halo context
-
-    if ( localContext.get() != haloContext.get() )
-    {
-        SCAI_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
-    }
-
-    setContextPtr( localContext );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void Matrix::inheritAttributes( const Matrix& other )
 {
     setCommunicationKind( other.getCommunicationKind() );

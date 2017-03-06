@@ -1145,15 +1145,21 @@ void DenseMatrix<ValueType>::redistributeRows( DistributionPtr rowDistribution )
     this->setDistributionPtr( rowDistribution );
 }
 
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 DenseMatrix<ValueType>::~DenseMatrix()
 {
-// Note: all member variables are freed by their own destructors
+    // nothing to do, all member variables are freed by their own destructors
 }
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setContextPtr( const ContextPtr context )
 {
+    SCAI_ASSERT_ERROR( context.get(), "NULL context for dense matrix, not allowed" )
+
     for ( size_t i = 0; i < mData.size(); ++i )
     {
         mData[i]->setContextPtr( context );

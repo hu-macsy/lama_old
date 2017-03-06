@@ -163,26 +163,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContextPtr( const hmemo::ContextPtr context )
-    {
-        SCAI_ASSERT_DEBUG( context, "NULL context" )
-        setContextPtr( context, context );
-    }
+    virtual void setContextPtr( const hmemo::ContextPtr context );
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContextPtr( const hmemo::ContextPtr localContext, const hmemo::ContextPtr haloContext )
-    {
-        mLocalData->setContextPtr( localContext );
-        mHaloData->setContextPtr( haloContext );
-    }
-
-    /* Implementation of pure method of class Matrix. */
-
-    virtual hmemo::ContextPtr getContextPtr() const
-    {
-        return mLocalData->getContextPtr();
-    }
+    virtual hmemo::ContextPtr getContextPtr() const;
 
     /** Implementation for Matrix::setDenseData */
 
@@ -605,7 +590,6 @@ public:
 
     /** Override the default assignment operator to guarantee deep copy. */
 
-//    SparseMatrix& operator=( const SparseMatrix& matrix );
     SparseMatrix<ValueType>& operator=( const SparseMatrix<ValueType>& matrix );
 
     /**
@@ -712,7 +696,7 @@ private:
      *  This routine can also handle the case that otherLocalData is a reference to the local
      *  data of this matrix ( helpful to avoid unneccessary copies ).
      */
-    void    set( const MatrixStorage<ValueType>& otherLocalData, dmemo::DistributionPtr otherDist );
+    void set( const MatrixStorage<ValueType>& otherLocalData, dmemo::DistributionPtr otherDist );
 
     /** Implementation of transposed assign for sparse matrix of a known value type. */
 
@@ -723,6 +707,27 @@ private:
     mutable hmemo::HArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 
 };
+
+/***************************************************************************************************/
+/* Implementation of inline methods                                                                */
+/***************************************************************************************************/
+
+template <typename ValueType>
+void SparseMatrix<ValueType>::setContextPtr( const hmemo::ContextPtr context )
+{
+    SCAI_ASSERT_ERROR( context, "NULL context, cannot be set" )
+
+    mLocalData->setContextPtr( context );
+    mHaloData->setContextPtr( context );
+}
+
+/* Implementation of pure method of class Matrix. */
+
+template <typename ValueType>
+hmemo::ContextPtr SparseMatrix<ValueType>::getContextPtr() const
+{
+    return mLocalData->getContextPtr();
+}
 
 } /* end namespace lama */
 
