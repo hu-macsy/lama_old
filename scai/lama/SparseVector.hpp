@@ -182,12 +182,16 @@ public:
      */
     SparseVector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
 
+    /**
+     * @brief Constrcutor of sparse vector with raw arrays.
+     */
     template<typename OtherValueType>
     SparseVector(
         const IndexType size,
-        const IndexType nz,
+        const IndexType nnz,
         const IndexType nonZeroIndexes[],
-        const OtherValueType nonZeroValues[] );
+        const OtherValueType nonZeroValues[],
+        const OtherValueType zeroValue = OtherValueType( 0 ) );
 
     /**
      * Override the default copy constructor to guarantee a deep copy.
@@ -345,6 +349,14 @@ public:
 
     virtual void allocate( const IndexType n );
 
+    /** Set the zero value, i.e. default value at positions not in nonZeroIndexes. */
+
+    inline void setZero( ValueType zeroValue );
+
+    /** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
+
+    inline ValueType getZero() const;
+
     /** Override the default assignment operator.  */
 
     SparseVector& operator=( const SparseVector<ValueType>& other );
@@ -406,6 +418,22 @@ public:
      * Implementation of pure method Vector::setSparseValues.
      */
     virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues );
+
+    /**
+     * Setting sparse values with raw data 
+     *
+     *   @param[in] nnz  number of non-zero values 
+     *   @param[in] nonZeroIndexes array with positions of non-zero values
+     *   @param[in] nonZeroValues array with the values at the positions
+     *
+     *   Note: the non zero entries will be sorted by position in ascending order.
+     */
+    template<typename OtherValueType>
+    void setSparseValues( 
+        const IndexType nnz, 
+        const IndexType nonZeroIndexes[], 
+        const OtherValueType nonZeroValues[],
+        const OtherValueType zeroValue = OtherValueType( 0 ) );
 
     /**
      * Set local sparse values of the sparse vector by swapping with existing arrays.
@@ -527,6 +555,8 @@ private:
     utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
     utilskernel::LArray<ValueType> mNonZeroValues;   //!< my local non-zero values
 
+    ValueType mZeroValue;    //!< ZERO element of vector, can be explicity set, defaults to 0
+
     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
 
     mutable utilskernel::LArray<ValueType> mHaloValues;
@@ -568,23 +598,38 @@ template<typename ValueType>
 template<typename OtherValueType>
 SparseVector<ValueType>::SparseVector(
     const IndexType size,
-    const IndexType nz,
+    const IndexType nnz,
     const IndexType nonZeroIndexes[],
-    const OtherValueType nonZeroValues[] ) :
+    const OtherValueType nonZeroValues[],
+    const OtherValueType zeroValue ) :
 
     _SparseVector( size )
+
 {
-    // use LAMA array reference to avoid copy of the raw data
-
-    hmemo::HArrayRef<OtherValueType> values( nz, nonZeroValues );
-    hmemo::HArrayRef<IndexType> indexes( nz, nonZeroIndexes );
-
-    setSparseValues( indexes, values );
+    setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
 }
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void SparseVector<ValueType>::setSparseValues(
+    const IndexType nnz,
+    const IndexType nonZeroIndexes[],
+    const OtherValueType nonZeroValues[],
+    const OtherValueType zeroValue ) 
+{
+    mZeroValue = zeroValue;
+
+    // use LAMA array reference to avoid copy of the raw data
+
+    hmemo::HArrayRef<OtherValueType> values( nnz, nonZeroValues );
+    hmemo::HArrayRef<IndexType> indexes( nnz, nonZeroIndexes );
+
+    setSparseValues( indexes, values );
+}
 
 Vector::VectorKind _SparseVector::getVectorKind() const
 {
@@ -602,6 +647,20 @@ const hmemo::HArray<IndexType>& SparseVector<ValueType>::getNonZeroIndexes() con
 {
     return mNonZeroIndexes;
 }
+
+
+template<typename ValueType>
+void SparseVector<ValueType>::setZero( ValueType zeroValue )
+{
+    mZeroValue = zeroValue;
+}
+
+template<typename ValueType>
+ValueType SparseVector<ValueType>::getZero() const
+{
+    return mZeroValue;
+}
+
 
 } /* end namespace lama */
 
