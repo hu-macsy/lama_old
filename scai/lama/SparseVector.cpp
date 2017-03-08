@@ -144,7 +144,8 @@ SparseVector<ValueType>::SparseVector() :
 
     _SparseVector( 0 ),
     mNonZeroIndexes(),
-    mNonZeroValues()
+    mNonZeroValues(),
+    mZeroValue( 0 )
 {
 }
 
@@ -153,7 +154,8 @@ SparseVector<ValueType>::SparseVector( const IndexType n ) :
 
     _SparseVector( n ),
     mNonZeroIndexes(),
-    mNonZeroValues()
+    mNonZeroValues(),
+    mZeroValue( 0 )
 {
 }
 
@@ -162,7 +164,8 @@ SparseVector<ValueType>::SparseVector( ContextPtr context ) :
 
     _SparseVector( 0, context ),
     mNonZeroIndexes( context ),
-    mNonZeroValues( context )
+    mNonZeroValues( context ),
+    mZeroValue( 0 )
 {
 }
 
@@ -171,7 +174,8 @@ SparseVector<ValueType>::SparseVector( const IndexType n, ContextPtr context ) :
 
     _SparseVector( n, context ),
     mNonZeroIndexes( context ),
-    mNonZeroValues( context )
+    mNonZeroValues( context ),
+    mZeroValue( 0 )
 {
 }
 
@@ -180,7 +184,8 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution ) :
     
     _SparseVector( distribution ), 
     mNonZeroIndexes(),
-    mNonZeroValues()
+    mNonZeroValues(),
+    mZeroValue( 0 )
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector, size = " << distribution->getGlobalSize()
                          << ", distribution = " << *distribution << ", all zero" )
@@ -191,7 +196,8 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, ContextPtr 
 
     _SparseVector( distribution, context ), 
     mNonZeroIndexes( context ), 
-    mNonZeroValues( context )
+    mNonZeroValues( context ),
+    mZeroValue( 0 )
 
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector on context = " << context << ", size = " << distribution->getGlobalSize()
@@ -827,8 +833,8 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 {
     const Distribution& dist = getDistribution();
 
-    stream << "SparseVector<" << getValueType() << ">" << "( size = " << size() << ", local nnz = " << mNonZeroIndexes.size()
-           << ", dist = " << dist << ", loc  = " << *getContextPtr() << " )";
+    stream << "SparseVector<" << getValueType() << ">" << "( size = " << size() << ", zero = " << mZeroValue 
+           <<", local nnz = " << mNonZeroIndexes.size() << ", dist = " << dist << ", loc  = " << *getContextPtr() << " )";
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1015,16 +1021,11 @@ void SparseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_INFO( logger, *this << ": assign " << value )
 
-    SCAI_UNSUPPORTED( "Assignment of scalar to a sparse vector not very useful" )
- 
-    const IndexType localSize = getDistribution().getLocalSize();
+    // just set this values as the ZERO value for the sparse vector
 
-    HArrayUtils::setOrder( mNonZeroIndexes, localSize, getContextPtr() );
-
+    mNonZeroIndexes.clear();
     mNonZeroValues.clear();
-    mNonZeroValues.resize( localSize );
-
-    HArrayUtils::assignScalar( mNonZeroValues, value.getValue<ValueType>(), utilskernel::binary::COPY, getContextPtr() );
+    mZeroValue = value.getValue<ValueType>();
 }
 
 /* ------------------------------------------------------------------------- */

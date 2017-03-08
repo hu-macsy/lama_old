@@ -75,22 +75,15 @@ GeneralDistribution::GeneralDistribution(
     SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize 
                             << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
 
-    ReadAccess<IndexType> rIndexes( myIndexes );
+    SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    IndexType nLocal = myIndexes.size();
+    // make a copy of the indexes and sort them ascending = true, perm not needed
 
-    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, nLocal );
-
-    for ( IndexType localIndex = 0; localIndex < nLocal; ++localIndex )
-    {
-        IndexType globalIndex = rIndexes[ localIndex ];
-
-        SCAI_ASSERT_LT_ERROR( globalIndex, mGlobalSize, "global index out of range" )
-
-        wLocal2Global[ localIndex ]  = globalIndex;
-    }
+    utilskernel::HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
 
     // Note: the constructor is completely local, but make some consistency check now
+
+    IndexType nLocal = myIndexes.size(); 
 
     SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
