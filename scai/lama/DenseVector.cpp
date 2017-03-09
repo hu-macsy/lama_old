@@ -911,13 +911,14 @@ void DenseVector<ValueType>::setDenseValues( const _HArray& values )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues )
+void DenseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, const Scalar zero )
 {
     const IndexType localSize = getDistribution().getLocalSize();
 
-    // Note: buildDenseArray checks for legal indexes, order of indexes does not matter
+    // Note: scatter might check for legal indexes
 
-    HArrayUtils::buildDenseArray( mLocalValues, localSize, nonZeroValues, nonZeroIndexes, getContextPtr() );
+    mLocalValues.init( zero.getValue<ValueType>(), localSize );
+    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, true, nonZeroValues, utilskernel::binary::COPY, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1137,9 +1138,19 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
         const HArray<IndexType>& nonZeroIndexes = sparseX.getNonZeroIndexes();
         const _HArray& nonZeroValues  = sparseX.getNonZeroValues();
 
+        const ValueType xZeroVal = sparseX.getZero().getValue<ValueType>();
+
         const bool unique = true;  // non-zero indexes in sparse vectors are always unique
 
-        if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::constants::ONE )
+        if ( xZeroVal != common::constants::ZERO )
+        {
+            // we have also to add the zero values
+
+            HArray<ValueType> xDenseValues;
+            sparseX.buildLocalValues( xDenseValues);
+            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, mContext );
+        }
+        else if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::constants::ONE )
         {
             const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( nonZeroValues );
             HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, utilskernel::binary::ADD, getContextPtr());
@@ -1588,6 +1599,8 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
     return Scalar( dotProduct );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
 {
@@ -1603,6 +1616,8 @@ DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
 
     return *this;
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void DenseVector<ValueType>::allocate()
@@ -1625,6 +1640,8 @@ void DenseVector<ValueType>::allocate( const IndexType n )
     allocate();
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::assign( const Scalar value )
 {
@@ -1633,6 +1650,8 @@ void DenseVector<ValueType>::assign( const Scalar value )
     HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::COPY, mContext );
 }
 
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::add( const Scalar value )
 {
@@ -1640,6 +1659,8 @@ void DenseVector<ValueType>::add( const Scalar value )
     // assign the scalar value on the home of this dense vector.
     HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::ADD, mContext );
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void DenseVector<ValueType>::buildLocalValues(
@@ -1659,6 +1680,8 @@ void DenseVector<ValueType>::buildLocalValues(
         HArrayUtils::setArray( localValues, mLocalValues, op, prefLoc );
     }
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void DenseVector<ValueType>::gatherLocalValues(

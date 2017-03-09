@@ -88,6 +88,10 @@ public:
 
     virtual const hmemo::HArray<IndexType>& getNonZeroIndexes() const = 0;
 
+    /** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
+
+    virtual Scalar getZero() const = 0;
+
     /**
      * @brief Implementation of pure method Vector::isConsistent 
      */
@@ -181,6 +185,15 @@ public:
      * @param[in] context  the context to use for the new vector.
      */
     SparseVector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context );
+
+    /**
+     * @brief creates a replicated SparseVector of the passed size with value as its ZERO element
+     *
+     * @param[in] size  the size of the new DenseVector.
+     * @param[in] value the value becomes ZERO element of the sparse vector, i.e. all elements have this values
+     * @param[in] context specifies optionally the context where dense vector should reside
+     */
+    SparseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief Constrcutor of sparse vector with raw arrays.
@@ -349,13 +362,9 @@ public:
 
     virtual void allocate( const IndexType n );
 
-    /** Set the zero value, i.e. default value at positions not in nonZeroIndexes. */
+    /** Implementation of pure method _SparseVector::getZero */
 
-    inline void setZero( ValueType zeroValue );
-
-    /** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
-
-    inline ValueType getZero() const;
+    inline Scalar getZero() const;
 
     /** Override the default assignment operator.  */
 
@@ -417,7 +426,10 @@ public:
     /**
      * Implementation of pure method Vector::setSparseValues.
      */
-    virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues );
+    virtual void setSparseValues(
+        const hmemo::HArray<IndexType>& nonZeroIndexes,
+        const hmemo::_HArray& nonZeroValues,
+        const Scalar zeroValue = Scalar( 0 ) );
 
     /**
      * Setting sparse values with raw data 
@@ -550,6 +562,10 @@ protected:
 
     using Vector::mContext;
 
+    /** Help routine for binary operation of two sparse vectors */
+
+    void binOpSparse( const _SparseVector& other, const utilskernel::binary::BinaryOp op, bool swapArgs );
+
 private:
 
     utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
@@ -621,14 +637,12 @@ void SparseVector<ValueType>::setSparseValues(
     const OtherValueType nonZeroValues[],
     const OtherValueType zeroValue ) 
 {
-    mZeroValue = zeroValue;
-
     // use LAMA array reference to avoid copy of the raw data
 
     hmemo::HArrayRef<OtherValueType> values( nnz, nonZeroValues );
     hmemo::HArrayRef<IndexType> indexes( nnz, nonZeroIndexes );
 
-    setSparseValues( indexes, values );
+    setSparseValues( indexes, values, zeroValue );
 }
 
 Vector::VectorKind _SparseVector::getVectorKind() const
@@ -648,19 +662,11 @@ const hmemo::HArray<IndexType>& SparseVector<ValueType>::getNonZeroIndexes() con
     return mNonZeroIndexes;
 }
 
-
 template<typename ValueType>
-void SparseVector<ValueType>::setZero( ValueType zeroValue )
+Scalar SparseVector<ValueType>::getZero() const
 {
-    mZeroValue = zeroValue;
+    return Scalar( mZeroValue );
 }
-
-template<typename ValueType>
-ValueType SparseVector<ValueType>::getZero() const
-{
-    return mZeroValue;
-}
-
 
 } /* end namespace lama */
 

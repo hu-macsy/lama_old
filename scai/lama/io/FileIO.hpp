@@ -127,6 +127,8 @@ public:
      *  @param[in] indexes are the positions of the array with non-zero values
      *  @param[in] values are the values for the positions specified by indexes
      *  @param[in] fileName is the name of the output file
+     *
+     *  Note: the ZERO element of a sparse vector cannot be written into a file.
      */
     virtual void writeSparse( 
         const IndexType size, 

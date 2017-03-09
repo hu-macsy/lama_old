@@ -495,7 +495,10 @@ public:
     /**
      * Implementation of pure method Vector::setSparseValues.
      */
-    virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues );
+    virtual void setSparseValues(
+        const hmemo::HArray<IndexType>& nonZeroIndexes,
+        const hmemo::_HArray& nonZeroValues,
+        const Scalar zeroValue = Scalar( 0 ) );
 
     /**
      * Implementation of Vector::copy with covariant return type.

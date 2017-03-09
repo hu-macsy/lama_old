@@ -313,6 +313,14 @@ public:
     Vector& operator+=( const Vector& other );
 
     /**
+     * @brief Returns the subtraction of this and other.
+     *
+     * @param[in] other the vector to do the subtraction with.
+     * @return          a reference to this.
+     */
+    Vector& operator-=( const Vector& other );
+
+    /**
      * @brief Add a scalar value to all elements of this vector.
      *
      * @param[in] value   the value to add all elements of this with.
@@ -321,12 +329,12 @@ public:
     Vector& operator+=( const Scalar value );
 
     /**
-     * @brief Returns the subtraction of this and other.
+     * @brief Sub a scalar value to all elements of this vector.
      *
-     * @param[in] other the vector to do the subtraction with.
-     * @return          a reference to this.
+     * @param[in] value   the value to add all elements of this with.
+     * @return            a reference to this.
      */
-    Vector& operator-=( const Vector& other );
+    Vector& operator-=( const Scalar value );
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -375,13 +383,16 @@ public:
      *
      * @param[in] nonZeroIndexes   array with all local indexes that have a non-zero entry
      * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
+     * @param[in] zeroValue        value for all indexes that do not appear in nonZeroIndexes
      *
      * The size of the both input arrays must be equal.
      *
      * Note: Implicit type conversion for the values is supported.
      */
-
-    virtual void setSparseValues( const hmemo::HArray<IndexType>& nonZeroIndexes, const hmemo::_HArray& nonZeroValues ) = 0;
+    virtual void setSparseValues( 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
+        const hmemo::_HArray& nonZeroValues,
+        const Scalar zeroValue = Scalar( 0 ) ) = 0;
 
     /**
      * @brief Sets the local size of the vector to zero. 

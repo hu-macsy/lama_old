@@ -611,9 +611,20 @@ Vector& Vector::operator+=( const Vector& other )
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
+Vector& Vector::operator-=( const Vector& other )
+{
+    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
+}
+
 Vector& Vector::operator+=( const Scalar value )
 {
     add( value );
+    return *this;
+}
+
+Vector& Vector::operator-=( const Scalar value )
+{
+    add( -value );
     return *this;
 }
 
@@ -644,17 +655,14 @@ Vector& Vector::operator-=( const Expression_SMV& exp )
     return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Vector& other )
-{
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
-}
-
 /* ---------------------------------------------------------------------------------------*/
 /*   assign operations                                                                    */
 /* ---------------------------------------------------------------------------------------*/
 
 void Vector::assign( const Vector& other )
 {
+    SCAI_LOG_INFO( logger, "assign other = " << other )
+
     setDistributionPtr( other.getDistributionPtr() );
 
     switch ( other.getVectorKind() )
@@ -668,7 +676,7 @@ void Vector::assign( const Vector& other )
         case Vector::SPARSE:
         {
             const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
-            setSparseValues( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues() );
+            setSparseValues( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), sparseOther.getZero() );
             break;
         }
         default:
