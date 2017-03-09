@@ -1768,9 +1768,11 @@ void HArrayUtils::addSparse(
     hmemo::HArray<ValueType>& resultValues,
     const hmemo::HArray<IndexType>& indexes1,
     const hmemo::HArray<ValueType>& values1,
+    const ValueType zero1,
     const ValueType alpha,
     const hmemo::HArray<IndexType>& indexes2,
     const hmemo::HArray<ValueType>& values2,
+    const ValueType zero2,
     const ValueType beta,
     hmemo::ContextPtr prefLoc )
 {
@@ -1805,8 +1807,58 @@ void HArrayUtils::addSparse(
     ReadAccess<ValueType> rValues2( values2, loc );
 
     addSparse[loc]( wIndexes.get(), wValues.get(),
-                    rIndexes1.get(), rValues1.get(), n1, alpha,
-                    rIndexes2.get(), rValues2.get(), n2, beta );
+                    rIndexes1.get(), rValues1.get(), zero1, n1, alpha,
+                    rIndexes2.get(), rValues2.get(), zero2, n2, beta );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::binaryOpSparse(
+    hmemo::HArray<IndexType>& resultIndexes,
+    hmemo::HArray<ValueType>& resultValues,
+    const hmemo::HArray<IndexType>& indexes1,
+    const hmemo::HArray<ValueType>& values1,
+    const ValueType zero1,
+    const hmemo::HArray<IndexType>& indexes2,
+    const hmemo::HArray<ValueType>& values2,
+    const ValueType zero2,
+    const binary::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
+    static LAMAKernel<SparseKernelTrait::binopSparse<ValueType> > binopSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes1.getValidContext();
+    }
+
+    binopSparse.getSupportedContext( loc, countAddSparse );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIndexes1( indexes1, loc );
+    ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+    IndexType n1 = indexes1.size();
+    IndexType n2 = indexes2.size();
+
+    IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
+
+    WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
+    WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+
+    ReadAccess<ValueType> rValues1( values1, loc );
+    ReadAccess<ValueType> rValues2( values2, loc );
+
+    binopSparse[loc]( wIndexes.get(), wValues.get(),
+                      rIndexes1.get(), rValues1.get(), zero1, n1, 
+                      rIndexes2.get(), rValues2.get(), zero2, n2, op );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1973,9 +2025,22 @@ void HArrayUtils::addSparse(
             const hmemo::HArray<IndexType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
             const ValueType,                                                    \
+            const ValueType,                                                    \
             const hmemo::HArray<IndexType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
             const ValueType,                                                    \
+            const ValueType,                                                    \
+            hmemo::ContextPtr );                                                \
+    template void HArrayUtils::binaryOpSparse(                                  \
+            hmemo::HArray<IndexType>&,                                          \
+            hmemo::HArray<ValueType>&,                                          \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
+            const binary::BinaryOp,                                             \
             hmemo::ContextPtr );                                                \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
 

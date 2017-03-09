@@ -690,9 +690,9 @@ public:
     /** Add two sparse arrays 
      *
      *  @param[out] resultIndexes, resultValues for sparse result array
-     *  @param[in]  indexes1, values1 first sparse array
+     *  @param[in]  indexes1, values1, zero1 stand for first sparse array
      *  @param[in]  alpha scaling factor for values of first array
-     *  @param[in]  indexes2, values2 second sparse array
+     *  @param[in]  indexes2, values2, zero2 stand for second sparse array
      *  @param[in]  beta scaling factor for values of second array
      *  @param[in]  prefLoc is the context where operation should be done
      *
@@ -705,10 +705,33 @@ public:
         hmemo::HArray<ValueType>& resultValues,
         const hmemo::HArray<IndexType>& indexes1,
         const hmemo::HArray<ValueType>& values1,
+        const ValueType zero1,
         const ValueType alpha,
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
+        const ValueType zero2,
         const ValueType beta,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Elementwise binary operation on sparse array: result[i] = op( x[i], y[i] )
+     *
+     *  @param[out] resultIndexes, resultValues for sparse result array
+     *  @param[in]  indexes1, values1, zero1 stand for first sparse array
+     *  @param[in]  indexes2, values2, zero2 stand for second sparse array
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     */
+    template<typename ValueType>
+    static void binaryOpSparse(
+        hmemo::HArray<IndexType>& resultIndexes,
+        hmemo::HArray<ValueType>& resultValues,
+        const hmemo::HArray<IndexType>& indexes1,
+        const hmemo::HArray<ValueType>& values1,
+        const ValueType zero1,
+        const hmemo::HArray<IndexType>& indexes2,
+        const hmemo::HArray<ValueType>& values2,
+        const ValueType zero2,
+        const binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:

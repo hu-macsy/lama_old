@@ -297,12 +297,30 @@ private:
         ValueType values[],
         const IndexType indexes1[],
         const ValueType values1[],
+        const ValueType zero1,
         const IndexType n1,
         const ValueType alpha,
         const IndexType indexes2[],
         const ValueType values2[],
+        const ValueType zero2,
         const IndexType n2,
         const ValueType beta );
+
+    /** OpenMP implementation of SparseKernelTrait::binopSparse */
+
+    template<typename ValueType>
+    static IndexType binopSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const binary::BinaryOp op );
 
     template<typename ValueType>
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );

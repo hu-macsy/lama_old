@@ -640,6 +640,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
     ValueType alpha = 1;
     ValueType beta  = 2;
 
+    ValueType zero = 0;
+
     {
         SCAI_CONTEXT_ACCESS( loc );
 
@@ -657,8 +659,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
         WriteOnlyAccess<ValueType> wValues( values, loc, n );
 
         IndexType nc = addSparse[loc]( wIndexes.get(), wValues.get(), 
-                                       rIndexes1.get(), rValues1.get(), n1, alpha,
-                                       rIndexes2.get(), rValues2.get(), n2, beta );
+                                       rIndexes1.get(), rValues1.get(), zero, n1, alpha,
+                                       rIndexes2.get(), rValues2.get(), zero, n2, beta );
 
         BOOST_CHECK_EQUAL( n, nc );
     }

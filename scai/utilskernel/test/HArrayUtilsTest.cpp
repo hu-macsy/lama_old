@@ -1354,7 +1354,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
     HArray<ValueType> values;
 
     ValueType one = 1;
-    HArrayUtils::addSparse( indexes, values, indexes1, values1, one, indexes2, values2, one );
+    ValueType zero = 0;
+    HArrayUtils::addSparse( indexes, values, indexes1, values1, zero, one, indexes2, values2, zero, one );
 
     BOOST_REQUIRE_EQUAL( n, indexes.size() );
     BOOST_REQUIRE_EQUAL( n, values.size() );
@@ -1367,7 +1368,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 
     // just switch the arguments
 
-    HArrayUtils::addSparse( indexes, values, indexes1, values1, one, indexes2, values2, one );
+    HArrayUtils::addSparse( indexes, values, indexes1, values1, zero, one, indexes2, values2, zero, one );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes ) );
     BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );

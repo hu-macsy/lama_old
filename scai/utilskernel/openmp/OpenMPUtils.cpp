@@ -1879,14 +1879,19 @@ IndexType OpenMPUtils::addSparse(
     ValueType values[],
     const IndexType indexes1[],
     const ValueType values1[],
+    const ValueType zero1,
     const IndexType n1,
     const ValueType alpha,
     const IndexType indexes2[],
     const ValueType values2[],
+    const ValueType zero2,
     const IndexType n2,
     const ValueType beta )
 {
     SCAI_REGION( "OpenMP.Utils.addSparse" )
+
+    SCAI_LOG_DEBUG( logger, "addSparse: "<< alpha << "* Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
+                             << beta << " * Sp( n2 = " << n2 << ", zero2 = " << zero2 )
 
     IndexType n = 0;
 
@@ -1912,7 +1917,7 @@ IndexType OpenMPUtils::addSparse(
             // entry only in array1
 
             indexes[n] = indexes1[i1];
-            values[n]  = alpha * values1[i1];
+            values[n]  = alpha * values1[i1] + beta * zero2;
             ++n;
             ++i1;
         }
@@ -1921,7 +1926,7 @@ IndexType OpenMPUtils::addSparse(
             // entry only in array2
 
             indexes[n] = indexes2[i2];
-            values[n]  = beta * values2[i2];
+            values[n]  = beta * values2[i2] + alpha * zero1;
             ++n;
             ++i2;
         }
@@ -1930,7 +1935,7 @@ IndexType OpenMPUtils::addSparse(
     while ( i1 < n1 )
     {
         indexes[n] = indexes1[i1];
-        values[n]  = alpha * values1[i1];
+        values[n]  = alpha * values1[i1] + beta * zero2;
         ++n;
         ++i1;
     }
@@ -1938,7 +1943,86 @@ IndexType OpenMPUtils::addSparse(
     while ( i2 < n2 )
     {
         indexes[n] = indexes2[i2];
-        values[n]  = beta * values2[i2];
+        values[n]  = beta * values2[i2] + alpha * zero1;
+        ++n;
+        ++i2;
+    }
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType OpenMPUtils::binopSparse(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const ValueType zero1,
+    const IndexType n1,
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const ValueType zero2,
+    const IndexType n2,
+    const binary::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.binopSparse" )
+
+    SCAI_LOG_DEBUG( logger, "binopSparse: Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
+                             << op << " Sp( n2 = " << n2 << ", zero2 = " << zero2 )
+
+    IndexType n = 0;
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] == indexes2[i2] )
+        {
+            // entry at same position
+
+            indexes[n] = indexes1[i1];
+            values[n]  = applyBinary( values1[i1], op, values2[i2] );
+            ++n;
+            ++i1;
+            ++i2;
+        }
+        else if ( indexes1[i1] < indexes2[i2] )
+        {
+            // entry only in array1
+
+            indexes[n] = indexes1[i1];
+            values[n]  = applyBinary( values1[i1], op, zero2 );
+            ++n;
+            ++i1;
+        }
+        else
+        {
+            // entry only in array2
+
+            indexes[n] = indexes2[i2];
+            values[n]  = applyBinary( zero1, op, values2[i2] );
+            ++n;
+            ++i2;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        indexes[n] = indexes1[i1];
+        values[n]  = applyBinary( values1[i1], op, zero2 );
+        ++n;
+        ++i1;
+    }
+
+    while ( i2 < n2 )
+    {
+        indexes[n] = indexes2[i2];
+        values[n]  = applyBinary( zero1, op, values2[i2] );
         ++n;
         ++i2;
     }
@@ -1985,6 +2069,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::sortInPlace<ValueType> >( sortInPlace, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::binopSparse<ValueType> >( binopSparse, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );

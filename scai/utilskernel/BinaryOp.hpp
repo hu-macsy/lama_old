@@ -212,8 +212,12 @@ inline ValueType zeroBinary( const binary::BinaryOp op )
     switch ( op )
     {
         case binary::ADD:
+        case binary::SUB:
         case binary::ABS_MAX:
             return ValueType( 0 );
+        case binary::MULT:
+        case binary::DIVIDE:
+            return ValueType( 1 );
         case binary::MIN:
             return common::TypeTraits<ValueType>::getMax();
         case binary::MAX:
