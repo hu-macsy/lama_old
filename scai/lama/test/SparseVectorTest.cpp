@@ -64,17 +64,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 {
     // replicated sparse vector of a certain size only with zero elements
 
-    IndexType n = 4;
+    ValueType zeroValues[] = { 0, 1 };
 
-    SparseVector<ValueType> v( n );
+    const IndexType n = 4;
 
-    ValueType zero = 0;
-
-    BOOST_CHECK_EQUAL( n, v.size() );
-
-    for ( IndexType i = 0; i < n; ++i )
+    for ( IndexType icase = 0; icase < 2; ++icase )
     {
-        BOOST_CHECK_EQUAL( v.getValue( i ), zero );
+        ValueType zero = zeroValues[icase];
+
+        SparseVector<ValueType> v( n, zero );
+
+        BOOST_CHECK_EQUAL( n, v.size() );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            BOOST_CHECK_EQUAL( v.getValue( i ), zero );
+        }
     }
 }
 
@@ -199,6 +204,8 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
 
     const hmemo::HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
 
+    // indexes must be sorted:  spIndexes[0] < spIndexes[1] < ... < spIndexes[nnz-1]
+
     BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, utilskernel::binary::LT ) );
 }
 
@@ -240,6 +247,136 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( binOpSparseTest )
+{
+    // Test of different binary operations with sparse vectors
+    // For comparison the same operations are computed with dense vectors
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    IndexType rawNonZeroIndexes1[] = { 0, 5, 6 };
+    ValueType rawNonZeroValues1[] = { 5, 6, 7 };
+
+    IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
+    double rawNonZeroValues2[] = { 5, 4, 9 };
+
+    // Note: binary operations should give sparse vector with maximal 4 elements
+
+    for ( IndexType icase = 0; icase < 5; ++icase )
+    {
+        ValueType zero1 = 1.0;
+        ValueType zero2 = 1.0;
+
+        SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
+        SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
+
+        // use copy constructor to build equivalent dense vectors
+
+        DenseVector<ValueType> xD1( xS1 );
+        DenseVector<ValueType> xD2( xS2 );
+
+        SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
+
+        switch ( icase )
+        {
+            case 0 : xS1 += xS2; 
+                     BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
+                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 + zero2 ) ) < Scalar( 0.0001 ) );
+                     xD1 += xD2;
+                     break;
+            case 1 : xS1 *= xS2; 
+                     BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
+                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 * zero2 ) ) < Scalar( 0.0001 ) );
+                     xD1 *= xD2;
+                     break;
+            case 2 : xS1 = 5 * xS1 - 2 * xS2; 
+                     BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
+                     BOOST_CHECK( abs( xS1.getZero() - Scalar( 5 * zero1 - 2 * zero2 ) ) < Scalar( 0.0001 ) );
+                     xD1 = 5 * xD1 - 2 * xD2;
+                     break;
+            case 3 : xS1.invert();   // this op is okay if zero element is not 0
+                     xD1.invert();
+                     break;
+            case 4 : xS1 += xD2;     // add with dense vector okay, but might be entry for each elem
+                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 ) ) < Scalar( 0.0001 ) );
+                     xD1 += xD2;
+                     break;
+            default: 
+                     BOOST_CHECK( false );  // just fail if not handled
+        }
+
+        xD1 -= xS1;
+
+        BOOST_CHECK( xD1.maxNorm() < Scalar( 1e-4 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( binOpDenseTest )
+{
+    // Test of different binary operations where result is dense vector
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    IndexType rawNonZeroIndexes1[] = { 0, 5, 6 };
+    ValueType rawNonZeroValues1[] = { 5, 6, 7 };
+
+    IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
+    double rawNonZeroValues2[] = { 5, 4, 9 };
+
+    // Note: binary operations should give sparse vector with maximal 4 elements
+
+    for ( IndexType icase = 0; icase < 4; ++icase )
+    {
+        ValueType zero1 = 0.0;
+        ValueType zero2 = 1.0;
+
+        SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
+        SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
+
+        DenseVector<ValueType> xD1( xS1 );
+        DenseVector<ValueType> xD2( xS2 );
+
+        // use copy constructor to build equivalent dense vectors
+
+        DenseVector<ValueType> result1( n, ValueType( 5 ) );
+        DenseVector<ValueType> result2( n, ValueType( 5 ) );
+
+        SCAI_LOG_DEBUG( logger, "Run test case " << icase << " for binop on sparse vectors" )
+
+        switch ( icase )
+        {
+            case 0 : result1 += xS1;
+                     result2 += xD1;
+                     break;
+            case 1 : result1 += xS2;
+                     result2 += xD2;
+                     break;
+            case 2 : result1 *= xS1;
+                     result2 *= xD1;
+                     break;
+            case 3 : result1 *= xS2;
+                     result2 *= xD2;
+                     break;
+            default: 
+                     BOOST_CHECK( false );  // just fail if not handled
+        }
+
+        result1 -= result2;
+
+        BOOST_CHECK( result1.maxNorm() < Scalar( 1e-4 ) );
     }
 }
 
