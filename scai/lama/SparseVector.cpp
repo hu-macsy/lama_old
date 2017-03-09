@@ -858,6 +858,7 @@ void SparseVector<ValueType>::swap( Vector& other )
 
     mNonZeroValues.swap( typedOther.mNonZeroValues );
     mNonZeroIndexes.swap( typedOther.mNonZeroIndexes );
+    std::swap( mZeroValue, typedOther.mZeroValue );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -932,6 +933,8 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
     HArrayUtils::addSparse( mNonZeroIndexes, mNonZeroValues,
                             x.mNonZeroIndexes, x.mNonZeroValues, x.mZeroValue, alpha, 
                             y.mNonZeroIndexes, y.mNonZeroValues, y.mZeroValue, beta, this->getContextPtr() );
+
+    mZeroValue = alpha * x.mZeroValue + beta * y.mZeroValue;
 }
 
 /* ------------------------------------------------------------------------- */
