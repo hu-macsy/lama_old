@@ -189,7 +189,7 @@ public:
     /**
      * @brief creates a replicated SparseVector of the passed size with value as its ZERO element
      *
-     * @param[in] size  the size of the new DenseVector.
+     * @param[in] size  the size of the new SparseVector.
      * @param[in] value the value becomes ZERO element of the sparse vector, i.e. all elements have this values
      * @param[in] context specifies optionally the context where dense vector should reside
      */
@@ -204,7 +204,8 @@ public:
         const IndexType nnz,
         const IndexType nonZeroIndexes[],
         const OtherValueType nonZeroValues[],
-        const OtherValueType zeroValue = OtherValueType( 0 ) );
+        const OtherValueType zeroValue = OtherValueType( 0 ),
+        hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * Override the default copy constructor to guarantee a deep copy.
@@ -617,9 +618,10 @@ SparseVector<ValueType>::SparseVector(
     const IndexType nnz,
     const IndexType nonZeroIndexes[],
     const OtherValueType nonZeroValues[],
-    const OtherValueType zeroValue ) :
+    const OtherValueType zeroValue,
+    hmemo::ContextPtr context ) :
 
-    _SparseVector( size )
+    _SparseVector( size, context )
 
 {
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
@@ -635,7 +637,7 @@ void SparseVector<ValueType>::setSparseValues(
     const IndexType nnz,
     const IndexType nonZeroIndexes[],
     const OtherValueType nonZeroValues[],
-    const OtherValueType zeroValue ) 
+    const OtherValueType zeroValue )
 {
     // use LAMA array reference to avoid copy of the raw data
 
