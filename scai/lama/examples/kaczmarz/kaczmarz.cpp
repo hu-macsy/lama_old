@@ -42,7 +42,10 @@
 #include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+
+// import common 
 #include <scai/common/Walltime.hpp>
+#include <scai/common/Settings.hpp>
 
 #include <iostream>
 #include <stdlib.h>
@@ -55,6 +58,12 @@ using namespace dmemo;
 
 int main( int argc, const char* argv[] )
 {
+    // relevant SCAI arguments: 
+    //   SCAI_CONTEXT = ...    set default context
+    //   SCAI_DEVICE  = ...    set default device
+
+    common::Settings::parseArgs( argc, argv );
+
     if ( argc != 3 )
     {
         std::cout << "Correct call: " << argv[0] << " <filename> <n_iter>" << std::endl;
@@ -67,6 +76,9 @@ int main( int argc, const char* argv[] )
     std::cout << "Run " << argv[0] << " " << filename << ", #iter = " << maxIter << std::endl;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    ContextPtr ctx = Context::getContextPtr();
+
+    // planned: SCAI_CONTEXT_ACCESS( ctx );   // becomes default context for all created objects
 
     SCAI_REGION( "main.Kacmarz" )
 
@@ -79,15 +91,16 @@ int main( int argc, const char* argv[] )
     DistributionPtr blockDist( new BlockDistribution( size, comm ) );
     DistributionPtr repDist( new NoDistribution( size ) );
 
+    matrix.setContextPtr( ctx );
     matrix.redistribute( blockDist, blockDist );
 
     std::cout << "Matrix = " << matrix << std::endl;
 
-    DenseVector<double> b( blockDist, 1.0 );
-    DenseVector<double> x( blockDist, 0.0 );
-    DenseVector<double> rowDotP( size, 0.0 );
+    DenseVector<double> b( blockDist, 1.0, ctx );
+    DenseVector<double> x( blockDist, 0.0, ctx );
+    DenseVector<double> rowDotP( size, 0.0, ctx );
 
-    SparseVector<double> row;
+    SparseVector<double> row( ctx );
 
     {
         SCAI_REGION( "main.RowDotp" )
