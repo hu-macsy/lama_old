@@ -306,7 +306,6 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
                      xD1.invert();
                      break;
             case 4 : xS1 += xD2;     // add with dense vector okay, but might be entry for each elem
-                     BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 ) ) < Scalar( 0.0001 ) );
                      xD1 += xD2;
                      break;
             default: 
@@ -378,6 +377,48 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
         BOOST_CHECK( result1.maxNorm() < Scalar( 1e-4 ) );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( reduceTest )
+{
+    // Test of different redcution operations on sparse vector
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    IndexType rawNonZeroIndexes1[] = { 0, 5, 6 };
+    ValueType rawNonZeroValues1[] = { 5, 6, 7 };
+
+    IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
+    double rawNonZeroValues2[] = { 5, 4, 9 };
+
+    // Note: binary operations should give sparse vector with maximal 4 elements
+
+    ValueType zero1 = 0;
+    ValueType zero2 = 0;
+
+    SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes1, rawNonZeroValues1, zero1 );
+    SparseVector<ValueType> xS2( n, 3, rawNonZeroIndexes2, rawNonZeroValues2, zero2 );
+
+    DenseVector<ValueType> xD1( xS1 );
+    DenseVector<ValueType> xD2( xS2 );
+
+    BOOST_CHECK_EQUAL( xS1.min(), xD1.min() );
+    BOOST_CHECK_EQUAL( xS2.min(), xD2.min() );
+    BOOST_CHECK_EQUAL( xS1.max(), xD1.max() );
+    BOOST_CHECK_EQUAL( xS2.max(), xD2.max() );
+    BOOST_CHECK_EQUAL( xS1.sum(), xD1.sum() );
+    BOOST_CHECK_EQUAL( xS1.l1Norm(), xD1.l1Norm() );
+    BOOST_CHECK_EQUAL( xS1.l2Norm(), xD1.l2Norm() );
+    BOOST_CHECK_EQUAL( xS2.maxNorm(), xD2.maxNorm() );
+    BOOST_CHECK_EQUAL( xS1.dotProduct( xS1 ), xD1.dotProduct(xD1 ) );
+    BOOST_CHECK_EQUAL( xS1.dotProduct( xS2 ), xD1.dotProduct(xD2 ) );
+    BOOST_CHECK_EQUAL( xS1.dotProduct( xD2 ), xD1.dotProduct(xD2 ) );
+    BOOST_CHECK_EQUAL( xD1.dotProduct( xS2 ), xD1.dotProduct(xD2 ) );
 }
 
 /* --------------------------------------------------------------------- */

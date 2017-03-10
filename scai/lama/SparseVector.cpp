@@ -588,6 +588,10 @@ void SparseVector<ValueType>::setDenseValues( const _HArray& values )
 
     SCAI_ASSERT_EQ_ERROR( size, values.size(), "size of local values does not match local size of vector" )
 
+    mZeroValue = ValueType( 0 );
+
+    // ToDo: use the current ZERO value for building the sparse data structures
+
     HArrayUtils::buildSparseArray( mNonZeroValues, mNonZeroIndexes, values, getContextPtr() );
 }
 
@@ -762,9 +766,11 @@ Scalar SparseVector<ValueType>::min() const
 
     // if there are implicit zero values they must be used for min computation
 
-    if ( mNonZeroValues.size() < getDistribution().getLocalSize() ) 
+    IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
+
+    if ( nZero > 0 )
     {
-         localMin = common::Math::min( localMin, ValueType( 0 ) );
+         localMin = common::Math::min( localMin, mZeroValue );
     }
 
     return Scalar( getDistribution().getCommunicator().min( localMin ) );
@@ -776,7 +782,18 @@ template<typename ValueType>
 Scalar SparseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
+
     ValueType localMax = mNonZeroValues.max();
+
+    IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
+
+    if ( nZero > 0 )
+    {
+        // ToDo: replace ABS with ASUM, is different for complex numbers
+
+        localMax = common::Math::max( localMax, mZeroValue );
+    }
+
     return Scalar( getDistribution().getCommunicator().max( localMax ) );
 }
 
@@ -788,6 +805,16 @@ Scalar SparseVector<ValueType>::l1Norm() const
     SCAI_REGION( "Vector.sparse.l1Norm" )
 
     ValueType localL1Norm = mNonZeroValues.l1Norm();
+
+    IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
+
+    if ( nZero > 0 )
+    {
+        // ToDo: replace ABS with ASUM, is different for complex numbers
+
+        localL1Norm += utilskernel::applyUnary( utilskernel::unary::ABS, mZeroValue ) * nZero;
+    }
+
     return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
 }
 
@@ -795,8 +822,16 @@ Scalar SparseVector<ValueType>::l1Norm() const
 template<typename ValueType>
 Scalar SparseVector<ValueType>::sum() const
 {
-    ValueType localsum = mNonZeroValues.sum();
-    return Scalar( getDistribution().getCommunicator().sum( localsum ) );
+    ValueType localSum = mNonZeroValues.sum();
+
+    IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
+
+    if ( nZero > 0 )
+    {
+        localSum += mZeroValue * nZero;
+    }
+
+    return Scalar( getDistribution().getCommunicator().sum( localSum ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -807,8 +842,18 @@ Scalar SparseVector<ValueType>::l2Norm() const
     SCAI_REGION( "Vector.sparse.l2Norm" )
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
+
     ValueType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+
+    IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
+
+    if ( nZero > 0 )
+    {
+        localDotProduct += mZeroValue * mZeroValue * nZero;
+    }
+ 
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+
     return Scalar( common::Math::sqrt( globalDotProduct ) );
 }
 
@@ -834,6 +879,17 @@ Scalar SparseVector<ValueType>::maxNorm() const
     SCAI_REGION( "Vector.sparse.maxNorm" )
 
     ValueType localMaxNorm = mNonZeroValues.maxNorm();
+
+    // the ZERO element must also be considered if at least one element is zero
+
+    IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
+
+    if ( nZero > 0 )
+    {
+        SCAI_LOG_DEBUG( logger, "maxNorm, zero = " << mZeroValue << ", non-zero = " << localMaxNorm )
+        localMaxNorm = common::Math::max( common::Math::abs( localMaxNorm ), common::Math::abs( mZeroValue ) );
+    }
+
     const Communicator& comm = getDistribution().getCommunicator();
     ValueType globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
@@ -988,7 +1044,7 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 
         localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
     }
-    else 
+    else if ( mZeroValue == common::constants::ZERO )
     {
         HArray<ValueType> otherNonZeroValues;  //  the values form other at my non-zero indexes
 
@@ -997,6 +1053,14 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
         // now build dotproduct( mNonZeroValues, otherNonZeroValues )
 
         localDotProduct = mNonZeroValues.dotProduct( otherNonZeroValues );
+    }
+    else 
+    {
+         utilskernel::LArray<ValueType> multValues;
+
+         buildLocalValues( multValues, utilskernel::binary::COPY, mContext );
+         other.buildLocalValues( multValues, utilskernel::binary::MULT, mContext );
+         localDotProduct = multValues.sum();
     }
 
     SCAI_LOG_DEBUG( logger, "Calculating global dot product form local dot product = " << localDotProduct )
