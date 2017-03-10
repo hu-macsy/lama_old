@@ -9,8 +9,8 @@ a specific ``Distribution`` from :ref:`scaidmemo:main-page_dmemo`.
 For a distributed vector, each processor stores only the values owned by it. The ``Vector`` class comes in two flavors:
 a ``DenseVector`` stores all its values and a ``SparseVector`` stores only the non-zero values. In the latter case, an additional
 array containing the indexes of the non-zero values is required, but the array containing the values might be significantly 
-smaller. The local values are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` so a ``Vector`` can be used transparently 
-on every device. 
+smaller. The local values are internally stored in a ``HArray`` out of :ref:`scaihmemo:main-page_hmemo` 
+so a ``Vector`` can be used transparently on every device. 
 
 Furthermore, each vector object has a context, that can be set explicitly. This context decides on which device operations 
 with this vector are executed. In case of operations with multiple vectors it is usually the target vector that decides, where
@@ -19,15 +19,62 @@ an operation is executed.
 Constructors
 ------------
 
-The class ``Vector`` is an abstract class that can be used for generic algorithm formulation.
 For instantiating a vector variable you need to call the constructor either of the templated class ``DenseVector``, 
 a specific representation of a vector holding all vector entries, or of the templated class ``SparseVector``, a
 specific representation of a vector holding only non-zero entries.
 
 .. code-block:: c++
 
-    DenseVector<ValueType> denseVector;
-    SparseVector<ValueType> sparseVector;
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+    const IndexType n = 1024;
+    DistributionPtr blockDist( new BlockDistribution( n, dmemo::Communicator::getCommunicatorPtr() ) );
+    ValueType initVal = 1;
+
+    DenseVector<ValueType> vector1;
+    SparseVector<ValueType> vector2( ctx );
+    SparseVector<ValueType> vector3( n [, ctx] );
+    DenseVector<ValueType> vector4( blockDist [, ctx] );
+    SparseVector<ValueType> vector5( n, initVal [, ctx] );
+    SparseVector<ValueType> vector6( blockDist, initVal [, ctx] );
+    SparseVector<ValueType> vector7( vectorX );
+    SparseVector<ValueType> vector8( vectorX, blockDist );
+    SparseVector<ValueType> vector9( "vector.mtx" );            // read vector from a file
+    DenseVector<ValueType> vector10( vector1 + 2 * vector3 );   // any supported vector expression
+
+The following constructors are only available for a dense vector:
+
+.. code-block:: c++
+
+    DenseVector<ValueType> dVector1( n, ValueType(1), ValueType(0.1) [, ctx] );
+    DenseVector<ValueType> dVector2( blockDist , ValueType(1), ValueType(0.1) [, ctx] );
+
+    HArray<ValueType> localValues;
+    ...   // compute, set local values independently on each processor
+    DenseVector( localValues, blockDist );
+
+The following constructors are only available for a sparse vector:
+
+.. code-block:: c++
+
+    HArray<IndexType> nonZeroIndexes;
+    HArray<ValueType> nonZeroValues;
+    ...   // compute set local non-zero values independently
+    // Note: nonZeroIndexes.size() == nonZeroValues.size() must be valid
+    SparseVector<ValueType> sVector1( n, nonZeroIndexes, nonZeroValues, zeroValue [, ctx] );
+
+    IndexType indexes_raw[] = { 1, 3, 7 };
+    ValueType values_raw[] = { 2, 1, 6 };
+    SparseVector<ValueType>( n, 3, indexes_raw, values_raw [, initVal ] );
+
+All index positions that do not appear in the array nonZeroIndexes are assumed to be zero. But keep
+in mind that the zero element of a sparse vector might be any value and not necessarily the value 0.
+
+Methods
+-------
+
+The class ``Vector`` is an abstract class that can be used for generic algorithm formulation. 
+Beside some exceptions, all methods and vector expressions are supported for all kind of vectors,
+either sparse or dense.
 
 .. code-block:: c++
 
@@ -45,7 +92,7 @@ specific representation of a vector holding only non-zero entries.
     v2 = ValueType( 1 );
 
     v1.setDenseValues( denseValues );
-    v1.setSparseValues( sparseIndexes, sparseValues );
+    v1.setSparseValues( sparseIndexes, sparseValues, zeroValue );
 
     v2.readFromFile( "vector.mtx" );
 
@@ -119,7 +166,6 @@ The following differences between a dense and a sparse vector should be kept in 
 * There is no method to set individually a single element in sparse vector, while a dense vector has the method ``setValue``.
 * gather and scatter operations are only supported for dense vectors
 * sorting is only supported for dense vectors
-* assign of a scalar value to a sparse vector throws an exception
 * Many operations where vectors are involved require an explicit array with all (local) values. For a
   dense vector the method ``getLocalValues`` gives a reference to the corresponding heterogeneous array for free,
   for a sparse vector this array will be built temporarily by calling the method ``buildLocalValues``.
