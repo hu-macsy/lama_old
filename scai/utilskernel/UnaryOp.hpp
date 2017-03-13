@@ -67,6 +67,7 @@ struct unary
     {
         CONJ,    //!< for conjugate of a vector
         ABS,     //!< for absolute value
+        ASUM,    //!< sum of magnitudes of real and imaginary part, same as abs for real
         MINUS,   //!< for negative value
         EXP,     //!< call exp on each vector element
         SQRT,    //!< call sqrt on each vector element
@@ -104,6 +105,8 @@ inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
             return common::Math::conj( x );
         case unary::ABS:
             return common::Math::abs( x );
+        case unary::ASUM:
+            return common::Math::abs( common::Math::real( x ) ) + common::Math::abs( common::Math::imag( x ));
         case unary::MINUS:
             return -x;
         case unary::EXP:
@@ -138,6 +141,8 @@ inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
             return x;
         case unary::ABS:
             return common::Math::abs( x );
+        case unary::ASUM:
+            return common::Math::abs( x );
         case unary::MINUS:
             return -x;
         default:
@@ -171,6 +176,10 @@ inline std::ostream& operator<<( std::ostream& stream, const unary::UnaryOp& op 
 
         case unary::ABS:
             stream << "ABS";
+            break;
+
+        case unary::ASUM:
+            stream << "ASUM";
             break;
 
         case unary::MINUS:
