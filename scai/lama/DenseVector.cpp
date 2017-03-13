@@ -324,7 +324,7 @@ DenseVector<ValueType>::DenseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, const float fillRate )
+void DenseVector<ValueType>::setRandom( DistributionPtr distribution, const float fillRate )
 {
     allocate( distribution );
     mLocalValues.setRandom( mLocalValues.size(), fillRate, getContextPtr() );
@@ -333,7 +333,7 @@ void DenseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, con
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const _HArray& localValues, DistributionPtr distribution ) :
+DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const _HArray& localValues ) :
 
     _DenseVector( distribution ),
     mLocalValues( localValues )

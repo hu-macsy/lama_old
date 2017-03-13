@@ -196,17 +196,20 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
     hmemo::HArray<ValueType> values( nnz, values_raw );
     hmemo::HArray<IndexType> indexes( nnz, indexes_raw );
 
+    Scalar zero = 1;
+
     dmemo::DistributionPtr dist( new dmemo::NoDistribution( n ) );
 
     // The constructor copies the arrays and sorts the entries
 
-    SparseVector<ValueType> s( indexes, values, dist );
+    SparseVector<ValueType> s( dist, indexes, values, zero );
 
     const hmemo::HArray<IndexType>& spIndexes = s.getNonZeroIndexes();
 
     // indexes must be sorted:  spIndexes[0] < spIndexes[1] < ... < spIndexes[nnz-1]
 
     BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, utilskernel::binary::LT ) );
+    BOOST_CHECK_EQUAL( s.getZero(), zero );
 }
 
 /* --------------------------------------------------------------------- */
@@ -248,6 +251,32 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( diffTest )
+{
+    // Test of different binary operations with sparse vectors
+    // For comparison the same operations are computed with dense vectors
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    IndexType rawNonZeroIndexes[] = { 0, 5, 6 };
+    ValueType rawNonZeroValues[] = { 5, 6, 7 };
+    ValueType zero = 2;
+
+    SparseVector<ValueType> xS1( n, 3, rawNonZeroIndexes, rawNonZeroValues, zero );
+    SparseVector<ValueType> xS2( xS1 );
+
+    BOOST_CHECK_EQUAL( xS2.getZero(), xS1.getZero() );
+
+    xS1 -= xS2;
+
+    BOOST_CHECK( xS1.maxNorm() < Scalar( 1e-4 ) );
 }
 
 /* --------------------------------------------------------------------- */

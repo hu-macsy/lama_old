@@ -175,6 +175,95 @@ BOOST_AUTO_TEST_CASE( InvertTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( ConjTest )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 100;
+
+    TestVectors vectors;
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        VectorPtr v = vectors[i];
+
+        if ( ! common::isComplex( v->getValueType() ) )
+        {
+            continue;   // test only useful for complex numbers
+        }
+
+        std::srand( i + 3351 );  // same values on each processor
+
+        float fillRate = 0.1f;
+
+        v->setRandom( dist, fillRate );
+        
+        VectorPtr v1( v->copy() );
+
+        v->conj();
+
+        *v *= *v1;  // ( a + b i ) ( a - b i )
+        
+        Scalar s1 = v->sum();
+        Scalar s2 = v1->dotProduct( *v1 );
+
+        SCAI_LOG_DEBUG( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
+
+        BOOST_CHECK( abs( s1 - s2 ) < Scalar( 0.0001 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( ExpLogTest )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 100;
+
+    TestVectors vectors;
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        VectorPtr v = vectors[i];
+
+        if ( ! common::isNumeric( v->getValueType() ) )
+        {
+            continue;   // test only useful for complex numbers
+        }
+
+        float fillRate = 0.1f;
+
+        v->setRandom( dist, fillRate );
+
+        *v += 2;
+
+        VectorPtr v1( v->copy() );
+
+        v->writeToFile( "v.txt" );
+        v->exp();
+        v->writeToFile( "vexp.txt" );
+        v->log();
+        v->writeToFile( "vlog.txt" );
+
+        *v -= *v1;
+
+        v->writeToFile( "vdiff.txt" );
+
+        Scalar diff = v->maxNorm();
+
+        SCAI_LOG_ERROR( logger, "v = " << *v << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
+
+        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 {
     const IndexType n = 13;

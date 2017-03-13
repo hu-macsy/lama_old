@@ -245,13 +245,32 @@ public:
     /**
      * @brief creates a distributed SparseVector with given local values.
      *
-     * @param[in] indexes       indexes this processor has values for
-     * @param[in] values        values belonging to the corresponding entries
      * @param[in] distribution  the distribution of the vector
+     * @param[in] indexes       local indexes this processor has nonz-zeros values for
+     * @param[in] values        values belonging to the corresponding entries
+     * @param[in] zero          is the zero value
+     *
+     * While indexes and values might have individual values on each processor, the zero value
+     * must be exactly the same on all processors
      */
-    SparseVector( const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, dmemo::DistributionPtr distribution );
+    SparseVector( 
+        dmemo::DistributionPtr distribution,
+        const hmemo::HArray<IndexType>& indexes, 
+        const hmemo::_HArray& values, 
+        const Scalar zero = Scalar( 0 ) );
 
-    SparseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+    /**
+     * @brief creates a distributed SparseVector with given local values.
+     *
+     * @param[in] distribution  the distribution of the vector
+     * @param[in] values        local values
+     *
+     * This constructor is only available to be more conform with DenseVector.
+     * The zero value is assumed to be 0. Only non-zero entries are stored explicitly.
+     */
+    SparseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues );
+
+    /** @brief Short form of SparseVector( dist, localValues ) if dist is replicated */
 
     explicit SparseVector( const hmemo::_HArray& localValues );
 

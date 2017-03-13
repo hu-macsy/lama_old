@@ -237,7 +237,7 @@ SparseVector<ValueType>::SparseVector( const Vector& other, DistributionPtr dist
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) :
+SparseVector<ValueType>::SparseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues ) :
 
     _SparseVector( distribution )
 
@@ -260,14 +260,15 @@ SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues ) :
 
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( 
+    dmemo::DistributionPtr distribution,
     const hmemo::HArray<IndexType>& indexes, 
     const hmemo::_HArray& values, 
-    dmemo::DistributionPtr distribution ) :
+    const Scalar zero ) :
 
     _SparseVector( distribution )
 
 {
-    setSparseValues( indexes, values );
+    setSparseValues( indexes, values, zero );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -624,6 +625,8 @@ void SparseVector<ValueType>::swapSparseValues( HArray<IndexType>& nonZeroIndexe
 template<typename ValueType>
 void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, const Scalar zeroValue )
 {
+    SCAI_LOG_INFO( logger, "setSparseValues, nnz = " << nonZeroIndexes.size() << ", ZERO = " << zeroValue )
+
     const IndexType size = getDistribution().getLocalSize();
 
     bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, size, getContextPtr() );
@@ -977,7 +980,7 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
          // alias of input and output array, needs a temporay for sparse vectors
 
          SparseVector<ValueType> tmp( this->getContextPtr() );
-         tmp.vectorPlusVector( alpha, x, beta, y );
+         tmp.vectorPlusVectorImpl( alpha, x, beta, y );
          swap( tmp );
          return;
     }
@@ -985,6 +988,8 @@ void SparseVector<ValueType>::vectorPlusVectorImpl(
     // Now we can just call addSparse for the local vectors
 
     setDistributionPtr( x.getDistributionPtr() );
+
+    SCAI_LOG_INFO( logger, "addSparse: " << alpha << " * x + " << beta << " * y, x = " << x << ", y = " << y )
 
     HArrayUtils::addSparse( mNonZeroIndexes, mNonZeroValues,
                             x.mNonZeroIndexes, x.mNonZeroValues, x.mZeroValue, alpha, 
@@ -1248,7 +1253,7 @@ void SparseVector<IndexType>::exp()
 template<typename ValueType>
 void SparseVector<ValueType>::log()
 {
-    // mZeroValue = common::Math::log( mZeroValue );
+    mZeroValue = common::Math::log( mZeroValue );
     mNonZeroValues.log();
 }
 
@@ -1594,7 +1599,8 @@ SparseVector<ValueType>::SparseVector( const SparseVector<ValueType>& other )
 
     : _SparseVector( other ),
       mNonZeroIndexes( other.mNonZeroIndexes ),
-      mNonZeroValues( other.mNonZeroValues )
+      mNonZeroValues( other.mNonZeroValues ),
+      mZeroValue( other.mZeroValue )
 
 {
     // implementation here can be simpler as SparseVector( const Vector& other )

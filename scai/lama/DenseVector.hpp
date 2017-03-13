@@ -303,12 +303,12 @@ public:
     /**
      * @brief creates a distributed DenseVector with given local values.
      *
-     * @param[in] localValues   the local values to initialize the new DenseVector with.
      * @param[in] distribution  the distribution for the vector
+     * @param[in] localValues   the local values to initialize the new DenseVector with.
      *
      * Note: localValues.size() == distribution->getLocalSize() must be valid.
      */
-    DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+    DenseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues );
 
     /**
      * @brief Constructor of a replicated DenseVector with local values
