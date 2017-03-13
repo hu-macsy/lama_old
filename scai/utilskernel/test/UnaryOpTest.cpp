@@ -70,6 +70,12 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
             count++;
         }
 
+        if ( type == unary::ASUM )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "ASUM" );
+            count++;
+        }
+
         if ( type == unary::EXP )
         {
             BOOST_CHECK_EQUAL( s.str(), "EXP" );

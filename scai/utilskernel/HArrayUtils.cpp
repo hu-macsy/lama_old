@@ -2019,6 +2019,10 @@ void HArrayUtils::binaryOpSparse(
             IndexType,                                                          \
             float,                                                              \
             hmemo::ContextPtr );                                                \
+    template void HArrayUtils::buildSparseIndexes<ValueType>(                   \
+            hmemo::HArray<IndexType>&,                                          \
+            const hmemo::HArray<ValueType>&,                                    \
+            hmemo::ContextPtr );                                                \
     template void HArrayUtils::addSparse(                                       \
             hmemo::HArray<IndexType>&,                                          \
             hmemo::HArray<ValueType>&,                                          \

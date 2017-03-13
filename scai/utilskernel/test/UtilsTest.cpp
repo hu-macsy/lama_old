@@ -125,6 +125,45 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
+{
+    static LAMAKernel<UtilKernelTrait::reduce2<ValueType> > reduce2;
+    ContextPtr loc = testContext;
+    reduce2.getSupportedContext( loc );
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
+    SCAI_LOG_INFO( logger, "reduce2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    {
+        ValueType valuesValues1[] = { 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+        ValueType valuesValues2[] = { 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0 };
+
+        ValueType expectedVal = 3 * 4 ; // maximal product
+
+        const IndexType nValues1 = sizeof( valuesValues1 ) / sizeof( ValueType );
+        const IndexType nValues2 = sizeof( valuesValues2 ) / sizeof( ValueType );
+
+        SCAI_ASSERT_EQ_ERROR( nValues1, nValues2, "size mismatch" )
+
+        LArray<ValueType> values1( nValues1, valuesValues1 );
+        LArray<ValueType> values2( nValues2, valuesValues2 );
+
+        ReadAccess<ValueType> rValues1( values1, loc );
+        ReadAccess<ValueType> rValues2( values2, loc );
+
+        SCAI_CONTEXT_ACCESS( loc );
+
+        binary::BinaryOp binop = binary::MULT;
+        binary::BinaryOp redop = binary::MAX;
+
+        ValueType zero = 0;
+
+        const ValueType result = reduce2[loc]( rValues1.get(), rValues2.get(), nValues1, binop, zero, redop );
+
+        BOOST_CHECK_EQUAL( expectedVal, result );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
 {
     static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;

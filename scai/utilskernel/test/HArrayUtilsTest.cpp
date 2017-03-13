@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test_types )
 {
-    // check of all unary array operations
+    // test array operations: array = scalar <op> array
 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -440,6 +440,154 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
             BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test_types )
+{
+    // test array operations: array2 = array1 <op> scalar
+
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+
+    const ValueType scalar = 3.5;
+    const ValueType values[] = { 1.0, 1.2, -1.3, -1.0 };
+
+    const IndexType n = sizeof( values ) / sizeof( ValueType );
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    {
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        HArray<ValueType> array1( ctx );
+        HArray<ValueType> array2( ctx );
+
+        array1.init( values, n );
+
+        HArrayUtils::binaryOpScalar2( array2, array1, scalar, op, ctx );
+
+        BOOST_REQUIRE_EQUAL( n, array2.size() );
+
+        ReadAccess<ValueType> read( array2, host );  // read result array
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType res = applyBinary( values[i], op, scalar );
+
+            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+            // might happen that result on other devices are not exactly the same
+
+            AbsType diff = common::Math::abs( read[i] - res  );
+
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseTest, ValueType, scai_numeric_test_types )
+{
+    // check of all unary array operations
+
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+
+    const ValueType values1[]  = { 1.0, 1.2, -1.3, -1.0 };
+    const IndexType indexes1[] = { 2, 4, 6, 7 };
+    const ValueType values2[]  = { 0.5, -0.7, 0.3, -1.3 };
+    const IndexType indexes2[] = { 2, 3, 6, 8 };
+
+    const IndexType n = 10;
+
+    const IndexType nnz1 = sizeof( values1 ) / sizeof( ValueType );
+    const IndexType nnz2 = sizeof( values2 ) / sizeof( ValueType );
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    {
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        HArray<IndexType> ia1( ctx );
+        HArray<IndexType> ia2( ctx );
+        HArray<IndexType> ia3( ctx );
+
+        HArray<ValueType> array1( ctx );
+        HArray<ValueType> array2( ctx );
+        HArray<ValueType> array3( ctx );
+
+        ia1.init( indexes1, nnz1 );
+        array1.init( values1, nnz1 );
+        ia2.init( indexes2, nnz1 );
+        array2.init( values2, nnz2 );
+
+        ValueType zero1 = 1;
+        ValueType zero2 = 2;
+
+        HArrayUtils::binaryOpSparse( ia3, array3, ia1, array1, zero1, ia2, array2, zero2, op, ctx );
+
+        BOOST_REQUIRE_EQUAL( ia3.size(), array3.size() ); 
+        BOOST_REQUIRE( ia3.size() >= ia2.size() ); 
+        BOOST_REQUIRE( ia3.size() >= ia1.size() ); 
+
+        IndexType pos1 = 0;
+        IndexType pos2 = 0;
+        IndexType pos3 = 0;
+
+        ReadAccess<IndexType> rIA1( ia1, host );  // read result array
+        ReadAccess<IndexType> rIA2( ia2, host );  // read result array
+        ReadAccess<IndexType> rIA3( ia3, host );  // read result array
+
+        ReadAccess<ValueType> rValues1( array1, host );  // read result array
+        ReadAccess<ValueType> rValues2( array2, host );  // read result array
+        ReadAccess<ValueType> rValues3( array3, host );  // read result array
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            ValueType res = 0;
+
+            if ( rIA3[pos3] != i )
+            {
+                continue;
+            }
+
+            if ( rIA2[pos2] == i && rIA1[pos1] == i )
+            {
+                res = applyBinary( rValues1[pos1], op, rValues2[pos2] );
+                pos1++;
+                pos2++;
+            }
+            else if ( rIA1[pos1] == i )
+            {
+                res = applyBinary( rValues1[pos1], op, zero2 );
+                pos1++;
+            }
+            else if ( rIA2[pos2] == i )
+            {
+                res = applyBinary( zero1, op, rValues2[pos2] );
+                pos2++;
+            }
+            else
+            {
+                BOOST_CHECK( false );  // fail here
+            }
+
+            typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+            AbsType diff = common::Math::abs( rValues3[pos3] - res  );
+
+            SCAI_LOG_TRACE( logger, "res = " << res << ", computed " << rValues3[pos3] )
+
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
+ 
+            pos3++;
+        }
+
+        BOOST_CHECK_EQUAL( pos1, array1.size() );
+        BOOST_CHECK_EQUAL( pos2, array2.size() );
+        BOOST_CHECK_EQUAL( pos3, array3.size() );
     }
 }
 
@@ -657,6 +805,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
     SCAI_LOG_INFO( logger, "Draw " << n << " random values of type " << common::TypeTraits<ValueType>::id()
                    << ", sum up to " << sum )
+
+    if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
+    {
+        // no check for integer types
+    }
+    else
+    {
+        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+        AbsType asum = Math::abs( sum );
+        // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
+        BOOST_CHECK( asum  < AbsType( n / 5 ) );
+    }
+  
+    // check that argument fillRate works correctly
+
+    fillRate = 0.1f;
+    HArrayUtils::setRandom( array, 10 * n, fillRate, loc );
+    BOOST_CHECK_EQUAL( array.size(), 10 * n );
+
+    HArray<IndexType> nonZeroIndexes;
+    HArrayUtils::buildSparseIndexes( nonZeroIndexes, array, loc );
+
+    // nonZeroIndexes should have size around n 
+
+    BOOST_CHECK( common::Math::abs( nonZeroIndexes.size() - n ) < ( n / 5 ) );
 
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
