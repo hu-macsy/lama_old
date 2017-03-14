@@ -1711,6 +1711,69 @@ void HArrayUtils::buildSparseArrayImpl(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+IndexType HArrayUtils::insertSorted( 
+    hmemo::HArray<ValueType>& array,
+    const ValueType value, 
+    hmemo::ContextPtr )
+{
+    IndexType n = array.size();
+
+    WriteAccess<ValueType> wArray( array );
+
+    wArray.resize( n + 1 );
+
+    IndexType pos = n;
+
+    // move up entries of index array until we have a smaller element
+
+    for ( IndexType i = n;  i-- > 0;  )
+    {
+        if ( wArray[i] > value ) 
+        {
+            pos = i;
+            wArray[i+1] = wArray[i];
+        }
+        else
+        {
+            break;
+        }
+    }
+ 
+    wArray[pos] = value;
+
+    return pos;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::insertAtPos(
+    hmemo::HArray<ValueType>& array,
+    const IndexType pos,
+    const ValueType value,
+    hmemo::ContextPtr )
+{
+    IndexType n = array.size();
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, n + 1, "illegal insert position" )
+
+    WriteAccess<ValueType> wArray( array );
+
+    wArray.resize( n + 1 );
+
+    // set the value at pos and swap the remaining values up like a bubble
+
+    ValueType swapValue = value;
+
+    for ( IndexType i = pos; i <= n; ++i )
+    {
+        std::swap( swapValue, wArray[i] );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 void HArrayUtils::buildDenseArray(
     hmemo::_HArray& denseArray,
     const IndexType denseN,
@@ -2022,6 +2085,15 @@ void HArrayUtils::binaryOpSparse(
     template void HArrayUtils::buildSparseIndexes<ValueType>(                   \
             hmemo::HArray<IndexType>&,                                          \
             const hmemo::HArray<ValueType>&,                                    \
+            hmemo::ContextPtr );                                                \
+    template IndexType HArrayUtils::insertSorted(                               \
+            hmemo::HArray<ValueType>& array,                                    \
+            const ValueType value,                                              \
+            hmemo::ContextPtr );                                                \
+    template void HArrayUtils::insertAtPos(                                     \
+            hmemo::HArray<ValueType>& array,                                    \
+            const IndexType pos,                                                \
+            const ValueType val,                                                \
             hmemo::ContextPtr );                                                \
     template void HArrayUtils::addSparse(                                       \
             hmemo::HArray<IndexType>&,                                          \

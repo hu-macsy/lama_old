@@ -655,6 +655,35 @@ public:
         const hmemo::HArray<ValueType>& denseArray,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Add new value in a sorted array, larger values are shifted up
+     * 
+     *  @param[in,out] array contains sorted values (ascending)
+     *  @param[in]     value is the new entry to be inserted                          
+     *  @param[in]     prefLoc  optional the context where the sparseIndexes are updated
+     *  @returns       position in array where the entry has been added
+     * 
+     *  Note: the size of the array is increased by 1
+     */
+    template<typename ValueType>
+    static IndexType insertSorted( 
+        hmemo::HArray<ValueType>& array,
+        const ValueType value,
+        hmemo::ContextPtr = hmemo::ContextPtr() );
+
+    /** Insert new value in an array at a certain pos, all other elements are shifted up
+     * 
+     *  @param[in,out] values
+     *  @param[in]     pos is the position where the value is added
+     *  @param[in]     val is the inserted value
+     *  @param[in]     prefLoc  optional the context where the values are updated
+     */
+    template<typename ValueType>
+    static void insertAtPos(
+        hmemo::HArray<ValueType>& array,
+        const IndexType pos,
+        const ValueType value,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Build dense array from sparse array, needed for conversion SparseVector -> DenseVector
      *
      *  @param[out]  denseArray will contain the dense data (input its only its size)

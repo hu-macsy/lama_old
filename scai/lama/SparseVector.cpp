@@ -737,6 +737,8 @@ Scalar SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 template<typename ValueType>
 void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
 {
+    SCAI_ASSERT_VALID_INDEX_ERROR( globalIndex, size(), "illegal index" )
+
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
     const IndexType localIndex = getDistribution().global2local( globalIndex );
@@ -745,15 +747,23 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 
     if ( localIndex != nIndex )
     {
+        // This partition is the owner, add it locally
+
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
+
+        ValueType typedValue = value.getValue<ValueType>();
 
         if ( pos != nIndex )
         {
-            mNonZeroValues[pos] = value.getValue<ValueType>();
+            mNonZeroValues[pos] = typedValue;
         }
         else
         {
-            COMMON_THROWEXCEPTION( "cannot set non-existing element in sparse vector, index = " << globalIndex )
+            // add a new entry in mNonZeroIndexes, mNonZeroValues
+
+            pos = HArrayUtils::insertSorted( mNonZeroIndexes, localIndex );
+            SCAI_LOG_TRACE( logger, "setValue, local index = " << localIndex << " at pos = " << pos )
+            HArrayUtils::insertAtPos( mNonZeroValues, pos, typedValue );
         }
     }
 }

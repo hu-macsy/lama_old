@@ -42,6 +42,7 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 using namespace scai;
@@ -140,6 +141,51 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( SetGetTest )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 13;
+
+    TestVectors vectors;
+
+//     for ( size_t i = 0; i < vectors.size(); ++i )
+//   {
+//        Vector& v = *vectors[i];
+
+        SparseVector<double> v;
+
+        v.allocate( n );
+
+        v = 1;
+
+        Scalar s = v[0];
+        BOOST_CHECK_EQUAL( s, Scalar( 1 ) );
+
+        v[n-2] = 9;
+        v[1] = 7;
+
+        SCAI_LOG_ERROR( logger, "v = " << v );
+
+        v.writeToFile( "v.txt" );
+
+        BOOST_CHECK_THROW(
+        {
+            v[n] = 1;
+        }, common::Exception );
+
+        s = v[2];
+        BOOST_CHECK_EQUAL( s, Scalar( 1 ) );
+        s = v[1];
+        BOOST_CHECK_EQUAL( s, Scalar( 7 ) );
+        v[1] = 5;
+        s = v[1];
+        BOOST_CHECK_EQUAL( s, Scalar( 5 ) );
+//    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( InvertTest )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
@@ -229,34 +275,76 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        Vector& v1 = *vectors[i];
 
-        if ( ! common::isNumeric( v->getValueType() ) )
+        if ( ! common::isNumeric( v1.getValueType() ) )
         {
-            continue;   // test only useful for complex numbers
+            continue;   // this test will fail for IndexType
         }
 
         float fillRate = 0.1f;
 
-        v->setRandom( dist, fillRate );
+        v1.setRandom( dist, fillRate );
 
-        *v += 2;
+        v1 += 2;
 
-        VectorPtr v1( v->copy() );
+        VectorPtr v2Ptr( v1.copy() );
+        const Vector& v2 = *v2Ptr;
 
-        v->writeToFile( "v.txt" );
-        v->exp();
-        v->writeToFile( "vexp.txt" );
-        v->log();
-        v->writeToFile( "vlog.txt" );
+        v1.exp();
+        v1.log();
 
-        *v -= *v1;
+        v1 -= v2;
 
-        v->writeToFile( "vdiff.txt" );
+        Scalar diff = v1.maxNorm();
 
-        Scalar diff = v->maxNorm();
+        SCAI_LOG_DEBUG( logger, "v = " << v1 << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
 
-        SCAI_LOG_ERROR( logger, "v = " << *v << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
+        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( SinCosTest )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 100;
+
+    TestVectors vectors;
+
+    dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        Vector& v1 = *vectors[i];
+
+        if ( ! common::isNumeric( v1.getValueType() ) )
+        {
+            continue;   // this test would fail for IndexType
+        }
+
+        float fillRate = 0.1f;
+
+        v1.setRandom( vectorDist, fillRate );
+
+        VectorPtr v2Ptr( v1.copy() );
+        Vector& v2 = *v2Ptr;
+
+        // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
+
+        v1.sin();
+        v2.cos();
+
+        // v1 = v1 * v1 - v2 * v2 - 1
+
+        v1 *= v1;
+        v2 *= v2;
+        v1 += v2;
+        v1 -= Scalar( 1 );
+
+        Scalar diff = v1.maxNorm();
 
         BOOST_CHECK( diff < Scalar( 0.0001 ) );
     }

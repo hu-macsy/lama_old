@@ -1456,6 +1456,47 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( insertTest )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    typedef RealType ValueType;
+
+    IndexType indexes[] = { 5, 7, 9, 1, 8 };
+    IndexType pos[]     = { 0, 1, 2, 0, 3 };
+
+    ValueType values[]   = { 5, 7, 9, 1, 8 };
+    ValueType values1[]  = { 1, 5, 7, 8, 9 };
+
+    const IndexType n = sizeof( indexes ) / sizeof( IndexType );
+
+    HArray<IndexType> indexArray;
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType p = HArrayUtils::insertSorted( indexArray, indexes[i], loc );
+        SCAI_LOG_TRACE( logger, i << " of " << n << ": insertIndex " << indexes[i] << " at pos = " << p << ", expected " << pos[i] )
+        BOOST_CHECK_EQUAL( pos[i], p );
+    }
+
+    BOOST_CHECK_EQUAL( indexArray.size(), n );
+    BOOST_CHECK( HArrayUtils::isSorted( indexArray, binary::LT, loc ) );
+
+    LArray<ValueType> valueArray;
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+         HArrayUtils::insertAtPos( valueArray, pos[i], values[i] );
+    }
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        BOOST_CHECK_EQUAL( valueArray[i], values1[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( findPosTest )
 {
     ContextPtr loc = Context::getContextPtr();

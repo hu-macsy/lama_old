@@ -702,6 +702,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
     sortVector.redistribute( blockDist );
 
+    {
+        bool descending = false;
+        DenseVector<ValueType> tmp( sortVector );
+        tmp.sort( descending );    // parallel sorting with global permutation
+        BOOST_CHECK( tmp.isSorted( descending ) );
+    }
+
     bool ascending = true;
 
     DenseVector<IndexType> perm;
@@ -709,6 +716,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     sortVector.sort( perm, ascending );    // parallel sorting with global permutation
 
     BOOST_REQUIRE_EQUAL( n, perm.size() );
+    BOOST_CHECK( sortVector.isSorted( ascending ) );
 
     dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
 
