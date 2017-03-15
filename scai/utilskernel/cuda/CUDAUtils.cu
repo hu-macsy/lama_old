@@ -68,6 +68,7 @@
 
 #include <complex.h>
 
+
 using namespace scai::common;
 
 namespace scai
@@ -179,7 +180,7 @@ void floorKernel( IndexType out[], const IndexType in[], const IndexType n )
 
 template<typename ValueType>
 __global__
-void binOpKernel( ValueType out[], const ValueType in1[], const binary::BinaryOp op, const ValueType in2[], const IndexType n )
+void binOpKernel( ValueType out[], const ValueType in1[], const common::binary::BinaryOp op, const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -203,7 +204,7 @@ void multKernel( ValueType out[], const ValueType in1[], const ValueType in2[], 
     }
 }
 
-/** Special version of binOpKernel with op == binary::ADD */
+/** Special version of binOpKernel with op == common::binary::ADD */
 
 template<typename ValueType>
 __global__
@@ -219,7 +220,7 @@ void addKernel( ValueType out[], const ValueType in1[], const ValueType in2[], c
 
 template<typename ValueType>
 __global__
-void binOpScalar1Kernel( ValueType out[], const ValueType value, const binary::BinaryOp op, const ValueType in[], const IndexType n )
+void binOpScalar1Kernel( ValueType out[], const ValueType value, const common::binary::BinaryOp op, const ValueType in[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -771,7 +772,7 @@ void CUDAUtils::setGather(
     ValueType1 out[],
     const ValueType2 in[],
     const IndexType indexes[],
-    const utilskernel::binary::BinaryOp op,
+    const binary::BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "CUDA.Utils.setGather" )
@@ -856,7 +857,7 @@ void scatter_sub_kernel( ValueType out[], const IndexType indexes[], const Sourc
 
 template<typename ValueType, typename SourceValueType>
 __global__
-void scatter_op_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n, const utilskernel::binary::BinaryOp op )
+void scatter_op_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n, const binary::BinaryOp op )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -1617,7 +1618,7 @@ void CUDAUtils::sort(
 
     if ( inValues != outValues )
     {
-        set( outValues, inValues, n, binary::COPY );
+        set( outValues, inValues, n, common::binary::COPY );
     }
 
     if ( n > 1 )

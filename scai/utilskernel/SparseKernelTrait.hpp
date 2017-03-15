@@ -37,8 +37,8 @@
 
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
-#include <scai/utilskernel/UnaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 
 namespace scai
 {
@@ -207,7 +207,7 @@ struct SparseKernelTrait
             const ValueType values2[],
             const ValueType zero2,
             const IndexType n2,
-            const binary::BinaryOp op );
+            const common::binary::BinaryOp op );
 
         static const char* getId()
         {

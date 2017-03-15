@@ -63,6 +63,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using namespace common;
 
 namespace utilskernel
 {
@@ -267,7 +268,7 @@ void HArrayUtils::sparseGatherImpl(
 
     setGatherSparse.getSupportedContext( loc );
 
-    if ( op == utilskernel::binary::COPY )
+    if ( op == binary::COPY )
     {
         target.init( TargetValueType( 0 ), n );    // initialize with zero as default
     }
@@ -1499,9 +1500,9 @@ void HArrayUtils::inversePerm(
         WriteOnlyAccess<IndexType> wInversePerm( invPerm, loc, n );
         ReadAccess<IndexType> rPerm( perm, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        setVal[loc]( wInversePerm.get(), n, n, utilskernel::binary::COPY );
+        setVal[loc]( wInversePerm.get(), n, n, binary::COPY );
         setInversePerm[loc]( wInversePerm.get(), rPerm.get(), n );
-        IndexType maxIndex = reduce[loc]( wInversePerm.get(), n, 0, utilskernel::binary::MAX );
+        IndexType maxIndex = reduce[loc]( wInversePerm.get(), n, 0, binary::MAX );
         SCAI_ASSERT_ERROR( maxIndex < n, "Perm array does not cover all row indexes, #n = " << n );
     }
 }
@@ -2146,7 +2147,7 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
             const hmemo::HArray<ValueType>&,                      \
             const binary::BinaryOp,                               \
             hmemo::ContextPtr);                                   \
-    template void HArrayUtils::binaryOpScalar2<ValueType>(    \
+    template void HArrayUtils::binaryOpScalar2<ValueType>(        \
             hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                      \
             const ValueType,                                      \
