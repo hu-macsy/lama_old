@@ -46,7 +46,7 @@
 #include <scai/lama/io/FileIO.hpp>
 
 // others
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
@@ -627,7 +627,7 @@ public:
      */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues, 
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
@@ -646,7 +646,7 @@ public:
     virtual void gatherLocalValues( 
         hmemo::_HArray& localValues, 
         const hmemo::HArray<IndexType>& localIndexes,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**

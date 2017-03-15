@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( SparseConstructorTest )
 
     // indexes must be sorted:  spIndexes[0] < spIndexes[1] < ... < spIndexes[nnz-1]
 
-    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, utilskernel::binary::LT ) );
+    BOOST_CHECK( utilskernel::HArrayUtils::isSorted( spIndexes, common::binary::LT ) );
     BOOST_CHECK_EQUAL( s.getZero(), zero );
 }
 

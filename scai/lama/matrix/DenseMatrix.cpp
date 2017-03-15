@@ -1388,7 +1388,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalRow(
     const hmemo::HArray<ValueType>& row,
     const IndexType localRowIndex,
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     SCAI_REGION( "Mat.Dense.setLocalRow" )
 
@@ -1412,7 +1412,7 @@ void DenseMatrix<ValueType>::setLocalRow(
 
     HArray<ValueType> rowResorted;   // row resorted according to the owners
 
-    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, utilskernel::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, common::binary::COPY );
 
     ReadAccess<IndexType> rOffsets( offsets );
 
@@ -1444,7 +1444,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalColumn(
     const hmemo::HArray<ValueType>& column,
     const IndexType globalColIndex,
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     SCAI_REGION( "Mat.Dense.setLocalColumn" )
 
@@ -1617,7 +1617,7 @@ void DenseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
     const Scalar val,
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
 

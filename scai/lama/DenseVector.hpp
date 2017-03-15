@@ -623,7 +623,7 @@ public:
     virtual void gather(
         const DenseVector<ValueType>& source,
         const DenseVector<IndexType>& index,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
     /** Scattering values from another vector into this vector
      *
@@ -636,14 +636,14 @@ public:
     virtual void scatter(
         const DenseVector<IndexType>& index,
         const DenseVector<ValueType>& source,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
     /**
      * @brief Implementation of pure method Vector::buildLocalValues.
      */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
@@ -655,7 +655,7 @@ public:
     virtual void gatherLocalValues(
         hmemo::_HArray& localValues,
         const hmemo::HArray<IndexType>& localIndexes,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;

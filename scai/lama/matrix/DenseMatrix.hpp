@@ -301,7 +301,7 @@ public:
 
     virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,
-                         const utilskernel::binary::BinaryOp op )
+                         const common::binary::BinaryOp op )
     {
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
     }
@@ -309,7 +309,7 @@ public:
     virtual void setColumn(
         const Vector& column,
         const IndexType globalColIndex,
-        const utilskernel::binary::BinaryOp op )
+        const common::binary::BinaryOp op )
     {
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
     }
@@ -457,7 +457,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
     /* Implemenation of pure method of class Matrix */
 
@@ -638,11 +638,11 @@ public:
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
-                      const utilskernel::binary::BinaryOp op  );
+                      const common::binary::BinaryOp op  );
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
-                         const utilskernel::binary::BinaryOp op  );
+                         const common::binary::BinaryOp op  );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 

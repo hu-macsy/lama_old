@@ -415,7 +415,7 @@ public:
      */
     virtual void buildLocalValues(
         hmemo::_HArray& localValues,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
@@ -427,7 +427,7 @@ public:
     virtual void gatherLocalValues(
         hmemo::_HArray& localValues,
         const hmemo::HArray<IndexType>& localIndexes,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY,
+        const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /** Implementation of _SpaseVector::getNonZeroValues */
@@ -584,7 +584,7 @@ protected:
 
     /** Help routine for binary operation of two sparse vectors */
 
-    void binOpSparse( const _SparseVector& other, const utilskernel::binary::BinaryOp op, bool swapArgs );
+    void binOpSparse( const _SparseVector& other, const common::binary::BinaryOp op, bool swapArgs );
 
 private:
 

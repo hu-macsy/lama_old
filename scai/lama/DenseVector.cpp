@@ -246,8 +246,8 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc, utilskernel::binary::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue, utilskernel::binary::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc, common::binary::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue, common::binary::ADD, context );
 }
 
 template <typename ValueType>
@@ -284,8 +284,8 @@ void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar 
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), utilskernel::binary::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), utilskernel::binary::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), common::binary::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), common::binary::ADD, context );
 }
 
 template<typename ValueType>
@@ -603,7 +603,7 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     const HArray<ValueType>& localValues = getLocalValues();
 
-    bool is = HArrayUtils::isSorted( localValues, ascending ? utilskernel::binary::LE : utilskernel::binary::GE );
+    bool is = HArrayUtils::isSorted( localValues, ascending ? common::binary::LE : common::binary::GE );
 
     if ( size == 1 )
     {
@@ -889,13 +889,15 @@ void DenseVector<ValueType>::scan()
  
     HArray<ValueType> prefixValues;
     
-    ValueType val = HArrayUtils::scan( mLocalValues, getContextPtr() );
+    ValueType val = mLocalValues.sum();
 
     val = comm.scan( val );
 
-    // we have to add value 
+    // now do the correct scan, start with val
 
-    HArrayUtils::binaryOpScalar1( mLocalValues, val, mLocalValues, utilskernel::binary::ADD, getContextPtr() );
+    bool exclusive = false;
+
+    HArrayUtils::scan( mLocalValues, val, exclusive, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -908,17 +910,19 @@ void DenseVector<ValueType>::scan( const DenseVector<ValueType>& other )
     SCAI_ASSERT_NE_ERROR( other.getDistribution().getBlockDistributionSize(), nIndex,
                           "scan only supported for block distribution" )
 
-    allocate( other.getDistributionPtr() );  
+    assign( other );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType val = HArrayUtils::scan( mLocalValues, getContextPtr() );
+    ValueType val = mLocalValues.sum();
 
-    val = comm.scan( val );
+    val = comm.scan( val );  // build the running sums
 
-    // we have to add value 
+    // now do the correct scan, start with val
 
-    HArrayUtils::binaryOpScalar1( mLocalValues, val, mLocalValues, utilskernel::binary::ADD, getContextPtr() );
+    bool exclusive = false;
+
+    HArrayUtils::scan( mLocalValues, val, exclusive, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -964,7 +968,7 @@ void DenseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIn
     // Note: scatter might check for legal indexes
 
     mLocalValues.init( zero.getValue<ValueType>(), localSize );
-    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, true, nonZeroValues, utilskernel::binary::COPY, getContextPtr() );
+    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, true, nonZeroValues, common::binary::COPY, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1136,7 +1140,7 @@ void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const Vect
     {
         SCAI_LOG_INFO( logger, "this = " << alpha << " * x -> this = x;  this *= " << alpha )
         assign( x );
-        HArrayUtils::setScalar( mLocalValues, alphaV, utilskernel::binary::MULT, mContext );
+        HArrayUtils::setScalar( mLocalValues, alphaV, common::binary::MULT, mContext );
         return;
     }
 
@@ -1199,7 +1203,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
         else if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::constants::ONE )
         {
             const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( nonZeroValues );
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, utilskernel::binary::ADD, getContextPtr());
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, common::binary::ADD, getContextPtr());
         }
         else
         {
@@ -1207,8 +1211,8 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
 
             HArray<ValueType> typedValues;
             HArrayUtils::assign( typedValues, nonZeroValues, mContext );
-            HArrayUtils::binaryOpScalar1( typedValues, alphaV, typedValues, utilskernel::binary::MULT, mContext );
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, utilskernel::binary::ADD, mContext );
+            HArrayUtils::binaryOpScalar1( typedValues, alphaV, typedValues, common::binary::MULT, mContext );
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, common::binary::ADD, mContext );
         }
     }
     else
@@ -1400,9 +1404,9 @@ template<typename ValueType>
 void DenseVector<ValueType>::gather(
     const DenseVector<ValueType>& source,
     const DenseVector<IndexType>& index,
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
-    if ( op != utilskernel::binary::COPY )
+    if ( op != common::binary::COPY )
     {
         SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
     }
@@ -1443,7 +1447,7 @@ void DenseVector<ValueType>::gather(
 
     HArray<IndexType> requiredIndexes;  // local index values sorted by owner
 
-    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, utilskernel::binary::COPY );
+    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, common::binary::COPY );
 
     // exchange communication plans
 
@@ -1481,7 +1485,7 @@ void DenseVector<ValueType>::gather(
 
     HArray<ValueType> sendValues;  // values to send from my source values
 
-    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, utilskernel::binary::COPY );
+    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, common::binary::COPY );
 
     // send via communication plan
 
@@ -1489,7 +1493,7 @@ void DenseVector<ValueType>::gather(
 
     comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
 
-    if ( op == utilskernel::binary::COPY )
+    if ( op == common::binary::COPY )
     {
         mLocalValues.resize( perm.size() );
     }
@@ -1509,7 +1513,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::scatter(
     const DenseVector<IndexType>& index,
     const DenseVector<ValueType>& source,
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     bool hasUniqueIndexes = false;
 
@@ -1554,9 +1558,9 @@ void DenseVector<ValueType>::scatter(
 
     HArray<ValueType> sendValues;   // local source values sorted same as index values
 
-    HArrayUtils::gather( sendIndexes, index.getLocalValues(), perm, utilskernel::binary::COPY );
+    HArrayUtils::gather( sendIndexes, index.getLocalValues(), perm, common::binary::COPY );
 
-    HArrayUtils::gather( sendValues, source.getLocalValues(), perm, utilskernel::binary::COPY );
+    HArrayUtils::gather( sendValues, source.getLocalValues(), perm, common::binary::COPY );
 
     // exchange communication plans
 
@@ -1633,7 +1637,7 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
     
         LArray<ValueType> myValues;   // build values at same position as sparse vector
 
-        gatherLocalValues( myValues, sparseOther.getNonZeroIndexes(), utilskernel::binary::COPY, getContextPtr() );
+        gatherLocalValues( myValues, sparseOther.getNonZeroIndexes(), common::binary::COPY, getContextPtr() );
 
         localDotProduct = myValues.dotProduct( sparseOther.getNonZeroValues() );
     }
@@ -1658,7 +1662,7 @@ DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
         COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
     }
 
-    other.buildLocalValues( mLocalValues, utilskernel::binary::MULT, getContextPtr() );
+    other.buildLocalValues( mLocalValues, common::binary::MULT, getContextPtr() );
 
     return *this;
 }
@@ -1693,7 +1697,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::binary::COPY, mContext );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1703,7 +1707,7 @@ void DenseVector<ValueType>::add( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": add " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), utilskernel::binary::ADD, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::binary::ADD, mContext );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1712,11 +1716,11 @@ template<typename ValueType>
 void DenseVector<ValueType>::buildLocalValues(
 
      _HArray& localValues, 
-     const utilskernel::binary::BinaryOp op,
+     const common::binary::BinaryOp op,
      ContextPtr prefLoc ) const
 
 {
-    if ( op == utilskernel::binary::COPY )
+    if ( op == common::binary::COPY )
     {
         HArrayUtils::assign( localValues, mLocalValues, prefLoc );
     }
@@ -1734,7 +1738,7 @@ void DenseVector<ValueType>::gatherLocalValues(
 
      _HArray& localValues,
      const HArray<IndexType>& indexes,
-     const utilskernel::binary::BinaryOp op,
+     const common::binary::BinaryOp op,
      ContextPtr prefLoc ) const
 {
     HArrayUtils::gather( localValues, mLocalValues, indexes, op, prefLoc );

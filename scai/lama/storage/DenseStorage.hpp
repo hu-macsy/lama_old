@@ -216,7 +216,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for dense storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+                   const common::binary::BinaryOp op = common::binary::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
@@ -354,7 +354,7 @@ public:
 
     template<typename OtherType>
     void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const utilskernel::binary::BinaryOp op );
+                     const common::binary::BinaryOp op );
 
     /** Implementation of pure method MatrixStorage::getColumn */
 
@@ -364,7 +364,7 @@ public:
 
     template<typename OtherType>
     void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const utilskernel::binary::BinaryOp op );
+                        const common::binary::BinaryOp op );
 
     /** Template method for getting diagonal. */
 

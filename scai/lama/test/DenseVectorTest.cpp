@@ -269,6 +269,57 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( ScanTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType n = 5;
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> distV( dist, 1, 1, ctx );   // sequence: 1, 2, ..., n
+
+        try
+        {
+            if ( i == 0 )
+            {
+                distV.writeToFile( "dist_orig.txt" );
+            }
+ 
+            distV.scan();
+
+            if ( i == 0 )
+            {
+                distV.writeToFile( "dist_unscan.txt" );
+            }
+ 
+            BOOST_CHECK_EQUAL( distV.size(), n );
+            BOOST_CHECK_EQUAL( distV.getLocalValues().size(), dist->getLocalSize() );
+ 
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                ValueType expected = i * ( i + 1 ) / 2;
+                Scalar computed = distV[i];
+                BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
+            }
+        }
+        catch ( common::Exception& e )
+        {
+            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), nIndex );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test_types )
 {
     // Note: here we only test constructor DenseVector( "fileName" )
@@ -723,7 +774,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     sortVector.redistribute( repDist );
     perm.redistribute( repDist );
 
-    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), utilskernel::binary::LE ) );
+    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), common::binary::LE ) );
 
     hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
     hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );
@@ -784,7 +835,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
             SCAI_LOG_INFO( logger, "gather source[index] with source = " << source << ", index = " << index )
 
-            target.gather( source, index, utilskernel::binary::ADD );
+            target.gather( source, index, common::binary::ADD );
 
             BOOST_CHECK_EQUAL( target.size(), index.size() );
             BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
@@ -858,13 +909,13 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
                 BOOST_CHECK_THROW(
                 {
-                    target.scatter( index, source, utilskernel::binary::ADD );
+                    target.scatter( index, source, common::binary::ADD );
                 }, common::Exception );
 
                 continue;
             }
 
-            target.scatter( index, source, utilskernel::binary::ADD );
+            target.scatter( index, source, common::binary::ADD );
 
             hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
 

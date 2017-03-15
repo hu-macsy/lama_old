@@ -46,7 +46,7 @@
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
@@ -460,7 +460,7 @@ bool _SparseVector::isConsistent() const
 
     // indexes for the non-zero values must be sorted
 
-    if ( !HArrayUtils::isSorted( nonZeroIndexes, utilskernel::binary::LT ) )
+    if ( !HArrayUtils::isSorted( nonZeroIndexes, common::binary::LT ) )
     {
         SCAI_LOG_INFO( logger, "sparse indexes not strong increasing" )
         consistencyErrors++;
@@ -527,7 +527,7 @@ common::scalar::ScalarType SparseVector<ValueType>::getValueType() const
 template<typename ValueType>
 void SparseVector<ValueType>::buildLocalValues( 
     _HArray& values, 
-    const utilskernel::binary::BinaryOp op,
+    const common::binary::BinaryOp op,
     ContextPtr loc ) const
 {
     SCAI_LOG_INFO( logger, *this << ": build local values, op = " << op << " into " << values )
@@ -540,7 +540,7 @@ void SparseVector<ValueType>::buildLocalValues(
 
     // convert the local sparse data to local dense data
 
-    if ( op == utilskernel::binary::COPY )
+    if ( op == common::binary::COPY )
     {
         // build values array from scratch 
 
@@ -549,7 +549,7 @@ void SparseVector<ValueType>::buildLocalValues(
         HArrayUtils::assignScalar( values, mZeroValue, op, getContextPtr() );
         HArrayUtils::scatter( values, mNonZeroIndexes, UNIQUE, mNonZeroValues, op, getContextPtr() );
     }
-    else if ( mZeroValue == utilskernel::zeroBinary<ValueType>( op ) ) 
+    else if ( mZeroValue == common::zeroBinary<ValueType>( op ) ) 
     {
         // ZERO element of this sparse vector is ZERO element for op, that is fine, we only apply non-zero values
 
@@ -563,7 +563,7 @@ void SparseVector<ValueType>::buildLocalValues(
         SCAI_LOG_WARN( logger, *this << ", is not ZERO element of " << op << ", temporary dense values are built" )
 
         utilskernel::LArray<ValueType> myDenseValues( size, mZeroValue );
-        HArrayUtils::scatterImpl( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, utilskernel::binary::COPY, loc );
+        HArrayUtils::scatterImpl( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::binary::COPY, loc );
         HArrayUtils::setArray( values, myDenseValues, op, loc );
     }
 }
@@ -574,7 +574,7 @@ template<typename ValueType>
 void SparseVector<ValueType>::gatherLocalValues(
     _HArray& values,
     const HArray<IndexType>& indexes,
-    const utilskernel::binary::BinaryOp op,
+    const common::binary::BinaryOp op,
     ContextPtr loc ) const
 {
     HArrayUtils::sparseGather( values, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
@@ -617,7 +617,7 @@ void SparseVector<ValueType>::swapSparseValues( HArray<IndexType>& nonZeroIndexe
 
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 
-    SCAI_ASSERT_DEBUG( HArrayUtils::isSorted( mNonZeroIndexes, utilskernel::binary::LT ), "sort sparse entries failed" )
+    SCAI_ASSERT_DEBUG( HArrayUtils::isSorted( mNonZeroIndexes, common::binary::LT ), "sort sparse entries failed" )
 }
 
 /* ------------------------------------------------------------------------- */
@@ -636,8 +636,8 @@ void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroI
         COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
     }
 
-    HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, utilskernel::binary::COPY, getContextPtr() );
-    HArrayUtils::setArray( mNonZeroValues, nonZeroValues, utilskernel::binary::COPY, getContextPtr() );
+    HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
+    HArrayUtils::setArray( mNonZeroValues, nonZeroValues, common::binary::COPY, getContextPtr() );
 
     HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
 
@@ -825,7 +825,7 @@ Scalar SparseVector<ValueType>::l1Norm() const
     {
         // ToDo: replace ABS with ASUM, is different for complex numbers
 
-        localL1Norm += utilskernel::applyUnary( utilskernel::unary::ABS, mZeroValue ) * nZero;
+        localL1Norm += common::applyUnary( common::unary::ABS, mZeroValue ) * nZero;
     }
 
     return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
@@ -1073,8 +1073,8 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
     {
          utilskernel::LArray<ValueType> multValues;
 
-         buildLocalValues( multValues, utilskernel::binary::COPY, mContext );
-         other.buildLocalValues( multValues, utilskernel::binary::MULT, mContext );
+         buildLocalValues( multValues, common::binary::COPY, mContext );
+         other.buildLocalValues( multValues, common::binary::MULT, mContext );
          localDotProduct = multValues.sum();
     }
 
@@ -1091,7 +1091,7 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 
 template<typename ValueType>
 void SparseVector<ValueType>::binOpSparse( const _SparseVector& other,
-                                           const utilskernel::binary::BinaryOp op,
+                                           const common::binary::BinaryOp op,
                                            bool swapArgs )
 {
     SCAI_LOG_INFO( logger, *this << " " << op << " = " << other )
@@ -1114,7 +1114,7 @@ void SparseVector<ValueType>::binOpSparse( const _SparseVector& other,
                                      mNonZeroIndexes, mNonZeroValues, mZeroValue,
                                      otherIndexes, otherValues, otherZero, op, mContext );
     
-        mZeroValue = utilskernel::applyBinary( mZeroValue, op, otherZero );
+        mZeroValue = common::applyBinary( mZeroValue, op, otherZero );
     }
     else
     {
@@ -1123,7 +1123,7 @@ void SparseVector<ValueType>::binOpSparse( const _SparseVector& other,
                                      mNonZeroIndexes, mNonZeroValues, mZeroValue,
                                      op, mContext );
     
-        mZeroValue = utilskernel::applyBinary( otherZero, op, mZeroValue );
+        mZeroValue = common::applyBinary( otherZero, op, mZeroValue );
     }
 
     // ToDo: remove entries in non-zero values that are now ZERO 
@@ -1147,14 +1147,14 @@ SparseVector<ValueType>& SparseVector<ValueType>::scale( const Vector& other )
         // gather the values from other vector at the non-zero positions 
 
         HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
-        other.gatherLocalValues( otherValues, mNonZeroIndexes, utilskernel::binary::COPY, getContextPtr() );
-        HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, utilskernel::binary::MULT, getContextPtr() );
+        other.gatherLocalValues( otherValues, mNonZeroIndexes, common::binary::COPY, getContextPtr() );
+        HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, common::binary::MULT, getContextPtr() );
     }
     else if ( other.getVectorKind() == Vector::SPARSE )
     {
         const _SparseVector& otherSparse = reinterpret_cast<const _SparseVector&>( other );
 
-        binOpSparse( otherSparse, utilskernel::binary::MULT, false );
+        binOpSparse( otherSparse, common::binary::MULT, false );
     
     }
     else
@@ -1211,7 +1211,7 @@ void SparseVector<ValueType>::add( const Scalar value )
     ValueType val = value.getValue<ValueType>();
 
     mZeroValue += val;
-    HArrayUtils::setScalar( mNonZeroValues, val, utilskernel::binary::ADD, mContext );
+    HArrayUtils::setScalar( mNonZeroValues, val, common::binary::ADD, mContext );
 }
 
 template<typename ValueType>
@@ -1572,7 +1572,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
             hmemo::ContextPtr ctx = hmemo::Context::getHostPtr();
             LArray<ValueType> denseArray( size, mZeroValue, ctx );
-            HArrayUtils::scatterImpl( denseArray, mNonZeroIndexes, true, mNonZeroValues, utilskernel::binary::COPY, ctx );
+            HArrayUtils::scatterImpl( denseArray, mNonZeroIndexes, true, mNonZeroValues, common::binary::COPY, ctx );
             fileIO->writeArray( denseArray, fileName );
         }
     }

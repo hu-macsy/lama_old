@@ -82,6 +82,8 @@ using utilskernel::OpenMPUtils;
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
+using common::binary;
+
 namespace lama
 {
 
@@ -233,7 +235,7 @@ IndexType _MatrixStorage::getNumValues() const
     ContextPtr loc = sizes.getValidContext();
     reduce.getSupportedContext( loc );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, utilskernel::binary::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, binary::ADD );
     return numValues;
 }
 
@@ -355,7 +357,7 @@ IndexType _MatrixStorage::sizes2offsets( HArray<IndexType>& offsets, const HArra
         WriteOnlyAccess<IndexType> wOffsets( offsets, loc, sizes.size() + 1 );
     }
     utilskernel::HArrayUtils::assign( offsets, sizes, loc );
-    return utilskernel::HArrayUtils::scan( offsets, loc );
+    return utilskernel::HArrayUtils::scan1( offsets, loc );
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -494,7 +496,7 @@ void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& 
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<IndexType> ja( csrJA, loc );
     ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), utilskernel::binary::COPY, mNumRows );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), binary::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -734,7 +736,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, utilskernel::binary::COPY );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, binary::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );

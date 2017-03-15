@@ -218,7 +218,7 @@ public:
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
      */
     void setRow( const Vector& row, const IndexType globalRowIndex,
-                 const utilskernel::binary::BinaryOp op )
+                 const common::binary::BinaryOp op )
     {
         Derived& m = reinterpret_cast<Derived&>( *this );
 
@@ -284,7 +284,7 @@ public:
      */
     void setColumn( const Vector& column,
                     const IndexType colIndex,
-                    const utilskernel::binary::BinaryOp op )
+                    const common::binary::BinaryOp op )
     {
         Derived& m = reinterpret_cast<Derived&>( *this );
 
