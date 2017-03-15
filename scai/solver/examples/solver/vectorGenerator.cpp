@@ -290,7 +290,7 @@ int main( int argc, const char* argv[] )
 
         // scale random numbers from -1 .. 1 with options.value
 
-        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), utilskernel::binary::MULT );
+        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), common::binary::MULT );
     }
     else
     {

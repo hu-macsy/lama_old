@@ -445,8 +445,8 @@ public:
      *  @returns        the total sum and last value in the array is returned
      *
      *  \code
-     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 3, 8, 15, 17 }  first = 0, exclusive = false
-     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 1, 4,  9, 16 }  first = 1, exclusive = true
+     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 13, 18, 25, 27 }  first = 10, exclusive = false
+     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 10, 13, 18, 25 }  first = 10, exclusive = true
      *  \endcode
      */
     template<typename ValueType>

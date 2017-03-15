@@ -36,6 +36,7 @@ set ( CXX_SOURCES
 	    atomicOpenMPTest
 	    bindFunctionTest
       commonTest
+      BinaryOpTest
       ConstantsTest
       ContextTypeTest
       ExceptionTest  
@@ -51,6 +52,8 @@ set ( CXX_SOURCES
       TypeListTest
       TypeLoopTest
       TypeTraitsTest  
+      UnaryOpTest
+      ConstantsTest
       ScalarTypeTest  
       SettingsTest  
       WalltimeTest  
