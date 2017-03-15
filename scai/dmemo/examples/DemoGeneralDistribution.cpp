@@ -43,6 +43,8 @@ using namespace scai::dmemo;
 using namespace scai::hmemo;
 using namespace scai::utilskernel;
 
+using scai::common::binary;
+
 int main()
 {
     SCAI_REGION( "Main.main" )

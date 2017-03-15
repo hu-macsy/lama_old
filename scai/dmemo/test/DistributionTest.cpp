@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             // check for sorted owners, e.g. 0 0 0 1 1 1 1 2 2 2 2 3 3 3 indicates block dist
 
-            bool isSorted = utilskernel::HArrayUtils::isSorted( owners, utilskernel::binary::LE );
+            bool isSorted = utilskernel::HArrayUtils::isSorted( owners, common::binary::LE );
 
             IndexType bs = dist->getBlockDistributionSize();
 

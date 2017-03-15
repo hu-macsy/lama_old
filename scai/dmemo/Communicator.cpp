@@ -644,7 +644,7 @@ void Communicator::updateHalo(
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
-    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), utilskernel::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
@@ -684,7 +684,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // put together the (send) values to provide for other partitions
 
-    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), utilskernel::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
 
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
 
@@ -885,6 +885,30 @@ bool Communicator::any( const bool flag ) const
     IndexType allval = sum( val ); // count flags == false
     SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
     return allval > 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Communicator::scan( const ValueType localValue ) const
+{
+    PartitionId size = getSize();
+    PartitionId rank = getRank();
+    PartitionId root = 0;
+
+    common::scoped_array<ValueType> allValues( new ValueType[ size ] );
+
+    gather( allValues.get(), 1, root, &localValue );
+    bcast ( allValues.get(), size, root );
+
+    ValueType runningSum = 0;
+
+    for ( PartitionId p = 0; p < rank; ++p )
+    {
+        runningSum += allValues[p];
+    }
+
+    return runningSum;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1216,6 +1240,9 @@ void Communicator::setNodeData()
             _type& val,                                             \
             IndexType& location,                                    \
             const PartitionId root ) const;                         \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    _type Communicator::scan( _type val ) const;                    \
     \
     // instantiate methods for all communicator data types
 

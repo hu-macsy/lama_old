@@ -600,6 +600,11 @@ public:
 
     virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
 
+    /** Scan values among the processor belonging to this communicator. */
+
+    template<typename ValueType>
+    ValueType scan( const ValueType localValue ) const;
+
     /**
      *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a
      *  given value type.
