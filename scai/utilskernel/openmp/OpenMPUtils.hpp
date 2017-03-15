@@ -132,7 +132,7 @@ public:
     /** OpenMP implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::binaryOp */
 

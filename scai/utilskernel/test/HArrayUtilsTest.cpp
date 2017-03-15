@@ -37,7 +37,6 @@
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LArray.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
 
 #include <scai/utilskernel/test/TestMacros.hpp>
 #include <scai/utilskernel/test/HArrays.hpp>

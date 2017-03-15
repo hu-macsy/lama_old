@@ -41,6 +41,8 @@ using namespace std;
 using namespace scai;
 using namespace hmemo;
 using namespace utilskernel;
+using common::binary;
+using common::unary;
 
 int main( int argc, const char* argv[] )
 {

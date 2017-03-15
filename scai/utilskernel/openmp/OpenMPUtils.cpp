@@ -55,6 +55,8 @@
 namespace scai
 {
 
+using common::binary;
+using common::unary;
 using common::TypeTraits;
 
 namespace utilskernel
@@ -1150,7 +1152,7 @@ void OpenMPUtils::setGather(
     ValueType1 out[],
     const ValueType2 in[],
     const IndexType indexes[],
-    const utilskernel::binary::BinaryOp op,
+    const binary::BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setGather" )
@@ -1270,7 +1272,7 @@ void OpenMPUtils::setGatherSparse(
     const IndexType sourceNonZeroIndexes[],
     const IndexType sourceNNZ,
     const IndexType indexes[],
-    const utilskernel::binary::BinaryOp op,
+    const binary::BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setGatherSparse" )

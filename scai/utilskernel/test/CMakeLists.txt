@@ -42,8 +42,6 @@ scai_project (
 
     SOURCES
 
-        UnaryOpTest
-        BinaryOpTest
         UtilsKernelTest
         HArrayUtilsTest
         UtilsTest
