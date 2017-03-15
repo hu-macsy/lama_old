@@ -436,6 +436,26 @@ public:
         const common::binary::CompareOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Build the running sums within an array
+     *
+     *  @param[in,out]  array contains values for which running sum is built
+     *  @param[in]      first is an offset that is used as starting value
+     *  @param[in]      exclusive if set the current values is not included in the running sum
+     *  @param[in]      prefLoc optional the context where computation should be done
+     *  @returns        the total sum and last value in the array is returned
+     *
+     *  \code
+     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 3, 8, 15, 17 }  first = 0, exclusive = false
+     *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 1, 4,  9, 16 }  first = 1, exclusive = true
+     *  \endcode
+     */
+    template<typename ValueType>
+    static ValueType scan( 
+        hmemo::HArray<ValueType>& array, 
+        const ValueType first,
+        bool exclusive, 
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
     /** Build the running sums for an array; note that result array will contain one element more.
      *
      *  @param[in,out]  array contains values for which running sum is built
@@ -446,9 +466,8 @@ public:
      *       array( in ) = { 3, 5, 7, 2 }, array( out ) = { 0, 3, 8, 15, 17 }
      *  \endcode
      */
-
     template<typename ValueType>
-    static ValueType scan( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static ValueType scan1( hmemo::HArray<ValueType>& array, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build the differences, opposite to scan, especially used to convert offsets to sizes
      *

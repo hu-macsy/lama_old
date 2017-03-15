@@ -177,7 +177,12 @@ public:
     /** CUDA implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>
-    static ValueType scan( ValueType array[], const IndexType n );
+    static ValueType scan(
+        ValueType array[],
+        const IndexType n,
+        const ValueType first,
+        const bool exclusive,
+        const bool append );
 
     /** CUDA implementation for UtilKernelTrait::sort */
 

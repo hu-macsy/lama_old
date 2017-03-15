@@ -740,7 +740,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
 
 typedef boost::mpl::list<IndexType, SCAI_NUMERIC_TYPES_HOST> array_types;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scan1Test, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
     ValueType vals[]     = { 3, 1, 4, 2 };
@@ -757,11 +757,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
     array.reserve( loc, n + 1 );
     array.init( vals, n );
     LArray<ValueType> correct( n + 1, scans.get(), loc );
-    ValueType total = HArrayUtils::scan( array );
+    ValueType total = HArrayUtils::scan1( array );
     ValueType lastVal = array[n];
     BOOST_CHECK_EQUAL( array.size(), n + 1 );
     BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
     BOOST_CHECK_EQUAL( total, lastVal );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
+{
+    ContextPtr loc = Context::getContextPtr();
+
+    ValueType first      = 1;
+    ValueType vals[]     = { 3, 1, 4, 2 };
+    const IndexType n = sizeof( vals ) / sizeof( ValueType );
+    scoped_array<ValueType> scans( new ValueType[n] );
+
+    scans[0] = first + vals[0];
+
+    for ( IndexType i = 1; i < n; ++i )
+    {
+        scans[i] = scans[i-1] + vals[i];
+    }
+
+    ValueType last = scans[n-1];
+
+    LArray<ValueType> array( n, vals, loc );
+    LArray<ValueType> correct( n, scans.get(), loc );
+
+    bool exclusive = false;
+
+    ValueType total = HArrayUtils::scan( array, first, exclusive, loc );
+
+    BOOST_CHECK_EQUAL( array.size(), n );
+    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
+    BOOST_CHECK_EQUAL( total, last );
 }
 
 /* --------------------------------------------------------------------- */

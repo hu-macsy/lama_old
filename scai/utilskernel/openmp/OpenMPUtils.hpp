@@ -189,7 +189,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>
-    static ValueType scan( ValueType array[], const IndexType n );
+    static ValueType scan( 
+        ValueType array[], 
+        const IndexType n, 
+        const ValueType first,
+        const bool exclusive,
+        const bool append );
 
     /** OpenMP implementation for UtilKernelTrait::unscan */
 
@@ -261,10 +266,10 @@ private:
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     template<typename ValueType>
-    static ValueType scanSerial( ValueType array[], const IndexType numValues );
+    static ValueType scanSerial( ValueType array[], const IndexType n, const ValueType first, const bool exclusive );
 
     template<typename ValueType>
-    static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType numValues );
+    static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType n, const ValueType first, const bool exclusive );
 
     /** OpenMP implementation of UtilsKernelTrait::countNonZeros */
 

@@ -48,6 +48,7 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Settings.hpp>
+#include <scai/common/OpenMP.hpp>
 #include <scai/logging.hpp>
 #include <scai/tracing.hpp>
 
@@ -59,6 +60,13 @@ scai::hmemo::ContextPtr testContext;
 
 bool init_function()
 {
+    int nThreads;
+
+    if ( scai::common::Settings::getEnvironment( nThreads, "SCAI_NUM_THREADS" ) )
+    {
+        omp_set_num_threads( nThreads );
+    }
+
     try
     {
         testContext = scai::hmemo::Context::getContextPtr();

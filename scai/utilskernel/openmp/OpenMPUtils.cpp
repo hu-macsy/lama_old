@@ -1393,89 +1393,120 @@ void OpenMPUtils::setScatter(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::scanSerial( ValueType array[], const IndexType n )
+ValueType OpenMPUtils::scanSerial( ValueType array[], const IndexType n, ValueType first, bool exclusive )
 {
-    SCAI_LOG_DEBUG( logger, "scanSerial: " << n << " entries" )
-    // In this case we do it just serial, probably faster
-    ValueType runningSum = 0;
+    SCAI_LOG_DEBUG( logger, "scanSerial: " << n << " entries, first = " << first << ", exclusive = " << exclusive )
 
-    for ( IndexType i = 0; i < n; i++ )
+    ValueType runningSum = first;
+
+    if ( exclusive )
     {
-        ValueType tmp = runningSum;
-        runningSum += array[i];
-        SCAI_LOG_TRACE( logger, "scan, row = " << i << ", size = " << array[i] << ", offset = " << runningSum )
-        array[i] = tmp;
-    }
-
-    return runningSum;;
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], const IndexType n )
-{
-    // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
-    // For more threads, we do it in parallel
-    // Attention: MUST USE schedule(static)
-    common::scoped_array<ValueType> threadCounter( new ValueType[numThreads] );
-    SCAI_LOG_DEBUG( logger, "scanParallel: " << n << " entries for " << numThreads << " threads" )
-    #pragma omp parallel
-    {
-        ValueType myCounter = 0;
-        #pragma omp for schedule(static)
-
         for ( IndexType i = 0; i < n; i++ )
         {
-            myCounter += array[i];
-        }
-
-        threadCounter[omp_get_thread_num()] = myCounter;
-    }
-    ValueType runningSum = scanSerial( threadCounter.get(), numThreads );
-    // Each thread sets now its offsets
-    #pragma omp parallel
-    {
-        ValueType myRunningSum = threadCounter[omp_get_thread_num()];
-        #pragma omp for schedule(static)
-
-        for ( IndexType i = 0; i < n; i++ )
-        {
-            ValueType tmp = myRunningSum;
-            myRunningSum += array[i];
+            ValueType tmp = runningSum;
+            runningSum += array[i];
             array[i] = tmp;
         }
     }
+    else
+    {
+        for ( IndexType i = 0; i < n; i++ )
+        {
+            runningSum += array[i];
+            array[i] = runningSum;
+        }
+    }
+
     return runningSum;;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType OpenMPUtils::scan( ValueType array[], const IndexType n )
+ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], const IndexType n, const ValueType zero, const bool exclusive )
+{
+    common::scoped_array<ValueType> threadValues( new ValueType[numThreads] );
+
+    SCAI_LOG_DEBUG( logger, "scanParallel: " << n << " entries for " << numThreads << " threads" )
+
+    ValueType runningSum;
+
+    #pragma omp parallel
+    {
+        IndexType lb, ub;
+
+        omp_get_my_range( lb, ub, n );
+
+        ValueType myLocalSum = 0;
+
+        for ( IndexType i = lb; i < ub; i++ )
+        {
+            myLocalSum += array[i];
+        }
+
+        SCAI_LOG_TRACE( logger, "scanParallel: local sum on " << lb << " - " << ub << " is " << myLocalSum )
+
+        threadValues[omp_get_thread_num()] = myLocalSum;
+
+        // Important: barrier before and after serial scan are mandatory
+
+        #pragma omp barrier
+
+        #pragma omp master
+        {
+            bool threadExclusive = true;
+            runningSum = scanSerial( threadValues.get(), numThreads, zero, threadExclusive );
+            SCAI_LOG_TRACE( logger, "runningSum for all = " << runningSum )
+        }
+
+        #pragma omp barrier
+
+        // Each thread has now its start value
+
+        ValueType myRunningSum = threadValues[omp_get_thread_num()];
+
+        scanSerial( array + lb, ub - lb, myRunningSum, exclusive );
+    }
+
+    return runningSum;;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType OpenMPUtils::scan( ValueType array[], const IndexType n, ValueType zero, const bool exclusive, const bool append )
 {
     SCAI_REGION( "OpenMP.Utils.scan" )
-    SCAI_LOG_INFO( logger, "scan array[ " << n << " ]" )
+
     int numThreads = 1; // will be set to available threads in parallel region
+
     #pragma omp parallel
     #pragma omp master
     {
         numThreads = omp_get_num_threads();
     }
-    SCAI_LOG_INFO( logger, "scan " << n << " entries, #threads = " << numThreads )
+
+    SCAI_LOG_DEBUG( logger, "scan " << n << " entries, #threads = " << numThreads << ", append = " << append )
+
     static int minThreads = 3;
     ValueType total;
 
     if ( numThreads < minThreads )
     {
-        total = scanSerial( array, n );
+        total = scanSerial( array, n, zero, exclusive );
     }
     else
     {
-        total = scanParallel( numThreads, array, n );
+        total = scanParallel( numThreads, array, n, zero, exclusive );
     }
 
-    array[n] = total;
+    if ( append )
+    {
+        SCAI_LOG_TRACE( logger, "append total = " << total << " at pos = " << n )
+
+        array[n] = total;
+    }
+
     return total;
 }
 

@@ -437,19 +437,28 @@ struct UtilKernelTrait
         /** This method computes runnings sums of values
          *
          *  @param[in,out] array contains  values and later the running sums
-         *  @param[in]    n is the number of values, array must contain one additional value
+         *  @param[in]    n is the number of values 
+         *  @param[in]    first is added to all elements
+         *  @param[in]    exclusive if false a[i] = a[i] op a[i-1], else a[i] = a[i-1] op a[i-2] op ... op first
+         *  @param[in]    append if true the result value is added at the end of the array
          *  @returns      the total sum of values
          *
          *  \code
-         *    array  :    3   7   8   4   2  x
-         *    array  :    0   3  10  18  22  24      -> returns 24
+         *    array  :    3   7   8   4   2   
+         *    array  :    3  10  18  22  24    -> returns 24, exclusive = false
+         *    array  :    0   3  10  18  22    -> returns 24, exclusive = true
          *  \endcode
          *
-         *  Important: sizes must have numRows + 1 allocated entries.
+         *  \code
+         *     array[i] = array'[i-1] + array'[i-2] + ... + array'[0] + first   exclusive = true
+         *     array[i] = array'[i] + array'[i-1] + ... + array'[0] + first     exclusive = false
+         *  \endcode
+         *
+         *  Important: array must have n + 1 allocated entries if append is true
          *
          */
 
-        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType first, bool exclusive, bool append );
 
         static const char* getId()
         {

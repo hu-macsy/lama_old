@@ -1219,12 +1219,14 @@ void HArrayUtils::setRandomImpl( hmemo::HArray<ValueType>& array,
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType HArrayUtils::scan(
+ValueType HArrayUtils::scan1(
     hmemo::HArray<ValueType>& array,
     hmemo::ContextPtr prefLoc )
 {
     const IndexType n = array.size();
+
     static LAMAKernel<UtilKernelTrait::scan<ValueType> > scan;
+
     ContextPtr loc = prefLoc;
 
     // default location for check: where we have valid entries
@@ -1235,11 +1237,54 @@ ValueType HArrayUtils::scan(
     }
 
     scan.getSupportedContext( loc );
+
     SCAI_CONTEXT_ACCESS( loc )
+
     WriteAccess<ValueType> wValues( array, loc );
-    // One additional element will be added at the end
-    wValues.resize( n + 1 );
-    ValueType total = scan[loc]( wValues.get(), n );
+
+    wValues.resize( n + 1 );   // One additional element will be added at the end
+
+    bool exclusive = true;
+    bool append = true;
+    ValueType zero = 0;
+
+    ValueType total = scan[loc]( wValues.get(), n, zero, exclusive, append );
+
+    return total;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType HArrayUtils::scan(
+    hmemo::HArray<ValueType>& array,
+    const ValueType first,
+    const bool exclusive,
+    hmemo::ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::scan<ValueType> > scan;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for check: where we have valid entries
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    scan.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    WriteAccess<ValueType> wValues( array, loc );
+ 
+    bool append = false;   // do not change the size
+
+    ValueType total = scan[loc]( wValues.get(), n, first, exclusive, append );
+
     return total;
 }
 
@@ -1416,7 +1461,8 @@ void HArrayUtils::bucketSort(
     WriteOnlyAccess<IndexType> sizes( offsets, loc, static_cast<IndexType>( nb + 1 ) );
 
     countBuckets[loc]( sizes.get(), nb, bucketMap, n );
-    IndexType total = scan[loc]( sizes.get(), nb );
+    IndexType first = 0;
+    IndexType total = scan[loc]( sizes.get(), nb, first, true, true );
 
     // Note: total can be < n if array contains values < 0 or >= nb
 
@@ -2050,8 +2096,14 @@ void HArrayUtils::binaryOpSparse(
             const hmemo::HArray<ValueType>&,                                    \
             const binary::CompareOp,                                            \
             hmemo::ContextPtr );                                                \
+    template ValueType HArrayUtils::scan1<ValueType>(                           \
+            hmemo::HArray<ValueType>&,                                          \
+            hmemo::ContextPtr );                                                \
     template ValueType HArrayUtils::scan<ValueType>(                            \
-            hmemo::HArray<ValueType>&, hmemo::ContextPtr );                     \
+            hmemo::HArray<ValueType>&,                                          \
+            const ValueType first,                                              \
+            const bool exclusive,                                               \
+            hmemo::ContextPtr );                                                \
     template ValueType HArrayUtils::unscan<ValueType>(                          \
             hmemo::HArray<ValueType>&, hmemo::ContextPtr );                     \
     template void HArrayUtils::sort<ValueType>(                                 \

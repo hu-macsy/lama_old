@@ -1456,16 +1456,61 @@ void CUDAUtils::binaryOpScalar2(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAUtils::scan( ValueType array[], const IndexType n )
+ValueType CUDAUtils::scan( ValueType array[], const IndexType n, ValueType first, const bool exclusive, const bool append )
 {
+    using namespace thrust::placeholders;
+
     SCAI_REGION( "CUDA.Utils.scan" )
 
-    SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n )
+    SCAI_LOG_ERROR( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n 
+                             << ", first = " << first << ", exclusive = " << exclusive )
+
     SCAI_CHECK_CUDA_ACCESS
+
     thrust::device_ptr<ValueType> array_ptr( array );
-    thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
-    thrust::host_vector<ValueType> numValues( array_ptr + n, array_ptr + n + 1 );
-    return numValues[0];
+
+    ValueType result;
+
+    if ( exclusive )
+    {
+        if ( append )
+        {
+            thrust::exclusive_scan( array_ptr, array_ptr + n + 1, array_ptr );
+
+            if ( first != common::constants::ZERO )
+            {
+                thrust::for_each( array_ptr, array_ptr + n + 1, _1 += first );
+            }
+
+            thrust::host_vector<ValueType> numValues( array_ptr + n, array_ptr + n + 1 );
+            result = numValues[0];
+        }
+        else
+        {
+            COMMON_THROWEXCEPTION( "exclusive scan, no append is unsupported" )
+        }
+    }
+    else
+    {
+        if ( append )
+        {
+            COMMON_THROWEXCEPTION( "inclusive scan, append is unsupported" )
+        }
+        else
+        {
+            thrust::inclusive_scan( array_ptr, array_ptr + n, array_ptr );
+
+            if ( first != common::constants::ZERO )
+            {
+                thrust::for_each( array_ptr, array_ptr + n, _1 += first );
+            }
+
+            thrust::host_vector<ValueType> numValues( array_ptr + n - 1, array_ptr + n );
+            result = numValues[0];
+        }
+    }
+
+    return result;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
