@@ -36,7 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -286,7 +286,7 @@ struct JDSKernelTrait
                                      const IndexType dlg[],
                                      const IndexType ja[],
                                      const OtherValueType row[],
-                                     const utilskernel::binary::BinaryOp op );
+                                     const common::binary::BinaryOp op );
 
         static const char* getId()
         {

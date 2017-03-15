@@ -125,7 +125,7 @@ void OpenMPJDSUtils::setRow(
     const IndexType dlg[],
     const IndexType ja[],
     const OtherValueType row[],
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.JDS.setRow" )
 
@@ -556,7 +556,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
-    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, common::binary::MULT );
 
     if ( ndlg == 0 )
     {
@@ -646,7 +646,7 @@ void OpenMPJDSUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, common::binary::MULT );
 
     if ( ndlg == 0 )
     {

@@ -36,7 +36,7 @@
 // for dll_import
 
 #include <scai/common/config.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -163,7 +163,7 @@ struct DenseKernelTrait
                                      const IndexType numRows,
                                      const IndexType numColumns,
                                      const DenseValueType2 in[],
-                                     const utilskernel::binary::BinaryOp op );
+                                     const common::binary::BinaryOp op );
 
         static const char* getId()
         {
@@ -181,7 +181,7 @@ struct DenseKernelTrait
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType val,
-            const utilskernel::binary::BinaryOp op );
+            const common::binary::BinaryOp op );
 
         static const char* getId()
         {

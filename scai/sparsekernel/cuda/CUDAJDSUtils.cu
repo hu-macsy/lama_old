@@ -1787,7 +1787,7 @@ void CUDAJDSUtils::normalGEVM(
 
     // result = alpha * x * A + beta * y -> result = beta * y; result += alpha * x * A
 
-    CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+    CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, common::binary::MULT );
 
     if ( ndlg == 0 )
     {

@@ -1235,7 +1235,7 @@ void OpenMPELLUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, common::binary::MULT );
 
     #pragma  omp parallel
     {

@@ -52,6 +52,8 @@ using namespace sparsekernel;
 using namespace utilskernel;
 
 using common::TypeTraits;
+using common::binary;
+using common::unary;
 
 /* --------------------------------------------------------------------- */
 

@@ -43,7 +43,7 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 #include <utility>
 
@@ -97,7 +97,7 @@ public:
         const IndexType dlg[],
         const IndexType ja[],
         const OtherValueType row[],
-        const utilskernel::binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     /** Implementation for JDSKernelTrait::getValuePos */
 
