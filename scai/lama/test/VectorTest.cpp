@@ -149,11 +149,9 @@ BOOST_AUTO_TEST_CASE( SetGetTest )
 
     TestVectors vectors;
 
-//     for ( size_t i = 0; i < vectors.size(); ++i )
-//   {
-//        Vector& v = *vectors[i];
-
-        SparseVector<double> v;
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        Vector& v = *vectors[i];
 
         v.allocate( n );
 
@@ -164,10 +162,6 @@ BOOST_AUTO_TEST_CASE( SetGetTest )
 
         v[n-2] = 9;
         v[1] = 7;
-
-        SCAI_LOG_ERROR( logger, "v = " << v );
-
-        v.writeToFile( "v.txt" );
 
         BOOST_CHECK_THROW(
         {
@@ -345,6 +339,55 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
         v1 -= Scalar( 1 );
 
         Scalar diff = v1.maxNorm();
+
+        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( PowTest )
+{
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 100;
+
+    TestVectors vectors;
+
+    dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        Vector& v1 = *vectors[i];
+
+        if ( ! common::isNumeric( v1.getValueType() ) )
+        {
+            continue;   // this test would fail for IndexType
+        }
+
+        float fillRate = 0.1f;
+
+        v1.setRandom( vectorDist, fillRate );
+
+        v1 += 3.0;   // range 2 .. 4
+
+        VectorPtr v2Ptr( v1.copy() );
+        Vector& v2 = *v2Ptr;
+
+        v1.powExp( 2 );   // v[i] = v[i] ** 2.0
+        v1.powExp( 0.5 ); 
+
+        v1 -= v2;
+
+        Scalar diff = v1.maxNorm();
+
+        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+ 
+        Scalar e( common::Math::exp( 0.0 ) );
+
+        v1.powBase( e );  // v1[i] = 2 ** v1
+        v2.exp();
+        v1 -= v2;
 
         BOOST_CHECK( diff < Scalar( 0.0001 ) );
     }

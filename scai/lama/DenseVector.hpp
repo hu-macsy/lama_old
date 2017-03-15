@@ -483,6 +483,22 @@ public:
      */
     virtual bool isSorted( bool ascending ) const;
 
+    /** Compute a global prefix sum for the elements of this vector. 
+     *
+     *  \code
+     *   A = { 1, 2, 3, 4, 5, 6 }
+     *   A.scan();
+     *   A = { 1, 3, 6, 10, 15, 21 }
+     *  \endcode  
+     *
+     *  Note: This vector must be block distributed, otherwise it throws an exception
+     */
+    void scan();
+
+    /** Same as scan but it uses another input vector. */
+
+    void scan( const DenseVector<ValueType>& other );
+
     /** Implementation of Vector::getValueType */
 
     virtual common::scalar::ScalarType getValueType() const;

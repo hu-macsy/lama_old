@@ -878,6 +878,52 @@ void DenseVector<ValueType>::sortImpl(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseVector<ValueType>::scan()
+{
+	// first, check that the input is some block distribution
+
+    SCAI_ASSERT_NE_ERROR( getDistribution().getBlockDistributionSize(), nIndex,
+                          "scan only supported for block distribution" )
+
+    const Communicator& comm = getDistribution().getCommunicator();
+ 
+    HArray<ValueType> prefixValues;
+    
+    ValueType val = HArrayUtils::scan( mLocalValues, getContextPtr() );
+
+    val = comm.scan( val );
+
+    // we have to add value 
+
+    HArrayUtils::binaryOpScalar1( mLocalValues, val, mLocalValues, utilskernel::binary::ADD, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::scan( const DenseVector<ValueType>& other )
+{
+    // first, check that the input is some block distribution
+
+    SCAI_ASSERT_NE_ERROR( other.getDistribution().getBlockDistributionSize(), nIndex,
+                          "scan only supported for block distribution" )
+
+    allocate( other.getDistributionPtr() );  
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    ValueType val = HArrayUtils::scan( mLocalValues, getContextPtr() );
+
+    val = comm.scan( val );
+
+    // we have to add value 
+
+    HArrayUtils::binaryOpScalar1( mLocalValues, val, mLocalValues, utilskernel::binary::ADD, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseVector<ValueType>::swap( HArray<ValueType>& newValues, DistributionPtr newDist )
 {
     SCAI_LOG_DEBUG( logger, *this << ": swap with new local values = " << newValues << ", new dist = " << *newDist )
