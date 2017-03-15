@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest0, ValueType, scai_numeric_test_types )
 
         WriteAccess<IndexType> wIA( csrIA, loc );
         wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows );
+        numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
     }
 
     BOOST_REQUIRE_EQUAL( numRows, numValues );
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
 
         WriteAccess<IndexType> wIA( csrIA, loc );
         wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows );
+        numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
     }
 
     BOOST_REQUIRE_EQUAL( 12, numValues );
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest2, ValueType, scai_numeric_test_types )
 
         WriteAccess<IndexType> wIA( csrIA, loc );
         wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows );
+        numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
     }
 
     {
