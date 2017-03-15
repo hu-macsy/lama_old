@@ -147,7 +147,7 @@ GeneralDistribution::GeneralDistribution(
     {
         localOffsets.reserve( ctx, size + 1 );
         localOffsets = localSizes;
-        utilskernel::HArrayUtils::scan( localOffsets );
+        utilskernel::HArrayUtils::scan1( localOffsets );
         SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
     }
 
@@ -424,7 +424,7 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
     if ( rank == root )
     {
         utilskernel::HArrayUtils::assign( offsets, localSizes, ctx );
-        IndexType nTotal = utilskernel::HArrayUtils::scan( offsets );
+        IndexType nTotal = utilskernel::HArrayUtils::scan1( offsets );
         SCAI_ASSERT( nTotal == mGlobalSize, "sum of local rows is not global size" )
     }
 

@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE( replicateRaggedTest )
         }
 
         hmemo::HArray<IndexType> offsets( globalN, repN );
-        IndexType totalValues = utilskernel::HArrayUtils::scan( offsets );
+        IndexType totalValues = utilskernel::HArrayUtils::scan1( offsets );
 
         hmemo::HArray<IndexType> allValues;  // result array for replicateRagged
 
