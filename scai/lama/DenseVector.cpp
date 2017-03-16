@@ -891,13 +891,15 @@ void DenseVector<ValueType>::scan()
     
     ValueType val = mLocalValues.sum();
 
-    val = comm.scan( val );
+    ValueType scanVal = comm.scan( val );
+
+    SCAI_LOG_INFO( logger, comm << ": local sum = " << val << ", scan = " << scanVal )
 
     // now do the correct scan, start with val
 
     bool exclusive = false;
 
-    HArrayUtils::scan( mLocalValues, val, exclusive, getContextPtr() );
+    HArrayUtils::scan( mLocalValues, scanVal, exclusive, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -910,19 +912,10 @@ void DenseVector<ValueType>::scan( const DenseVector<ValueType>& other )
     SCAI_ASSERT_NE_ERROR( other.getDistribution().getBlockDistributionSize(), nIndex,
                           "scan only supported for block distribution" )
 
+    // currently scan is only supported by in-place array operations
+
     assign( other );
-
-    const Communicator& comm = getDistribution().getCommunicator();
-
-    ValueType val = mLocalValues.sum();
-
-    val = comm.scan( val );  // build the running sums
-
-    // now do the correct scan, start with val
-
-    bool exclusive = false;
-
-    HArrayUtils::scan( mLocalValues, val, exclusive, getContextPtr() );
+    scan();
 }
 
 /* ------------------------------------------------------------------------- */

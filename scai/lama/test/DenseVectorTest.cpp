@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    const IndexType n = 5;
+    const IndexType n = 100;
 
     dmemo::TestDistributions dists( n );
 
@@ -289,30 +289,27 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 
         try
         {
-            if ( i == 0 )
-            {
-                distV.writeToFile( "dist_orig.txt" );
-            }
- 
             distV.scan();
 
-            if ( i == 0 )
-            {
-                distV.writeToFile( "dist_unscan.txt" );
-            }
- 
             BOOST_CHECK_EQUAL( distV.size(), n );
             BOOST_CHECK_EQUAL( distV.getLocalValues().size(), dist->getLocalSize() );
  
-            for ( IndexType i = 0; i < n; ++i )
+            distV.replicate();
+
             {
-                ValueType expected = i * ( i + 1 ) / 2;
-                Scalar computed = distV[i];
-                BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
+                hmemo::ReadAccess<ValueType> rVector( distV.getLocalValues() );
+
+                for ( IndexType i = 0; i < n; ++i )
+                {
+                    ValueType expected = ( i + 1 ) * ( i + 2 ) / 2;
+                    Scalar computed = rVector[i];
+                    BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
+                }
             }
         }
         catch ( common::Exception& e )
         {
+            SCAI_LOG_INFO( logger, "scan unsupported for this distribution: " << *dist << ", no block distribution" )
             BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), nIndex );
         }
     }
