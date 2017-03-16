@@ -891,7 +891,9 @@ void DenseVector<ValueType>::scan()
     
     ValueType val = mLocalValues.sum();
 
-    ValueType scanVal = comm.scan( val );
+    ValueType scanVal = comm.scan( val ); // is inclusve scan
+
+    scanVal -= val;  // exclusive value is needed
 
     SCAI_LOG_INFO( logger, comm << ": local sum = " << val << ", scan = " << scanVal )
 
