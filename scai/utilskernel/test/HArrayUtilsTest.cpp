@@ -658,7 +658,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_ty
     // Define the sparse array, IA, VA, nnz 
 
     ValueType sourceVA_vals[] = { 3, 1, 4, 2 };
-    ValueType sourceIA_vals[] = { 0, 1, 5, 7 };
+    IndexType sourceIA_vals[] = { 0, 1, 5, 7 };
 
     const IndexType M = 9;
     const IndexType nnz = sizeof( sourceVA_vals ) / sizeof( ValueType );
@@ -670,7 +670,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_ty
     BOOST_CHECK_EQUAL( sourceVA.size(), sourceIA.size() );
 
     IndexType indexes_vals[]  = { 0, 2, 1, 2, 7, 5 };
-    IndexType target_vals[]   = { 3, 0, 1, 0, 2, 4 };   // expected
+    ValueType target_vals[]   = { 3, 0, 1, 0, 2, 4 };   // expected
 
     const IndexType N = sizeof( indexes_vals ) / sizeof( IndexType );
 

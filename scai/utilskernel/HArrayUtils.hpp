@@ -427,7 +427,7 @@ public:
      *
      *  @param[in] array
      *  @param[in] op
-     *  @param[in] prefloc 
+     *  @param[in] prefLoc 
      *  @returns   true if a[i] op a[i+1] is true for all neighbored pairs
      */
     template<typename ValueType>
@@ -687,13 +687,13 @@ public:
     static IndexType insertSorted( 
         hmemo::HArray<ValueType>& array,
         const ValueType value,
-        hmemo::ContextPtr = hmemo::ContextPtr() );
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Insert new value in an array at a certain pos, all other elements are shifted up
      * 
-     *  @param[in,out] values
+     *  @param[in,out] array is the array where to insert the element
      *  @param[in]     pos is the position where the value is added
-     *  @param[in]     val is the inserted value
+     *  @param[in]     value is the inserted value
      *  @param[in]     prefLoc  optional the context where the values are updated
      */
     template<typename ValueType>
@@ -733,7 +733,7 @@ public:
      *     findPosInSortedIndexes( indexes, 31 ) -> nIndex
      *  \endcode
      */
-    static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType pos );
+    static IndexType findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType index );
 
     /** Add two sparse arrays 
      *

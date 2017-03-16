@@ -249,7 +249,7 @@ public:
      *  @param[out] offset is the corresponding offset
      *  @param[in] p is the partition for which info is needed
      */
-    void getInfo( IndexType& quantity, IndexType& offsets, PartitionId p ) const;
+    void getInfo( IndexType& quantity, IndexType& offset, PartitionId p ) const;
 
     /** @brief build a communnication plan from existing one for one processor only */
 

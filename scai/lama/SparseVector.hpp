@@ -263,7 +263,7 @@ public:
      * @brief creates a distributed SparseVector with given local values.
      *
      * @param[in] distribution  the distribution of the vector
-     * @param[in] values        local values
+     * @param[in] localValues   local values
      *
      * This constructor is only available to be more conform with DenseVector.
      * The zero value is assumed to be 0. Only non-zero entries are stored explicitly.
@@ -457,6 +457,7 @@ public:
      *   @param[in] nnz  number of non-zero values 
      *   @param[in] nonZeroIndexes array with positions of non-zero values
      *   @param[in] nonZeroValues array with the values at the positions
+     *   @param[in] zeroValue is the value for all other array elements
      *
      *   Note: the non zero entries will be sorted by position in ascending order.
      */

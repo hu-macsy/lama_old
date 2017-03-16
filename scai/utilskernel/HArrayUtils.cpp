@@ -1846,7 +1846,7 @@ void HArrayUtils::buildDenseArray(
 
 /* --------------------------------------------------------------------------- */
 
-IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType pos )
+IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& indexes, const IndexType index )
 {
     ReadAccess<IndexType> rIndexes( indexes );
 
@@ -1857,11 +1857,11 @@ IndexType HArrayUtils::findPosInSortedIndexes( const hmemo::HArray<IndexType>& i
     {
         IndexType middle = first + ( last - first ) / 2;
 
-        if ( rIndexes[middle] == pos )
+        if ( rIndexes[middle] == index )
         {
             return middle;
         }
-        else if ( rIndexes[middle] > pos )
+        else if ( rIndexes[middle] > index )
         {
             last = middle;
         }
