@@ -34,6 +34,7 @@ Class                        Description
 :ref:`Factory`               Template class for Factory
 :ref:`Thread`                Abstraction of a portable thread class
 :ref:`Walltime`              Simple and efficient walltime measuring
+:ref:`Grid`                  Definition of a rectangular grid
 :ref:`Printable`             Base class to support stream output
 :ref:`NonCopyable`           Disable default copy constructors
 :ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
@@ -127,6 +128,7 @@ Class                   Description
 :ref:`Math`             Wrapper for mathematical operations (like those in cmath) to use them in templated code
 :ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA and MIC devices.
 :ref:`Constants`        Operations to compare value to a machine specific eps
+:ref:`BinaryOp`         Enumeration type for binary operations
 ====================    ==========================================
 
 .. toctree::
@@ -137,6 +139,7 @@ Class                   Description
    Math
    Complex
    Constants
+   BinaryOp
 
 Common Classes for CUDA
 -----------------------
