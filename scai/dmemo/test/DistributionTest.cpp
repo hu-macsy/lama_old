@@ -363,7 +363,15 @@ BOOST_AUTO_TEST_CASE( getBlockDistributionSizeTest )
 
             if ( isSorted )
             {
-                BOOST_CHECK_EQUAL( bs, dist->getLocalSize() );
+                if ( bs == nIndex )
+                {
+                    // might happen for grid distributions
+                    SCAI_LOG_WARN( logger, "Owners sorted, but not block distribution: " << *dist )
+                }
+                else
+                {
+                    BOOST_CHECK_EQUAL( bs, dist->getLocalSize() );
+                }
             }
             else
             {

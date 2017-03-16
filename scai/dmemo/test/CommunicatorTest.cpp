@@ -711,6 +711,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumArrayTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, scai_array_test_types )
+{
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId size = comm->getSize();
+    PartitionId rank = comm->getRank();
+
+    ValueType v = rank * 2 + 1;
+
+    ValueType scanV = comm->scan( v );
+
+    ValueType expected = 0;
+
+    for ( IndexType i = 0; i < rank; ++i )
+    {
+        expected += i * 2 + 1;
+    }
+
+    SCAI_LOG_DEBUG( logger, *comm << ": v = " << v << ", scanV = " << scanV << ", expected = " << expected )
+
+    BOOST_CHECK_EQUAL( expected, scanV );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_numeric_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
