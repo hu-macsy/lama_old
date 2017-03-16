@@ -715,10 +715,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, scai_array_test_types )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    PartitionId size = comm->getSize();
-    PartitionId rank = comm->getRank();
+    struct
+    {
+        inline ValueType operator() ( const PartitionId r )
+        {
+            return r * 2 + 1;
+        }
+    } f;
 
-    ValueType v = rank * 2 + 1;
+    PartitionId rank = comm->getRank();   // used to compute my value
+
+    // ValueType v = rank * 2 + 1;
+
+    ValueType v = f( rank );
 
     ValueType scanV = comm->scan( v );
 
@@ -726,7 +735,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, scai_array_test_types )
 
     for ( IndexType i = 0; i < rank; ++i )
     {
-        expected += i * 2 + 1;
+        expected += f( i );
     }
 
     SCAI_LOG_DEBUG( logger, *comm << ": v = " << v << ", scanV = " << scanV << ", expected = " << expected )
