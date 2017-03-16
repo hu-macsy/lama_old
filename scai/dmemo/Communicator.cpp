@@ -892,6 +892,20 @@ bool Communicator::any( const bool flag ) const
 template<typename ValueType>
 ValueType Communicator::scan( const ValueType localValue ) const
 {
+    ValueType scanValue;
+
+    scanImpl( &scanValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+ 
+    // scanImpl does an inclusive scan
+
+    return scanValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Communicator::scanDefault( ValueType localValue ) const
+{
     PartitionId size = getSize();
     PartitionId rank = getRank();
     PartitionId root = 0;
@@ -1243,6 +1257,9 @@ void Communicator::setNodeData()
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     _type Communicator::scan( _type val ) const;                    \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    _type Communicator::scanDefault( _type val ) const;             \
     \
     // instantiate methods for all communicator data types
 

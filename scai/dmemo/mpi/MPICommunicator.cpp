@@ -758,6 +758,31 @@ tasking::SyncToken* MPICommunicator::shiftAsyncImpl(
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*              scan                                                                  */
+/* ---------------------------------------------------------------------------------- */
+
+void MPICommunicator::scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    SCAI_REGION( "Communicator.MPI.scan" )
+
+    SCAI_LOG_DEBUG( logger, "MPI_Scan, n = " << n << ", type = " << stype )
+
+    MPI_Datatype commType = getMPIType( stype );
+    MPI_Op opType = getMPISum( stype );
+
+    if ( inValues == outValues )
+    {
+        SCAI_MPICALL( logger, MPI_Scan( MPI_IN_PLACE, outValues, 1, commType, opType, 
+                              selectMPIComm() ), "MPI_Scan" )
+    }
+    else
+    {
+        SCAI_MPICALL( logger, MPI_Scan( const_cast<void*>( inValues ), outValues, n, commType, opType,
+                              selectMPIComm() ), "MPI_Scan" )
+    }
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*              sum                                                                   */
 /* ---------------------------------------------------------------------------------- */
 

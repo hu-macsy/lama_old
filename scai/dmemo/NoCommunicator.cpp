@@ -117,6 +117,16 @@ void NoCommunicator::maxImpl( void* outData, const void* inData, const IndexType
     memcpy( outData, inData, typeSize( stype ) * n );
 }
 
+void NoCommunicator::scanImpl( void* outData, const void* inData, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    if ( outData == inData )
+    {
+        return;   // IN_PLACE
+    }
+
+    memcpy( outData, inData, typeSize( stype ) * n );
+}
+
 /* ---------------------------------------------------------------------------------- */
 /*      exchangeByPlan                                                                */
 /* ---------------------------------------------------------------------------------- */

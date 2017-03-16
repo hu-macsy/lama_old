@@ -733,9 +733,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, scai_array_test_types )
 
     ValueType expected = 0;
 
-    for ( IndexType i = 0; i < rank; ++i )
+    for ( IndexType i = 0; i <= rank; ++i )
     {
-        expected += f( i );
+        expected += f( i );  // note: is inclusive scan
     }
 
     SCAI_LOG_DEBUG( logger, *comm << ": v = " << v << ", scanV = " << scanV << ", expected = " << expected )

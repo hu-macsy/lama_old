@@ -605,6 +605,15 @@ public:
     template<typename ValueType>
     ValueType scan( const ValueType localValue ) const;
 
+    /** Inclusive scan, similiar to sum but each processor has partial sums */
+
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    /** Default implementation */
+
+    template<typename ValueType>
+    ValueType scanDefault( const ValueType localValue ) const;
+
     /**
      *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a
      *  given value type.

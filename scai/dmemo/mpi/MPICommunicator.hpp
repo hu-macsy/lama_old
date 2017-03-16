@@ -114,6 +114,10 @@ private:
 
     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
+    /** Implementation of Communicator::scanImpl */
+
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
     /** Translate SCAI project enum type ScalarType to MPI enum MPI_Datatype */
 
     inline static MPI_Datatype getMPIType( common::scalar::ScalarType stype );
