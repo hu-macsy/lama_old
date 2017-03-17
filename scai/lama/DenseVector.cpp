@@ -1102,6 +1102,36 @@ Scalar DenseVector<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+Scalar DenseVector<ValueType>::maxDiffNorm( const Vector& other ) const
+{
+    if (   other.getDistribution() != getDistribution() 
+       ||  other.getVectorKind() != Vector::DENSE 
+       ||  other.getValueType() != getValueType()        )
+    {
+        DenseVector<ValueType> tmpOther( other, getDistributionPtr() );
+        return maxDiffNorm( tmpOther );
+    }
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<const DenseVector<ValueType>*>( &other ), "wrong cast" )
+
+    const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+
+    ValueType localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    ValueType globalMaxNorm = comm.max( localMaxNorm );
+
+    SCAI_LOG_INFO( logger,
+                   comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
+                   << ", max norm global = " << globalMaxNorm )
+
+    return Scalar( globalMaxNorm );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseVector<ValueType>::swap( Vector& other )
 {
     SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
@@ -1647,19 +1677,25 @@ Scalar DenseVector<ValueType>::dotProduct( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseVector<ValueType>& DenseVector<ValueType>::scale( const Vector& other )
+void DenseVector<ValueType>::setVector( const Vector& other, common::binary::BinaryOp op, const bool swapArgs )
 {
-    SCAI_REGION( "Vector.Dense.scale" )
-    SCAI_LOG_INFO( logger, "Scale " << *this << " with " << other )
+    SCAI_REGION( "Vector.Dense.setVector" )
+
+    SCAI_LOG_INFO( logger, "set " << *this << " with " << other << ", op = " << op )
 
     if ( getDistribution() != other.getDistribution() )
     {
         COMMON_THROWEXCEPTION( "distribution do not match for this * other, this = " << *this << " , other = " << other )
     }
 
-    other.buildLocalValues( mLocalValues, common::binary::MULT, getContextPtr() );
-
-    return *this;
+    if ( !swapArgs )
+    {
+        other.buildLocalValues( mLocalValues, op, getContextPtr() );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "swapArgs not supported yet" );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1698,11 +1734,22 @@ void DenseVector<ValueType>::assign( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::add( const Scalar value )
+void DenseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs )
 {
-    SCAI_LOG_DEBUG( logger, *this << ": add " << value )
-    // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::binary::ADD, mContext );
+    SCAI_LOG_DEBUG( logger, *this << ": setScalar " << value << ", op = " << op )
+
+    // assign the scalar value on the context of this dense vector.
+
+    ValueType val = value.getValue<ValueType>();
+
+    if ( swapArgs )
+    {
+        HArrayUtils::binaryOpScalar1( mLocalValues, val, mLocalValues, op, mContext );
+    }
+    else
+    {
+        HArrayUtils::binaryOpScalar2( mLocalValues, mLocalValues, val, op, mContext );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1752,95 +1799,10 @@ void DenseVector<ValueType>::wait() const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::invert()
+void DenseVector<ValueType>::applyUnary( const common::unary::UnaryOp op )
 {
-    mLocalValues.invert();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::conj()
-{
-    mLocalValues.conj();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::exp()
-{
-    mLocalValues.exp();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::log()
-{
-    mLocalValues.log();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::floor()
-{
-    mLocalValues.floor();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::ceil()
-{
-    mLocalValues.ceil();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::sqrt()
-{
-    mLocalValues.sqrt();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::sin()
-{
-    mLocalValues.sin();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::cos()
-{
-    mLocalValues.cos();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::tan()
-{
-    mLocalValues.tan();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::atan()
-{
-    mLocalValues.atan();
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::powExp( const Vector& other )
-{
-    const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
-    mLocalValues.powExp( denseOther.mLocalValues );
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::powBase( const Vector& other )
-{
-    const DenseVector<ValueType>& denseOther = dynamic_cast<const DenseVector<ValueType>&>( other );
-    mLocalValues.powBase( denseOther.mLocalValues );
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::powBase( Scalar base )
-{
-    mLocalValues.powBase( base.getValue<ValueType>() );
-}
-
-template<typename ValueType>
-void DenseVector<ValueType>::powExp( Scalar exp )
-{
-    mLocalValues.powExp( exp.getValue<ValueType>() );
+    // myValues = op ( myValues )
+    HArrayUtils::unaryOp( mLocalValues, mLocalValues, op, mContext );
 }
 
 template<typename ValueType>

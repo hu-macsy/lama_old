@@ -586,25 +586,38 @@ Vector& Vector::operator=( const Scalar value )
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*   Compound assignments                                                                 */
+/*   Compound assignments *=, /=                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
 Vector& Vector::operator*=( const Scalar value )
 {
-    return operator=( Expression_SV( value, *this ) );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::MULT, noSwapArgs );
+    return *this;
 }
 
 Vector& Vector::operator*=( const Vector& other )
 {
-    scale( other );
+    bool noSwapArgs = false;
+    setVector( other, common::binary::MULT, noSwapArgs );
     return *this;
 }
 
 Vector& Vector::operator/=( const Scalar value )
 {
-    Expression<Scalar, Vector, Times> exp1( Scalar( 1.0 ) / value, *this );
-    return operator=( exp1 );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::MULT, noSwapArgs );
+    return *this;
 }
+
+Vector& Vector::operator/=( const Vector& other )
+{
+    bool noSwapArgs = false;
+    setVector( other, common::binary::DIVIDE, noSwapArgs );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
 
 Vector& Vector::operator+=( const Vector& other )
 {
@@ -618,13 +631,15 @@ Vector& Vector::operator-=( const Vector& other )
 
 Vector& Vector::operator+=( const Scalar value )
 {
-    add( value );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::ADD, noSwapArgs );
     return *this;
 }
 
 Vector& Vector::operator-=( const Scalar value )
 {
-    add( -value );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::SUB, noSwapArgs );
     return *this;
 }
 
@@ -808,6 +823,95 @@ void Vector::writeToFile(
         // matrix_%r.mtx -> matrix_0.4.mtx,  ..., matrix_3.4.mtxt
         writeToPartitionedFile( newFileName, fileType, dataType, fileMode );
     }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   unary operations                                                                     */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::invert()
+{
+    bool swapArgs = true;
+    setScalar( Scalar( 1 ), binary::DIVIDE, swapArgs );
+}
+
+void Vector::powBase( const Vector& other )
+{
+    bool swapArgs = true;
+    setVector( other, common::binary::POW, swapArgs );
+}
+
+void Vector::powExp( const Vector& other )
+{
+    bool swapArgs = false;
+    setVector( other, common::binary::POW, swapArgs );
+}
+
+void Vector::powBase( const Scalar value )
+{
+    bool swapArgs = true;  // this[i] =  value ** this[i] 
+    setScalar( value, common::binary::POW, swapArgs );
+}
+
+void Vector::powExp( const Scalar value )
+{
+    bool swapArgs = false;  // this[i] = this[i] ** value
+    setScalar( value, common::binary::POW, swapArgs );
+}
+
+void Vector::conj()
+{
+    applyUnary( common::unary::CONJ );
+}
+
+void Vector::abs()
+{
+    applyUnary( common::unary::ABS );
+}
+
+void Vector::exp()
+{
+    applyUnary( common::unary::EXP );
+}
+
+void Vector::sqrt()
+{
+    applyUnary( common::unary::SQRT );
+}
+
+void Vector::sin()
+{
+    applyUnary( common::unary::SIN );
+}
+
+void Vector::cos()
+{
+    applyUnary( common::unary::COS );
+}
+
+void Vector::tan()
+{
+    applyUnary( common::unary::TAN );
+}
+
+void Vector::atan()
+{
+    applyUnary( common::unary::ATAN );
+}
+
+void Vector::log()
+{
+    applyUnary( common::unary::LOG );
+}
+
+void Vector::floor()
+{
+    applyUnary( common::unary::FLOOR );
+}
+
+void Vector::ceil()
+{
+    applyUnary( common::unary::CEIL );
 }
 
 /* ---------------------------------------------------------------------------------------*/

@@ -568,6 +568,10 @@ public:
 
     virtual Scalar maxNorm() const;
 
+    /** Implementation of pure method Vector::maxDiffNorm */
+
+    virtual Scalar maxDiffNorm( const Vector& other ) const;
+
     virtual void swap( Vector& other );
 
     /** Reset a dense vector with a new array of local values and a new distribution.
@@ -609,7 +613,17 @@ public:
 
     virtual void assign( const Scalar value );
 
-    virtual void add( const Scalar value );
+    /** Implementation of pure method Vector::setScalar */
+
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false );
+
+    /** Implementation of pure method Vector::setVector */
+
+    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
+
+    /** Implementation of pure method Vector::applyUnary */
+
+    virtual void applyUnary( common::unary::UnaryOp op );
 
     /** Setting this vector by gathering vector elements from another vector.
      *
@@ -660,45 +674,11 @@ public:
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
-    /** Implementation of pure method Vector::scale */
-
-    virtual DenseVector<ValueType>& scale( const Vector& other );
-
     using Vector::prefetch; // prefetch() with no arguments
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     virtual void wait() const;
-
-    virtual void invert();
-
-    virtual void conj();
-
-    virtual void exp();
-
-    virtual void log();
-
-    virtual void floor();
-
-    virtual void ceil();
-
-    virtual void sqrt();
-
-    virtual void sin();
-
-    virtual void cos();
-
-    virtual void tan();
-
-    virtual void atan();
-
-    virtual void powBase( const Vector& other );
-
-    virtual void powExp( const Vector& other );
-
-    virtual void powBase( const Scalar base );
-
-    virtual void powExp( const Scalar exp );
 
     virtual size_t getMemoryUsage() const;
 

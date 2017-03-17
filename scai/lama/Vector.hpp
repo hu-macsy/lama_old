@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Definition of an abstract class for distributed vectors.
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 22.02.2011
  */
 #pragma once
@@ -47,6 +47,7 @@
 
 // others
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
@@ -305,6 +306,14 @@ public:
     Vector& operator/=( const Scalar value );
 
     /**
+     * @brief Divide this vector by another vector element-wise
+     *
+     * @param[in] other   the vector to multiply to do the multiplication per element
+     * @return            a reference to this.
+     */
+    Vector& operator/=( const Vector& other );
+
+    /**
      * @brief Returns the addition of this and other.
      *
      * @param[in] other the vector to do the addition with.
@@ -526,6 +535,20 @@ public:
     virtual Scalar maxNorm() const = 0;
 
     /**
+     * @brief Returns the max norm of the difference with another vector
+     *
+     *  v1.maxDiffNorm( v2 ) is equivalent to:
+     *
+     *  \code
+     *      Vector tmp = v1 - v2;
+     *      maxNorm( tmp )
+     *  \endcode
+     *
+     *  But it avoids the temporary vector wherever possible
+     */
+    virtual Scalar maxDiffNorm( const Vector& other ) const = 0;
+
+    /**
      *  Method to create a new vector of the same kind and same type
      *
      *  /code
@@ -657,11 +680,6 @@ public:
     virtual void assign( const Scalar value ) = 0;
 
     /**
-     * @brief Add a scalar value element-wise to the elements of a vector
-     */
-    virtual void add( const Scalar value ) = 0;
-
-    /**
      * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
      *
      * Each vector class has to implement its own version of this assignment. 
@@ -691,18 +709,56 @@ public:
     virtual Scalar dotProduct( const Vector& other ) const = 0;
 
     /**
-     *  @brief Scale this vector with another Vector.
-     *
-     *  @param[in] other   the other vector to scale this with
-     *  @returns this vector so it can be used in further operations
+     *  @brief Update this vector with another vector elementwise
+     * 
+     *  @param[in] other is the input vector for setting, must have same distribution
+     *  @param[in] op specifies the binary operation for the update
+     * 
+     *  The call v1.setVector( v2, op ) is equivalent to the following code:
      *
      *  \code
-     *    DenseVector<double> v;
-     *    SparseVector<double> update, density;
-     *    v += update.scale( density );
+     *      SCAI_ASSERT_EQ_ERROR(( v1.getDistribution(), v2.getDistribuiton(), "mismatch" )
+     *      for ( IndexType i = 0; i < v1.size(); ++i )
+     *      {
+     *          v1[i] = v1[i] op v2[i];    // swapArgs = false
+     *          v1[i] = v2[i] op v1[i];    // swapArgs = true
+     *      }
+     *  \endcode
+     *
+     *  In contrary to the loop, it can be assumed that the vector operation is full parallel.
+     */
+    virtual void setVector( const Vector& other, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
+
+    /**
+     *  @brief Update this vector with a scalar value elementswise
+     * 
+     *  @param[in] value is th scalar element used for the operation
+     *  @param[in] op specifies the binary operation for the update
+     *  @param[in] swapArgs if true the operands are swapped
+     * 
+     *  The call v.setScalar( s, op ) is equivalent to the following code:
+     *
+     *  \code
+     *      for ( IndexType i = 0; i < v1.size(); ++i )
+     *      {
+     *          v[i] = v[i] op s;    // swapArgs = false
+     *          v[i] = s op v[i];    // swapArgs = true
+     *      }
+     *  \endcode
+     *
+     *  Here are some examples how this method is used:
+     *  \code
+     *      v.invert()      v.setScalar( Scalar( 1 ), binary::DIVIDE, true );
+     *      v += s;         v.setScalar( s, binary::ADD, false );
+     *      v *= s;         v.setScalar( s, binary::MULT, false );
      *  \endcode
      */
-    virtual Vector& scale( const Vector& other ) = 0;
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
+
+    /**
+     *  @brief Apply a unary operation for each element of the vector.
+     */
+    virtual void applyUnary( common::unary::UnaryOp op ) = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -774,77 +830,82 @@ public:
     /**
      * @brief This method inverts all elements of the vector and is completely local.
      */
-    virtual void invert() = 0;
+    void invert();
 
     /**
      *  Build the conjugate vector in place.
      */
-    virtual void conj() = 0;
+    void conj();
+
+    /**
+     *  Build the absolute in place.
+     */
+    void abs();
 
     /**
      *  Calculates the exponentional function of the vector elements in place.
      */
-    virtual void exp() = 0;
+    void exp();
 
     /**
      *  Calculates the logarithm of the vector elements in place.
      */
-    virtual void log() = 0;
+    void log();
 
     /**
      *  Calculates the floor function of the vector elements in place.
      */
-    virtual void floor() = 0;
+    void floor();
 
     /**
      *  Calculates the ceil function of the vector elements in place.
      */
-    virtual void ceil() = 0;
+    void ceil();
 
     /**
      *  Calculates the square root of the vector elements.
      */
-    virtual void sqrt() = 0;
+    void sqrt();
 
     /**
      *  Calculates the sinus of the vector elements.
      */
-    virtual void sin() = 0;
+    void sin();
 
     /**
      *  Calculates the cosinus of the vector elements.
      */
-    virtual void cos() = 0;
+    void cos();
 
     /**
      *  Calculates the tangens of the vector elements.
      */
-    virtual void tan() = 0;
+    void tan();
 
     /**
      *  Calculates the arcus tangens of the vector elements.
      */
-    virtual void atan() = 0;
+    void atan();
 
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    virtual void powBase( const Vector& other ) = 0;
+    void powBase( const Vector& other );
 
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    virtual void powExp( const Vector& other ) = 0;
+    void powExp( const Vector& other );
 
     /**
      *  Calculates the pow function for a base the vector elements as exponents.
      */
-    virtual void powBase( const Scalar base ) = 0;
+    void powBase( const Scalar base );
 
     /**
      *  Calculates the pow function for the vector elements as base and an exponent.
      */
-    virtual void powExp( const Scalar exp ) = 0;
+    void powExp( const Scalar exp );
 
 protected:
 

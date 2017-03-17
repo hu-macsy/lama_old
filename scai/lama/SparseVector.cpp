@@ -914,6 +914,18 @@ Scalar SparseVector<ValueType>::maxNorm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+Scalar SparseVector<ValueType>::maxDiffNorm( const Vector& other ) const
+{
+    // ToDo: find some more efficient solutions wherever possible
+
+    SparseVector<ValueType> tmp( *this );
+    tmp.setVector( other, common::binary::SUB, false );
+    return tmp.maxNorm();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseVector<ValueType>::swap( Vector& other )
 {
     SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )
@@ -1134,36 +1146,34 @@ void SparseVector<ValueType>::binOpSparse( const _SparseVector& other,
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-SparseVector<ValueType>& SparseVector<ValueType>::scale( const Vector& other )
+void SparseVector<ValueType>::setVector( const Vector& other, common::binary::BinaryOp op, const bool swapArgs )
 {
-    SCAI_REGION( "Vector.Sparse.scale" )
+    SCAI_REGION( "Vector.Sparse.setVector" )
 
-    SCAI_LOG_INFO( logger, "scale " << *this << " with " << other )
+    SCAI_LOG_INFO( logger, "set " << *this << " with " << other << ", op = " << op )
 
-    SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "vector scale only with same distributions supported" );
+    SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "setVector only with same distributions supported" );
 
-    if ( mZeroValue == common::constants::ZERO )
+    SCAI_ASSERT_ERROR( !swapArgs, "swapping arguments not supported yet" )
+
+    if ( mZeroValue == common::zeroBinary<ValueType>( op ) )
     {
         // gather the values from other vector at the non-zero positions 
 
         HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
         other.gatherLocalValues( otherValues, mNonZeroIndexes, common::binary::COPY, getContextPtr() );
-        HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, common::binary::MULT, getContextPtr() );
+        HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, op, getContextPtr() );
     }
     else if ( other.getVectorKind() == Vector::SPARSE )
     {
         const _SparseVector& otherSparse = reinterpret_cast<const _SparseVector&>( other );
 
-        binOpSparse( otherSparse, common::binary::MULT, false );
-    
+        binOpSparse( otherSparse, op, swapArgs );
     }
     else
     {
-        COMMON_THROWEXCEPTION( "scale with dense vector makes this sparse vector dense, unsupported" )
+        COMMON_THROWEXCEPTION( "setVector with dense vector makes this sparse vector dense, unsupported" )
     }
-
-
-    return *this;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1204,15 +1214,37 @@ void SparseVector<ValueType>::assign( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::add( const Scalar value )
+void SparseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs )
 {
-    SCAI_LOG_DEBUG( logger, *this << ": add " << value )
+    SCAI_LOG_DEBUG( logger, *this << ": set " << value << ", op = " << op )
 
     ValueType val = value.getValue<ValueType>();
 
+    if ( op == common::binary::COPY )
+    {
+        mNonZeroIndexes.clear();
+        mNonZeroValues.clear();
+        mZeroValue = val;
+        return;
+    }
+
     mZeroValue += val;
-    HArrayUtils::setScalar( mNonZeroValues, val, common::binary::ADD, mContext );
+
+    if ( swapArgs )
+    {
+        COMMON_THROWEXCEPTION( "Oops, not available yet" )
+
+        mZeroValue = common::applyBinary( val, op, mZeroValue );
+        HArrayUtils::binaryOpScalar1( mNonZeroValues, val, mNonZeroValues, op, mContext );
+    }
+    else
+    {
+        mZeroValue = common::applyBinary( mZeroValue, op, val );
+        HArrayUtils::binaryOpScalar2( mNonZeroValues, mNonZeroValues, val, op, mContext );
+    }
 }
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void SparseVector<ValueType>::prefetch( const ContextPtr location ) const
@@ -1228,171 +1260,16 @@ void SparseVector<ValueType>::wait() const
     mNonZeroIndexes.wait();
 }
 
-template<typename ValueType>
-void SparseVector<ValueType>::invert()
-{
-    SCAI_ASSERT_ERROR( mZeroValue != common::constants::ZERO, "invert on sparse vector with 0" )
-
-    // invert not very useful on a sparse vector that usually has a lot of zero values
-
-    mZeroValue = ValueType( 1 ) / mZeroValue;
-
-    mNonZeroValues.invert();
-}
+/* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void SparseVector<ValueType>::conj()
+void SparseVector<ValueType>::applyUnary( common::unary::UnaryOp op )
 {
-    // mZeroValue = common::Math::conj( mZeroValue );
-    mNonZeroValues.conj();
+    mZeroValue = common::applyUnary( op, mZeroValue );
+    HArrayUtils::unaryOp( mNonZeroValues, mNonZeroValues, op, mContext );
 }
 
-template<typename ValueType>
-void SparseVector<ValueType>::exp()
-{
-    mZeroValue = common::Math::exp( mZeroValue );
-    mNonZeroValues.exp();
-}
-
-template<>
-void SparseVector<IndexType>::exp()
-{
-    COMMON_THROWEXCEPTION( "exp not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::log()
-{
-    mZeroValue = common::Math::log( mZeroValue );
-    mNonZeroValues.log();
-}
-
-template<>
-void SparseVector<IndexType>::log()
-{
-    COMMON_THROWEXCEPTION( "log not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::floor()
-{
-    mZeroValue = common::Math::floor( mZeroValue );
-    mNonZeroValues.floor();
-}
-
-template<>
-void SparseVector<IndexType>::floor()
-{
-    // nothing to do at all
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::ceil()
-{
-    mZeroValue = common::Math::ceil( mZeroValue );
-    mNonZeroValues.ceil();
-}
-
-template<>
-void SparseVector<IndexType>::ceil()
-{
-    // nothing to do at all
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::sqrt()
-{
-    mZeroValue = common::Math::sqrt( mZeroValue );
-    mNonZeroValues.sqrt();
-}
-
-template<>
-void SparseVector<IndexType>::sqrt()
-{
-    COMMON_THROWEXCEPTION( "sqrt not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::sin()
-{
-    mZeroValue = common::Math::sin( mZeroValue );
-    mNonZeroValues.sin();
-}
-
-template<>
-void SparseVector<IndexType>::sin()
-{
-    COMMON_THROWEXCEPTION( "sin not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::cos()
-{
-    mZeroValue = common::Math::cos( mZeroValue );
-    mNonZeroValues.cos();
-}
-
-template<>
-void SparseVector<IndexType>::cos()
-{
-    COMMON_THROWEXCEPTION( "cos not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::tan()
-{
-    mZeroValue = common::Math::tan( mZeroValue );
-    mNonZeroValues.tan();
-}
-
-template<>
-void SparseVector<IndexType>::tan()
-{
-    COMMON_THROWEXCEPTION( "tan not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::atan()
-{
-    mZeroValue = common::Math::atan( mZeroValue );
-    mNonZeroValues.atan();
-}
-
-template<>
-void SparseVector<IndexType>::atan()
-{
-    COMMON_THROWEXCEPTION( "atan not supported for Vector<IndexType>" )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::powExp( const Vector& other )
-{
-    COMMON_THROWEXCEPTION( "powExp not supported for sparse vectors, other = " << other )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::powBase( const Vector& other )
-{
-    COMMON_THROWEXCEPTION( "powBase not supported for sparse vectors, other = " << other )
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::powBase( Scalar base )
-{
-    ValueType baseValue = base.getValue<ValueType>();
-
-    mZeroValue = common::Math::pow( baseValue, mZeroValue );
-    mNonZeroValues.powBase( baseValue );
-}
-
-template<typename ValueType>
-void SparseVector<ValueType>::powExp( Scalar exp )
-{
-    ValueType expValue = exp.getValue<ValueType>();
-
-    mZeroValue = common::Math::pow( mZeroValue, expValue );
-    mNonZeroValues.powExp( expValue );
-}
+/* ------------------------------------------------------------------------ */
 
 template<typename ValueType>
 size_t SparseVector<ValueType>::getMemoryUsage() const

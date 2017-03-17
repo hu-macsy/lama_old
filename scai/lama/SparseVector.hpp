@@ -502,7 +502,13 @@ public:
 
     virtual Scalar l2Norm() const;
 
+    /** Implementation of pure method Vector::maxNorm */
+
     virtual Scalar maxNorm() const;
+
+    /** Implementation of pure method Vector::maxDiffNorm */
+
+    virtual Scalar maxDiffNorm( const Vector& other ) const;
 
     virtual void swap( Vector& other );
 
@@ -529,51 +535,27 @@ public:
 
     virtual void assign( const Scalar value );
 
-    virtual void add( const Scalar value );
-
     /** Implementation of pure method Vector::dotProduct */
 
     virtual Scalar dotProduct( const Vector& other ) const;
 
-    /** Implementation of pure method Vector::scale */
+    /** Implementation of pure method Vector::setVector */
 
-    virtual SparseVector<ValueType>& scale( const Vector& other );
+    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
+
+    /** Implementation of pure method Vector::setScalar */
+
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false );
+
+    /** Implementation of pure method Vector::applyUnary */
+
+    virtual void applyUnary( common::unary::UnaryOp op );
 
     using Vector::prefetch; // prefetch() with no arguments
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     virtual void wait() const;
-
-    virtual void invert();
-
-    virtual void conj();
-
-    virtual void exp();
-
-    virtual void log();
-
-    virtual void floor();
-
-    virtual void ceil();
-
-    virtual void sqrt();
-
-    virtual void sin();
-
-    virtual void cos();
-
-    virtual void tan();
-
-    virtual void atan();
-
-    virtual void powBase( const Vector& other );
-
-    virtual void powExp( const Vector& other );
-
-    virtual void powBase( const Scalar base );
-
-    virtual void powExp( const Scalar exp );
 
     virtual size_t getMemoryUsage() const;
 
