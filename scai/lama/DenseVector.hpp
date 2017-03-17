@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_DenseVector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -57,105 +57,6 @@ namespace scai
 
 namespace lama
 {
-
-/**
- * @brief Common base class for all dense vectors to deal with untyped dense vectors.
- *
- * A dense vector is a distributed one-dimensional array where each value is explicitly available.
- * This base class provides common methods for typed dense vectors and allows access to the
- * data via untyped heterogeneous arrays.
- */
-
-class COMMON_DLL_IMPORTEXPORT _DenseVector :
-
-    public Vector
-
-{
-
-public:
-
-    /** Implementation of pure method Vector::getVectorKind() */
-
-    inline virtual VectorKind getVectorKind() const;
-
-    /**
-     * @brief get a reference to local values of this dense vector.
-     *
-     * @return  a reference to the local values of this dense vector.
-     *
-     * This method allows to modifiy the values of the array but it 
-     * should not be used to change the size of the array.
-     *
-     * Derived classes can overwrite this method and might use a covariant return type,
-     * i.e. a typed version of a heterogeneous array.
-     */
-
-    virtual hmemo::_HArray& getLocalValues() = 0;
-
-    /**
-     * @brief get a constant reference to local values of this Dense Vector.
-     *
-     * @return  a constant reference to the local values of this dense vector.
-     */
-    virtual const hmemo::_HArray& getLocalValues() const = 0;
-
-    /**
-     * @brief This method initializes a (replicated) dense vector with a sequence of values.
-     *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the elements
-     * @param[in] n will be the size of this replicated vector.
-     */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n ) = 0;
-
-    /**
-     * This method initializes a (distributed) dense vector with a sequence of values
-     *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the element
-     * @param[in] distribution determines global/local size of the vector
-     */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution ) = 0;
-
-    /**
-     * @brief Create a new dense vector of a certain type 
-     *
-     * @param type is the value type of the vector
-     * @return new allocated DenseVector of the given type 
-     * @throw  common::Exception if no dense vector of this type is registered in factory.
-     */
-     
-    static _DenseVector* create( common::scalar::ScalarType );
-
-    // make operators and methods of Vector visible for _DenseVector
-
-    using Vector::operator=;
-
-    /**
-     * @brief Implementation of pure method Vector::isConsistent 
-     */
-    virtual bool isConsistent() const;
-
-protected:
-
-    // All constructors here just call the corresponing constructors of Vector 
-
-    _DenseVector( const IndexType n );
-
-    _DenseVector( const IndexType n, hmemo::ContextPtr context );
-
-    _DenseVector( const dmemo::DistributionPtr dist );
-
-    _DenseVector( const dmemo::DistributionPtr dist, hmemo::ContextPtr context );
-
-    _DenseVector( const _DenseVector& other );
-
-    _DenseVector( const Vector& other );
-
-    /** Common logger for all types of dense vectors. */
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-};
 
 /**
  * @brief The template DenseVector represents a distributed 1D Vector with elements of type ValueType.
@@ -736,13 +637,6 @@ public:
 
     virtual VectorCreateKeyType getCreateValue() const;
 };
-
-/* ------------------------------------------------------------------------- */
-
-Vector::VectorKind _DenseVector::getVectorKind() const
-{
-    return Vector::DENSE;
-}
 
 /* ------------------------------------------------------------------------- */
 

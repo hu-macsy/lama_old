@@ -79,63 +79,6 @@ using namespace dmemo;
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( _SparseVector::logger, "Vector.SparseVector" )
-
-/* ------------------------------------------------------------------------- */
-/*  Implementation of methods/constructors for _SparseVector                 */
-/* ------------------------------------------------------------------------- */
-
-_SparseVector::_SparseVector( const IndexType n ) :
-
-    Vector( n )
-{
-}
-
-_SparseVector::_SparseVector( const IndexType n, ContextPtr context ) :
-
-    Vector( n, context )
-{
-}
-
-_SparseVector::_SparseVector( DistributionPtr dist ) :
-
-    Vector( dist )
-{
-}
-
-_SparseVector::_SparseVector( DistributionPtr dist, ContextPtr context ) :
-
-    Vector( dist, context )
-{
-}
-
-_SparseVector::_SparseVector( const _SparseVector& other ) :
-
-    Vector( other )
-{
-}
-
-_SparseVector::_SparseVector( const Vector& other ) :
-
-    Vector( other )
-{
-}
-
-/* ------------------------------------------------------------------------- */
-/*  Implementation of methods/constructors for _SparseVector                 */
-/* ------------------------------------------------------------------------- */
-
-_SparseVector* _SparseVector::create( common::scalar::ScalarType type )
-{
-    // There is only one factor for all vectors
-
-    Vector* v = Vector::create( VectorCreateKeyType( Vector::SPARSE, type ) );
-
-    // reinterpret cast is safe
-
-    return reinterpret_cast<_SparseVector*>( v );
-}
-
 /* ------------------------------------------------------------------------- */
 /*  Implementation of constructors for SparseVector                         */
 /* ------------------------------------------------------------------------- */

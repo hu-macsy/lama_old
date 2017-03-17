@@ -719,7 +719,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, scai_array_test_types )
     {
         inline ValueType operator() ( const PartitionId r )
         {
-            return r * 2 + 1;
+            return ValueType( r * 2 + 1 );
         }
     } f;
 

@@ -78,57 +78,6 @@ using namespace dmemo;
 namespace lama
 {
 
-// common logger for all types of DenseVector
-
-SCAI_LOG_DEF_LOGGER( _DenseVector::logger, "Vector.DenseVector" )
-
-_DenseVector::_DenseVector( const IndexType n ) :
-
-    Vector( n )
-{
-}
-
-_DenseVector::_DenseVector( const IndexType n, ContextPtr context ) :
-
-    Vector( n, context )
-{
-}
-
-_DenseVector::_DenseVector( DistributionPtr dist ) :
-
-    Vector( dist )
-{
-}
-
-_DenseVector::_DenseVector( DistributionPtr dist, ContextPtr context ) :
-
-    Vector( dist, context )
-{
-}
-
-_DenseVector::_DenseVector( const _DenseVector& other ) :
-
-    Vector( other )
-{
-}
-
-_DenseVector::_DenseVector( const Vector& other ) :
-
-    Vector( other )
-{
-}
-
-_DenseVector* _DenseVector::create( common::scalar::ScalarType type )
-{
-    // There is only one factor for all vectors
-
-    Vector* v = Vector::create( VectorCreateKeyType( Vector::DENSE, type ) );
-
-    // reinterpret cast is safe
-
-    return reinterpret_cast<_DenseVector*>( v );
-}
-
 /* ------------------------------------------------------------------------- */
 /*  Constructors of DenseVector<ValueType>                                   */
 /* ------------------------------------------------------------------------- */

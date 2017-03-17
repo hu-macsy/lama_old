@@ -46,6 +46,7 @@ Class                        Description
    Factory
    Thread
    Walltime
+   Grid
    Printable
    NonCopyable
    LibModule
