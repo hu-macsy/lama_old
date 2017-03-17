@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE( setOrderTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binop;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar<ValueType> > binop;
     ContextPtr loc = testContext;
     binop.getSupportedContext( loc );
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );   // print warning if not available for test context
@@ -298,7 +298,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            binop[loc]( wValues.get(), ValueType( 1 ), wValues.get(), nValues, binary::DIVIDE );
+            binop[loc]( wValues.get(), wValues.get(), ValueType( 1 ), nValues, binary::DIVIDE, true );
         }
 
         ReadAccess<ValueType> rValues( values );

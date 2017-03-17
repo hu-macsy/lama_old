@@ -139,15 +139,16 @@ public:
     template<typename ValueType>
     static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar1 */
+    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar */
 
     template<typename ValueType>
-    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const common::binary::BinaryOp op );
-
-    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar2 */
-
-    template<typename ValueType>
-    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const common::binary::BinaryOp op );
+    static void binaryOpScalar( 
+        ValueType out[], 
+        const ValueType in[], 
+        const ValueType value, 
+        const IndexType n, 
+        const common::binary::BinaryOp op,
+        const bool swapScalar );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 

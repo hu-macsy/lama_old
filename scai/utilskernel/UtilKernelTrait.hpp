@@ -286,48 +286,30 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct binaryOpScalar1
+    struct binaryOpScalar
     {
-        /** Same as binaryOp but first operand is only a scalar
+        /** Same as binaryOp but one operand is only a scalar
          *
          *  This operation is only available for numeric types, not for IndexType
          *
-         *  @param[out] out   array with output values
-         *  @param[in]  value scalar value as first argument
-         *  @param[in]  in    array with values for second argument
-         *  @param[in]  n     number of elements
-         *  @param[in]  op    binary operation to be applied
-         */
-        typedef void ( *FuncType ) (
-            ValueType out[],
-            const ValueType value,
-            const ValueType in[],
-            const IndexType n,
-            const common::binary::BinaryOp op );
-
-        static const char* getId()
-        {
-            return "Util.binaryOpScalar1";
-        }
-    };
-
-    template<typename ValueType>
-    struct binaryOpScalar2
-    {
-        /** Same as binaryOp but 2nd arg of the input arrays is just a scalar value
-         *
-         *  This operation is only available for numeric types, not for IndexType
+         *  @param[out] out        array with output values
+         *  @param[in]  in         array with values for second argument
+         *  @param[in]  value      scalar value as first argument
+         *  @param[in]  n          number of elements
+         *  @param[in]  op         binary operation to be applied
+         *  @param[in]  swapScalar if true value becomes first argument of binary op
          */
         typedef void ( *FuncType ) (
             ValueType out[],
             const ValueType in[],
             const ValueType value,
             const IndexType n,
-            const common::binary::BinaryOp op );
+            const common::binary::BinaryOp op,
+            const bool swapScalar );
 
         static const char* getId()
         {
-            return "Util.binaryOpScalar2";
+            return "Util.binaryOpScalar";
         }
     };
 

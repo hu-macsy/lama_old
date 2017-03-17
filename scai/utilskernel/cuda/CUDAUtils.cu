@@ -1297,12 +1297,13 @@ void CUDAUtils::binaryOp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::binaryOpScalar1(
+void CUDAUtils::binaryOpScalar(
     ValueType out[],
-    const ValueType value,
     const ValueType in[],
+    const ValueType value,
     const IndexType n,
-    const binary::BinaryOp op )
+    const binary::BinaryOp op,
+    const bool swapScalar )
 {
     SCAI_REGION( "CUDA.Utils.binOpScalar" )
 
@@ -1342,13 +1343,21 @@ void CUDAUtils::binaryOpScalar1(
 
         case binary::DIVIDE :
         {
-            if ( value == scai::common::constants::ZERO )
+            if ( swapScalar )
             {
-                CUDAUtils::setVal( out, n, value, binary::COPY );
-                return;
+                if ( value == scai::common::constants::ZERO )
+                {
+                    CUDAUtils::setVal( out, n, value, binary::COPY );
+                    return;
+                }
+    
+                divScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, in, n );
             }
-
-            divScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, in, n );
+            else
+            {
+                ValueType factor = ValueType( 1 ) / value;
+                multScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, factor, n );
+            }
 
             break;
         }
@@ -1367,86 +1376,14 @@ void CUDAUtils::binaryOpScalar1(
 
         default:
         {
-            binOpScalar1Kernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, op, in, n );
-        }
-    }
-
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "kernel for binary op with scalar" );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void CUDAUtils::binaryOpScalar2(
-    ValueType out[],
-    const ValueType in[],
-    const ValueType value,
-    const IndexType n,
-    const binary::BinaryOp op )
-{
-    SCAI_REGION( "CUDA.Utils.binOpScalar" )
-
-    SCAI_LOG_INFO( logger, "binaryOp<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
-
-    if ( n <= 0 )
-    {
-        return;
-    }
-
-    SCAI_CHECK_CUDA_ACCESS
-
-    const int blockSize = CUDASettings::getBlockSize( n );
-    dim3 dimBlock( blockSize, 1, 1 );
-    dim3 dimGrid = makeGrid( n, dimBlock.x );
-
-    switch ( op )
-    {
-        case binary::ADD :
-        {
-            addScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
-        case binary::SUB :
-        {
-            addScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, -value, n );
-            break;
-        }
-
-        case binary::MULT :
-        {
-            if ( value == scai::common::constants::ZERO )
+            if ( swapScalar )
             {
-                CUDAUtils::setVal( out, n, value, binary::COPY );
-                return;
+                binOpScalar1Kernel<ValueType> <<< dimGrid, dimBlock>>>( out, value, op, in, n );
+            } 
+            else
+            {
+                binOpScalar2Kernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, op, value, n );
             }
-
-            multScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-
-            break;
-        }
-
-        case binary::DIVIDE :
-        {
-            multScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, ValueType( 1 ) / value, n );
-            break;
-        }
-
-        case binary::MAX :
-        {
-            maxScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
-        case binary::MIN :
-        {
-            minScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
-        default:
-        {
-            binOpScalar2Kernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, op, value, n );
         }
     }
 
@@ -1462,8 +1399,8 @@ ValueType CUDAUtils::scan( ValueType array[], const IndexType n, ValueType first
 
     SCAI_REGION( "CUDA.Utils.scan" )
 
-    SCAI_LOG_ERROR( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n 
-                             << ", first = " << first << ", exclusive = " << exclusive )
+    SCAI_LOG_INFO( logger, "scan<" << TypeTraits<ValueType>::id() <<  ">, #n = " << n 
+                            << ", first = " << first << ", exclusive = " << exclusive )
 
     SCAI_CHECK_CUDA_ACCESS
 
@@ -1898,8 +1835,7 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::binaryOpScalar1<ValueType> >( binaryOpScalar1, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::binaryOpScalar2<ValueType> >( binaryOpScalar2, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
 }
 
 template<typename ValueType, typename SourceValueType>

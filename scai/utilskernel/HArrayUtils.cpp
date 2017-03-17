@@ -1014,7 +1014,7 @@ void HArrayUtils::binaryOpScalar1(
 
     const IndexType n = y.size();
 
-    static LAMAKernel<UtilKernelTrait::binaryOpScalar1<ValueType> > binaryOpScalar1;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar<ValueType> > binaryOpScalar;
 
     ContextPtr loc = prefLoc;
 
@@ -1025,7 +1025,7 @@ void HArrayUtils::binaryOpScalar1(
         loc = y.getValidContext();
     }
 
-    binaryOpScalar1.getSupportedContext( loc );
+    binaryOpScalar.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1034,7 +1034,8 @@ void HArrayUtils::binaryOpScalar1(
     ReadAccess<ValueType> rY( y, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    binaryOpScalar1[loc]( wResult.get(), x, rY.get(), n, op );
+    bool swapScalar = true;
+    binaryOpScalar[loc]( wResult.get(), rY.get(), x, n, op, swapScalar );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1052,7 +1053,7 @@ void HArrayUtils::binaryOpScalar2(
 
     const IndexType n = x.size();
 
-    static LAMAKernel<UtilKernelTrait::binaryOpScalar2<ValueType> > binaryOpScalar2;
+    static LAMAKernel<UtilKernelTrait::binaryOpScalar<ValueType> > binaryOpScalar;
 
     ContextPtr loc = prefLoc;
 
@@ -1063,7 +1064,7 @@ void HArrayUtils::binaryOpScalar2(
         loc = x.getValidContext();
     }
 
-    binaryOpScalar2.getSupportedContext( loc );
+    binaryOpScalar.getSupportedContext( loc );
 
     SCAI_CONTEXT_ACCESS( loc )
 
@@ -1072,7 +1073,9 @@ void HArrayUtils::binaryOpScalar2(
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    binaryOpScalar2[loc]( wResult.get(), rX.get(), y, n, op );
+    bool noSwapScalar = false;
+
+    binaryOpScalar[loc]( wResult.get(), rX.get(), y, n, op, noSwapScalar );
 }
 
 /* --------------------------------------------------------------------------- */

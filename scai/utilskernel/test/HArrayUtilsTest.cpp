@@ -661,8 +661,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_ty
     IndexType sourceIA_vals[] = { 0, 1, 5, 7 };
 
     const IndexType M = 9;
+
     const IndexType nnz = sizeof( sourceVA_vals ) / sizeof( ValueType );
-    const IndexType nnz1 = sizeof( sourceIA_vals ) / sizeof( ValueType );
+    const IndexType nnz1 = sizeof( sourceIA_vals ) / sizeof( IndexType );
 
     LArray<ValueType> sourceVA( nnz, sourceVA_vals );
     LArray<IndexType> sourceIA( nnz1, sourceIA_vals );
