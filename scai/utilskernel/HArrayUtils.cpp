@@ -753,6 +753,8 @@ void HArrayUtils::arrayPlusArray(
                    ", x = " << x << ", y = " << y << ", result = " << result )
 
     // check for zero terms as we do not need read access and assert correct sizes
+ 
+    bool noSwapScalar = false;
 
     if ( beta == common::constants::ZERO )
     {
@@ -762,7 +764,7 @@ void HArrayUtils::arrayPlusArray(
         }
         else
         {
-            binaryOpScalar1( result, alpha, x, binary::MULT, prefLoc );
+            binaryOpScalar( result, x, alpha, binary::MULT, noSwapScalar, prefLoc );
         }
 
         return;
@@ -770,7 +772,7 @@ void HArrayUtils::arrayPlusArray(
 
     if ( alpha == common::constants::ZERO )
     {
-        binaryOpScalar1( result, beta, y, binary::MULT, prefLoc );
+        binaryOpScalar( result, y, beta, binary::MULT, noSwapScalar, prefLoc );
         return;
     }
 
@@ -834,7 +836,7 @@ void HArrayUtils::arrayPlusScalar(
 
     if ( alpha == common::constants::ONE ) // result = x + b (elementwise)
     {
-        binaryOpScalar1( result, beta, x, binary::ADD, prefLoc );
+        binaryOpScalar( result, x, beta, binary::ADD, false, prefLoc );
         return;
     }
 
@@ -846,7 +848,7 @@ void HArrayUtils::arrayPlusScalar(
         }
         else // result = alpha * x
         {
-            binaryOpScalar1( result, alpha, x, binary::MULT, prefLoc );
+            binaryOpScalar( result, x, alpha, binary::MULT, false, prefLoc );
         }
 
         return;
@@ -1002,50 +1004,12 @@ void HArrayUtils::binaryOp(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::binaryOpScalar1(
-    hmemo::HArray<ValueType>& result,
-    const ValueType x,
-    const hmemo::HArray<ValueType>& y,
-    const binary::BinaryOp op,
-    ContextPtr prefLoc )
-{
-    SCAI_ASSERT( isBinarySupported<ValueType>( op ),
-                 op << " not supported for " << TypeTraits<ValueType>::id() )
-
-    const IndexType n = y.size();
-
-    static LAMAKernel<UtilKernelTrait::binaryOpScalar<ValueType> > binaryOpScalar;
-
-    ContextPtr loc = prefLoc;
-
-    // default location for check: where we have valid entries
-
-    if ( loc == ContextPtr() )
-    {
-        loc = y.getValidContext();
-    }
-
-    binaryOpScalar.getSupportedContext( loc );
-
-    SCAI_CONTEXT_ACCESS( loc )
-
-    // due to possible alias of result and y, write access must follow read
-
-    ReadAccess<ValueType> rY( y, loc );
-    WriteOnlyAccess<ValueType> wResult( result, loc, n );
-
-    bool swapScalar = true;
-    binaryOpScalar[loc]( wResult.get(), rY.get(), x, n, op, swapScalar );
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void HArrayUtils::binaryOpScalar2(
+void HArrayUtils::binaryOpScalar(
     hmemo::HArray<ValueType>& result,
     const hmemo::HArray<ValueType>& x,
     const ValueType y,
     const binary::BinaryOp op,
+    const bool swapScalar,
     ContextPtr prefLoc )
 {
     SCAI_ASSERT( isBinarySupported<ValueType>( op ),
@@ -1073,9 +1037,7 @@ void HArrayUtils::binaryOpScalar2(
     ReadAccess<ValueType> rX( x, loc );
     WriteOnlyAccess<ValueType> wResult( result, loc, n );
 
-    bool noSwapScalar = false;
-
-    binaryOpScalar[loc]( wResult.get(), rX.get(), y, n, op, noSwapScalar );
+    binaryOpScalar[loc]( wResult.get(), rX.get(), y, n, op, swapScalar );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2200,17 +2162,12 @@ SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
             const hmemo::HArray<ValueType>&,                      \
             const binary::BinaryOp,                               \
             hmemo::ContextPtr);                                   \
-    template void HArrayUtils::binaryOpScalar1<ValueType>(        \
-            hmemo::HArray<ValueType>&,                            \
-            const ValueType,                                      \
-            const hmemo::HArray<ValueType>&,                      \
-            const binary::BinaryOp,                               \
-            hmemo::ContextPtr);                                   \
-    template void HArrayUtils::binaryOpScalar2<ValueType>(        \
+    template void HArrayUtils::binaryOpScalar<ValueType>(         \
             hmemo::HArray<ValueType>&,                            \
             const hmemo::HArray<ValueType>&,                      \
             const ValueType,                                      \
             const binary::BinaryOp,                               \
+            const bool,                                           \
             hmemo::ContextPtr);
 
 // Note: it is now safe to instantiate unary/binary kernels also for IndexType

@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
         array1.init( values, n );
 
-        HArrayUtils::binaryOpScalar1( array2, scalar, array1, op, ctx );
+        HArrayUtils::binaryOpScalar( array2, array1, scalar, op, true, ctx );
 
         BOOST_REQUIRE_EQUAL( n, array2.size() );
 
@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
         array1.init( values, n );
 
-        HArrayUtils::binaryOpScalar2( array2, array1, scalar, op, ctx );
+        HArrayUtils::binaryOpScalar( array2, array1, scalar, op, false, ctx );
 
         BOOST_REQUIRE_EQUAL( n, array2.size() );
 

@@ -385,43 +385,32 @@ public:
         const common::binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Elementwise binary operation on array: result[i] = op( x, y[i] ), first arg is scalar
-     *
-     *  @param[out] result  output array
-     *  @param[in]  x       input value
-     *  @param[in]  y       input array
-     *  @param[in]  op      specifies operation to apply on input values
-     *  @param[in]  prefLoc location where operation should be done if possible
-     */
-    template<typename ValueType>
-    static void binaryOpScalar1(
-        hmemo::HArray<ValueType>& result,
-        const ValueType x,
-        const hmemo::HArray<ValueType>& y,
-        const common::binary::BinaryOp op,
-        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
-
     /** Elementwise binary operation on array: result[i] = op( x[i], y ), second arg is scalar
      *
      *  @param[out] result  output array
      *  @param[in]  x       input array
      *  @param[in]  y       input value
      *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  swapScalar if true scalar is first arg               
      *  @param[in]  prefLoc location where operation should be done if possible
      *
-     *  Note: this operation is different to binaryOpScalar1( result, y, x, loc ) if op is not commutative
+     *  Note: swapScalar does only matter if op is not commutative
      */
     template<typename ValueType>
-    static void binaryOpScalar2(
+    static void binaryOpScalar(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const ValueType y,
         const common::binary::BinaryOp op,
+        const bool swapScalar,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check for an index array whether all values are smaller than n */
 
-    static bool validIndexes( const hmemo::HArray<IndexType>& array, const IndexType size, hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static bool validIndexes( 
+        const hmemo::HArray<IndexType>& array, 
+        const IndexType size, 
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Check whether values in array are sorted  
      *

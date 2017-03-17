@@ -387,7 +387,8 @@ public:
     void invert()
     {
         // use the common::binary op DIVIDE that is also supported
-        HArrayUtils::binaryOpScalar1( *this, ValueType( 1 ), *this, common::binary::DIVIDE );
+        bool doSwapScalar = true;
+        HArrayUtils::binaryOpScalar( *this, *this, ValueType( 1 ), common::binary::DIVIDE, doSwapScalar );
     }
 
     /** Compute the conj in-place */
@@ -444,12 +445,14 @@ public:
 
     void powBase( ValueType base )
     {
-        HArrayUtils::binaryOpScalar1( *this, base, *this, common::binary::POW );
+        bool doSwapScalar = true;
+        HArrayUtils::binaryOpScalar( *this, *this, base, common::binary::POW, doSwapScalar );
     }
 
     void powExp( ValueType exp )
     {
-        HArrayUtils::binaryOpScalar2( *this, *this, exp, common::binary::POW );
+        bool noSwapScalar = false;
+        HArrayUtils::binaryOpScalar( *this, *this, exp, common::binary::POW, noSwapScalar );
     }
 
     void powBase( const hmemo::HArray<ValueType>& base )
