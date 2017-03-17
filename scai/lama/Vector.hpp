@@ -734,15 +734,15 @@ public:
      * 
      *  @param[in] value is th scalar element used for the operation
      *  @param[in] op specifies the binary operation for the update
-     *  @param[in] swapArgs if true the operands are swapped
+     *  @param[in] swapScalar if true the operands are swapped
      * 
      *  The call v.setScalar( s, op ) is equivalent to the following code:
      *
      *  \code
      *      for ( IndexType i = 0; i < v1.size(); ++i )
      *      {
-     *          v[i] = v[i] op s;    // swapArgs = false
-     *          v[i] = s op v[i];    // swapArgs = true
+     *          v[i] = v[i] op s;    // swapScalar = false
+     *          v[i] = s op v[i];    // swapScalar = true
      *      }
      *  \endcode
      *
@@ -753,7 +753,7 @@ public:
      *      v *= s;         v.setScalar( s, binary::MULT, false );
      *  \endcode
      */
-    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar = false ) = 0;
 
     /**
      *  @brief Apply a unary operation for each element of the vector.

@@ -537,7 +537,7 @@ template<typename ValueType>
 void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl with value = " << value )
-    HArrayUtils::binaryOpScalar2( mValues, mValues, value, common::binary::MULT, this->getContextPtr() );
+    HArrayUtils::compute( mValues, mValues, common::binary::MULT, value, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1035,7 +1035,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -1103,7 +1103,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
     {
         // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, loc );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result

@@ -1099,7 +1099,7 @@ void SparseVector<ValueType>::setVector( const Vector& other, common::binary::Bi
 
     SCAI_ASSERT_ERROR( !swapArgs, "swapping arguments not supported yet" )
 
-    if ( mZeroValue == common::zeroBinary<ValueType>( op ) )
+    if ( mZeroValue == ValueType( 0 ) && op == common::binary::MULT )
     {
         // gather the values from other vector at the non-zero positions 
 
@@ -1157,7 +1157,7 @@ void SparseVector<ValueType>::assign( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs )
+void SparseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar )
 {
     SCAI_LOG_DEBUG( logger, *this << ": set " << value << ", op = " << op )
 
@@ -1171,20 +1171,16 @@ void SparseVector<ValueType>::setScalar( const Scalar value, common::binary::Bin
         return;
     }
 
-    mZeroValue += val;
-
-    if ( swapArgs )
+    if ( swapScalar )
     {
-        COMMON_THROWEXCEPTION( "Oops, not available yet" )
-
         mZeroValue = common::applyBinary( val, op, mZeroValue );
-        HArrayUtils::binaryOpScalar1( mNonZeroValues, val, mNonZeroValues, op, mContext );
     }
     else
     {
         mZeroValue = common::applyBinary( mZeroValue, op, val );
-        HArrayUtils::binaryOpScalar2( mNonZeroValues, mNonZeroValues, val, op, mContext );
     }
+
+    HArrayUtils::binaryOpScalar( mNonZeroValues, mNonZeroValues, val, op, swapScalar, mContext );
 }
 
 /* ------------------------------------------------------------------------- */

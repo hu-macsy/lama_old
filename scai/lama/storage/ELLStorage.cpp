@@ -1159,7 +1159,7 @@ SyncToken* ELLStorage<ValueType>::gemv(
     if ( alpha == common::constants::ZERO || ( mNumValuesPerRow == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
 
         if ( async )
         {
@@ -1214,7 +1214,7 @@ SyncToken* ELLStorage<ValueType>::gevm(
     if ( alpha == common::constants::ZERO || ( mNumValuesPerRow == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
 
         if ( async )
         {

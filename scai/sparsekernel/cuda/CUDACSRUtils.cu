@@ -1001,7 +1001,7 @@ void CUDACSRUtils::normalGEVM(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, common::binary::MULT );
+    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
 
     SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 

@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
     denseStorage.matrixTimesVector( denseResult1, alpha, x, beta, y );
     denseStorage.matrixTimesVector( denseResult2, alpha, x, 0, yDummy );
     denseStorage.matrixTimesVector( denseResult3, alpha, x, 1, denseResult3 );
-    utilskernel::HArrayUtils::binaryOpScalar1( denseResult4, beta, y, common::binary::MULT );
+    utilskernel::HArrayUtils::compute( denseResult4, beta, common::binary::MULT, y );
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
     SCAI_LOG_INFO( logger, "matrixTimesVectorTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format

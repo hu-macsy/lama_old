@@ -964,6 +964,8 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 template<typename ValueType>
 void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
 {
+    SCAI_ASSERT_VALID_INDEX_ERROR( globalIndex, size(), "out of range index" )
+
     SCAI_LOG_TRACE( logger, *this << ": setValue( globalIndex = " << globalIndex << " ) = " <<  value )
 
     const IndexType localIndex = getDistribution().global2local( globalIndex );
@@ -1185,7 +1187,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
 
             HArray<ValueType> typedValues;
             HArrayUtils::assign( typedValues, nonZeroValues, mContext );
-            HArrayUtils::binaryOpScalar1( typedValues, alphaV, typedValues, common::binary::MULT, mContext );
+            HArrayUtils::compute( typedValues, typedValues, common::binary::MULT, alphaV, mContext );
             HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, common::binary::ADD, mContext );
         }
     }
@@ -1683,7 +1685,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs )
+void DenseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar )
 {
     SCAI_LOG_DEBUG( logger, *this << ": setScalar " << value << ", op = " << op )
 
@@ -1691,14 +1693,7 @@ void DenseVector<ValueType>::setScalar( const Scalar value, common::binary::Bina
 
     ValueType val = value.getValue<ValueType>();
 
-    if ( swapArgs )
-    {
-        HArrayUtils::binaryOpScalar1( mLocalValues, val, mLocalValues, op, mContext );
-    }
-    else
-    {
-        HArrayUtils::binaryOpScalar2( mLocalValues, mLocalValues, val, op, mContext );
-    }
+    HArrayUtils::binaryOpScalar( mLocalValues, mLocalValues, val, op, swapScalar, mContext );
 }
 
 /* ------------------------------------------------------------------------- */

@@ -1150,7 +1150,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_ASSERT_EQUAL( mValues.size(), mNumValues, "size mismatch" )
-    HArrayUtils::binaryOpScalar2( mValues, mValues, value, binary::MULT, this->getContextPtr() );
+    HArrayUtils::compute( mValues, mValues, binary::MULT, value, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1289,8 +1289,10 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
     LArray<IndexType> blockIA( n + 1 );
     HArrayUtils::setArraySection( blockIA, 0, 1, mIa, first, 1, n +  1, binary::COPY, loc );
 
+    // Note: binary::ADD with -offset is strange if IndexType is unsigned
+
     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
-    HArrayUtils::binaryOpScalar2( blockIA, blockIA, offset, binary::SUB, loc );
+    HArrayUtils::compute( blockIA, blockIA, binary::SUB, offset, loc );
 
     IndexType numBlockValues = blockIA[n];
 
@@ -1832,7 +1834,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
     if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, binary::MULT, y, this->getContextPtr() );
 
         if ( async )
         {
@@ -1888,7 +1890,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
     {
         SCAI_LOG_INFO( logger, "gevm, alpha = 0 : result = " << beta << " * y " )
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, binary::MULT, y, this->getContextPtr() );
 
         if ( async )
         {

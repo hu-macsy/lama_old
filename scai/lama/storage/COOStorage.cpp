@@ -648,7 +648,7 @@ void COOStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -667,7 +667,7 @@ void COOStorage<ValueType>::matrixTimesVector(
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
     }
 
     bool async = false;
@@ -749,7 +749,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, loc );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -776,7 +776,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, loc );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
         return new tasking::NoSyncToken();
     }
 
@@ -794,7 +794,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     {
         // Note: binary::MULT will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, loc );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
     }
 
     bool async = true;
@@ -1198,7 +1198,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, loc );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result

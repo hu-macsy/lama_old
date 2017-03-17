@@ -652,7 +652,7 @@ void DenseStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::binaryOpScalar1( result, beta, y, common::binary::MULT, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -703,7 +703,7 @@ void DenseStorage<ValueType>::matrixTimesVector(
         }
         else
         {
-            HArrayUtils::binaryOpScalar2( result, result, beta, common::binary::MULT, this->getContextPtr() );
+            HArrayUtils::compute( result, beta, common::binary::MULT, result, this->getContextPtr() );
         }
     }
     else
@@ -786,7 +786,7 @@ void DenseStorage<ValueType>::vectorTimesMatrix(
         }
         else
         {
-            utilskernel::HArrayUtils::binaryOpScalar2( result, result, beta, common::binary::MULT, this->getContextPtr() );
+            utilskernel::HArrayUtils::compute( result, result, common::binary::MULT, beta, this->getContextPtr() );
         }
     }
     else

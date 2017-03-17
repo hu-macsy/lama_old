@@ -516,11 +516,11 @@ public:
 
     /** Implementation of pure method Vector::setScalar */
 
-    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar = false );
 
     /** Implementation of pure method Vector::setVector */
 
-    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapScalar = false );
 
     /** Implementation of pure method Vector::applyUnary */
 

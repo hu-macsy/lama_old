@@ -405,6 +405,32 @@ public:
         const bool swapScalar,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** More convenient interface for binaryOpScalar( swap = true ) */
+
+    template<typename ValueType>
+    static void compute(
+        hmemo::HArray<ValueType>& result,
+        const hmemo::HArray<ValueType>& x,
+        const common::binary::BinaryOp op,
+        const ValueType y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
+    {
+        binaryOpScalar( result, x, y, op, true, prefLoc );
+    }
+
+    /** More convenient interface for binaryOpScalar( swap = false ) */
+
+    template<typename ValueType>
+    static void compute(
+        hmemo::HArray<ValueType>& result,
+        const ValueType x,
+        const common::binary::BinaryOp op,
+        const hmemo::HArray<ValueType>& y,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
+    {
+        binaryOpScalar( result, y, x, op, false, prefLoc );
+    }
+
     /** Check for an index array whether all values are smaller than n */
 
     static bool validIndexes( 

@@ -245,7 +245,7 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
     // array = array + i * imagValues
 
     ValueType i = static_cast<ValueType>( ComplexDouble( 0, 1 ) );
-    utilskernel::HArrayUtils::binaryOpScalar2( imagValues, imagValues, i, common::binary::MULT );
+    utilskernel::HArrayUtils::compute( imagValues, imagValues, common::binary::MULT, i );
     utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::binary::ADD );
 
 #endif
@@ -338,7 +338,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
         HArray<ValueType> tmp;
         ValueType minusi = ComplexDouble( 0, -1 );
-        utilskernel::HArrayUtils::binaryOpScalar2( tmp, array, minusi, common::binary::MULT );
+        utilskernel::HArrayUtils::compute( tmp, array, common::binary::MULT, minusi );
         utilskernel::HArrayUtils::setArray( real, tmp );
 
         wBytes += writeArrayData( outFile, real, dryRun );

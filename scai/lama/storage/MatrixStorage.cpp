@@ -593,7 +593,7 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
     HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, binary::COPY, loc );
 
     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
-    HArrayUtils::binaryOpScalar2( blockIA, blockIA, offset, binary::SUB, loc );
+    HArrayUtils::compute( blockIA, blockIA, binary::SUB, offset, loc );
 
     IndexType numBlockValues = blockIA[n];
 

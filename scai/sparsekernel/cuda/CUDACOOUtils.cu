@@ -218,7 +218,7 @@ void CUDACOOUtils::normalGEMV(
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
         // setScale also deals with y undefined for beta == 0
 
-        CUDAUtils::binaryOpScalar1( result, beta, y, numRows, common::binary::MULT );
+        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGemvKernel FAILED" )
@@ -327,7 +327,7 @@ void CUDACOOUtils::normalGEVM(
     else
     {
         SCAI_LOG_DEBUG( logger, "normalGEMV, set result = " << beta << " * y " )
-        CUDAUtils::binaryOpScalar1( result, beta, y, numRows, common::binary::MULT );
+        CUDAUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "COO: initGevmKernel FAILED" )

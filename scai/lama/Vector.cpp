@@ -606,7 +606,7 @@ Vector& Vector::operator*=( const Vector& other )
 Vector& Vector::operator/=( const Scalar value )
 {
     bool noSwapArgs = false;
-    setScalar( value, common::binary::MULT, noSwapArgs );
+    setScalar( value, common::binary::DIVIDE, noSwapArgs );
     return *this;
 }
 
