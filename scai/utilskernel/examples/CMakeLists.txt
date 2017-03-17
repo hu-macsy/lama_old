@@ -32,7 +32,7 @@
  # @date 16.06.2015
 ###
 
-foreach ( executable vectorAdd SingleAccess BenchSort BenchOps )
+foreach ( executable LArrayDemo vectorAdd SingleAccess BenchSort BenchOps )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

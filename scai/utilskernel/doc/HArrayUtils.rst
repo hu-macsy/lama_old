@@ -20,10 +20,10 @@ For arithmetic operations the ValueType must be known at compile time.
     HArrayUtils::binaryOp( result, x1, x2, binaryOp::ADD );
 
     // result[i] = 1.0 / result[i]
-    HArrayUtils::binaryOpScalar1( result, 1.0, result, binaryOp::DIVIDE );
+    HArrayUtils::compute( result, 1.0, binaryOp::DIVIDE, result );
 
     // result[i] *= 2.5
-    HArrayUtils::binaryOpScalar2( result, result, 2.5, binaryOp::MULT );
+    HArrayUtils::compute( result, result, binaryOp::MULT, 2.5 );
 
 Filling
 -------
