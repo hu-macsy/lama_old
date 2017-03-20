@@ -415,7 +415,7 @@ public:
         const ValueType y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     {
-        binaryOpScalar( result, x, y, op, true, prefLoc );
+        binaryOpScalar( result, x, y, op, false, prefLoc );
     }
 
     /** More convenient interface for binaryOpScalar( swap = false ) */
@@ -428,7 +428,8 @@ public:
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     {
-        binaryOpScalar( result, y, x, op, false, prefLoc );
+        // y and x must be swapped
+        binaryOpScalar( result, y, x, op, true, prefLoc );
     }
 
     /** Check for an index array whether all values are smaller than n */
