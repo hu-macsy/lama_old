@@ -768,7 +768,7 @@ Scalar SparseVector<ValueType>::l1Norm() const
     {
         // ToDo: replace ABS with ASUM, is different for complex numbers
 
-        localL1Norm += common::applyUnary( common::unary::ABS, mZeroValue ) * nZero;
+        localL1Norm += common::applyUnary( common::unary::ABS, mZeroValue ) * ValueType( nZero );
     }
 
     return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
@@ -784,7 +784,7 @@ Scalar SparseVector<ValueType>::sum() const
 
     if ( nZero > 0 )
     {
-        localSum += mZeroValue * nZero;
+        localSum += mZeroValue * ValueType( nZero );
     }
 
     return Scalar( getDistribution().getCommunicator().sum( localSum ) );
@@ -805,7 +805,7 @@ Scalar SparseVector<ValueType>::l2Norm() const
 
     if ( nZero > 0 )
     {
-        localDotProduct += mZeroValue * mZeroValue * nZero;
+        localDotProduct += mZeroValue * mZeroValue * ValueType( nZero );
     }
  
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
