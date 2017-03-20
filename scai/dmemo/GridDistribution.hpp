@@ -103,11 +103,11 @@ public:
 
     /** Get access to the local grid, helpful for traversing */
 
-    const common::Grid& getLocalGrid() const;
+    inline const common::Grid& getLocalGrid() const;
 
     /** Get access to the global grid, helpful for traversing */
 
-    const common::Grid& getGlobalGrid() const;
+    inline const common::Grid& getGlobalGrid() const;
 
     /** Override default implementation Distribution::getMaxLocalSize() */
 
@@ -183,11 +183,11 @@ public:
 
     /** Implementation of pure method Distribution::getKind for this class.  */
 
-    virtual const char* getKind() const;
+    inline virtual const char* getKind() const;
 
     /** static method to get kind of this class. */
 
-    static const char* getId();
+    static inline const char* getId();
 
 protected:
 
@@ -215,6 +215,10 @@ private:
     IndexType mLB[ SCAI_GRID_MAX_DIMENSION];
     IndexType mUB[ SCAI_GRID_MAX_DIMENSION];
 };
+
+/* -----------------------------------------------------------------------------*/
+/*  Implementation of inline methods                                            */
+/* -----------------------------------------------------------------------------*/
 
 const common::Grid& GridDistribution::getLocalGrid() const
 {
