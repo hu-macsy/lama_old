@@ -407,8 +407,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
+    // be careful about values, e.g. pow( x, y ), x >= 0 
+
     const ValueType scalar = 3.5;
-    const ValueType values[] = { 1.0, 1.2, -1.3, -1.0 };
+    const ValueType values[] = { 1.0, 1.2, 2.0, 1.3 };
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
@@ -421,7 +423,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
         array1.init( values, n );
 
-        HArrayUtils::binaryOpScalar( array2, array1, scalar, op, true, ctx );
+        // array2 = scalar <op> array1
+
+        HArrayUtils::compute( array2, scalar, op, array1, ctx );
 
         BOOST_REQUIRE_EQUAL( n, array2.size() );
 
@@ -452,7 +456,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
     ContextPtr host = Context::getHostPtr();
 
     const ValueType scalar = 3.5;
-    const ValueType values[] = { 1.0, 1.2, -1.3, -1.0 };
+    const ValueType values[] = { 1.0, 1.2, 2.0, 1.3 };
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
@@ -465,7 +469,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
         array1.init( values, n );
 
-        HArrayUtils::binaryOpScalar( array2, array1, scalar, op, false, ctx );
+        HArrayUtils::compute( array2, array1, op, scalar, ctx );
 
         BOOST_REQUIRE_EQUAL( n, array2.size() );
 
@@ -481,6 +485,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
             AbsType diff = common::Math::abs( read[i] - res  );
 
+            SCAI_LOG_TRACE( logger, values[i] << " " << op << " " << scalar << ", array[" << i << "] = " << read[i] << ", res = " << res )
+
             BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
     }
@@ -495,9 +501,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseTest, ValueType, scai_numeric_test_
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
-    const ValueType values1[]  = { 1.0, 1.2, -1.3, -1.0 };
+    // be careful about values
+
+    const ValueType values1[]  = { 1.0, 1.2, 2.0, 1.3 };
     const IndexType indexes1[] = { 2, 4, 6, 7 };
-    const ValueType values2[]  = { 0.5, -0.7, 0.3, -1.3 };
+    const ValueType values2[]  = { 0.5, 0.7, 0.3, 1.3 };
     const IndexType indexes2[] = { 2, 3, 6, 8 };
 
     const IndexType n = 10;
