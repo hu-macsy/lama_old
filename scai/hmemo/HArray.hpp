@@ -166,7 +166,11 @@ public:
      *  same class as the object for which it is called. The copy
      *  constructor is called.
      */
+    HArray<ValueType>* newArray() const;
 
+    /**
+     *  Implementation of pure methods _HArray::copy(), returns covariant type.
+     */
     HArray<ValueType>* copy() const;
 
     /**
@@ -398,6 +402,14 @@ template<typename ValueType>
 HArray<ValueType>* HArray<ValueType>::copy() const
 {
     return new HArray<ValueType>( *this );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+HArray<ValueType>* HArray<ValueType>::newArray() const
+{
+    return new HArray<ValueType>();
 }
 
 /* ---------------------------------------------------------------------------------*/

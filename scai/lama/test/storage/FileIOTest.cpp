@@ -39,6 +39,7 @@
 
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/utilskernel/LArray.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -821,6 +822,101 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
         // due to binary output and using same data type there should be no loss
 
         BOOST_CHECK_EQUAL( ValueType( 0 ), array.maxDiffNorm( inArray ) );
+
+#ifdef DELETE_OUTPUT_FILES
+        int rc = FileIO::removeFile( fileName );
+
+        BOOST_CHECK_EQUAL( rc, 0 );
+        BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+#endif
+
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_types )
+{
+    const IndexType N = 100;  
+
+    std::vector<std::string> supportedSuffixes;
+
+    FileIO::getCreateValues( supportedSuffixes );
+
+    // loop over all supported suffixes, got them from FileIO factory
+
+    for ( size_t i = 0; i < supportedSuffixes.size(); ++i )
+    {
+        const std::string& fileSuffix = supportedSuffixes[i];
+
+        unique_ptr<FileIO> fileIO( FileIO::create( fileSuffix ) );
+
+        if ( fileSuffix != fileIO->getVectorFileSuffix() )
+        {
+            SCAI_LOG_INFO( logger, *fileIO << " skipped for vector, " << fileSuffix
+                           << " is not default vector suffix" << fileIO->getVectorFileSuffix() )
+            continue;
+        }
+
+        LArray<ValueType> array;
+
+        float fillRate = 0.05f;   // make it really sparse
+
+        array.setRandom( N, fillRate );
+
+        LArray<ValueType> sparseArray;
+        LArray<IndexType> sparseIndexes;
+
+        utilskernel::HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, array );
+
+        std::string typeName = TypeTraits<ValueType>::id();
+        std::string fileName = "outArraySparse" + typeName + fileSuffix;
+
+        SCAI_LOG_INFO( logger, "FileIO(sparse): write this sparse array: " << array << " via " << *fileIO << " to " << fileName )
+
+        fileIO->writeSparse( N, sparseIndexes, sparseArray, fileName );
+
+        BOOST_CHECK( FileIO::fileExists( fileName ) );
+
+        // Test the method readArrayInfo for sparse vector data
+
+        {
+            IndexType size;
+            fileIO->readArrayInfo( size, fileName );
+            SCAI_LOG_DEBUG( logger, "readArrayInfo " << fileName << ": size = " << size )
+            BOOST_CHECK_EQUAL( N, size );
+        }
+
+        // Test the method readSparse
+
+        {
+            IndexType         inN;
+            LArray<ValueType> inValues;
+            LArray<IndexType> inPos;
+
+            fileIO->readSparse( inN, inPos, inValues, fileName );
+
+            SCAI_LOG_DEBUG( logger, "readSparse( " << fileName << " ): N = " << inN 
+                                     << ", indexes = " << inPos << ", vals = " << inValues );
+
+            BOOST_REQUIRE_EQUAL( N, inN );
+            BOOST_REQUIRE_EQUAL( sparseArray.size(), inValues.size() );
+            BOOST_REQUIRE_EQUAL( sparseIndexes.size(), inPos.size() );
+
+            // indexes must be equal
+
+            BOOST_CHECK_EQUAL( 0, sparseIndexes.maxDiffNorm( inPos ) );
+
+            for ( IndexType i = 0; i < inValues.size(); ++i )
+            {
+                ValueType expectedVal = sparseArray[i];
+                ValueType readVal = inValues[i];
+
+                // Due to the formatted output there might be a loss of precision
+
+                SCAI_CHECK_CLOSE( expectedVal, readVal, 0.01f );
+            }
+        }
 
 #ifdef DELETE_OUTPUT_FILES
         int rc = FileIO::removeFile( fileName );

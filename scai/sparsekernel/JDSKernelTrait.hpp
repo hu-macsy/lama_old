@@ -36,7 +36,7 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -286,7 +286,7 @@ struct JDSKernelTrait
                                      const IndexType dlg[],
                                      const IndexType ja[],
                                      const OtherValueType row[],
-                                     const utilskernel::binary::BinaryOp op );
+                                     const common::binary::BinaryOp op );
 
         static const char* getId()
         {
@@ -307,6 +307,33 @@ struct JDSKernelTrait
         static const char* getId()
         {
             return "JDS.getValuePos";
+        }
+    };
+
+    struct getValuePosRow
+    {
+        /** This method returns for a certain row of the JDS matrix all
+         *  corresponding positions in the jdsJA/jdsValues array belonging to the row
+         *
+         *  @param[out] pos positions of entries with row = i 
+         *  @param[in] i is the row of which positions are required
+         *  @param[in] numRows is the number of rows
+         *  @param[in] ilg
+         *  @param[in] dlg
+         *  @param[in] perm
+         *  @returns  number of non-zero entries in row i
+         */
+        typedef IndexType ( *FuncType ) (
+            IndexType pos[],
+            const IndexType i,
+            const IndexType numRows,
+            const IndexType ilg[],
+            const IndexType dlg[],
+            const IndexType perm[] );
+
+        static const char* getId()
+        {
+            return "JDS.getValuePosRow";
         }
     };
 

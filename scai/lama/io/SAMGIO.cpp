@@ -178,7 +178,7 @@ void SAMGIO::writeVectorHeader(
 
 template<typename ValueType>
 void SAMGIO::writeArrayImpl(
-    const hmemo::HArray<ValueType>& array,
+    const HArray<ValueType>& array,
     const std::string& fileName )
 {
     // needed for header file: type size is size of data type used in output
@@ -219,6 +219,22 @@ void SAMGIO::writeArrayImpl(
     }
 
     outFile.close();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SAMGIO::writeSparseImpl(
+    const IndexType size,
+    const HArray<IndexType>& indexes,
+    const HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse unsupported for SAMG file format, write it dense
+
+    HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    writeArrayImpl( denseArray, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -272,7 +288,7 @@ void SAMGIO::readArrayInfo( IndexType& size, const std::string& fileName )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
+void SAMGIO::readArrayImpl( HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
 {
     IndexType dataTypeSize = 0;
     IndexType size = 0;
@@ -337,6 +353,24 @@ void SAMGIO::readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& 
     }
 
     inFile.closeCheck();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SAMGIO::readSparseImpl(
+    IndexType& size,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse array not supported for this file format, uses a temporary dense array of same type
+
+    HArray<ValueType> denseArray;
+
+    readArray( denseArray, fileName, 0, nIndex );
+    size = denseArray.size();
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
 
 /* --------------------------------------------------------------------------------- */

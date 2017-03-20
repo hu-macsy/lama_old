@@ -100,6 +100,32 @@ IndexType NoDistribution::getBlockDistributionSize() const
 
 /* ---------------------------------------------------------------------- */
 
+void NoDistribution::enableAnyAddressing() const
+{
+}
+
+IndexType NoDistribution::getAnyLocalSize( const PartitionId ) const
+{
+    return getGlobalSize();
+}
+
+PartitionId NoDistribution::getAnyOwner( const IndexType ) const
+{
+    return 0;
+}
+
+IndexType NoDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId ) const
+{
+    return globalIndex;
+}
+
+IndexType NoDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId ) const
+{
+    return localIndex;
+}
+
+/* ---------------------------------------------------------------------- */
+
 bool NoDistribution::isEqual( const Distribution& other ) const
 {
     bool isSame = false;

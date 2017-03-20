@@ -299,6 +299,83 @@ BOOST_AUTO_TEST_CASE( allocateTransposeTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getInfoTest )
+{
+    // Idea: build a communication plan and call getInfo where quantity and offset are known
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId rank = comm->getRank();
+
+    std::vector<IndexType> reqQuantities;
+
+    setQuantities( reqQuantities, *comm );
+
+    bool compressFlag = true;  // make sure that p in getInfo is not same as entry pos
+
+    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size(), compressFlag );
+
+    IndexType expectedOffset = 0;
+
+    for ( PartitionId p = 0; p < comm->getSize(); ++p )
+    {
+        IndexType n;
+        IndexType offset;
+        requiredPlan.getInfo( n, offset, p );
+
+        BOOST_CHECK_EQUAL( n, required( rank, p ) );
+
+        if ( n > 0 ) 
+        {
+             BOOST_CHECK_EQUAL( expectedOffset, offset );
+             expectedOffset += n;
+        }
+    }
+
+    BOOST_CHECK_EQUAL( expectedOffset, requiredPlan.totalQuantity() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( extractPlanTest )
+{
+    // Idea: build a communication plan and call getInfo where quantity and offset are known
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    PartitionId rank = comm->getRank();
+
+    std::vector<IndexType> reqQuantities;
+
+    setQuantities( reqQuantities, *comm );
+
+    bool compressFlag = true;  // make sure that p in getInfo is not same as entry pos
+
+    CommunicationPlan requiredPlan( reqQuantities.data(), reqQuantities.size(), compressFlag );
+
+    CommunicationPlan singlePlan;
+
+    for ( PartitionId p = 0; p < comm->getSize(); ++p )
+    {
+        singlePlan.extractPlan( requiredPlan, p );
+
+        if ( singlePlan.size() == 0 )
+        {
+            BOOST_CHECK_EQUAL( 0, required( rank, p ) );
+        }
+        else
+        {
+            // singlePlan must have exactly one entry for this p 
+
+            BOOST_CHECK_EQUAL( singlePlan.size(), 1 );
+            BOOST_CHECK_EQUAL( p, singlePlan[0].partitionId );
+            BOOST_CHECK_EQUAL( required( rank, p ), singlePlan[0].quantity );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
 
 /* --------------------------------------------------------------------- */

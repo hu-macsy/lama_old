@@ -1,5 +1,5 @@
 /**
- * @file utilskernel/test/UnaryOpTest.cpp
+ * @file common/test/UnaryOpTest.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -34,11 +34,11 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/utilskernel/UnaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 #include <sstream>
 
 using namespace scai;
-using namespace utilskernel;
+using namespace common;
 
 BOOST_AUTO_TEST_CASE( UnaryOpTest )
 {
@@ -67,6 +67,12 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
         if ( type == unary::ABS )
         {
             BOOST_CHECK_EQUAL( s.str(), "ABS" );
+            count++;
+        }
+
+        if ( type == unary::ASUM )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "ASUM" );
             count++;
         }
 

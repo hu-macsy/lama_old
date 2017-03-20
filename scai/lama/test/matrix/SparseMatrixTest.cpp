@@ -83,6 +83,9 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
         setDenseData( *storage );  // fill it with some data
 
+        SCAI_LOG_DEBUG( logger, *comm << ": localConstructorTest " << i << " of " << storages.size() 
+                                << ", storage = " << *storage )
+
         dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( storage->getNumRows(), comm ) );
 
         SparseMatrix<ValueType> matrix( storage, rowDist );  // local constructor
@@ -91,8 +94,9 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
         BOOST_CHECK( matrix.isConsistent() );
 
-        if ( rowDist->getLocalSize() > 0 )
+        if ( rowDist->getGlobalSize() > 0 )
         {
+            // be careful: all processors must call it or all not
             BOOST_CHECK( matrix.getMemoryUsage() > 0 );
         }
 
@@ -227,6 +231,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, SparseMatrixType
 
     MatrixType matrix1( globalStorage );
     matrix1.redistribute( rowDist, colDist );
+
+    SCAI_LOG_INFO( logger, "Test copy constructor SparseMatrix( matrix1 ), with matrix1 = " << matrix1 )
 
     SparseMatrix<ValueType> matrix2( matrix1 );
 

@@ -47,7 +47,7 @@
 namespace scai
 {
 
-namespace utilskernel
+namespace common
 {
 
 /** Own struct for enum type of binary operators */
@@ -77,6 +77,15 @@ struct binary
         COPY_SIGN,    //!< for operator magnitude(x) * sign(y)
         MAX_BINARY_OP //!< for internal use only
     } BinaryOp;
+
+    typedef enum
+    {
+        LT,            //!< for less than
+        LE,            //!< for less equal
+        GE,            //!< for greater equal
+        GT,            //!< for greater than
+        MAX_COMPARE_OP //!< for internal use only
+    } CompareOp;
 };
 
 /** Method that applies a binary operation for two operands.
@@ -104,19 +113,38 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
         case binary::DIVIDE:
             return x1 / x2;
         case binary::MODULO:
-            return common::Math::mod( x1, x2 );
+            return Math::mod( x1, x2 );
         case binary::COPY_SIGN:
-            return common::Math::copysign( x1, x2 );
+            return Math::copysign( x1, x2 );
         case binary::POW:
-            return common::Math::pow( x1, x2 );
+            return Math::pow( x1, x2 );
         case binary::MIN:
-            return common::Math::min( x1, x2 );
+            return Math::min( x1, x2 );
         case binary::MAX:
-            return common::Math::max( x1, x2 );
+            return Math::max( x1, x2 );
         case binary::ABS_MAX:
-            return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
+            return Math::max( Math::abs( x1 ), Math::abs( x2 ) );
         default:
             return ValueType( 0 );
+    }
+}
+
+template <typename ValueType>
+MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
+inline bool applyBinary( const ValueType& x1, const binary::CompareOp op, const ValueType& x2 )
+{
+    switch ( op )
+    {
+        case binary::LT:
+            return x1 < x2;
+        case binary::LE:
+            return x1 < x2 || x1 == x2;
+        case binary::GE:
+            return x1 > x2 || x1 == x2;
+        case binary::GT:
+            return x1 > x2;
+        default:
+            return false;
     }
 }
 
@@ -140,11 +168,11 @@ inline IndexType applyBinary( const IndexType& x1, const binary::BinaryOp op, co
         case binary::MODULO:
             return x1 % x2;
         case binary::MIN:
-            return common::Math::min( x1, x2 );
+            return Math::min( x1, x2 );
         case binary::MAX:
-            return common::Math::max( x1, x2 );
+            return Math::max( x1, x2 );
         case binary::ABS_MAX:
-            return common::Math::max( common::Math::abs( x1 ), common::Math::abs( x2 ) );
+            return Math::max( Math::abs( x1 ), Math::abs( x2 ) );
         default:
             return IndexType( 0 );
     }
@@ -184,12 +212,16 @@ inline ValueType zeroBinary( const binary::BinaryOp op )
     switch ( op )
     {
         case binary::ADD:
+        case binary::SUB:
         case binary::ABS_MAX:
             return ValueType( 0 );
+        case binary::MULT:
+        case binary::DIVIDE:
+            return ValueType( 1 );
         case binary::MIN:
-            return common::TypeTraits<ValueType>::getMax();
+            return TypeTraits<ValueType>::getMax();
         case binary::MAX:
-            return common::TypeTraits<ValueType>::getMin();
+            return TypeTraits<ValueType>::getMin();
         default:
         {
             COMMON_THROWEXCEPTION( "Illegal reduction operator: " << op )
@@ -257,6 +289,38 @@ inline std::ostream& operator<<( std::ostream& stream, const binary::BinaryOp& o
     return stream;
 }
 
-} /* end namespace utilskernel */
+/*
+ * Output of CompareOp in stream by writing strings instead of numbers
+ */
+
+inline std::ostream& operator<<( std::ostream& stream, const binary::CompareOp& op )
+{
+    switch ( op )
+    {
+        case binary::LE:
+            stream << "LE";
+            break;
+
+        case binary::LT:
+            stream << "LT";
+            break;
+
+        case binary::GE:
+            stream << "GE";
+            break;
+
+        case binary::GT:
+            stream << "GT";
+            break;
+
+        default:
+            stream << "<unknown_compare_op>";
+            break;
+    }
+
+    return stream;
+}
+
+} /* end namespace common */
 
 } /* end namespace scai */

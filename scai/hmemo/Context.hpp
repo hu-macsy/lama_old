@@ -100,7 +100,7 @@ public:
 
     /** Method to get the type of the context. */
 
-    ContextType getType() const;
+    inline ContextType getType() const;
 
     /** @brief  Predicate to check in a context whether a certain memory class can be used.
      *
@@ -195,17 +195,14 @@ public:
 
     /** @brief getHostPtr() as abbreviation of getContextPtr( context::Host ) */
 
-    static ContextPtr getHostPtr()
-    {
-        return getContextPtr( common::context::Host );
-    }
+    static inline ContextPtr getHostPtr();
 
     /** Checks if a context of the passed type is available.
      *
      * @param[in] type  is the type of context that is wanted
      * @return          if a context of the passed type is available
      */
-    static bool hasContext( const ContextType type );
+    static inline bool hasContext( const ContextType type );
 
     /** Get the currently accessed context of this thread */
 
@@ -254,20 +251,24 @@ private:
     static SCAI_THREAD_PRIVATE_PTR( ContextStack, contextStack )
 };
 
-inline Context::ContextType Context::getType() const
+/* ======================================================================== */
+/*             Inline methods                                               */
+/* ======================================================================== */
+
+Context::ContextType Context::getType() const
 {
     return mContextType;
 }
 
-inline bool Context::hasContext( const ContextType type )
+bool Context::hasContext( const ContextType type )
 {
     return canCreate( type );
 }
 
-/** Output of context type in stream. */
-
-
-/** Output of AccessKind in stream is supported and very useful.  */
+ContextPtr Context::getHostPtr()
+{
+    return getContextPtr( common::context::Host );
+}
 
 } /* end namespace hmemo */
 

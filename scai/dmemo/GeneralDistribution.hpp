@@ -44,10 +44,6 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 
-// std
-#include <vector>
-#include <map>
-
 namespace scai
 {
 
@@ -100,13 +96,19 @@ public:
 
     virtual ~GeneralDistribution();
 
-    virtual bool isLocal( const IndexType index ) const;
+    /** Implementation of pure method Distribution::isLocal */
+
+    virtual bool isLocal( const IndexType globalIndex ) const;
+
+    /** Implementation of pure method Distribution::getLocalSize */
 
     virtual IndexType getLocalSize() const;
 
-    // virtual std::vector<IndexType>& getLocalRows();
+    /** Implementation of pure method Distribution::local2global */
 
     virtual IndexType local2global( const IndexType localIndex ) const;
+
+    /** Implementation of pure method Distribution::global2local */
 
     virtual IndexType global2local( const IndexType globalIndex ) const;
 
@@ -129,26 +131,60 @@ public:
 
     virtual void getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const;
 
+    /** Implementation of pure method Distribution::enableAnyAddressing */
+
+    virtual void enableAnyAddressing() const;
+
+    /** Implementation of pure method Distribution::getAnyLocalSize */
+
+    virtual IndexType getAnyLocalSize( const PartitionId partition ) const;
+
+    /** Implementation of pure method Distribution::getAnyOwner */
+
+    virtual PartitionId getAnyOwner( const IndexType globalIndex ) const;
+
+    /** Implementation of pure method Distribution::getAnyLocalIndex */
+
+    virtual IndexType getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const;
+
+    /** Implementation of pure method Distribution::getAnyGlobalIndex */
+
+    virtual IndexType getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const;
+
     /** This method returns the array that contains for this processors all owned indexes. */
 
     inline const hmemo::HArray<IndexType>& getMyIndexes() const;
 
-    virtual const char* getKind() const
-    {
-        return theCreateValue;
-    }
+    /** Implementation of pure method Distribution::getKind */
+
+    virtual inline const char* getKind() const;
 
 protected:
 
     static const char theCreateValue[];
 
+    /** This constructor might be called for derived classes that fill mGlobal2Local and mLocal2Global themselves. */
+
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
-    typedef std::map<IndexType, IndexType> Global2LocalMapType;
+    utilskernel::LArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
+ 
+    // the following arrays will only be available if enableAnyAddressing has been called
+    // Note: if set the array mGlobal2Local is no more needed
 
-    Global2LocalMapType mGlobal2Local;
+    mutable utilskernel::LArray<PartitionId> mAllOwners;
+    mutable utilskernel::LArray<IndexType> mAllLocalOffsets;     // local size on each partition
+    mutable utilskernel::LArray<IndexType> mAllLocal2Global;     // sorts elements into buckets 
+    mutable utilskernel::LArray<IndexType> mAllGlobal2Local;     // sorts elements into buckets 
 
-    utilskernel::LArray<IndexType> mLocal2Global;
+    // Example
+    // index       0    1    2    3   4    5    6    7   8   9   10   11   12 
+    // mOwners:    0    1    2    0   2    0    1    0   0   1    1    2    2 
+    // Offsets:    0                       5                 9                    13
+    // perm   :    0    3    5    7   8    1    6    9  10   2    4   11   12     local2global
+    // perm'  :    0    5    9    1  10    2    6    3   4   7    8   11   12     global2local
+    // 
+    // Note: perm is identity iff we have a block distribution
 
 private:
 
@@ -161,9 +197,18 @@ private:
 
 typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
 const hmemo::HArray<IndexType>& GeneralDistribution::getMyIndexes() const
 {
     return mLocal2Global;
+}
+
+const char* GeneralDistribution::getKind() const
+{
+    return theCreateValue;
 }
 
 } /* end namespace dmemo */

@@ -370,7 +370,7 @@ void CUDAELLUtils::scaleValue(
     thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
     thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
 
-    IndexType maxCols = CUDAUtils::reduce( ia, numRows, IndexType( 0 ), utilskernel::binary::MAX );
+    IndexType maxCols = CUDAUtils::reduce( ia, numRows, IndexType( 0 ), common::binary::MAX );
 
     // TODO: maybe find better implementation
 
@@ -1096,7 +1096,7 @@ void CUDAELLUtils::normalGEVM(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
 
     SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 

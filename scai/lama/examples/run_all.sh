@@ -72,6 +72,7 @@ RUN 1 bench/matvecmul.exe
 RUN 1 bench/maxnorm.exe
 RUN 1 bench/rowcol.exe
 RUN 1 bench/sort.exe 10000
+RUN 1 bench/scan.exe 10000
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/bench/*.exe | wc -l`

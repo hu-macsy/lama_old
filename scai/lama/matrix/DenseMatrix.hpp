@@ -72,6 +72,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseMatrix:
 
     public CRTPMatrix<DenseMatrix<ValueType>, ValueType>,
+    public Matrix,
     public Matrix::Register<DenseMatrix<ValueType> >    // register at factory
 {
 
@@ -263,7 +264,7 @@ public:
 
     virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setContextPtr; // setContextPtr( localContext, haloContext )
+    using Matrix::setContextPtr; // setContextPtr( localContext, haloContext )
 
     /* Implementation of pure method of class Matrix. */
 
@@ -272,11 +273,46 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setIdentity; // setIdentity( const IndexType n )
+    using Matrix::setIdentity; // setIdentity( const IndexType n )
 
     /** Implementation of pure method Matrix::setIdentity. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
+
+    virtual void matrixTimesVector(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
+    }
+
+    virtual void vectorTimesMatrix(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
+    }
+
+    virtual void setRow( const Vector& row,
+                         const IndexType globalRowIndex,
+                         const common::binary::BinaryOp op )
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
+    }
+
+    virtual void setColumn(
+        const Vector& column,
+        const IndexType globalColIndex,
+        const common::binary::BinaryOp op )
+    {
+        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
+    }
 
     /** Implementation of pure Matrix::setDenseData */
 
@@ -363,7 +399,7 @@ public:
 
     /** Method that assigns a sparse matrix, specialization of assign( const Matrix& ) */
 
-    void assignSparse( const CRTPMatrix<SparseMatrix<ValueType>, ValueType>& other );
+    void assignSparse( const Matrix& other );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -421,7 +457,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
     /* Implemenation of pure method of class Matrix */
 
@@ -576,18 +612,25 @@ public:
 
     std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getNumRows;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getNumColumns;
+    using Matrix::getNumRows;
+    using Matrix::getNumColumns;
 
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getRowDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getRowDistributionPtr;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistribution;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::getColDistributionPtr;
+    using Matrix::getRowDistribution;
+    using Matrix::getRowDistributionPtr;
+    using Matrix::getColDistribution;
+    using Matrix::getColDistributionPtr;
 
-    const utilskernel::LArray<PartitionId>& getOwners() const
-    {
-        return mOwners;
-    }
+    /** Implementation of pure methode Matrix::getRow */
+
+    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
+
+    /** Implementation of pure methode Matrix::getRowLocal */
+
+    virtual void getRowLocal( Vector& row, const IndexType globalRowIndex ) const;
+
+    /** Implementation of pure methode Matrix::getColumn */
+
+    virtual void getColumn( Vector& col, const IndexType globalColIndex ) const;
 
     /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
 
@@ -595,13 +638,11 @@ public:
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
-                      const utilskernel::binary::BinaryOp op  );
-
-    void getLocalColumn( hmemo::HArray<ValueType>& col, const IndexType colIndex ) const;
+                      const common::binary::BinaryOp op  );
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
-                         const utilskernel::binary::BinaryOp op  );
+                         const common::binary::BinaryOp op  );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 
@@ -614,11 +655,6 @@ public:
     void getDiagonalImpl( DenseVector<OtherT>& diagonal ) const;
 
 protected:
-
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumRows;
-    using CRTPMatrix<DenseMatrix<ValueType>, ValueType>::mNumColumns;
-
-    utilskernel::LArray<PartitionId> mOwners;
 
     /**
      * @brief Set this matrix = alpha * A + beta * B
@@ -645,8 +681,6 @@ private:
      *  @param[out]  result     will be the joined data
      *  @param[in]   firstRow   first local row
      *  @param[in]   nRows      number of rows to join
-     *
-     *  Note: the column distribution is taken from the values of mOwners
      */
     void joinColumnData( scai::hmemo::HArray<ValueType>& result, const IndexType firstRow, const IndexType nRows ) const;
 
@@ -658,14 +692,15 @@ private:
      *
      *  @param[out]  chunks        vector of shared pointer to the new allocated chunks
      *  @param[in]   columnData    is the dense storage to split
-     *  @param[in]   numChunks     is the number of chunks, same as number of partitions of distribution
-     *  @param[in]   columnOwners  owner for each column
+     *  @param[in]   columnDist    is the distribution used for splitting global data to local data
+     *
+     *  Note:  columnData.getNumColumns() == columnDist.getGlobalSize()
+     *  After: chunks.size() == columnDist.getNumPartitions()
      */
     static void splitColumnData(
         std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
-        const PartitionId numChunks,
-        const hmemo::HArray<PartitionId>& columnOwners );
+        const dmemo::Distribution& columnDist );
 
     /** Restrict dense storage of a replicated matrix to its local part according to row distribution.
      *
@@ -691,8 +726,6 @@ private:
     //TODO: no implementation: implement or delete
     //void initChunks();  // common initialization for constructors
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
     void    computeOwners();
 
     /** Special implementation of invert in place for a cyclic distributed matrix. */
@@ -702,6 +735,8 @@ private:
     static std::string initTypeName();
 
 public:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     // static methods, variables to register create routine in Matrix factory of base class.
 
@@ -733,8 +768,6 @@ void DenseMatrix<ValueType>::copyDenseMatrix( const DenseMatrix<OtherValueType>&
         SCAI_LOG_DEBUG( logger, "copy block " << i << " of " << n << " = " << *other.mData[i] )
         mData[i].reset( new DenseStorage<ValueType>( *other.mData[i] ) );
     }
-
-    mOwners = other.getOwners();
 }
 
 template<typename ValueType>
@@ -750,7 +783,7 @@ DenseMatrix<ValueType>::DenseMatrix(
     : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
 {
     mData.resize( 1 );
-    mData[0].reset( new DenseStorage<ValueType>( mNumRows, mNumColumns ) );
+    mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );
     mData[0]->setCSRData( numNoneZeros, ia, ja, values );
     computeOwners();
 }

@@ -337,8 +337,8 @@ void CUDACSRUtils::convertCSR2CSC(
     const IndexType numDiagonals = 0;// not supported yet
     CUDACOOUtils::offsets2ia( cscJA, numValues, csrIA, numRows, numDiagonals );
     // switch cooIA and cooJA, copy values and resort
-    CUDAUtils::set( cooIA, csrJA, numValues, utilskernel::binary::COPY );
-    CUDAUtils::set( cscValues, csrValues, numValues, utilskernel::binary::COPY );
+    CUDAUtils::set( cooIA, csrJA, numValues, common::binary::COPY );
+    CUDAUtils::set( cscValues, csrValues, numValues, common::binary::COPY );
     thrust::device_ptr<IndexType> ja_d( cooIA );
     thrust::device_ptr<ValueType> values_d( cscValues );
     thrust::device_ptr<IndexType> ia_d( cscJA );
@@ -1001,7 +1001,7 @@ void CUDACSRUtils::normalGEVM(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    CUDAUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
 
     SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 

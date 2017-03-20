@@ -146,6 +146,33 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( setContextTest )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    hmemo::ContextPtr nullContext = hmemo::ContextPtr();   // null context
+
+    Matrices allMatrices( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for setContext" )
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix& matrix = *allMatrices[s];
+
+        BOOST_CHECK_THROW( 
+        {
+            matrix.setContextPtr( nullContext );
+        }, common::Exception );
+
+        matrix.setContextPtr( context );
+ 
+        BOOST_CHECK_EQUAL( context.get(), matrix.getContextPtr().get() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE( copyTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
@@ -602,7 +629,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
                     matrix.getRow( *row, iRow );
-                    matrix.setRow( *row, iRow, utilskernel::binary::SUB );
+                    matrix.setRow( *row, iRow, common::binary::SUB );
                 }
 
                 // the final matrix should be zero
@@ -660,7 +687,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
                 for ( IndexType iCol = 0; iCol < matrix.getNumColumns(); ++iCol )
                 {
                     matrix.getColumn( *col, iCol );
-                    matrix.setColumn( *col, iCol, utilskernel::binary::SUB );
+                    matrix.setColumn( *col, iCol, common::binary::SUB );
                 }
 
                 // the final matrix should be zero
@@ -780,7 +807,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                         if ( s != Scalar( 0 ) )
                         {
-                            matrix.setValue( iRow, jCol, s, utilskernel::binary::SUB );
+                            matrix.setValue( iRow, jCol, s, common::binary::SUB );
                         }
                     }
                 }

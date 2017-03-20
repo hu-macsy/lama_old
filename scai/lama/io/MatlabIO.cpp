@@ -245,8 +245,8 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
     // array = array + i * imagValues
 
     ValueType i = static_cast<ValueType>( ComplexDouble( 0, 1 ) );
-    utilskernel::HArrayUtils::binaryOpScalar2( imagValues, imagValues, i, utilskernel::binary::MULT );
-    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, utilskernel::binary::ADD );
+    utilskernel::HArrayUtils::compute( imagValues, imagValues, common::binary::MULT, i );
+    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::binary::ADD );
 
 #endif
 }
@@ -304,6 +304,24 @@ void MatlabIO::readArrayImpl(
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatlabIO::readSparseImpl(
+    IndexType& size,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse array not supported for this file format, uses a temporary dense array of same type
+
+    HArray<ValueType> denseArray;
+
+    readArray( denseArray, fileName, 0, nIndex );
+    size = denseArray.size();
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>& array, bool dryRun )
 {
     uint32_t wBytes = 0;
@@ -320,7 +338,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 
         HArray<ValueType> tmp;
         ValueType minusi = ComplexDouble( 0, -1 );
-        utilskernel::HArrayUtils::binaryOpScalar2( tmp, array, minusi, utilskernel::binary::MULT );
+        utilskernel::HArrayUtils::compute( tmp, array, common::binary::MULT, minusi );
         utilskernel::HArrayUtils::setArray( real, tmp );
 
         wBytes += writeArrayData( outFile, real, dryRun );
@@ -398,6 +416,22 @@ void MatlabIO::writeArrayImpl(
     IndexType dims[2] = { array.size(), 1 };
 
     writeDenseArray( outFile, array, dims );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeSparseImpl(
+    const IndexType size,
+    const HArray<IndexType>& indexes,
+    const HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse unsupported for this file format, write it dense
+
+    HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    writeArrayImpl( denseArray, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

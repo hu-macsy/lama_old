@@ -125,7 +125,7 @@ void OpenMPJDSUtils::setRow(
     const IndexType dlg[],
     const IndexType ja[],
     const OtherValueType row[],
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.JDS.setRow" )
 
@@ -240,6 +240,46 @@ IndexType OpenMPJDSUtils::getValuePosCol(
 
             k += dlg[jj];
         }
+    }
+
+    return cnt;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+IndexType OpenMPJDSUtils::getValuePosRow(
+    IndexType pos[],
+    const IndexType i,
+    const IndexType numRows,
+    const IndexType ilg[],
+    const IndexType dlg[],
+    const IndexType perm[] )
+{
+    SCAI_REGION( "OpenMP.JDSUtils.getValuePosRow" )
+
+    IndexType ii = nIndex;
+
+    // check the permutation of row i
+
+    for ( ii = 0; ii < numRows; ii++ )
+    {
+        if ( perm[ii] == i )
+        {
+            break;
+        }
+    }
+
+    SCAI_ASSERT_NE_ERROR( ii, numRows, "row " << i << " not found in perm array" );
+
+    IndexType cnt = ilg[ii];
+
+    IndexType k = 0;
+
+    for ( IndexType jj = 0; jj < cnt; ++jj )
+    {
+        pos[jj] = ii + k;
+        k += dlg[jj];
+        SCAI_LOG_TRACE( logger, "pos[" << jj << "] = " << pos[jj] << ", dlg[" << jj << "] = " << dlg[jj] )
     }
 
     return cnt;
@@ -516,7 +556,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     // z = alpha * JDS * x + beta * y, remains: z += alpha * JDS * x
 
-    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
 
     if ( ndlg == 0 )
     {
@@ -606,7 +646,7 @@ void OpenMPJDSUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar1( result, beta, y, numColumns, utilskernel::binary::MULT );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
 
     if ( ndlg == 0 )
     {
@@ -778,6 +818,7 @@ void OpenMPJDSUtils::Registrator::registerKernels( kregistry::KernelRegistry::Ke
     KernelRegistry::set<JDSKernelTrait::checkDiagonalProperty>( checkDiagonalProperty, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePos>( getValuePos, ctx, flag );
     KernelRegistry::set<JDSKernelTrait::getValuePosCol>( getValuePosCol, ctx, flag );
+    KernelRegistry::set<JDSKernelTrait::getValuePosRow>( getValuePosRow, ctx, flag );
 }
 
 template<typename ValueType>

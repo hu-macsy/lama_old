@@ -41,6 +41,7 @@
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
@@ -341,6 +342,88 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
+{
+    typedef RealType ValueType;   // no focus here on type
+
+    const IndexType n = 18;
+
+    dmemo::TestDistributions testDists( n );
+    removeReplicatedDistributions( testDists );
+
+    const std::string distFileName   = "TestDist.txt";
+    const std::string vectorFileName = "TestVector%r.frv";
+
+    for ( size_t i = 0; i < testDists.size(); ++i )
+    {
+        DistributionPtr dist = testDists[i];
+        CommunicatorPtr comm = dist->getCommunicatorPtr();
+
+        SparseVector<ValueType> vector;
+
+        float fillRate = 0.2;
+
+        vector.setRandom( dist, fillRate );
+
+        bool withDist = dist->getBlockDistributionSize() == nIndex;
+
+        if ( withDist )
+        {
+            PartitionIO::write( *dist, distFileName );
+        }
+
+        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+
+        SparseVector<ValueType> readVector;
+
+        if ( withDist )
+        {
+            readVector.readFromFile( vectorFileName, distFileName );
+
+            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName
+                           << " ) with dist ( " << distFileName << " ): " << readVector )
+        }
+        else
+        {
+            readVector.readFromFile( vectorFileName );
+
+            SCAI_LOG_INFO( logger, "Read vector ( " << vectorFileName << " ): " << readVector )
+        }
+
+        // we replicate now the vector, proves same distribution and same values
+
+        DistributionPtr repDist( new NoDistribution( vector.size() ) );
+
+        vector.redistribute( repDist );
+        readVector.redistribute( repDist );
+
+        // The two vector must be exactly the same
+
+        const hmemo::HArray<ValueType>& local = vector.getNonZeroValues();
+        const hmemo::HArray<ValueType>& readLocal = readVector.getNonZeroValues();
+
+        BOOST_REQUIRE_EQUAL( local.size(), readLocal.size() );
+
+        ValueType diff = utilskernel::HArrayUtils::absMaxDiffVal( local, readLocal );
+
+        BOOST_CHECK( diff == ValueType( 0 ) );
+
+        int rc = PartitionIO::removeFile( vectorFileName, *comm );
+        BOOST_CHECK_EQUAL( 0, rc );
+        BOOST_CHECK( !PartitionIO::fileExists( vectorFileName, *comm ) );
+
+        if ( withDist )
+        {
+            SCAI_LOG_DEBUG( logger, "remove file " << distFileName )
+            int rc = PartitionIO::removeFile( distFileName, *comm );
+            BOOST_CHECK_EQUAL( 0, rc );
+            BOOST_CHECK( !PartitionIO::fileExists( distFileName, *comm ) );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 {
     typedef RealType ValueType;   // no focus here on type
@@ -404,8 +487,8 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
 {
     typedef RealType ValueType;   // no focus here on type
 
-    const IndexType numRows = 15;   // # rows for global matrix
-    const IndexType numCols = 15;   // # cols for global matrix
+    IndexType numRows = 15;   // # rows for global matrix
+    IndexType numCols = 15;   // # cols for global matrix
 
     dmemo::TestDistributions testDists( numRows );
     removeReplicatedDistributions( testDists );
@@ -452,6 +535,12 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
 
             SCAI_LOG_INFO( logger, "Read matrix ( " << matrixFileName << " ): " << readMatrix )
         }
+
+        BOOST_REQUIRE_EQUAL( numRows, readMatrix.getNumRows() );
+
+        // It might happen that the read matrix has less columns if last columns have only zeros
+
+        BOOST_REQUIRE( readMatrix.getNumColumns() <= numCols );
 
         // we replicate now the matrix, proves same distribution and same values
 

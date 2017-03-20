@@ -155,7 +155,7 @@ public:
     /**
      * @brief Overload assignment operator +=
      */
-    Scalar& operator+=( Scalar& other )
+    Scalar& operator+=( const Scalar& other )
     {
         mValue += other.mValue;
         return *this;
@@ -164,7 +164,7 @@ public:
     /**
      * @brief Overload assignment operator -=
      */
-    Scalar& operator-=( Scalar& other )
+    Scalar& operator-=( const Scalar& other )
     {
         mValue -= other.mValue;
         return *this;
@@ -173,7 +173,7 @@ public:
     /**
      * @brief Overload assignment operator *=
      */
-    Scalar& operator*=( Scalar& other )
+    Scalar& operator*=( const Scalar& other )
     {
         mValue *= other.mValue;
         return *this;
@@ -182,7 +182,7 @@ public:
     /**
      * @brief Overload assignment operator /=
      */
-    Scalar& operator/=( Scalar& other )
+    Scalar& operator/=( const Scalar& other )
     {
         mValue /= other.mValue;
         return *this;

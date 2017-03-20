@@ -188,12 +188,15 @@ set ( COMMON_CLASSES
 
 set ( COMMON_HEADERS 
         config
+        BinaryOp
         Constants
         Factory
         Factory1
+        Grid
         Math
         OpenMP
         NonCopyable
+        UnaryOp
         Utils
 )
 

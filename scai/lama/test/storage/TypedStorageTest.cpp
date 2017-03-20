@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
         for ( IndexType i = 0; i < storage.getNumRows(); ++i )
         {
             storage.getRow( row, i );
-            storage.setRow( row, i, utilskernel::binary::SUB );
+            storage.setRow( row, i, common::binary::SUB );
         }
 
         BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
         for ( IndexType j = 0; j < storage.getNumColumns(); ++j )
         {
             storage.getColumn( column, j );
-            storage.setColumn( column, j, utilskernel::binary::SUB );
+            storage.setColumn( column, j, common::binary::SUB );
         }
 
         BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
@@ -444,7 +444,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
     denseStorage.matrixTimesVector( denseResult1, alpha, x, beta, y );
     denseStorage.matrixTimesVector( denseResult2, alpha, x, 0, yDummy );
     denseStorage.matrixTimesVector( denseResult3, alpha, x, 1, denseResult3 );
-    utilskernel::HArrayUtils::binaryOpScalar1( denseResult4, beta, y, utilskernel::binary::MULT );
+    utilskernel::HArrayUtils::compute( denseResult4, beta, common::binary::MULT, y );
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
     SCAI_LOG_INFO( logger, "matrixTimesVectorTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format
@@ -1019,7 +1019,7 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
         BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
         storage.purge();
         // Now set CSR data with an offset array
-        utilskernel::HArrayUtils::scan( matrixRowSizes, context );
+        utilskernel::HArrayUtils::scan1( matrixRowSizes, context );
         storage.setCSRData( numRows, numColumns, numValues, matrixRowSizes, matrixJA, matrixValues );
         BOOST_CHECK_EQUAL( 0, storageDense->maxDiffNorm( storage ) );
         // now we make some checks with incorrect CSR data

@@ -161,6 +161,38 @@ void TextIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void TextIO::writeSparseImpl(
+    const IndexType size,
+    const hmemo::HArray<IndexType>& indexes,
+    const hmemo::HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // Note: size is ignored for TextIO of sparse vector
+
+    if ( true )
+    {
+        HArray<ValueType> denseArray;
+        utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+        writeArrayImpl( denseArray, fileName );
+    }
+    else
+    {
+        // Better solution to write sparse data, but not unique when reading, no header
+
+        SCAI_ASSERT( mFileMode != BINARY, "Binary mode not supported for " << *this )
+
+        IOStream outFile( fileName, std::ios::out );
+    
+        int precIndexes  = getDataPrecision( indexes.getValueType() );
+        int precData     = getDataPrecision( values.getValueType() );
+
+        outFile.writeFormatted( indexes, precIndexes, values, precData );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void TextIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
     IndexType nEntries;   // dummy variable needed for checkTextFile
@@ -221,10 +253,28 @@ void TextIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
 
         array.swap( block );
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void TextIO::readSparseImpl(
+    IndexType& size,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse array not supported for this file format, uses a temporary dense array of same type
+
+    HArray<ValueType> denseArray;
+
+    readArray( denseArray, fileName, 0, nIndex );
+    size = denseArray.size();
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -286,7 +336,7 @@ void TextIO::readData(
     HArrayUtils::setArrayImpl( ia, dIA );  // conversion from double to IndexType
     HArrayUtils::setArrayImpl( ja, dJA );  // conversion from double to IndexType
 
-    IndexType minRowIndex = HArrayUtils::reduce( ia, binary::MIN );
+    IndexType minRowIndex = HArrayUtils::reduce( ia, common::binary::MIN );
 
     if ( minRowIndex == 0 )
     {
@@ -296,8 +346,8 @@ void TextIO::readData(
     {
         // offset base = 1, convert it to 0
 
-        HArrayUtils::setScalar( ia, IndexType( 1 ), binary::SUB );
-        HArrayUtils::setScalar( ja, IndexType( 1 ), binary::SUB );
+        HArrayUtils::setScalar( ia, IndexType( 1 ), common::binary::SUB );
+        HArrayUtils::setScalar( ja, IndexType( 1 ), common::binary::SUB );
     }
     else
     {

@@ -20,7 +20,7 @@ the communication can be executed asynchronously to the calculation on the local
 Distribution Types
 ------------------
 
-LAMA provides five distributions types yet.
+Up to now, LAMA provides seven distribution classes.
 
 Block Distribution
 ^^^^^^^^^^^^^^^^^^
@@ -67,35 +67,76 @@ The following example creates with three parts of size 1, 3 and 2 rows/columns:
 
 .. code-block:: c++
 
-   std::vector<IndexType> localSizes;
-   int sizes[] = { 1, 3, 2 };
-   localSizes.assign( sizes, sizes + 3 );
-   DistributionPtr genBlock( new GenBlockDistribution( numRows, localSizes, comm ) );
+   IndexType raw_sizes[] = { 1, 3, 2 };
+   HArray<IndexType> sizes( 3, raw_sizes );
+   DistributionPtr genBlock( new GenBlockDistribution( numRows, rawSizes, comm ) );
 
 GeneralDistribution
 ^^^^^^^^^^^^^^^^^^^
 
-With the *GeneralDistribution* a fully free Distribution can be created. Therefor, a vector with the mapping from row to
+With the *GeneralDistribution* a fully free Distribution can be created. Therefore, a vector with the mapping from index to
 partition is given to the distribution. The number of partitions starts by zero. 
 
 .. code-block:: c++
 
-   std::vector<IndexType> row2part;
-   int dist[] = { 1, 2, 0, 2, 0, 1};
-   row2part.assign( dist, dist + 6 );
-   DistributionPtr gen( new GeneralDistribution( row2part, numRows, comm ) );
+   IndexType n = 6;
+   PartitionId raw_mapping[] = { 1, 2, 0, 1, 0, 1};
+   HArray<PartitionId> mapping( n, raw_mapping);
+   DistributionPtr gen( new GeneralDistribution( mapping, comm ) );
    
-In this example process 0 has row/column 3 and 5, process 1 row/column 1 and 6 and process 2 row/column.
+In this example process 0 owns index 2 and 4, process 1 owns 0, 3, and 5 and process 2 owns 1.
 
-An alternative is that each process assigns the global indices of his partition (for process 0):
+An alternative constructor uses the individual sets of owned indexes on each processor.
 
 .. code-block:: c++
 
-    std::vector<IndexType> myIndices;
-    int indices[] = { 3, 5 };
-    myIndices.assign( dist, dist + 2 );
-    DistributionPtr gen2( new GeneralDistribution( numRows, myIndices, comm ) );
+    IndexType n = 6;
+    IndexType raw_indexes[] = { 0, 3, 5 }; // respective
+    IndexType localN = sizeof( raw_indexes ) / sizeof( IndexType ); 
+    HArray<IndexType> myIndexes( localN, raw_indexes );
+    DistributionPtr gen2( new GeneralDistribution( 6, raw_indexes, comm ) );
+
+For the latter constructor the number of locally owned indexes must sum up to the global size and
+each global index must appear exactly once in the local array ``myIndexes`` on a processor. It is not possible
+that one element is owned by multiple processors.
+
+Compared to the other distributions, general distributions have the big disadvantage that one local processor
+does not know the full mapping, i.e. it cannot determine the owner of an abritrary index. Therefore additional
+communication is required to determine ownership of elements.
+
+Grid Distribution
+^^^^^^^^^^^^^^^^^
+
+A *GridDistribution* stands for a block distribution of an n-dimenisonal grid in multiple dimensions.
+
+.. code-block:: c++
+
+    const IndexType N1 = 10;
+    const IndexType N2 = 20;
+    Grid globalGrid( N1, N2 );
+    Grid procGrid( 2, 2 );
+    DistributionPtr gridDist( new GridDistribution( globalGrid, comm, procGrid ) );
+
+Actually, this defines a mapping from the indexes 0 to N1 * N2 - 1 to four processors. The elements of the
+grid are assumed to be stored in a row-major order, i.e. ( x, y+1 ) follows directly ( x, y ) and 
+there are N2 elements between ( x + 1, y ) and ( x, y ).
+
+The number of processors in the processor grid has to match the size of the communicator, i.e. the number
+of processors onto which the application is running. The procGrid argument is optional in the constructor
+of a grid distribution. If it is not specified a processor grid is built from the available processors
+in such a way that an optimal balancing with smallest boundaries is achieved.
+
+Single Distribution
+^^^^^^^^^^^^^^^^^^^
+
+A *SingleDistribution* stands for a mapping of a all data to one single processor, i.e. only one
+processor owns all the data.
     
+.. code-block:: c++
+
+    const PartitionId p = 2;
+    DistributionPtr singleDist( new SingleDistribution( p, comm ) );
+
 No Distribution
 ^^^^^^^^^^^^^^^
 
@@ -106,6 +147,10 @@ no distribution of the data and all processes have a local copy.
 .. code-block:: c++
 
    DistributionPtr no( new NoDistribution ( numRows ) );
+
+Regarding distributed memory programming you should keep in mind that not distributed data might either be used
+in a private mode where each processor works on individual values or in a global mode, where all processors
+have exactly the same values for their incarnation.
 
 Comparison of Distributions
 ---------------------------

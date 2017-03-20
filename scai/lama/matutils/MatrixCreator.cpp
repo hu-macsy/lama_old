@@ -36,10 +36,10 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 // local library
-#include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/GridDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
@@ -130,18 +130,6 @@ bool MatrixCreator::supportedStencilType( const IndexType dimension, const Index
 }
 
 template<typename IndexType>
-static inline IndexType getMatrixPosition(
-    IndexType idX,
-    IndexType idY,
-    IndexType idZ,
-    IndexType dimX,
-    IndexType dimY,
-    IndexType /* dimZ */ )
-{
-    return idZ * dimX * dimY + idY * dimX + idX;
-}
-
-template<typename IndexType>
 static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
 {
     int neighbors = common::Math::abs( shift );
@@ -170,47 +158,45 @@ static inline int getNumNeighbors( IndexType id, IndexType dim, int shift )
     return neighbors;
 }
 
+/* ------------------------------------------------------------------------- */ 
+
 template<typename IndexType>
 static inline IndexType getNStencilValues(
-    IndexType idX,
-    IndexType idY,
-    IndexType idZ,
-    IndexType dimX,
-    IndexType dimY,
-    IndexType dimZ,
+    const IndexType pos[],
+    const common::Grid& grid,
     IndexType length,
     IndexType maxDistance )
 {
-    SCAI_ASSERT_DEBUG( idX < dimX, "idX = " << idX << " out of range, dimX = " << dimX )
-    SCAI_ASSERT_DEBUG( idY < dimY, "idY = " << idY << " out of range, dimY = " << dimY )
-    SCAI_ASSERT_DEBUG( idZ < dimZ, "idZ = " << idZ << " out of range, dimZ = " << dimZ )
+    SCAI_ASSERT_DEBUG( grid.validPos( pos ), "Invalid pos = " << pos[0] << "-" << pos[1] << "-" << pos[2] << " in " << grid )
 
-    IndexType nX = getNumNeighbors( idX, dimX, -length ) + getNumNeighbors( idX, dimX, length );
-    IndexType nY = getNumNeighbors( idY, dimY, -length ) + getNumNeighbors( idY, dimY, length );
-    IndexType nZ = getNumNeighbors( idZ, dimZ, -length ) + getNumNeighbors( idZ, dimZ, length );
+    IndexType nX = getNumNeighbors( pos[0], grid.size( 0 ), -length ) + getNumNeighbors( pos[0], grid.size( 0 ), length );
+    IndexType nY = getNumNeighbors( pos[1], grid.size( 1 ), -length ) + getNumNeighbors( pos[1], grid.size( 1 ), length );
+    IndexType nZ = getNumNeighbors( pos[2], grid.size( 2 ), -length ) + getNumNeighbors( pos[2], grid.size( 2 ), length );
 
-    // SCAI_LOG_DEBUG( logger, idX << "," << idY << "," << idZ << ": neighbors = "
-    //                   << nX << "," << nY << "," << nZ )
-    // printf("%d,%d,%d has %d,%d,%d neighbors\n", idX, idY, idZ, nX, nY, nZ);
-    // Note: nZ will be 0 for dim <= 2, nZ will be 0 for dim <= 1
+    // Note: nZ will be 0 for dim <= 2, nY will be 0 for dim <= 1
+
     IndexType numValues = 1 + nX + nY + nZ; // maxDistance 1
 
     if ( maxDistance >= 2 )
     {
-        SCAI_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
+        SCAI_ASSERT_EQ_ERROR( 1, length, "length > 1 for stencil not supported" )
         numValues += nX * nY + nX * nZ + nY * nZ;
     }
 
     if ( maxDistance >= 3 )
     {
-        SCAI_ASSERT_ERROR( length == 1, "length > 1 for stencil not supported" )
+        SCAI_ASSERT_EQ_ERROR( 1, length, "length > 1 for stencil not supported" )
+
         // dimension cannot be 1, 2
+
         numValues += nX * nY * nZ;
     }
 
-    // std::cout << "getNStencilValues( idX = " << idX << ", idY = " << idY << ", idZ = " << idZ
-    //                         << ", dimX = " << dimX << ", dimY = " << dimY << ", dimZ = " << dimZ
-    //                         << ", len = " << length << ", maxDist = " << maxDistance  << " ) -> " << numValues << std::endl;
+    /*
+    std::cout << "getNStencilValues( pos = " << pos[0] << ", " << pos[1] << ", " << pos[2]
+                            << ", grid = " << grid
+                            << ", len = " << length << ", maxDist = " << maxDistance  << " ) -> " << numValues << std::endl;
+    */
 
     return numValues;
 }
@@ -218,30 +204,27 @@ static inline IndexType getNStencilValues(
 static inline void getStencil(
     std::vector<IndexType>& positions,
     std::vector<int>& values,
-    const IndexType idX,
-    const IndexType idY,
-    const IndexType idZ,
-    const IndexType dimX,
-    const IndexType dimY,
-    const IndexType dimZ,
+    const IndexType pos[],
+    const common::Grid& grid,
     const IndexType stencilType,
     const IndexType length,
     const IndexType maxDistance )
 {
     positions.clear(); // reset number of entries to 0
     values.clear(); // reset
-    positions.push_back( getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) );
+
+    positions.push_back( grid.linearPos( pos ) );
     values.push_back( stencilType - 1 );
 
-    int leftX = getNumNeighbors( idX, dimX, -length );
-    int rightX = getNumNeighbors( idX, dimX, length );
-    int leftY = getNumNeighbors( idY, dimY, -length );
-    int rightY = getNumNeighbors( idY, dimY, length );
-    int leftZ = getNumNeighbors( idZ, dimZ, -length );
-    int rightZ = getNumNeighbors( idZ, dimZ, length );
+    int leftX = getNumNeighbors( pos[0], grid.size( 0 ), -length );
+    int rightX = getNumNeighbors( pos[0], grid.size( 0 ), length );
+    int leftY = getNumNeighbors( pos[1], grid.size( 1 ), -length );
+    int rightY = getNumNeighbors( pos[1], grid.size( 1 ), length );
+    int leftZ = getNumNeighbors( pos[2], grid.size( 2 ), -length );
+    int rightZ = getNumNeighbors( pos[2], grid.size( 2 ), length );
 
     // std::cout << "range [ " << leftX << ":" << rightX << ", " << leftY << ":" << rightY << ", " << leftZ << ":" << rightZ << "]"
-    //           << " for " << idX << ":" << idY << ":" << idZ << std::endl;
+    //           << " for " << pos[0] << ":" << pos[1] << ":" << pos[2] << std::endl;
 
     for ( int dz = -leftZ; dz <= rightZ; ++dz )
     {
@@ -272,7 +255,8 @@ static inline void getStencil(
                     continue;
                 }
 
-                positions.push_back( getMatrixPosition( idX + dx, idY + dy, idZ + dz, dimX, dimY, dimZ ) );
+                IndexType npos[] = { pos[0] + dx, pos[1] + dy, pos[2] + dz };
+                positions.push_back( grid.linearPos( npos ) );
                 values.push_back( -1 );
             }
         }
@@ -289,103 +273,65 @@ void MatrixCreator::buildPoisson(
     const IndexType dimY,
     const IndexType dimZ )
 {
-    // Calculate subdomains, subranges
-    PartitionId gridSize[3] = { 1, 1, 1 };
-    PartitionId gridRank[3] = { 0, 0, 0 };
-    PartitionId dimLB[3]    = { 0, 0, 0 };
-    PartitionId dimUB[3]    = { dimX, dimY, dimZ };
+    using namespace dmemo;   // simplifies working with distributons, communicator
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
+    IndexType sizes[] = { dimX, dimY, dimZ };
 
-    // get rank of this processor
+    common::Grid globalGrid( dimension, sizes );
 
-    if ( dimension == 1 )
-    {
-        gridSize[0] = comm->getSize();
-        gridRank[0] = comm->getRank();
-        dmemo::BlockDistribution::getLocalRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-    }
-    else if ( dimension == 2 )
-    {
-        comm->factorize2( gridSize, static_cast<double>( dimX ), static_cast<double>( dimY ) );
-        comm->getGrid2Rank( gridRank, gridSize );
-        dmemo::BlockDistribution::getLocalRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        dmemo::BlockDistribution::getLocalRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
-    }
-    else if ( dimension == 3 )
-    {
-        comm->factorize3( gridSize, static_cast<double>( dimX ), static_cast<double>( dimY ), static_cast<double>( dimZ ) );
-        comm->getGrid3Rank( gridRank, gridSize );
-        dmemo::BlockDistribution::getLocalRange( dimLB[0], dimUB[0], dimX, gridRank[0], gridSize[0] );
-        dmemo::BlockDistribution::getLocalRange( dimLB[1], dimUB[1], dimY, gridRank[1], gridSize[1] );
-        dmemo::BlockDistribution::getLocalRange( dimLB[2], dimUB[2], dimZ, gridRank[2], gridSize[2] );
-    }
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr( );   // get the default communicator
 
-    SCAI_LOG_INFO( logger,
-                   *comm << ": rank = (" << gridRank[0] << "," << gridRank[1] << "," << gridRank[2]
-                   << ") of (" << gridSize[0] << "," << gridSize[1] << "," << gridSize[2]
-                   << "), local range = [" << dimLB[0] << ":" << dimUB[0] << "," << dimLB[1] << ":" << dimUB[1] << "," << dimLB[2] << ":" << dimUB[2]
-                   << "] of " << dimX << " x " << dimY << " x " << dimZ )
+    common::shared_ptr<GridDistribution> gridDistribution( new GridDistribution( globalGrid, comm ) );
 
-    IndexType globalSize = dimX * dimY * dimZ; // number of rows, columns of full matrix
-    std::vector<IndexType> myGlobalIndexes; // row indexes of this processor
-    std::vector<IndexType> myIA; // number of entries in my rows
+    SCAI_LOG_INFO( logger, *comm << ": " << *gridDistribution )
+
     IndexType myNNA = 0; // accumulated sum for number of my entries
-    // compute local size on this processor
-    IndexType localSize = 1;
 
-    for ( IndexType i = 0; i < dimension; i++ )
-    {
-        localSize *= dimUB[i] - dimLB[i];
-    }
-
-    SCAI_LOG_DEBUG( logger, *comm << ": has local size = " << localSize )
-    myGlobalIndexes.reserve( localSize );
-    myIA.reserve( localSize );
     IndexType length;
     IndexType dimStencil;
     IndexType maxDistance;
+
     getStencilProperties( dimStencil, length, maxDistance, stencilType );
+
     SCAI_ASSERT_EQUAL_ERROR( dimStencil, dimension )
-    SCAI_LOG_INFO( logger,
-                   "stencil type = " << stencilType << " -> dim = " << dimStencil << ", direction length = " << length << ", max distance = " << maxDistance )
 
-    // compute global indexes this processor is responsibile for and number of non-zero values
-    // of the rows owned by this processor
+    SCAI_LOG_INFO( logger, "stencil type = " << stencilType << " -> dim = " << dimStencil 
+                            << ", direction length = " << length << ", max distance = " << maxDistance )
 
-    for ( IndexType idZ = dimLB[2]; idZ < dimUB[2]; ++idZ )
+    // Loop over all local grid points and count number of matrix values needed
+    // Actual we could make a guess here with getLocalSize * nPoints
+
+    const common::Grid& localGrid = gridDistribution->getLocalGrid();
+    const IndexType localSize = gridDistribution->getLocalSize();
+
+    IndexType localGridPos[3]  = { 0, 0, 0 };
+    IndexType globalGridPos[3] = { 0, 0, 0 };
+
+    for ( IndexType i = 0; i < localSize; ++i )
     {
-        for ( IndexType idY = dimLB[1]; idY < dimUB[1]; ++idY )
-        {
-            for ( IndexType idX = dimLB[0]; idX < dimUB[0]; ++idX )
-            {
-                const IndexType iPos = getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ );
-                myGlobalIndexes.push_back( iPos );
-                const IndexType numNonZeros = getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance );
-                myIA.push_back( numNonZeros );
-                // accumulate number of stencil values
-                myNNA += numNonZeros;
-            }
-        }
+        localGrid.gridPos( localGridPos, i );
+        gridDistribution->local2global( globalGridPos, localGridPos );
+
+        const IndexType numNonZeros = getNStencilValues( globalGridPos, globalGrid, length, maxDistance );
+
+        myNNA += numNonZeros;
     }
 
-    SCAI_LOG_INFO( logger, *comm << ": has local " << localSize << " rows, nna = " << myNNA )
-    // allocate and fill local part of the distributed matrix
-    hmemo::HArrayRef<IndexType> indexes(  myGlobalIndexes );
-    dmemo::DistributionPtr distribution( new dmemo::GeneralDistribution( globalSize, indexes, comm ) );
-    SCAI_LOG_INFO( logger, "distribution = " << *distribution )
     // create new local CSR data ( # local rows x # columns )
-    scai::lama::CSRStorage<double> localMatrix;
-    localMatrix.allocate( localSize, globalSize );
-    // Allocate local matrix with correct sizes and correct first touch in case of OpenMP
-    // ToDo: localMatrix( localSize, numColumns, numNonZeros, &myIA[0] );
+
+    CSRStorage<double> localMatrix;
+
+    localMatrix.allocate( localSize, globalGrid.size() );
+
     hmemo::HArray<IndexType> csrIA;
     hmemo::HArray<IndexType> csrJA;
     hmemo::HArray<double> csrValues;
+
     {
         hmemo::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );
         hmemo::WriteOnlyAccess<IndexType> ja( csrJA, myNNA );
         hmemo::WriteOnlyAccess<double> values( csrValues, myNNA );
+
         ia[0] = 0;
 
         std::vector<IndexType> colIndexes;
@@ -393,44 +339,50 @@ void MatrixCreator::buildPoisson(
 
         colIndexes.reserve( stencilType );
         colValues.reserve( stencilType );
+
         // compute global indexes this processor is responsibile for and number of non-zero values
         // Important: same loop order as above
         IndexType rowCounter = 0; // count local rows
         IndexType nnzCounter = 0; // count local non-zero elements
 
-        for ( IndexType idZ = dimLB[2]; idZ < dimUB[2]; ++idZ )
+        for ( IndexType i = 0; i < localSize; ++i )
         {
-            for ( IndexType idY = dimLB[1]; idY < dimUB[1]; ++idY )
+            localGrid.gridPos( localGridPos, i );
+            gridDistribution->local2global( globalGridPos, localGridPos );
+
+            // get column positions and values of matrix, diagonal element is first
+
+            getStencil( colIndexes, colValues, globalGridPos, globalGrid, stencilType, length, maxDistance );
+
+            // check colIndexes.size() against number of values given by getNStencilValues
+
+            SCAI_ASSERT_EQ_DEBUG( ( IndexType ) colIndexes.size(), 
+                                    getNStencilValues( globalGridPos, globalGrid, length, maxDistance ), 
+                                    "serious mismatch" );
+
+            SCAI_ASSERT_EQ_DEBUG( colIndexes.size(), colValues.size(), "serious mismatch" )
+
+            SCAI_LOG_DEBUG( logger,
+                            *comm << ": at " << globalGridPos[0] << "-" << globalGridPos[1] << "-" << globalGridPos[2] 
+                             << ", local row : " << rowCounter << ", global row : " << globalGrid.linearPos( globalGridPos ) 
+                             << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." )
+
+            ia[rowCounter + 1] = ia[rowCounter] + static_cast<IndexType>( colIndexes.size() );
+
+            for ( size_t k = 0; k < colIndexes.size(); ++k )
             {
-                for ( IndexType idX = dimLB[0]; idX < dimUB[0]; ++idX )
-                {
-                    // get column positions and values of matrix, diagonal element is first
-                    getStencil( colIndexes, colValues, idX, idY, idZ, dimX, dimY, dimZ, stencilType, length,
-                                maxDistance );
-                    // check colIndexes.size() against number of values given by getNStencilValues
-                    SCAI_ASSERT_EQUAL_DEBUG( ( IndexType ) colIndexes.size(),
-                                             getNStencilValues( idX, idY, idZ, dimX, dimY, dimZ, length, maxDistance ) );
-                    SCAI_ASSERT_EQUAL_DEBUG( colIndexes.size(), colValues.size() )
-                    SCAI_LOG_TRACE( logger,
-                                    *comm << ": at " << idX << " x " << idY << " x " << idZ << ", local row : " << rowCounter << ", global row : " << getMatrixPosition( idX, idY, idZ, dimX, dimY, dimZ ) << ": " << colIndexes.size() << " entries: " << colIndexes[0] << ": " << colValues[0] << ", ..." )
-                    ia[rowCounter + 1] = ia[rowCounter] + static_cast<IndexType>( colIndexes.size() );
-
-                    for ( size_t k = 0; k < colIndexes.size(); ++k )
-                    {
-                        ja[nnzCounter] = colIndexes[k];
-                        values[nnzCounter] = static_cast<double>( colValues[k] );
-                        ++nnzCounter;
-                    }
-
-                    ++rowCounter;
-                }
+                ja[nnzCounter] = colIndexes[k];
+                values[nnzCounter] = static_cast<double>( colValues[k] );
+                ++nnzCounter;
             }
+
+            ++rowCounter;
         }
     }
 
     localMatrix.swap( csrIA, csrJA, csrValues );
     SCAI_LOG_DEBUG( logger, "replace owned data with " << localMatrix )
-    matrix.assign( localMatrix, distribution, distribution ); // builds also halo
+    matrix.assign( localMatrix, gridDistribution, gridDistribution );     // builds also halo
 
     // but now the local part of matrixA should have the diagonal property as global column // indexes have been localized
     // is not for each storage format the case

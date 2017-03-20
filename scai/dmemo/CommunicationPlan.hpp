@@ -243,6 +243,22 @@ public:
 
     void writeAt( std::ostream& stream ) const;
 
+    /** @brief Query info for a certain partition.
+     *
+     *  @param[out] quantity is number of entries to communicate with p
+     *  @param[out] offset is the corresponding offset
+     *  @param[in] p is the partition for which info is needed
+     */
+    void getInfo( IndexType& quantity, IndexType& offset, PartitionId p ) const;
+
+    /** @brief build a communnication plan from existing one for one processor only */
+
+    void extractPlan( const CommunicationPlan& oldPlan, const PartitionId p );
+
+    /** @brief build a communication plan with a single entry only */
+
+    void singleEntry( const PartitionId p, const IndexType quantity );
+
 private:
 
     bool mAllocated; //!< true, if plan has been allocated

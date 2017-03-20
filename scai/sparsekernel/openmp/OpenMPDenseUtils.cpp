@@ -232,9 +232,9 @@ void OpenMPDenseUtils::set(
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType2 in[],
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
-    using namespace utilskernel;
+    using namespace common;
 
     SCAI_REGION( "OpenMP.DenseUtils.set" )
 
@@ -301,11 +301,11 @@ void OpenMPDenseUtils::setValue(
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType val,
-    const utilskernel::binary::BinaryOp op )
+    const common::binary::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.DenseUtils.setValue" )
 
-    using namespace utilskernel;
+    using namespace common;
 
     switch ( op )
     {

@@ -36,6 +36,7 @@
 
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/utilskernel.hpp>
 
 namespace scai
@@ -117,6 +118,13 @@ public:
         float weight = static_cast<float>( comm->getRank() + 1 );
 
         push_back( DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) ) );
+
+        // Create a single distributon, not on first processor
+        //  1 -> 0, 2 ->1, 3 -> 1, 4 -> 2
+
+        PartitionId owner = comm->getSize() / 2;
+
+        push_back( DistributionPtr( new SingleDistribution( globalSize, comm, owner ) ) );
     }
 
 private:

@@ -93,7 +93,7 @@ int main()
 //    csrStorage->setCSRData( numRows, numColumns, numValues, matrixIA, matrixJA, mValues );
     // Allocate and fill vector for the multiplication.
     DenseVector<ValueType> vector( numColumns, 0.0 );
-    vector.setValues( vValues );
+    vector.setDenseValues( vValues );
     // Allocation of the result vector.
     DenseVector<ValueType> result( numRows, 0.0 );
     // Distribution pointer are needed to construct a CSRSparseMatrix.

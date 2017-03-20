@@ -44,6 +44,7 @@ scai_project(
         throw
         loop
         unique_name
+        unsupported
         unused
 
     ADD_PARENT_SCOPE 

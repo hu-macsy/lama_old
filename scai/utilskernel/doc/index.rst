@@ -29,7 +29,6 @@ Contents
    HArrayUtils
    LArray
    LAMAKernel
-   BinaryOp
 
 *******
 Example

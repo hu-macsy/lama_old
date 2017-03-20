@@ -208,6 +208,31 @@ void Distribution::computeOwners( HArray<PartitionId>& owners, const HArray<Inde
 
 /* ---------------------------------------------------------------------- */
 
+PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
+{
+    // sum reduction required for owner as other processors do not know it
+
+    IndexType owner = 0;
+
+	IndexType localIndex = global2local( globalIndex );
+
+    if ( localIndex != nIndex )
+    {
+        SCAI_LOG_INFO( logger,
+                       *this << ": owner of " << globalIndex << ", local index = " << localIndex )
+
+        owner = mCommunicator->getRank() + 1;
+    }
+
+    owner = mCommunicator->sum( owner ) - 1;
+
+    SCAI_LOG_INFO( logger, *mCommunicator << ": owner of " << globalIndex << " = " << owner )
+
+    return owner;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Distribution::allOwners( HArray<PartitionId>& owners, PartitionId root ) const
 {
     HArray<IndexType> indexes;
@@ -251,6 +276,34 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
     }
 
     SCAI_ASSERT_EQ_ERROR( k, nLocal, "serious local mismatch" );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexType>& local2global ) const
+{
+    HArray<PartitionId> owners;
+
+    IndexType n = getGlobalSize();
+
+    {
+        WriteOnlyAccess<IndexType> wOwners( owners, n );
+        for ( IndexType i = 0; i < getGlobalSize(); ++i )
+        {
+            wOwners[i] = getAnyOwner( i );
+        }
+    }
+
+    utilskernel::HArrayUtils::bucketSort( offsets, local2global, owners, mCommunicator->getSize() );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Distribution::getAnyGlobal2Local( HArray<IndexType>& offsets, HArray<IndexType>& global2local ) const
+{
+    HArray<IndexType> local2global;              // temporary array to keep the inverse permutation
+    getAnyLocal2Global( offsets, local2global );
+    utilskernel::HArrayUtils::inversePerm( global2local, local2global );
 }
 
 /* ---------------------------------------------------------------------- */

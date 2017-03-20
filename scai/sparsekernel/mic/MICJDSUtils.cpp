@@ -40,7 +40,7 @@
 
 // other scai libraries
 #include <scai/utilskernel/mic/MICUtils.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 #include <scai/hmemo/mic/MICContext.hpp>
 #include <scai/tasking/mic/MICSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
@@ -567,7 +567,7 @@ void MICJDSUtils::normalGEMV(
 
     if ( beta == common::constants::ZERO )
     {
-        MICUtils::setVal( result, numRows, ValueType( 0 ), utilskernel::binary::COPY );
+        MICUtils::setVal( result, numRows, ValueType( 0 ), common::binary::COPY );
     }
     else if ( result == y )
     {
@@ -578,13 +578,13 @@ void MICJDSUtils::normalGEMV(
         }
         else
         {
-            MICUtils::setVal( result, numRows, beta, utilskernel::binary::MULT );
+            MICUtils::setVal( result, numRows, beta, common::binary::MULT );
         }
     }
     else
     {
         // result = beta * y
-        MICUtils::binaryOpScalar1( result, beta, y, numRows, utilskernel::binary::MULT );
+        MICUtils::binaryOpScalar1( result, beta, y, numRows, common::binary::MULT );
     }
 
     if ( ndlg == 0 )

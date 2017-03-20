@@ -600,6 +600,20 @@ public:
 
     virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
 
+    /** Scan values among the processor belonging to this communicator. */
+
+    template<typename ValueType>
+    ValueType scan( const ValueType localValue ) const;
+
+    /** Inclusive scan, similiar to sum but each processor has partial sums */
+
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+
+    /** Default implementation */
+
+    template<typename ValueType>
+    ValueType scanDefault( const ValueType localValue ) const;
+
     /**
      *  Predicate that returns true if (derived) Communicator class supports minloc/maxlocImpl for a
      *  given value type.
@@ -669,6 +683,19 @@ public:
      *                                                                                    *
      *************************************************************************************/
 
+    /** Broadcast of a heterogeneous array */
+
+    template<typename ValueType>
+    void bcastArray( hmemo::HArray<ValueType>& array, const PartitionId root ) const;
+
+    /** Broadcast of a heterogeneous array with known size 
+     *
+     *  If the size of the array is known, an additional broadcast of the size is not required. 
+     */
+
+    template<typename ValueType>
+    void bcastArray( hmemo::HArray<ValueType>& array, const IndexType n, const PartitionId root ) const;
+
     /** exchangeByPlan for HArrays instead of usual array */
 
     template<typename ValueType>
@@ -723,9 +750,12 @@ public:
     template<typename ValueType>
     void shiftArray( hmemo::HArray<ValueType>& recv, const hmemo::HArray<ValueType>& send, const int direction ) const;
 
+    template<typename ValueType>
+    void joinArray( hmemo::HArray<ValueType>& global, const hmemo::HArray<ValueType>& local ) const;
+
     /** @brief Asychronous shift on LAMA arrays.
      *
-     *  @tparam     ValueType           TODO[doxy] Complete Description.
+     *  @tparam     ValueType   stands for the data type of the arrays
      *  @param[out] recvArray   array to receive for this partition
      *  @param[in]  sendArray   array to send from this partition
      *  @param[in]  direction   number of positions to shift, e.g. 1 or -1

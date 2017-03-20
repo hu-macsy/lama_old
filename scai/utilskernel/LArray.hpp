@@ -164,11 +164,11 @@ public:
 
         if ( context.get() )
         {
-            HArrayUtils::setScalar( *this, value, binary::COPY, context );
+            HArrayUtils::setScalar( *this, value, common::binary::COPY, context );
         }
         else
         {
-            HArrayUtils::setScalar( *this, value, binary::COPY, hmemo::Context::getHostPtr() );
+            HArrayUtils::setScalar( *this, value, common::binary::COPY, hmemo::Context::getHostPtr() );
         }
     }
 
@@ -251,49 +251,49 @@ public:
 
     LArray& operator*= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, binary::MULT );
+        HArrayUtils::setArray( *this, other, common::binary::MULT );
         return *this;
     }
 
     LArray& operator*= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, binary::MULT );
+        HArrayUtils::setScalar( *this, val, common::binary::MULT );
         return *this;
     }
 
     LArray& operator/= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, binary::DIVIDE );
+        HArrayUtils::setArray( *this, other, common::binary::DIVIDE );
         return *this;
     }
 
     LArray& operator/= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, binary::DIVIDE );
+        HArrayUtils::setScalar( *this, val, common::binary::DIVIDE );
         return *this;
     }
 
     LArray& operator+= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, binary::ADD );
+        HArrayUtils::setArray( *this, other, common::binary::ADD );
         return *this;
     }
 
     LArray& operator+= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, binary::ADD );
+        HArrayUtils::setScalar( *this, val, common::binary::ADD );
         return *this;
     }
 
     LArray& operator-= ( const hmemo::_HArray& other )
     {
-        HArrayUtils::setArray( *this, other, binary::SUB );
+        HArrayUtils::setArray( *this, other, common::binary::SUB );
         return *this;
     }
 
     LArray& operator-= ( const ValueType val )
     {
-        HArrayUtils::setScalar( *this, val, binary::SUB );
+        HArrayUtils::setScalar( *this, val, common::binary::SUB );
         return *this;
     }
 
@@ -309,7 +309,7 @@ public:
         //  assignment is done on the first touch memory/context
         hmemo::ContextPtr context = this->getFirstTouchContextPtr();
         SCAI_ASSERT( context.get(), "No first touch context" )
-        HArrayUtils::setScalar( *this, val, binary::COPY, this->getFirstTouchContextPtr() );
+        HArrayUtils::setScalar( *this, val, common::binary::COPY, this->getFirstTouchContextPtr() );
         return *this;
     }
 
@@ -332,28 +332,28 @@ public:
 
     ValueType min() const
     {
-        return HArrayUtils::reduce( *this, binary::MIN );
+        return HArrayUtils::reduce( *this, common::binary::MIN );
     }
 
     /** Get the maximal value of an array */
 
     ValueType max() const
     {
-        return HArrayUtils::reduce( *this, binary::MAX );
+        return HArrayUtils::reduce( *this, common::binary::MAX );
     }
 
     /** Get the maximal value of an array */
 
     ValueType maxNorm() const
     {
-        return HArrayUtils::reduce( *this, binary::ABS_MAX );
+        return HArrayUtils::reduce( *this, common::binary::ABS_MAX );
     }
 
     /** Get the sum of all array elements */
 
     ValueType sum() const
     {
-        return HArrayUtils::reduce( *this, binary::ADD );
+        return HArrayUtils::reduce( *this, common::binary::ADD );
     }
 
     /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */
@@ -386,80 +386,83 @@ public:
 
     void invert()
     {
-        // use the binary op DIVIDE that is also supported
-        HArrayUtils::binaryOpScalar1( *this, ValueType( 1 ), *this, binary::DIVIDE );
+        // use the common::binary op DIVIDE that is also supported
+        bool doSwapScalar = true;
+        HArrayUtils::binaryOpScalar( *this, *this, ValueType( 1 ), common::binary::DIVIDE, doSwapScalar );
     }
 
     /** Compute the conj in-place */
 
     void conj()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::CONJ );
+        HArrayUtils::unaryOp( *this, *this, common::unary::CONJ );
     }
 
     void exp()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::EXP );
+        HArrayUtils::unaryOp( *this, *this, common::unary::EXP );
     }
 
     void log()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::LOG );
+        HArrayUtils::unaryOp( *this, *this, common::unary::LOG );
     }
 
     void floor()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::FLOOR );
+        HArrayUtils::unaryOp( *this, *this, common::unary::FLOOR );
     }
 
     void ceil()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::CEIL );
+        HArrayUtils::unaryOp( *this, *this, common::unary::CEIL );
     }
 
     void sqrt()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::SQRT );
+        HArrayUtils::unaryOp( *this, *this, common::unary::SQRT );
     }
 
     void sin()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::SIN );
+        HArrayUtils::unaryOp( *this, *this, common::unary::SIN );
     }
 
     void cos()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::COS );
+        HArrayUtils::unaryOp( *this, *this, common::unary::COS );
     }
 
     void tan()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::TAN );
+        HArrayUtils::unaryOp( *this, *this, common::unary::TAN );
     }
 
     void atan()
     {
-        HArrayUtils::unaryOp( *this, *this, unary::ATAN );
+        HArrayUtils::unaryOp( *this, *this, common::unary::ATAN );
     }
 
     void powBase( ValueType base )
     {
-        HArrayUtils::binaryOpScalar1( *this, base, *this, binary::POW );
+        bool doSwapScalar = true;
+        HArrayUtils::binaryOpScalar( *this, *this, base, common::binary::POW, doSwapScalar );
     }
 
     void powExp( ValueType exp )
     {
-        HArrayUtils::binaryOpScalar2( *this, *this, exp, binary::POW );
+        bool noSwapScalar = false;
+        HArrayUtils::binaryOpScalar( *this, *this, exp, common::binary::POW, noSwapScalar );
     }
 
     void powBase( const hmemo::HArray<ValueType>& base )
     {
-        return HArrayUtils::binaryOp( *this, base, *this, binary::POW );
+        return HArrayUtils::binaryOp( *this, base, *this, common::binary::POW );
     }
 
     void powExp( const hmemo::HArray<ValueType>& exp )
     {
-        return HArrayUtils::binaryOp( *this, *this, exp, binary::POW );
+        return HArrayUtils::binaryOp( *this, *this, exp, common::binary::POW );
     }
 };
 

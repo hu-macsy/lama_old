@@ -266,6 +266,14 @@ public:
 
     virtual IndexType getNumValues() const;
 
+    /** Implementation of pure method MatrixStorage::getSparseRow */
+
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const;
+
+    /** Implementation of pure method MatrixStorage::getSparseColumn */
+
+    virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const;
+
     /** Template version of getRow */
 
     template<typename OtherType>
@@ -275,18 +283,17 @@ public:
 
     template<typename OtherType>
     void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const utilskernel::binary::BinaryOp op );
+                     const common::binary::BinaryOp op );
 
-    /** Template version of getColumn */
+    /** Implementation of pure method MatrixStorage::getColumn */
 
-    template<typename OtherType>
-    void getColumnImpl( hmemo::HArray<OtherType>& column, const IndexType j ) const;
+    void getColumn( hmemo::_HArray& column, const IndexType j ) const;
 
     /** Template version of setColumn */
 
     template<typename OtherType>
     void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const utilskernel::binary::BinaryOp op );
+                        const common::binary::BinaryOp op );
 
     /** This method returns the diagonal
      *
@@ -406,7 +413,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for ELL storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+                   const common::binary::BinaryOp op = common::binary::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

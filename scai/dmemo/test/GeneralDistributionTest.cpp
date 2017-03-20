@@ -137,4 +137,18 @@ BOOST_AUTO_TEST_CASE( isEqualTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( copyConstructorTest )
+{
+    IndexType N = 15;
+
+    BlockDistribution bdist( N, comm );
+    GeneralDistribution gdist( bdist );
+
+    // maybe they are not equal, but we compare local sizes
+
+    BOOST_CHECK_EQUAL( bdist.getLocalSize(), gdist.getLocalSize() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

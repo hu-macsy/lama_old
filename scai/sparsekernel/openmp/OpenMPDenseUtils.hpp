@@ -44,7 +44,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 
 // std
@@ -103,7 +103,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType2 oldValues[],
-        const utilskernel::binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
@@ -124,7 +124,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType val,
-        const utilskernel::binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
 

@@ -210,6 +210,67 @@ void BlockDistribution::writeAt( std::ostream& stream ) const
            << ", size = " << mLB << ":" << mUB << " of " << mGlobalSize <<  " )";
 }
 
+/* ---------------------------------------------------------------------- */
+
+void BlockDistribution::enableAnyAddressing() const
+{
+    // done, here we have closed formulas
+}
+
+IndexType BlockDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    PartitionId nP = mCommunicator->getSize();
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( rank, nP, "illegal rank specified" )
+
+    IndexType lb;
+    IndexType ub;
+
+    getLocalRange( lb, ub, getGlobalSize(), rank, nP );
+
+    // Attention:  lb = 14 > ub = 12 might be possible
+
+    if ( lb < ub )
+    { 
+        return ub - lb;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+PartitionId BlockDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, mGlobalSize, "global index out of range" )
+    return globalIndex / mBlockSize;
+}
+
+IndexType BlockDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( globalIndex, mGlobalSize, "global index out of range" )
+ 
+    if ( owner == nIndex )
+    {
+        return globalIndex % mBlockSize;
+    }
+    else
+    {
+        // avoid expensive ownership
+
+        return globalIndex - owner * mBlockSize;
+    }
+}
+
+IndexType BlockDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
+{
+    IndexType localSize = getAnyLocalSize( owner );
+
+    SCAI_ASSERT_VALID_INDEX_DEBUG( localIndex, localSize, "local index out of range for owner = " << owner )
+
+    return localIndex + owner * mBlockSize;
+}
+
 /* ---------------------------------------------------------------------------------*
  *   static create methods ( required for registration in distribution factory )    *
  * ---------------------------------------------------------------------------------*/

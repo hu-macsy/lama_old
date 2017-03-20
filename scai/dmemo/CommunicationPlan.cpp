@@ -352,6 +352,26 @@ void CommunicationPlan::compress()
 
 /* ----------------------------------------------------------------------- */
 
+void CommunicationPlan::getInfo( IndexType& quantity, IndexType& offset, PartitionId p ) const
+{
+    // set initial values in case we do not find an entry for p
+
+    quantity = 0;
+    offset   = 0;
+
+    for ( PartitionId pid = 0; pid < size(); pid++ )
+    {
+        if ( mEntries[pid].partitionId == p )
+        {
+            quantity = mEntries[pid].quantity;
+            offset = mEntries[pid].offset;
+            break;
+        }
+    }
+}
+
+/* ----------------------------------------------------------------------- */
+
 void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const Communicator& comm )
 {
     SCAI_ASSERT( plan.allocated(), "plan to reverse not allocated" )
@@ -371,6 +391,57 @@ void CommunicationPlan::allocateTranspose( const CommunicationPlan& plan, const 
     comm.all2all( &recvSizes[0], &sendSizes[0] );
     // now we can allocate by quantities
     allocate( &recvSizes[0], recvSizes.size() );
+}
+
+/* ----------------------------------------------------------------------- */
+
+void CommunicationPlan::extractPlan( const CommunicationPlan& oldPlan, const PartitionId p )
+{
+    mEntries.clear();
+    mQuantity = 0;
+
+    for ( PartitionId pid = 0; pid < oldPlan.size(); pid++ )
+    {
+        const Entry& entry = oldPlan.mEntries[pid];
+
+        if ( entry.partitionId == p  && entry.quantity > 0 )
+        {
+            Entry newEntry( entry );
+
+            newEntry.offset = 0;
+
+            mEntries.push_back( newEntry );
+        
+            mQuantity += entry.quantity;
+        }
+    }
+
+    mAllocated = true;
+    mCompressed = true;
+}
+
+/* ----------------------------------------------------------------------- */
+
+void CommunicationPlan::singleEntry( const PartitionId p, const IndexType quantity )
+{
+    mEntries.clear();
+    mQuantity = 0;
+
+    if ( quantity > 0 )
+    {
+        Entry entry;
+
+        entry.partitionId = p;
+        entry.quantity    = quantity;
+        entry.offset      = 0;
+
+        mQuantity += quantity;
+
+        mEntries.push_back( entry );
+    }
+
+    mAllocated = true;
+    mCompressed = true;
 }
 
 /* ----------------------------------------------------------------------- */

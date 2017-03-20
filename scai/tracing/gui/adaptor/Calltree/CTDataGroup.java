@@ -1,15 +1,15 @@
 /*
  * CTDataGroup.java
- * 
+ *
  * Calltree build by grouping nodes and edges of CTData.
- * 
+ *
  * Created: 2006-02-20 Thomas Brandes <thomas.brandes@scai.fraunhofer.de>
  * Changed:
- * 
+ *
  * $Id$
- * 
+ *
  * Copyright (C) 2006 Fraunhofer SCAI, Germany
- * 
+ *
  * All rights reserved
  *
  * http://www.scai.fhg.de/EP-CACHE/adaptor
@@ -27,26 +27,28 @@ import adaptor.General.CallNode;
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public class CTDataGroup extends CTData {
+public class CTDataGroup extends CTData
+{
 
     /**
      * Logger for this class.
      */
-    private static Logger logger = Logger.getLogger(CTDataGroup.class);
+    private static Logger logger = Logger.getLogger( CTDataGroup.class );
 
     /**
      * A CTData group is created by given CTData.
      * Different possibilities of grouping are supported by the
      * value group_kind.
-     * 
+     *
      * @param theData is the underlying calltree data
      * @param groupKind is the kind of group to build
      */
-    CTDataGroup(CTData theData, int groupKind) {
+    CTDataGroup( CTData theData, int groupKind )
+    {
 
         myIdentification = groupKind;
 
-        logger.info("collapsing CTData, group kind = " + groupKind);
+        logger.info( "collapsing CTData, group kind = " + groupKind );
 
         // we start with the default sizes
 
@@ -56,56 +58,60 @@ public class CTDataGroup extends CTData {
 
         int noNodes = theData.getNumberNodes();
 
-        logger.info("Original CT has " + noNodes + " nodes");
+        logger.info( "Original CT has " + noNodes + " nodes" );
 
-        for (i = 0; i < noNodes; i++) {
+        for ( i = 0; i < noNodes; i++ )
+        {
 
-            CTNode node = theData.getNode(i);
+            CTNode node = theData.getNode( i );
 
-            if (node == null) {
-                
-                continue;           
+            if ( node == null )
+            {
+
+                continue;
             }
 
             // the new node gets the name of the file
 
-            String groupName = node.getGroupName(groupKind);
+            String groupName = node.getGroupName( groupKind );
 
-            CallNode cnode = new CallNode(CallNode.GROUP_NODE, groupName);
+            CallNode cnode = new CallNode( CallNode.GROUP_NODE, groupName );
 
-            CTNode groupNode = findNode(cnode);
+            CTNode groupNode = findNode( cnode );
 
-            if (groupNode == null) {
-                                
-                groupNode = new CTNode(cnode);
-                addCTNode(noGroupNodes, groupNode);
+            if ( groupNode == null )
+            {
+
+                groupNode = new CTNode( cnode );
+                addCTNode( noGroupNodes, groupNode );
                 noGroupNodes++;
             }
 
             // add the node to this CT Data
 
-            groupNode.addSubNode(node);
-            
+            groupNode.addSubNode( node );
+
             long [] costs = node.getExclusiveCosts();
-            
-            groupNode.addInclusiveCosts(costs);
-            groupNode.addExclusiveCosts(costs);
+
+            groupNode.addInclusiveCosts( costs );
+            groupNode.addExclusiveCosts( costs );
 
             // we set the parent of the node
 
-            node.setParent(groupNode);
+            node.setParent( groupNode );
 
         }
 
-        logger.info("collapsed graph has " + noGroupNodes + " nodes");
+        logger.info( "collapsed graph has " + noGroupNodes + " nodes" );
 
         int nEdges = theData.getNumberEdges();
 
-        logger.info("Original CT has " + nEdges + " edges");
+        logger.info( "Original CT has " + nEdges + " edges" );
 
-        for (i = 0; i < nEdges; i++) {
+        for ( i = 0; i < nEdges; i++ )
+        {
 
-            CTEdge edge = theData.getEdge(i);
+            CTEdge edge = theData.getEdge( i );
 
             CTNode sourceNode = edge.getSource();
             CTNode targetNode = edge.getTarget();
@@ -117,17 +123,17 @@ public class CTDataGroup extends CTData {
 
             // find/insert the Edge for the supernodes
 
-            CTEdge groupEdge = getEdge(groupSourceNode, groupTargetNode);
+            CTEdge groupEdge = getEdge( groupSourceNode, groupTargetNode );
 
-            groupEdge.addSubEdge(edge);
+            groupEdge.addSubEdge( edge );
 
             // add the costs / calls
 
-            groupEdge.inheritCosts(edge);
+            groupEdge.inheritCosts( edge );
 
         }
 
-        logger.info("the new graph has " + nEdges + " edges");
+        logger.info( "the new graph has " + nEdges + " edges" );
 
     }
 

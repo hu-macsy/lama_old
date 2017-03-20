@@ -247,10 +247,10 @@ int main( int argc, const char* argv[] )
     options.checkOutFileName();
     options.checkOutDataType();
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
+
     // use vector of outDataType so no information is lost
     common::shared_ptr<Matrix> matrix;
-    VectorCreateKeyType vectorType( Vector::DENSE, options.outDataType );
-    common::shared_ptr<Vector> v ( Vector::create( vectorType ) );
+    common::shared_ptr<_DenseVector> v ( _DenseVector::create( options.outDataType ) );
 
     if ( options.matFileName != "" )
     {
@@ -290,7 +290,7 @@ int main( int argc, const char* argv[] )
 
         // scale random numbers from -1 .. 1 with options.value
 
-        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), utilskernel::binary::MULT );
+        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), common::binary::MULT );
     }
     else
     {
@@ -301,8 +301,7 @@ int main( int argc, const char* argv[] )
 
     if ( matrix.get() )
     {
-        VectorCreateKeyType vectorType( Vector::DENSE, options.outDataType );
-        common::shared_ptr<Vector> rhs ( Vector::create( vectorType ) );
+        common::shared_ptr<_DenseVector> rhs ( _DenseVector::create( options.outDataType ) );
         *rhs = *matrix * *v;
         v = rhs;
         cout << "Vector now rhs of multiplication with matrix: " << *v << endl;

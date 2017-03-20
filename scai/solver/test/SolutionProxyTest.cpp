@@ -74,9 +74,9 @@ BOOST_AUTO_TEST_CASE( testOperators )
     BOOST_CHECK_EQUAL( true, mProxy.isDirty() );
     mProxy.setDirty( false );
     BOOST_CHECK( ! mProxy.isDirty() );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), ( *mProxy )( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), ( *mProxy )( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), ( *mProxy )( 2 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy).getValue( 0 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy).getValue( 1 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), (*mProxy).getValue( 2 ) );
     // using reference makes proxy dirty
     BOOST_CHECK( mProxy.isDirty() );
 }
@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE( testGetConstReference )
     mProxy.setDirty( false );
     const VectorType& vec = mProxy.getConstReference();
     BOOST_CHECK( !mProxy.isDirty() );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 0 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 1 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 2 ) );
     // using const reference makes proxy not dirty
     BOOST_CHECK( ! mProxy.isDirty() );
 }
@@ -113,9 +113,9 @@ BOOST_AUTO_TEST_CASE( testGetReference )
     BOOST_CHECK( !mProxy.isDirty() );
     VectorType& vec = mProxy.getReference();
     BOOST_CHECK( mProxy.isDirty() );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 0 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 1 ) );
-    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec( 2 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 0 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 1 ) );
+    BOOST_CHECK_EQUAL( Scalar( -5.0 ), vec.getValue( 2 ) );
 }
 
 /* --------------------------------------------------------------------- */

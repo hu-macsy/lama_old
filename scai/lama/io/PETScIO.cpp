@@ -40,6 +40,8 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/io/IOStream.hpp>
 
+#include <scai/tracing.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 
@@ -117,7 +119,7 @@ void PETScIO::writeArrayImpl(
     const hmemo::HArray<ValueType>& array,
     const std::string& fileName )
 {
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for PETScIO" )
 
     // int    VEC_FILE_CLASSID
     // int    number of rows
@@ -151,8 +153,26 @@ void PETScIO::writeArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void PETScIO::writeSparseImpl(
+    const IndexType size,
+    const HArray<IndexType>& indexes,
+    const HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    // sparse unsupported for this file format, write it dense
+
+    HArray<ValueType> denseArray;
+    utilskernel::HArrayUtils::buildDenseArray( denseArray, size, values, indexes );
+    writeArrayImpl( denseArray, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 {
+    SCAI_REGION( "IO.PETSc.readArrayInfo" )
+
     // int    VEC_FILE_CLASSID
     // int    number of rows
     // type   values
@@ -183,6 +203,8 @@ void PETScIO::readArrayImpl(
     const IndexType first,
     const IndexType n )
 {
+    SCAI_REGION( "IO.PETSc.readArray" )
+
     // int    VEC_FILE_CLASSID
     // int    number of rows
     // type   values
@@ -235,10 +257,30 @@ void PETScIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, utilskernel::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
 
         array.swap( block );
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void PETScIO::readSparseImpl(
+    IndexType& size,
+    HArray<IndexType>& indexes,
+    HArray<ValueType>& values,
+    const std::string& fileName )
+{
+    SCAI_REGION( "IO.PETSc.readSparse" )
+
+    // sparse array not supported for this file format, uses a temporary dense array of same type
+
+    HArray<ValueType> denseArray;
+
+    readArray( denseArray, fileName, 0, nIndex );
+    size = denseArray.size();
+    utilskernel::HArrayUtils::buildSparseArrayImpl( values, indexes, denseArray );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -248,7 +290,9 @@ void PETScIO::writeStorageImpl(
     const MatrixStorage<ValueType>& storage,
     const std::string& fileName )
 {
-    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for MatlabIO" )
+    SCAI_REGION( "IO.PETSc.writeStorage" )
+
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not available for PETScIO" )
 
     // int    MAT_FILE_CLASSID
     // int    number of rows
@@ -314,6 +358,8 @@ void PETScIO::writeStorageImpl(
 
 void PETScIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName )
 {
+    SCAI_REGION( "IO.PETSc.readStorageInfo" )
+
     std::ios::openmode flags = std::ios::in | std::ios::binary;
 
     SCAI_LOG_INFO( logger, "Read storage info from file " << fileName )
@@ -342,6 +388,8 @@ void PETScIO::readStorageImpl(
     const IndexType firstRow,
     const IndexType nRows )
 {
+    SCAI_REGION( "IO.PETSc.readStorage" )
+
     // int    MAT_FILE_CLASSID
     // int    number of rows
     // int    number of columns

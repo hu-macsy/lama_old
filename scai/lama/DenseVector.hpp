@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_DenseVector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -51,7 +51,6 @@
 #include <scai/common/macros/throw.hpp>
 
 // std
-#include <fstream>
 
 namespace scai
 {
@@ -67,7 +66,7 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseVector:
 
-    public Vector,
+    public _DenseVector,
 
     public Vector::Register<DenseVector<ValueType> >    // register at factory
 
@@ -86,11 +85,26 @@ public:
     explicit DenseVector( hmemo::ContextPtr context );
 
     /**
+     * @brief creates a not initialized replicated DenseVector of the passed global size.
+     *
+     * @param[in] size  is the global size of the vector
+     */
+    explicit DenseVector( const IndexType size );
+
+    /**
      * @brief creates a not initialized distributed DenseVector of the passed global size.
      *
      * @param[in] distribution  the distribution to use for the new vector.
      */
     explicit DenseVector( dmemo::DistributionPtr distribution );
+
+    /**
+     * @brief create a not initialized replicated DenseVector with a given context
+     *
+     * @param[in] size  is the global size of the vector
+     * @param[in] context  the context to use for the new vector.
+     */
+    DenseVector ( const IndexType size, hmemo::ContextPtr context );
 
     /**
      * @brief creates a not initialized distributed DenseVector of the passed global size.
@@ -185,15 +199,29 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    explicit DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
+    DenseVector( const Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed DenseVector with given local values.
      *
+     * @param[in] distribution  the distribution for the vector
      * @param[in] localValues   the local values to initialize the new DenseVector with.
-     * @param[in] distribution  the distribution the
+     *
+     * Note: localValues.size() == distribution->getLocalSize() must be valid.
      */
-    explicit DenseVector( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
+    DenseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues );
+
+    /**
+     * @brief Constructor of a replicated DenseVector with local values
+     *
+     * Note: DenseVector( localValues ) is same as DenseVector( localValues, repDistribution )
+     *       with repDistributon = DistributionPtr( new NoDistribution( localValues.size() )
+     *
+     * Usually, a replicated vector has on multiple processes the same values on each processor.
+     * It might be used in a local mode where each processor has individual values but then it
+     * should never be used in operations that involve global communication.
+     */
+    explicit DenseVector( const hmemo::_HArray& localValues );
 
     /**
      * @brief This constructor creates a vector with the size and values stored
@@ -295,10 +323,6 @@ public:
      */
     virtual ~DenseVector();
 
-    /** Implementation of pure method Vector::getVectorKind() */
-
-    inline virtual VectorKind getVectorKind() const;
-
     /** Implememenation of pure routine Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
@@ -318,6 +342,7 @@ public:
     // All other assignment operators are inherited from class Vector, but using is required
 
     using Vector::operator=;
+    using Vector::assign;
 
     /**
      * This method initializes a distributed vector with random numbers.
@@ -359,19 +384,38 @@ public:
      */
     virtual bool isSorted( bool ascending ) const;
 
+    /** Compute a global prefix sum for the elements of this vector. 
+     *
+     *  \code
+     *   A = { 1, 2, 3, 4, 5, 6 }
+     *   A.scan();
+     *   A = { 1, 3, 6, 10, 15, 21 }
+     *  \endcode  
+     *
+     *  Note: This vector must be block distributed, otherwise it throws an exception
+     */
+    void scan();
+
+    /** Same as scan but it uses another input vector. */
+
+    void scan( const DenseVector<ValueType>& other );
+
     /** Implementation of Vector::getValueType */
 
     virtual common::scalar::ScalarType getValueType() const;
 
     /**
-     * Implementation of pure method.
+     * Implementation of pure method Vector::setDenseValues.
      */
-    virtual void buildValues( hmemo::_HArray& values ) const;
+    virtual void setDenseValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of pure method.
+     * Implementation of pure method Vector::setSparseValues.
      */
-    virtual void setValues( const hmemo::_HArray& values );
+    virtual void setSparseValues(
+        const hmemo::HArray<IndexType>& nonZeroIndexes,
+        const hmemo::_HArray& nonZeroValues,
+        const Scalar zeroValue = Scalar( 0 ) );
 
     /**
      * Implementation of Vector::copy with covariant return type.
@@ -383,36 +427,20 @@ public:
      */
     virtual DenseVector* newVector() const;
 
-    //TODO: We either need a none const getLocalValues()
-    // or an operator[] with local sematics or both
-    // i guess both is the most intuitive because a user that does not request
-    // a parallel environment expects the operator[] to exists
-    // and for users of a distributed DenseVector the usage of
-    // getLocalValues and getHaloValues is more explicite and there for
-    // better understandable and less errorprone.
-    // Maybe an access proxy would be a nice solution, because with a proxy we
-    // can avoid to change the size and other attributes of the HArray
-    // mLocalValues.
     /**
      * @brief get a non constant reference to local values of this Dense Vector.
      *
      * @return  a non constant reference to the local values of this.
      */
 
-    utilskernel::LArray<ValueType>& getLocalValues()
-    {
-        return mLocalValues;
-    }
+    inline utilskernel::LArray<ValueType>& getLocalValues();
 
     /**
      * @brief get a constant reference to local values of this Dense Vector.
      *
      * @return  a constant reference to the local values of this.
      */
-    const utilskernel::LArray<ValueType>& getLocalValues() const
-    {
-        return mLocalValues;
-    }
+    inline const utilskernel::LArray<ValueType>& getLocalValues() const;
 
     /**
      * @brief Get a reference to the halo temp array of this Dense Vector.
@@ -423,10 +451,7 @@ public:
      * processors. It avoids reallocation of memory for the values.
      */
 
-    utilskernel::LArray<ValueType>& getHaloValues() const
-    {
-        return mHaloValues;
-    }
+    inline utilskernel::LArray<ValueType>& getHaloValues() const;
 
     virtual Scalar getValue( IndexType globalIndex ) const;
 
@@ -443,6 +468,10 @@ public:
     virtual Scalar l2Norm() const;
 
     virtual Scalar maxNorm() const;
+
+    /** Implementation of pure method Vector::maxDiffNorm */
+
+    virtual Scalar maxDiffNorm( const Vector& other ) const;
 
     virtual void swap( Vector& other );
 
@@ -461,25 +490,41 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    virtual void assign( const Expression_SV_SV& expression );
+    /** Implementation of pure method Vector::vectorPlusVector */
 
-    virtual void assign( const Expression_SVV& expression );
+    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y );
 
-    virtual void assign( const Expression_SV_S& expression );
+    /** vectorPlusVector with one zero term */
+
+    void assignScaledVector( const Scalar& alpha, const Vector& x );
+
+    /** vectorPlusVector with aliased */
+
+    void axpy( const Scalar& alpha, const Vector& x );
+
+    /** Implementation of pure method Vector::vectorTimesVector */
+
+    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y );
+
+    /** Implementation of pure method Vector::vectorPlusScalar */
+
+    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 
     virtual void assign( const Scalar value );
 
-    virtual void add( const Scalar value );
+    /** Implementation of pure method Vector::setScalar */
 
-    /** Assign this vector with another vector, inherits size and distribution. */
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar = false );
 
-    virtual void assign( const Vector& other );
+    /** Implementation of pure method Vector::setVector */
 
-    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr dist );
+    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapScalar = false );
 
-    virtual void assign( const hmemo::_HArray& globalValues );
+    /** Implementation of pure method Vector::applyUnary */
+
+    virtual void applyUnary( common::unary::UnaryOp op );
 
     /** Setting this vector by gathering vector elements from another vector.
      *
@@ -493,7 +538,7 @@ public:
     virtual void gather(
         const DenseVector<ValueType>& source,
         const DenseVector<IndexType>& index,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
     /** Scattering values from another vector into this vector
      *
@@ -506,49 +551,35 @@ public:
     virtual void scatter(
         const DenseVector<IndexType>& index,
         const DenseVector<ValueType>& source,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
-    virtual void buildLocalValues( hmemo::_HArray& localValues ) const;
+    /**
+     * @brief Implementation of pure method Vector::buildLocalValues.
+     */
+    virtual void buildLocalValues( 
+        hmemo::_HArray& localValues,
+        const common::binary::BinaryOp op = common::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
+
+    /**
+     * @brief Implementation of pure method Vector::gatherLocalValues.
+     *
+     * For a dense vector this is just a corresponding gather of the HArray containing
+     * all local values.
+     */
+    virtual void gatherLocalValues(
+        hmemo::_HArray& localValues,
+        const hmemo::HArray<IndexType>& localIndexes,
+        const common::binary::BinaryOp op = common::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     virtual Scalar dotProduct( const Vector& other ) const;
-
-    virtual DenseVector& scale( const Vector& other );
 
     using Vector::prefetch; // prefetch() with no arguments
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     virtual void wait() const;
-
-    virtual void invert();
-
-    virtual void conj();
-
-    virtual void exp();
-
-    virtual void log();
-
-    virtual void floor();
-
-    virtual void ceil();
-
-    virtual void sqrt();
-
-    virtual void sin();
-
-    virtual void cos();
-
-    virtual void tan();
-
-    virtual void atan();
-
-    virtual void powBase( const Vector& other );
-
-    virtual void powExp( const Vector& other );
-
-    virtual void powBase( const Scalar base );
-
-    virtual void powExp( const Scalar exp );
 
     virtual size_t getMemoryUsage() const;
 
@@ -558,9 +589,11 @@ protected:
 
     using Vector::mContext;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
 private:
+
+    /** Allocate local values array with correct size at right context */
+
+    void allocate();
 
     /** Static method for sorting of DenseVector */
 
@@ -575,6 +608,22 @@ private:
     /** array that might be used to keep halo values of vector, avoids reallocation of memory for halo values */
 
     mutable utilskernel::LArray<ValueType> mHaloValues;
+
+    /** Implementation of Vector::writeLocalToFile */
+
+    virtual void writeLocalToFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** Implementation of Vector::readLocalFromFile */
+
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
+
+    /** Implementation of Vector::clearValues */
+
+    virtual void clearValues();
 
 public:
 
@@ -592,17 +641,31 @@ public:
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Vector::VectorKind DenseVector<ValueType>::getVectorKind() const
+utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues()
 {
-    return Vector::DENSE;
+    return mLocalValues;
+}
+
+template<typename ValueType>
+const utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues() const
+{
+    return mLocalValues;
+}
+
+template<typename ValueType>
+utilskernel::LArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
+{
+    return mHaloValues;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 template<typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context )
-    : Vector( size, context )
+DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context ) :
+
+    _DenseVector( size, context )
+
 {
     // use LAMA array reference to avoid copy of the raw data
     hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );

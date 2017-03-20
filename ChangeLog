@@ -1,8 +1,17 @@
 ##########################################################################
-        LAMA (Version 2.0.0)
+        LAMA (Version 2.2.0)
 ##########################################################################
 
-2016-06-15    Fraunhofer SCAI
+2017-01-11    Fraunhofer SCAI
+
+VERSION 2.2.0 (in preparation):
+
+ * SparseVector now available, especially helpful for operations with rows and/or columns of sparse matrices
+ * Grid added as data structure for multidimensional indexing
+ * GridDistribution added for mapping of data grids to processor grids
+ * SingleDistribution added to map data to one single processor only
+ * dmemo::Distribution: routines added to query ownership and local indexes for each partition
+ * DenseMatrix: owner array for column distribution removed
 
 VERSION 2.1.0 (11.01.2017):
 
@@ -40,7 +49,7 @@ VERSION 1.0.1 (20.06.2013):
  + added examples working with user doc
  
  - dot product only available as vec.dotProduct() not as expression,
- 	because of confusion of scaling a vector component-by-component
+   because of confusion of scaling a vector component-by-component
 
 VERSION 1.0.0 (22.05.2013 - Alpamayo):
 

@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Definition of an abstract class for distributed vectors.
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 22.02.2011
  */
 #pragma once
@@ -46,6 +46,8 @@
 #include <scai/lama/io/FileIO.hpp>
 
 // others
+#include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/logging.hpp>
@@ -72,7 +74,6 @@ typedef common::shared_ptr<class Vector> VectorPtr;
 
 struct _Vector
 {
-
     /**
      * @brief VectorKind describes if a vector is dense or sparse.
      */
@@ -110,8 +111,7 @@ typedef std::pair<_Vector::VectorKind, common::scalar::ScalarType> VectorCreateK
  *
  * The following methods must be implemented by derived classes:
  *
- *  - buildValues to get all local elements on one processor
- *  - getLocalValue( i ) the the i-th local element
+ *  - buildLocalValues to get all local elements on one processor
  *
  * This base class can be used to define dense and sparse vectors of
  * any type.
@@ -124,6 +124,36 @@ class COMMON_DLL_IMPORTEXPORT Vector:
 
 {
 public:
+
+    /** Help class to observe the further use of operator[] for Vector */
+
+    class VectorElemProxy
+    {
+    public:
+
+        /** Proxy constructed by ref to the array and the index value. */
+
+        inline VectorElemProxy( Vector& vector, const IndexType i );
+
+        /** Proxy for a vector element can be used to get its value, type conversion to Scalar
+         *
+         *  @returns current value of the vector element as a Scalar
+         */
+        inline operator Scalar() const;
+
+        /** indexed value proxy can be assigned a scalar */
+
+        inline VectorElemProxy& operator= ( Scalar val );
+
+        /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
+
+        inline VectorElemProxy& operator= ( const VectorElemProxy& other );
+
+    private:
+
+        Vector& mVector;
+        IndexType mIndex;
+    };
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
@@ -139,6 +169,23 @@ public:
         const common::scalar::ScalarType valueType,
         dmemo::DistributionPtr distribution,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    /**
+     * @brief Checks for this vector whether the content of its data is sound.
+     *
+     * @return false if any of the internal data structures is not okay
+     *
+     * This method returns the same value on all processors.
+     *
+     * If any inconsistency has been found an error message should be logged, but it should
+     * not throw an exception. This might be done by the caller of this routine to avoid
+     * working with inconsistent vectors.
+     *
+     * \code
+     * SCAI_ASSERT_DEBUG( a.isConsistent(), a << ": is invalid matrix after reading" )
+     * \endcode
+     */
+    virtual bool isConsistent() const = 0;
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -259,12 +306,28 @@ public:
     Vector& operator/=( const Scalar value );
 
     /**
+     * @brief Divide this vector by another vector element-wise
+     *
+     * @param[in] other   the vector to multiply to do the multiplication per element
+     * @return            a reference to this.
+     */
+    Vector& operator/=( const Vector& other );
+
+    /**
      * @brief Returns the addition of this and other.
      *
      * @param[in] other the vector to do the addition with.
      * @return          a reference to this.
      */
     Vector& operator+=( const Vector& other );
+
+    /**
+     * @brief Returns the subtraction of this and other.
+     *
+     * @param[in] other the vector to do the subtraction with.
+     * @return          a reference to this.
+     */
+    Vector& operator-=( const Vector& other );
 
     /**
      * @brief Add a scalar value to all elements of this vector.
@@ -275,12 +338,12 @@ public:
     Vector& operator+=( const Scalar value );
 
     /**
-     * @brief Returns the subtraction of this and other.
+     * @brief Sub a scalar value to all elements of this vector.
      *
-     * @param[in] other the vector to do the subtraction with.
-     * @return          a reference to this.
+     * @param[in] value   the value to add all elements of this with.
+     * @return            a reference to this.
      */
-    Vector& operator-=( const Vector& other );
+    Vector& operator-=( const Scalar value );
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -298,26 +361,57 @@ public:
      *
      * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
      */
-    const Scalar operator()( const IndexType i ) const;
+    Scalar operator()( const IndexType i ) const
+    {
+        return getValue( i );
+    }
+
+    VectorElemProxy operator[]( const IndexType i )
+    {
+        return VectorElemProxy( *this, i );
+    }
+
+    Scalar operator[]( const IndexType i ) const
+    {
+        return getValue( i );
+    }
 
     /**
-     * @brief Builds an array with local values of the vector.
+     * @brief Sets the local values of a vector by a dense array.
      *
-     * @param[in,out] values   LAMA array that will be filled with the local values.
+     * @param[in] values    is the array with all local vector values.
      *
-     * Only the type of the LAMA array is used as input arg to determine the value type.
+     * The size of the values array must be the same size as the local size of the distribution.
+     *
+     * Note: Implicit type conversion for the values is supported.
      */
-    virtual void buildValues( hmemo::_HArray& values ) const = 0;
+    virtual void setDenseValues( const hmemo::_HArray& values ) = 0;
 
     /**
-     * @brief Sets the local values of a vector by an array.
+     * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
      *
-     * @param[out] values    is the array with local vector values.
+     * @param[in] nonZeroIndexes   array with all local indexes that have a non-zero entry
+     * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
+     * @param[in] zeroValue        value for all indexes that do not appear in nonZeroIndexes
      *
-     * Note: A conversion operator must be available for values.getValueType() to
-     *       the type of this vector.
+     * The size of the both input arrays must be equal.
+     *
+     * Note: Implicit type conversion for the values is supported.
      */
-    virtual void setValues( const hmemo::_HArray& values ) = 0;
+    virtual void setSparseValues( 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
+        const hmemo::_HArray& nonZeroValues,
+        const Scalar zeroValue = Scalar( 0 ) ) = 0;
+
+    /**
+     * @brief Sets the local size of the vector to zero. 
+     *
+     * This routine has the same semantic as setValues with an empty array of any type. It is
+     * a private routine as it allows a temporary inconsistency between the local part and 
+     * the distribution.
+     */
+
+    virtual void clearValues() = 0;
 
     /**
      * This method initializes a (distributed) vector with random numbers.
@@ -326,24 +420,6 @@ public:
      * @param[in] fillRate for the number of non-zeros
      */
     virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
-
-    /**
-     * @brief This method initializes a (replicated) vector with a sequence of values.
-     *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the elements
-     * @param[in] n will be the size of this replicated vector.
-     */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n ) = 0;
-
-    /**
-     * This method initializes a (distributed) vector with a sequence of values
-     *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the element
-     * @param[in] distribution determines global/local size of the vector
-     */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution ) = 0;
 
     /**
      * This method sets a vector by reading its values from one or multiple files.
@@ -392,25 +468,27 @@ public:
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
-     * @brief get a vector with all local values
-     */
-    virtual const hmemo::_HArray& getLocalValues() const = 0;
-
-    /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
     virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
-     * @brief Returns a copy of the value at the passed global index.
+     * @brief Returns the value at the passed global index.
      *
      * @param[in] globalIndex   the global index to get the value at.
      * @return                  a copy of the value at the passed global position.
      *
      * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
+     * Therefore it is recommended to query values on the local vector data with local indexes.
      */
     virtual Scalar getValue( IndexType globalIndex ) const = 0;
 
+    /**
+     *
+     * @brief This methods sets/updates a value of a vector.
+     *
+     * Be careful: this method might throw an exception on a sparse vector, if the element is not available
+     */
     virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
 
     /**
@@ -455,6 +533,20 @@ public:
      * maxNorm computes the value of this with the largest magnitude.
      */
     virtual Scalar maxNorm() const = 0;
+
+    /**
+     * @brief Returns the max norm of the difference with another vector
+     *
+     *  v1.maxDiffNorm( v2 ) is equivalent to:
+     *
+     *  \code
+     *      Vector tmp = v1 - v2;
+     *      maxNorm( tmp )
+     *  \endcode
+     *
+     *  But it avoids the temporary vector wherever possible
+     */
+    virtual Scalar maxDiffNorm( const Vector& other ) const = 0;
 
     /**
      *  Method to create a new vector of the same kind and same type
@@ -520,34 +612,65 @@ public:
      */
     virtual void swap( Vector& other ) = 0;
 
+    /** Override default implementation of Printable::writeAt */
+
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
      *  @brief Assigns an arbitrary vector to this vector.
+     *
+     *  Common implementation for all vectors using virtual methods.
      */
-    virtual void assign( const Vector& other ) = 0;
+    void assign( const Vector& other );
 
     /**
      *  Assignment to vector by local values and distribution.
      */
-    virtual void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution ) = 0;
+    void assign( const hmemo::_HArray& localValues, dmemo::DistributionPtr distribution );
 
     /**
      *  Define a non-distributed vector by an array with all its values.
      *
      *  Note: for a correct replication all processors must set the same values.
      */
-    virtual void assign( const hmemo::_HArray& globalValues ) = 0;
+    void assign( const hmemo::_HArray& globalValues );
 
     /**
-     *  Builds an array with local values of a distributed vector.
+     *  Build an array with all local values of a distributed vector.
      *
-     *  @param[out] localValues   will be an array that contains local values of the vector
+     *  @param[in,out] localValues   will be an array that contains local values of the vector
+     *  @param[in]     op            specifies how to combine with existing values in localValues
+     *  @param[in]     prefLoc       is the location where the values are needed
      *
      *  For different value types, implicit format conversion will be done.
-     *  A sparse vector should generate an array with all values.
+     *  A sparse vector might generate an array with all local values.
+     *
+     *  If op is not COPY, the binary operation op is applied to existing values in localValues. In this
+     *  case, the array localValues must have the local size of the distribution.
      */
-    virtual void buildLocalValues( hmemo::_HArray& localValues ) const = 0;
+    virtual void buildLocalValues( 
+        hmemo::_HArray& localValues, 
+        const common::binary::BinaryOp op = common::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
+
+    /**
+     *  Gather certain local values of a distributed vector.
+     *
+     *  @param[in,out] localValues   array for the gather values
+     *  @param[in]     localIndexes  are the indexes to be gathered
+     *  @param[in]     op            specifies how to combine with existing values in localValues
+     *  @param[in]     prefLoc       is the location where the values are needed
+     *
+     *  For different value types, implicit format conversion will be done.
+     *
+     *  If op is not COPY, the binary operation op is applied to existing values in localValues. In this
+     *  case, the array localValues must have the same size as localIndexes.
+     */
+    virtual void gatherLocalValues( 
+        hmemo::_HArray& localValues, 
+        const hmemo::HArray<IndexType>& localIndexes,
+        const common::binary::BinaryOp op = common::binary::COPY,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -557,18 +680,25 @@ public:
     virtual void assign( const Scalar value ) = 0;
 
     /**
-     * @brief Add a scalar value element-wise to the elements of a vector
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
+     *
+     * Each vector class has to implement its own version of this assignment. 
      */
-    virtual void add( const Scalar value ) = 0;
+    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y ) = 0;
 
     /**
-     * @brief Assignment of a 'full' vector expression.
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * vectorY
+     *
+     * Each vector class has to implement its own version of this assignment. 
      */
-    virtual void assign( const Expression_SV_SV& expression ) = 0;
+    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y ) = 0;
 
-    virtual void assign( const Expression_SVV& expression ) = 0;
-
-    virtual void assign( const Expression_SV_S& expression ) = 0;
+    /**
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * scalarBeta
+     *
+     * Each vector class has to implement its own version of this assignment. 
+     */
+    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS ) = 0;
 
     /**
      * @brief Returns the dot product of this and other.
@@ -579,12 +709,56 @@ public:
     virtual Scalar dotProduct( const Vector& other ) const = 0;
 
     /**
-     *  @brief Scale a Vector with another Vector.
+     *  @brief Update this vector with another vector elementwise
+     * 
+     *  @param[in] other is the input vector for setting, must have same distribution
+     *  @param[in] op specifies the binary operation for the update
+     * 
+     *  The call v1.setVector( v2, op ) is equivalent to the following code:
      *
-     *  @param[in] other   the other vector to scale this with
-     *  @return            reference to the scaled vector
+     *  \code
+     *      SCAI_ASSERT_EQ_ERROR(( v1.getDistribution(), v2.getDistribuiton(), "mismatch" )
+     *      for ( IndexType i = 0; i < v1.size(); ++i )
+     *      {
+     *          v1[i] = v1[i] op v2[i];    // swapArgs = false
+     *          v1[i] = v2[i] op v1[i];    // swapArgs = true
+     *      }
+     *  \endcode
+     *
+     *  In contrary to the loop, it can be assumed that the vector operation is full parallel.
      */
-    virtual Vector& scale( const Vector& other ) = 0;
+    virtual void setVector( const Vector& other, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
+
+    /**
+     *  @brief Update this vector with a scalar value elementswise
+     * 
+     *  @param[in] value is th scalar element used for the operation
+     *  @param[in] op specifies the binary operation for the update
+     *  @param[in] swapScalar if true the operands are swapped
+     * 
+     *  The call v.setScalar( s, op ) is equivalent to the following code:
+     *
+     *  \code
+     *      for ( IndexType i = 0; i < v1.size(); ++i )
+     *      {
+     *          v[i] = v[i] op s;    // swapScalar = false
+     *          v[i] = s op v[i];    // swapScalar = true
+     *      }
+     *  \endcode
+     *
+     *  Here are some examples how this method is used:
+     *  \code
+     *      v.invert()      v.setScalar( Scalar( 1 ), binary::DIVIDE, true );
+     *      v += s;         v.setScalar( s, binary::ADD, false );
+     *      v *= s;         v.setScalar( s, binary::MULT, false );
+     *  \endcode
+     */
+    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar = false ) = 0;
+
+    /**
+     *  @brief Apply a unary operation for each element of the vector.
+     */
+    virtual void applyUnary( common::unary::UnaryOp op ) = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -648,80 +822,90 @@ public:
      */
     virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
 
+    /** 
+     * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
+     */
+    void replicate();
+
     /**
      * @brief This method inverts all elements of the vector and is completely local.
      */
-    virtual void invert() = 0;
+    void invert();
 
     /**
      *  Build the conjugate vector in place.
      */
-    virtual void conj() = 0;
+    void conj();
+
+    /**
+     *  Build the absolute in place.
+     */
+    void abs();
 
     /**
      *  Calculates the exponentional function of the vector elements in place.
      */
-    virtual void exp() = 0;
+    void exp();
 
     /**
      *  Calculates the logarithm of the vector elements in place.
      */
-    virtual void log() = 0;
+    void log();
 
     /**
      *  Calculates the floor function of the vector elements in place.
      */
-    virtual void floor() = 0;
+    void floor();
 
     /**
      *  Calculates the ceil function of the vector elements in place.
      */
-    virtual void ceil() = 0;
+    void ceil();
 
     /**
      *  Calculates the square root of the vector elements.
      */
-    virtual void sqrt() = 0;
+    void sqrt();
 
     /**
      *  Calculates the sinus of the vector elements.
      */
-    virtual void sin() = 0;
+    void sin();
 
     /**
      *  Calculates the cosinus of the vector elements.
      */
-    virtual void cos() = 0;
+    void cos();
 
     /**
      *  Calculates the tangens of the vector elements.
      */
-    virtual void tan() = 0;
+    void tan();
 
     /**
      *  Calculates the arcus tangens of the vector elements.
      */
-    virtual void atan() = 0;
+    void atan();
 
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    virtual void powBase( const Vector& other ) = 0;
+    void powBase( const Vector& other );
 
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    virtual void powExp( const Vector& other ) = 0;
+    void powExp( const Vector& other );
 
     /**
      *  Calculates the pow function for a base the vector elements as exponents.
      */
-    virtual void powBase( const Scalar base ) = 0;
+    void powBase( const Scalar base );
 
     /**
      *  Calculates the pow function for the vector elements as base and an exponent.
      */
-    virtual void powExp( const Scalar exp ) = 0;
+    void powExp( const Scalar exp );
 
 protected:
 
@@ -760,11 +944,11 @@ private:
 
     /** write only the local data to a file, no communication here */
 
-    void writeLocalToFile(
+    virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
         const common::scalar::ScalarType dataType,
-        const FileIO::FileMode fileMode ) const;
+        const FileIO::FileMode fileMode ) const = 0;
 
     /** write the whole vector into a single file, can imply redistribution */
 
@@ -784,6 +968,20 @@ private:
 
     void readFromSingleFile( const std::string& fileName );
 
+    /** Read only the local part from a file, no communication here.
+     *
+     *  This routine is implemented individually by sparse and dense vectors.
+     *
+     *  @param[in] fileName is the name of the input file containing the local vector data
+     *  @param[in] first is index of first element to read
+     *  @param[in] size number of elements to read, if nIndex read up to maximal size
+     *  @return    the size of the local vector read in
+     *
+     *  This routine is private as it allows a temporary inconsistency between the size of 
+     *  the local vector data and the distribution.
+     */
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex ) = 0;
+
     /** In this version each processor reads from input file its local part. */
 
     void readFromSingleFile( const std::string& fileName, dmemo::DistributionPtr dist );
@@ -791,9 +989,39 @@ private:
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
+Vector::VectorElemProxy::VectorElemProxy( Vector& vector, const IndexType i ) :
+
+    mVector( vector ),
+    mIndex( i )
+
+{
+}
+
+Vector::VectorElemProxy::operator Scalar() const
+{
+    return mVector.getValue( mIndex );
+}
+
+Vector::VectorElemProxy& Vector::VectorElemProxy::operator= ( Scalar val )
+{
+    mVector.setValue( mIndex, val );
+    return *this;
+}
+
+Vector::VectorElemProxy& Vector::VectorElemProxy::operator= ( const Vector::VectorElemProxy& other )
+{
+    Scalar tmp = other.mVector.getValue( other.mIndex );
+    mVector.setValue( mIndex, tmp );
+    return *this;
+}
+
 IndexType Vector::size() const
 {
-    return getDistributionPtr()->getGlobalSize();
+    return getDistribution().getGlobalSize();
 }
 
 hmemo::ContextPtr Vector::getContextPtr() const

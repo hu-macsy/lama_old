@@ -39,6 +39,7 @@
 #include <scai/common/unique_ptr.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
 #include <string>
@@ -253,6 +254,8 @@ void FileIO::write(
     const std::string& outFileName,
     const common::scalar::ScalarType dataType )
 {
+    // This static method creates a FileIO object by suffix (file type)  and calls its write method for dense array
+
     std::string suffix = getSuffix( outFileName );
 
     if ( !canCreate( suffix ) )
@@ -264,6 +267,30 @@ void FileIO::write(
 
     fileIO->setDataType( dataType );
     fileIO->writeArray( array, outFileName );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::write(
+    const IndexType size,
+    const hmemo::HArray<IndexType>& indexes,
+    const hmemo::_HArray& values,
+    const std::string& outFileName,
+    const common::scalar::ScalarType dataType )
+{
+    // This static method creates a FileIO object by suffix (file type)  and calls its write method for sparse array
+
+    std::string suffix = getSuffix( outFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->setDataType( dataType );
+    fileIO->writeSparse( size, indexes, values, outFileName );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -287,6 +314,29 @@ void FileIO::read(
 
     fileIO->setDataType( dataType );
     fileIO->readArray( array, inFileName, first, n );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::read(
+    IndexType& size,
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::_HArray& values,
+    const std::string& inFileName,
+    const common::scalar::ScalarType dataType )
+{
+    std::string suffix = getSuffix( inFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "ERROR: read from file " << inFileName <<
+                             ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->setDataType( dataType );
+    fileIO->readSparse( size, indexes, values, inFileName );
 }
 
 /* -------------------------------------------------------------------------- */

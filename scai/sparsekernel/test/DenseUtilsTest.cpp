@@ -52,6 +52,8 @@ using namespace sparsekernel;
 using namespace utilskernel;
 
 using common::TypeTraits;
+using common::binary;
+using common::unary;
 
 /* --------------------------------------------------------------------- */
 
@@ -174,7 +176,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest, ValueType, scai_numeric_test_types )
 
         WriteAccess<IndexType> wIA( csrIA, loc );
         wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows );
+        IndexType zero = 0;
+        bool exclusive = true;
+        bool append = true;
+        numValues = scan[loc]( wIA.get(), numRows, zero , exclusive, append );
     }
 
     {
@@ -271,7 +276,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRDiagTest, ValueType, scai_numeric_test_type
 
         WriteAccess<IndexType> wIA( csrIA, loc );
         wIA.resize( numRows + 1 );
-        numValues = scan[loc]( wIA.get(), numRows );
+        IndexType zero = 0;
+        bool exclusive = true;
+        bool append = true;
+        numValues = scan[loc]( wIA.get(), numRows, zero, exclusive, append );
     }
 
     {

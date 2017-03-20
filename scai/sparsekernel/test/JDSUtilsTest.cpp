@@ -128,6 +128,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE( getValuePosRowTest )
+{
+    typedef RealType ValueType;
+
+    ContextPtr testContext = ContextFix::testContext;
+
+    LAMAKernel<JDSKernelTrait::getValuePosRow> getValuePosRow;
+
+    ContextPtr loc = testContext;
+
+    getValuePosRow.getSupportedContext( loc );
+
+    LArray<IndexType> jdsPerm( testContext );
+    LArray<IndexType> jdsILG( testContext );
+    LArray<IndexType> jdsDLG( testContext );
+    LArray<IndexType> jdsJA( testContext );
+    LArray<ValueType> jdsValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numDiagonals;
+
+    data1::getJDSTestData( numRows, numColumns, numDiagonals, jdsPerm, jdsILG, jdsDLG, jdsJA, jdsValues );
+
+    HArray<IndexType> pos;
+
+    ReadAccess<IndexType> rDlg( jdsDLG, loc );
+    ReadAccess<IndexType> rIlg( jdsILG, loc );
+    ReadAccess<IndexType> rPerm( jdsPerm, loc );
+    WriteOnlyAccess<IndexType> wPos( pos, loc, numColumns );
+
+    SCAI_CONTEXT_ACCESS( loc );
+
+    IndexType n = 0;    // count number of entries
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        n += getValuePosRow[loc]( wPos.get(), i, numRows, rIlg.get(), rDlg.get(), rPerm.get() );
+    }
+
+    BOOST_CHECK_EQUAL( jdsJA.size(), n );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;
@@ -164,7 +209,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
         WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
 
-        binary::BinaryOp op = binary::SUB;
+        common::binary::BinaryOp op = common::binary::SUB;
 
         getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wValues.get() );
         setRow[loc]( wValues.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wRow.get(), op );

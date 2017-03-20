@@ -36,8 +36,8 @@
 // for dll_import
 #include <scai/common/config.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
-#include <scai/utilskernel/UnaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 
 namespace scai
 {
@@ -94,7 +94,7 @@ struct UtilKernelTrait
         typedef ValueType ( *FuncType ) ( const ValueType array[],
                                           const IndexType n,
                                           const ValueType zero,
-                                          const binary::BinaryOp op );
+                                          const common::binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.reduce";
@@ -122,9 +122,9 @@ struct UtilKernelTrait
         typedef ValueType ( *FuncType ) ( const ValueType array1[],
                                           const ValueType array2[],
                                           const IndexType n,
-                                          const binary::BinaryOp binop,
+                                          const common::binary::BinaryOp binop,
                                           const ValueType zero,
-                                          const binary::BinaryOp redop );
+                                          const common::binary::BinaryOp redop );
         static const char* getId()
         {
             return "Util.reduce2";
@@ -138,11 +138,11 @@ struct UtilKernelTrait
          *
          *  @param[in] array values to be checked
          *  @param[in] n number of values to check
-         *  @param[in] ascending if true check for ascending order, otherwise for descending
+         *  @param[in] op specifies comparison operator that must hold for each neighbored pair 
          *  @returns true iff \f$ a[i] \le a[i+1] \f$ (ascending=true) or \f$ a[i] \ge a[i+1] \f$ (ascending=false)
          */
 
-        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const bool ascending );
+        typedef bool ( *FuncType ) ( const ValueType array[], const IndexType n, const common::binary::CompareOp op );
         static const char* getId()
         {
             return "Util.isSorted";
@@ -161,7 +161,7 @@ struct UtilKernelTrait
          *  A binary operator like ADD, MULT can be used to combine the new value with the old value.
          */
 
-        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
+        typedef void ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.setVal";
@@ -214,26 +214,26 @@ struct UtilKernelTrait
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct set
     {
         /** Set out[i] _op= in[i],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
+        typedef void ( *FuncType ) ( TargetValueType out[], const SourceValueType in[], const IndexType n, const common::binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.set";
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct setSection
     {
         /** Set out[i + inc_out] _op= in[i + inc_in],  0 <= i < n , op = +, -, *, /, min, max, ... */
 
-        typedef void ( *FuncType ) ( ValueType1 out[], const IndexType inc_out,
-                                     const ValueType2 in[], const IndexType inc_in,
-                                     const IndexType n, const binary::BinaryOp op );
+        typedef void ( *FuncType ) ( TargetValueType out[], const IndexType inc_out,
+                                     const SourceValueType in[], const IndexType inc_in,
+                                     const IndexType n, const common::binary::BinaryOp op );
         static const char* getId()
         {
             return "Util.setSection";
@@ -251,7 +251,7 @@ struct UtilKernelTrait
             ValueType out[],
             const ValueType in[],
             const IndexType n,
-            const unary::UnaryOp op );
+            const common::unary::UnaryOp op );
 
         static const char* getId()
         {
@@ -277,7 +277,7 @@ struct UtilKernelTrait
             const ValueType in1[],
             const ValueType in2[],
             const IndexType n,
-            const binary::BinaryOp op );
+            const common::binary::BinaryOp op );
 
         static const char* getId()
         {
@@ -286,66 +286,68 @@ struct UtilKernelTrait
     };
 
     template<typename ValueType>
-    struct binaryOpScalar1
+    struct binaryOpScalar
     {
-        /** Same as binaryOp but first operand is only a scalar
+        /** Same as binaryOp but one operand is only a scalar
          *
          *  This operation is only available for numeric types, not for IndexType
          *
-         *  @param[out] out   array with output values
-         *  @param[in]  value scalar value as first argument
-         *  @param[in]  in    array with values for second argument
-         *  @param[in]  n     number of elements
-         *  @param[in]  op    binary operation to be applied
-         */
-        typedef void ( *FuncType ) (
-            ValueType out[],
-            const ValueType value,
-            const ValueType in[],
-            const IndexType n,
-            const binary::BinaryOp op );
-
-        static const char* getId()
-        {
-            return "Util.binaryOpScalar1";
-        }
-    };
-
-    template<typename ValueType>
-    struct binaryOpScalar2
-    {
-        /** Same as binaryOp but 2nd arg of the input arrays is just a scalar value
-         *
-         *  This operation is only available for numeric types, not for IndexType
+         *  @param[out] out        array with output values
+         *  @param[in]  in         array with values for second argument
+         *  @param[in]  value      scalar value as first argument
+         *  @param[in]  n          number of elements
+         *  @param[in]  op         binary operation to be applied
+         *  @param[in]  swapScalar if true value becomes first argument of binary op
          */
         typedef void ( *FuncType ) (
             ValueType out[],
             const ValueType in[],
             const ValueType value,
             const IndexType n,
-            const binary::BinaryOp op );
+            const common::binary::BinaryOp op,
+            const bool swapScalar );
 
         static const char* getId()
         {
-            return "Util.binaryOpScalar2";
+            return "Util.binaryOpScalar";
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct setGather
     {
         /** Set out[i] op = in[ indexes[i] ],  \f$0 \le i < n\f$ */
 
         typedef void ( *FuncType ) (
-            ValueType1 out[],
-            const ValueType2 in[],
+            TargetValueType out[],
+            const SourceValueType in[],
             const IndexType indexes[],
-            const binary::BinaryOp op,
+            const common::binary::BinaryOp op,
             const IndexType n );
 
         static const char* getId()
         {
             return "Util.setGather";
+        }
+    };
+
+    template<typename TargetValueType, typename SourceValueType>
+    struct setGatherSparse
+    {
+        /** setGather where in is a sparse array */
+
+        typedef void ( *FuncType ) (
+            TargetValueType out[],
+            const SourceValueType inNonZeroValues[],
+            const IndexType inNonZeroIndexes[],
+            const IndexType nnz,
+            const IndexType indexes[],
+            const common::binary::BinaryOp op,
+            const IndexType n );
+
+        static const char* getId()
+        {
+            return "Util.setGatherSparse";
         }
     };
 
@@ -376,20 +378,21 @@ struct UtilKernelTrait
         }
     };
 
-    template<typename ValueType1, typename ValueType2>
+    template<typename TargetValueType, typename SourceValueType>
     struct setScatter
     {
         /** @brief Indirect set of arrays also known as scatter.
          *
          *  @param[in,out] out is the array in which values will be inserted
          *  @param[in]     indexes are the positions where values are written
+         *  @param[in]     unique if true no index appears twice
          *  @param[in]     in is the array with the output values.
          *  @param[in]     op specifies how the set element is combined with available element
          *  @param[in]     n is the number of values
          *
-         *  Note: Not all values might be set in 'out'. There should be no double
-         *        values in indexes as this might result in non-ambiguous results
-         *        by a parallel execution.
+         *  Note: If indexes are unique, the operation is done data parallel;
+         *        if they are not unique, a parallel execution is only possible if
+         *        the binary operation can be done via atomic updates.
          *
          *  out[ indexes[i] ] = in [i] , i = 0, ..., n-1   for op == recution::COPY
          *  out[ indexes[i] ] += in [i] , i = 0, ..., n-1   for op == recution::ADD
@@ -397,10 +400,11 @@ struct UtilKernelTrait
          */
 
         typedef void ( *FuncType ) (
-            ValueType1 out[],
+            TargetValueType out[],
             const IndexType indexes[],
-            const ValueType2 in[],
-            const binary::BinaryOp op,
+            const bool unique,
+            const SourceValueType in[],
+            const common::binary::BinaryOp op,
             const IndexType n );
 
         static const char* getId()
@@ -415,19 +419,28 @@ struct UtilKernelTrait
         /** This method computes runnings sums of values
          *
          *  @param[in,out] array contains  values and later the running sums
-         *  @param[in]    n is the number of values, array must contain one additional value
+         *  @param[in]    n is the number of values 
+         *  @param[in]    first is added to all elements
+         *  @param[in]    exclusive if false a[i] = a[i] op a[i-1], else a[i] = a[i-1] op a[i-2] op ... op first
+         *  @param[in]    append if true the result value is added at the end of the array
          *  @returns      the total sum of values
          *
          *  \code
-         *    array  :    3   7   8   4   2  x
-         *    array  :    0   3  10  18  22  24      -> returns 24
+         *    array  :    3   7   8   4   2   
+         *    array  :    3  10  18  22  24    -> returns 24, exclusive = false
+         *    array  :    0   3  10  18  22    -> returns 24, exclusive = true
          *  \endcode
          *
-         *  Important: sizes must have numRows + 1 allocated entries.
+         *  \code
+         *     array[i] = array'[i-1] + array'[i-2] + ... + array'[0] + first   exclusive = true
+         *     array[i] = array'[i] + array'[i-1] + ... + array'[0] + first     exclusive = false
+         *  \endcode
+         *
+         *  Important: array must have n + 1 allocated entries if append is true
          *
          */
 
-        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n );
+        typedef ValueType ( *FuncType ) ( ValueType array[], const IndexType n, const ValueType first, bool exclusive, bool append );
 
         static const char* getId()
         {
@@ -499,6 +512,36 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Utils.sort";
+        }
+    };
+
+    template<typename ValueType>
+    struct sortInPlace
+    {
+        /** Sorting of values
+         *
+         *  @param[in,out] indexes
+         *  @param[in,out] values
+         *  @param[in]   n is the number of values to be sorted
+         *  @param[in]   ascending if true sort in ascending order, descending otherwise
+         *
+         *  \code
+         *         indexes  =     8   3    1   5
+         *         values   =   1.0  2.0  3.0  4.0
+         *
+         *         indexes  =     1   3    5    8
+         *         values   =   3.0  2.0  4.0  1.0
+         *  \endcode
+         */
+        typedef void ( *FuncType ) (
+            IndexType indexes[],
+            ValueType values[],
+            const IndexType n,
+            const bool ascending );
+
+        static const char* getId()
+        {
+            return "Utils.sortInPlace";
         }
     };
 
@@ -582,52 +625,6 @@ struct UtilKernelTrait
         static const char* getId()
         {
             return "Utils.setInversePerm";
-        }
-    };
-
-    template<typename ValueType>
-    struct countNonZeros
-    {
-        /** Count the non-zero elements in an array, used to allocate data for sparse version.
-         *
-         *  @param[in] denseArray are the values
-         *  @param[in] eps        threshold when a value is to be considered as non-zero
-         *  @param[in] n          number of elements in the dense array
-         *  @returns   number of non-zero elements in denseArray
-         */
-
-        typedef IndexType ( *FuncType ) ( const ValueType denseArray[], const IndexType n, const ValueType eps );
-
-        static const char* getId()
-        {
-            return "Utils.countNonZeros";
-        }
-    };
-
-    template<typename ValueType>
-    struct compress
-    {
-        /** Build sparse array and sparse indexes from dense array
-         *
-         *  @param[out] sparseArray     array with non-zero values
-         *  @param[out] sparseIndexes  indexes of the non-zero values of input array
-         *  @param[in]  denseArray      array with dense values
-         *  @param[in]  n               number of elements in the dense array
-         *  @returns    number of non-zero elements in denseArray
-         *
-         *  Note: sparseArray and sparseIndexes must have been allocated with the  correct size before
-         */
-
-        typedef IndexType ( *FuncType ) (
-            ValueType sparseArray[],
-            IndexType sparseIndexes[],
-            const ValueType denseArray[],
-            const IndexType n,
-            const ValueType eps );
-
-        static const char* getId()
-        {
-            return "Utils.compress";
         }
     };
 };

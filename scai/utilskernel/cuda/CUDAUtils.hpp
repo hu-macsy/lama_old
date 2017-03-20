@@ -37,14 +37,13 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-#include <scai/utilskernel/BinaryOp.hpp>
-#include <scai/utilskernel/UnaryOp.hpp>
-
 // internal scai libraries
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
+#include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 #include <scai/kregistry/mepr/Registrator.hpp>
 
 namespace scai
@@ -70,7 +69,7 @@ public:
         const ValueType array[],
         const IndexType n,
         const ValueType zero,
-        const binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::reduce2 */
 
@@ -79,14 +78,14 @@ public:
         const ValueType array1[],
         const ValueType array2[],
         const IndexType n,
-        const binary::BinaryOp binOp,
+        const common::binary::BinaryOp binOp,
         const ValueType zero,
-        const binary::BinaryOp redOp );
+        const common::binary::BinaryOp redOp );
 
     /** CUDA implementation of UtilKernelTrait::setVal  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::scaleVectorAddScalar */
 
@@ -116,38 +115,39 @@ public:
     /** CUDA implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
-    static bool isSorted( const ValueType array[], const IndexType n, bool acending );
+    static bool isSorted( const ValueType array[], const IndexType n, const common::binary::CompareOp op );
 
     /** CUDA implementation for UtilKernelTrait::set */
 
     template<typename ValueType, typename otherValueType>
-    static void set( ValueType out[], const otherValueType in[], const IndexType n, const binary::BinaryOp op );
+    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::binary::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::setSection */
 
     template<typename ValueType, typename otherValueType>
     static void setSection( ValueType out[], const IndexType inc_out,
-                            const otherValueType in[], const IndexType inc_in, const IndexType n, const binary::BinaryOp op );
+                            const otherValueType in[], const IndexType inc_in, const IndexType n, const common::binary::BinaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::binaryOp */
 
     template<typename ValueType>
-    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::binaryOpScalar1 */
-
-    template<typename ValueType>
-    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::binaryOpScalar2 */
+    /** CUDA implementation for UtilKernelTrait::binaryOpScalar */
 
     template<typename ValueType>
-    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
+    static void binaryOpScalar(
+        ValueType out[],
+        const ValueType in[],
+        const ValueType value,
+        const IndexType n,
+        const common::binary::BinaryOp op,
+        const bool swapScalar );
 
     /** CUDA implementation for UtilKernelTrait::setGather */
 
@@ -156,7 +156,7 @@ public:
         ValueType out[],
         const otherValueType in[],
         const IndexType indexes[],
-        const utilskernel::binary::BinaryOp op,
+        const common::binary::BinaryOp op,
         const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::setScatter */
@@ -165,8 +165,9 @@ public:
     static void setScatter(
         ValueType out[],
         const IndexType indexes[],
+        const bool unique,
         const otherValueType in[],
-        const binary::BinaryOp op,
+        const common::binary::BinaryOp op,
         const IndexType n );
 
     /** CUDA implementation for UtilKernelTrait::scatterVal */
@@ -177,7 +178,12 @@ public:
     /** CUDA implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>
-    static ValueType scan( ValueType array[], const IndexType n );
+    static ValueType scan(
+        ValueType array[],
+        const IndexType n,
+        const ValueType first,
+        const bool exclusive,
+        const bool append );
 
     /** CUDA implementation for UtilKernelTrait::sort */
 
@@ -186,6 +192,15 @@ public:
         IndexType perm[],
         ValueType outValues[],
         const ValueType inValues[],
+        const IndexType n,
+        const bool ascending );
+
+    /** CUDA implementation for UtilKernelTrait::sortInPlace */
+
+    template<typename ValueType>
+    static void sortInPlace(
+        IndexType indexes[],
+        ValueType values[],
         const IndexType n,
         const bool ascending );
 
@@ -200,13 +215,13 @@ public:
 
     /** CUDA implementation of UtilKernelTrait::compress */
 
-    template<typename ValueType>
+    template<typename TargetValueType, typename SourceValueType>
     static IndexType compress(
-        ValueType sparseArray[],
+        TargetValueType sparseArray[],
         IndexType sparseIndexes[],
-        const ValueType denseArray[],
+        const SourceValueType denseArray[],
         const IndexType n,
-        const ValueType eps );
+        const SourceValueType eps );
 
 private:
 

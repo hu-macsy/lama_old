@@ -120,11 +120,30 @@ public:
     void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName )
     __attribute( ( noinline ) );
 
+    /** Typed version of writeArray for sparse arrays. */
+
+    template<typename ValueType>
+    void writeSparseImpl(
+        const IndexType size,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::HArray<ValueType>& values,
+        const std::string& fileName )
+    __attribute( ( noinline ) );
+
     /** Typed version of readArray */
 
     template<typename ValueType>
     void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
     __attribute( ( noinline ) );
+
+    /** Typed version of readSparse */
+
+    template<typename ValueType>
+    void readSparseImpl(
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<ValueType>& values,
+        const std::string& fileName );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 

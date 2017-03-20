@@ -113,9 +113,8 @@ int main()
     lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
     utilskernel::LArray<ScalarType> lama_array1 ( 10, plain_vec );
     lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
-    lama_vec2.setValues( lama_array1 );
-    dmemo::DistributionPtr noDist( new dmemo::NoDistribution( 10 ) );
-    lama::DenseVector<ScalarType> lama_vec3( lama_array1, noDist  );
+    lama_vec2.setDenseValues( lama_array1 );
+    lama::DenseVector<ScalarType> lama_vec3( lama_array1 );
     std::cout << "DenseVector with rand values filled" << std::endl;
     //
     // Define the vectors to be used on GPU (CUDA context on device 0) and upload them

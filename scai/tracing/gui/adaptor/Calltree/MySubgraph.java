@@ -1,15 +1,15 @@
 /*
  * MySubgraph.java
- * 
+ *
  * Frame that displays the call graph.
- * 
+ *
  * Created: 2006-02-20 Thomas Brandes <thomas.brandes@scai.fraunhofer.de>
  * Changed:
- * 
+ *
  * $Id$
- * 
+ *
  * Copyright (C) 2006 Fraunhofer SCAI, Germany
- * 
+ *
  * All rights reserved
  *
  * http://www.scai.fhg.de/EP-CACHE/adaptor
@@ -35,47 +35,52 @@ import att.grappa.Subgraph;
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public final class MySubgraph {
+public final class MySubgraph
+{
 
     /**
      * This is an array with the names of all nodes of the
      * last selection.
-     * 
+     *
      */
     private static String[] lastSelection = null;
-    
+
     /**
      * Logger for this class.
      */
-    private static Logger logger = Logger.getLogger(MySubgraph.class);
+    private static Logger logger = Logger.getLogger( MySubgraph.class );
 
     /**
      * Overwriting the default constructor.
-     * 
+     *
      */
-    private MySubgraph() {
-        
+    private MySubgraph()
+    {
+
     }
     /**
-     * This routine returns from a Subgraph the selected node and 
+     * This routine returns from a Subgraph the selected node and
      * returns the corresponding CT node.
-     * 
+     *
      * @param graph is the graph where one node should be selected
      * @return the CT node or null if no or multiple nodes are selected
      */
-    static CTNode getSelectedNode(Subgraph graph) {
+    static CTNode getSelectedNode( Subgraph graph )
+    {
 
-        if (graph.currentSelection instanceof Element) {
+        if ( graph.currentSelection instanceof Element )
+        {
 
-            Element selElem = (Element) graph.currentSelection;
+            Element selElem = ( Element ) graph.currentSelection;
 
-            logger.info("selected element = " + selElem);
+            logger.info( "selected element = " + selElem );
 
-            if (selElem.getType() == GrappaConstants.NODE) {
+            if ( selElem.getType() == GrappaConstants.NODE )
+            {
 
-                Node node = (Node) selElem;
-                logger.info("NODE " + node.getName() + " clicked");
-                CTNode nodeCT = CalltreePM.getNode(node.getName());
+                Node node = ( Node ) selElem;
+                logger.info( "NODE " + node.getName() + " clicked" );
+                CTNode nodeCT = CalltreePM.getNode( node.getName() );
 
                 return nodeCT;
 
@@ -90,81 +95,92 @@ public final class MySubgraph {
     /**
      * This routine returns the selected nodes in a graph
      * presentation but the corresponding ones of the CT data.
-     * 
+     *
      * @param graph is the layout graph of GRAPPA
      * @return an array of CT nodes that are selected
      */
-    static CTNode[] getSelectedNodes(Subgraph graph) {
+    static CTNode[] getSelectedNodes( Subgraph graph )
+    {
 
         CTNode[] selectedCTNodes = null;
 
-        if (graph.currentSelection instanceof Element) {
+        if ( graph.currentSelection instanceof Element )
+        {
 
-            CTNode nodeCT = getSelectedNode(graph);
+            CTNode nodeCT = getSelectedNode( graph );
 
-            if (nodeCT != null) {
-                
+            if ( nodeCT != null )
+            {
+
                 selectedCTNodes = new CTNode[1];
 
                 selectedCTNodes[0] = nodeCT;
 
-                return selectedCTNodes; 
+                return selectedCTNodes;
             }
 
-        } else if (graph.currentSelection instanceof Vector) {
-            
-            List vec = (Vector) graph.currentSelection;
+        }
+        else if ( graph.currentSelection instanceof Vector )
+        {
+
+            List vec = ( Vector ) graph.currentSelection;
 
             List vecCT = new Vector();
-            
-            for (int i = 0; i < vec.size(); i++) {
 
-                Element elem = (Element) vec.get(i);
+            for ( int i = 0; i < vec.size(); i++ )
+            {
 
-                if (elem.getType() == GrappaConstants.NODE) {
+                Element elem = ( Element ) vec.get( i );
 
-                    Node node = (Node) elem;
-                    
-                    CTNode nodeCT = CalltreePM.getNode(node.getName());
-                    
-                    if (nodeCT != null) {
-                        
-                        vecCT.add(nodeCT);
+                if ( elem.getType() == GrappaConstants.NODE )
+                {
+
+                    Node node = ( Node ) elem;
+
+                    CTNode nodeCT = CalltreePM.getNode( node.getName() );
+
+                    if ( nodeCT != null )
+                    {
+
+                        vecCT.add( nodeCT );
                     }
 
                 }
- 
+
             }
-            
+
             int size = vecCT.size();
-            
+
             selectedCTNodes = new CTNode[size];
-            
-            for (int i = 0; i < size; i++) {
-                
-                selectedCTNodes[i] = (CTNode) vecCT.get(i);
-                
+
+            for ( int i = 0; i < size; i++ )
+            {
+
+                selectedCTNodes[i] = ( CTNode ) vecCT.get( i );
+
             }
-            
+
         }
- 
+
         return selectedCTNodes;
 
     } // getSelectedNodes
 
     /**
-     * This routine takes the given CT nodes and makes them to 
+     * This routine takes the given CT nodes and makes them to
      * the last selected nodes.
-     * 
+     *
      * @param selectedNodes is the array with selected nodes
      */
-    public static void fixSelectedNodes(CTNode[] selectedNodes) {
+    public static void fixSelectedNodes( CTNode[] selectedNodes )
+    {
 
         int noNodes = selectedNodes.length;
 
         lastSelection = new String[noNodes];
 
-        for (int i = 0; i < noNodes; i++) {
+        for ( int i = 0; i < noNodes; i++ )
+        {
 
             lastSelection[i] = selectedNodes[i].getPrintIdent();
 
@@ -175,55 +191,63 @@ public final class MySubgraph {
     /**
      * This routine sets in a subgraph the last selected nodes
      * to the selected nodes of this graph.
-     * 
+     *
      * @param theGraph is the graph where we set the latest selection
      */
-    public static void setLastSelection(Subgraph theGraph) {
+    public static void setLastSelection( Subgraph theGraph )
+    {
 
-        if (lastSelection == null) {
+        if ( lastSelection == null )
+        {
 
-            logger.info("setLastSelection: not done, was null");
+            logger.info( "setLastSelection: not done, was null" );
             return;
 
         }
 
-        if (theGraph.currentSelection != null) {
+        if ( theGraph.currentSelection != null )
+        {
 
-            logger.info("setLastSelection: not done, G has already selection");
+            logger.info( "setLastSelection: not done, G has already selection" );
             return;
 
         }
 
         int numberNodes = lastSelection.length;
 
-        if (numberNodes == 0) {
+        if ( numberNodes == 0 )
+        {
 
-            logger.info("setLastSelection: not done, 0 elements");
+            logger.info( "setLastSelection: not done, 0 elements" );
             return;
 
         }
 
         List selectionVector = new Vector();
 
-        for (int i = 0; i < numberNodes; i++) {
+        for ( int i = 0; i < numberNodes; i++ )
+        {
 
-            Node graphNode = theGraph.findNodeByName(lastSelection[i]);
+            Node graphNode = theGraph.findNodeByName( lastSelection[i] );
 
-            if (graphNode == null) {
+            if ( graphNode == null )
+            {
 
-                logger.info("setLastSelection: node " + lastSelection[i] + " not found");
+                logger.info( "setLastSelection: node " + lastSelection[i] + " not found" );
 
-            } else {
+            }
+            else
+            {
 
                 graphNode.highlight |= Grappa.SELECTION_MASK;
 
-                selectionVector.add(graphNode);
+                selectionVector.add( graphNode );
 
             }
 
         } //
 
-        logger.info("setLastSelection: done, " + selectionVector.size() + " elements selected");
+        logger.info( "setLastSelection: done, " + selectionVector.size() + " elements selected" );
 
         theGraph.currentSelection = selectionVector;
 

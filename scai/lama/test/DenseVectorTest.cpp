@@ -77,6 +77,39 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cTorTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( consistencyTest )
+{
+    typedef RealType ValueType;
+
+    IndexType n = 10;
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    // create distributed dense vector
+
+    DenseVector<ValueType> v( dist, ValueType( 1 ) );
+
+    BOOST_CHECK( v.isConsistent() );
+
+    // usually it is not simple to make a vector inconsistent
+
+    hmemo::HArray<ValueType>& localData = v.getLocalValues();
+
+    // make it inconsistent on one processor only, isConsistent can deal with it
+
+    if ( comm->getRank() == ( comm->getSize() / 2 ) )
+    {
+        localData.resize( 17 );
+    }
+ 
+    // consistency check fails on all processors
+
+    BOOST_CHECK( ! v.isConsistent() );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( SetGetValueTest )
 {
     // Note: it is sufficient to consider one value type
@@ -157,8 +190,8 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
         hmemo::HArray<ValueType> tmp;
 
-        distV.buildValues( tmp );
-        newV.setValues( tmp );
+        distV.buildLocalValues( tmp );
+        newV.setDenseValues( tmp );
 
         // replicate newV, so we can compare with repV
 
@@ -231,6 +264,54 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
         // prove same distribution, same values of r and c
 
         BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( ScanTest )
+{
+    // Note: it is sufficient to consider one value type
+
+    typedef RealType ValueType;
+
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType n = 100;
+
+    dmemo::TestDistributions dists( n );
+
+    for ( size_t i = 0; i < dists.size(); ++i )
+    {
+        dmemo::DistributionPtr dist = dists[i];
+
+        DenseVector<ValueType> distV( dist, 1, 1, ctx );   // sequence: 1, 2, ..., n
+
+        try
+        {
+            distV.scan();
+
+            BOOST_CHECK_EQUAL( distV.size(), n );
+            BOOST_CHECK_EQUAL( distV.getLocalValues().size(), dist->getLocalSize() );
+ 
+            distV.replicate();
+
+            {
+                hmemo::ReadAccess<ValueType> rVector( distV.getLocalValues() );
+
+                for ( IndexType i = 0; i < n; ++i )
+                {
+                    ValueType expected = ( i + 1 ) * ( i + 2 ) / 2;
+                    Scalar computed = rVector[i];
+                    BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
+                }
+            }
+        }
+        catch ( common::Exception& e )
+        {
+            SCAI_LOG_INFO( logger, "scan unsupported for this distribution: " << *dist << ", no block distribution" )
+            BOOST_CHECK_EQUAL( dist->getBlockDistributionSize(), nIndex );
+        }
     }
 }
 
@@ -393,8 +474,8 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
     x1.swap( x2 );
 
-    BOOST_CHECK_EQUAL( x1( 8 ), ValueType( 2 ) );
-    BOOST_CHECK_EQUAL( x2( 1 ), ValueType( 1 ) );
+    BOOST_CHECK_EQUAL( x1.getValue( 8 ), ValueType( 2 ) );
+    BOOST_CHECK_EQUAL( x2.getValue( 1 ), ValueType( 1 ) );
 
     BOOST_CHECK_EQUAL( x1.getLocalValues().size(), dist2->getLocalSize() );
     BOOST_CHECK_EQUAL( x2.getLocalValues().size(), dist1->getLocalSize() );
@@ -669,6 +750,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
 
     sortVector.redistribute( blockDist );
 
+    {
+        bool descending = false;
+        DenseVector<ValueType> tmp( sortVector );
+        tmp.sort( descending );    // parallel sorting with global permutation
+        BOOST_CHECK( tmp.isSorted( descending ) );
+    }
+
     bool ascending = true;
 
     DenseVector<IndexType> perm;
@@ -676,13 +764,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     sortVector.sort( perm, ascending );    // parallel sorting with global permutation
 
     BOOST_REQUIRE_EQUAL( n, perm.size() );
+    BOOST_CHECK( sortVector.isSorted( ascending ) );
 
     dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
 
     sortVector.redistribute( repDist );
     perm.redistribute( repDist );
 
-    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), ascending ) );
+    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), common::binary::LE ) );
 
     hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
     hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );
@@ -743,7 +832,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
             SCAI_LOG_INFO( logger, "gather source[index] with source = " << source << ", index = " << index )
 
-            target.gather( source, index, utilskernel::binary::ADD );
+            target.gather( source, index, common::binary::ADD );
 
             BOOST_CHECK_EQUAL( target.size(), index.size() );
             BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
@@ -817,13 +906,13 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
                 BOOST_CHECK_THROW(
                 {
-                    target.scatter( index, source, utilskernel::binary::ADD );
+                    target.scatter( index, source, common::binary::ADD );
                 }, common::Exception );
 
                 continue;
             }
 
-            target.scatter( index, source, utilskernel::binary::ADD );
+            target.scatter( index, source, common::binary::ADD );
 
             hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
 

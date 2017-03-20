@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Definition of abstract base class for a one-dimensional distribution.
- * @author Jiri Kraus
+ * @author Thomas Brandes, Jiri Kraus
  * @date 22.02.2011
  */
 
@@ -177,26 +177,28 @@ public:
 
     CommunicatorPtr getCommunicatorPtr() const;
 
-    /** Query for the number of partitions onto which the distribution is done. */
+    /** Query for the number of processors/partitions onto which the distribution is done. */
 
     PartitionId getNumPartitions() const;
 
-    /** Query whether the distribution is a replication. */
+    /** Query whether the distribution is a replication, i.e. each processor is owner of all data 
+     *
+     *  same as getNumPartitions() == 1, always true for NoDistribution, always true when running
+     *  an application on a single processor.
+     */
+    inline bool isReplicated() const;
 
-    bool isReplicated() const
-    {
-        return getNumPartitions() == 1;
-    }
+    /** Each derived class has to return a specific kind string to specify its kind. */
 
     virtual const char* getKind() const = 0;
 
     /** Query if the given global index is local for the calling rank
      *                          (e.g. process for an MPI Communicator)
      *
-     * @param[in]    index the global index to query for locality to the calling rank
-     * @return       if the passed global index is local to the calling rank
+     * @param[in]    globalIndex the global index to query for locality to the calling rank
+     * @return       true if this processor/partition  is owner 
      */
-    virtual bool isLocal( const IndexType index ) const = 0;
+    virtual bool isLocal( const IndexType globalIndex ) const = 0;
 
     /** Getter for the global number of elements that are distributed. */
 
@@ -249,6 +251,14 @@ public:
      */
     virtual void computeOwners( hmemo::HArray<PartitionId>& owners, const hmemo::HArray<IndexType>& indexes ) const;
 
+    /**
+     * Get the owner of a global index, all processors call with same value.
+     *
+     *  @param[in] globalIndex index for which owner is required
+     *  @return id of the owner partition.
+     */
+    virtual PartitionId findOwner( const IndexType globalIndex ) const;
+
     /** Get the owners of all global indexes.
      *
      *  @param[out] owners owners[i] is owner of element i, 0 <= i < globalSize
@@ -273,6 +283,69 @@ public:
      *  getBlockDistributionSize() != nIndex iff isSorted( owners( {0, ..., globalSize-1 }, ascending = true )
      */
     virtual IndexType getBlockDistributionSize() const = 0;
+
+    /** 
+     * @brief This method sets up local data structures in such a way that afterwards on each 
+     *        partition/processor it is possible to get any owner/local index for any global index
+     *        without communication.
+     *
+     * Most distributions can do any addressing by closed formulas ( block, cyclic, grid distributions )
+     * but general distributions have no information about the ownership of global indexes that are not
+     * local. If a general distribution is used in dense matrices for the column distribution it is essential 
+     * to know for all indexes where the data is mapped to.
+     */
+    virtual void enableAnyAddressing() const = 0;
+
+    /** Get the local size of any partititon. */
+
+    virtual IndexType getAnyLocalSize( const PartitionId partition ) const = 0;
+
+    /** Get the owner for any global index, same as findOwner but here no communication is guaranteed */
+
+    virtual IndexType getAnyOwner( const IndexType globalIndex ) const = 0;
+
+    /** Get the local index for any global index, owner is not really required but might be helpful if already available. */
+
+    virtual IndexType getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const = 0;
+
+    /** Get the global index for any local index on any partition */
+
+    virtual IndexType getAnyGlobalIndex( const IndexType locaIndex, const PartitionId owner ) const = 0;
+
+    /** This method returns the permutation of global indexes that sorts them by the different owners
+     *  (same as bucket sort of array with all owners).
+     *
+     *  @param[out] offsets local sizes of all partitions as offset array, size is number of partitions + 1
+     *  @param[out] local2global contains all global indexes sorted by the owners, is permutation
+     *
+     *  With the output arrays, the call of getAnyGlobalIndex can be done directly on heterorgeneous arrays
+     *
+     *  \code
+     *     getAnyGlobalIndex( localIndex, owner ) == local2global[ offsets[owner] + localIndex]
+     *  \endcode
+     *
+     *  /code
+     *     PartitionId p = ... // some partition
+     *     // traverse all global indexes belonging to partition p
+     *     for ( IndexType k = offsets[p]; k < offsets[p+1]; ++k )
+     *     {  
+     *         IndexType localIndex = k - offsets[p];
+     *         IndexType globalIndex = local2global[k];  
+     *         ....
+     *     }
+     *  /endcode
+     *
+     *  Note: If this distribution is a block distribution, the permutation is the identitiy.
+     */
+    virtual void getAnyLocal2Global( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& local2global ) const;
+
+    /** This method returns the inverse permutation as called by getAnyLocal2Global.
+     *
+     *  \code
+     *     getAnyLocalIndex( globalIndex, owner ) == global2local[globalIndex] - offsets[owner]
+     *  \endcode
+     */
+    virtual void getAnyGlobal2Local( hmemo::HArray<IndexType>& offsets, hmemo::HArray<IndexType>& global2local ) const;
 
     /**
      * Virtual method to check two distributions for equality.
@@ -399,9 +472,18 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
+/* ======================================================================== */
+/*             Inline methods                                               */
+/* ======================================================================== */
+
 IndexType Distribution::getGlobalSize() const
 {
     return mGlobalSize;
+}
+
+inline bool Distribution::isReplicated() const
+{
+    return getNumPartitions() == 1;
 }
 
 } /* end namespace dmemo */

@@ -67,27 +67,23 @@ const char GeneralDistribution::theCreateValue[] = "GENERAL";
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
     const HArray<IndexType>& myIndexes,
-    const CommunicatorPtr communicator )
+    const CommunicatorPtr communicator ) : 
 
-    : Distribution( globalSize, communicator )
+    Distribution( globalSize, communicator )
+
 {
-    ReadAccess<IndexType> rIndexes( myIndexes );
+    SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize 
+                            << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
 
-    IndexType nLocal = myIndexes.size();
+    SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
-    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, nLocal );
+    // make a copy of the indexes and sort them ascending = true, perm not needed
 
-    for ( IndexType localIndex = 0; localIndex < nLocal; ++localIndex )
-    {
-        IndexType globalIndex = rIndexes[ localIndex ];
-
-        SCAI_ASSERT_LT_ERROR( globalIndex, mGlobalSize, "global index out of range" )
-
-        wLocal2Global[ localIndex ]  = globalIndex;
-        mGlobal2Local[ globalIndex ] = localIndex;
-    }
+    utilskernel::HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
 
     // Note: the constructor is completely local, but make some consistency check now
+
+    //IndexType nLocal = myIndexes.size(); 
 
     //SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
@@ -151,7 +147,7 @@ GeneralDistribution::GeneralDistribution(
     {
         localOffsets.reserve( ctx, size + 1 );
         localOffsets = localSizes;
-        utilskernel::HArrayUtils::scan( localOffsets );
+        utilskernel::HArrayUtils::scan1( localOffsets );
         SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
     }
 
@@ -192,13 +188,6 @@ GeneralDistribution::GeneralDistribution(
         mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
     }
-
-    // Compute Global2Local
-
-    for ( IndexType i = 0; i < localSize; ++i )
-    {
-        mGlobal2Local[ wLocal2Global[i] ] = i;
-    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -208,17 +197,14 @@ GeneralDistribution::GeneralDistribution( const Distribution& other ) :
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
 
 {
-    WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, other.getLocalSize() );
+    SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
 
-    for ( IndexType i = 0; i < getGlobalSize(); ++i )
-    {
-        if ( other.isLocal( i ) )
-        {
-            IndexType localIndex = other.global2local( i );
-            mGlobal2Local[i] = localIndex;
-            wLocal2Global[localIndex] = i;
-        }
-    }
+    // just get form the other distribution the owned indexes, and it is done
+
+    other.getOwnedIndexes( mLocal2Global );
+
+    SCAI_ASSERT_EQ_DEBUG( mLocal2Global.size(), other.getLocalSize(), 
+                          "serious mismatch in other dist = " << other )
 }
 
 /* ---------------------------------------------------------------------- */
@@ -228,8 +214,9 @@ GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
     Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
 
 {
+    SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
+
     mLocal2Global = other.mLocal2Global;
-    mGlobal2Local = other.mGlobal2Local;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -238,40 +225,45 @@ GeneralDistribution::GeneralDistribution( const IndexType globalSize, const Comm
 
     Distribution( globalSize, communicator )
 {
+    SCAI_LOG_INFO( logger, "GeneralDistribuiton constructor only for derived classes" )
 }
 
 /* ---------------------------------------------------------------------- */
 
 GeneralDistribution::~GeneralDistribution()
 {
-    SCAI_LOG_INFO( logger, "~GeneralDistribution" )
+    SCAI_LOG_DEBUG( logger, "~GeneralDistribution" )
 }
 
-bool GeneralDistribution::isLocal( const IndexType index ) const
+/* ---------------------------------------------------------------------- */
+
+bool GeneralDistribution::isLocal( const IndexType globalIndex ) const
 {
-    return mGlobal2Local.find( index ) != mGlobal2Local.end();
+    IndexType pos = utilskernel::HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
+    return pos != nIndex;
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::getLocalSize() const
 {
-    return static_cast<IndexType>( mLocal2Global.size() );
+    return mLocal2Global.size();
 }
+
+/* ---------------------------------------------------------------------- */
 
 IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
 {
     return mLocal2Global[localIndex];
 }
 
+/* ---------------------------------------------------------------------- */
+
 IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 {
-    const Global2LocalMapType::const_iterator elem = mGlobal2Local.find( globalIndex );
+    // do a binary search in the array of global indexes for entries owned by this partition
 
-    if ( elem == mGlobal2Local.end() )
-    {
-        return nIndex;
-    }
-
-    return elem->second;
+    return utilskernel::HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -370,12 +362,16 @@ bool GeneralDistribution::isEqual( const Distribution& other ) const
     return allSameVals;
 }
 
+/* ---------------------------------------------------------------------- */
+
 void GeneralDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
     stream << "GeneralDistribution( size = " << mLocal2Global.size() << " of " << mGlobalSize << ", comm = "
            << *mCommunicator << " )";
 }
+
+/* ---------------------------------------------------------------------- */
 
 static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes, const HArray<IndexType>& offsets )
 {
@@ -402,6 +398,8 @@ static void setOwners( HArray<PartitionId>& owners, const HArray<IndexType>& ind
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
 void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const PartitionId root ) const
 {
     ContextPtr ctx = Context::getHostPtr();
@@ -426,7 +424,7 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
     if ( rank == root )
     {
         utilskernel::HArrayUtils::assign( offsets, localSizes, ctx );
-        IndexType nTotal = utilskernel::HArrayUtils::scan( offsets );
+        IndexType nTotal = utilskernel::HArrayUtils::scan1( offsets );
         SCAI_ASSERT( nTotal == mGlobalSize, "sum of local rows is not global size" )
     }
 
@@ -449,9 +447,81 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
 void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
 {
     utilskernel::HArrayUtils::assign( myGlobalIndexes, mLocal2Global );
+}
+
+/* ---------------------------------------------------------------------- */
+
+void GeneralDistribution::enableAnyAddressing() const
+{
+    if ( mAllOwners.size() > 0 ) 
+    {
+        // already computed, but just verify correct sizes
+
+        SCAI_ASSERT_EQ_DEBUG( mAllOwners.size(), getGlobalSize(), "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllLocalOffsets.size(), getNumPartitions() + 1, "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllLocal2Global.size(), getGlobalSize(), "serious mismatch" )
+        SCAI_ASSERT_EQ_DEBUG( mAllGlobal2Local.size(), getGlobalSize(), "serious mismatch" )
+
+        return;   // already done
+    }
+
+    // compute mAllOwners
+
+    HArray<IndexType> indexes;   // will contain all column indexes to get all owners
+  
+    utilskernel::HArrayUtils::setOrder( indexes, mGlobalSize );
+
+    Distribution::computeOwners( mAllOwners, indexes );
+
+    // bucket sort the owners, gives offsets and permutation to block values according to owners
+
+    utilskernel::HArrayUtils::bucketSort( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
+    utilskernel::HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType GeneralDistribution::getAnyLocalSize( const PartitionId rank ) const
+{
+    SCAI_ASSERT( mAllLocalOffsets.size() > 0, "any addressing not enabled" )
+
+    return mAllLocalOffsets[ rank + 1] - mAllLocalOffsets[rank];
+}
+
+/* ---------------------------------------------------------------------- */
+
+PartitionId GeneralDistribution::getAnyOwner( const IndexType globalIndex ) const
+{
+    SCAI_ASSERT( mAllOwners.size() > 0, "any addressing not enabled" )
+
+    return mAllOwners[ globalIndex ];
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType GeneralDistribution::getAnyLocalIndex( const IndexType globalIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+
+    // here the owner is important as local index  requires size offsets
+
+    return mAllGlobal2Local[ globalIndex ] - mAllLocalOffsets[ owner ];
+}
+
+/* ---------------------------------------------------------------------- */
+
+IndexType GeneralDistribution::getAnyGlobalIndex( const IndexType localIndex, const PartitionId owner ) const
+{
+    SCAI_ASSERT( mAllGlobal2Local.size() > 0, "any addressing not enabled" )
+
+    // here the owner is important as local index  requires size offsets
+
+    return mAllLocal2Global[ localIndex + mAllLocalOffsets[ owner ] ];
 }
 
 } /* end namespace dmemo */

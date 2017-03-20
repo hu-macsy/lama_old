@@ -75,7 +75,11 @@ template<typename > class DenseMatrix;
  */
 
 template<typename ValueType>
-class COMMON_DLL_IMPORTEXPORT SparseMatrix: public CRTPMatrix<SparseMatrix<ValueType>, ValueType>
+class COMMON_DLL_IMPORTEXPORT SparseMatrix: 
+
+    public CRTPMatrix<SparseMatrix<ValueType>, ValueType>,
+    public Matrix
+
 {
 
 public:
@@ -159,26 +163,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContextPtr( const hmemo::ContextPtr context )
-    {
-        SCAI_ASSERT_DEBUG( context, "NULL context" )
-        setContextPtr( context, context );
-    }
+    virtual void setContextPtr( const hmemo::ContextPtr context );
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setContextPtr( const hmemo::ContextPtr localContext, const hmemo::ContextPtr haloContext )
-    {
-        mLocalData->setContextPtr( localContext );
-        mHaloData->setContextPtr( haloContext );
-    }
-
-    /* Implementation of pure method of class Matrix. */
-
-    virtual hmemo::ContextPtr getContextPtr() const
-    {
-        return mLocalData->getContextPtr();
-    }
+    virtual hmemo::ContextPtr getContextPtr() const;
 
     /** Implementation for Matrix::setDenseData */
 
@@ -225,7 +214,48 @@ public:
 
     /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setIdentity;
+    using Matrix::setIdentity;
+
+    virtual void matrixTimesVector(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
+    }
+
+    virtual void vectorTimesMatrix(
+        Vector& result,
+        const Scalar alpha,
+        const Vector& x,
+        const Scalar beta,
+        const Vector& y ) const 
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
+    }
+
+    /** @brief Implementation of pure method Matrix::getColumn 
+     *
+     *  It is recommended to call getColumn with a SparseVector for a sparse matrix.
+     */
+    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const;
+
+    virtual void setRow( const Vector& row,
+                         const IndexType globalRowIndex,
+                         const common::binary::BinaryOp op )
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
+    }
+
+    virtual void setColumn(
+        const Vector& column,
+        const IndexType globalColIndex,
+        const common::binary::BinaryOp op )
+    {
+        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
+    }
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -488,7 +518,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY );
+        const common::binary::BinaryOp op = common::binary::COPY );
 
     /**
      * @brief Read access to the halo of the distributed matrix.
@@ -545,22 +575,21 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::operator=; // make overloaded routines visible before overwriting one
+    using Matrix::operator=; // make overloaded routines visible before overwriting one
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getColDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getRowDistribution;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getRowDistributionPtr;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setDistributionPtr;
+    using Matrix::getColDistribution;
+    using Matrix::getColDistributionPtr;
+    using Matrix::getRowDistribution;
+    using Matrix::getRowDistributionPtr;
+    using Matrix::setDistributionPtr;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getCommunicationKind;
+    using Matrix::getCommunicationKind;
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::getNumRows;
+    using Matrix::getNumColumns;
+    using Matrix::getNumRows;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
-//    SparseMatrix& operator=( const SparseMatrix& matrix );
     SparseMatrix<ValueType>& operator=( const SparseMatrix<ValueType>& matrix );
 
     /**
@@ -573,13 +602,25 @@ public:
 
     /** Get a complete row of this matrix from its local part. */
 
-    void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
+    void getLocalRowDense( hmemo::HArray<ValueType>& row, const IndexType localRowIndex ) const;
+
+    /** Get a complete row of this matrix from its local part in sparse format */
+
+    void getLocalRowSparse( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex ) const;
+
+    /** Implementation of pure method Matrix::getRow */
+
+    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
+
+    /** Implementation of pure method Matrix::getRowLocal */
+
+    virtual void getRowLocal( Vector& row, const IndexType localRowIndex ) const;
 
     /** Set a complete row of this matrix in its local part. */
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
-                      const utilskernel::binary::BinaryOp op  );
+                      const common::binary::BinaryOp op  );
 
     /** Get the local part of a col of this matrix */
 
@@ -589,7 +630,7 @@ public:
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
-                         const utilskernel::binary::BinaryOp op  );
+                         const common::binary::BinaryOp op  );
 
 protected:
 
@@ -632,17 +673,18 @@ protected:
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
 
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mNumRows;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mNumColumns;
-    using CRTPMatrix<SparseMatrix<ValueType>, ValueType>::mColDistribution;
+    using Matrix::mColDistribution;
+
+public:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
 
     /**
      * @brief Default constructor is disabled.
      */
     SparseMatrix();
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     /** This method sets a row-distributed matrix corresponding to the distribution of this matrix.
      *  ( no column distribution, no halo ).
@@ -654,7 +696,7 @@ private:
      *  This routine can also handle the case that otherLocalData is a reference to the local
      *  data of this matrix ( helpful to avoid unneccessary copies ).
      */
-    void    set( const MatrixStorage<ValueType>& otherLocalData, dmemo::DistributionPtr otherDist );
+    void set( const MatrixStorage<ValueType>& otherLocalData, dmemo::DistributionPtr otherDist );
 
     /** Implementation of transposed assign for sparse matrix of a known value type. */
 
@@ -665,6 +707,27 @@ private:
     mutable hmemo::HArray<ValueType> mTempSendValues; //!< temporary vector for halo communications
 
 };
+
+/***************************************************************************************************/
+/* Implementation of inline methods                                                                */
+/***************************************************************************************************/
+
+template <typename ValueType>
+void SparseMatrix<ValueType>::setContextPtr( const hmemo::ContextPtr context )
+{
+    SCAI_ASSERT_ERROR( context, "NULL context, cannot be set" )
+
+    mLocalData->setContextPtr( context );
+    mHaloData->setContextPtr( context );
+}
+
+/* Implementation of pure method of class Matrix. */
+
+template <typename ValueType>
+hmemo::ContextPtr SparseMatrix<ValueType>::getContextPtr() const
+{
+    return mLocalData->getContextPtr();
+}
 
 } /* end namespace lama */
 

@@ -194,7 +194,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_numeric_test_types )
     ValueType one = 1;
     ValueType one1 = one + eps1;
 
+    // Note: This test fails for LongDouble or ComplexLongDouble when using valgrind
+
     BOOST_CHECK( one < one1 );
+    BOOST_CHECK( one1 != ValueType( 0 ) );
 
     // there should be no value between one and one1
 

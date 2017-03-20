@@ -36,10 +36,12 @@
 #include <scai/lama/Vector.hpp>
 
 // local library
+
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Distribution.hpp>
@@ -145,7 +147,7 @@ Vector* Vector::getDenseVector(
 
 Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
 
-    Distributed( shared_ptr<Distribution>( new NoDistribution( size ) ) ),
+    Distributed( DistributionPtr( new NoDistribution( size ) ) ),
     mContext( context )
 {
     if ( !mContext )
@@ -177,7 +179,7 @@ Vector::Vector( const Vector& other )
 
 Vector::~Vector()
 {
-    SCAI_LOG_INFO( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
+    SCAI_LOG_DEBUG( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -193,31 +195,27 @@ void Vector::readFromSingleFile( const std::string& fileName )
 
     // this is a bit tricky stuff, but it avoids an additional copy from array -> vector
 
-    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
-
-    IndexType vectorSize;
+    IndexType globalSize;
 
     if ( myRank == MASTER )
     {
-        SCAI_LOG_INFO( logger, *comm << ": read array from single file " << fileName )
+        SCAI_LOG_INFO( logger, *comm << ": read local array from file " << fileName )
 
-        FileIO::read( localValues, fileName );
-
-        vectorSize = localValues.size();
+        globalSize = readLocalFromFile( fileName );
     }
 
-    comm->bcast( &vectorSize, 1, MASTER );
+    comm->bcast( &globalSize, 1, MASTER );
 
     if ( myRank != MASTER )
     {
-        localValues.clear();
+        clearValues();
     }
 
-    DistributionPtr distribution( new CyclicDistribution( vectorSize, vectorSize, comm ) );
+    DistributionPtr distribution( new SingleDistribution( globalSize, comm, MASTER ) );
 
-    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
+    setDistributionPtr( distribution );
 
-    assign( localValues, distribution );
+    SCAI_LOG_INFO( logger, "readFromSingleFile, vector = " << *this )
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -228,6 +226,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
 {
     if ( distribution.get() == NULL )
     {
+        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << ", master only" )
         readFromSingleFile( fileName );
         return;
     }
@@ -236,6 +235,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
 
     if ( n == nIndex )
     {
+        SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), master only + redistribute" )
         readFromSingleFile( fileName );
         redistribute( distribution );
         return;
@@ -250,13 +250,15 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
         first = distribution->local2global( 0 );   // first global index
     }
 
-    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
-
     bool error = false;
+
+    SCAI_LOG_INFO( logger, "readFromSingleFile( " << fileName << " ), block dist = " << *distribution 
+                           << ", read my block, first = " << first << ", n = " << n )
 
     try
     {
-        FileIO::read( localValues, fileName, common::scalar::INTERNAL, first, n );
+        IndexType localSize = readLocalFromFile( fileName, first, n );
+        error = localSize != distribution->getLocalSize();
     }
     catch ( Exception& ex )
     {
@@ -271,9 +273,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
         COMMON_THROWEXCEPTION( "readFromSingleFile " << fileName << " failed, dist = " << *distribution )
     }
 
-    // works fine as assign can deal with alias, i.e. localValues und getLocalValues() are same
-
-    assign( localValues, distribution );
+    setDistributionPtr( distribution );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -282,20 +282,13 @@ void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, Di
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    // this is a bit tricky stuff, but it provides us with an array of the right type
-    // and it avoids an additional copy from array -> vector
-
-    _HArray& localValues = const_cast<_HArray&>( getLocalValues() );
-
     bool errorFlag = false;
 
     IndexType localSize = 0;
 
     try
     {
-        FileIO::read( localValues, myPartitionFileName );
-
-        localSize = localValues.size();
+        localSize = readLocalFromFile( myPartitionFileName );
 
         if ( dist.get() )
         {
@@ -328,9 +321,7 @@ void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, Di
         vectorDist.reset( new GenBlockDistribution( globalSize, localSize, comm ) );
     }
 
-    // make sure that all processors have the same number of columns
-
-    assign( localValues, vectorDist );
+    setDistributionPtr( vectorDist );   // distribution matches size of local part
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -377,8 +368,7 @@ void Vector::readFromFile( const std::string& vectorFileName, const std::string&
 
 void Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
 {
-    SCAI_LOG_INFO( logger,
-                   *this << ": readFromFile( " << fileName << " )" )
+    SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
 
     std::string newFileName = fileName;
 
@@ -410,10 +400,16 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 Vector& Vector::operator=( const Expression_SV_SV& expression )
 {
     SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
+
+    const Scalar& alpha = expression.getArg1().getArg1();
+    const Scalar& beta  = expression.getArg2().getArg1();
     const Vector& x = expression.getArg1().getArg2();
     const Vector& y = expression.getArg2().getArg2();
-    SCAI_ASSERT_EQ_ERROR( x.size(), y.size(), "size mismatch for the two vectors in a * x + b * y" );
-    assign( expression );
+
+    // Note: all checks are done the vector specific implementations
+
+    vectorPlusVector( alpha, x, beta, y );
+
     return *this;
 }
 
@@ -475,12 +471,12 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     const Matrix& matrix = matrixTimesVectorExp.getArg1();
     const Vector& vectorX = matrixTimesVectorExp.getArg2();
     Vector* resultPtr = this;
-    common::shared_ptr<Vector> tmpResult;
+    VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -507,12 +503,12 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     const Vector& vectorX = vectorTimesMatrixExp.getArg1();
     const Matrix& matrix = vectorTimesMatrixExp.getArg2();
     Vector* resultPtr = this;
-    common::shared_ptr<Vector> tmpResult;
+    VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult = common::shared_ptr<Vector>( Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -529,43 +525,57 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
 
 Vector& Vector::operator=( const Expression_SV& expression )
 {
-    SCAI_LOG_DEBUG( logger, "operator=, SV (  s * vector )  -> SV_SV ( s * vector  + 0 * vector )" )
-    Expression_SV_SV tmpExp( expression, Expression_SV( Scalar( 0 ), expression.getArg2() ) );
-    // calling operator=( tmpExp ) would imply unnecessary checks, so call assign directly
-    assign( tmpExp );
+    const Scalar& alpha = expression.getArg1();
+    const Vector& x = expression.getArg2();
+
+    vectorPlusVector( alpha, x, 0, x );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Expression_VV& expression )
 {
     SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
-    Expression_SVV tmpExp( Scalar( 1.0 ), expression );
-    assign( tmpExp );
+
+    const Vector& x = expression.getArg1();
+    const Vector& y = expression.getArg2();
+
+    Scalar alpha( 1 );
+
+    vectorTimesVector( alpha, x, y );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Expression_SVV& expression )
 {
-    SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> alpha * x * y" )
-    assign( expression );
+    const Scalar& alpha = expression.getArg1();
+
+    const Expression_VV& exp = expression.getArg2();
+    const Vector& x = exp.getArg1();
+    const Vector& y = exp.getArg2();
+
+    vectorTimesVector( alpha, x, y );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Vector& other )
 {
-    Distributed::operator=( other );
     assign( other );
+
     return *this;
 }
 
 Vector& Vector::operator=( const Expression_SV_S& expression )
 {
-    SCAI_LOG_DEBUG( logger, "operator=, SV_V( alpha, x, beta ) -> alpha * x + beta, alpha="
-                    << expression.getArg1().getArg1() << " x=" << expression.getArg1().getArg2()
-                    << " y=" << expression.getArg2() )
+    const Expression_SV& exp = expression.getArg1();
+    const Scalar& alpha = exp.getArg1();
+    const Vector& x = exp.getArg2();
+    const Scalar& beta = expression.getArg2();
 
-    // Distributed::operator=( expression.getArg1().getArg2() );
-    assign( expression );
+    vectorPlusScalar( alpha, x, beta );
+
     return *this;
 }
 
@@ -576,33 +586,60 @@ Vector& Vector::operator=( const Scalar value )
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*   Compound assignments                                                                 */
+/*   Compound assignments *=, /=                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
 Vector& Vector::operator*=( const Scalar value )
 {
-    return operator=( Expression_SV( value, *this ) );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::MULT, noSwapArgs );
+    return *this;
 }
 
 Vector& Vector::operator*=( const Vector& other )
 {
-    return scale( other );
+    bool noSwapArgs = false;
+    setVector( other, common::binary::MULT, noSwapArgs );
+    return *this;
 }
 
 Vector& Vector::operator/=( const Scalar value )
 {
-    Expression<Scalar, Vector, Times> exp1( Scalar( 1.0 ) / value, *this );
-    return operator=( exp1 );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::DIVIDE, noSwapArgs );
+    return *this;
 }
+
+Vector& Vector::operator/=( const Vector& other )
+{
+    bool noSwapArgs = false;
+    setVector( other, common::binary::DIVIDE, noSwapArgs );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
 
 Vector& Vector::operator+=( const Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
+Vector& Vector::operator-=( const Vector& other )
+{
+    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
+}
+
 Vector& Vector::operator+=( const Scalar value )
 {
-    add( value );
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::ADD, noSwapArgs );
+    return *this;
+}
+
+Vector& Vector::operator-=( const Scalar value )
+{
+    bool noSwapArgs = false;
+    setScalar( value, common::binary::SUB, noSwapArgs );
     return *this;
 }
 
@@ -633,19 +670,253 @@ Vector& Vector::operator-=( const Expression_SMV& exp )
     return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Vector& other )
+/* ---------------------------------------------------------------------------------------*/
+/*   assign operations                                                                    */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::assign( const Vector& other )
 {
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
+    SCAI_LOG_INFO( logger, "assign other = " << other )
+
+    setDistributionPtr( other.getDistributionPtr() );
+
+    switch ( other.getVectorKind() )
+    {
+        case Vector::DENSE:
+        {
+            const _DenseVector& denseOther = reinterpret_cast<const _DenseVector&>( other );
+            setDenseValues( denseOther.getLocalValues() );
+            break;
+        }
+        case Vector::SPARSE:
+        {
+            const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
+            setSparseValues( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), sparseOther.getZero() );
+            break;
+        }
+        default:
+
+            COMMON_THROWEXCEPTION( "illegal vector kind, other = " << other.getVectorKind() )
+    }
+}
+
+void Vector::assign( const _HArray& localValues, DistributionPtr dist )
+{
+    SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "Mismatch local size of vecotr" )
+
+    setDistributionPtr( dist );
+    setDenseValues( localValues );
+}
+
+void Vector::assign( const _HArray& globalValues )
+{
+    SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
+
+    setDistributionPtr( DistributionPtr( new NoDistribution( globalValues.size() ) ) );
+    setDenseValues( globalValues );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   writeToFile                                                                          */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::writeToSingleFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
+) const
+{
+    if ( getDistribution().isReplicated() )
+    {
+        // make sure that only one processor writes to file
+
+        CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+        if ( comm->getRank() == 0 )
+        {
+            writeLocalToFile( fileName, fileType, dataType, fileMode );
+        }
+
+        // synchronization to avoid that other processors start with
+        // something that might depend on the finally written file
+
+        comm->synchronize();
+    }
+    else
+    {
+        // writing a distributed vector into a single file requires redistributon
+
+        common::unique_ptr<Vector> repV( copy() );
+        repV->replicate();
+        repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::replicate()
+{
+    if ( getDistribution().isReplicated() )
+    {
+        return;
+    }
+
+    redistribute( DistributionPtr( new NoDistribution( size() ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::writeToPartitionedFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode ) const
+{
+    bool errorFlag = false;
+
+    try
+    {
+        writeLocalToFile( fileName, fileType, dataType, fileMode );
+    }
+    catch ( common::Exception& e )
+    {
+        errorFlag = true;
+    }
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    errorFlag = comm.any( errorFlag );
+
+    if ( errorFlag )
+    {
+        COMMON_THROWEXCEPTION( "Partitioned IO of vector failed" )
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::writeToFile(
+    const std::string& fileName,
+    const std::string& fileType,               /* = "", take IO type by suffix   */
+    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const FileIO::FileMode fileMode            /* = DEFAULT_MODE */
+) const
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": writeToFile( " << fileName << ", fileType = " << fileType << ", dataType = " << dataType << " )" )
+
+    std::string newFileName = fileName;
+
+    bool writePartitions;
+
+    const Communicator& comm = getDistribution().getCommunicator();
+
+    PartitionIO::getPartitionFileName( newFileName, writePartitions, comm );
+
+    if ( !writePartitions )
+    {
+        writeToSingleFile( newFileName, fileType, dataType, fileMode );
+    }
+    else
+    {
+        // matrix_%r.mtx -> matrix_0.4.mtx,  ..., matrix_3.4.mtxt
+        writeToPartitionedFile( newFileName, fileType, dataType, fileMode );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   unary operations                                                                     */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::invert()
+{
+    bool swapArgs = true;
+    setScalar( Scalar( 1 ), binary::DIVIDE, swapArgs );
+}
+
+void Vector::powBase( const Vector& other )
+{
+    bool swapArgs = true;
+    setVector( other, common::binary::POW, swapArgs );
+}
+
+void Vector::powExp( const Vector& other )
+{
+    bool swapArgs = false;
+    setVector( other, common::binary::POW, swapArgs );
+}
+
+void Vector::powBase( const Scalar value )
+{
+    bool swapArgs = true;  // this[i] =  value ** this[i] 
+    setScalar( value, common::binary::POW, swapArgs );
+}
+
+void Vector::powExp( const Scalar value )
+{
+    bool swapArgs = false;  // this[i] = this[i] ** value
+    setScalar( value, common::binary::POW, swapArgs );
+}
+
+void Vector::conj()
+{
+    applyUnary( common::unary::CONJ );
+}
+
+void Vector::abs()
+{
+    applyUnary( common::unary::ABS );
+}
+
+void Vector::exp()
+{
+    applyUnary( common::unary::EXP );
+}
+
+void Vector::sqrt()
+{
+    applyUnary( common::unary::SQRT );
+}
+
+void Vector::sin()
+{
+    applyUnary( common::unary::SIN );
+}
+
+void Vector::cos()
+{
+    applyUnary( common::unary::COS );
+}
+
+void Vector::tan()
+{
+    applyUnary( common::unary::TAN );
+}
+
+void Vector::atan()
+{
+    applyUnary( common::unary::ATAN );
+}
+
+void Vector::log()
+{
+    applyUnary( common::unary::LOG );
+}
+
+void Vector::floor()
+{
+    applyUnary( common::unary::FLOOR );
+}
+
+void Vector::ceil()
+{
+    applyUnary( common::unary::CEIL );
 }
 
 /* ---------------------------------------------------------------------------------------*/
 /*   Miscellaneous                                                                        */
 /* ---------------------------------------------------------------------------------------*/
-
-const Scalar Vector::operator()( const IndexType i ) const
-{
-    return getValue( i );
-}
 
 void Vector::swapVector( Vector& other )
 {

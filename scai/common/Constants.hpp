@@ -57,8 +57,8 @@ struct constants
 
     typedef enum
     {
-        ONE,   //!< stands for value 1
-        ZERO   //!< stands for value 0
+        ZERO,  //!< stands for value 0
+        ONE    //!< stands for value 1
     } ConstantType;
 
 }; /* struct constants */
@@ -95,7 +95,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
     {
         AbsType r = Math::real( x );
 
-        bool isRealZero = Math::abs( r ) < TypeTraits<ValueType>::eps0();
+        bool isRealZero = Math::abs( r ) <= TypeTraits<ValueType>::eps0();
 
         if ( typeid( AbsType ) == typeid( ValueType ) )
         {
@@ -107,7 +107,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
 
             AbsType i = Math::imag( x );
 
-            bool isImagZero = Math::abs( i ) < TypeTraits<ValueType>::eps0();
+            bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
 
             return isRealZero && isImagZero;
         }
@@ -116,7 +116,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
     {
         AbsType r = Math::real( x );
 
-        bool isRealOne = Math::abs( r - AbsType( 1 ) ) < TypeTraits<ValueType>::eps1();
+        bool isRealOne = Math::abs( r - AbsType( 1 ) ) <= TypeTraits<ValueType>::eps1();
 
         if ( typeid( AbsType ) == typeid( ValueType ) )
         {
@@ -128,7 +128,7 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
 
             AbsType i = Math::imag( x );
 
-            bool isImagZero = Math::abs( i ) < TypeTraits<ValueType>::eps0();
+            bool isImagZero = Math::abs( i ) <= TypeTraits<ValueType>::eps0();
 
             return isRealOne && isImagZero;
         }

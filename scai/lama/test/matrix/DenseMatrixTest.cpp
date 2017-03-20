@@ -50,6 +50,8 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 
@@ -131,6 +133,125 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( invertTest, ValueType, scai_numeric_test_types )
     DenseMatrix<ValueType> e2( matrix * invMatrix );
 
     BOOST_CHECK( e1.maxDiffNorm( e2 ) < 1e-3 );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( columnDistributionTest )
+{
+    // Motivation: dedicated test to check that split/join of distributed column
+    //             data works which is typique for dense matrices.
+
+    typedef RealType ValueType;
+
+    // In this method we just test that split/join of columns works fine
+
+    const IndexType numRows = 5;
+    const IndexType numColumns = 12;
+ 
+    dmemo::DistributionPtr repRowDist( new dmemo::NoDistribution( numRows ) );
+    dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numColumns ) );
+
+    DenseStorage<ValueType> denseData( numRows, numColumns );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            denseData.setValue( i, j, ValueType( i * 100 + j ) );
+        }
+    }
+
+    dmemo::TestDistributions dists( numColumns );
+
+    for ( size_t k = 0; k < dists.size(); ++k )
+    {
+        dmemo::DistributionPtr dist = dists[k];
+
+        DenseMatrix<ValueType> denseM( denseData );
+
+        // split the column data
+
+        denseM.redistribute( repRowDist, dist );
+
+        // join the column data
+
+        denseM.redistribute( repRowDist, repColDist );
+
+        DenseStorage<ValueType> dense1 = denseM.getLocalStorage();
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                BOOST_CHECK_EQUAL( denseData.getValue( i, j ), ValueType( i * 100 + j ) );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( dense2SparseTest )
+{
+    // Motivation: dedicated test to check that split/join of distributed column
+    //             data works which is typique for dense matrices.
+
+    typedef RealType ValueType;
+
+    // In this method we just test that split/join of columns works fine
+
+    const IndexType numRows = 5;
+    const IndexType numColumns = 12;
+ 
+    dmemo::DistributionPtr repRowDist( new dmemo::NoDistribution( numRows ) );
+    dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( numColumns ) );
+
+    DenseStorage<ValueType> denseData( numRows, numColumns );
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            denseData.setValue( i, j, ValueType( i * 100 + j ) );
+        }
+    }
+
+    dmemo::TestDistributions dists( numColumns );
+
+    for ( size_t k = 0; k < dists.size(); ++k )
+    {
+        dmemo::DistributionPtr dist = dists[k];
+
+        DenseMatrix<ValueType> denseM( denseData );
+
+        denseM.redistribute( repRowDist, dist );
+
+        CSRSparseMatrix<ValueType> sparseM( denseM );
+
+        BOOST_REQUIRE_EQUAL( denseM.getColDistribution(), sparseM.getColDistribution() );
+        BOOST_REQUIRE_EQUAL( denseM.getRowDistribution(), sparseM.getRowDistribution() );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                BOOST_CHECK_EQUAL( sparseM.getValue( i, j ), ValueType( i * 100 + j ) );
+            }
+        }
+
+        sparseM.redistribute( repRowDist, repColDist );
+
+        CSRStorage<ValueType> csrData = sparseM.getLocalStorage();
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                BOOST_CHECK_EQUAL( csrData.getValue( i, j ), ValueType( i * 100 + j ) );
+            }
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------- */

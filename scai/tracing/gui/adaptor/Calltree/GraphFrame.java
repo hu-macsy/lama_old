@@ -1,15 +1,15 @@
 /*
  * GraphFrame.java
- * 
+ *
  * Frame that displays the call graph.
- * 
+ *
  * Created: 2006-02-20 Thomas Brandes <thomas.brandes@scai.fraunhofer.de>
  * Changed:
- * 
+ *
  * $Id$
- * 
+ *
  * Copyright (C) 2006 Fraunhofer SCAI, Germany
- * 
+ *
  * All rights reserved
  *
  * http://www.scai.fhg.de/EP-CACHE/adaptor
@@ -37,28 +37,29 @@ import att.grappa.Subgraph;
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public class GraphFrame extends JFrame {
+public class GraphFrame extends JFrame
+{
 
     /**
      * The following dimension(width,height) is taken for the size
      * of the graph display frame.
-     * 
+     *
      * (1000, 800) is good dimension for 1240 x 1028 screeen
      * (800, 600) is good dimension for 1024 x 800 screen
      */
-    private static final Dimension SIZE_DIM = new Dimension(1000, 800);
-    
+    private static final Dimension SIZE_DIM = new Dimension( 1000, 800 );
+
     /**
      * The following point is taken as the left upper corner for
      * the graph display frame.
      */
-    private static final Point ORIGIN_POINT = new Point(120, 100);
-    
+    private static final Point ORIGIN_POINT = new Point( 120, 100 );
+
     /**
      * The panel to show the call graph via Grappa.
      */
     private GrappaPanel myGrappaPanel = null;
-    
+
     /**
      * Enables the graph to be scrolled.
      */
@@ -77,67 +78,70 @@ public class GraphFrame extends JFrame {
     /**
      * Constructor to genreate a Graph frame. It has no related call tree
      * at the beginning.
-     * 
+     *
      * @param graphMenuBar must be an instance of the menu related to this frame.
      */
-    GraphFrame(JMenuBar graphMenuBar) {
+    GraphFrame( JMenuBar graphMenuBar )
+    {
 
-        super("GraphFrame");
+        super( "GraphFrame" );
 
-        this.setSize(SIZE_DIM);
-        this.setLocation(ORIGIN_POINT);
+        this.setSize( SIZE_DIM );
+        this.setLocation( ORIGIN_POINT );
 
         myScrollPane = new JScrollPane();
-        
-        myTabbedPane = new JTabbedPane(JTabbedPane.TOP);
-        
-        myTabbedPane.addTab("Calltree", myScrollPane);
-        
+
+        myTabbedPane = new JTabbedPane( JTabbedPane.TOP );
+
+        myTabbedPane.addTab( "Calltree", myScrollPane );
+
         myCalltreePanel = new CTPanel();
 
-        getContentPane().add("North", graphMenuBar);
-        getContentPane().add("Center", myTabbedPane);
-        getContentPane().add("South", myCalltreePanel);
+        getContentPane().add( "North", graphMenuBar );
+        getContentPane().add( "Center", myTabbedPane );
+        getContentPane().add( "South", myCalltreePanel );
 
-        setVisible(true);
+        setVisible( true );
 
     } // constructor GraphFrame
 
     /**
      * This routine adds a new selection panel as a tabbed pane.
-     * 
+     *
      * @param title is the name of the new tab
      * @param newComponent is the panel that will be added
      */
-    public void addTab(String title, Component newComponent) {
-        
-        myTabbedPane.add(title, newComponent);
-        
+    public void addTab( String title, Component newComponent )
+    {
+
+        myTabbedPane.add( title, newComponent );
+
     }
-    
+
     /**
      * This routine is used to display the call graph in this frame. The CT interface
      * allows to call routines for certain actions.
-     * 
+     *
      * @param graph is the graph to be displayed
      * @param theMain implements the CTInterface
      */
-    void showGraph(Graph graph, CTInterface theMain) {
+    void showGraph( Graph graph, CTInterface theMain )
+    {
 
-        myGrappaPanel = new GrappaPanel(graph);
+        myGrappaPanel = new GrappaPanel( graph );
 
         // gp.addGrappaListener(new GrappaAdapter());
-        // attention: we take our own listener 
+        // attention: we take our own listener
 
-        myGrappaPanel.addGrappaListener(new MyGrappaListener(theMain));
+        myGrappaPanel.addGrappaListener( new MyGrappaListener( theMain ) );
 
-        myGrappaPanel.setScaleToFit(false);
+        myGrappaPanel.setScaleToFit( false );
 
-        MySubgraph.setLastSelection(myGrappaPanel.getSubgraph());
+        MySubgraph.setLastSelection( myGrappaPanel.getSubgraph() );
 
-        myScrollPane.setViewportView(myGrappaPanel);
-        
-        myTabbedPane.setSelectedComponent(myScrollPane);
+        myScrollPane.setViewportView( myGrappaPanel );
+
+        myTabbedPane.setSelectedComponent( myScrollPane );
 
         repaint();
 
@@ -145,34 +149,40 @@ public class GraphFrame extends JFrame {
 
     /**
      * Getter routine for the current selected subgraph.
-     * 
+     *
      * @return the selected Subgraph
      */
-    public Subgraph getSubgraph() {
-        
-        if (myGrappaPanel == null) {
+    public Subgraph getSubgraph()
+    {
+
+        if ( myGrappaPanel == null )
+        {
             return null;
-        } else {
+        }
+        else
+        {
             return myGrappaPanel.getSubgraph();
         }
     }
-    
+
     /**
      * Enables a kill button to kill thread T.
-     * 
+     *
      * @param theThread is the thread that can be killed by the button
      */
-    void enableKill(LayoutThread theThread) {
+    void enableKill( LayoutThread theThread )
+    {
 
-        myCalltreePanel.enableKillButton(theThread);
+        myCalltreePanel.enableKillButton( theThread );
     }
 
     /**
      * Disable the kill button. Should be called when the thread has already
-     * finised. 
-     * 
+     * finised.
+     *
      */
-    void disableKillButton() {
+    void disableKillButton()
+    {
 
         myCalltreePanel.disableKillButton();
     }

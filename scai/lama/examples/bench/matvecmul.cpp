@@ -53,13 +53,15 @@ using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
+typedef common::shared_ptr<_DenseVector> DenseVectorPtr;
+
 static void bench( Matrix& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
-    VectorPtr x( mat.newDenseVector() );
-    VectorPtr y1( mat.newDenseVector() );
-    VectorPtr y2( mat.newDenseVector() );
+    DenseVectorPtr x( mat.newDenseVector() );
+    DenseVectorPtr y1( mat.newDenseVector() );
+    DenseVectorPtr y2( mat.newDenseVector() );
 
     const IndexType size = mat.getNumRows();
 

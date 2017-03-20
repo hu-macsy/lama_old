@@ -42,8 +42,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/utilskernel/BinaryOp.hpp>
-#include <scai/utilskernel/UnaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 
 #include <scai/kregistry/mepr/Registrator.hpp>
 
@@ -70,7 +70,7 @@ public:
         const ValueType array[],
         const IndexType n,
         const ValueType zero,
-        const binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::reduce2 */
 
@@ -79,14 +79,14 @@ public:
         const ValueType array1[],
         const ValueType array2[],
         const IndexType n,
-        const binary::BinaryOp binOp,
+        const common::binary::BinaryOp binOp,
         const ValueType zero,
-        const binary::BinaryOp redOp );
+        const common::binary::BinaryOp redOp );
 
     /** OpenMP implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op );
+    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::scaleVectorAddScalar */
 
@@ -111,12 +111,12 @@ public:
     /** OpenMP implementation for UtilKernelTrait::isSorted */
 
     template<typename ValueType>
-    static bool isSorted( const ValueType array[], const IndexType n, bool acending );
+    static bool isSorted( const ValueType array[], const IndexType n, const common::binary::CompareOp op );
 
     /** OpenMP implementation for UtilKernelTrait::set */
 
     template<typename ValueType1, typename ValueType2>
-    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op );
+    static void set( ValueType1 out[], const ValueType2 in[], const IndexType n, const common::binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::setSection */
 
@@ -127,27 +127,28 @@ public:
         const ValueType2 in[],
         const IndexType inc2,
         const IndexType n,
-        const binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::binaryOp */
 
     template<typename ValueType>
-    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op );
+    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar1 */
-
-    template<typename ValueType>
-    static void binaryOpScalar1( ValueType out[], const ValueType value, const ValueType in[], const IndexType n, const binary::BinaryOp op );
-
-    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar2 */
+    /** OpenMP implementation for UtilKernelTrait::binaryOpScalar */
 
     template<typename ValueType>
-    static void binaryOpScalar2( ValueType out[], const ValueType in[], const ValueType value, const IndexType n, const binary::BinaryOp op );
+    static void binaryOpScalar( 
+        ValueType out[], 
+        const ValueType in[], 
+        const ValueType value, 
+        const IndexType n, 
+        const common::binary::BinaryOp op,
+        const bool swapScalar );
 
     /** OpenMP implementation for UtilKernelTrait::setGather */
 
@@ -156,7 +157,19 @@ public:
         ValueType1 out[],
         const ValueType2 in[],
         const IndexType indexes[],
-        const binary::BinaryOp op,
+        const common::binary::BinaryOp op,
+        const IndexType n );
+
+    /** OpenMP implementation for UtilKernelTrait::setGatherSparse */
+
+    template<typename ValueType1, typename ValueType2>
+    static void setGatherSparse(
+        ValueType1 target[],
+        const ValueType2 sourceNonZeroValues[],
+        const IndexType sourceNonZeroIndexes[],
+        const IndexType sourceNNZ,
+        const IndexType indexes[],
+        const common::binary::BinaryOp op,
         const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scatterVal */
@@ -169,14 +182,20 @@ public:
     template<typename ValueType1, typename ValueType2>
     static void setScatter( ValueType1 out[],
                             const IndexType indexes[],
+                            const bool unique,
                             const ValueType2 in[],
-                            const binary::BinaryOp op,
+                            const common::binary::BinaryOp op,
                             const IndexType n );
 
     /** OpenMP implementation for UtilKernelTrait::scan */
 
     template<typename ValueType>
-    static ValueType scan( ValueType array[], const IndexType n );
+    static ValueType scan( 
+        ValueType array[], 
+        const IndexType n, 
+        const ValueType first,
+        const bool exclusive,
+        const bool append );
 
     /** OpenMP implementation for UtilKernelTrait::unscan */
 
@@ -190,6 +209,15 @@ public:
         IndexType perm[],
         ValueType outValues[],
         const ValueType inValues[],
+        const IndexType n,
+        const bool ascending );
+
+    /** OpenMP implementation for UtilKernelTrait::sortInPlace */
+
+    template<typename ValueType>
+    static void sortInPlace(
+        IndexType indexes[],
+        ValueType values[],
         const IndexType n,
         const bool ascending );
 
@@ -212,7 +240,7 @@ public:
                                const IndexType n );
 private:
 
-    /** Optimized reduce for binary::ADD as reduction operator. */
+    /** Optimized reduce for common::binary::ADD as reduction operator. */
 
     template<typename ValueType>
     static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
@@ -233,16 +261,16 @@ private:
         const ValueType array[],
         const IndexType n,
         const ValueType zero,
-        const binary::BinaryOp op );
+        const common::binary::BinaryOp op );
 
     template<typename ValueType>
     static ValueType absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n );
 
     template<typename ValueType>
-    static ValueType scanSerial( ValueType array[], const IndexType numValues );
+    static ValueType scanSerial( ValueType array[], const IndexType n, const ValueType first, const bool exclusive );
 
     template<typename ValueType>
-    static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType numValues );
+    static ValueType scanParallel( PartitionId numThreads, ValueType array[], const IndexType n, const ValueType first, const bool exclusive );
 
     /** OpenMP implementation of UtilsKernelTrait::countNonZeros */
 
@@ -251,16 +279,60 @@ private:
 
     /** OpenMP implementation of UtilsKernelTrait::compress */
 
-    template<typename ValueType>
+    template<typename TargetType, typename SourceType>
     static IndexType compress(
-        ValueType sparseArray[],
+        TargetType sparseArray[],
         IndexType sparseIndexes[],
-        const ValueType denseArray[],
+        const SourceType denseArray[],
         const IndexType n,
-        const ValueType eps );
+        const SourceType eps );
+
+    /** OpenMP implementation of SparseKernelTrait::countAddSparse */
+
+    static IndexType countAddSparse(
+        const IndexType indexes1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const IndexType n2 );
+
+    /** OpenMP implementation of SparseKernelTrait::addSparse */
+
+    template<typename ValueType>
+    static IndexType addSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const ValueType alpha,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const ValueType beta );
+
+    /** OpenMP implementation of SparseKernelTrait::binopSparse */
+
+    template<typename ValueType>
+    static IndexType binopSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const common::binary::BinaryOp op );
 
     template<typename ValueType>
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
+
+    template<typename KeyType, typename ValueType>
+    static void qsort( KeyType keys[], ValueType values[], IndexType left, IndexType right, bool ascending );
 
     /** Compute the inverse permutation as specified in UtilKernelTrait::setInversePerm */
 

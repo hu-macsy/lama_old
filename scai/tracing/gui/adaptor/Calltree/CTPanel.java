@@ -1,15 +1,15 @@
 /*
  * CTPanel.java
- * 
+ *
  * Panel for CalltreePM that contains a kill button for layout thread.
- * 
+ *
  * Created: 2006-02-20 Thomas Brandes <thomas.brandes@scai.fraunhofer.de>
  * Changed:
- * 
+ *
  * $Id$
- * 
+ *
  * Copyright (C) 2006 Fraunhofer SCAI, Germany
- * 
+ *
  * All rights reserved
  *
  * http://www.scai.fhg.de/EP-CACHE/adaptor
@@ -33,13 +33,14 @@ import org.apache.log4j.Logger;
  * @version $LastChangedRevision$
  * @author Thomas Brandes
  */
-public class CTPanel extends JPanel implements ActionListener {
+public class CTPanel extends JPanel implements ActionListener
+{
 
 
     /**
      * Logger for this class.
      */
-    private static Logger logger = Logger.getLogger(CTPanel.class);
+    private static Logger logger = Logger.getLogger( CTPanel.class );
 
     /**
      * Button that is used to kill the layout thread.
@@ -53,20 +54,21 @@ public class CTPanel extends JPanel implements ActionListener {
 
     /**
      * Constructor for a new panel. The kill button is disabled by default.
-     * 
+     *
      */
-    public CTPanel() {
-    
-        setLayout(new GridLayout(1, 1, 10, 0));
-    
-        myKillButton = new JButton("Kill Layout Thread");
-    
-        myKillButton.addActionListener(this);
-    
-        add(myKillButton);
-    
-        myKillButton.setEnabled(false);
-    
+    public CTPanel()
+    {
+
+        setLayout( new GridLayout( 1, 1, 10, 0 ) );
+
+        myKillButton = new JButton( "Kill Layout Thread" );
+
+        myKillButton.addActionListener( this );
+
+        add( myKillButton );
+
+        myKillButton.setEnabled( false );
+
     } // constructor CTPanel
 
     /**
@@ -74,61 +76,67 @@ public class CTPanel extends JPanel implements ActionListener {
      *
      * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
      */
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed( ActionEvent e )
+    {
 
-        Object actionSource = (Object) e.getSource();
+        Object actionSource = ( Object ) e.getSource();
 
-        logger.info("CTACtion: action performed");
+        logger.info( "CTACtion: action performed" );
 
-        if (actionSource instanceof JButton) {
+        if ( actionSource instanceof JButton )
+        {
 
-            JButton actionButton = (JButton) actionSource;
+            JButton actionButton = ( JButton ) actionSource;
 
-            if (actionButton == myKillButton) {
+            if ( actionButton == myKillButton )
+            {
 
                 // Attention: getId only available since 1.5
-                
-                if (myThread != null) {
-                    
-                    logger.info("cancel the layout thread " 
-                                + myThread.getName()
-                                + ", id =  x "); 
+
+                if ( myThread != null )
+                {
+
+                    logger.info( "cancel the layout thread "
+                                 + myThread.getName()
+                                 + ", id =  x " );
 
                     // myThread.getId()
-                    
+
                     myThread.cancel();
-                    
-                    actionButton.setEnabled(false);
-                }  
-                
-  
+
+                    actionButton.setEnabled( false );
+                }
+
+
             }
 
 
-        } // instanceof JButton 
+        } // instanceof JButton
 
     } // actionPerformed
 
     /**
      * This routine will enable the kill button that can be used to cancel
      * a thread.
-     * 
+     *
      * @param theThread is the thread that will be canceled
      */
-    public void enableKillButton(LayoutThread theThread) {
+    public void enableKillButton( LayoutThread theThread )
+    {
 
         myThread = theThread;
-        myKillButton.setEnabled(true);
+        myKillButton.setEnabled( true );
 
     }
 
     /**
      * The kill button will be disabled as the thread might have finished.
-     * 
+     *
      */
-    public void disableKillButton() {
+    public void disableKillButton()
+    {
 
-        myKillButton.setEnabled(false);
+        myKillButton.setEnabled( false );
     }
 
 } // CTPanel

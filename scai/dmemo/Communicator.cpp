@@ -498,6 +498,99 @@ void Communicator::shiftArray(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void Communicator::joinArray(
+    HArray<ValueType>& globalArray,
+    const HArray<ValueType>& localArray ) const
+{
+    // ToDo: make this routine more efficient, can use gatherAll if sizes are known before
+
+    HArray<ValueType> bufferArray;
+
+    globalArray.clear();
+
+    IndexType currentSize = 0;
+
+    for ( PartitionId p = 0; p < getSize(); ++p )
+    {
+        if ( p == getRank() )
+        {
+            // my turn for broadcast
+
+            utilskernel::HArrayUtils::assign( bufferArray, localArray );
+        }
+
+        bcastArray( bufferArray, p );
+
+        // append the local part to the global array
+
+        {
+            WriteAccess<ValueType> wGlobal( globalArray );
+            ReadAccess<ValueType> rLocal( bufferArray );
+            wGlobal.resize( currentSize + rLocal.size() );
+            for ( IndexType i = 0; i < rLocal.size(); ++i )
+            {
+                wGlobal[currentSize + i] = rLocal[i];
+            }
+        }
+
+        currentSize += bufferArray.size();
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::bcastArray( HArray<ValueType>& array, const IndexType n, const PartitionId root ) const
+{
+    SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
+
+    ContextPtr commContext = getCommunicationContext( array );
+
+    SCAI_CONTEXT_ACCESS( commContext )
+
+    if ( root == getRank() )
+    {
+        SCAI_ASSERT_LE_ERROR( n, array.size(), "bcastArray: root has not enough values" )
+        SCAI_LOG_INFO( logger, *this << ": bcast to all other procs, array = " << array )
+
+        ReadAccess<ValueType> rArray( array, commContext );   // WriteAccess might invalidate data
+
+        ValueType* arrayPtr = const_cast<ValueType*>( rArray.get() ); 
+
+        bcast( arrayPtr, n, root ); // bcast the array
+    }
+    else
+    {
+        WriteOnlyAccess<ValueType> wArray( array, commContext, n );
+        bcast( wArray.get(), n, root ); // bcast the array
+        SCAI_LOG_INFO( logger, *this << ": bcast from root = " << root << ", array = " << array )
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Communicator::bcastArray( HArray<ValueType>& array, const PartitionId root ) const
+{
+    SCAI_ASSERT_VALID_INDEX_ERROR( root, getSize(), "illegal root for bcast specified" )
+
+    ContextPtr commContext = getCommunicationContext( array );
+
+    IndexType n = 0;
+
+    if ( root == getRank() )
+    {   
+        n = array.size();
+    }
+
+    bcast( &n, 1, root );
+    
+    bcastArray( array, n, root );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 SyncToken* Communicator::shiftAsync(
     HArray<ValueType>& recvArray,
     const HArray<ValueType>& sendArray,
@@ -551,7 +644,7 @@ void Communicator::updateHalo(
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
-    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), utilskernel::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
@@ -591,7 +684,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // put together the (send) values to provide for other partitions
 
-    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), utilskernel::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
 
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
 
@@ -792,6 +885,44 @@ bool Communicator::any( const bool flag ) const
     IndexType allval = sum( val ); // count flags == false
     SCAI_LOG_DEBUG( logger, "sum( " << val << " ) = " << allval )
     return allval > 0;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Communicator::scan( const ValueType localValue ) const
+{
+    ValueType scanValue;
+
+    scanImpl( &scanValue, &localValue, 1, common::TypeTraits<ValueType>::stype );
+ 
+    // scanImpl does an inclusive scan
+
+    return scanValue;
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType Communicator::scanDefault( ValueType localValue ) const
+{
+    PartitionId size = getSize();
+    PartitionId rank = getRank();
+    PartitionId root = 0;
+
+    common::scoped_array<ValueType> allValues( new ValueType[ size ] );
+
+    gather( allValues.get(), 1, root, &localValue );
+    bcast ( allValues.get(), size, root );
+
+    ValueType runningSum = 0;
+
+    for ( PartitionId p = 0; p < rank; ++p )
+    {
+        runningSum += allValues[p];
+    }
+
+    return runningSum;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1124,6 +1255,12 @@ void Communicator::setNodeData()
             IndexType& location,                                    \
             const PartitionId root ) const;                         \
     \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    _type Communicator::scan( _type val ) const;                    \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    _type Communicator::scanDefault( _type val ) const;             \
+    \
     // instantiate methods for all communicator data types
 
 SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
@@ -1133,10 +1270,26 @@ SCAI_COMMON_LOOP( SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS, SCAI_ALL_TYPES )
 #define SCAI_DMEMO_COMMUNICATOR_INSTANTIATIONS( _type )             \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::bcastArray(                                  \
+            HArray<_type>& array,                                   \
+            const PartitionId root ) const;                         \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::bcastArray(                                  \
+            HArray<_type>& array,                                   \
+            const IndexType n,                                      \
+            const PartitionId root ) const;                         \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
     void Communicator::shiftArray(                                  \
             HArray<_type>& recvArray,                               \
             const HArray<_type>& sendArray,                         \
             const int direction ) const;                            \
+    \
+    template COMMON_DLL_IMPORTEXPORT                                \
+    void Communicator::joinArray(                                   \
+            HArray<_type>& globalArray,                             \
+            const HArray<_type>& localArray ) const;                \
     \
     template COMMON_DLL_IMPORTEXPORT                                \
     SyncToken* Communicator::shiftAsync(                            \

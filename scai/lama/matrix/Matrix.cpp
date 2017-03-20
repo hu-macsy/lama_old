@@ -39,7 +39,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
@@ -77,8 +77,6 @@ Matrix::Matrix( const Matrix& other ) :
 
     Distributed( other ),
     mColDistribution( other.mColDistribution ),
-    mNumRows( other.mNumRows ),
-    mNumColumns( other.mNumColumns ),
     mCommunicationKind( other.mCommunicationKind )
 {
     SCAI_LOG_INFO( logger, "Creating copy of " << other << " with same distributions." )
@@ -90,8 +88,6 @@ Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr co
 
     Distributed( rowDist ),
     mColDistribution( colDist ),
-    mNumRows( other.mNumRows ),
-    mNumColumns( other.mNumColumns ),
     mCommunicationKind( other.mCommunicationKind )
 {
     // Very important: here we check that new distributions fit the matrix
@@ -105,12 +101,10 @@ Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr co
 Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
 
     Distributed( DistributionPtr( new NoDistribution( numRows ) ) ),
-    mColDistribution( DistributionPtr( new NoDistribution( numColumns ) ) ),
-    mNumRows( numRows ),
-    mNumColumns( numColumns )
+    mColDistribution( DistributionPtr( new NoDistribution( numColumns ) ) )
 {
     setDefaultKind();
-    SCAI_LOG_INFO( logger, "Creating a replicated Matrix of size " << mNumRows << " x " << mNumColumns )
+    SCAI_LOG_INFO( logger, "Creating a replicated Matrix of size " << numRows << " x " << numColumns )
 }
 
 /* ----------------------------------------------------------------------- */
@@ -160,18 +154,6 @@ void Matrix::checkSettings() const
     {
         COMMON_THROWEXCEPTION( "NULL pointer for column distribution" )
     }
-
-    if ( mNumRows != getDistribution().getGlobalSize() )
-    {
-        COMMON_THROWEXCEPTION(
-            "row distribution " << getDistribution() << ": global size mismatches #rows = " << mNumRows );
-    }
-
-    if ( mNumColumns != getColDistribution().getGlobalSize() )
-    {
-        COMMON_THROWEXCEPTION(
-            "col distribution " << getColDistribution() << ": global size mismatches #columns = " << mNumColumns );
-    }
 }
 
 /* ----------------------------------------------------------------------- */
@@ -182,8 +164,8 @@ Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution
     setDistributedMatrix( rowDistribution, colDistribution );
     setDefaultKind();
     SCAI_LOG_INFO( logger,
-                   "Construct a Matrix of size " << mNumRows << " x " << mNumColumns << " with the distribution " << getDistribution() )
-    checkSettings();
+                   "Construct a Matrix of size " << getNumRows() << " x " << getNumColumns() 
+                    << " with the distribution " << getDistribution() )
 }
 
 Matrix::Matrix( DistributionPtr distribution )
@@ -191,14 +173,14 @@ Matrix::Matrix( DistributionPtr distribution )
 {
     setDistributedMatrix( distribution, distribution );
     SCAI_LOG_INFO( logger,
-                   "Construct a square Matrix of size " << mNumRows << " x " << mNumColumns << " with the row/col distribution " << getDistribution() )
-    checkSettings();
+                   "Construct a square Matrix of size " << getNumRows() << " x " << getNumColumns() 
+                   << " with the row/col distribution " << getDistribution() )
 }
 
-Matrix::Matrix()
-    : Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), mColDistribution(
-        DistributionPtr( new NoDistribution( 0 ) ) ), mNumRows( 0 ),
-    mNumColumns( 0 )
+Matrix::Matrix() : 
+
+    Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), 
+    mColDistribution( DistributionPtr( new NoDistribution( 0 ) ) )
 {
     setDefaultKind();
 }
@@ -257,9 +239,7 @@ void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, Distribution
 {
     SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
     SCAI_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
-    mNumRows = rowDistribution->getGlobalSize();
     setDistributionPtr( rowDistribution );
-    mNumColumns = colDistribution->getGlobalSize();
     mColDistribution = colDistribution;
 }
 
@@ -295,23 +275,6 @@ void Matrix::setCommunicationKind( SyncKind communicationKind )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setContextPtr( hmemo::ContextPtr localContext, hmemo::ContextPtr haloContext )
-{
-    SCAI_ASSERT_DEBUG( localContext, "localContext == NULL" )
-    SCAI_ASSERT_DEBUG( haloContext, "haloContext == NULL" )
-
-    // default implementation for matrices that do not support halo context
-
-    if ( localContext.get() != haloContext.get() )
-    {
-        SCAI_LOG_WARN( logger, *this << ": halo context = " << *haloContext << " ignored" )
-    }
-
-    setContextPtr( localContext );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void Matrix::inheritAttributes( const Matrix& other )
 {
     setCommunicationKind( other.getCommunicationKind() );
@@ -322,7 +285,7 @@ void Matrix::inheritAttributes( const Matrix& other )
 
 void Matrix::writeAt( std::ostream& stream ) const
 {
-    stream << "Matrix(" << mNumRows << "x" << mNumColumns << ")";
+    stream << "Matrix(" << getNumRows() << "x" << getNumColumns() << ")";
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -409,8 +372,6 @@ Matrix& Matrix::operator=( const Expression_SMM& exp )
 void Matrix::swapMatrix( Matrix& other )
 {
     Distributed::swap( other );
-    std::swap( mNumRows, other.mNumRows );
-    std::swap( mNumColumns, other.mNumColumns );
     std::swap( mColDistribution, other.mColDistribution );
 }
 
@@ -698,7 +659,7 @@ void Matrix::readFromSingleFile( const std::string& fileName )
         localMatrix.allocate( localNumRows, dims[1] );
     }
 
-    DistributionPtr rowDist( new CyclicDistribution( dims[0], dims[0], comm ) );
+    DistributionPtr rowDist( new SingleDistribution( dims[0], comm, MASTER ) );
     DistributionPtr colDist( new NoDistribution( dims[1] ) );
 
     // works fine as assign can deal with alias, i.e. localMatrix und getLocalStorage() are same
@@ -861,7 +822,7 @@ void Matrix::resetRowDistributionByFirstColumn()
 
         // if storage has not the global column index of diagonal first, this test is likely to fail
 
-        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, /* ascending = */ true ),
+        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LE ),
                            "first column indexes are not sorted, cannot be global indexes" )
 
         // otherwise building the distribution will fail

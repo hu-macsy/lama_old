@@ -41,7 +41,7 @@
 
 // local library
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/DenseVector.hpp>
 #include <scai/lama/io/FileIO.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
@@ -49,7 +49,7 @@
 
 // internal scai libraries
 
-#include <scai/utilskernel/BinaryOp.hpp>
+#include <scai/common/BinaryOp.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
@@ -439,21 +439,41 @@ public:
 
     /** @brief This method allows any arbitrary redistribution of the matrix.
      *
-     *  @param[in] rowDistribution is new distribution of rows, global size must be mNumRows
-     *  @param[in] colDistribution is new distribution of columns, global size must be mNumColumns
+     *  @param[in] rowDistribution is new distribution of rows, global size must be getNumRows()
+     *  @param[in] colDistribution is new distribution of columns, global size must be getNumColumns()
+     *
+     *  For sparse matrices it might be allowed that the new number of columns might become larger with the
+     *  new column distribution. 
      */
     virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
 
-    /** @brief This method returns one row of the matrix.
+    /** @brief This method returns one row of this matrix.
      *
-     * @param[out] row              is a replicated vector with all values of the row
+     * @param[out] row              is the vector that will contain the queried row of this matrix
      * @param[in]  globalRowIndex   global index of the row that should be extracted
      *
-     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
-     *   (otherwise conversion)
-     * - the output vector will always be replicated
+     * - The result vector will have the same distribution as the column distribution of this matrix
+     * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
+     * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
+     *   of a dense matrix and a sparse vector on a sparse matrix.
+     * - This method implies communication as one row resides only on one processor but here the communication
+     *   pattern for sparse or dense matrices are exploited.
      */
     virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
+
+    /** @brief This method returns a row of this matrix locally for one processor.
+     *
+     * @param[out] row            is the vector that will contain the queried row of this matrix
+     * @param[in]  localRowIndex  local index of the row that should be extracted
+     *
+     * - The result vector is not distributed, only valid results on the corresponding partition
+     * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
+     * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
+     *   of a dense matrix and a sparse vector on a sparse matrix.
+     * - This method is completely local, no communication
+     *   pattern for sparse or dense matrices are exploited.
+     */
+    virtual void getRowLocal( Vector& row, const IndexType localRowIndex ) const = 0;
 
     /** @brief This method returns one column of the matrix.
      *
@@ -478,7 +498,7 @@ public:
      */
     virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,
-                         const utilskernel::binary::BinaryOp op ) = 0;
+                         const common::binary::BinaryOp op ) = 0;
 
     /** @brief Pure method to set one column of the matrix.
      *
@@ -494,7 +514,7 @@ public:
     virtual void setColumn(
         const Vector& column,
         const IndexType globalColIndex,
-        const utilskernel::binary::BinaryOp op ) = 0;
+        const common::binary::BinaryOp op ) = 0;
 
     /** @brief This method returns the diagonal.
      *
@@ -574,7 +594,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const utilskernel::binary::BinaryOp op = utilskernel::binary::COPY ) = 0;
+        const common::binary::BinaryOp op = common::binary::COPY ) = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -732,16 +752,6 @@ public:
      *       local and halo computations.
      */
     virtual void setContextPtr( const hmemo::ContextPtr context ) = 0;
-
-    /**
-     * @brief Set individual context for local and halo part of the matrix.
-     *
-     * @param[in] localContext   context for local part
-     * @param[in] haloContext    context for non-local part
-     *
-     *  Note: Only sparse matrices will override this method, others will ignore second argument.
-     */
-    virtual void setContextPtr( const hmemo::ContextPtr localContext, const hmemo::ContextPtr haloContext );
 
     /**
      *  @brief Getter routine for the context.
@@ -962,9 +972,10 @@ public:
      *  Note: this method is for a more convenient use
      */
 
-    Vector* newDenseVector() const
+    _DenseVector* newDenseVector() const
     {
-        Vector* v = Vector::getDenseVector( getValueType(), getRowDistributionPtr() );
+        _DenseVector* v = _DenseVector::create( getValueType() );
+        v->allocate( getRowDistributionPtr() );
         v->setContextPtr( getContextPtr() );
         return v;
     }
@@ -1147,10 +1158,6 @@ protected:
 
     dmemo::DistributionPtr mColDistribution;
 
-    // TODO remove mNumRows and mNumColumns, this value is stored in the distribution
-    IndexType mNumRows;
-    IndexType mNumColumns;
-
 protected:
 
     void checkSettings() const; // check valid member variables
@@ -1159,7 +1166,7 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private    :
+private:
 
     using Distributed::getDistribution;
 
@@ -1198,14 +1205,12 @@ private    :
 
 inline IndexType Matrix::getNumRows() const
 {
-    //return getRowDistributionPtr().get()->getGlobalSize();
-    return mNumRows;
+    return getDistribution().getGlobalSize();
 }
 
 inline IndexType Matrix::getNumColumns() const
 {
-    //return getColDistributionPtr().get()->getGlobalSize();
-    return mNumColumns;
+    return mColDistribution->getGlobalSize();
 }
 
 inline Matrix::SyncKind Matrix::getCommunicationKind() const
@@ -1215,13 +1220,11 @@ inline Matrix::SyncKind Matrix::getCommunicationKind() const
 
 inline const dmemo::Distribution& Matrix::getColDistribution() const
 {
-    SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return *mColDistribution;
 }
 
 inline dmemo::DistributionPtr Matrix::getColDistributionPtr() const
 {
-    SCAI_ASSERT_ERROR( mColDistribution, "NULL column distribution for Matrix" )
     return mColDistribution;
 }
 
