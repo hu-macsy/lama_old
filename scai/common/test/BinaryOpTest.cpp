@@ -43,6 +43,8 @@ using namespace common;
 
 BOOST_AUTO_TEST_CASE( BinaryOpTest )
 {
+    // arithmetic binary operations
+
     for ( int type = binary::COPY; type < binary::MAX_BINARY_OP; ++type )
     {
         std::ostringstream s;
@@ -53,6 +55,15 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
         {
             BOOST_CHECK_EQUAL( s.str(), "COPY" );
         }
+    }
+
+    // comparison binary operations
+
+    for ( int type = binary::LT; type < binary::MAX_COMPARE_OP; ++type )
+    {
+        std::ostringstream s;
+        s << binary::BinaryOp( type );
+        BOOST_CHECK( s.str().length() > 0 );
     }
 }
 
@@ -82,5 +93,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
 
         BOOST_CHECK( z != T( 0 ) );
     }
+
+    // test compare operations
+
+    BOOST_CHECK( applyBinary<T>( T( 2 ), binary::LT, T( 3 ) ) );
+    BOOST_CHECK( !applyBinary<T>( T( 3 ), binary::LT, T( 3 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 3 ), binary::LE, T( 3 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 3 ), binary::GE, T( 3 ) ) );
+    BOOST_CHECK( !applyBinary<T>( T( 3 ), binary::GT, T( 3 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 3 ), binary::GT, T( 2 ) ) );
 }
 

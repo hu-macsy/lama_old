@@ -67,11 +67,6 @@ struct ScalarTypeHelper<NullType>
         return 0;
     }
 
-    static scalar::ScalarType getBySize( const long )
-    {
-        return scalar::UNKNOWN;
-    }
-
     static int precision( const scalar::ScalarType )
     {
         // no type T available with TypeTraits<T>::stype
@@ -109,18 +104,6 @@ struct ScalarTypeHelper< TypeList<H, T> >
         else
         {
             return ScalarTypeHelper<T>::sizeOf( s );
-        }
-    }
-
-    static scalar::ScalarType getBySize( const long size )
-    {
-        if ( sizeof( H ) == size )
-        {
-            return TypeTraits<H>::stype;
-        }
-        else
-        {
-            return ScalarTypeHelper< T >::getBySize( size );
         }
     }
 
