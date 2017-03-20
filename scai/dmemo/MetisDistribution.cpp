@@ -39,6 +39,7 @@
 #include <scai/dmemo/NoDistribution.hpp>
 
 // internal scai libraries
+#include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/tracing.hpp>
 
 extern "C"
@@ -199,18 +200,15 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
     int numMyRows = 0;
     comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
 
-    hmemo::WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, numMyRows );
-
-    comm->scatterV( wLocal2Global.get(), numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
-
-    // Compute Global2Local
-
-    for ( IndexType i = 0; i < numMyRows; ++i )
     {
-        IndexType globalIndex = wLocal2Global[i];
-        SCAI_ASSERT_LT_DEBUG( globalIndex, mGlobalSize, "global index out of range" )
-        mGlobal2Local[ globalIndex ] = i;
+        hmemo::WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, numMyRows );
+        comm->scatterV( wLocal2Global.get(), numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
     }
+
+    // verify that indexes are sorted otherwise global to local via binary search won't work
+
+    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( mLocal2Global, common::binary::LT ), 
+                       *comm << ": local row indexes unsorted." )
 }
 
 MetisDistribution::~MetisDistribution()
