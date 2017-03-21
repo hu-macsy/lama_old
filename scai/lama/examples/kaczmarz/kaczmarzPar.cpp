@@ -70,18 +70,18 @@ int main( int argc, const char* argv[] )
 
     SCAI_REGION( "main.Kacmarz" )
 
-    CSRSparseMatrix<double> matrix( filename );
+    CSRSparseMatrix<double> a( filename );
 
-    SCAI_ASSERT_EQ_ERROR( matrix.getNumRows(), matrix.getNumColumns(), "example only for square matrices" )
+    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), a.getNumColumns(), "example only for square matrices" )
 
-    IndexType size = matrix.getNumRows();
+    IndexType size = a.getNumRows();
 
     DistributionPtr blockDist( new BlockDistribution( size, comm ) );
     DistributionPtr repDist( new NoDistribution( size ) );
 
-    matrix.redistribute( blockDist, repDist );
+    a.redistribute( blockDist, repDist );
 
-    std::cout << "Matrix = " << matrix << std::endl;
+    std::cout << "Matrix = " << a << std::endl;
 
     DenseVector<double> rowDotP( blockDist, 0.0 );
 
@@ -92,7 +92,7 @@ int main( int argc, const char* argv[] )
 
         double time = common::Walltime::get();
 
-        const Distribution& rowDist = matrix.getRowDistribution();
+        const Distribution& rowDist = a.getRowDistribution();
 
         HArray<double>& localRowDot = rowDotP.getLocalValues();
 
@@ -105,7 +105,7 @@ int main( int argc, const char* argv[] )
                 continue;
             }
 
-            matrix.getRowLocal( row, localI );
+            a.getRowLocal( row, localI );
 
             Scalar dotP = row.dotProduct( row );
 
@@ -119,29 +119,29 @@ int main( int argc, const char* argv[] )
  
     std::cout << "Norms: min = " << rowDotP.min() << ", max = " << rowDotP.max() << std::endl;
 
-    matrix.redistribute( blockDist, blockDist );
+    a.redistribute( blockDist, blockDist );
 
-    DenseVector<double> b( matrix.getRowDistributionPtr(), 1.0 );
-    DenseVector<double> x( matrix.getColDistributionPtr(), 0.0 );
+    DenseVector<double> b( a.getRowDistributionPtr(), 1.0 );
+    DenseVector<double> x( a.getColDistributionPtr(), 0.0 );
 
     std::cout << "built dotp of each row, now start" << std::endl;
 
-    // x = x + ( b(i) - < matrix(i,:) * x(:)> / 
+    // x = x + ( b(i) - < a(i,:) * x(:)> / 
 
-    const IndexType printIter = 2;
+    const IndexType printIter = 10;
 
     DenseVector<double> res;
 
-    double omega = 0.1;  // underrelaxation required
+    double omega = 1.0;  // underrelaxation required
 
     for ( IndexType iter = 0; iter < maxIter; ++iter )
     {
         {
             SCAI_REGION( "main.FullIter" )
 
-            res = b - matrix * x;
+            res = b - a * x;
             res *= rowDotP;
-            x += omega * res * matrix;
+            x += omega * res * a;
 
         }
 
@@ -149,7 +149,7 @@ int main( int argc, const char* argv[] )
         {
             SCAI_REGION( "main.Residual" )
 
-            DenseVector<double> res( matrix * x - b );
+            DenseVector<double> res( a * x - b );
 
             Scalar norm = res.l2Norm();
 

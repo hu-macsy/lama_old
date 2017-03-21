@@ -82,25 +82,25 @@ int main( int argc, const char* argv[] )
 
     SCAI_REGION( "main.Kacmarz" )
 
-    CSRSparseMatrix<double> matrix( filename );
+    CSRSparseMatrix<double> a( filename );
 
-    SCAI_ASSERT_EQ_ERROR( matrix.getNumRows(), matrix.getNumColumns(), "example only for square matrices" )
+    SCAI_ASSERT_EQ_ERROR( a.getNumRows(), a.getNumColumns(), "example only for square matrices" )
 
-    IndexType size = matrix.getNumRows();
+    IndexType size = a.getNumRows();
 
     DistributionPtr blockDist( new BlockDistribution( size, comm ) );
     DistributionPtr repDist( new NoDistribution( size ) );
 
-    matrix.setContextPtr( ctx );
-    matrix.redistribute( blockDist, blockDist );
+    a.setContextPtr( ctx );
+    a.redistribute( blockDist, blockDist );
 
-    std::cout << "Matrix = " << matrix << std::endl;
+    std::cout << "Matrix = " << a << std::endl;
 
     DenseVector<double> b( blockDist, 1.0, ctx );
     DenseVector<double> x( blockDist, 0.0, ctx );
-    DenseVector<double> rowDotP( size, 0.0, ctx );
+    DenseVector<double> rowNorm( size, 0.0, ctx );
 
-    SparseVector<double> row( ctx );
+    SparseVector<double> ai( ctx );
 
     {
         SCAI_REGION( "main.RowDotp" )
@@ -109,9 +109,9 @@ int main( int argc, const char* argv[] )
 
         for ( IndexType i = 0; i < size; ++i )
         {
-            matrix.getRow( row, i );
-            Scalar dotP = row.dotProduct( row );
-            rowDotP[i]  = dotP.getValue<double>();
+            a.getRow( ai, i );
+            Scalar dotP = ai.dotProduct( ai );
+            rowNorm[i]  = dotP.getValue<double>();
         }
 
         time = common::Walltime::get() - time;
@@ -121,9 +121,9 @@ int main( int argc, const char* argv[] )
 
     std::cout << "built dotp of each row, now start" << std::endl;
 
-    // x = x + ( b(i) - < matrix(i,:) * x(:)> / 
+    // x = x + ( b(i) - < a(i,:) * x(:)> / 
 
-    const IndexType printIter = 1;
+    const IndexType printIter = 10;
 
     Scalar s1, s2, bi, alpha;
 
@@ -134,12 +134,12 @@ int main( int argc, const char* argv[] )
 
             for ( IndexType i = 0; i < size; ++i )
             {
-                matrix.getRow( row, i );
-                s1 = row.dotProduct( x );
-                s2 = rowDotP[i];
+                a.getRow( ai, i );
+                s1 = ai.dotProduct( x );
+                s2 = rowNorm[i];
                 bi = b[i];
                 alpha = ( bi - s1 ) / s2;
-                x += alpha * row;
+                x += alpha * ai;
             }
         }
 
@@ -147,7 +147,7 @@ int main( int argc, const char* argv[] )
         {
             SCAI_REGION( "main.Residual" )
 
-            DenseVector<double> y( matrix * x );
+            DenseVector<double> y( a * x );
             DenseVector<double> res( y - b );
             std::cout << "Iter = " << ( iter + 1 ) << ", res = " << res.l2Norm() << std::endl;
         } 
