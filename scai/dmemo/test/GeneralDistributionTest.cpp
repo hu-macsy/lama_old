@@ -35,8 +35,11 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
+#include <scai/dmemo/test/TestDistributions.hpp>
+
 #include <scai/dmemo/GeneralDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
 using namespace scai;
@@ -147,6 +150,56 @@ BOOST_AUTO_TEST_CASE( copyConstructorTest )
     // maybe they are not equal, but we compare local sizes
 
     BOOST_CHECK_EQUAL( bdist.getLocalSize(), gdist.getLocalSize() );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( redistConstructorTest )
+{
+    IndexType N = 15;
+
+    TestDistributions allDist( N );
+
+    for ( size_t i = 0; i < allDist.size(); ++i )
+    {
+        const Distribution& dist = *allDist[i];
+
+        if ( dist.getCommunicator() != *comm )
+        {
+            // dist is NoDistribution, cannot be redistributed
+
+            continue;
+        }
+
+        IndexType nLocal = dist.getLocalSize();
+
+        hmemo::HArray<PartitionId> owners;  // new owners for my local indexes
+
+        {
+            hmemo::WriteOnlyAccess<PartitionId> wOwners( owners, nLocal );
+
+            for ( IndexType i = 0; i < nLocal; ++i )
+            {
+                 // choose owner as if it will be a Cyclic(1) distribution
+
+                 IndexType globalIndex = dist.local2global( i );
+                 wOwners[i] = globalIndex % size;
+            }
+        }
+
+        SCAI_LOG_DEBUG( logger, "redistribute, dist = " << dist << ", owners = " << owners )
+
+        GeneralDistribution gdist( dist, owners );
+    
+        CyclicDistribution cyclic( N, 1, comm );
+
+        BOOST_REQUIRE_EQUAL( gdist.getLocalSize(), cyclic.getLocalSize() );
+    
+        for ( IndexType i = 0; i < cyclic.getLocalSize(); ++i )
+        {
+            BOOST_CHECK_EQUAL( cyclic.local2global( i ), gdist.local2global(i ) );
+        }
+    }
 }
 
 /* --------------------------------------------------------------------- */
