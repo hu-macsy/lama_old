@@ -34,6 +34,11 @@
 
 #include <scai/lama.hpp>
 
+#include <scai/solver/logger/CommonLogger.hpp>
+#include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/criteria/ResidualThreshold.hpp>
+#include <scai/solver/CG.hpp>
+
 // Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
@@ -43,42 +48,40 @@
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 
+// import common 
+#include <scai/common/Walltime.hpp>
+#include <scai/common/Settings.hpp>
+
 #include <iostream>
 #include <stdlib.h>
 
-using namespace scai::hmemo;
-using namespace scai::lama;
-using namespace scai::dmemo;
+using namespace scai;
+using namespace lama;
+using namespace solver;
 
-int main()
+int main( int argc, const char* argv[] )
 {
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    // relevant SCAI arguments: 
+    //   SCAI_CONTEXT = ...    set default context
+    //   SCAI_DEVICE  = ...    set default device
 
-    SCAI_REGION( "main.Kacmarz" )
+    common::Settings::parseArgs( argc, argv );
 
-    CSRSparseMatrix<double> sMatrix( "matrix.frm" );
-    DenseMatrix<double> dMatrix( "matrix.frm" );
+    std::string filename = argv[1];
 
-    IndexType size = sMatrix.getNumRows();
+    CSRSparseMatrix<double> A( filename );
 
-    DistributionPtr blockDist( new BlockDistribution( size, comm ) );
+    DenseVector<double> r( A.getRowDistributionPtr(), 1 );
+    DenseVector<double> y;
 
-    sMatrix.redistribute( blockDist, blockDist );
-    dMatrix.redistribute( blockDist, blockDist );
-
-    std::cout << *comm << ": Matrix: " << sMatrix << ", " << dMatrix << std::endl;
-
-    SparseVector<double> sRow;
-    DenseVector<double> dRow;
-
-    for ( IndexType i = 0; i < size; ++i )
+    for ( int k = 0; k < 100; ++k )
     {
-        sMatrix.getRow( sRow, i );
-        dMatrix.getRow( dRow, i );
-
-        Scalar s = sRow.dotProduct( sRow );
-        Scalar d = dRow.dotProduct( dRow );
-
-        SCAI_ASSERT_EQ_ERROR( s, d, "Error iter i = " << i ) 
+        y = A * r;
+        Scalar norm = y.l2Norm();
+        Scalar lambda = r.dotProduct ( y ) / r.dotProduct( r );
+        r = y / norm;
+        std::cout << "lambda = " << lambda << std::endl;
     }
+
+    r.writeToFile( "eigenvector.mtx" );
 }
