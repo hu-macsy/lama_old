@@ -67,6 +67,8 @@ class COMMON_DLL_IMPORTEXPORT NoDistribution:
 {
 public:
 
+    /** Constructor of NoDistribution requires only the global size */
+
     NoDistribution( const IndexType globalSize );
 
     virtual ~NoDistribution();
@@ -128,6 +130,10 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 };
+
+/* ------------------------------------------------------------------------ */
+/*  Implementation of inline methods                                        */
+/* ------------------------------------------------------------------------ */
 
 const char* NoDistribution::getKind() const
 {

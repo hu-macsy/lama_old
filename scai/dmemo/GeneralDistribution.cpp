@@ -56,6 +56,7 @@ namespace scai
 {
 
 using namespace hmemo;
+using namespace utilskernel;
 
 namespace dmemo
 {
@@ -63,6 +64,8 @@ namespace dmemo
 SCAI_LOG_DEF_LOGGER( GeneralDistribution::logger, "Distribution.General" )
 
 const char GeneralDistribution::theCreateValue[] = "GENERAL";
+
+/* ---------------------------------------------------------------------- */
 
 GeneralDistribution::GeneralDistribution(
     const IndexType globalSize,
@@ -75,11 +78,11 @@ GeneralDistribution::GeneralDistribution(
     SCAI_LOG_INFO( logger, "GeneralDistribution( size = " << globalSize 
                             << ", myIndexes = " << myIndexes.size() << ", comm = " << *communicator )
 
-    SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
+    SCAI_ASSERT_DEBUG( HArrayUtils::validIndexes( myIndexes, globalSize ), "myIndexes contains illegal values" )
 
     // make a copy of the indexes and sort them ascending = true, perm not needed
 
-    utilskernel::HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
+    HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
 
     // Note: the constructor is completely local, but make some consistency check now
 
@@ -87,6 +90,8 @@ GeneralDistribution::GeneralDistribution(
 
     //SCAI_ASSERT_EQ_ERROR( mGlobalSize, communicator->sum( nLocal ), "illegal general distribution" )
 }
+
+/* ---------------------------------------------------------------------- */
 
 GeneralDistribution::GeneralDistribution(
     const HArray<PartitionId>& owners,
@@ -111,8 +116,8 @@ GeneralDistribution::GeneralDistribution(
 
     SCAI_LOG_DEBUG( logger, *mCommunicator << ": global size = " << mGlobalSize )
 
-    utilskernel::LArray<IndexType> localSizes;
-    utilskernel::LArray<IndexType> localOffsets;
+    LArray<IndexType> localSizes;
+    LArray<IndexType> localOffsets;
 
     // count in localSizes for each partition the owners
     // owners = [ 0, 1, 2, 1, 2, 1, 0 ] -> sizes = [2, 3, 2 ]
@@ -120,14 +125,14 @@ GeneralDistribution::GeneralDistribution(
 
     if ( rank == MASTER )
     {
-        utilskernel::HArrayUtils::bucketCount( localSizes, owners, size );
+        HArrayUtils::bucketCount( localSizes, owners, size );
         IndexType lsum = localSizes.sum();
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": sum( localSizes ) = " << lsum << ", must be " << mGlobalSize );
     }
     else
     {
         // all other procs intialize localSizes with a dummy value to avoid read access of uninitialized array
-        utilskernel::HArrayUtils::setOrder( localSizes, 1 );
+        HArrayUtils::setOrder( localSizes, 1 );
     }
 
     IndexType localSize;
@@ -147,7 +152,7 @@ GeneralDistribution::GeneralDistribution(
     {
         localOffsets.reserve( ctx, size + 1 );
         localOffsets = localSizes;
-        utilskernel::HArrayUtils::scan1( localOffsets );
+        HArrayUtils::scan1( localOffsets );
         SCAI_LOG_DEBUG( logger, "scan done, sum = " << localOffsets[ size ] )
     }
 
@@ -161,7 +166,7 @@ GeneralDistribution::GeneralDistribution(
 
         ContextPtr loc = Context::getHostPtr();
 
-        static utilskernel::LAMAKernel<utilskernel::UtilKernelTrait::sortInBuckets<PartitionId> > sortInBuckets;
+        static LAMAKernel<UtilKernelTrait::sortInBuckets<PartitionId> > sortInBuckets;
 
         sortInBuckets.getSupportedContext( loc );
 
@@ -176,7 +181,7 @@ GeneralDistribution::GeneralDistribution(
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": initialize sortedIndexes " )
 
         // all other procs intialize sortedIndexes with a dummy value to avoid read access of uninitialized array
-        utilskernel::HArrayUtils::setOrder( sortedIndexes, 1 );
+        HArrayUtils::setOrder( sortedIndexes, 1 );
     }
 
     WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, localSize );
@@ -188,6 +193,93 @@ GeneralDistribution::GeneralDistribution(
         mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
     }
+}
+
+/* ---------------------------------------------------------------------- */
+
+GeneralDistribution::GeneralDistribution(
+    const Distribution& other,
+    const HArray<PartitionId>& owners ) :
+
+    Distribution( other.getGlobalSize(), other.getCommunicatorPtr() )
+
+{
+    SCAI_LOG_INFO( logger, "GeneralDistribution( dist = " << other << ", new local owners =  " << owners )
+
+    SCAI_ASSERT_EQ_DEBUG( other.getLocalSize(), owners.size(), "serious size mismatch" )
+
+    const IndexType nLocal = owners.size();
+
+    const Communicator& comm = *mCommunicator;
+
+    const PartitionId nPartitions = comm.getSize();
+
+    if ( nPartitions == 1 )
+    {
+        // owners[i] == 0 for al i, mLocal2Global = { 0, 1, ..., globalSize - 1 }
+
+        SCAI_ASSERT_ERROR( HArrayUtils::validIndexes( owners, 1 ), "illegal owners, #partitions = " << nPartitions )
+
+        HArrayUtils::setOrder( mLocal2Global, nLocal );
+
+        return;
+    }
+
+    // make a bucket sort with owners
+
+    HArray<IndexType> sizes;      // number of elements for each bucket/partition
+    HArray<IndexType> perm;       // permutation to resort in buckets
+
+    HArrayUtils::bucketSort( sizes, perm, owners, mCommunicator->getSize() );
+    // bucketSort returns offsets, so unscan it to get the sizes
+    HArrayUtils::unscan( sizes );
+
+    HArray<IndexType> sortedIndexes;    // current indexes resorted according the buckets
+
+    if ( other.getKind() == GeneralDistribution::theCreateValue )
+    {
+        SCAI_ASSERT_DEBUG( dynamic_cast<const GeneralDistribution*>( &other ), "no general dist" )
+        const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
+        HArrayUtils::gather( sortedIndexes, otherGen.getMyIndexes(), perm, common::binary::COPY );
+    }
+    else
+    {
+        HArray<IndexType> currentIndexes;
+        other.getOwnedIndexes( currentIndexes );
+        HArrayUtils::gather( sortedIndexes, currentIndexes, perm, common::binary::COPY );
+    }
+
+    // make communication plans for sending data and receiving to exchange 
+
+    dmemo::CommunicationPlan sendPlan;
+
+    {
+        ReadAccess<IndexType> rSizes( sizes );
+        sendPlan.allocate( rSizes.get(), nPartitions );
+    }
+
+    dmemo::CommunicationPlan recvPlan;
+
+    recvPlan.allocateTranspose( sendPlan, comm );
+
+    SCAI_LOG_INFO( logger, comm << ": send plan: " << sendPlan << ", rev plan: " << recvPlan );
+
+    // we just receive all the values in mLocal2Global
+
+    IndexType newLocalSize = recvPlan.totalQuantity();
+
+    HArray<IndexType> myNewIndexes;
+
+    {
+        WriteOnlyAccess<IndexType> recvVals( myNewIndexes, newLocalSize );
+        ReadAccess<IndexType> sendVals( sortedIndexes );
+        comm.exchangeByPlan( recvVals.get(), recvPlan, sendVals.get(), sendPlan );
+    }
+
+    // Important: the new local indexes must be sorted
+    // Note: actually it would be sufficient to have a mergesort
+
+    HArrayUtils::sort( NULL, &mLocal2Global, myNewIndexes, true );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -239,7 +331,7 @@ GeneralDistribution::~GeneralDistribution()
 
 bool GeneralDistribution::isLocal( const IndexType globalIndex ) const
 {
-    IndexType pos = utilskernel::HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
+    IndexType pos = HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
     return pos != nIndex;
 }
 
@@ -263,7 +355,7 @@ IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 {
     // do a binary search in the array of global indexes for entries owned by this partition
 
-    return utilskernel::HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
+    return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -423,8 +515,8 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
 
     if ( rank == root )
     {
-        utilskernel::HArrayUtils::assign( offsets, localSizes, ctx );
-        IndexType nTotal = utilskernel::HArrayUtils::scan1( offsets );
+        HArrayUtils::assign( offsets, localSizes, ctx );
+        IndexType nTotal = HArrayUtils::scan1( offsets );
         SCAI_ASSERT( nTotal == mGlobalSize, "sum of local rows is not global size" )
     }
 
@@ -451,7 +543,7 @@ void GeneralDistribution::allOwners( HArray<PartitionId>& owners, const Partitio
 
 void GeneralDistribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) const
 {
-    utilskernel::HArrayUtils::assign( myGlobalIndexes, mLocal2Global );
+    HArrayUtils::assign( myGlobalIndexes, mLocal2Global );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -474,14 +566,14 @@ void GeneralDistribution::enableAnyAddressing() const
 
     HArray<IndexType> indexes;   // will contain all column indexes to get all owners
   
-    utilskernel::HArrayUtils::setOrder( indexes, mGlobalSize );
+    HArrayUtils::setOrder( indexes, mGlobalSize );
 
     Distribution::computeOwners( mAllOwners, indexes );
 
     // bucket sort the owners, gives offsets and permutation to block values according to owners
 
-    utilskernel::HArrayUtils::bucketSort( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
-    utilskernel::HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
+    HArrayUtils::bucketSort( mAllLocalOffsets, mAllLocal2Global, mAllOwners, mCommunicator->getSize() );
+    HArrayUtils::inversePerm( mAllGlobal2Local, mAllLocal2Global ); // global2local
 }
 
 /* ---------------------------------------------------------------------- */

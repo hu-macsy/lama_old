@@ -88,6 +88,16 @@ public:
         const hmemo::HArray<PartitionId>& owners,
         const CommunicatorPtr communicator );
 
+    /** This constructor creates a general distribution from an existing distribution and an
+     *  owners array locally for each processor. 
+     *
+     *  @param[in] other is the given distribution
+     *  @param[in] owners contains the new owner for each of the local indexes.
+     */
+    GeneralDistribution( const Distribution& other, const hmemo::HArray<PartitionId>& owners );
+ 
+    /** Constructor of a general distribution just as copy of any other distribution. */
+
     explicit GeneralDistribution( const Distribution& other );
 
     /** Reimplment the default copy constructor */
