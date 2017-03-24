@@ -63,6 +63,7 @@
 
 // std
 #include <ostream>
+ #include <set>
 
 namespace scai
 {
@@ -490,10 +491,47 @@ static void getSplitValues(
     const Communicator& comm,
     const ValueType sortedValues[],
     const IndexType n,
+    const IndexType s,
     const bool ascending )
 {
     const PartitionId nPartitions = comm.getSize();
 
+    //pick s samples in each process. If s is large, copying the sequence and using a Fisher-Yates-shuffle might be more efficient.
+    ValueType samples[s];
+    std::set<IndexType> pickedIndices;
+    while(pickedIndices.size() < s) {
+        const IndexType nextIndex = rand()%n;
+        pickedIndices.insert(nextIndex);
+    }
+
+    IndexType i = 0;
+    for (IndexType index : pickedIndices) {
+        samples[i++] = sortedValues[index];
+    }
+
+    //gather samples in root process
+    HArray<ValueType> allSamples(s*nPartitions);
+    {
+        WriteAccess<ValueType> wSamples(allSamples);
+        comm.gather(wSamples.get(), s, 0, samples);
+    }
+
+    //sort samples and get split values
+    HArray<ValueType> sortedSamples(s*nPartitions);
+    if (comm.getRank() == 0) {
+        utilskernel::HArrayUtils::sort( NULL, &sortedSamples, allSamples, ascending );
+
+        ReadAccess<ValueType> rSamples(sortedSamples);
+        for ( PartitionId p = 1; p < nPartitions; ++p )
+        {
+            splitValues[p] = rSamples[p*s];
+        }
+    }
+
+    //broadcast split values
+    comm.bcast(splitValues, nPartitions+1, 0 );
+
+    //write ends of split values with global min/max
     if ( ascending )
     {
         ValueType minV = n > 0 ? sortedValues[0] : TypeTraits<ValueType>::getMax();
@@ -509,13 +547,6 @@ static void getSplitValues(
 
         splitValues[0]           = comm.max( maxV );
         splitValues[nPartitions] = comm.min( minV );
-    }
-
-    // fill intermediate values by uniform distribution of range splitValues[0] .. splitValues[nPartitions]
-
-    for ( PartitionId p = 1; p < nPartitions; ++p )
-    {
-        splitValues[p] = splitValues[0] + ( splitValues[nPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( nPartitions );
     }
 }
 
@@ -695,12 +726,14 @@ void DenseVector<ValueType>::sortImpl(
 
     PartitionId nPartitions = comm.getSize();
 
+    const IndexType overSamplingRatio = 50;
+
     SCAI_REGION_START("DenseVector.sort.determineSplittingValues")
     common::scoped_array<ValueType> splitValues( new ValueType[ nPartitions + 1 ] );
 
     {
         ReadAccess<ValueType> rSortedValues( sortedValues );
-        getSplitValues( splitValues.get(), comm, rSortedValues.get(), sortedValues.size(), ascending );
+        getSplitValues( splitValues.get(), comm, rSortedValues.get(), sortedValues.size(), overSamplingRatio, ascending );
     }
 
     SCAI_REGION_END("DenseVector.sort.determineSplittingValues")
