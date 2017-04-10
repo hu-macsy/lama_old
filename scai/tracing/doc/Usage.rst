@@ -10,6 +10,7 @@ The environment variable SCAI_TRACE specifies which trace data is collected at r
 
     SCAI_TRACE=time
     SCAI_TRACE=ct
+    SCAI_TRACE=vt
     SCAI_TRACE=time:thread:ct
 
 If tracing is disabled the overhead for each region is very low (just comparison with a global variable).
@@ -40,3 +41,13 @@ Calltree
     export SCAI_TRACE=ct:thread  
 
     ${CMAKE_INSTALL_PREFIX}/bin/TraceCT <file.ct>
+
+VampirTrace
+-----------
+
+.. code-block:: bash
+
+    export SCAI_TRACE=vt
+    ... ! run application, eg. mpirun -np 4 myTest.exe
+    vampir <file>.otf
+
