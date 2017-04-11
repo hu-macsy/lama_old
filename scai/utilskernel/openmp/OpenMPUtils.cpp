@@ -1394,7 +1394,11 @@ ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], 
 
         ValueType myRunningSum = threadValues[omp_get_thread_num()];
 
-        scanSerial( array + lb, ub - lb, myRunningSum, exclusive );
+        if ( lb < ub )
+        {
+            // local part on this thread has at least one element
+            scanSerial( array + lb, ub - lb, myRunningSum, exclusive );
+        }
     }
 
     return runningSum;;
