@@ -658,10 +658,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
         ReadAccess<ValueType> rValues2( array2, host );  // read result array
         ReadAccess<ValueType> rValues3( array3, host );  // read result array
 
+        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
         for ( IndexType i = 0; i < nnz; ++i )
         {
             ValueType expectedValue = applyBinary( rValues1[i], op, rValues2[i] );
-            BOOST_REQUIRE_EQUAL( expectedValue, rValues3[i] );
+
+            AbsType diff = common::Math::abs( expectedValue - rValues3[i] );
+
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
     }
 }

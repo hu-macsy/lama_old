@@ -1406,7 +1406,7 @@ ValueType CUDAUtils::scan( ValueType array[], const IndexType n, ValueType first
 
     thrust::device_ptr<ValueType> array_ptr( array );
 
-    ValueType result;
+    ValueType result = 0;
 
     if ( exclusive )
     {
@@ -1433,12 +1433,13 @@ ValueType CUDAUtils::scan( ValueType array[], const IndexType n, ValueType first
         {
             COMMON_THROWEXCEPTION( "inclusive scan, append is unsupported" )
         }
-        else
+        else if ( n > 0 )
         {
             thrust::inclusive_scan( array_ptr, array_ptr + n, array_ptr );
 
             if ( first != common::constants::ZERO )
             {
+		        SCAI_LOG_INFO( logger, "now add first = " << first << ", n = " << n )
                 thrust::for_each( array_ptr, array_ptr + n, _1 += first );
             }
 
