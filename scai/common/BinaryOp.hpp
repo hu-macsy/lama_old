@@ -73,6 +73,7 @@ struct binary
         MIN,          //!< for operator min( x, y )
         MAX,          //!< for operator max( x, y )
         ABS_MAX,      //!< for operator max( abs(x), abs(y) )
+        ABS_DIFF,     //!< for operator abs( x - y )
         POW,          //!< for operator pow( x, y )
         COPY_SIGN,    //!< for operator magnitude(x) * sign(y)
         MAX_BINARY_OP //!< for internal use only
@@ -124,6 +125,8 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
             return Math::max( x1, x2 );
         case binary::ABS_MAX:
             return Math::max( Math::abs( x1 ), Math::abs( x2 ) );
+        case binary::ABS_DIFF:
+            return Math::abs( x1 - x2 );
         default:
             return ValueType( 0 );
     }
@@ -173,6 +176,16 @@ inline IndexType applyBinary( const IndexType& x1, const binary::BinaryOp op, co
             return Math::max( x1, x2 );
         case binary::ABS_MAX:
             return Math::max( Math::abs( x1 ), Math::abs( x2 ) );
+        case binary::ABS_DIFF:
+            // abs( x1 - x2 ) does not work for unsigned int
+            if ( x1 < x2 ) 
+            {
+                return x2 - x1;
+            }
+            else
+            {
+                return x1 - x2;
+            }
         default:
             return IndexType( 0 );
     }
@@ -271,6 +284,10 @@ inline std::ostream& operator<<( std::ostream& stream, const binary::BinaryOp& o
 
         case binary::ABS_MAX:
             stream << "ABS_MAX";
+            break;
+
+        case binary::ABS_DIFF:
+            stream << "ABS_DIFF";
             break;
 
         case binary::POW:

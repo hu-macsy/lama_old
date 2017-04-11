@@ -938,7 +938,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
     // nonZeroIndexes should have size around n 
 
-    BOOST_CHECK( common::Math::abs( nonZeroIndexes.size() - n ) < ( n / 5 ) );
+    SCAI_LOG_DEBUG( logger, "nonZeroIndexes.size() = " << nonZeroIndexes.size() << ", should be close to " << n )
+
+    // not possible: BOOST_CHECK_CLOSE( n, nonZeroIndexes.size(), 20  );
+    // not possible for unsigned int abs( n - nonZeroIndexes.size() )
+
+    BOOST_CHECK( common::applyBinary( n, common::binary::ABS_DIFF, nonZeroIndexes.size() ) < ( n / 5 ) );
 
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
