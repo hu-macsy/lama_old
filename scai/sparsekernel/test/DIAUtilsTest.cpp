@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest0, ValueType, scai_numeric_test_types )
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
-            BOOST_CHECK_EQUAL( rIA[i], 1 );
+            BOOST_CHECK_EQUAL( rIA[i], IndexType( 1 ) );
         }
     }
 
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest1, ValueType, scai_numeric_test_types )
         numValues = scan[loc]( wIA.get(), numRows, IndexType( 0 ), true, true );
     }
 
-    BOOST_REQUIRE_EQUAL( 12, numValues );
+    BOOST_REQUIRE_EQUAL( IndexType( 12 ), numValues );
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -341,9 +341,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getCSRTest2, ValueType, scai_numeric_test_types )
     BOOST_REQUIRE_EQUAL( numColumns1, numColumns );
     BOOST_REQUIRE_EQUAL( numValues1, numValues );
 
-    BOOST_CHECK_EQUAL( expIA.maxDiffNorm( csrIA ), 0 );
-    BOOST_CHECK_EQUAL( expJA.maxDiffNorm( csrJA ), 0 );
-    BOOST_CHECK_EQUAL( expValues.maxDiffNorm( csrValues ), 0 );
+    BOOST_CHECK_EQUAL( expIA.maxDiffNorm( csrIA ), IndexType( 0 ) );
+    BOOST_CHECK_EQUAL( expJA.maxDiffNorm( csrJA ), IndexType( 0 ) );
+    BOOST_CHECK_EQUAL( expValues.maxDiffNorm( csrValues ), ValueType( 0 ) );
 }
 
 /* ------------------------------------------------------------------------------------- */

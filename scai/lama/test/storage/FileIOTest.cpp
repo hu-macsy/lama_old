@@ -905,7 +905,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
             // indexes must be equal
 
-            BOOST_CHECK_EQUAL( 0, sparseIndexes.maxDiffNorm( inPos ) );
+            BOOST_CHECK_EQUAL( IndexType( 0 ), sparseIndexes.maxDiffNorm( inPos ) );
 
             for ( IndexType i = 0; i < inValues.size(); ++i )
             {

@@ -63,12 +63,12 @@ BOOST_AUTO_TEST_CASE( buildSparseIndexesTest )
 {
     BuildSparseIndexes myIndexes( 10 );
 
-    BOOST_CHECK_EQUAL( 0, myIndexes.getLength() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), myIndexes.getLength() );
     BOOST_CHECK( myIndexes.isEmpty() );
 
     myIndexes.pushIndex( 3 );
 
-    BOOST_CHECK_EQUAL( 1, myIndexes.getLength() );
+    BOOST_CHECK_EQUAL( IndexType( 1 ), myIndexes.getLength() );
     BOOST_CHECK( !myIndexes.isEmpty() );
 }
 
@@ -78,12 +78,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
 {
     BuildSparseVector<ValueType> myVector( 10 );
 
-    BOOST_CHECK_EQUAL( 0, myVector.getLength() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
 
     myVector.push( 1, 5 );
 
-    BOOST_CHECK_EQUAL( 1, myVector.getLength() );
+    BOOST_CHECK_EQUAL( IndexType( 1 ), myVector.getLength() );
     BOOST_CHECK( !myVector.isEmpty() );
 
     IndexType i;
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
     BOOST_CHECK_EQUAL( static_cast<IndexType>( 1 ), i );
     BOOST_CHECK_EQUAL( static_cast<ValueType>( 5 ), v );
 
-    BOOST_CHECK_EQUAL( 0, myVector.getLength() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
 }
 

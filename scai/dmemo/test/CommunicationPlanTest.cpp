@@ -361,13 +361,13 @@ BOOST_AUTO_TEST_CASE( extractPlanTest )
 
         if ( singlePlan.size() == 0 )
         {
-            BOOST_CHECK_EQUAL( 0, required( rank, p ) );
+            BOOST_CHECK_EQUAL( IndexType( 0 ), required( rank, p ) );
         }
         else
         {
             // singlePlan must have exactly one entry for this p 
 
-            BOOST_CHECK_EQUAL( singlePlan.size(), 1 );
+            BOOST_CHECK_EQUAL( singlePlan.size(), IndexType( 1 ) );
             BOOST_CHECK_EQUAL( p, singlePlan[0].partitionId );
             BOOST_CHECK_EQUAL( required( rank, p ), singlePlan[0].quantity );
         }

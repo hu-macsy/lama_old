@@ -47,12 +47,18 @@ BOOST_AUTO_TEST_SUITE( GridTest )
 
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
-    Grid grid1( 10 );
-    BOOST_CHECK_EQUAL( 10, grid1.size() );
-    Grid grid2( 2, 5 );
-    BOOST_CHECK_EQUAL( 10, grid2.size() );
-    Grid grid3( 2, 3, 2 );
-    BOOST_CHECK_EQUAL( 12, grid3.size() );
+    IndexType n1 = 10;
+    Grid grid1( n1 );
+    BOOST_CHECK_EQUAL( n1, grid1.size() );
+    n1 = 2;
+    IndexType n2 = 5;
+    Grid grid2( n1, n2 );
+    BOOST_CHECK_EQUAL( n1 * n2 , grid2.size() );
+    n1 = 2;
+    n2 = 3;
+    IndexType n3 = 2;
+    Grid grid3( n1, n2, n3 );
+    BOOST_CHECK_EQUAL( n1 * n2 * n3, grid3.size() );
 }
 
 /* --------------------------------------------------------------------- */

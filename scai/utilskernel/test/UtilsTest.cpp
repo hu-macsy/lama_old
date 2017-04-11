@@ -662,6 +662,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
     const ValueType values2_values[]    = {      5,  6,     7,         8 };
     const ValueType values_values[]     = { 1,  10, 14,    17,    4,  16 };
 
+    IndexType nR = sizeof( indexes_values ) / sizeof( IndexType );
     IndexType n1 = sizeof( indexes1_values ) / sizeof( IndexType );
     IndexType n2 = sizeof( indexes2_values ) / sizeof( IndexType );
 
@@ -690,7 +691,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 
         IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
 
-        BOOST_CHECK_EQUAL( n, 6 );
+        BOOST_CHECK_EQUAL( n, nR );
 
         ReadAccess<ValueType> rValues1( values1, loc );
         ReadAccess<ValueType> rValues2( values2, loc );
