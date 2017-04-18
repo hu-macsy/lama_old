@@ -758,8 +758,15 @@ void HArrayUtils::arrayPlusArray(
 
     if ( beta == common::constants::ZERO )
     {
+        // result = alpha * x [ + 0 * y ]
+
         if ( alpha == common::constants::ZERO )
         {
+            // result = 0 * x + 0 * y, be careful about size of result
+
+            IndexType n = common::Math::max( x.size(), y.size() );
+            result.clear();
+            result.resize( n );
             setScalar( result, ValueType( 0 ), binary::COPY, prefLoc );
         }
         else
@@ -772,6 +779,7 @@ void HArrayUtils::arrayPlusArray(
 
     if ( alpha == common::constants::ZERO )
     {
+        // result = beta * y
         binaryOpScalar( result, y, beta, binary::MULT, noSwapScalar, prefLoc );
         return;
     }
@@ -1879,15 +1887,36 @@ void HArrayUtils::addSparse(
 
     IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
 
-    WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
-    WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+    if ( n == n1 && n == n2 )
+    {
+        SCAI_LOG_DEBUG( logger, "addSparse, same pattern for both operands" )
 
-    ReadAccess<ValueType> rValues1( values1, loc );
-    ReadAccess<ValueType> rValues2( values2, loc );
+        rIndexes1.release();
+        rIndexes2.release();
 
-    addSparse[loc]( wIndexes.get(), wValues.get(),
-                    rIndexes1.get(), rValues1.get(), zero1, n1, alpha,
-                    rIndexes2.get(), rValues2.get(), zero2, n2, beta );
+        if ( ( &resultIndexes != &indexes1 ) && ( &resultIndexes != &indexes2 ) )
+        {
+            // no alias, so we have to copy the indexes
+
+            resultIndexes = indexes1;
+        }
+
+        arrayPlusArray( resultValues, alpha, values1, beta, values2, loc );
+    }
+    else
+    {
+        SCAI_LOG_DEBUG( logger, "addSparse, different pattern, n = " << n << ", n1 = " << n1 << ", n2 = " << n2 )
+
+        WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
+        WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+
+        ReadAccess<ValueType> rValues1( values1, loc );
+        ReadAccess<ValueType> rValues2( values2, loc );
+
+        addSparse[loc]( wIndexes.get(), wValues.get(),
+                        rIndexes1.get(), rValues1.get(), zero1, n1, alpha,
+                        rIndexes2.get(), rValues2.get(), zero2, n2, beta );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1929,15 +1958,29 @@ void HArrayUtils::binaryOpSparse(
 
     IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
 
-    WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
-    WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+    if ( n == n1 && n == n2 )
+    {
+        // sparse input arrays have same pattern, so we can call binary op for values
 
-    ReadAccess<ValueType> rValues1( values1, loc );
-    ReadAccess<ValueType> rValues2( values2, loc );
+        rIndexes1.release();
+        rIndexes2.release();
 
-    binopSparse[loc]( wIndexes.get(), wValues.get(),
-                      rIndexes1.get(), rValues1.get(), zero1, n1, 
-                      rIndexes2.get(), rValues2.get(), zero2, n2, op );
+         
+        resultIndexes = indexes1;
+        binaryOp( resultValues, values1, values2, op, prefLoc );
+    }
+    else
+    {
+        WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
+        WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+
+        ReadAccess<ValueType> rValues1( values1, loc );
+        ReadAccess<ValueType> rValues2( values2, loc );
+
+        binopSparse[loc]( wIndexes.get(), wValues.get(),
+                          rIndexes1.get(), rValues1.get(), zero1, n1, 
+                          rIndexes2.get(), rValues2.get(), zero2, n2, op );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

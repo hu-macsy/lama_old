@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_test_types )
 {
     // check of all unary array operations
 
@@ -595,6 +595,74 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseTest, ValueType, scai_numeric_test_
         BOOST_CHECK_EQUAL( pos1, array1.size() );
         BOOST_CHECK_EQUAL( pos2, array2.size() );
         BOOST_CHECK_EQUAL( pos3, array3.size() );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_test_types )
+{
+    // check of all binary ops on sparse arrays with same pattern
+
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+
+    // be careful about values, must be valid arguments for all binary ops
+
+    const IndexType indexes[] = { 2, 3, 6, 8 };
+    const ValueType values1[] = { 1.0, 1.2, 2.0, 1.3 };
+    const ValueType values2[] = { 0.5, 0.7, 0.3, 1.3 };
+
+    const IndexType nnz  = sizeof( indexes ) / sizeof( IndexType );
+
+    const IndexType nnz1 = sizeof( values1 ) / sizeof( ValueType );
+    const IndexType nnz2 = sizeof( values2 ) / sizeof( ValueType );
+
+    SCAI_ASSERT_EQ_ERROR( nnz, nnz1, "serious size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( nnz, nnz2, "serious size mismatch" )
+
+    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    {
+        binary::BinaryOp op = binary::BinaryOp( i );
+
+        LArray<IndexType> ia1( ctx );
+        LArray<IndexType> ia2( ctx );
+        LArray<IndexType> ia3( ctx );
+
+        LArray<ValueType> array1( ctx );
+        LArray<ValueType> array2( ctx );
+        LArray<ValueType> array3( ctx );
+
+        ia1.init( indexes, nnz );
+        array1.init( values1, nnz );
+        ia2.init( indexes, nnz1 );
+        array2.init( values2, nnz );
+
+        // zero values are not really needed if indexes are all same
+
+        ValueType zero1 = 1;
+        ValueType zero2 = 2;
+
+        HArrayUtils::binaryOpSparse( ia3, array3, ia1, array1, zero1, ia2, array2, zero2, op, ctx );
+
+        BOOST_REQUIRE_EQUAL( ia3.size(), array3.size() ); 
+        BOOST_REQUIRE_EQUAL( nnz, ia3.size() );
+
+        // ia3 must be equal to ia1, ia2
+
+        BOOST_REQUIRE_EQUAL( 0, ia3.maxDiffNorm( ia1 ) );
+
+        // array3 must be array1 op array2 for all elements
+
+        ReadAccess<ValueType> rValues1( array1, host );  // read result array
+        ReadAccess<ValueType> rValues2( array2, host );  // read result array
+        ReadAccess<ValueType> rValues3( array3, host );  // read result array
+
+        for ( IndexType i = 0; i < nnz; ++i )
+        {
+            ValueType expectedValue = applyBinary( rValues1[i], op, rValues2[i] );
+            BOOST_REQUIRE_EQUAL( expectedValue, rValues3[i] );
+        }
     }
 }
 
@@ -1299,13 +1367,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( arrayPlusArrayTest, ValueType, scai_numeric_test_
 
             HArrayUtils::arrayPlusArray( target, alpha, x1, beta, x2, loc );
 
-            if ( alpha == ValueType( 0 ) && beta == ValueType( 0 ) )
-            {
-                // target should be unchanged, size was 0 due to purge
-                BOOST_CHECK_EQUAL( IndexType( 0 ), target.size() );
-                continue;
-            }
-
             BOOST_CHECK_EQUAL( x1.size(), target.size() );
 
             for ( IndexType i = 0; i < n1; ++i )
@@ -1578,8 +1639,10 @@ BOOST_AUTO_TEST_CASE( findPosTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTestNew, ValueType, scai_array_test_types )
 {
+    // sparseArray = alpha * sparseArray1 + beta * sparseArray2, result gets new pattern
+
     ContextPtr testContext = Context::getContextPtr();
 
     const IndexType indexes1_values[]   = { 0, 2, 5, 7 };
@@ -1630,4 +1693,60 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTestSame, ValueType, scai_array_test_types )
+{
+    // sparseArray = alpha * sparseArray1 + beta * sparseArray2,  both sparse arrays have same pattern
+
+    ContextPtr testContext = Context::getContextPtr();
+
+    const IndexType indexes_values[]    = { 0, 2, 5, 7, 8 };
+
+    const ValueType values1_values[] = { 1, 2, 3, 4, 5 };
+    const ValueType values2_values[] = { 5, 6, 7, 8, 9 };
+    const ValueType values_values[]  = { 6, 8, 10, 12, 14 };
+
+    IndexType n  = sizeof( indexes_values ) / sizeof( IndexType );
+
+    HArray<IndexType> indexes1( n, indexes_values, testContext );
+    HArray<IndexType> indexes2( n, indexes_values, testContext );
+
+    HArray<ValueType> values1( n, values1_values, testContext );
+    HArray<ValueType> values2( n, values2_values, testContext );
+
+    HArray<IndexType> indexes;
+    HArray<ValueType> values;
+
+    ValueType one = 1;
+    ValueType zero = 0;
+    HArrayUtils::addSparse( indexes, values, indexes1, values1, zero, one, indexes2, values2, zero, one );
+
+    BOOST_REQUIRE_EQUAL( n, indexes.size() );
+    BOOST_REQUIRE_EQUAL( n, values.size() );
+
+    LArray<IndexType> okayIndexes( n, indexes_values, testContext );
+    LArray<ValueType> okayValues( n, values_values, testContext );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
+
+    // just switch the arguments
+
+    HArrayUtils::addSparse( indexes, values, indexes1, values1, zero, one, indexes2, values2, zero, one );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
+
+    // alias on result and operand
+
+    HArrayUtils::addSparse( indexes1, values1, indexes1, values1, zero, one, indexes2, values2, zero, one );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes1 ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values1 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();
+
+/* --------------------------------------------------------------------- */
+

@@ -197,8 +197,10 @@ public:
      *  @param[in]  beta    scaling factor
      *  @param[in]  y       source array
      *  @param[in]  prefLoc location where operation should be done if possible
+     *
+     *  Note: size of x and y must be equal if alpha != 0 and beta != 0
+     *  Note: size of result is x.size() if alpha != 0, otherwise y.size()
      */
-
     template<typename ValueType>
     static void arrayPlusArray(
         hmemo::HArray<ValueType>& result,
