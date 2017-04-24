@@ -115,17 +115,19 @@ int main( int argc, const char* argv[] )
 
     dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
 
-    common::Grid grid( 100, 100, 100 );
+    common::Grid grid( 4, 4, 4 );
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
     StencilStorage<double> stencilStorage( grid, stencil3_7 );
 
+    std::cout << "stencilStorage " << stencilStorage << std::endl;
+
     CSRStorage<double> csrStorage( stencilStorage );
 
-    csrStorage.writeToFile( "stencil3.mtx" );
+    csrStorage.writeToFile( "stencil5.txt" );
 
-    StencilMatrix<double> stencilMatrix( gridDistribution, stencil3_19 );
+    // StencilMatrix<double> stencilMatrix( grid, stencil3_19 );
 
-    stencilMatrix.writeToFile( "stencil%r.mtx" );
+    // stencilMatrix.writeToFile( "stencil19.mtx" );
 }

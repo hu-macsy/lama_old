@@ -68,74 +68,85 @@ public:
 
     /** Constructor of a one-dimensional grid. */
 
-    Grid( const IndexType n1 );
+    inline Grid( const IndexType n1 );
 
     /** Constructor of a two-dimensional grid. */
 
-    Grid( const IndexType n1, const IndexType n2 );
+    inline Grid( const IndexType n1, const IndexType n2 );
 
     /** Constructor of a three-dimensional grid. */
 
-    Grid( const IndexType n1, const IndexType n2, const IndexType n3 );
+    inline Grid( const IndexType n1, const IndexType n2, const IndexType n3 );
 
     /** Constructor of a four-dimensional grid. */
 
-    Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
+    inline Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
 
     /** Constructor of a n-dimensioal grid.
      *
      *  @param[in] ndims is the number of dimensions
      *  @param[in] sizes contains the dimensions of the grid
      */
-    Grid( const IndexType ndims, const IndexType sizes[] );
+    inline Grid( const IndexType ndims, const IndexType sizes[] );
 
     /** Set explicitly the size in a dim */
 
-    void setSize( IndexType dim, IndexType size );
+    inline void setSize( IndexType dim, IndexType size );
 
     /** Return number of dimensions for the grid. */
 
-    IndexType ndims() const;
+    inline IndexType ndims() const;
 
     /** Return the total number of grid points. */
 
-    IndexType size() const;
+    inline IndexType size() const;
 
     /** Size of the grid in a certain dimension */
 
-    IndexType size( const IndexType dim ) const;
+    inline IndexType size( const IndexType dim ) const;
+
+    /** Return an array with sizes of all grid dimensions */
+
+    inline void getSizes( IndexType sizes[] ) const;
+
+    /** Return an array with distances between grid elements for linear positions.
+     *
+     *  linearPos( gridPos[] ) = gridPos[0] * distances[0] + gridPos[1] * distances[1] + ... 
+     */
+
+    inline void getDistances( IndexType distances[] ) const;
 
     /** Predicate to check for a correct position in the grid, all position indexes must be valid */
 
-    bool validPos( const IndexType gridPos[] ) const;
+    inline bool validPos( const IndexType gridPos[] ) const;
 
     /** Linearize grid position */
 
-    IndexType linearPos( const IndexType gridPos[] ) const;
+    inline IndexType linearPos( const IndexType gridPos[] ) const;
 
     /** More convenient call of linearPos on one-dimensional grid */
 
-    IndexType linearPos( const IndexType pos1 ) const;
+    inline IndexType linearPos( const IndexType pos1 ) const;
 
     /** More convenient call of linearPos on two-dimensional grids */
 
-    IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
 
     /** More convenient call of linearPos for tree-dimensional grids */
 
-    IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const;
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const;
 
     /** Get grid position from a linearized index. */
 
-    void gridPos( IndexType pos[], const IndexType linearPos ) const;
+    inline void gridPos( IndexType pos[], const IndexType linearPos ) const;
 
     /** Compares two grids for equality. */
 
-    bool operator==( const Grid& other ) const;
+    inline bool operator==( const Grid& other ) const;
 
     /** Compares two grids for inequality. */
 
-    bool operator!=( const Grid& other ) const;
+    inline bool operator!=( const Grid& other ) const;
 
 private:
 
@@ -153,7 +164,7 @@ private:
  *    cout << grid;   // e.g. prints Grid-3( 2 x 3 x 2 )
  * \endcode
  */
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Grid& grid );
+inline COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Grid& grid );
 
 /* ------------------------------------------------------------------------------------ */
 /*   Implementations of inline constructors                                             */
@@ -213,6 +224,25 @@ IndexType Grid::ndims() const
 void Grid::setSize( IndexType dim, IndexType size )
 {
     mSize[dim] = size;
+}
+
+void Grid::getSizes( IndexType sizes[] ) const
+{
+    for ( IndexType idim = 0; idim < mNDims; ++idim )
+    {
+        sizes[idim] = mSize[idim];
+    }
+}
+
+void Grid::getDistances( IndexType distances[] ) const
+{
+    IndexType distance = 1;
+
+    for ( IndexType idim = mNDims; idim-- > 0; )
+    {
+        distances[idim] = distance;
+        distance *= mSize[idim];
+    }
 }
 
 bool Grid::validPos( const IndexType gridPos[] ) const

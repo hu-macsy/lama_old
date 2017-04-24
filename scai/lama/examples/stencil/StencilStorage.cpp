@@ -85,7 +85,7 @@ namespace lama
 template<typename ValueType>
 StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const Stencil<ValueType>&  stencil ) :
 
-    MatrixStorage<ValueType>(),
+    MatrixStorage<ValueType>( grid.size(), grid.size() ),
     mGrid( grid ),
     mStencil( stencil )
 {
@@ -135,6 +135,102 @@ ValueType StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;
+}
+
+/* --------------------------------------------------------------------------- */
+
+#define SCAI_STENCIL_MAX_POINTS 128
+
+template<typename ValueType>
+void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<IndexType>& csrJA, _HArray& csrValues ) const
+{
+    IndexType n = this->getNumRows();
+
+    int       stencilPos[SCAI_STENCIL_MAX_POINTS];
+    ValueType stencilValues[SCAI_STENCIL_MAX_POINTS];
+
+    IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
+    IndexType gridSizes[SCAI_GRID_MAX_DIMENSION];
+
+    mGrid.getSizes( gridSizes );
+    mGrid.getDistances( gridDistances );
+
+    for ( IndexType i = 0; i < mGrid.ndims(); ++i )
+    {
+        SCAI_LOG_ERROR( logger, "dim = " << i << ", size = " << gridSizes[i] << ", dist = " << gridDistances[i] )
+    }
+
+    mStencil.getData( stencilPos, stencilValues, gridDistances );
+
+    for ( IndexType i = 0; i < mStencil.nPoints(); ++i )
+    {
+        SCAI_LOG_ERROR( logger, "point = " << i << ", pos = " << stencilPos[i] << ", val = " << stencilValues[i] )
+    }
+
+    {
+        WriteOnlyAccess<IndexType> sizes( csrIA, n );
+  
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            IndexType gridPos[SCAI_GRID_MAX_DIMENSION];
+            bool      valid [SCAI_STENCIL_MAX_POINTS];
+
+            mGrid.gridPos( gridPos, i );   // grid position of point i 
+
+            sizes[i] = mStencil.getValidPoints( valid, gridSizes, gridPos );
+
+            SCAI_LOG_ERROR( logger, "Grid point " << i << " has " << sizes[i] << " valid neighbors" )
+        }
+    }
+
+    // now build offset array
+
+    IndexType nnz = HArrayUtils::scan1( csrIA );
+
+    SCAI_LOG_ERROR( logger, "nnz = " << nnz )
+
+    // compute ja and values array
+
+    HArray<ValueType> typedValues;
+ 
+    {
+        ReadAccess<IndexType> ia( csrIA );
+        WriteOnlyAccess<IndexType> ja( csrJA, nnz );
+        WriteOnlyAccess<ValueType> values( typedValues, nnz );
+ 
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            IndexType gridPos[SCAI_GRID_MAX_DIMENSION];
+            bool      valid [SCAI_STENCIL_MAX_POINTS];
+
+            mGrid.gridPos( gridPos, i );   // grid position of point i 
+
+            mStencil.getValidPoints( valid, gridSizes, gridPos );
+
+            IndexType pos = ia[i];
+
+            for ( IndexType k = 0; k < mStencil.nPoints(); ++k )
+            {
+                if ( valid[k] )
+                {
+                    ja[pos]     = i + stencilPos[k];
+                    values[pos] = stencilValues[k];
+                    pos++;
+                }
+            }
+ 
+            SCAI_ASSERT_EQ_ERROR( pos, ia[i+1], "serious mismatch" )
+        }
+    }
+
+    if ( typedValues.getValueType() == csrValues.getValueType() )
+    {
+        typedValues.swap( csrValues );
+    }
+    else
+    {
+        HArrayUtils::assign( csrValues, typedValues );
+    }
 }
 
 /* --------------------------------------------------------------------------- */

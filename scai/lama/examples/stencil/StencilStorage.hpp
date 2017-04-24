@@ -233,12 +233,10 @@ public:
         COMMON_THROWEXCEPTION( "buildCSRSizes unsuported" )
     }
 
-    /** _MatrixStorage */
-
- 	virtual void buildCSRData(scai::hmemo::HArray<int>&, scai::hmemo::HArray<int>&, scai::hmemo::_HArray&) const
-    {
-        COMMON_THROWEXCEPTION( "buildCSRData unsuported" )
-    }
+ 	virtual void buildCSRData(
+       scai::hmemo::HArray<IndexType>& csrIA, 
+       scai::hmemo::HArray<IndexType>& csrJA, 
+       scai::hmemo::_HArray& csrValues ) const;
 
     /** _MatrixStorage */
 
@@ -272,7 +270,7 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const
     {
-        stream << "StencilStorage";
+        stream << "StencilStorage( " << this->getNumRows() << " x " << this->getNumColumns() << ", grid = " << mGrid << ", stencil = " << mStencil << ")";
     }
 
     /** Getter routine for the number of stored values. */

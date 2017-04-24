@@ -88,7 +88,15 @@ public:
 
     /** Return boundaries of a stencil */
 
-    void getBoundaries( int lb[], int ub[] );
+    void getBoundaries( int lb[], int ub[] ) const;
+
+    /** Get stencil data */
+
+    inline void getData( int pos[], ValueType val[], IndexType gridDistances[] ) const;
+
+    /** Get valid positions */
+
+    inline IndexType getValidPoints( bool valid[], const IndexType gridSizes[], const IndexType gridPos[] ) const;
 
     /** Compares two stencils for equality. */
 
@@ -182,7 +190,7 @@ void Stencil<ValueType>::addPoint( const int relpos[], const ValueType val )
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void Stencil<ValueType>::getBoundaries( int lb[], int ub[] )
+void Stencil<ValueType>::getBoundaries( int lb[], int ub[] ) const
 {
     // determine min and max extent for each dimensions
 
@@ -200,6 +208,60 @@ void Stencil<ValueType>::getBoundaries( int lb[], int ub[] )
             ub[i] = common::Math::max( ub[i], mPositions[ k * mNDims + i ] );
         }
     }
+}
+
+template<typename ValueType>
+void Stencil<ValueType>::getData( int pos[], ValueType val[], IndexType gridDistances[] ) const
+{
+     for ( IndexType k = 0; k < nPoints(); ++k )
+     {
+         pos[k] = 0;
+         
+         for ( IndexType i = 0; i < mNDims; ++i )
+         {
+             pos[k] += mPositions[ k * mNDims + i ] * static_cast<int>( gridDistances[ i ] );
+         }
+
+         val[k] = mValues[ k ];
+     }
+}
+
+template<typename ValueType>
+IndexType Stencil<ValueType>::getValidPoints( bool valid[], const IndexType gridSizes[], const IndexType gridPos[] ) const
+{
+    IndexType cnt = 0;   // count the number of valid stencil neighbors
+
+     for ( IndexType k = 0; k < nPoints(); ++k )
+     {
+         valid[k] = true;
+
+         for ( IndexType i = 0; i < mNDims; ++i )
+         {
+             int pos = mPositions[ k * mNDims + i ];
+
+             if ( pos < 0 )
+             {
+                 if ( gridPos[i] < static_cast<IndexType>( -pos ) )
+                 {
+                     valid[k] = false;
+                 }
+             }
+             else 
+             {
+                 if ( gridPos[i] + static_cast<IndexType>( pos ) >= gridSizes[i] )
+                 {
+                     valid[k] = false;
+                 }
+             }
+         }
+
+         if ( valid[k] )
+         {
+            cnt++;
+         }
+     }
+
+    return cnt;
 }
 
 /* ------------------------------------------------------------------------------------ */

@@ -53,20 +53,35 @@ namespace lama
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, StencilMatrix<ValueType>::logger,
                               "Matrix.SparseMatrix.StencilMatrix" )
 
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil )
 
-    : SparseMatrix<ValueType>( common::shared_ptr<MatrixStorage<ValueType> >( new StencilStorage<ValueType>( grid, stencil ) ) )
+    : SparseMatrix<ValueType>()
 
 {
+    SCAI_LOG_ERROR( logger, "create stencil matrix" )
+
+    common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>( grid, stencil ) );
+    common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
+
+    haloData->allocate( localData->getNumRows(), 0 );
+
+    DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
+
+    Halo halo;
+
+    this->set( localData, haloData, halo, dist, dist );
 }
 
 template<typename ValueType>
 StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
 
-    : SparseMatrix<ValueType>( common::shared_ptr<MatrixStorage<ValueType> >( new StencilStorage<ValueType>( common::Grid( 0 ), stencil ) ) )
+    : SparseMatrix<ValueType>()
 
 {
+    COMMON_THROWEXCEPTION( "unsupported: create distributed stencil matrix, dist = " << *dist << ", stencil = " << stencil )
     SCAI_ASSERT_ERROR( dist, "NULL dist" )
 }
 

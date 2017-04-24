@@ -189,6 +189,33 @@ SparseMatrix<ValueType>::SparseMatrix(
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+SparseMatrix<ValueType>::SparseMatrix() : Matrix( 0, 0 )
+{
+}
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::set(
+    common::shared_ptr<MatrixStorage<ValueType> > localData,
+    common::shared_ptr<MatrixStorage<ValueType> > haloData,
+    const Halo& halo,
+    DistributionPtr rowDist,
+    DistributionPtr colDist ) 
+{
+    SCAI_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
+    // TODO: asserts for correct sizes of all relevant sizes
+    SCAI_ASSERT_EQUAL_ERROR( localData->getNumRows(), rowDist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( haloData->getNumRows(), rowDist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( haloData->getNumColumns(), halo.getHaloSize() )
+
+    mLocalData = localData;  // flat copy
+    mHaloData = haloData;    // flat copy
+    mHalo = halo;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const SparseMatrix& matrix )
 {
     SCAI_LOG_INFO( logger, " = SparseMatrix : " << matrix )
