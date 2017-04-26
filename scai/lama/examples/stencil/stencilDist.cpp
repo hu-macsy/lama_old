@@ -1,5 +1,5 @@
 /**
- * @file stencilExample.cpp
+ * @file stencilDist.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Demo of stencil class and generation of Stencil matrix
+ * @brief Demo of distributed stencil
  * @author Thomas Brandes
- * @date 23.02.2017
+ * @date 27.04.2017
  */
 
 #include <scai/lama.hpp>
@@ -70,42 +70,17 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil3D<double> stencil3( 27 ); // 27-point stencil
-    Stencil2D<double> stencil2( 5 );  // 5-point stencil, two dims
-    Stencil1D<double> stencil1( 3 );  // 3-point stencil, one dimension
+    Stencil2D<double> stencil( 5 );  // 5-point stencil, two dims
 
-    Stencil1D<double> stencilFD8;
+    const IndexType N = 10; 
 
-    stencilFD8.reserve( 8 );   // just for convenience, not mandatory
+    common::Grid2D grid( N, N );
 
-    stencilFD8.addPoint( -3, -5.0/7168.0 );
-    stencilFD8.addPoint( -2, 49.0/5120.0 );
-    stencilFD8.addPoint( -1, -245.0/3072.0 );
-    stencilFD8.addPoint( 0, 1225.0/1024.0 );
-    stencilFD8.addPoint( 1, -1225.0/1024.0 );
-    stencilFD8.addPoint( 2, 245.0/3072.0 ) ;
-    stencilFD8.addPoint( 3, -49.0/5120.0 );
-    stencilFD8.addPoint( 4, 5.0/7168.0 );
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr(); 
 
-    Stencil1D<double> stencilDummy( 1 );
+    dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
-    // 1-dimensional stencils can be combined
+    StencilMatrix<double> stencilMatrix( gridDistribution, stencil );
 
-    Stencil3D<double> stencilX( stencilFD8, stencilDummy, stencilDummy );
-    Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
-    Stencil3D<double> stencilZ( stencilDummy, stencilDummy, stencilFD8 );
-
-    Stencil2D<double> stencil2_5( stencil1, stencil1 /*, 1 */ ); 
-    Stencil2D<double> stencil2_9( 9 );
-
-    Stencil3D<double> stencil3_7( stencil1, stencil1, stencil1 );
-    Stencil3D<double> stencil3_19( 19 );
-    Stencil3D<double> stencil3_27( 27 );
-
-    for ( IndexType i = 0; i < stencil3_27.nPoints(); ++i )
-    {
-        int i1, i2, i3;  // relative position
-        double val;
-        stencil3_27.getPoint( i1, i2, i3, val, i );
-    }
+    std::cout << "stencilMatrix " << stencilMatrix << std::endl;
 }

@@ -37,6 +37,42 @@ namespace stencilkernel
 struct StencilKernelTrait
 {
     template<typename ValueType>
+    struct stencil2CSR
+    {
+        /** Function that build csr data for a stencil matrix.
+         *
+         *  @param[out] csrJA  contains the column indexes for the csr matrix
+         *  @param[out] csrValues  contains the non-zero values for the csr matrix corresponding to csrJA
+         *  @param[in] csrIA offsets array, csrIA[i] gives position where values start belonging to grid point i
+         *  @param[in] nDims is the number of dimensions for the grid
+         *  @param[in] gridSizes contains the dimensions of the grid 
+         *  @param[in] gridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] nPoints number of stencil points
+         *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
+         *  @param[in] stencilVal contains the scale value for each stencil point
+         *  @param[in] stencilLinPos contains the distance of each stencil point in linearized grid
+         *
+         *  csrIA is the offset array that is a scan of the sizes array computed by stencilSizes.
+         */
+        typedef void ( *FuncType )(
+            IndexType csrJA[],
+            ValueType csrValues[],
+            const IndexType csrIA[],
+            const IndexType nDims,
+            const IndexType gridSizes[],
+            const IndexType gridDistances[],
+            const IndexType nPoints,
+            const int stencilNodes[],
+            const ValueType stencilVal[],
+            const int stencilLinPos[] );
+    
+        static const char* getId()
+        {
+            return "Stencil.2CSR";
+        }
+    };
+
+    template<typename ValueType>
     struct stencilGEMV
     {
         /** function that computes result += alpha * A * x where A is a stencil matrix.
@@ -50,12 +86,12 @@ struct StencilKernelTrait
          *  @param[in] ub contains maximal right distance for each dimension given by stencil
          *  @param[in] gridDistances contains the distance between two neighbored points for each dim
          *  @param[in] nPoints number of stencil points
-         *  @param[in] stencilGridPos contins nDims * nPoints direction values for the stencil points
+         *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
          *  @param[in] stencilLinPos contains the distance of each stencil point in linearized grid
          *
          *  result and x have one value for each grid point corresponding the linearized grid with nDims dimensions.
-         *  lb and ub might be recomputed by stencilGridPos but are passed to avoid a recomputation.
+         *  lb and ub might be recomputed by stencilNodes but are passed to avoid a recomputation.
          *  gridDistances might also be recomputed by gridSizes but is used here to be independent from 
          *  column or row-major linearization of grids.
          */
@@ -69,13 +105,13 @@ struct StencilKernelTrait
             const IndexType ub[],
             const IndexType gridDistances[],
             const IndexType nPoints,
-            const int stencilGridPos[],
+            const int stencilNodes[],
             const ValueType stencilVal[],
             const int stencilLinPos[] );
 
         static const char* getId()
         {
-            return "StencilUtils.stencilVectorMultiplication";
+            return "Stencil.GEMV";
         }
     };
 };

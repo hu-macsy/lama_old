@@ -91,6 +91,9 @@ StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const Stenc
     mGrid( grid ),
     mStencil( stencil )
 {
+    // #dimension of grid and stencil must be equal
+
+    SCAI_ASSERT_EQ_ERROR( grid.nDims(), stencil.nDims(), "dimensions of grid an stencil must be equal" )
 }
 
 template<typename ValueType>
@@ -156,8 +159,6 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     mStencil.getLinearPositions( stencilPos, gridDistances );
 
-    const IndexType* gridSizes = mGrid.sizes();
-
     for ( IndexType i = 0; i < mStencil.nPoints(); ++i )
     {
         SCAI_LOG_DEBUG( logger, "point = " << i << ", pos = " << stencilPos[i] << ", val = " << mStencil.values()[i] )
@@ -166,17 +167,9 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     {
         WriteOnlyAccess<IndexType> sizes( csrIA, n );
   
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            IndexType gridPos[SCAI_GRID_MAX_DIMENSION];
-            bool      valid [SCAI_STENCIL_MAX_POINTS];
-
-            mGrid.gridPos( gridPos, i );   // grid position of point i 
-
-            sizes[i] = mStencil.getValidPoints( valid, gridSizes, gridPos );
-
-            SCAI_LOG_TRACE( logger, "Grid point " << i << " has " << sizes[i] << " valid neighbors" )
-        }
+        stencilkernel::OpenMPStencilKernel::stencilSizes( 
+            sizes.get(), mStencil.nDims(), mGrid.sizes(), gridDistances, 
+            mStencil.nPoints(), mStencil.positions() );
     }
 
     // now build offset array
@@ -189,36 +182,15 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     HArray<ValueType> typedValues;
  
-    const ValueType* stencilValues = mStencil.values();
-
     {
         ReadAccess<IndexType> ia( csrIA );
         WriteOnlyAccess<IndexType> ja( csrJA, nnz );
         WriteOnlyAccess<ValueType> values( typedValues, nnz );
  
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            IndexType gridPos[SCAI_GRID_MAX_DIMENSION];
-            bool      valid [SCAI_STENCIL_MAX_POINTS];
-
-            mGrid.gridPos( gridPos, i );   // grid position of point i 
-
-            mStencil.getValidPoints( valid, gridSizes, gridPos );
-
-            IndexType pos = ia[i];
-
-            for ( IndexType k = 0; k < mStencil.nPoints(); ++k )
-            {
-                if ( valid[k] )
-                {
-                    ja[pos]     = i + stencilPos[k];
-                    values[pos] = stencilValues[k];
-                    pos++;
-                }
-            }
- 
-            SCAI_ASSERT_EQ_ERROR( pos, ia[i+1], "serious mismatch" )
-        }
+        stencilkernel::OpenMPStencilKernel::stencil2CSR( 
+            ja.get(), values.get(), ia.get(),
+            mStencil.nDims(), mGrid.sizes(), gridDistances, 
+            mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilPos );
     }
 
     if ( typedValues.getValueType() == csrValues.getValueType() )

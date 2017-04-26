@@ -40,9 +40,38 @@ namespace scai
 namespace stencilkernel
 {
 
+/** Class that contains the OpenMP implementations of the stencil kernels. */
+
 class OpenMPStencilKernel
 {
 public:
+
+    /** OpenMP implementation for StencilKernelTrait::stencilSizes */
+
+    static void stencilSizes(
+        IndexType sizes[],
+        const IndexType nDims, 
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[] );
+
+    /** OpenMP implementation for StencilKernelTrait::stencil2CSR */
+
+    template<typename ValueType>
+    static void stencil2CSR(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType nDims,
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
+
+    /** OpenMP implementation for StencilKernelTrait::stencilGEMV */
 
     template<typename ValueType>
     static void stencilGEMV(
@@ -55,11 +84,112 @@ public:
         const IndexType ub[],
         const IndexType gridDistances[],
         const IndexType nPoints,
-        const int stencilGridPos[], 
+        const int stencilNodes[], 
         const ValueType stencilVal[],
         const int stencilLinPos[] );
 
 private:
+
+    /** Implementation of stencilSizes for nDims == 1 */
+
+    static void stencilSizes1(
+        IndexType sizes[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[] );
+
+    /** Implementation of stencilSizes for nDims == 2 */
+
+    static void stencilSizes2(
+        IndexType sizes[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[] );
+
+    /** Implementation of stencilSizes for nDims == 3 */
+
+    static void stencilSizes3(
+        IndexType sizes[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[] );
+
+    /** Implementation of stencil2CSR for nDims == 1 */
+
+    template<typename ValueType>
+    static void stencil2CSR1(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
+
+    /** Implementation of stencil2CSR for nDims == 2 */
+
+    template<typename ValueType>
+    static void stencil2CSR2(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
+
+    /** Implementation of stencil2CSR for nDims == 3 */
+
+    template<typename ValueType>
+    static void stencil2CSR3(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
+
+    /** Implementation of stencilGEMV for nDims == 1 */
+
+    template<typename ValueType>
+    static void stencilGEMV1(
+        ValueType result[], 
+        const ValueType alpha,  
+        const ValueType x[],
+        const IndexType gridSizes[],
+        const IndexType lb[],
+        const IndexType ub[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[], 
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
+
+    /** Implementation of stencilGEMV for nDims == 2 */
+
+    template<typename ValueType>
+    static void stencilGEMV2(
+        ValueType result[], 
+        const ValueType alpha,  
+        const ValueType x[],
+        const IndexType gridSizes[],
+        const IndexType lb[],
+        const IndexType ub[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[], 
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
 
     /** Implementation of stencilGEMV for nDims == 3 */
 
@@ -73,7 +203,23 @@ private:
         const IndexType ub[],
         const IndexType gridDistances[],
         const IndexType nPoints,
-        const int stencilGridPos[], 
+        const int stencilNodes[], 
+        const ValueType stencilVal[],
+        const int stencilLinPos[] );
+
+    /** Implementation of stencilGEMV for nDims == 4 */
+
+    template<typename ValueType>
+    static void stencilGEMV4(
+        ValueType result[], 
+        const ValueType alpha,  
+        const ValueType x[],
+        const IndexType gridSizes[],
+        const IndexType lb[],
+        const IndexType ub[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[], 
         const ValueType stencilVal[],
         const int stencilLinPos[] );
 

@@ -1,5 +1,5 @@
 /**
- * @file stencilExample.cpp
+ * @file stencilConversion.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Demo of stencil class and generation of Stencil matrix
+ * @brief Benchmarking for conversion of StencilMatrix to CSRMatrix
  * @author Thomas Brandes
  * @date 23.02.2017
  */
@@ -61,7 +61,6 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
-
 int main( int argc, const char* argv[] )
 {
     // relevant SCAI arguments: 
@@ -70,42 +69,29 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil3D<double> stencil3( 27 ); // 27-point stencil
-    Stencil2D<double> stencil2( 5 );  // 5-point stencil, two dims
-    Stencil1D<double> stencil1( 3 );  // 3-point stencil, one dimension
+    Stencil1D<double> stencil( 3 );
 
-    Stencil1D<double> stencilFD8;
+    const IndexType N = 10000000;
 
-    stencilFD8.reserve( 8 );   // just for convenience, not mandatory
+    common::Grid1D grid( N );
 
-    stencilFD8.addPoint( -3, -5.0/7168.0 );
-    stencilFD8.addPoint( -2, 49.0/5120.0 );
-    stencilFD8.addPoint( -1, -245.0/3072.0 );
-    stencilFD8.addPoint( 0, 1225.0/1024.0 );
-    stencilFD8.addPoint( 1, -1225.0/1024.0 );
-    stencilFD8.addPoint( 2, 245.0/3072.0 ) ;
-    stencilFD8.addPoint( 3, -49.0/5120.0 );
-    stencilFD8.addPoint( 4, 5.0/7168.0 );
+    StencilMatrix<double> stencilMatrix( grid, stencil );
 
-    Stencil1D<double> stencilDummy( 1 );
+    CSRSparseMatrix<double> csrMatrix1;
 
-    // 1-dimensional stencils can be combined
-
-    Stencil3D<double> stencilX( stencilFD8, stencilDummy, stencilDummy );
-    Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
-    Stencil3D<double> stencilZ( stencilDummy, stencilDummy, stencilFD8 );
-
-    Stencil2D<double> stencil2_5( stencil1, stencil1 /*, 1 */ ); 
-    Stencil2D<double> stencil2_9( 9 );
-
-    Stencil3D<double> stencil3_7( stencil1, stencil1, stencil1 );
-    Stencil3D<double> stencil3_19( 19 );
-    Stencil3D<double> stencil3_27( 27 );
-
-    for ( IndexType i = 0; i < stencil3_27.nPoints(); ++i )
     {
-        int i1, i2, i3;  // relative position
-        double val;
-        stencil3_27.getPoint( i1, i2, i3, val, i );
+        SCAI_REGION( "main.buildPoisson" )
+        MatrixCreator::buildPoisson( csrMatrix1, 1, 3, N, N, N );
     }
+
+    CSRSparseMatrix<double> csrMatrix2;
+
+    {
+        SCAI_REGION( "main.convertStencil" )
+        csrMatrix2 = stencilMatrix;
+    }
+
+    SCAI_ASSERT_EQUAL( csrMatrix1.getNumRows(), csrMatrix2.getNumRows(), "serious mismatch" )
+
+    std::cout << "diff = " << csrMatrix1.maxDiffNorm( csrMatrix2 ) << std::endl;
 }

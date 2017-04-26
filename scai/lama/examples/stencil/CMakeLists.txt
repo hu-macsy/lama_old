@@ -38,9 +38,12 @@ set ( SOURCES
          StencilMatrix.cpp
     )
 
-foreach ( executable stencilExample )
-    add_executable( ${executable}.exe ${executable}.cpp ${SOURCES} )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+add_library( stencilLib SHARED ${SOURCES} )
+target_link_libraries( stencilLib ${PROJECT_NAME} )
+
+foreach ( executable stencilExample stencilConversion stencilGEMV stencilDist )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe stencilLib )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )

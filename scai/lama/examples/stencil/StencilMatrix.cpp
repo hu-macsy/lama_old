@@ -61,7 +61,7 @@ StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil
     : SparseMatrix<ValueType>()
 
 {
-    SCAI_LOG_ERROR( logger, "create stencil matrix" )
+    SCAI_LOG_INFO( logger, "create stencil matrix, grid = " << grid << ", stencil = " << stencil )
 
     common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>( grid, stencil ) );
     common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
@@ -70,12 +70,12 @@ StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil
 
     DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
 
-    SCAI_LOG_ERROR( logger, "dist of stencil matrix = " << *dist )
-
     Halo halo;
 
     this->set( localData, haloData, halo, dist, dist );
 }
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
@@ -86,6 +86,8 @@ StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Sten
     COMMON_THROWEXCEPTION( "unsupported: create distributed stencil matrix, dist = " << *dist << ", stencil = " << stencil )
     SCAI_ASSERT_ERROR( dist, "NULL dist" )
 }
+
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
 StencilMatrix<ValueType>::~StencilMatrix()
