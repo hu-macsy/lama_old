@@ -70,6 +70,8 @@ StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil
 
     DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
 
+    SCAI_LOG_ERROR( logger, "dist of stencil matrix = " << *dist )
+
     Halo halo;
 
     this->set( localData, haloData, halo, dist, dist );

@@ -111,23 +111,48 @@ int main( int argc, const char* argv[] )
  
     // stencil2 == stencil2X 
 
-    CSRSparseMatrix<double> csrMatrix;
-
     dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
 
-    common::Grid grid( 4, 4, 4 );
+    const IndexType N = 300;
+
+    common::Grid3D grid( N, N, N );
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
-    StencilStorage<double> stencilStorage( grid, stencil3_7 );
+    // StencilStorage<double> stencilStorage( grid, stencil3_7 );
 
-    std::cout << "stencilStorage " << stencilStorage << std::endl;
+    // std::cout << "stencilStorage " << stencilStorage << std::endl;
 
-    CSRStorage<double> csrStorage( stencilStorage );
+    // CSRStorage<double> csrStorage( stencilStorage );
 
-    csrStorage.writeToFile( "stencil5.txt" );
+    StencilMatrix<double> stencilMatrix( grid, stencil3_7 );
 
-    // StencilMatrix<double> stencilMatrix( grid, stencil3_19 );
+    std::cout << "stencilMatrix " << stencilMatrix << std::endl;
 
-    // stencilMatrix.writeToFile( "stencil19.mtx" );
+    stencilMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+    // stencilMatrix.writeToFile( "stencil.txt" );
+
+    CSRSparseMatrix<double> csrMatrix;
+
+    MatrixCreator::buildPoisson( csrMatrix, 3, 7, N, N, N );
+
+    csrMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+    std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
+
+    // csrMatrix.writeToFile( "csr.txt" );
+
+    // Scalar s = csrMatrix.maxDiffNorm( stencilMatrix );
+    // std::cout << "max diff = " << s << std::endl;
+
+    DenseVector<double> x( stencilMatrix.getColDistributionPtr() );
+    x = 1.0;
+
+    DenseVector<double> y1 ( stencilMatrix * x );
+    // y1.writeToFile( "y1.txt" );
+    DenseVector<double> y2 ( csrMatrix * x );
+    // y2.writeToFile( "y2.txt" );
+
+    std::cout << "diff = " << y1.maxDiffNorm( y2 ) << std::endl;
 }

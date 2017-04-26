@@ -151,28 +151,28 @@ public:
 
     virtual Format::MatrixStorageFormat getFormat() const
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" );
+        return Format::STENCIL;
     }
 
     /** Implementation of pure method.  */
 
     virtual void setIdentity( const IndexType )
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
+        COMMON_THROWEXCEPTION( "setIdentity unsuported" )
     }
 
     /** Implementation of pure method _MatrixStorage::checkDiagonalProperty */
 
     virtual bool checkDiagonalProperty() const
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
+        COMMON_THROWEXCEPTION( "checkDiagonalProperty unsuported" )
     }
 
     /** Implementation of pure method _MatrixStorage::swap */
 
     virtual void swap( _MatrixStorage& )
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
+        COMMON_THROWEXCEPTION( "swap unsuported" )
     }
 
     /** Implementation of pure method _MatrixStorage::getTypeName */
@@ -188,21 +188,21 @@ public:
 
     virtual void getRow(scai::hmemo::_HArray&, IndexType) const
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
+        COMMON_THROWEXCEPTION( "getRow unsuported" )
     }
 
     /** _MatrixStorage */
 
     virtual void setRow(const scai::hmemo::_HArray&, IndexType, scai::common::binary::BinaryOp)
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
+        COMMON_THROWEXCEPTION( "setRow unsuported" )
     }
 
     /** _MatrixStorage */
 
  	virtual void setColumn(const scai::hmemo::_HArray&, IndexType, scai::common::binary::BinaryOp)
     {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
+        COMMON_THROWEXCEPTION( "setColumn unsuported" )
     }
 
     /** _MatrixStorage */
@@ -399,6 +399,14 @@ public:
         COMMON_THROWEXCEPTION( "print unsupported" )
     }
    
+    /** Implementation of MatrixStorage::matrixTimesVector for stencil storage */
+
+    virtual void matrixTimesVector(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y ) const;
 
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
@@ -413,6 +421,8 @@ protected:
     Stencil<ValueType> mStencil;      //! stencil that specifies connections between elements
 
 private:
+
+    tasking::SyncToken* incGEMV( hmemo::HArray<ValueType>& result, const ValueType alpha, const hmemo::HArray<ValueType>& x, bool async ) const;
 
     /** Logger for this class. */
 

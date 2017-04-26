@@ -35,6 +35,7 @@
 #pragma once
 
 // for dll_import
+
 #include <scai/common/config.hpp>
 #include <scai/common/Utils.hpp>
 #include <scai/common/SCAITypes.hpp>
@@ -86,17 +87,23 @@ public:
 
     IndexType size() const;
 
-    /** Return boundaries of a stencil */
-
-    void getBoundaries( int lb[], int ub[] ) const;
-
-    /** Get stencil data */
-
-    inline void getData( int pos[], ValueType val[], IndexType gridDistances[] ) const;
+    /** Get stencil positions in linearized grid 
+     *  
+     *  @param[in] gridDistances contains for each dim the distance between two neighbored elements in that dim
+     *  @param[out] pos with entry fore each stencil point the relative position in linearized grid
+     */
+    inline void getLinearPositions( int pos[], IndexType gridDistances[] ) const;
 
     /** Get valid positions */
 
     inline IndexType getValidPoints( bool valid[], const IndexType gridSizes[], const IndexType gridPos[] ) const;
+
+    /** Return widths of a stencil in each dimension, both directions
+     *
+     *  @param[out] lb is array with width to the left for each dimension
+     *  @param[out] ub is array with width to the right for each dimension
+     */
+    inline void getWidths( IndexType lb[], IndexType ub[] ) const;
 
     /** Compares two stencils for equality. */
 
@@ -105,6 +112,14 @@ public:
     /** Compares two stencils for inequality. */
 
     bool operator!=( const Stencil& other ) const;
+
+    /** Get pointer to the array with stencil positions, size is nPoints() * nDims() */
+
+    const int* positions() const;
+
+    /** Get pointer to the array with stencil values, size is nPoints() */
+
+    const ValueType* values() const;
 
 protected:
 
@@ -128,7 +143,7 @@ private:
 template<typename ValueType>
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Stencil<ValueType>& stencil  )
 {
-    stream << "Stencil " << stencil.nDims() << "D<" << common::TypeTraits<ValueType>::id() << "> ( " << stencil.nPoints() << " )";
+    stream << "Stencil" << stencil.nDims() << "D<" << common::TypeTraits<ValueType>::id() << "> ( " << stencil.nPoints() << " )";
 
     return stream;
 }
@@ -172,6 +187,18 @@ IndexType Stencil<ValueType>::nDims() const
     return mNDims;
 }
 
+template<typename ValueType>
+const int* Stencil<ValueType>::positions() const
+{
+    return &mPositions[0];
+}
+
+template<typename ValueType>
+const ValueType* Stencil<ValueType>::values() const
+{
+    return &mValues[0];
+}
+
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -190,28 +217,7 @@ void Stencil<ValueType>::addPoint( const int relpos[], const ValueType val )
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void Stencil<ValueType>::getBoundaries( int lb[], int ub[] ) const
-{
-    // determine min and max extent for each dimensions
-
-    for ( IndexType i = 0; i < mNDims; ++i )
-    {
-        lb[i] = 0;
-        ub[i] = 0;
-    }
- 
-    for ( IndexType k = 0; k < nPoints(); ++k )
-    {
-        for ( IndexType i = 0; i < mNDims; ++i )
-        {
-            lb[i] = common::Math::min( lb[i], mPositions[ k * mNDims + i ] );
-            ub[i] = common::Math::max( ub[i], mPositions[ k * mNDims + i ] );
-        }
-    }
-}
-
-template<typename ValueType>
-void Stencil<ValueType>::getData( int pos[], ValueType val[], IndexType gridDistances[] ) const
+void Stencil<ValueType>::getLinearPositions( int pos[], IndexType gridDistances[] ) const
 {
      for ( IndexType k = 0; k < nPoints(); ++k )
      {
@@ -221,9 +227,47 @@ void Stencil<ValueType>::getData( int pos[], ValueType val[], IndexType gridDist
          {
              pos[k] += mPositions[ k * mNDims + i ] * static_cast<int>( gridDistances[ i ] );
          }
-
-         val[k] = mValues[ k ];
      }
+}
+
+template<typename ValueType>
+void Stencil<ValueType>::getWidths( IndexType lb[], IndexType ub[] ) const
+{
+    // initialize lb and ub arrays with 0
+
+    for ( IndexType i = 0; i < mNDims; ++i )
+    {
+        lb[i] = 0;
+        ub[i] = 0;
+    }
+
+    for ( IndexType k = 0; k < nPoints(); ++k )
+    {
+         for ( IndexType i = 0; i < mNDims; ++i )
+         {
+             int pos = mPositions[ k * mNDims + i ];
+
+             if ( pos < 0 )
+             {
+                 IndexType lbi = static_cast<IndexType>( -pos );
+
+                 if ( lbi > lb[ i ] )
+                 { 
+                     lb[i] = lbi;    // new max value here
+                 }
+             }
+          
+             if ( pos > 0 )
+             {
+                 IndexType ubi = static_cast<IndexType>( pos );
+
+                 if ( ubi > ub[ i ] )
+                 { 
+                     ub[i] = ubi;    // new max value here
+                 }
+             }
+         }
+    }
 }
 
 template<typename ValueType>
@@ -565,13 +609,15 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  1, -1,  1,  minusOne );
             addPoint(  1,  1, -1, minusOne );
             addPoint(  1,  1,  1,  minusOne );
+
+            // no break here, continue with points for Stencil3D( 19 )
         }
         case 19 : 
         {
             addPoint( -1,  0, -1, minusOne );
             addPoint( -1,  0,  1, minusOne );
             addPoint( -1, -1,  0, minusOne );
-            addPoint( -1, -1,  0, minusOne );
+            addPoint( -1,  1,  0, minusOne );
             addPoint(  0, -1, -1, minusOne );
             addPoint(  0,  1, -1, minusOne );
             addPoint(  0, -1,  1, minusOne );
@@ -579,7 +625,9 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  1,  0, -1, minusOne );
             addPoint(  1,  0,  1, minusOne );
             addPoint(  1, -1,  0, minusOne );
-            addPoint(  1, -1,  0, minusOne );
+            addPoint(  1,  1,  0, minusOne );
+
+            // no break here, continue with points for Stencil3D( 7 )
         }
         case 7 :
         {
@@ -589,6 +637,8 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  0,  1,  0, minusOne );
             addPoint(  0,  0, -1, minusOne );
             addPoint(  0,  0,  1, minusOne );
+
+            // no break here, continue with points for Stencil3D( 1 )
         }
         case 1 :
         {
@@ -596,7 +646,8 @@ Stencil3D<ValueType>::Stencil3D( const IndexType nPoints ) : Stencil<ValueType>(
             break;
         }
         default:
-            COMMON_THROWEXCEPTION( "Unsupported type of Stencil1D, #points = " << nPoints )
+
+            COMMON_THROWEXCEPTION( "Unsupported type of Stencil3D, #points = " << nPoints )
 
         SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
     }

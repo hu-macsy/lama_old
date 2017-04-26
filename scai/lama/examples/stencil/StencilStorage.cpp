@@ -34,6 +34,7 @@
 
 // hpp
 #include "StencilStorage.hpp"
+#include <scai/lama/examples/stencil/OpenMPStencilKernel.hpp>
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
@@ -73,6 +74,7 @@ namespace scai
 using namespace hmemo;
 using namespace dmemo;
 using namespace utilskernel;
+using namespace tasking;
 
 using common::unique_ptr;
 using common::shared_ptr;
@@ -147,24 +149,18 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     IndexType n = this->getNumRows();
 
     int       stencilPos[SCAI_STENCIL_MAX_POINTS];
-    ValueType stencilValues[SCAI_STENCIL_MAX_POINTS];
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
-    IndexType gridSizes[SCAI_GRID_MAX_DIMENSION];
 
-    mGrid.getSizes( gridSizes );
     mGrid.getDistances( gridDistances );
 
-    for ( IndexType i = 0; i < mGrid.ndims(); ++i )
-    {
-        SCAI_LOG_ERROR( logger, "dim = " << i << ", size = " << gridSizes[i] << ", dist = " << gridDistances[i] )
-    }
+    mStencil.getLinearPositions( stencilPos, gridDistances );
 
-    mStencil.getData( stencilPos, stencilValues, gridDistances );
+    const IndexType* gridSizes = mGrid.sizes();
 
     for ( IndexType i = 0; i < mStencil.nPoints(); ++i )
     {
-        SCAI_LOG_ERROR( logger, "point = " << i << ", pos = " << stencilPos[i] << ", val = " << stencilValues[i] )
+        SCAI_LOG_DEBUG( logger, "point = " << i << ", pos = " << stencilPos[i] << ", val = " << mStencil.values()[i] )
     }
 
     {
@@ -179,7 +175,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
             sizes[i] = mStencil.getValidPoints( valid, gridSizes, gridPos );
 
-            SCAI_LOG_ERROR( logger, "Grid point " << i << " has " << sizes[i] << " valid neighbors" )
+            SCAI_LOG_TRACE( logger, "Grid point " << i << " has " << sizes[i] << " valid neighbors" )
         }
     }
 
@@ -187,12 +183,14 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     IndexType nnz = HArrayUtils::scan1( csrIA );
 
-    SCAI_LOG_ERROR( logger, "nnz = " << nnz )
+    SCAI_LOG_DEBUG( logger, "Stencil -> CSR, nnz = " << nnz )
 
     // compute ja and values array
 
     HArray<ValueType> typedValues;
  
+    const ValueType* stencilValues = mStencil.values();
+
     {
         ReadAccess<IndexType> ia( csrIA );
         WriteOnlyAccess<IndexType> ja( csrJA, nnz );
@@ -231,6 +229,87 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     {
         HArrayUtils::assign( csrValues, typedValues );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* StencilStorage<ValueType>::incGEMV(
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    bool /* async */ ) const
+{
+    ReadAccess<ValueType> rX( x );
+    WriteAccess<ValueType> wResult( result );
+
+    IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
+
+    IndexType lb[SCAI_GRID_MAX_DIMENSION];
+    IndexType ub[SCAI_GRID_MAX_DIMENSION];
+
+    mGrid.getDistances( gridDistances );
+
+    mStencil.getWidths( lb, ub );
+
+    int stencilLinPos[SCAI_STENCIL_MAX_POINTS];
+
+    mStencil.getLinearPositions( stencilLinPos, gridDistances );
+
+    stencilkernel::OpenMPStencilKernel::stencilGEMV( wResult.get(), alpha, rX.get(), 
+                 mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
+                 mStencil.nPoints(), mStencil.positions(), mStencil.values(),
+                 stencilLinPos );
+
+    return NULL;  
+}
+
+template<typename ValueType>
+void StencilStorage<ValueType>::matrixTimesVector(
+
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y ) const
+
+{
+    SCAI_LOG_INFO( logger,
+                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x 
+                         << ", beta = " << beta << ", y = " << y )
+
+    SCAI_REGION( "Storage.Stencil.matrixTimesVector" )
+
+    if ( alpha == common::constants::ZERO )
+    {
+        // so we just have result = beta * y, will be done synchronously
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        return;
+    }
+
+    ContextPtr loc = this->getContextPtr();
+
+    // GEMV only implemented as y += A * x, so split
+
+    // Step 1: result = beta * y
+
+    if ( beta == common::constants::ZERO )
+    {
+        result.clear();
+        result.resize( mNumRows );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+    }
+    else
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+    }
+
+    bool async = false;
+
+    SyncToken* token = incGEMV( result, alpha, x, async );
+
+    SCAI_ASSERT( token == NULL, "syncrhonous execution cannot have token" )
 }
 
 /* --------------------------------------------------------------------------- */
