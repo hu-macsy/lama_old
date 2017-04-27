@@ -119,6 +119,8 @@ public:
         return mLocalData->getFormat();
     }
 
+    /** This method sets all relevant data of a sparse matrix and checks consistency */
+
     void set(
         common::shared_ptr<MatrixStorage<ValueType> > localData,
         common::shared_ptr<MatrixStorage<ValueType> > haloData,

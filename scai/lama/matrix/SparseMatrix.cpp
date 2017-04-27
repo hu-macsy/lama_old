@@ -201,6 +201,8 @@ void SparseMatrix<ValueType>::set(
     DistributionPtr rowDist,
     DistributionPtr colDist ) 
 {
+    Matrix::setDistributedMatrix( rowDist, colDist );
+
     SCAI_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
     // TODO: asserts for correct sizes of all relevant sizes
     SCAI_ASSERT_EQUAL_ERROR( localData->getNumRows(), rowDist->getLocalSize() )

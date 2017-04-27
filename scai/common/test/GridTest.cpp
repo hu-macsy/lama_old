@@ -38,6 +38,9 @@
 #include <scai/common/test/TestMacros.hpp>
 
 using scai::common::Grid;
+using scai::common::Grid1D;
+using scai::common::Grid2D;
+using scai::common::Grid3D;
 
 /* --------------------------------------------------------------------- */
 
@@ -48,16 +51,16 @@ BOOST_AUTO_TEST_SUITE( GridTest )
 BOOST_AUTO_TEST_CASE( constructorTest )
 {
     IndexType n1 = 10;
-    Grid grid1( n1 );
+    Grid1D grid1( n1 );
     BOOST_CHECK_EQUAL( n1, grid1.size() );
     n1 = 2;
     IndexType n2 = 5;
-    Grid grid2( n1, n2 );
+    Grid2D grid2( n1, n2 );
     BOOST_CHECK_EQUAL( n1 * n2 , grid2.size() );
     n1 = 2;
     n2 = 3;
     IndexType n3 = 2;
-    Grid grid3( n1, n2, n3 );
+    Grid3D grid3( n1, n2, n3 );
     BOOST_CHECK_EQUAL( n1 * n2 * n3, grid3.size() );
 }
 
@@ -65,7 +68,7 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 BOOST_AUTO_TEST_CASE( validTest )
 {
-    Grid grid3( 2, 3, 2 );
+    Grid3D grid3( 2, 3, 2 );
 
     IndexType p1[] = { 1, 2, 1 };
     IndexType p2[] = { 1, 2, 2 };
@@ -81,7 +84,7 @@ BOOST_AUTO_TEST_CASE( pos2Test )
     const IndexType n1 = 10;
     const IndexType n2 = 15;
 
-    Grid grid( n1, n2 );
+    Grid2D grid( n1, n2 );
 
     const IndexType n = grid.size();
 
@@ -127,7 +130,7 @@ BOOST_AUTO_TEST_CASE( pos3Test )
     const IndexType n2 = 3;
     const IndexType n3 = 4;
 
-    Grid grid( n1, n2, n3 );
+    Grid3D grid( n1, n2, n3 );
 
     const IndexType n = grid.size();
 
@@ -201,10 +204,10 @@ BOOST_AUTO_TEST_CASE( posNTest )
 
 BOOST_AUTO_TEST_CASE( equalTest )
 {
-    Grid grid1( 5 );
-    Grid grid2a( 5, 3 );
-    Grid grid2b( 3, 5 );
-    Grid grid2c( 5, 3 );
+    Grid1D grid1( 5 );
+    Grid2D grid2a( 5, 3 );
+    Grid2D grid2b( 3, 5 );
+    Grid2D grid2c( 5, 3 );
 
     BOOST_CHECK( ! ( grid1 == grid2a ) );
     BOOST_CHECK( grid2a != grid2b );
@@ -217,7 +220,7 @@ BOOST_AUTO_TEST_CASE( writeTest )
 {
     std::ostringstream f;
 
-    Grid grid( 5, 2, 4 );
+    Grid3D grid( 5, 2, 4 );
 
     f << grid;
 

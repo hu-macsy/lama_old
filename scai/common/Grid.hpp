@@ -66,28 +66,12 @@ class COMMON_DLL_IMPORTEXPORT Grid
 {
 public:
 
-    /** Constructor of a one-dimensional grid. */
-
-    inline Grid( const IndexType n1 );
-
-    /** Constructor of a two-dimensional grid. */
-
-    inline Grid( const IndexType n1, const IndexType n2 );
-
-    /** Constructor of a three-dimensional grid. */
-
-    inline Grid( const IndexType n1, const IndexType n2, const IndexType n3 );
-
-    /** Constructor of a four-dimensional grid. */
-
-    inline Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
-
-    /** Constructor of a n-dimensioal grid.
+    /** Constructor of a n-dimensional grid.
      *
-     *  @param[in] ndims is the number of dimensions
+     *  @param[in] nDims is the number of dimensions
      *  @param[in] sizes contains the dimensions of the grid
      */
-    inline Grid( const IndexType ndims, const IndexType sizes[] );
+    inline Grid( const IndexType nDims, const IndexType sizes[] );
 
     /** Set explicitly the size in a dim */
 
@@ -95,7 +79,7 @@ public:
 
     /** Return number of dimensions for the grid. */
 
-    inline IndexType ndims() const;
+    inline IndexType nDims() const;
 
     /** Return the total number of grid points. */
 
@@ -104,6 +88,10 @@ public:
     /** Size of the grid in a certain dimension */
 
     inline IndexType size( const IndexType dim ) const;
+
+    /** Size of the grid in all dimensions as pointer to array */
+
+    inline const IndexType* sizes() const;
 
     /** Return an array with sizes of all grid dimensions */
 
@@ -124,18 +112,6 @@ public:
 
     inline IndexType linearPos( const IndexType gridPos[] ) const;
 
-    /** More convenient call of linearPos on one-dimensional grid */
-
-    inline IndexType linearPos( const IndexType pos1 ) const;
-
-    /** More convenient call of linearPos on two-dimensional grids */
-
-    inline IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
-
-    /** More convenient call of linearPos for tree-dimensional grids */
-
-    inline IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const;
-
     /** Get grid position from a linearized index. */
 
     inline void gridPos( IndexType pos[], const IndexType linearPos ) const;
@@ -148,13 +124,75 @@ public:
 
     inline bool operator!=( const Grid& other ) const;
 
-private:
+protected:
 
-    Grid();
+    inline Grid();
 
     IndexType mNDims;
 
     IndexType mSize[ SCAI_GRID_MAX_DIMENSION];
+};
+
+/** 1-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid1D : public Grid
+{
+public:
+
+    /** Constructor of a three-dimensional grid */
+
+    inline Grid1D( const IndexType n1 );
+};
+
+/** 2-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid2D : public Grid
+{
+public:
+
+    /** Constructor of a three-dimensional grid */
+
+    inline Grid2D( const IndexType n1, const IndexType n2 );
+
+    /** More convenient call of linearPos for tree-dimensional grids */
+
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
+
+    using Grid::linearPos;
+};
+
+/** 3-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid3D : public Grid
+{
+public:
+
+    /** Constructor of a three-dimensional grid */
+
+    inline Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 );
+
+    /** More convenient call of linearPos for tree-dimensional grids */
+
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const;
+
+    using Grid::linearPos;
+};
+
+/** 4-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid4D : public Grid
+{
+public:
+
+    /** Constructor of a four-dimensional grid */
+
+    inline Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
+
+    /** More convenient call of linearPos for tree-dimensional grids */
+
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3, const IndexType pos4 ) const;
+
+    using Grid::linearPos;
 };
 
 /*
@@ -170,20 +208,25 @@ inline COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, c
 /*   Implementations of inline constructors                                             */
 /* ------------------------------------------------------------------------------------ */
 
-Grid::Grid( const IndexType n1 )
+Grid::Grid()
+{
+    mNDims = 0;
+}
+
+Grid1D::Grid1D( const IndexType n1 )
 {
     mNDims = 1;
     mSize[0] = n1;
 }
 
-Grid::Grid( const IndexType n1, const IndexType n2 )
+Grid2D::Grid2D( const IndexType n1, const IndexType n2 ) 
 {
     mNDims = 2;
     mSize[0] = n1;
     mSize[1] = n2;
 }
 
-Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3 )
+Grid3D::Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 ) 
 {
     mNDims = 3;
 
@@ -192,7 +235,7 @@ Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3 )
     mSize[2] = n3;
 }
 
-Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 )
+Grid4D::Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 )
 {
     mNDims = 4;
 
@@ -216,7 +259,7 @@ Grid::Grid( const IndexType nDims, const IndexType size[] )
 /*   Implementations of inline methods                                                  */
 /* ------------------------------------------------------------------------------------ */
 
-IndexType Grid::ndims() const
+IndexType Grid::nDims() const
 {
     return mNDims;
 }
@@ -276,27 +319,23 @@ IndexType Grid::linearPos( const IndexType gridPos[] ) const
     return pos;
 }
 
-IndexType Grid::linearPos( const IndexType pos0 ) const
-
+IndexType Grid2D::linearPos( const IndexType pos1, const IndexType pos2 ) const
 {
-    SCAI_ASSERT_EQ_DEBUG( 1, mNDims, "linearPos with 1 value, but grid has " << mNDims << " dimensions" )
-
-    return pos0;
+    return pos1 * mSize[1] + pos2;
 }
 
-IndexType Grid::linearPos( const IndexType pos0, const IndexType pos1 ) const
-
+IndexType Grid3D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
 {
-    SCAI_ASSERT_EQ_DEBUG( 2, mNDims, "linearPos with 2 values, but grid has " << mNDims << " dimensions" )
+    // 3-dimensional grid has always 3 dimensions, no assert required
 
-    return pos0 * mSize[1] + pos1;
+    return ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3;
 }
 
-IndexType Grid::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2 ) const
+IndexType Grid4D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3, const IndexType pos4 ) const
 {
-    SCAI_ASSERT_EQ_DEBUG( 3, mNDims, "linearPos with 3 values, but grid has " << mNDims << " dimensions" )
+    // 3-dimensional grid has always 3 dimensions, no assert required
 
-    return ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2;
+    return ( ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3 ) * mSize[3] + pos4;
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -359,6 +398,11 @@ bool Grid::operator!=( const Grid& other ) const
     return ! operator==( other );
 }
 
+const IndexType* Grid::sizes() const
+{
+    return mSize;
+}
+
 IndexType Grid::size( IndexType dim ) const
 {
     if ( dim < mNDims )
@@ -393,9 +437,9 @@ IndexType Grid::size() const
 
 std::ostream& operator<<( std::ostream& stream, const Grid& grid )
 {
-    stream << "Grid-" << grid.ndims() << "( " << grid.size(0) ;
+    stream << "Grid" << grid.nDims() << "D( " << grid.size(0) ;
 
-    for ( IndexType i = 1; i < grid.ndims(); ++i )
+    for ( IndexType i = 1; i < grid.nDims(); ++i )
     {
         stream << " x " << grid.size(i);
     }

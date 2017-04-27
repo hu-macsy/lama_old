@@ -269,6 +269,10 @@ const char* format2Str( const Format::MatrixStorageFormat storageFormat )
             return "DENSE";
             break;
 
+        case Format::STENCIL:
+            return "STENCIL";
+            break;
+
         case Format::ASSEMBLY:
             return "ASSEMBLY";
             break;

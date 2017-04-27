@@ -88,6 +88,7 @@ struct Format
         DIA,      //!< Diagonal
         JDS,      //!< Jagged Diagonal Storage
         COO,      //!< Coordinate list
+        STENCIL,  //!< stencil pattern
         ASSEMBLY, //!<  Matrix storage used for assembling of values
         UNDEFINED //!<  Default value
     } MatrixStorageFormat;
