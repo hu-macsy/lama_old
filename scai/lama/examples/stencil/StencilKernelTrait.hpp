@@ -37,9 +37,9 @@ namespace stencilkernel
 struct StencilKernelTrait
 {
     template<typename ValueType>
-    struct stencil2CSR
+    struct stencilLocalCSR
     {
-        /** Function that build csr data for a stencil matrix.
+        /** Function that builds local csr data for a stencil matrix.
          *
          *  @param[out] csrJA  contains the column indexes for the csr matrix
          *  @param[out] csrValues  contains the non-zero values for the csr matrix corresponding to csrJA
@@ -68,7 +68,49 @@ struct StencilKernelTrait
     
         static const char* getId()
         {
-            return "Stencil.2CSR";
+            return "Stencil.localCSR";
+        }
+    };
+
+    template<typename ValueType>
+    struct stencilHaloCSR
+    {
+        /** Function that build halo csr data for a stencil matrix.
+         *
+         *  @param[out] csrJA  contains the 'global' column indexes for the csr matrix
+         *  @param[out] csrValues  contains the non-zero values for the csr matrix corresponding to csrJA
+         *  @param[in] csrIA offsets array, csrIA[i] gives position where values start belonging to grid point i
+         *  @param[in] nDims is the number of dimensions for the grid
+         *  @param[in] localGridSizes contains the dimensions of the grid 
+         *  @param[in] localGridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] localLB where the local grid is positioned in the global grid
+         *  @param[in] globalGridSizes contains the dimensions of the global grid 
+         *  @param[in] globalGridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] nPoints number of stencil points
+         *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
+         *  @param[in] stencilVal contains the scale value for each stencil point
+         *  @param[in] stencilLinPos contains the distance of each stencil point in linearized global grid
+         *
+         *  csrIA is the offset array that is a scan of the sizes array computed by stencilSizes.
+         */
+        typedef void ( *FuncType )(
+            IndexType csrJA[],
+            ValueType csrValues[],
+            const IndexType csrIA[],
+            const IndexType nDims,
+            const IndexType localGridSizes[],
+            const IndexType localGridDistances[],
+            const IndexType localLB[],
+            const IndexType globalGridSizes[],
+            const IndexType globalGridDistances[],
+            const IndexType nPoints,
+            const int stencilNodes[],
+            const ValueType stencilVal[],
+            const int stencilLinPos[] );
+    
+        static const char* getId()
+        {
+            return "Stencil.haloCSR";
         }
     };
 

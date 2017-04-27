@@ -67,7 +67,7 @@ static inline bool isInner( const IndexType pos, const int border, const IndexTy
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPStencilKernel::stencilSizes1(
+void OpenMPStencilKernel::stencilLocalSizes1(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
@@ -98,7 +98,7 @@ void OpenMPStencilKernel::stencilSizes1(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPStencilKernel::stencilSizes2(
+void OpenMPStencilKernel::stencilLocalSizes2(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
@@ -135,7 +135,7 @@ void OpenMPStencilKernel::stencilSizes2(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPStencilKernel::stencilSizes3(
+void OpenMPStencilKernel::stencilLocalSizes3(
     IndexType sizes[],
     const IndexType gridSizes[],
     const IndexType gridDistances[],
@@ -179,7 +179,7 @@ void OpenMPStencilKernel::stencilSizes3(
 
 /* --------------------------------------------------------------------------- */
 
-void OpenMPStencilKernel::stencilSizes(
+void OpenMPStencilKernel::stencilLocalSizes(
     IndexType sizes[],
     const IndexType nDims,
     const IndexType gridSizes[],
@@ -187,27 +187,27 @@ void OpenMPStencilKernel::stencilSizes(
     const IndexType nPoints,
     const int stencilNodes[] )
 {
-    SCAI_REGION( "OpenMP.StencilSizes" )
+    SCAI_REGION( "OpenMP.Stencil.LocalSizes" )
 
     switch ( nDims ) 
     {
-        case 1 : stencilSizes1( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
+        case 1 : stencilLocalSizes1( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
                  break;
 
-        case 2 : stencilSizes2( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
+        case 2 : stencilLocalSizes2( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
                  break;
 
-        case 3 : stencilSizes3( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
+        case 3 : stencilLocalSizes3( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
                  break;
 
-        default: COMMON_THROWEXCEPTION( "stencilSizes for nDims = " << nDims << " not supported yet" )
+        default: COMMON_THROWEXCEPTION( "stencilLocalSizes for nDims = " << nDims << " not supported yet" )
     }
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencil2CSR1(
+void OpenMPStencilKernel::stencilLocalCSR1(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -246,7 +246,7 @@ void OpenMPStencilKernel::stencil2CSR1(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencil2CSR2(
+void OpenMPStencilKernel::stencilLocalCSR2(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -292,7 +292,7 @@ void OpenMPStencilKernel::stencil2CSR2(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencil2CSR3(
+void OpenMPStencilKernel::stencilLocalCSR3(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -345,7 +345,7 @@ void OpenMPStencilKernel::stencil2CSR3(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencil2CSR(
+void OpenMPStencilKernel::stencilLocalCSR(
     IndexType csrJA[],
     ValueType csrValues[],
     const IndexType csrIA[],
@@ -357,20 +357,301 @@ void OpenMPStencilKernel::stencil2CSR(
     const ValueType stencilVal[],
     const int stencilLinPos[] )
 {
-    SCAI_REGION( "OpenMP.Stencil2CSR" )
+    SCAI_REGION( "OpenMP.Stencil.LocalCSR" )
 
     switch ( nDims ) 
     {
-        case 1 : stencil2CSR1( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+        case 1 : stencilLocalCSR1( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
                  break;
 
-        case 2 : stencil2CSR2( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+        case 2 : stencilLocalCSR2( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
                  break;
 
-        case 3 : stencil2CSR3( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+        case 3 : stencilLocalCSR3( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
                  break;
 
-        default: COMMON_THROWEXCEPTION( "stencil2CSR for nDims = " << nDims << " not supported yet" )
+        default: COMMON_THROWEXCEPTION( "stencilLocalCSR for nDims = " << nDims << " not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPStencilKernel::stencilHaloSizes2(
+    IndexType sizes[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType nPoints,
+    const int stencilNodes[] )
+{
+    // traverse over all points of the local grid
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
+        {
+            IndexType localIndex = iLocal * localGridDistances[0] + jLocal * localGridDistances[1];
+
+            IndexType cnt = 0;   // check for non-local stencil points but valid in global grid
+
+            // check for each stencil point if it is not local
+
+            for ( IndexType p = 0; p < nPoints; ++p )
+            {
+                if (    isInner( iGlobal, stencilNodes[2 * p], globalGridSizes[0] ) 
+                     && isInner( jGlobal, stencilNodes[2 * p + 1], globalGridSizes[1] ) )
+                {
+                    // stencil point is in global grid
+
+                    if (    isInner( iLocal, stencilNodes[ 2 * p ], localGridSizes[0] )
+                         && isInner( jLocal, stencilNodes[ 2 * p + 1 ], localGridSizes[1] ) )
+                    {
+                        // stencil point is in local grid, do not count
+                    }
+                    else
+                    {
+                        cnt ++;
+                    }
+                }
+            }
+
+            sizes[ localIndex ] = cnt;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPStencilKernel::stencilHaloSizes3(
+    IndexType sizes[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType nPoints,
+    const int stencilNodes[] )
+{
+    // traverse over all points of the local grid
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
+        {
+            for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
+            {
+                IndexType localIndex = iLocal * localGridDistances[0] + jLocal * localGridDistances[1] 
+                                       + kLocal * localGridDistances[2];
+
+                IndexType cnt = 0;   // check for non-local stencil points but valid in global grid
+
+                // check for each stencil point if it is not local
+
+                for ( IndexType p = 0; p < nPoints; ++p )
+                {
+                    if (    isInner( iGlobal, stencilNodes[3 * p], globalGridSizes[0] ) 
+                         && isInner( jGlobal, stencilNodes[3 * p + 1], globalGridSizes[1] ) 
+                         && isInner( kGlobal, stencilNodes[3 * p + 2], globalGridSizes[2] ) )
+                    {
+                        // stencil point is in global grid
+    
+                        if (    isInner( iLocal, stencilNodes[ 3 * p ], localGridSizes[0] )
+                             && isInner( jLocal, stencilNodes[ 3 * p + 1 ], localGridSizes[1] ) 
+                             && isInner( kLocal, stencilNodes[ 3 * p + 2 ], localGridSizes[2] ) )
+                        {
+                            // stencil point is in local grid, do not count
+                        }
+                        else
+                        {
+                            cnt ++;
+                        }
+                    }
+                }
+
+                sizes[ localIndex ] = cnt;
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPStencilKernel::stencilHaloSizes(
+    IndexType sizes[],
+    const IndexType nDims,
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType nPoints,
+    const int stencilNodes[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.HaloSizes" )
+
+    switch ( nDims ) 
+    {
+        case 2 : stencilHaloSizes2( sizes, localGridSizes, localGridDistances, 
+                                    localLB, globalGridSizes, nPoints, stencilNodes );
+                 break;
+
+        case 3 : stencilHaloSizes3( sizes, localGridSizes, localGridDistances, 
+                                    localLB, globalGridSizes, nPoints, stencilNodes );
+                 break;
+
+        default: COMMON_THROWEXCEPTION( "stencilLocalSizes for nDims = " << nDims << " not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilHaloCSR2(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType globalGridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilLinPos[] )
+{
+    // traverse over all points of the local grid
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
+        {
+            IndexType localIndex  = iLocal * localGridDistances[0] + jLocal * localGridDistances[1];
+            IndexType globalIndex = iGlobal * globalGridDistances[0] + jGlobal * globalGridDistances[1];
+
+            IndexType offset = csrIA[ localIndex ];
+
+            // check for each stencil point if it is not local
+
+            for ( IndexType p = 0; p < nPoints; ++p )
+            {
+                if (    isInner( iGlobal, stencilNodes[2 * p], globalGridSizes[0] ) 
+                     && isInner( jGlobal, stencilNodes[2 * p + 1], globalGridSizes[1] ) )
+                {
+                    // stencil point is in global grid
+
+                    if (    isInner( iLocal, stencilNodes[ 2 * p ], localGridSizes[0] )
+                         && isInner( jLocal, stencilNodes[ 2 * p + 1 ], localGridSizes[1] ) )
+                    {
+                        // stencil point is in local grid, do not count
+                    }
+                    else
+                    {
+                        csrJA[offset] = globalIndex + stencilLinPos[p];
+                        csrValues[offset] = stencilVal[p];
+                        ++offset;
+                    }
+                }
+            }
+ 
+            SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilHaloCSR3(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType globalGridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilLinPos[] )
+{
+    // traverse over all points of the local grid
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
+        {
+            for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
+            {
+                IndexType localIndex  = iLocal * localGridDistances[0] + jLocal * localGridDistances[1] 
+                                         + kLocal * localGridDistances[2];
+                IndexType globalIndex = iGlobal * globalGridDistances[0] + jGlobal * globalGridDistances[1]
+                                         + kGlobal * globalGridDistances[2];
+
+                IndexType offset = csrIA[ localIndex ];
+
+                // check for each stencil point if it is not local
+
+                for ( IndexType p = 0; p < nPoints; ++p )
+                {
+                    if (    isInner( iGlobal, stencilNodes[3 * p], globalGridSizes[0] ) 
+                         && isInner( jGlobal, stencilNodes[3 * p + 1], globalGridSizes[1] ) 
+                         && isInner( kGlobal, stencilNodes[3 * p + 2], globalGridSizes[2] ) )
+                    {
+                        // stencil point is in global grid
+    
+                        if (    isInner( iLocal, stencilNodes[ 3 * p ], localGridSizes[0] )
+                             && isInner( jLocal, stencilNodes[ 3 * p + 1 ], localGridSizes[1] ) 
+                             && isInner( kLocal, stencilNodes[ 3 * p + 2 ], localGridSizes[2] ) )
+                        {
+                            // stencil point is in local grid, do not count
+                        }
+                        else
+                        {
+                            csrJA[offset] = globalIndex + stencilLinPos[p];
+                            csrValues[offset] = stencilVal[p];
+                            ++offset;
+                        }
+                    }
+                }
+     
+                SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilHaloCSR(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType nDims,
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType globalGridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilLinPos[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.HaloCSR" )
+
+    switch ( nDims ) 
+    {
+        case 2 : stencilHaloCSR2( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
+                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+                 break;
+
+        case 3 : stencilHaloCSR3( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
+                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+                 break;
+
+        default: COMMON_THROWEXCEPTION( "stencilHaloCSR for nDims = " << nDims << " not supported yet" )
     }
 }
 
@@ -392,7 +673,9 @@ void OpenMPStencilKernel::stencilGEMV1(
 {
     SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] )
 
-    const IndexType i_stripes[] = { 0, lb[0], gridSizes[0] - ub[0], gridSizes[0] };
+    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
+
+    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
 
     /** The two-dimensional grid is partitioned in each dimension according to the boundaries */
 
@@ -459,8 +742,11 @@ void OpenMPStencilKernel::stencilGEMV2(
 {
     SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] )
 
-    const IndexType i_stripes[] = { 0, lb[0], gridSizes[0] - ub[0], gridSizes[0] };
-    const IndexType j_stripes[] = { 0, lb[1], gridSizes[1] - ub[1], gridSizes[1] };
+    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
+    bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
+
+    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
+    const IndexType j_stripes[] = { 0, small1 ? 0 : lb[1], small1 ? 0 : gridSizes[1] - ub[1], gridSizes[1] };
 
     /** The two-dimensional grid is partitioned in each dimension according to the boundaries */
 
@@ -542,9 +828,13 @@ void OpenMPStencilKernel::stencilGEMV3(
 
     const IndexType nStripes = 3;
 
-    const IndexType i_stripes[] = { 0, lb[0], gridSizes[0] - ub[0], gridSizes[0] };
-    const IndexType j_stripes[] = { 0, lb[1], gridSizes[1] - ub[1], gridSizes[1] };
-    const IndexType k_stripes[] = { 0, lb[2], gridSizes[2] - ub[2], gridSizes[2] };
+    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
+    bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
+    bool small2 = gridSizes[2] <= lb[2] + ub[2];  // no inner part
+
+    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
+    const IndexType j_stripes[] = { 0, small1 ? 0 : lb[1], small1 ? 0 : gridSizes[1] - ub[1], gridSizes[1] };
+    const IndexType k_stripes[] = { 0, small2 ? 0 : lb[2], small2 ? 0 : gridSizes[2] - ub[2], gridSizes[2] };
 
     /** The three dimensional grid is partitioned in each dimension according to the boundaries */
 
@@ -638,10 +928,15 @@ void OpenMPStencilKernel::stencilGEMV4(
 
     const IndexType nStripes = 4;
 
-    const IndexType i_stripes[] = { 0, lb[0], gridSizes[0] - ub[0], gridSizes[0] };
-    const IndexType j_stripes[] = { 0, lb[1], gridSizes[1] - ub[1], gridSizes[1] };
-    const IndexType k_stripes[] = { 0, lb[2], gridSizes[2] - ub[2], gridSizes[2] };
-    const IndexType m_stripes[] = { 0, lb[3], gridSizes[3] - ub[3], gridSizes[3] };
+    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
+    bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
+    bool small2 = gridSizes[2] <= lb[2] + ub[2];  // no inner part
+    bool small3 = gridSizes[3] <= lb[3] + ub[3];  // no inner part
+
+    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
+    const IndexType j_stripes[] = { 0, small1 ? 0 : lb[1], small1 ? 0 : gridSizes[1] - ub[1], gridSizes[1] };
+    const IndexType k_stripes[] = { 0, small2 ? 0 : lb[2], small2 ? 0 : gridSizes[2] - ub[2], gridSizes[2] };
+    const IndexType m_stripes[] = { 0, small3 ? 0 : lb[3], small3 ? 0 : gridSizes[3] - ub[3], gridSizes[3] };
 
     /** The four-dimensional grid is partitioned in each dimension according to the boundaries */
 
@@ -781,7 +1076,8 @@ void OpenMPStencilKernel::RegistratorV<ValueType>::registerKernels( kregistry::K
                     "register StencilKernel OpenMP-routines for Host at kernel registry [" << flag 
                     << " --> " << common::getScalarType<ValueType>() << "]" )
 
-    KernelRegistry::set<StencilKernelTrait::stencil2CSR<ValueType> >( stencil2CSR, ctx, flag );
+    KernelRegistry::set<StencilKernelTrait::stencilLocalCSR<ValueType> >( stencilLocalCSR, ctx, flag );
+    KernelRegistry::set<StencilKernelTrait::stencilHaloCSR<ValueType> >( stencilHaloCSR, ctx, flag );
     KernelRegistry::set<StencilKernelTrait::stencilGEMV<ValueType> >( stencilGEMV, ctx, flag );
 }
 

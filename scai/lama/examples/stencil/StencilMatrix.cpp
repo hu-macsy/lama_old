@@ -35,6 +35,10 @@
 // hpp
 #include "StencilMatrix.hpp"
 
+#include <scai/lama/storage/StorageMethods.hpp>
+#include <scai/utilskernel/HArrayUtils.hpp>
+
+#include <scai/lama/examples/stencil/OpenMPStencilKernel.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/shared_ptr.hpp>
@@ -78,13 +82,107 @@ StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void StencilMatrix<ValueType>::buildStencilHaloStorage(
+    hmemo::HArray<IndexType>& haloIA,
+    hmemo::HArray<IndexType>& haloJA,
+    hmemo::HArray<ValueType>& haloValues,
+    const dmemo::GridDistribution& gridDist,
+    const Stencil<ValueType>& stencil )
+{
+    // Determine all non-local grid points of the boundaries
+
+    IndexType lb[ SCAI_GRID_MAX_DIMENSION ];
+    IndexType ub[ SCAI_GRID_MAX_DIMENSION ];
+
+    stencil.getWidths( lb, ub );
+
+    const common::Grid& localGrid  = gridDist.getLocalGrid();
+    const common::Grid& globalGrid = gridDist.getGlobalGrid();
+
+    const IndexType n     = gridDist.getLocalSize();
+    const IndexType nDims = stencil.nDims();
+
+    IndexType localGridDistances[ SCAI_GRID_MAX_DIMENSION ];
+    IndexType globalGridDistances[ SCAI_GRID_MAX_DIMENSION ];
+
+    localGrid.getDistances( localGridDistances );
+    globalGrid.getDistances( globalGridDistances );
+
+    int stencilPos[SCAI_STENCIL_MAX_POINTS];  // for the global grid
+    stencil.getLinearPositions( stencilPos, globalGridDistances );
+
+    {
+        hmemo::WriteOnlyAccess<IndexType> wIA( haloIA, n + 1 );
+
+        stencilkernel::OpenMPStencilKernel::stencilHaloSizes( 
+            wIA.get(), nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
+            globalGrid.sizes(), stencil.nPoints(), stencil.positions() );
+
+        wIA.resize( n );
+    }
+
+    // scan of IA 
+
+    const IndexType nnz = utilskernel::HArrayUtils::scan1( haloIA );
+
+    {
+        hmemo::WriteOnlyAccess<IndexType> wJA( haloJA, nnz );
+        hmemo::WriteOnlyAccess<ValueType> wValues( haloValues, nnz );
+        hmemo::ReadAccess<IndexType> rIA( haloIA );
+
+        stencilkernel::OpenMPStencilKernel::stencilHaloCSR(
+            wJA.get(), wValues.get(), rIA.get(),
+            nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
+            globalGrid.sizes(), globalGridDistances, stencil.nPoints(), stencil.positions(),
+            stencil.values(), stencilPos );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
 
     : SparseMatrix<ValueType>()
 
 {
-    COMMON_THROWEXCEPTION( "unsupported: create distributed stencil matrix, dist = " << *dist << ", stencil = " << stencil )
-    SCAI_ASSERT_ERROR( dist, "NULL dist" )
+    SCAI_ASSERT_ERROR( dist.get(), "NULL dist" )
+
+    using namespace dmemo;
+
+    const GridDistribution* gridDist = dynamic_cast<const GridDistribution*>( dist.get() );
+  
+    SCAI_ASSERT_ERROR( gridDist, "not grid distribution: dist = " << *dist )
+
+    Matrix::setDistributedMatrix( dist, dist );
+
+    // const common::Grid& globalGrid = gridDist->getGlobalGrid();
+    const common::Grid& localGrid  = gridDist->getLocalGrid();
+
+    mLocalData.reset( new StencilStorage<ValueType>( localGrid, stencil ) );
+
+    CSRStorage<ValueType>* haloStorage = new CSRStorage<ValueType>();
+    mHaloData.reset( haloStorage );   
+
+    hmemo::HArray<IndexType> haloIA;
+    hmemo::HArray<IndexType> haloJA;
+    hmemo::HArray<ValueType> haloValues;
+
+    // ToDo: build halo storage and halo 
+
+    buildStencilHaloStorage( haloIA, haloJA, haloValues, *gridDist, stencil );
+    
+    SCAI_LOG_DEBUG( logger, "haloStorage, haloIA = " << haloIA )
+    SCAI_LOG_DEBUG( logger, "haloStorage, haloJA = " << haloJA )
+
+    IndexType haloNumColumns;
+
+    _StorageMethods::buildHalo( mHalo, haloJA, haloNumColumns, *gridDist );
+
+    SCAI_LOG_DEBUG( logger, "halo = " << mHalo )
+
+    haloStorage->allocate( haloIA.size() - 1, haloNumColumns );
+    haloStorage->swap( haloIA, haloJA, haloValues );
 }
 
 /* -------------------------------------------------------------------------- */

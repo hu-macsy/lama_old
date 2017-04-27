@@ -44,6 +44,8 @@
 // std
 #include <stdint.h>
 
+#define SCAI_STENCIL_MAX_POINTS 128
+
 namespace scai
 {
 
@@ -472,7 +474,8 @@ Stencil2D<ValueType>::Stencil2D( const IndexType nPoints ) : Stencil<ValueType>(
             break;
         }
         default:
-            COMMON_THROWEXCEPTION( "Unsupported type of Stencil1D, #points = " << nPoints )
+
+            COMMON_THROWEXCEPTION( "Unsupported type of Stencil2D, #points = " << nPoints )
     }
 }
 

@@ -67,20 +67,57 @@ int main( int argc, const char* argv[] )
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
+    //   SCAI_NP      = ...    set the default processor grid for grid distribution
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil2D<double> stencil( 5 );  // 5-point stencil, two dims
+    Stencil1D<double> stencilFD8;
 
-    const IndexType N = 10; 
+    stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
-    common::Grid2D grid( N, N );
+    stencilFD8.addPoint( -3, -5.0/7168.0 );
+    stencilFD8.addPoint( -2, 49.0/5120.0 );
+    stencilFD8.addPoint( -1, -245.0/3072.0 );
+    stencilFD8.addPoint( 0, 1225.0/1024.0 );
+    stencilFD8.addPoint( 1, -1225.0/1024.0 );
+    stencilFD8.addPoint( 2, 245.0/3072.0 ) ;
+    stencilFD8.addPoint( 3, -49.0/5120.0 );
+    stencilFD8.addPoint( 4, 5.0/7168.0 );
+
+    Stencil1D<double> stencilDummy( 1 );
+
+    Stencil2D<double> stencilX( stencilFD8, stencilDummy );
+
+    Stencil3D<double> stencil( 7 );
+
+    const IndexType N = 4; 
+
+    common::Grid3D grid( N, N, N );
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr(); 
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
-    StencilMatrix<double> stencilMatrix( gridDistribution, stencil );
+    StencilMatrix<double> distStencilMatrix( gridDistribution, stencil );
+    CSRSparseMatrix<double> distCSRMatrix( distStencilMatrix );
 
-    std::cout << "stencilMatrix " << stencilMatrix << std::endl;
+    std::cout << "distributed stencilMatrix " << distStencilMatrix << std::endl;
+
+    StencilMatrix<double> repStencilMatrix( grid, stencil );
+
+    std::cout << "replicated stencilMatrix " << repStencilMatrix << std::endl;
+
+    DenseVector<double> repX;
+    repX.setRandom( repStencilMatrix.getColDistributionPtr(), 1.0f );
+
+    DenseVector<double> distX( repX, distStencilMatrix.getColDistributionPtr() );
+
+    std::cout << "max diff X = " << repX.maxDiffNorm( distX ) << std::endl;
+
+    // replicated and distributed matrix-vector multiplication
+
+    DenseVector<double> repY( repStencilMatrix * repX );
+    DenseVector<double> distY( distStencilMatrix * distX );
+
+    std::cout << "max diff Y = " << repY.maxDiffNorm( distY ) << std::endl;
 }

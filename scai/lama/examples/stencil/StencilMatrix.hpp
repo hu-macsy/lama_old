@@ -85,10 +85,14 @@ public:
     /** Constructor of a stencil matrix by a distributed grid and a stencil 
      *
      *  @param dist must be a GridDistribution 
+     *  @param stencil specifies operation on the distributed grid points
+     *
+     *  The dimensions of the stencil must match the number of dimensions of the grid.
+     *
+     *  Note: the stencil matrix is like a sparse matrix where the local part is a stencil storage
+     *        and the halo part is given by a CSR storage.
      */
     StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil );
-
-    // Expression constructors are not allowed
 
     /**
      * @brief Destructor. Releases all allocated resources.
@@ -135,6 +139,13 @@ private:
     static std::string initTypeName();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    static void buildStencilHaloStorage(
+        hmemo::HArray<IndexType>& haloIA,
+        hmemo::HArray<IndexType>& haloJA,
+        hmemo::HArray<ValueType>& haloValues,
+        const dmemo::GridDistribution& gridDist,
+        const Stencil<ValueType>& stencil );
 
 };
 

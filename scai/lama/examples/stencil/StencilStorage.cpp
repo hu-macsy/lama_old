@@ -144,8 +144,6 @@ ValueType StencilStorage<ValueType>::maxNorm() const
 
 /* --------------------------------------------------------------------------- */
 
-#define SCAI_STENCIL_MAX_POINTS 128
-
 template<typename ValueType>
 void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<IndexType>& csrJA, _HArray& csrValues ) const
 {
@@ -167,7 +165,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     {
         WriteOnlyAccess<IndexType> sizes( csrIA, n );
   
-        stencilkernel::OpenMPStencilKernel::stencilSizes( 
+        stencilkernel::OpenMPStencilKernel::stencilLocalSizes( 
             sizes.get(), mStencil.nDims(), mGrid.sizes(), gridDistances, 
             mStencil.nPoints(), mStencil.positions() );
     }
@@ -187,7 +185,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
         WriteOnlyAccess<IndexType> ja( csrJA, nnz );
         WriteOnlyAccess<ValueType> values( typedValues, nnz );
  
-        stencilkernel::OpenMPStencilKernel::stencil2CSR( 
+        stencilkernel::OpenMPStencilKernel::stencilLocalCSR( 
             ja.get(), values.get(), ia.get(),
             mStencil.nDims(), mGrid.sizes(), gridDistances, 
             mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilPos );
@@ -228,6 +226,8 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     mStencil.getLinearPositions( stencilLinPos, gridDistances );
 
+    SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil )
+
     stencilkernel::OpenMPStencilKernel::stencilGEMV( wResult.get(), alpha, rX.get(), 
                  mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
                  mStencil.nPoints(), mStencil.positions(), mStencil.values(),
@@ -235,6 +235,8 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     return NULL;  
 }
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void StencilStorage<ValueType>::matrixTimesVector(
@@ -246,6 +248,11 @@ void StencilStorage<ValueType>::matrixTimesVector(
     const HArray<ValueType>& y ) const
 
 {
+    if ( mGrid.size() == 0 )
+    {
+        return;
+    }
+
     SCAI_LOG_INFO( logger,
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x 
                          << ", beta = " << beta << ", y = " << y )
