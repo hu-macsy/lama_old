@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( constructor1Test )
     else
     {
         const IndexType zero = 0;
-        BOOST_CHECK_EQUAL( localGrid, Grid( zero, zero ) );
+        BOOST_CHECK_EQUAL( localGrid, Grid2D( zero, zero ) );
     }
 }
 
