@@ -50,7 +50,7 @@ struct StencilKernelTrait
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
-         *  @param[in] stencilLinPos contains the distance of each stencil point in linearized grid
+         *  @param[in] stencilOffset array with offset for each stencil point in linearized grid
          *
          *  csrIA is the offset array that is a scan of the sizes array computed by stencilSizes.
          */
@@ -64,7 +64,7 @@ struct StencilKernelTrait
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],
-            const int stencilLinPos[] );
+            const int stencilOffset[] );
     
         static const char* getId()
         {
@@ -89,7 +89,7 @@ struct StencilKernelTrait
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
-         *  @param[in] stencilLinPos contains the distance of each stencil point in linearized global grid
+         *  @param[in] stencilOffset array with offset for each stencil point in linearized 'global' grid
          *
          *  csrIA is the offset array that is a scan of the sizes array computed by stencilSizes.
          */
@@ -106,7 +106,7 @@ struct StencilKernelTrait
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],
-            const int stencilLinPos[] );
+            const int stencilOffset[] );
     
         static const char* getId()
         {
@@ -130,7 +130,7 @@ struct StencilKernelTrait
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
-         *  @param[in] stencilLinPos contains the distance of each stencil point in linearized grid
+         *  @param[in] stencilOffset array with offset for each stencil point in linearized grid
          *
          *  result and x have one value for each grid point corresponding the linearized grid with nDims dimensions.
          *  lb and ub might be recomputed by stencilNodes but are passed to avoid a recomputation.
@@ -149,7 +149,7 @@ struct StencilKernelTrait
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],
-            const int stencilLinPos[] );
+            const int stencilOffset[] );
 
         static const char* getId()
         {

@@ -48,21 +48,55 @@ SCAI_LOG_DEF_LOGGER( OpenMPStencilKernel::logger, "OpenMP.StencilKernel" )
 /** This routine checks whether a point pos is an inner point 
  *
  *  @param[in] pos is the position, in range 0 .. size-1
- *  @param[in] border specfies a border, if < 0 from left, if > 0 at right
- *  @param[in] size is the size of the range, only needed for border > 0
+ *  @param[in] offset specifies the relative offset to pos, might be positive or negative
+ *  @param[in] size is the size of the range, only needed for offset > 0
  */
-static inline bool isInner( const IndexType pos, const int border, const IndexType size )
+static inline bool isInner( const IndexType pos, const int offset, const IndexType size )
 {
-    if ( border == 0 )
+    if ( offset == 0 )
     {
         return true;
     }
-    if ( border < 0 )
+    if ( offset < 0 )
     {
-        return pos >= static_cast<IndexType>( -border );
+        return pos >= static_cast<IndexType>( -offset );
     }
 
-    return pos + static_cast<IndexType>( border ) < size;
+    return pos + static_cast<IndexType>( offset ) < size;
+}
+
+/** Inline predicate to check if a stencil point is still in the grid */
+
+static inline bool isInner2( const IndexType pos0, const IndexType pos1, 
+                             const int offset[2], const IndexType size[2] )
+{
+    if ( !isInner( pos0, offset[0], size[0] ) ) return false;
+    if ( !isInner( pos1, offset[1], size[1] ) ) return false;
+    return true;
+}
+
+/** Inline predicate to check if a stencil point is still in the grid */
+
+static inline bool isInner3( const IndexType pos0, const IndexType pos1, const IndexType pos2, 
+                             const int offset[3], const IndexType size[3] )
+{
+    if ( !isInner( pos0, offset[0], size[0] ) ) return false;
+    if ( !isInner( pos1, offset[1], size[1] ) ) return false;
+    if ( !isInner( pos2, offset[2], size[2] ) ) return false;
+    return true;
+}
+
+/** Inline predicate to check if a 4-dimensional stencil point is still in the grid */
+
+static inline bool isInner4( const IndexType pos0, const IndexType pos1, 
+                             const IndexType pos2, const IndexType pos3, 
+                             const int offset[4], const IndexType size[4] )
+{
+    if ( !isInner( pos0, offset[0], size[0] ) ) return false;
+    if ( !isInner( pos1, offset[1], size[1] ) ) return false;
+    if ( !isInner( pos2, offset[2], size[2] ) ) return false;
+    if ( !isInner( pos3, offset[3], size[3] ) ) return false;
+    return true;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -106,7 +140,6 @@ void OpenMPStencilKernel::stencilLocalSizes2(
     const int stencilNodes[] )
 {
     #pragma omp parallel for
-
     for ( IndexType i = 0; i < gridSizes[0]; ++i )
     {
         for ( IndexType j = 0; j < gridSizes[1]; ++j )
@@ -117,15 +150,10 @@ void OpenMPStencilKernel::stencilLocalSizes2(
 
             for ( IndexType p = 0; p < nPoints; ++p )
             {
-                if ( !isInner( i, stencilNodes[ 2 * p ], gridSizes[0] ) )
+                if ( isInner2( i, j, &stencilNodes[ 2 * p ], gridSizes ) )
                 {   
-                    continue;
+                    cnt++;
                 }
-                if ( !isInner( j, stencilNodes[ 2 * p + 1 ], gridSizes[1] ) )
-                {   
-                    continue;
-                }
-                cnt++;
             }
 
             sizes[ gridPos ] = cnt;
@@ -156,22 +184,51 @@ void OpenMPStencilKernel::stencilLocalSizes3(
 
                 for ( IndexType p = 0; p < nPoints; ++p )
                 {
-                    if ( !isInner( i, stencilNodes[ 3 * p ], gridSizes[0] ) )
+                    if ( isInner3( i, j, k, &stencilNodes[ 3 * p ], gridSizes ) )
                     {   
-                        continue;
+                        cnt++;
                     }
-                    if ( !isInner( j, stencilNodes[ 3 * p + 1 ], gridSizes[1] ) )
-                    {   
-                        continue;
-                    }
-                    if ( !isInner( k, stencilNodes[ 3 * p + 2 ], gridSizes[2] ) )
-                    {   
-                        continue;
-                    }
-                    cnt++;
                 }
 
                 sizes[ gridPos ] = cnt;
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPStencilKernel::stencilLocalSizes4(
+    IndexType sizes[],
+    const IndexType gridSizes[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[] )
+{
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < gridSizes[0]; ++i )
+    {
+        for ( IndexType j = 0; j < gridSizes[1]; ++j )
+        {
+            for ( IndexType k = 0; k < gridSizes[2]; ++k )
+            {
+                for ( IndexType m = 0; m < gridSizes[3]; ++m )
+                {
+                    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
+
+                    IndexType cnt = 0;
+
+                    for ( IndexType p = 0; p < nPoints; ++p )
+                    {
+                        if ( isInner4( i, j, k, m, &stencilNodes[ 4 * p ], gridSizes ) )
+                        { 
+                            cnt++;
+                        }
+                    }
+    
+                    sizes[ gridPos ] = cnt;
+                }
             }
         }
     }
@@ -200,6 +257,9 @@ void OpenMPStencilKernel::stencilLocalSizes(
         case 3 : stencilLocalSizes3( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
                  break;
 
+        case 4 : stencilLocalSizes4( sizes, gridSizes, gridDistances, nPoints, stencilNodes );
+                 break;
+
         default: COMMON_THROWEXCEPTION( "stencilLocalSizes for nDims = " << nDims << " not supported yet" )
     }
 }
@@ -216,7 +276,7 @@ void OpenMPStencilKernel::stencilLocalCSR1(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     #pragma omp parallel for
 
@@ -233,7 +293,7 @@ void OpenMPStencilKernel::stencilLocalCSR1(
                 continue;
             }
 
-            csrJA[ ia ] = gridPos + stencilLinPos[p];
+            csrJA[ ia ] = gridPos + stencilOffset[p];
             csrValues[ ia ] = stencilVal[p];
 
             ia++;
@@ -255,7 +315,7 @@ void OpenMPStencilKernel::stencilLocalCSR2(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     #pragma omp parallel for
 
@@ -269,19 +329,12 @@ void OpenMPStencilKernel::stencilLocalCSR2(
 
             for ( IndexType p = 0; p < nPoints; ++p )
             {
-                if ( !isInner( i, stencilNodes[ 2 * p ], gridSizes[0] ) )
+                if ( isInner2( i, j, &stencilNodes[2 * p], gridSizes ) )
                 {   
-                    continue;
+                    csrJA[ ia ] = gridPos + stencilOffset[p];
+                    csrValues[ ia ] = stencilVal[p];
+                    ia++;
                 }
-                if ( !isInner( j, stencilNodes[ 2 * p + 1 ], gridSizes[1] ) )
-                {   
-                    continue;
-                }
-
-                csrJA[ ia ] = gridPos + stencilLinPos[p];
-                csrValues[ ia ] = stencilVal[p];
-
-                ia++;
             }
 
             SCAI_ASSERT_EQ_ERROR( ia, csrIA[gridPos + 1], "serious mismatch, invalid csrIA array" )
@@ -301,7 +354,7 @@ void OpenMPStencilKernel::stencilLocalCSR3(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     #pragma omp parallel for
 
@@ -317,26 +370,61 @@ void OpenMPStencilKernel::stencilLocalCSR3(
 
                 for ( IndexType p = 0; p < nPoints; ++p )
                 {
-                    if ( !isInner( i, stencilNodes[ 3 * p ], gridSizes[0] ) )
+                    if ( isInner3( i, j, k, &stencilNodes[3 * p], gridSizes ) )
                     {   
-                        continue;
+                        csrJA[ ia ] = gridPos + stencilOffset[p];
+                        csrValues[ ia ] = stencilVal[p];
+                        ia++;
                     }
-                    if ( !isInner( j, stencilNodes[ 3 * p + 1 ], gridSizes[1] ) )
-                    {   
-                        continue;
-                    }
-                    if ( !isInner( k, stencilNodes[ 3 * p + 2 ], gridSizes[2] ) )
-                    {   
-                        continue;
-                    }
-
-                    csrJA[ ia ] = gridPos + stencilLinPos[p];
-                    csrValues[ ia ] = stencilVal[p];
-
-                    ia++;
                 }
 
                 SCAI_ASSERT_EQ_ERROR( ia, csrIA[gridPos + 1], "serious mismatch, invalid csrIA array" )
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilLocalCSR4(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType gridSizes[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    #pragma omp parallel for
+
+    for ( IndexType i = 0; i < gridSizes[0]; ++i )
+    {
+        for ( IndexType j = 0; j < gridSizes[1]; ++j )
+        {
+            for ( IndexType k = 0; k < gridSizes[2]; ++k )
+            {
+                for ( IndexType m = 0; m < gridSizes[3]; ++m )
+                {
+                    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
+
+                    IndexType ia = csrIA[ gridPos ];
+
+                    for ( IndexType p = 0; p < nPoints; ++p )
+                    {
+                        if ( isInner4( i, j, k, m, &stencilNodes[ 4 * p ], gridSizes ) )
+                        {   
+                            csrJA[ ia ] = gridPos + stencilOffset[p];
+                            csrValues[ ia ] = stencilVal[p];
+    
+                            ia++;
+                        }
+                    }
+
+                    SCAI_ASSERT_EQ_ERROR( ia, csrIA[gridPos + 1], "serious mismatch, invalid csrIA array" )
+                }
             }
         }
     }
@@ -355,22 +443,66 @@ void OpenMPStencilKernel::stencilLocalCSR(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_REGION( "OpenMP.Stencil.LocalCSR" )
 
     switch ( nDims ) 
     {
-        case 1 : stencilLocalCSR1( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+        case 1 : stencilLocalCSR1( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
-        case 2 : stencilLocalCSR2( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+        case 2 : stencilLocalCSR2( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
-        case 3 : stencilLocalCSR3( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+        case 3 : stencilLocalCSR3( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
+        case 4 : stencilLocalCSR4( csrJA, csrValues, csrIA, gridSizes, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilLocalCSR for nDims = " << nDims << " not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPStencilKernel::stencilHaloSizes1(
+    IndexType sizes[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType nPoints,
+    const int stencilNodes[] )
+{
+    // traverse over all points of the local grid
+
+    #pragma omp parallel for
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        IndexType localIndex = iLocal * localGridDistances[0];
+
+        IndexType cnt = 0;   // check for non-local stencil points but valid in global grid
+
+        // check for each stencil point if it is not local
+
+        for ( IndexType p = 0; p < nPoints; ++p )
+        {
+            if ( isInner( iLocal, stencilNodes[p], localGridSizes[0] ) )
+            {
+                // stencil point is local, no halo entry
+                continue;
+            }
+            if ( isInner( iGlobal, stencilNodes[p], globalGridSizes[0] ) )
+            {
+                // stencil point is not local, but globally available, so count it
+                cnt ++;
+            }
+        }
+
+        sizes[ localIndex ] = cnt;
     }
 }
 
@@ -387,6 +519,8 @@ void OpenMPStencilKernel::stencilHaloSizes2(
 {
     // traverse over all points of the local grid
 
+    #pragma omp parallel for
+
     for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
     {
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
@@ -399,20 +533,15 @@ void OpenMPStencilKernel::stencilHaloSizes2(
 
             for ( IndexType p = 0; p < nPoints; ++p )
             {
-                if (    isInner( iGlobal, stencilNodes[2 * p], globalGridSizes[0] ) 
-                     && isInner( jGlobal, stencilNodes[2 * p + 1], globalGridSizes[1] ) )
+                if ( isInner2( iLocal, jLocal, &stencilNodes[2 * p], localGridSizes ) )
                 {
-                    // stencil point is in global grid
-
-                    if (    isInner( iLocal, stencilNodes[ 2 * p ], localGridSizes[0] )
-                         && isInner( jLocal, stencilNodes[ 2 * p + 1 ], localGridSizes[1] ) )
-                    {
-                        // stencil point is in local grid, do not count
-                    }
-                    else
-                    {
-                        cnt ++;
-                    }
+                    // stencil point is local, no halo entry
+                    continue;
+                }
+                if ( isInner2( iGlobal, jGlobal, &stencilNodes[2 * p], globalGridSizes ) )
+                {
+                    // stencil point is not local, but globally available, so count it
+                    cnt ++;
                 }
             }
 
@@ -434,6 +563,8 @@ void OpenMPStencilKernel::stencilHaloSizes3(
 {
     // traverse over all points of the local grid
 
+    #pragma omp parallel for
+
     for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
     {
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
@@ -449,26 +580,68 @@ void OpenMPStencilKernel::stencilHaloSizes3(
 
                 for ( IndexType p = 0; p < nPoints; ++p )
                 {
-                    if (    isInner( iGlobal, stencilNodes[3 * p], globalGridSizes[0] ) 
-                         && isInner( jGlobal, stencilNodes[3 * p + 1], globalGridSizes[1] ) 
-                         && isInner( kGlobal, stencilNodes[3 * p + 2], globalGridSizes[2] ) )
+                    if ( isInner3( iLocal, jLocal, kLocal, &stencilNodes[ 3 * p ], localGridSizes ) )
                     {
-                        // stencil point is in global grid
-    
-                        if (    isInner( iLocal, stencilNodes[ 3 * p ], localGridSizes[0] )
-                             && isInner( jLocal, stencilNodes[ 3 * p + 1 ], localGridSizes[1] ) 
-                             && isInner( kLocal, stencilNodes[ 3 * p + 2 ], localGridSizes[2] ) )
-                        {
-                            // stencil point is in local grid, do not count
-                        }
-                        else
-                        {
-                            cnt ++;
-                        }
+                        // stencil point is local, no halo entry
+                        continue;
+                    }
+                    if ( isInner3( iGlobal, jGlobal, kGlobal, &stencilNodes[3 * p], globalGridSizes ) )
+                    {
+                        // stencil point is not local, but globally available, so count it
+                        cnt ++;
                     }
                 }
 
                 sizes[ localIndex ] = cnt;
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void OpenMPStencilKernel::stencilHaloSizes4(
+    IndexType sizes[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType nPoints,
+    const int stencilNodes[] )
+{
+    // traverse over all points of the local 4-dimensional grid
+
+    #pragma omp parallel for
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
+        {
+            for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
+            {
+                for ( IndexType mLocal = 0, mGlobal = localLB[3]; mLocal < localGridSizes[3]; ++mLocal, ++mGlobal )
+                {
+                    IndexType localIndex =   iLocal * localGridDistances[0] + jLocal * localGridDistances[1] 
+                                           + kLocal * localGridDistances[2] + mLocal * localGridDistances[3];
+    
+                    IndexType cnt = 0;   // check for non-local stencil points but valid in global grid
+
+                    // check for each stencil point if it is not local
+
+                    for ( IndexType p = 0; p < nPoints; ++p )
+                    {
+                        if ( isInner4( iLocal, jLocal, kLocal, mLocal, &stencilNodes[4 * p], localGridSizes ) )
+                        {
+                            continue;   // local stencil neighbor, does not count for halo
+                        }
+                        if ( isInner4( iGlobal, jGlobal, kGlobal, mGlobal, &stencilNodes[4 * p], globalGridSizes ) )
+                        {
+                            cnt ++;     // stencil point is not local, but globally available, so count it
+                        }
+                    }
+
+                    sizes[ localIndex ] = cnt;
+                }
             }
         }
     }
@@ -490,6 +663,10 @@ void OpenMPStencilKernel::stencilHaloSizes(
 
     switch ( nDims ) 
     {
+        case 1 : stencilHaloSizes1( sizes, localGridSizes, localGridDistances, 
+                                    localLB, globalGridSizes, nPoints, stencilNodes );
+                 break;
+
         case 2 : stencilHaloSizes2( sizes, localGridSizes, localGridDistances, 
                                     localLB, globalGridSizes, nPoints, stencilNodes );
                  break;
@@ -498,7 +675,68 @@ void OpenMPStencilKernel::stencilHaloSizes(
                                     localLB, globalGridSizes, nPoints, stencilNodes );
                  break;
 
-        default: COMMON_THROWEXCEPTION( "stencilLocalSizes for nDims = " << nDims << " not supported yet" )
+        case 4 : stencilHaloSizes4( sizes, localGridSizes, localGridDistances, 
+                                    localLB, globalGridSizes, nPoints, stencilNodes );
+                 break;
+
+        default: COMMON_THROWEXCEPTION( "stencilHaloSizes for nDims = " << nDims << " not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilHaloCSR1(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType globalGridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    // traverse over all points of the local grid
+
+    #pragma omp parallel for
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        IndexType localIndex  = iLocal * localGridDistances[0];
+
+        IndexType offset = csrIA[ localIndex ];
+
+        if ( csrIA[ localIndex + 1 ] == offset )
+        {
+            continue;   // this grid point has all its relevant neighbors locally, no halo
+        }
+
+        IndexType globalIndex = iGlobal * globalGridDistances[0];
+
+        // check for each stencil point if it is not local
+
+        for ( IndexType p = 0; p < nPoints; ++p )
+        {
+            if ( isInner( iLocal, stencilNodes[p], localGridSizes[0] ) )
+            {
+                continue;      // stencil point is local, no halo entry
+            }
+
+            // stencil point must still be globally available to be counted
+
+            if ( isInner( iGlobal, stencilNodes[p], globalGridSizes[0] ) )
+            {
+                csrJA[offset] = globalIndex + stencilOffset[p];
+                csrValues[offset] = stencilVal[p];
+                ++offset;
+            }
+        }
+
+        SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
     }
 }
 
@@ -517,7 +755,7 @@ void OpenMPStencilKernel::stencilHaloCSR2(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     // traverse over all points of the local grid
 
@@ -526,30 +764,32 @@ void OpenMPStencilKernel::stencilHaloCSR2(
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             IndexType localIndex  = iLocal * localGridDistances[0] + jLocal * localGridDistances[1];
-            IndexType globalIndex = iGlobal * globalGridDistances[0] + jGlobal * globalGridDistances[1];
 
             IndexType offset = csrIA[ localIndex ];
+
+            if ( csrIA[ localIndex + 1 ] == offset )
+            {
+                continue;   // this grid point has all its relevant neighbors locally, no halo
+            }
+
+            IndexType globalIndex = iGlobal * globalGridDistances[0] + jGlobal * globalGridDistances[1];
 
             // check for each stencil point if it is not local
 
             for ( IndexType p = 0; p < nPoints; ++p )
             {
-                if (    isInner( iGlobal, stencilNodes[2 * p], globalGridSizes[0] ) 
-                     && isInner( jGlobal, stencilNodes[2 * p + 1], globalGridSizes[1] ) )
+                if ( isInner2( iLocal, jLocal, &stencilNodes[2 * p], localGridSizes ) )
                 {
-                    // stencil point is in global grid
+                    continue;      // stencil point is local, no halo entry
+                }
 
-                    if (    isInner( iLocal, stencilNodes[ 2 * p ], localGridSizes[0] )
-                         && isInner( jLocal, stencilNodes[ 2 * p + 1 ], localGridSizes[1] ) )
-                    {
-                        // stencil point is in local grid, do not count
-                    }
-                    else
-                    {
-                        csrJA[offset] = globalIndex + stencilLinPos[p];
-                        csrValues[offset] = stencilVal[p];
-                        ++offset;
-                    }
+                // stencil point must still be globally available to be counted
+
+                if ( isInner2( iGlobal, jGlobal, &stencilNodes[2 * p], globalGridSizes ) )
+                {
+                    csrJA[offset] = globalIndex + stencilOffset[p];
+                    csrValues[offset] = stencilVal[p];
+                    ++offset;
                 }
             }
  
@@ -573,7 +813,75 @@ void OpenMPStencilKernel::stencilHaloCSR3(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
+{
+    // traverse over all points of the local grid
+
+    #pragma omp parallel for
+
+    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    {
+        for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
+        {
+            for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
+            {
+                IndexType localIndex =   iLocal * localGridDistances[0] 
+                                       + jLocal * localGridDistances[1] 
+                                       + kLocal * localGridDistances[2];
+
+                IndexType offset = csrIA[ localIndex ];
+
+                if ( csrIA[ localIndex + 1 ] == offset )
+                {
+                    continue;   // this grid point has all its relevant neighbors locally, no halo
+                }
+
+                IndexType globalIndex =    iGlobal * globalGridDistances[0] 
+                                         + jGlobal * globalGridDistances[1]
+                                         + kGlobal * globalGridDistances[2];
+
+                // check for each stencil point if it is not local
+
+                for ( IndexType p = 0; p < nPoints; ++p )
+                {
+                    if ( isInner3( iLocal, jLocal, kLocal, &stencilNodes[ 3 * p ], localGridSizes ) )
+                    {
+                        // stencil point is local, no halo entry
+                        continue;
+                    }
+
+                    // stencil point must still be globally available to be counted
+
+                    if ( isInner3( iGlobal, jGlobal, kGlobal, &stencilNodes[3 * p], globalGridSizes ) )
+                    {
+                        csrJA[offset] = globalIndex + stencilOffset[p];
+                        csrValues[offset] = stencilVal[p];
+                        ++offset;
+                    }
+                }
+     
+                SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilHaloCSR4(
+    IndexType csrJA[],
+    ValueType csrValues[],
+    const IndexType csrIA[],
+    const IndexType localGridSizes[],
+    const IndexType localGridDistances[],
+    const IndexType localLB[],
+    const IndexType globalGridSizes[],
+    const IndexType globalGridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
 {
     // traverse over all points of the local grid
 
@@ -583,39 +891,46 @@ void OpenMPStencilKernel::stencilHaloCSR3(
         {
             for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
             {
-                IndexType localIndex  = iLocal * localGridDistances[0] + jLocal * localGridDistances[1] 
-                                         + kLocal * localGridDistances[2];
-                IndexType globalIndex = iGlobal * globalGridDistances[0] + jGlobal * globalGridDistances[1]
-                                         + kGlobal * globalGridDistances[2];
-
-                IndexType offset = csrIA[ localIndex ];
-
-                // check for each stencil point if it is not local
-
-                for ( IndexType p = 0; p < nPoints; ++p )
+                for ( IndexType mLocal = 0, mGlobal = localLB[3]; mLocal < localGridSizes[3]; ++mLocal, ++mGlobal )
                 {
-                    if (    isInner( iGlobal, stencilNodes[3 * p], globalGridSizes[0] ) 
-                         && isInner( jGlobal, stencilNodes[3 * p + 1], globalGridSizes[1] ) 
-                         && isInner( kGlobal, stencilNodes[3 * p + 2], globalGridSizes[2] ) )
+                    IndexType localIndex =   iLocal * localGridDistances[0] 
+                                           + jLocal * localGridDistances[1] 
+                                           + kLocal * localGridDistances[2]
+                                           + mLocal * localGridDistances[3];
+
+                    IndexType offset = csrIA[ localIndex ];
+
+                    if ( csrIA[ localIndex + 1 ] == offset )
                     {
-                        // stencil point is in global grid
+                        continue;   // this grid point has all its relevant neighbors locally, no halo
+                    }
+
+                    IndexType globalIndex =    iGlobal * globalGridDistances[0] 
+                                             + jGlobal * globalGridDistances[1]
+                                             + kGlobal * globalGridDistances[2]
+                                             + mGlobal * globalGridDistances[3];
+
+                    // check for each stencil point if it is not local
+
+                    for ( IndexType p = 0; p < nPoints; ++p )
+                    {
+                        if ( isInner4( iGlobal, jGlobal, kGlobal, mGlobal, &stencilNodes[4 * p], globalGridSizes ) )
+                        {
+                            // stencil point is in global grid
     
-                        if (    isInner( iLocal, stencilNodes[ 3 * p ], localGridSizes[0] )
-                             && isInner( jLocal, stencilNodes[ 3 * p + 1 ], localGridSizes[1] ) 
-                             && isInner( kLocal, stencilNodes[ 3 * p + 2 ], localGridSizes[2] ) )
-                        {
-                            // stencil point is in local grid, do not count
-                        }
-                        else
-                        {
-                            csrJA[offset] = globalIndex + stencilLinPos[p];
-                            csrValues[offset] = stencilVal[p];
-                            ++offset;
+                            if ( !isInner4( iLocal, jLocal, kLocal, mLocal, &stencilNodes[4 * p], localGridSizes ) )
+                            {
+                                // but not locally, so it belongs to halo, store global index
+
+                                csrJA[offset] = globalIndex + stencilOffset[p];
+                                csrValues[offset] = stencilVal[p];
+                                ++offset;
+                            }
                         }
                     }
+
+                    SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
                 }
-     
-                SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
             }
         }
     }
@@ -637,18 +952,26 @@ void OpenMPStencilKernel::stencilHaloCSR(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_REGION( "OpenMP.Stencil.HaloCSR" )
 
     switch ( nDims ) 
     {
+        case 1 : stencilHaloCSR1( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
+                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
         case 2 : stencilHaloCSR2( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
-                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         case 3 : stencilHaloCSR3( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
-                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilLinPos );
+                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
+        case 4 : stencilHaloCSR4( csrJA, csrValues, csrIA, localGridSizes, localGridDistances, localLB,
+                                  globalGridSizes, globalGridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilHaloCSR for nDims = " << nDims << " not supported yet" )
@@ -669,7 +992,7 @@ void OpenMPStencilKernel::stencilGEMV1(
     const IndexType nPoints,
     const int stencilNodes[], 
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] )
 
@@ -688,18 +1011,24 @@ void OpenMPStencilKernel::stencilGEMV1(
 
         if ( ib == 1 )
         {
+            SCAI_REGION( "OpenMP.Stencil.GEMV1.inner" )
+
             // this is the inner part, all stencil points are valid, no inner checks needed
 
             #pragma omp parallel for
-
+            #pragma unroll_and_jam( 4 )
             for ( IndexType i = i0; i < i1; i++ )
             {
                 IndexType gridPos = i * gridDistances[0];
 
+                ValueType v = 0;
+
                 for ( IndexType p = 0; p < nPoints; ++p )
                 {   
-                    result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
+                    v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                 }
+
+                result[ gridPos ] += alpha * v;
             }
         }
         else
@@ -717,7 +1046,7 @@ void OpenMPStencilKernel::stencilGEMV1(
                         continue;
                     }
                     
-                    result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
+                    result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                 }
             }
         }
@@ -738,7 +1067,7 @@ void OpenMPStencilKernel::stencilGEMV2(
     const IndexType nPoints,
     const int stencilNodes[], 
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] )
 
@@ -764,26 +1093,34 @@ void OpenMPStencilKernel::stencilGEMV2(
 
             if ( ib == 1 && jb == 1 )
             {
+                SCAI_REGION( "OpenMP.Stencil.GEMV2.inner" )
+
                 // this is the inner part, all stencil points are valid, no inner checks needed
 
                 #pragma omp parallel for
 
                 for ( IndexType i = i0; i < i1; i++ )
+
+                #pragma unroll_and_jam( 4 )
+
                 for ( IndexType j = j0; j < j1; j++ )
                 {
                     IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
 
+                    ValueType v = 0;
+
                     for ( IndexType p = 0; p < nPoints; ++p )
                     {   
-                        result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
+                        v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                     }
+
+                    result[ gridPos ] += alpha * v;
                 }
             }
             else
             {
                 // at least one stencil point neighbor might be invalid, check all
-
-
+              
                 for ( IndexType i = i0; i < i1; i++ )
                 for ( IndexType j = j0; j < j1; j++ )
                 {
@@ -800,7 +1137,7 @@ void OpenMPStencilKernel::stencilGEMV2(
                             continue;
                         }
                         
-                        result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
+                        result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                     }
                 }
             }
@@ -822,7 +1159,7 @@ void OpenMPStencilKernel::stencilGEMV3(
     const IndexType nPoints,
     const int stencilNodes[], 
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] << " x " << gridSizes[2] )
 
@@ -857,49 +1194,52 @@ void OpenMPStencilKernel::stencilGEMV3(
 
                 if ( ib == 1 && jb == 1 && kb == 1 )
                 {
+                    SCAI_REGION( "OpenMP.Stencil.GEMV3.inner" )
+
                     // this is the inner part, all stencil points are valid, no inner checks needed
 
                     #pragma omp parallel for
 
                     for ( IndexType i = i0; i < i1; i++ )
                     for ( IndexType j = j0; j < j1; j++ )
+                    #pragma unroll_and_jam( 4 )
                     for ( IndexType k = k0; k < k1; k++ )
                     {
                         IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
+       
+                        ValueType v = 0;
 
                         for ( IndexType p = 0; p < nPoints; ++p )
                         {   
-                            result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
+                            v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                         }
+
+                        result[ gridPos] += alpha * v;
                     }
                 }
                 else
                 {
                     // at least one stencil point neighbor might be invalid, check all
 
+                    #pragma omp parallel for if ( ib == 1 )
                     for ( IndexType i = i0; i < i1; i++ )
+                    #pragma omp parallel for
                     for ( IndexType j = j0; j < j1; j++ )
                     for ( IndexType k = k0; k < k1; k++ )
                     {
                         IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
 
+                        ValueType v = 0;
+
                         for ( IndexType p = 0; p < nPoints; ++p )
                         {
-                            if ( !isInner( i, stencilNodes[ 3 * p ], gridSizes[0] ) )
+                            if ( isInner3( i, j, k, &stencilNodes[ 3 * p ], gridSizes ) )
                             {   
-                                continue;
+                                v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                             }
-                            if ( !isInner( j, stencilNodes[ 3 * p + 1 ], gridSizes[1] ) )
-                            {   
-                                continue;
-                            }
-                            if ( !isInner( k, stencilNodes[ 3 * p + 2 ], gridSizes[2] ) )
-                            {   
-                                continue;
-                            }
-                            
-                            result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
                         }
+
+                        result[ gridPos ] += alpha * v;
                     }
                 }
             }
@@ -921,12 +1261,12 @@ void OpenMPStencilKernel::stencilGEMV4(
     const IndexType nPoints,
     const int stencilNodes[], 
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] 
                                            << " x " << gridSizes[2] << " x " << gridSizes[3] )
 
-    const IndexType nStripes = 4;
+    const IndexType nStripes = 3;
 
     bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
     bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
@@ -965,6 +1305,8 @@ void OpenMPStencilKernel::stencilGEMV4(
 
                     if ( ib == 1 && jb == 1 && kb == 1 && mb == 1 )
                     {
+                        SCAI_REGION( "OpenMP.Stencil.GEMV4.inner" )
+
                         // this is the inner part, all stencil points are valid, no inner checks needed
 
                         #pragma omp parallel for
@@ -972,48 +1314,45 @@ void OpenMPStencilKernel::stencilGEMV4(
                         for ( IndexType i = i0; i < i1; i++ )
                         for ( IndexType j = j0; j < j1; j++ )
                         for ( IndexType k = k0; k < k1; k++ )
+                        #pragma unroll_and_jam( 4 )
                         for ( IndexType m = m0; m < m1; m++ )
                         {
                             IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
 
+                            ValueType v = 0;
+
                             for ( IndexType p = 0; p < nPoints; ++p )
                             {   
-                                result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
+                                v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                             }
+
+                            result[ gridPos ] += alpha * v;
                         }
                     }
                     else
                     {
                         // at least one stencil point neighbor might be invalid, check all
     
+                        #pragma omp parallel for if ( ib == 1 )
                         for ( IndexType i = i0; i < i1; i++ )
+                        #pragma omp parallel for 
                         for ( IndexType j = j0; j < j1; j++ )
                         for ( IndexType k = k0; k < k1; k++ )
                         for ( IndexType m = m0; m < m1; m++ )
                         {
                             IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
     
+                            ValueType v = 0;
+
                             for ( IndexType p = 0; p < nPoints; ++p )
                             {
-                                if ( !isInner( i, stencilNodes[ 4 * p ], gridSizes[0] ) )
-                                {   
-                                    continue;
+                                if ( isInner4( i, j, k, m, &stencilNodes[ 4 * p ], gridSizes ) )
+                                {
+                                    v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                                 }
-                                if ( !isInner( j, stencilNodes[ 4 * p + 1 ], gridSizes[1] ) )
-                                {   
-                                    continue;
-                                }
-                                if ( !isInner( k, stencilNodes[ 4 * p + 2 ], gridSizes[2] ) )
-                                {   
-                                    continue;
-                                }
-                                if ( !isInner( m, stencilNodes[ 4 * p + 3 ], gridSizes[3] ) )
-                                {   
-                                    continue;
-                                }
-                                
-                                result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilLinPos[p] ];
                             }
+
+                            result[ gridPos ] += alpha * v;
                         }
                     }
                 } 
@@ -1037,26 +1376,26 @@ void OpenMPStencilKernel::stencilGEMV(
     const IndexType nPoints,
     const int stencilNodes[],
     const ValueType stencilVal[],
-    const int stencilLinPos[] )
+    const int stencilOffset[] )
 {
     SCAI_REGION( "OpenMP.Stencil.GEMV" )
 
     switch ( nDims ) 
     {
         case 1 : stencilGEMV1( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilLinPos );
+                               nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         case 2 : stencilGEMV2( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilLinPos );
+                               nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         case 3 : stencilGEMV3( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilLinPos );
+                               nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         case 4 : stencilGEMV4( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilLinPos );
+                               nPoints, stencilNodes, stencilVal, stencilOffset );
                  break;
 
         default: COMMON_THROWEXCEPTION( "stencilGEMV for nDims = " << nDims << " not supported yet" )

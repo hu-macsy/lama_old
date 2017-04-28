@@ -70,7 +70,11 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil3D<double> stencil( 27 ); // 27-point stencil
+    // Take a default stencil
+
+    Stencil3D<double> stencil( 27 ); 
+
+    // Define a grid with same number of dimensions as stencil
 
     const IndexType N1 = 300;
     const IndexType N2 = 300;
@@ -78,11 +82,21 @@ int main( int argc, const char* argv[] )
 
     common::Grid3D grid( N1, N2, N3 );
 
-    StencilMatrix<double> stencilMatrix( grid, stencil );
+    // Distibute grid onto default processor array, can be set by --SCAI_NP=2x3x2
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
+
+    // The stencil matrix just needs the grid distribution and the stencil
+
+    StencilMatrix<double> stencilMatrix( gridDistribution, stencil );
 
     std::cout << "stencilMatrix " << stencilMatrix << std::endl;
 
     stencilMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+
+    // Conversion stencil matrix -> CSR matrix is full supported
 
     CSRSparseMatrix<double> csrMatrix( stencilMatrix );
 
@@ -94,14 +108,26 @@ int main( int argc, const char* argv[] )
 
     x = 1.0;
 
-    DenseVector<double> y1 ( stencilMatrix.getNumRows(), 0.0 );
-    DenseVector<double> y2 ( csrMatrix.getNumRows(), 0.0 );
+    DenseVector<double> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
+    DenseVector<double> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
 
-    for ( IndexType iter = 0; iter < 10; ++iter )
     {
-        y1 += stencilMatrix * x;
-        y2 += csrMatrix * x;
+        SCAI_REGION( "main.stencilGEMV" )
+
+        for ( IndexType iter = 0; iter < 10; ++iter )
+        {
+            y1 += stencilMatrix * x;
+        }
     }
+    {
+        SCAI_REGION( "main.csrGEMV" )
+        for ( IndexType iter = 0; iter < 10; ++iter )
+        {
+            y2 += csrMatrix * x;
+        }
+    }
+
+    // stencil and CSR matrix are same, so result vectors y1 and y2 must be same or close
 
     std::cout << "diff = " << y1.maxDiffNorm( y2 ) << std::endl;
 }

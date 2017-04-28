@@ -69,7 +69,7 @@ public:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** OpenMP implementation for StencilKernelTrait::stencilHaloSizes */
 
@@ -99,7 +99,7 @@ public:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** OpenMP implementation for StencilKernelTrait::stencilGEMV */
 
@@ -116,7 +116,7 @@ public:
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
 private:
 
@@ -147,6 +147,15 @@ private:
         const IndexType nPoints,
         const int stencilNodes[] );
 
+    /** Implementation of stencilLocalSizes for nDims == 4 */
+
+    static void stencilLocalSizes4(
+        IndexType sizes[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[] );
+
     /** Implementation of stencilLocalCSR for nDims == 1 */
 
     template<typename ValueType>
@@ -159,7 +168,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilLocalCSR for nDims == 2 */
 
@@ -173,7 +182,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilLocalCSR for nDims == 3 */
 
@@ -187,7 +196,21 @@ private:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
+
+    /** Implementation of stencilLocalCSR for nDims == 4 */
+
+    template<typename ValueType>
+    static void stencilLocalCSR4(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType gridSizes[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
 
     /** Implementation of stencilHaloSizes for nDims == 1 */
 
@@ -222,6 +245,17 @@ private:
         const IndexType nPoints,
         const int stencilNodes[] );
 
+    /** Implementation of stencilHaloSizes for nDims == 4 */
+
+    static void stencilHaloSizes4(
+        IndexType sizes[],
+        const IndexType localGridSizes[],
+        const IndexType localGridDistances[],
+        const IndexType localLB[],
+        const IndexType globalGridSizes[],
+        const IndexType nPoints,
+        const int stencilNodes[] );
+
     /** Implementation of stencilHaloCSR for nDims == 1 */
 
     template<typename ValueType>
@@ -237,7 +271,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilHaloCSR for nDims == 2 */
 
@@ -254,7 +288,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilHaloCSR for nDims == 3 */
 
@@ -271,7 +305,24 @@ private:
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
+
+    /** Implementation of stencilHaloCSR for nDims == 4 */
+
+    template<typename ValueType>
+    static void stencilHaloCSR4(
+        IndexType csrJA[],
+        ValueType csrValues[],
+        const IndexType csrIA[],
+        const IndexType localGridSizes[],
+        const IndexType localGridDistances[],
+        const IndexType localLB[],
+        const IndexType globalGridSizes[],
+        const IndexType globalGridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
 
     /** Implementation of stencilGEMV for nDims == 1 */
 
@@ -287,7 +338,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilGEMV for nDims == 2 */
 
@@ -303,7 +354,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilGEMV for nDims == 3 */
 
@@ -319,7 +370,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Implementation of stencilGEMV for nDims == 4 */
 
@@ -335,7 +386,7 @@ private:
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
-        const int stencilLinPos[] );
+        const int stencilOffset[] );
 
     /** Struct for registration of methods with one template argument.
      *

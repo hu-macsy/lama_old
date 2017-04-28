@@ -743,6 +743,195 @@ void Stencil3D<ValueType>::getPoint( int& posX, int& posY, int& posZ, ValueType&
     val = mValues[ k ];
 }
 
+/* ------------------------------------------------------------------------------------ */
+/*  4-dimensional stencil                                                               */
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT Stencil4D : public Stencil<ValueType>
+{
+public:
+
+    /** Create an empty stencil */
+
+    Stencil4D();
+
+    /** Create a default stencil with a certain number of points */
+
+    Stencil4D( const IndexType nPoints );
+
+    /** Create a stencil by two one-dimensional stencils */
+
+    Stencil4D( 
+        const Stencil1D<ValueType>& stencilX, 
+        const Stencil1D<ValueType>& stencilY, 
+        const Stencil1D<ValueType>& stencilZ,
+        const Stencil1D<ValueType>& stencilT );
+
+    /** More convenient interface for addPoint */
+
+    void addPoint( int posX, int posY, int posZ, int posT, ValueType val );
+
+    /** More convenient interface for getPoint on 4-dimensional stencil */
+
+    void getPoint( int& posX, int& posY, int& posZ, int& posT, ValueType& val, IndexType k ) const;
+
+protected:
+
+    using Stencil<ValueType>::mPositions;
+    using Stencil<ValueType>::mValues;
+};
+
+/* ------------------------------------------------------------------------------------ */
+/*   Implementations of inline constructors                                             */
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+Stencil4D<ValueType>::Stencil4D() : Stencil<ValueType>( 4 )
+{
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>( 4 )
+{
+    Stencil<ValueType>::reserve( nPoints );
+
+    ValueType minusOne( -1 );
+ 
+    switch( nPoints ) 
+    {
+        case 9 :
+        {
+            addPoint( -1,  0,  0,  0, minusOne );
+            addPoint(  1,  0,  0,  0, minusOne );
+            addPoint(  0, -1,  0,  0, minusOne );
+            addPoint(  0,  1,  0,  0, minusOne );
+            addPoint(  0,  0, -1,  0, minusOne );
+            addPoint(  0,  0,  1,  0, minusOne );
+            addPoint(  0,  0,  0, -1, minusOne );
+            addPoint(  0,  0,  0,  1, minusOne );
+
+            // no break here, continue with points for Stencil3D( 1 )
+        }
+        case 1 :
+        {
+            addPoint( 0, 0, 0, 0, ValueType( nPoints - 1 ) );
+            break;
+        }
+        default:
+
+            COMMON_THROWEXCEPTION( "Unsupported type of Stencil4D, #points = " << nPoints )
+
+        SCAI_ASSERT_EQ_DEBUG( Stencil<ValueType>::nPoints(), nPoints, "serious mismatch" )
+    }
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+Stencil4D<ValueType>::Stencil4D( 
+    const Stencil1D<ValueType>& stencilX, 
+    const Stencil1D<ValueType>& stencilY, 
+    const Stencil1D<ValueType>& stencilZ,
+    const Stencil1D<ValueType>& stencilT ) :
+
+    Stencil<ValueType>( 4 )
+
+{
+    IndexType nPoints = stencilX.nPoints() + stencilY.nPoints() + stencilZ.nPoints() + stencilT.nPoints() - 4 + 1 ;
+
+    ValueType diagValue = 0;
+
+    Stencil<ValueType>::reserve( nPoints );
+
+    IndexType pos;
+    ValueType val;
+
+    for ( IndexType i = 0; i < stencilX.nPoints(); ++i )
+    {
+        stencilX.getPoint( pos, val, i );
+
+        if ( pos == 0 )
+        {
+            diagValue += val;
+        }
+        else
+        {
+            addPoint( pos, 0, 0, 0, val );
+        }
+    }
+
+    for ( IndexType i = 0; i < stencilY.nPoints(); ++i )
+    {
+        stencilY.getPoint( pos, val, i );
+
+        if ( pos == 0 )
+        {
+            diagValue += val;
+        }
+        else
+        {
+            addPoint( 0, pos, 0, 0, val );
+        }
+    }
+
+    for ( IndexType i = 0; i < stencilZ.nPoints(); ++i )
+    {
+        stencilZ.getPoint( pos, val, i );
+
+        if ( pos == 0 )
+        {
+            diagValue += val;
+        }
+        else
+        {
+            addPoint( 0, 0, pos, 0, val );
+        }
+    }
+
+    for ( IndexType i = 0; i < stencilT.nPoints(); ++i )
+    {
+        stencilT.getPoint( pos, val, i );
+
+        if ( pos == 0 )
+        {
+            diagValue += val;
+        }
+        else
+        {
+            addPoint( 0, 0, 0, pos, val );
+        }
+    }
+
+    addPoint( 0, 0, 0, 0, diagValue );
+}
+
+/* ------------------------------------------------------------------------------------ */
+/*   Implementations of inline methods for Stencil4D                                    */
+/* ---------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void Stencil4D<ValueType>::addPoint( int posX, int posY, int posZ, int posT, ValueType val )
+{
+    mPositions.push_back( posX );
+    mPositions.push_back( posY );
+    mPositions.push_back( posZ );
+    mPositions.push_back( posT );
+    mValues.push_back( val );
+}
+
+template<typename ValueType>
+void Stencil4D<ValueType>::getPoint( int& posX, int& posY, int& posZ, int& posT, ValueType& val, IndexType k ) const
+{
+    posX = mPositions[ k * 4 ];
+    posY = mPositions[ k * 4 + 1 ];
+    posZ = mPositions[ k * 4 + 2 ];
+    posT = mPositions[ k * 4 + 3 ];
+    val = mValues[ k ];
+}
+
 /* ---------------------------------------------------------------------------------- */
 
 }  // namespace lama
