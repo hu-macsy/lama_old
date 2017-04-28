@@ -228,7 +228,7 @@ public:
 
     /** _MatrixStorage */
 
- 	virtual void buildCSRSizes(scai::hmemo::HArray<int>&) const
+ 	virtual void buildCSRSizes(scai::hmemo::HArray<IndexType>&) const
     {
         COMMON_THROWEXCEPTION( "buildCSRSizes unsuported" )
     }
@@ -240,14 +240,14 @@ public:
 
     /** _MatrixStorage */
 
- 	virtual void setCSRData(IndexType, IndexType, IndexType, const scai::hmemo::HArray<int>&, const scai::hmemo::HArray<int>&, const scai::hmemo::_HArray&)
+ 	virtual void setCSRData(IndexType, IndexType, IndexType, const scai::hmemo::HArray<IndexType>&, const scai::hmemo::HArray<IndexType>&, const scai::hmemo::_HArray&)
     {
         COMMON_THROWEXCEPTION( "setcSRData unsuported" )
     }
 
     /** _MatrixStorage */
 
- 	virtual void setDIAData(IndexType, IndexType, IndexType, const scai::hmemo::HArray<int>&, const scai::hmemo::_HArray&)
+ 	virtual void setDIAData(IndexType, IndexType, IndexType, const scai::hmemo::HArray<IndexType>&, const scai::hmemo::_HArray&)
     {
         COMMON_THROWEXCEPTION( "setDIAData unsuported" )
     }

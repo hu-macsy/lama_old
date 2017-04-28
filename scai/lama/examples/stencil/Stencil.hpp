@@ -495,7 +495,7 @@ Stencil2D<ValueType>::Stencil2D(
 
     Stencil<ValueType>::reserve( nPoints );
 
-    IndexType pos;
+    int pos;        // is relative, so must be signed
     ValueType val;
 
     for ( IndexType i = 0; i < stencilX.nPoints(); ++i )
@@ -673,7 +673,7 @@ Stencil3D<ValueType>::Stencil3D(
 
     Stencil<ValueType>::reserve( nPoints );
 
-    IndexType pos;
+    int pos;
     ValueType val;
 
     for ( IndexType i = 0; i < stencilX.nPoints(); ++i )
