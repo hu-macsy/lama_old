@@ -324,69 +324,144 @@ private:
         const ValueType stencilVal[],
         const int stencilOffset[] );
 
-    /** Implementation of stencilGEMV for nDims == 1 */
+    template<typename ValueType>
+    static void stencilGEMV1Inner(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType gridBounds[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
 
     template<typename ValueType>
-    static void stencilGEMV1(
-        ValueType result[], 
-        const ValueType alpha,  
+    static void stencilGEMV2Inner(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType gridBounds[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
+
+    template<typename ValueType>
+    static void stencilGEMV3Inner(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType gridBounds[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
+
+    template<typename ValueType>
+    static void stencilGEMV4Inner(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType gridBounds[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
+
+    template<typename ValueType>
+    static void stencilGEMVInner(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType nDims,
+        const IndexType gridBounds[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
+
+    template<typename ValueType>
+    static void stencilGEMV1Border(
+        ValueType result[],
+        const ValueType alpha,
         const ValueType x[],
         const IndexType gridSizes[],
-        const IndexType lb[],
-        const IndexType ub[],
+        const IndexType gridBounds[],
         const IndexType gridDistances[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
         const int stencilOffset[] );
 
-    /** Implementation of stencilGEMV for nDims == 2 */
-
     template<typename ValueType>
-    static void stencilGEMV2(
-        ValueType result[], 
-        const ValueType alpha,  
+    static void stencilGEMV2Border(
+        ValueType result[],
+        const ValueType alpha,
         const ValueType x[],
         const IndexType gridSizes[],
-        const IndexType lb[],
-        const IndexType ub[],
+        const IndexType gridBounds[],
         const IndexType gridDistances[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
         const int stencilOffset[] );
 
-    /** Implementation of stencilGEMV for nDims == 3 */
-
     template<typename ValueType>
-    static void stencilGEMV3(
-        ValueType result[], 
-        const ValueType alpha,  
+    static void stencilGEMV3Border(
+        ValueType result[],
+        const ValueType alpha,
         const ValueType x[],
         const IndexType gridSizes[],
-        const IndexType lb[],
-        const IndexType ub[],
+        const IndexType gridBounds[],
         const IndexType gridDistances[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
         const int stencilOffset[] );
 
-    /** Implementation of stencilGEMV for nDims == 4 */
-
     template<typename ValueType>
-    static void stencilGEMV4(
-        ValueType result[], 
-        const ValueType alpha,  
+    static void stencilGEMV4Border(
+        ValueType result[],
+        const ValueType alpha,
         const ValueType x[],
         const IndexType gridSizes[],
-        const IndexType lb[],
-        const IndexType ub[],
+        const IndexType gridBounds[],
         const IndexType gridDistances[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
         const int stencilOffset[] );
+
+    template<typename ValueType>
+    static void stencilGEMVBorder(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType nDims,
+        const IndexType gridSizes[],
+        const IndexType gridBounds[],
+        const IndexType gridDistances[],
+        const IndexType nPoints,
+        const int stencilNodes[], 
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
+
+    template<typename ValueType>
+    static void stencilGEMVCaller(
+    IndexType gridBounds[],
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType nDims,
+    const IndexType gridSizes[],
+    const IndexType lb[],
+    const IndexType ub[],
+    const IndexType gridDistances[],
+    const IndexType currentDim,
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] );
 
     /** Struct for registration of methods with one template argument.
      *

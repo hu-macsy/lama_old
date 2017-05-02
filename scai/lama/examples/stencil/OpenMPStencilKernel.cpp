@@ -31,6 +31,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/tracing.hpp>
 
+#include <scai/common/Grid.hpp>
 #include <scai/lama/examples/stencil/OpenMPStencilKernel.hpp>
 #include <scai/lama/examples/stencil/StencilKernelTrait.hpp>
 
@@ -479,9 +480,10 @@ void OpenMPStencilKernel::stencilHaloSizes1(
     // traverse over all points of the local grid
 
     #pragma omp parallel for
-
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        IndexType iGlobal = localLB[0] + iLocal;
+
         IndexType localIndex = iLocal * localGridDistances[0];
 
         IndexType cnt = 0;   // check for non-local stencil points but valid in global grid
@@ -520,9 +522,10 @@ void OpenMPStencilKernel::stencilHaloSizes2(
     // traverse over all points of the local grid
 
     #pragma omp parallel for
-
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        IndexType iGlobal = localLB[0] + iLocal;
+
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             IndexType localIndex = iLocal * localGridDistances[0] + jLocal * localGridDistances[1];
@@ -565,8 +568,10 @@ void OpenMPStencilKernel::stencilHaloSizes3(
 
     #pragma omp parallel for
 
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        IndexType iGlobal = localLB[0] + iLocal;
+
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
@@ -613,8 +618,10 @@ void OpenMPStencilKernel::stencilHaloSizes4(
 
     #pragma omp parallel for
 
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        IndexType iGlobal = localLB[0] + iLocal;
+
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
@@ -704,7 +711,7 @@ void OpenMPStencilKernel::stencilHaloCSR1(
 
     #pragma omp parallel for
 
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
         IndexType localIndex  = iLocal * localGridDistances[0];
 
@@ -715,6 +722,7 @@ void OpenMPStencilKernel::stencilHaloCSR1(
             continue;   // this grid point has all its relevant neighbors locally, no halo
         }
 
+        IndexType iGlobal = localLB[0] + iLocal;
         IndexType globalIndex = iGlobal * globalGridDistances[0];
 
         // check for each stencil point if it is not local
@@ -759,8 +767,10 @@ void OpenMPStencilKernel::stencilHaloCSR2(
 {
     // traverse over all points of the local grid
 
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        const IndexType iGlobal = localLB[0] + iLocal;
+
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             IndexType localIndex  = iLocal * localGridDistances[0] + jLocal * localGridDistances[1];
@@ -819,8 +829,10 @@ void OpenMPStencilKernel::stencilHaloCSR3(
 
     #pragma omp parallel for
 
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        const IndexType iGlobal = localLB[0] + iLocal;
+
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
@@ -885,8 +897,10 @@ void OpenMPStencilKernel::stencilHaloCSR4(
 {
     // traverse over all points of the local grid
 
-    for ( IndexType iLocal = 0, iGlobal = localLB[0]; iLocal < localGridSizes[0]; ++iLocal, ++iGlobal )
+    for ( IndexType iLocal = 0; iLocal < localGridSizes[0]; ++iLocal )
     {
+        const IndexType iGlobal = localLB[0] + iLocal;
+
         for ( IndexType jLocal = 0, jGlobal = localLB[1]; jLocal < localGridSizes[1]; ++jLocal, ++jGlobal )
         {
             for ( IndexType kLocal = 0, kGlobal = localLB[2]; kLocal < localGridSizes[2]; ++kLocal, ++kGlobal )
@@ -981,73 +995,126 @@ void OpenMPStencilKernel::stencilHaloCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencilGEMV1(
+void OpenMPStencilKernel::stencilGEMV1Inner(
     ValueType result[], 
     const ValueType alpha,  
     const ValueType x[],
-    const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
+    const IndexType gridBounds[],
     const IndexType gridDistances[],
     const IndexType nPoints,
-    const int stencilNodes[], 
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
-    SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] )
+    SCAI_REGION( "OpenMP.Stencil.GEMV1Inner" )
 
-    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
 
-    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
+    SCAI_LOG_INFO( logger,  "stencilGEMV1Inner on " << i0 << " - " << i1 )
 
-    /** The two-dimensional grid is partitioned in each dimension according to the boundaries */
-
-    for ( IndexType ib = 0; ib < 3; ib++ )
+    #pragma omp parallel for
+    #pragma unroll_and_jam( 4 )
+    for ( IndexType i = i0; i < i1; i++ )
     {
-        IndexType i0 = i_stripes[ib];
-        IndexType i1 = i_stripes[ib + 1];
+        IndexType gridPos = i * gridDistances[0];
 
-        SCAI_LOG_DEBUG( logger, "loop over " << i0 << " - " << i1 )
+        ValueType v = 0;
 
-        if ( ib == 1 )
+        for ( IndexType p = 0; p < nPoints; ++p )
+        {   
+            v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
+        }
+
+        result[ gridPos] += alpha * v;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMV2Inner(
+    ValueType result[], 
+    const ValueType alpha,  
+    const ValueType x[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.GEMV2Inner" )
+
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+    const IndexType j0 = gridBounds[2];
+    const IndexType j1 = gridBounds[3];
+
+    SCAI_LOG_INFO( logger,  "stencilGEMV2Inner on " << i0 << " - " << i1 << " x " << j0 << " - " << j1 )
+
+    #pragma omp parallel for
+    for ( IndexType i = i0; i < i1; i++ )
+    {
+        #pragma unroll_and_jam( 4 )
+        for ( IndexType j = j0; j < j1; j++ )
         {
-            SCAI_REGION( "OpenMP.Stencil.GEMV1.inner" )
+            IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
 
-            // this is the inner part, all stencil points are valid, no inner checks needed
+            ValueType v = 0;
 
-            #pragma omp parallel for
+            for ( IndexType p = 0; p < nPoints; ++p )
+            {   
+                v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
+            }
+
+            result[ gridPos] += alpha * v;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMV3Inner(
+    ValueType result[], 
+    const ValueType alpha,  
+    const ValueType x[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.GEMV3Inner" )
+
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+    const IndexType j0 = gridBounds[2];
+    const IndexType j1 = gridBounds[3];
+    const IndexType k0 = gridBounds[4];
+    const IndexType k1 = gridBounds[5];
+
+    SCAI_LOG_INFO( logger,  "stencilGEMV3Inner on " << i0 << " - " << i1 
+                             << " x " << j0 << " - " << j1 
+                             << " x " << k0 << " - " << k1  )
+
+    #pragma omp parallel for
+    for ( IndexType i = i0; i < i1; i++ )
+    {
+        for ( IndexType j = j0; j < j1; j++ )
+        {
             #pragma unroll_and_jam( 4 )
-            for ( IndexType i = i0; i < i1; i++ )
+            for ( IndexType k = k0; k < k1; k++ )
             {
-                IndexType gridPos = i * gridDistances[0];
-
+                IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
+    
                 ValueType v = 0;
-
+    
                 for ( IndexType p = 0; p < nPoints; ++p )
                 {   
                     v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                 }
-
-                result[ gridPos ] += alpha * v;
-            }
-        }
-        else
-        {
-            // at least one stencil point neighbor might be invalid, check all
-
-            for ( IndexType i = i0; i < i1; i++ )
-            {
-                IndexType gridPos = i * gridDistances[0];
-
-                for ( IndexType p = 0; p < nPoints; ++p )
-                {
-                    if ( !isInner( i, stencilNodes[ p ], gridSizes[0] ) )
-                    {   
-                        continue;
-                    }
-                    
-                    result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilOffset[p] ];
-                }
+    
+                result[ gridPos] += alpha * v;
             }
         }
     }
@@ -1056,191 +1123,291 @@ void OpenMPStencilKernel::stencilGEMV1(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencilGEMV2(
+void OpenMPStencilKernel::stencilGEMV4Inner(
     ValueType result[], 
     const ValueType alpha,  
     const ValueType x[],
-    const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
+    const IndexType gridBounds[],
     const IndexType gridDistances[],
     const IndexType nPoints,
-    const int stencilNodes[], 
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
-    SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] )
+    SCAI_REGION( "OpenMP.Stencil.GEMV4Inner" )
 
-    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
-    bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+    const IndexType j0 = gridBounds[2];
+    const IndexType j1 = gridBounds[3];
+    const IndexType k0 = gridBounds[4];
+    const IndexType k1 = gridBounds[5];
+    const IndexType m0 = gridBounds[6];
+    const IndexType m1 = gridBounds[7];
 
-    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
-    const IndexType j_stripes[] = { 0, small1 ? 0 : lb[1], small1 ? 0 : gridSizes[1] - ub[1], gridSizes[1] };
+    SCAI_LOG_INFO( logger,  "stencilGEMV4Inner on " << i0 << " - " << i1 
+                             << " x " << j0 << " - " << j1 
+                             << " x " << k0 << " - " << k1  
+                             << " x " << m0 << " - " << m1  )
 
-    /** The two-dimensional grid is partitioned in each dimension according to the boundaries */
-
-    for ( IndexType ib = 0; ib < 3; ib++ )
+    #pragma omp parallel for
+    for ( IndexType i = i0; i < i1; i++ )
     {
-        IndexType i0 = i_stripes[ib];
-        IndexType i1 = i_stripes[ib + 1];
-
-        for ( IndexType jb = 0; jb < 3; jb++ )
+        for ( IndexType j = j0; j < j1; j++ )
         {
-            IndexType j0 = j_stripes[jb];
-            IndexType j1 = j_stripes[jb + 1];
-
-            SCAI_LOG_DEBUG( logger, "loop over " << i0 << " - " << i1 << ", " << j0 << " - " << j1 )
-
-            if ( ib == 1 && jb == 1 )
+            for ( IndexType k = k0; k < k1; k++ )
             {
-                SCAI_REGION( "OpenMP.Stencil.GEMV2.inner" )
-
-                // this is the inner part, all stencil points are valid, no inner checks needed
-
-                #pragma omp parallel for
-
-                for ( IndexType i = i0; i < i1; i++ )
-
                 #pragma unroll_and_jam( 4 )
-
-                for ( IndexType j = j0; j < j1; j++ )
+                for ( IndexType m = m0; m < m1; m++ )
                 {
-                    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
-
+                    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
+    
                     ValueType v = 0;
-
+        
                     for ( IndexType p = 0; p < nPoints; ++p )
                     {   
                         v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                     }
-
-                    result[ gridPos ] += alpha * v;
+    
+                    result[ gridPos] += alpha * v;
                 }
             }
-            else
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMVInner(
+    ValueType result[], 
+    const ValueType alpha,  
+    const ValueType x[],
+    const IndexType nDims,
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    switch ( nDims ) 
+    {
+        case 1 : stencilGEMV1Inner( result, alpha, x, gridBounds, gridDistances,
+                                    nPoints, stencilVal, stencilOffset );
+                 break;
+
+        case 2 : stencilGEMV2Inner( result, alpha, x, gridBounds, gridDistances,
+                                    nPoints, stencilVal, stencilOffset );
+                 break;
+
+        case 3 : stencilGEMV3Inner( result, alpha, x, gridBounds, gridDistances,
+                                    nPoints, stencilVal, stencilOffset );
+                 break;
+
+        case 4 : stencilGEMV4Inner( result, alpha, x, gridBounds, gridDistances,
+                                    nPoints, stencilVal, stencilOffset );
+                 break;
+
+        default: COMMON_THROWEXCEPTION( "stencilGEMVInner for nDims = " << nDims << " not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMV1Border(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType gridSizes[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.GEMV1Border" )
+
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+
+    SCAI_LOG_INFO( logger,  "stencilGEMV1Border on " << i0 << " - " << i1 )
+
+    #pragma omp parallel for if ( i1 - i0 > 7 )
+    for ( IndexType i = i0; i < i1; i++ )
+    {
+        IndexType gridPos = i * gridDistances[0];
+
+        ValueType v = 0;
+
+        for ( IndexType p = 0; p < nPoints; ++p )
+        {
+            if ( isInner( i, stencilNodes[ p ], gridSizes [ p ] ) )
             {
-                // at least one stencil point neighbor might be invalid, check all
-              
-                for ( IndexType i = i0; i < i1; i++ )
-                for ( IndexType j = j0; j < j1; j++ )
+                v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
+            }
+        }
+
+        result[ gridPos] += alpha * v;
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMV2Border(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType gridSizes[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.GEMV2Border" )
+
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+    const IndexType j0 = gridBounds[2];
+    const IndexType j1 = gridBounds[3];
+
+    SCAI_LOG_INFO( logger,  "stencilGEMV2Border on " << i0 << " - " << i1 
+                             << " x " << j0 << " - " << j1 )
+
+    #pragma omp parallel for if ( i1 - i0 > 7 )
+    for ( IndexType i = i0; i < i1; i++ )
+    {
+        #pragma omp parallel for
+        for ( IndexType j = j0; j < j1; j++ )
+        {
+            IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
+
+            ValueType v = 0;
+
+            for ( IndexType p = 0; p < nPoints; ++p )
+            {
+                if ( isInner2( i, j, &stencilNodes[ 2 * p ], gridSizes ) )
                 {
-                    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
+                    v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
+                }
+            }
+
+            result[ gridPos] += alpha * v;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMV3Border(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType gridSizes[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.GEMV3Border" )
+
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+    const IndexType j0 = gridBounds[2];
+    const IndexType j1 = gridBounds[3];
+    const IndexType k0 = gridBounds[4];
+    const IndexType k1 = gridBounds[5];
+
+    SCAI_LOG_INFO( logger,  "stencilGEMV3Border on " << i0 << " - " << i1 
+                             << " x " << j0 << " - " << j1 
+                             << " x " << k0 << " - " << k1  )
+
+    #pragma omp parallel for if ( i1 - i0 > 7 )
+    for ( IndexType i = i0; i < i1; i++ )
+    {
+        #pragma omp parallel for
+        for ( IndexType j = j0; j < j1; j++ )
+        {
+            for ( IndexType k = k0; k < k1; k++ )
+            {
+                IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
+
+                ValueType v = 0;
+
+                for ( IndexType p = 0; p < nPoints; ++p )
+                {
+                    if ( isInner3( i, j, k, &stencilNodes[ 3 * p ], gridSizes ) )
+                    {
+                        v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
+                    }
+                }
+
+                result[ gridPos] += alpha * v;
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMV4Border(
+    ValueType result[],
+    const ValueType alpha,
+    const ValueType x[],
+    const IndexType gridSizes[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    SCAI_REGION( "OpenMP.Stencil.GEMV4Border" )
+
+    const IndexType i0 = gridBounds[0];
+    const IndexType i1 = gridBounds[1];
+    const IndexType j0 = gridBounds[2];
+    const IndexType j1 = gridBounds[3];
+    const IndexType k0 = gridBounds[4];
+    const IndexType k1 = gridBounds[5];
+    const IndexType m0 = gridBounds[6];
+    const IndexType m1 = gridBounds[7];
+
+    SCAI_LOG_INFO( logger,  "stencilGEMV4Border on " << i0 << " - " << i1 
+                             << " x " << j0 << " - " << j1 
+                             << " x " << k0 << " - " << k1  
+                             << " x " << m0 << " - " << m1  )
+
+    #pragma omp parallel for if ( i1 - i0 > 7 )
+    for ( IndexType i = i0; i < i1; i++ )
+    {
+        #pragma omp parallel for
+        for ( IndexType j = j0; j < j1; j++ )
+        {
+            for ( IndexType k = k0; k < k1; k++ )
+            {
+                for ( IndexType m = m0; m < m1; m++ )
+                {
+                    IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
+
+                    ValueType v = 0;
 
                     for ( IndexType p = 0; p < nPoints; ++p )
                     {
-                        if ( !isInner( i, stencilNodes[ 2 * p ], gridSizes[0] ) )
-                        {   
-                            continue;
-                        }
-                        if ( !isInner( j, stencilNodes[ 2 * p + 1 ], gridSizes[1] ) )
-                        {   
-                            continue;
-                        }
-                        
-                        result[ gridPos ] += alpha * stencilVal[p] * x[ gridPos + stencilOffset[p] ];
-                    }
-                }
-            }
-        }
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
-void OpenMPStencilKernel::stencilGEMV3(
-    ValueType result[], 
-    const ValueType alpha,  
-    const ValueType x[],
-    const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
-    const IndexType gridDistances[],
-    const IndexType nPoints,
-    const int stencilNodes[], 
-    const ValueType stencilVal[],
-    const int stencilOffset[] )
-{
-    SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] << " x " << gridSizes[2] )
-
-    const IndexType nStripes = 3;
-
-    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
-    bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
-    bool small2 = gridSizes[2] <= lb[2] + ub[2];  // no inner part
-
-    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
-    const IndexType j_stripes[] = { 0, small1 ? 0 : lb[1], small1 ? 0 : gridSizes[1] - ub[1], gridSizes[1] };
-    const IndexType k_stripes[] = { 0, small2 ? 0 : lb[2], small2 ? 0 : gridSizes[2] - ub[2], gridSizes[2] };
-
-    /** The three dimensional grid is partitioned in each dimension according to the boundaries */
-
-    for ( IndexType ib = 0; ib < nStripes; ib++ )
-    {
-        IndexType i0 = i_stripes[ib];
-        IndexType i1 = i_stripes[ib + 1];
-
-        for ( IndexType jb = 0; jb < nStripes; jb++ )
-        {
-            IndexType j0 = j_stripes[jb];
-            IndexType j1 = j_stripes[jb + 1];
-
-            for ( IndexType kb = 0; kb < nStripes; kb++ )
-            {
-                IndexType k0 = k_stripes[kb]; 
-                IndexType k1 = k_stripes[kb + 1];
-
-                SCAI_LOG_DEBUG( logger, "loop over " << i0 << " - " << i1 << ", " << j0 << " - " << j1 << ", " << k0 << " - " << k1 )
-
-                if ( ib == 1 && jb == 1 && kb == 1 )
-                {
-                    SCAI_REGION( "OpenMP.Stencil.GEMV3.inner" )
-
-                    // this is the inner part, all stencil points are valid, no inner checks needed
-
-                    #pragma omp parallel for
-
-                    for ( IndexType i = i0; i < i1; i++ )
-                    for ( IndexType j = j0; j < j1; j++ )
-                    #pragma unroll_and_jam( 4 )
-                    for ( IndexType k = k0; k < k1; k++ )
-                    {
-                        IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
-       
-                        ValueType v = 0;
-
-                        for ( IndexType p = 0; p < nPoints; ++p )
-                        {   
+                        if ( isInner4( i, j, k, m, &stencilNodes[ 4 * p ], gridSizes ) )
+                        {
                             v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
                         }
-
-                        result[ gridPos] += alpha * v;
                     }
-                }
-                else
-                {
-                    // at least one stencil point neighbor might be invalid, check all
 
-                    #pragma omp parallel for if ( ib == 1 )
-                    for ( IndexType i = i0; i < i1; i++ )
-                    #pragma omp parallel for
-                    for ( IndexType j = j0; j < j1; j++ )
-                    for ( IndexType k = k0; k < k1; k++ )
-                    {
-                        IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
-
-                        ValueType v = 0;
-
-                        for ( IndexType p = 0; p < nPoints; ++p )
-                        {
-                            if ( isInner3( i, j, k, &stencilNodes[ 3 * p ], gridSizes ) )
-                            {   
-                                v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
-                            }
-                        }
-
-                        result[ gridPos ] += alpha * v;
-                    }
+                    result[ gridPos] += alpha * v;
                 }
             }
         }
@@ -1250,115 +1417,114 @@ void OpenMPStencilKernel::stencilGEMV3(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPStencilKernel::stencilGEMV4(
+void OpenMPStencilKernel::stencilGEMVBorder(
     ValueType result[], 
     const ValueType alpha,  
     const ValueType x[],
+    const IndexType nDims,
+    const IndexType gridSizes[],
+    const IndexType gridBounds[],
+    const IndexType gridDistances[],
+    const IndexType nPoints,
+    const int stencilNodes[],
+    const ValueType stencilVal[],
+    const int stencilOffset[] )
+{
+    switch ( nDims ) 
+    {
+        case 1 : stencilGEMV1Border( result, alpha, x, gridSizes, gridBounds, gridDistances,
+                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
+        case 2 : stencilGEMV2Border( result, alpha, x, gridSizes, gridBounds, gridDistances,
+                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
+        case 3 : stencilGEMV3Border( result, alpha, x, gridSizes, gridBounds, gridDistances,
+                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
+        case 4 : stencilGEMV4Border( result, alpha, x, gridSizes, gridBounds, gridDistances,
+                                     nPoints, stencilNodes, stencilVal, stencilOffset );
+                 break;
+
+        default: COMMON_THROWEXCEPTION( "stencilGEMVBorder for nDims = " << nDims << " not supported yet" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPStencilKernel::stencilGEMVCaller(
+    IndexType gridBounds[],
+    ValueType result[], 
+    const ValueType alpha,  
+    const ValueType x[],
+    const IndexType nDims,
     const IndexType gridSizes[],
     const IndexType lb[],
     const IndexType ub[],
     const IndexType gridDistances[],
+    const IndexType currentDim,
     const IndexType nPoints,
     const int stencilNodes[], 
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
-    SCAI_LOG_INFO( logger,  "stencilGEMV on grid " << gridSizes[0] << " x " << gridSizes[1] 
-                                           << " x " << gridSizes[2] << " x " << gridSizes[3] )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( currentDim, nDims, "illegal current dimension" )
 
-    const IndexType nStripes = 3;
-
-    bool small0 = gridSizes[0] <= lb[0] + ub[0];  // no inner part
-    bool small1 = gridSizes[1] <= lb[1] + ub[1];  // no inner part
-    bool small2 = gridSizes[2] <= lb[2] + ub[2];  // no inner part
-    bool small3 = gridSizes[3] <= lb[3] + ub[3];  // no inner part
-
-    const IndexType i_stripes[] = { 0, small0 ? 0 : lb[0], small0 ? 0 : gridSizes[0] - ub[0], gridSizes[0] };
-    const IndexType j_stripes[] = { 0, small1 ? 0 : lb[1], small1 ? 0 : gridSizes[1] - ub[1], gridSizes[1] };
-    const IndexType k_stripes[] = { 0, small2 ? 0 : lb[2], small2 ? 0 : gridSizes[2] - ub[2], gridSizes[2] };
-    const IndexType m_stripes[] = { 0, small3 ? 0 : lb[3], small3 ? 0 : gridSizes[3] - ub[3], gridSizes[3] };
-
-    /** The four-dimensional grid is partitioned in each dimension according to the boundaries */
-
-    for ( IndexType ib = 0; ib < nStripes; ib++ )
+    if ( gridSizes[currentDim] <= lb[currentDim] + ub[currentDim] )
     {
-        IndexType i0 = i_stripes[ib];
-        IndexType i1 = i_stripes[ib + 1];
+        // no inner part in current dimension, call boundary routine, afterwards all is done
 
-        for ( IndexType jb = 0; jb < nStripes; jb++ )
-        {
-            IndexType j0 = j_stripes[jb];
-            IndexType j1 = j_stripes[jb + 1];
-
-            for ( IndexType kb = 0; kb < nStripes; kb++ )
-            {
-                IndexType k0 = k_stripes[kb]; 
-                IndexType k1 = k_stripes[kb + 1];
-
-                for ( IndexType mb = 0; mb < nStripes; mb++ )
-                {
-                    IndexType m0 = m_stripes[mb]; 
-                    IndexType m1 = m_stripes[mb + 1];
-
-                    SCAI_LOG_DEBUG( logger, "loop over " << i0 << " - " << i1 << ", " << j0 << " - " << j1 
-                                                 << ", " << k0 << " - " << k1 << ", " << m0 << " - " << m1 )
-
-                    if ( ib == 1 && jb == 1 && kb == 1 && mb == 1 )
-                    {
-                        SCAI_REGION( "OpenMP.Stencil.GEMV4.inner" )
-
-                        // this is the inner part, all stencil points are valid, no inner checks needed
-
-                        #pragma omp parallel for
-
-                        for ( IndexType i = i0; i < i1; i++ )
-                        for ( IndexType j = j0; j < j1; j++ )
-                        for ( IndexType k = k0; k < k1; k++ )
-                        #pragma unroll_and_jam( 4 )
-                        for ( IndexType m = m0; m < m1; m++ )
-                        {
-                            IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
-
-                            ValueType v = 0;
-
-                            for ( IndexType p = 0; p < nPoints; ++p )
-                            {   
-                                v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
-                            }
-
-                            result[ gridPos ] += alpha * v;
-                        }
-                    }
-                    else
-                    {
-                        // at least one stencil point neighbor might be invalid, check all
-    
-                        #pragma omp parallel for if ( ib == 1 )
-                        for ( IndexType i = i0; i < i1; i++ )
-                        #pragma omp parallel for 
-                        for ( IndexType j = j0; j < j1; j++ )
-                        for ( IndexType k = k0; k < k1; k++ )
-                        for ( IndexType m = m0; m < m1; m++ )
-                        {
-                            IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
-    
-                            ValueType v = 0;
-
-                            for ( IndexType p = 0; p < nPoints; ++p )
-                            {
-                                if ( isInner4( i, j, k, m, &stencilNodes[ 4 * p ], gridSizes ) )
-                                {
-                                    v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
-                                }
-                            }
-
-                            result[ gridPos ] += alpha * v;
-                        }
-                    }
-                } 
-            }
-        }
+        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
+ 
+        return;
     }
+
+    // if left boundary, handle it
+
+    if ( lb[currentDim] > 0 )
+    {
+        gridBounds[2 * currentDim] = 0;
+        gridBounds[2 * currentDim + 1] = lb[currentDim];
+
+        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
+    }
+
+    // set inner boundaries,
+
+    gridBounds[2 * currentDim] = lb[currentDim];
+    gridBounds[2 * currentDim + 1] = gridSizes[currentDim] - ub[currentDim];
+
+    if ( currentDim + 1 == nDims )
+    {
+        // all boundaries are now inner ones, we can call the routine for the inner points
+
+        stencilGEMVInner( result, alpha, x, nDims, gridBounds, gridDistances, nPoints, stencilVal, stencilOffset );
+    }
+    else
+    { 
+        // recursive call to set grid bounds for the next dimension 
+
+        stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, lb, ub, gridDistances, currentDim + 1, 
+                           nPoints, stencilNodes, stencilVal, stencilOffset );
+    }
+
+    // if right boundary, travere it
+
+    if ( ub[currentDim] > 0 )
+    {
+        gridBounds[2 * currentDim] = gridSizes[currentDim] - ub[currentDim];
+        gridBounds[2 * currentDim + 1] = gridSizes[currentDim];
+
+        stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
+    }
+
+    // reset the boundaries
+
+    gridBounds[2 * currentDim] = 0;
+    gridBounds[2 * currentDim + 1] = gridSizes[1];
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1378,28 +1544,20 @@ void OpenMPStencilKernel::stencilGEMV(
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
-    SCAI_REGION( "OpenMP.Stencil.GEMV" )
+    // prepare array with gridBounds for the recursive traverser routine
 
-    switch ( nDims ) 
+    IndexType gridBounds[ 2 * SCAI_GRID_MAX_DIMENSION ];
+
+    for ( IndexType i = 0; i < nDims; ++i )
     {
-        case 1 : stencilGEMV1( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilOffset );
-                 break;
-
-        case 2 : stencilGEMV2( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilOffset );
-                 break;
-
-        case 3 : stencilGEMV3( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilOffset );
-                 break;
-
-        case 4 : stencilGEMV4( result, alpha, x, gridSizes, lb, ub, gridDistances,
-                               nPoints, stencilNodes, stencilVal, stencilOffset );
-                 break;
-
-        default: COMMON_THROWEXCEPTION( "stencilGEMV for nDims = " << nDims << " not supported yet" )
+        gridBounds[2 * i] = 0;
+        gridBounds[2 * i + 1] = gridSizes[i];
     }
+
+    IndexType currentDim = 0;
+
+    stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, lb, ub, gridDistances, currentDim,
+                       nPoints, stencilNodes, stencilVal, stencilOffset );
 }
 
 /* --------------------------------------------------------------------------- */

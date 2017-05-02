@@ -72,7 +72,7 @@ int main( int argc, const char* argv[] )
 
     // Take a default stencil
 
-    Stencil3D<double> stencil( 27 ); 
+    Stencil3D<double> stencil( 27 );
 
     // Define a grid with same number of dimensions as stencil
 
@@ -108,20 +108,22 @@ int main( int argc, const char* argv[] )
 
     x = 1.0;
 
+    const IndexType NITER = 1;
+
     DenseVector<double> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
     DenseVector<double> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
 
     {
         SCAI_REGION( "main.stencilGEMV" )
 
-        for ( IndexType iter = 0; iter < 10; ++iter )
+        for ( IndexType iter = 0; iter < NITER; ++iter )
         {
             y1 += stencilMatrix * x;
         }
     }
     {
         SCAI_REGION( "main.csrGEMV" )
-        for ( IndexType iter = 0; iter < 10; ++iter )
+        for ( IndexType iter = 0; iter < NITER; ++iter )
         {
             y2 += csrMatrix * x;
         }
