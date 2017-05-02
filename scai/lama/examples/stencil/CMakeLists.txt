@@ -33,7 +33,6 @@
 ###
 
 set ( SOURCES
-         OpenMPStencilKernel.cpp
          StencilStorage.cpp
          StencilMatrix.cpp
     )

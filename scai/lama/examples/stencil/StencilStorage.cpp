@@ -34,7 +34,7 @@
 
 // hpp
 #include "StencilStorage.hpp"
-#include <scai/lama/examples/stencil/OpenMPStencilKernel.hpp>
+#include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
 
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
@@ -165,7 +165,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     {
         WriteOnlyAccess<IndexType> sizes( csrIA, n );
   
-        stencilkernel::OpenMPStencilKernel::stencilLocalSizes( 
+        sparsekernel::OpenMPStencilKernel::stencilLocalSizes( 
             sizes.get(), mStencil.nDims(), mGrid.sizes(), gridDistances, 
             mStencil.nPoints(), mStencil.positions() );
     }
@@ -185,7 +185,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
         WriteOnlyAccess<IndexType> ja( csrJA, nnz );
         WriteOnlyAccess<ValueType> values( typedValues, nnz );
  
-        stencilkernel::OpenMPStencilKernel::stencilLocalCSR( 
+        sparsekernel::OpenMPStencilKernel::stencilLocalCSR( 
             ja.get(), values.get(), ia.get(),
             mStencil.nDims(), mGrid.sizes(), gridDistances, 
             mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilPos );
@@ -228,7 +228,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil )
 
-    stencilkernel::OpenMPStencilKernel::stencilGEMV( wResult.get(), alpha, rX.get(), 
+    sparsekernel::OpenMPStencilKernel::stencilGEMV( wResult.get(), alpha, rX.get(), 
                  mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
                  mStencil.nPoints(), mStencil.positions(), mStencil.values(),
                  stencilLinPos );

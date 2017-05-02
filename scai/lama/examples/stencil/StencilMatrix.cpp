@@ -38,7 +38,7 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
-#include <scai/lama/examples/stencil/OpenMPStencilKernel.hpp>
+#include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/shared_ptr.hpp>
@@ -114,7 +114,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
     {
         hmemo::WriteOnlyAccess<IndexType> wIA( haloIA, n + 1 );
 
-        stencilkernel::OpenMPStencilKernel::stencilHaloSizes( 
+        sparsekernel::OpenMPStencilKernel::stencilHaloSizes( 
             wIA.get(), nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
             globalGrid.sizes(), stencil.nPoints(), stencil.positions() );
 
@@ -130,7 +130,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
         hmemo::WriteOnlyAccess<ValueType> wValues( haloValues, nnz );
         hmemo::ReadAccess<IndexType> rIA( haloIA );
 
-        stencilkernel::OpenMPStencilKernel::stencilHaloCSR(
+        sparsekernel::OpenMPStencilKernel::stencilHaloCSR(
             wJA.get(), wValues.get(), rIA.get(),
             nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
             globalGrid.sizes(), globalGridDistances, stencil.nPoints(), stencil.positions(),
