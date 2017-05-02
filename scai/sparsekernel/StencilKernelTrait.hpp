@@ -31,11 +31,39 @@
 
 namespace scai
 {
-namespace stencilkernel
+namespace sparsekernel
 {
 
 struct StencilKernelTrait
 {
+    struct stencilLocalSizes
+    {
+        /** Function that computes local csr sizes (num entries per point) for a stencil matrix.
+         *
+         *  @param[out] sizes is array with entry for each grid point how many stencil points are available
+         *  @param[in] nDims is the number of dimensions for the grid
+         *  @param[in] gridSizes contains the dimensions of the grid 
+         *  @param[in] gridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] nPoints number of stencil points
+         *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
+         *
+         *  The grid is assumed to be linearized for entries in sizes where the kind of linearization is 
+         *  given by the gridDistances, e.g. [ numCols, 1 ] for row-major, [1, numRows ] for col-major.
+         */
+        typedef void ( *FuncType )(
+            IndexType sizes[],
+            const IndexType nDims,
+            const IndexType gridSizes[],
+            const IndexType gridDistances[],
+            const IndexType nPoints,
+            const int stencilNodes[] );
+
+        static const char* getId()
+        {
+            return "Stencil.localSizes";
+        }
+    };
+
     template<typename ValueType>
     struct stencilLocalCSR
     {

@@ -32,12 +32,12 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Grid.hpp>
-#include <scai/lama/examples/stencil/OpenMPStencilKernel.hpp>
-#include <scai/lama/examples/stencil/StencilKernelTrait.hpp>
+#include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
+#include <scai/sparsekernel/StencilKernelTrait.hpp>
 
 namespace scai
 {
-namespace stencilkernel
+namespace sparsekernel
 {
 
 /* --------------------------------------------------------------------------- */
@@ -1562,6 +1562,19 @@ void OpenMPStencilKernel::stencilGEMV(
 
 /* --------------------------------------------------------------------------- */
 
+void OpenMPStencilKernel::Registrator::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry; 
+
+    common::context::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_DEBUG( logger, "register StencilKernel OpenMP-routines for Host at kernel registry [" << flag << "]" )
+
+    KernelRegistry::set<StencilKernelTrait::stencilLocalSizes>( stencilLocalSizes, ctx, flag );
+}
+
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPStencilKernel::RegistratorV<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
 {
@@ -1586,6 +1599,8 @@ OpenMPStencilKernel::OpenMPStencilKernel()
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
 
+    Registrator::registerKernels( flag );
+
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
@@ -1596,6 +1611,8 @@ OpenMPStencilKernel::~OpenMPStencilKernel()
     SCAI_LOG_INFO( logger, "unregister StencilKernel OpenMP-routines for Host at kernel registry" )
 
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+
+    Registrator::registerKernels( flag );
 
     kregistry::mepr::RegistratorV<RegistratorV, SCAI_NUMERIC_TYPES_HOST_LIST>::registerKernels( flag );
 }

@@ -41,6 +41,7 @@ set ( CXX_SOURCES
       DIAUtilsTest
       ELLUtilsTest
       JDSUtilsTest
+      StencilKernelTest
 ) 
 
 include_directories ( ${Boost_INCLUDE_DIR} )

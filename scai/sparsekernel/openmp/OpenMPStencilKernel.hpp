@@ -37,7 +37,7 @@
 
 namespace scai
 {
-namespace stencilkernel
+namespace sparsekernel
 {
 
 /** Class that contains the OpenMP implementations of the stencil kernels. */
@@ -463,6 +463,13 @@ private:
     const ValueType stencilVal[],
     const int stencilOffset[] );
 
+    /** Struct for registration of methods without template arguments */
+
+    struct Registrator
+    {
+        static void registerKernels( const kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
     /** Struct for registration of methods with one template argument.
      *
      *  Registration function is wrapped in struct/class that can be used as template
@@ -492,6 +499,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} // namespace stencilkernel
+} // namespace sparsekernel
 
 } // namespace scai
