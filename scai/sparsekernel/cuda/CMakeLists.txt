@@ -48,6 +48,7 @@ scai_project(
         CUDADIAUtils
         CUDAELLUtils
         CUDAJDSUtils
+        CUDAStencilKernel
 
     CUDA_SOURCES   # .cu
 

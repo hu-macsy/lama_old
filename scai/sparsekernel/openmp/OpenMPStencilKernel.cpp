@@ -1144,7 +1144,7 @@ void OpenMPStencilKernel::stencilGEMV4Inner(
     const IndexType m0 = gridBounds[6];
     const IndexType m1 = gridBounds[7];
 
-    SCAI_LOG_INFO( logger,  "stencilGEMV4Inner on " << i0 << " - " << i1 
+    SCAI_LOG_INFO( logger,  "stencilGEMV4Inner ( " << nPoints << " points ) on " << i0 << " - " << i1 
                              << " x " << j0 << " - " << j1 
                              << " x " << k0 << " - " << k1  
                              << " x " << m0 << " - " << m1  )
@@ -1242,7 +1242,7 @@ void OpenMPStencilKernel::stencilGEMV1Border(
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
-            if ( isInner( i, stencilNodes[ p ], gridSizes [ p ] ) )
+            if ( isInner( i, stencilNodes[ p ], gridSizes [ 0 ] ) )
             {
                 v += stencilVal[p] * x[ gridPos + stencilOffset[p] ];
             }
@@ -1524,7 +1524,7 @@ void OpenMPStencilKernel::stencilGEMVCaller(
     // reset the boundaries
 
     gridBounds[2 * currentDim] = 0;
-    gridBounds[2 * currentDim + 1] = gridSizes[1];
+    gridBounds[2 * currentDim + 1] = gridSizes[currentDim];
 }
 
 /* --------------------------------------------------------------------------- */
