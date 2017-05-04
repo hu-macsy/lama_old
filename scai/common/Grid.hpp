@@ -211,12 +211,22 @@ inline COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, c
 Grid::Grid()
 {
     mNDims = 0;
+
+    for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid1D::Grid1D( const IndexType n1 )
 {
     mNDims = 1;
     mSize[0] = n1;
+
+    for ( IndexType i = 1; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid2D::Grid2D( const IndexType n1, const IndexType n2 ) 
@@ -224,6 +234,11 @@ Grid2D::Grid2D( const IndexType n1, const IndexType n2 )
     mNDims = 2;
     mSize[0] = n1;
     mSize[1] = n2;
+
+    for ( IndexType i = 2; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid3D::Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 ) 
@@ -233,6 +248,11 @@ Grid3D::Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 )
     mSize[0] = n1;
     mSize[1] = n2;
     mSize[2] = n3;
+
+    for ( IndexType i = 3; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid4D::Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 )
@@ -243,6 +263,11 @@ Grid4D::Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, cons
     mSize[1] = n2;
     mSize[2] = n3;
     mSize[3] = n4;
+ 
+    for ( IndexType i = 4; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid::Grid( const IndexType nDims, const IndexType size[] )

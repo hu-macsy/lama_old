@@ -42,6 +42,7 @@ add_subdirectory ( mandelbrot )
 add_subdirectory ( stencil )
 add_subdirectory ( nbody )
 add_subdirectory ( tutorial )
+add_subdirectory ( image )
 add_subdirectory ( io )
 
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
