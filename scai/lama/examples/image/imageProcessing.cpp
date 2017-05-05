@@ -47,6 +47,34 @@
 using namespace scai;
 using namespace lama;
 
+
+GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, float sigma){
+    /* radius = amount of blur, sigma = standard deviation*/
+    Stencil3D<float> stencil;
+    
+    float num = 0;
+    for(IndexType i = -radius; i<radius+1; i++){
+        for(IndexType j = -radius; j<radius+1; j++){
+            num = num +(1/(2*M_PI*(sigma*sigma))*pow(M_E, -((i*i+j*j)/(2*sigma*sigma))));
+        }
+
+    }
+    for(IndexType i = -radius; i<radius+1; i++){
+        for(IndexType j = -radius; j<radius+1; j++){
+            stencil.addPoint(i,j,0,((1/(2*M_PI*(sigma*sigma))*pow(M_E, -((i*i+j*j)/(2*sigma*sigma)))))/num);
+        }
+
+    }
+
+    StencilMatrix<float> blur( inputImage.getDistributionPtr(), stencil);
+
+    GridVector<float> output;
+    output = blur*inputImage;
+
+    return output;
+
+}
+
 int main( int argc, const char* argv[] )
 {
     // relevant SCAI arguments: 
@@ -81,11 +109,12 @@ int main( int argc, const char* argv[] )
 
     Stencil3D<float> stencil( stencil1, stencil1, stencilDummy );
 
-    StencilMatrix<float> m( image.getDistributionPtr(), stencil );
+
+    StencilMatrix<float> m( image.getDistributionPtr(), stencil);
 
     std::cout << "stencil matrix = " << m << std::endl;
 
-    CSRSparseMatrix<float> csr( m );
+    // CSRSparseMatrix<float> csr( m );
 
     // csr.setIdentity( image.getDistributionPtr() );
 
@@ -95,9 +124,10 @@ int main( int argc, const char* argv[] )
 
     GridVector<float> imageNew;
 
-    imageNew = m * image;
+    imageNew  =  m * image;
+    GridVector<float> imageGausBlur= gaussianBlur(image, 6, 1.5);
 
-    std::cout << "new image = " << imageNew << std::endl;
+    //std::cout << "___new image = " << imageNew << std::endl;
 
     // imageNew += image;
 
