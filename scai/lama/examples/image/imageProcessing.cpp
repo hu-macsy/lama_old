@@ -55,11 +55,20 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
+    if ( argc != 3 )
+    {
+        std::cout << "Wrong call, please use : " << argv[0] << " <inputFileName> <outputFileName>" << std::endl;
+        return -1;
+    }
+
+    std::string inputFileName = argv[1];
+    std::string outputFileName = argv[2];
+
     // read in the image file, must be a png file
 
     GridVector<float> image;   // size will be ( width , height, ncolors )
 
-    ImageIO::read( image, "input.bmp" );
+    ImageIO::read( image, inputFileName );
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
@@ -70,15 +79,28 @@ int main( int argc, const char* argv[] )
     Stencil1D<float> stencil1( 3 );
     Stencil1D<float> stencilDummy( 1 );
 
-    Stencil3D<float> stencil( stencil1, stencil1, stencilDummy );
+    Stencil3D<float> stencil;
+    stencil.addPoint( 0, 0, 0, 0.5 );
+    stencil.addPoint( 0, 0, -1, 0.25 );
+    stencil.addPoint( 0, 0, 1, 0.25 );
 
     StencilMatrix<float> m( image.getDistributionPtr(), stencil );
 
-    // apply the stencil
+    std::cout << "stencil matrix = " << m << std::endl;
+
+    CSRSparseMatrix<float> csr( m );
+
+    // csr.setIdentity( image.getDistributionPtr() );
+
+    // std::cout << "csr matrix = " << csr << std::endl;
+
+    // csr.writeToFile( "stencilM.mtx" );
 
     GridVector<float> imageNew;
 
-    imageNew = m * image;
+    imageNew = csr * image;
 
-    ImageIO::write( image, "output.bmp" );
+    std::cout << "new image = " << imageNew << std::endl;
+
+    ImageIO::write( imageNew, outputFileName );
 }

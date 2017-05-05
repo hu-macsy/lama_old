@@ -42,7 +42,8 @@
 
 // other SCAI libraries
 
-#include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/GridDistribution.hpp>
+#include <scai/dmemo/NoCommunicator.hpp>
 #include <scai/common/Grid.hpp>
 
 namespace scai
@@ -82,39 +83,43 @@ public:
 
     /** Default vector to enable just declaration of a grid vector. */
 
-    GridVector() :
-
-        DenseVector<ValueType>(),
-        mGrid( common::Grid1D( 0 ) )
+    GridVector() : DenseVector<ValueType>()
 
     {
+        // give it a default grid distribution for consistency
+
+        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
+        dmemo::DistributionPtr dist( new dmemo::GridDistribution( common::Grid1D( 0 ), comm ) );
+        this->allocate( dist );
     }
 
-    GridVector( const common::Grid& grid, const ValueType initVal ) :
-
-        DenseVector<ValueType>( grid.size(), initVal ),
-        mGrid( grid )
+    GridVector( const common::Grid& grid, const ValueType initVal ) : DenseVector<ValueType>()
 
     {
+        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
+        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
+        this->allocate( dist );
+        this->assign( initVal );
     }
 
     const common::Grid& globalGrid() const
     {
-        return mGrid;
+        const dmemo::GridDistribution* dist = dynamic_cast<const dmemo::GridDistribution*>( this->getDistributionPtr().get() );
+        SCAI_ASSERT_ERROR( dist, "Grid vector has no grid distribution" )
+        return dist->getGlobalGrid();
     }
 
     IndexType nDims() const
     {
-        return mGrid.nDims();
+        return globalGrid().nDims();
     }
 
     /** Swap available array with data into a grid vector. */
 
     void swap( hmemo::HArray<ValueType>& data, const common::Grid& grid )
     {
-        mGrid = grid;
-
-        dmemo::DistributionPtr dist( new dmemo::NoDistribution( grid.size() ) );
+        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
+        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
    
         DenseVector<ValueType>::swap( data, dist );
     }
@@ -197,27 +202,24 @@ public:
 
     Scalar operator() ( const IndexType i1, const IndexType i2 ) const
     {
-        const common::Grid2D& grid2D = static_cast<const common::Grid2D&>( mGrid );
+        const common::Grid2D& grid2D = static_cast<const common::Grid2D&>( globalGrid() );
         return DenseVector<ValueType>::getValue( grid2D.linearPos( i1, i2 ) );
     }
 
     Scalar operator() ( const IndexType i1, const IndexType i2, const IndexType i3 ) const
     {
-        const common::Grid3D& grid3D = static_cast<const common::Grid3D&>( mGrid );
+        const common::Grid3D& grid3D = static_cast<const common::Grid3D&>( globalGrid() );
         return DenseVector<ValueType>::getValue( grid3D.linearPos( i1, i2, i3 ) );
     }
 
     Scalar operator() ( const IndexType i1, const IndexType i2, const IndexType i3, const IndexType i4 ) const
     {
-        IndexType pos[] = { i1, i2, i3, i4, 0, 0 };
-        return DenseVector<ValueType>::getValue( mGrid.linearPos( pos ) );
+        const common::Grid4D& grid4D = static_cast<const common::Grid4D&>( globalGrid() );
+        return DenseVector<ValueType>::getValue( grid4D.linearPos( i1, i2, i3, i4 ) );
     }
 
     using DenseVector<ValueType>::operator=;
 
-private:
-
-    common::Grid mGrid;
 };
 
 } /* end namespace lama */

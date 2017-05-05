@@ -87,13 +87,15 @@ void ImageIO::read( GridVector<ValueType>& imageData, const std::string& inputFi
     IndexType width = png_get_image_width(png_ptr, info_ptr);
     IndexType height = png_get_image_height(png_ptr, info_ptr);
 
+    SCAI_LOG_ERROR( logger, "read image of size " << width << " x " << height )
+
     png_byte color_type = png_get_color_type(png_ptr, info_ptr);
     png_byte png_bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
     int number_of_passes = png_set_interlace_handling(png_ptr);
 
-    SCAI_LOG_ERROR( logger, "color_type = " << color_type 
-                            << ", png_bit_depth = " << png_bit_depth 
+    SCAI_LOG_ERROR( logger, "color_type = " << static_cast<int>( color_type )
+                            << ", png_bit_depth = " << static_cast<int>( png_bit_depth )
                             << ", passes = " << number_of_passes )
 
     png_read_update_info(png_ptr, info_ptr);
@@ -131,7 +133,7 @@ void ImageIO::read( GridVector<ValueType>& imageData, const std::string& inputFi
             {
                  wX[ 3 * width * i + 3 * j ] = row_ptr[ 4 * j ];
                  wX[ 3 * width * i + 3 * j + 1 ] = row_ptr[ 4 * j + 1 ];
-                 wX[ 3 * width * i + 3 * j + 1 ] = row_ptr[ 4 * j + 2 ];
+                 wX[ 3 * width * i + 3 * j + 2 ] = row_ptr[ 4 * j + 2 ];
             }
         }
     }
@@ -144,51 +146,45 @@ void ImageIO::read( GridVector<ValueType>& imageData, const std::string& inputFi
 template<typename ValueType>
 void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& outputFileName )
 {
-    SCAI_LOG_ERROR( logger, "cannot write data to file " << outputFileName )
+    SCAI_LOG_ERROR( logger, "write image data = " << imageData << " to file " << outputFileName )
 
     const LArray<ValueType>& x = imageData.getLocalValues();
 
     const common::Grid grid = imageData.globalGrid();
 
+    SCAI_LOG_ERROR( logger, "write image, shape = " << grid )
+
     const IndexType width  = grid.size( 0 );
     const IndexType height = grid.size( 1 );
     const IndexType ncolor = grid.size( 2 );
 
-    SCAI_ASSERT_EQ_ERROR( 4, ncolor, "4 values per pixel expected" )
+    SCAI_ASSERT_EQ_ERROR( 3, ncolor, "3 values per pixel expected" )
 
     // convert the array data to png data
 
-    png_bytep png_bitmap = new png_byte[ 4 * width * height ];
+    png_bytep* row_pointers = new png_bytep[ height ];
 
     {
         ReadAccess<ValueType> rX( x );
 
-        IndexType cnt = 0;
-
         for ( IndexType y = 0; y < height; y++ )
         {
+            row_pointers[y] = new png_byte[ 4 * width ];
+
             for ( IndexType x = 0; x < width; ++x )
             {
             
                 // png_bitmap requires r, g, b, opaque value 
 
-                png_bitmap[ cnt++ ] = static_cast<png_byte>( rX[ 3 * width * y + 3  * x ] );
-                png_bitmap[ cnt++ ] = 255;
+                row_pointers[y][ 4 * x ]     = static_cast<png_byte>( rX[ 3 * width * y + 3 * x ] );
+                row_pointers[y][ 4 * x + 1 ] = static_cast<png_byte>( rX[ 3 * width * y + 3 * x + 1 ] );
+                row_pointers[y][ 4 * x + 2 ] = static_cast<png_byte>( rX[ 3 * width * y + 3 * x + 2 ] );
+                row_pointers[y][ 4 * x + 3 ] = static_cast<png_byte>( 255 );
             }    
         }
     }
 
     png_structp png_ptr;
-    png_bytep* row_pointers;
-
-    // png library expects pointer for each row
-
-    row_pointers = new png_bytep[ height ];
-
-    for ( int y = 0; y < height; ++y )
-    {
-        row_pointers[y] = png_bitmap + 4 * width;
-    }
 
     FILE* fp = fopen( outputFileName.c_str(), "wb" );
 
@@ -198,15 +194,20 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
 
     png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
 
+    SCAI_ASSERT_ERROR( png_ptr, "png_create_write_struct failed" );
+
     png_infop info_ptr = png_create_info_struct( png_ptr );
 
-    SCAI_ASSERT_ERROR( png_ptr, "png_create_write_struct failed" );
+    SCAI_ASSERT_ERROR( info_ptr, "png_create_info_struct failed" );
 
     SCAI_ASSERT_ERROR( !setjmp( png_jmpbuf( png_ptr ) ), "failed" )
 
     png_init_io( png_ptr, fp );
 
-    SCAI_ASSERT_ERROR( !setjmp( png_jmpbuf( png_ptr ) ), "failed" )
+    if ( setjmp( png_jmpbuf( png_ptr ) ) )
+    {
+        COMMON_THROWEXCEPTION( "[write png file error]" )
+    }
 
      /* write header */
 
@@ -219,9 +220,17 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
 
     png_write_info( png_ptr, info_ptr );
 
+    if ( setjmp( png_jmpbuf( png_ptr ) ) )
+    {
+        COMMON_THROWEXCEPTION( "[write png file error]" )
+    }
+
     png_write_image( png_ptr, row_pointers );
 
-    SCAI_ASSERT_ERROR( setjmp( png_jmpbuf( png_ptr ) ), "FAIL" )
+    if ( setjmp( png_jmpbuf( png_ptr ) ) )
+    {
+        COMMON_THROWEXCEPTION( "[write png file error]" )
+    }
 
     png_write_end( png_ptr, NULL );
 
