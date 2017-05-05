@@ -79,10 +79,7 @@ int main( int argc, const char* argv[] )
     Stencil1D<float> stencil1( 3 );
     Stencil1D<float> stencilDummy( 1 );
 
-    Stencil3D<float> stencil;
-    stencil.addPoint( 0, 0, 0, 0.5 );
-    stencil.addPoint( 0, 0, -1, 0.25 );
-    stencil.addPoint( 0, 0, 1, 0.25 );
+    Stencil3D<float> stencil( stencil1, stencil1, stencilDummy );
 
     StencilMatrix<float> m( image.getDistributionPtr(), stencil );
 
@@ -98,9 +95,11 @@ int main( int argc, const char* argv[] )
 
     GridVector<float> imageNew;
 
-    imageNew = csr * image;
+    imageNew = m * image;
 
     std::cout << "new image = " << imageNew << std::endl;
+
+    // imageNew += image;
 
     ImageIO::write( imageNew, outputFileName );
 }

@@ -118,7 +118,7 @@ void ImageIO::read( GridVector<ValueType>& imageData, const std::string& inputFi
 
     fclose(fp);
 
-    common::Grid3D grid( width, height, 3 );
+    common::Grid3D grid( height, width, 3 );
 
     LArray<ValueType> x;
     
@@ -154,8 +154,8 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
 
     SCAI_LOG_ERROR( logger, "write image, shape = " << grid )
 
-    const IndexType width  = grid.size( 0 );
-    const IndexType height = grid.size( 1 );
+    const IndexType height = grid.size( 0 );
+    const IndexType width  = grid.size( 1 );
     const IndexType ncolor = grid.size( 2 );
 
     SCAI_ASSERT_EQ_ERROR( 3, ncolor, "3 values per pixel expected" )
