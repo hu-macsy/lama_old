@@ -1,5 +1,5 @@
 /**
- * @file lama/Stencil.hpp
+ * @file common/Stencil.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -39,25 +39,34 @@
 #include <scai/common/config.hpp>
 #include <scai/common/Utils.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 
 // std
 #include <stdint.h>
 
-#define SCAI_STENCIL_MAX_POINTS 128
-
 namespace scai
 {
 
-namespace lama
+namespace common
 {
 
 /** Common base class for all stencils. 
  *
- *  A stencil describes in an n-dimensional grid how one element is connected
- *  with a certain number of neighbors.
+ *  A stencil describes a linear mapping in an n-dimensional grid how a function value is computed
+ *  by the values of neighbors in a certain range. The linear mapping is the same for each grid point
+ *  as long as all neighbors are available.
  *
- *  Please note that a stencil does not contain any information about the grid size
+ *  If a neighbored element is not available, different strategies are possible:
+ *
+ *   - its value is assumed to be zero 
+ *   - the value of the other side is taken( circular boundaries )
+ *   - the value of other neighboris taken ( reflecting boundaries )
+ *  
+ *  How this is handled is not part of this class. It must be specified when a stencil
+ *  is applied to a grid.
+ * 
+ *  A stencil does not contain any information about the grid size
  *  only about its dimenison.
  */
 template<typename ValueType>
@@ -325,6 +334,18 @@ public:
 
     Stencil1D( const IndexType nPoints );
 
+    /** Construct the stencil by a matrix that covers all neighbors involved.
+     *
+     *  @param[in] n is the size of the matrix
+     *  @param[in] matrix contains the values  
+     *
+     *  If n is odd, the range -n2 .. n2 is covered with n2 = ( n - 1 ) / 2
+     *  If n is even, the range -n2+1 .. n2 is covered with n2 = n / 2
+     */
+
+    template<typename OtherValueType>
+    Stencil1D( const IndexType n, const OtherValueType matrix[] );
+
     /** More convenient interface for addPoint on 1-dimensional stencil */
 
     void addPoint( int pos, ValueType val );
@@ -384,6 +405,35 @@ Stencil1D<ValueType>::Stencil1D( const IndexType nPoints ) : Stencil<ValueType>(
 }
 
 /* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+template<typename OtherValueType>
+Stencil1D<ValueType>::Stencil1D( const IndexType n, const OtherValueType matrix[] ) :
+
+    Stencil<ValueType>( 1 )
+
+{
+    // if n is even, we use one element more on the right, e.g. n = 8 covers -3 : 4, 9 covers -4 : 4
+
+    int ub = static_cast<int>( n / 2 );
+    int lb = ub + 1 - static_cast<int>( n );
+ 
+    IndexType cnt = 0;
+
+    for ( int i = lb; i <= ub; ++i )
+    {
+        ValueType val = static_cast<ValueType>( matrix[ cnt++ ] );
+
+        if ( val != 0 )
+        {
+            addPoint( i, val );
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( cnt, n, "serious mismatch" )
+}
+
+/* ------------------------------------------------------------------------------------ */
 /*   Implementations of inline methods                                                  */
 /* ------------------------------------------------------------------------------------ */
 
@@ -429,6 +479,16 @@ public:
     /** More convenient interface for getPoint on 2-dimensional stencil */
 
     void getPoint( int& posX, int& posY, ValueType& val, IndexType k ) const;
+
+    /** Construct the stencil by a n1 x n2 matrix that covers all neighbors involved.
+     *
+     *  @param[in] n1 is the size of the matrix in the first dimension, must be odd
+     *  @param[in] n2 is the size of the matrix in the second dimension, must be odd
+     *  @param[in] matrix contains the values  
+     */
+
+    template<typename OtherValueType>
+    Stencil2D( const IndexType n1, const IndexType n2, const OtherValueType matrix[] );
 
 protected:
 
@@ -477,6 +537,38 @@ Stencil2D<ValueType>::Stencil2D( const IndexType nPoints ) : Stencil<ValueType>(
 
             COMMON_THROWEXCEPTION( "Unsupported type of Stencil2D, #points = " << nPoints )
     }
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+template<typename OtherValueType>
+Stencil2D<ValueType>::Stencil2D( const IndexType n1, const IndexType n2, const OtherValueType matrix[] ) :
+
+    Stencil<ValueType>( 2 )
+
+{
+    int ub1 = static_cast<int>( n1 / 2 );
+    int lb1 = ub1 + 1 - static_cast<int>( n1 );
+    int ub2 = static_cast<int>( n2 / 2 );
+    int lb2 = ub2 + 1 - static_cast<int>( n2 );
+
+    IndexType cnt = 0;
+
+    for ( int i1 = lb1; i1 <= ub1; ++i1 )
+    {
+        for ( int i2 = lb2; i2 <= ub2; ++i2 )
+        {
+            ValueType val = static_cast<ValueType>( matrix[ cnt++ ] );
+
+            if ( val != 0 )
+            {
+                addPoint( i1, i2, val );
+            }
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( n1 * n2, cnt, "serious mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -567,6 +659,17 @@ public:
     /** Create a stencil by two one-dimensional stencils */
 
     Stencil3D( const Stencil1D<ValueType>& stencilX, const Stencil1D<ValueType>& stencilY, const Stencil1D<ValueType>& stencilZ );
+
+    /** Construct the stencil by a n1 x n2 x n3 matrix that covers all neighbors involved.
+     *
+     *  @param[in] n1 is the size of the matrix in the first dimension, must be odd
+     *  @param[in] n2 is the size of the matrix in the second dimension, must be odd
+     *  @param[in] n3 is the size of the matrix in the third dimension, must be odd
+     *  @param[in] matrix contains the values  
+     */
+
+    template<typename OtherValueType>
+    Stencil3D( const IndexType n1, const IndexType n2, const IndexType n3, const OtherValueType matrix[] );
 
     /** More convenient interface for addPoint */
 
@@ -719,6 +822,43 @@ Stencil3D<ValueType>::Stencil3D(
     }
 
     addPoint( 0, 0, 0, diagValue );
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+template<typename OtherValueType>
+Stencil3D<ValueType>::Stencil3D( const IndexType n1, const IndexType n2, const IndexType n3, const OtherValueType matrix[] ) :
+
+    Stencil<ValueType>( 3 )
+
+{
+    int ub1 = static_cast<int>( n1 / 2 );
+    int lb1 = ub1 + 1 - static_cast<int>( n1 );
+    int ub2 = static_cast<int>( n2 / 2 );
+    int lb2 = ub2 + 1 - static_cast<int>( n2 );
+    int ub3 = static_cast<int>( n3 / 2 );
+    int lb3 = ub3 + 1 - static_cast<int>( n3 );
+
+    IndexType cnt = 0;
+
+    for ( int i1 = lb1; i1 <= ub1; ++i1 )
+    {
+        for ( int i2 = lb2; i2 <= ub2; ++i2 )
+        {
+            for ( int i3 = lb3; i3 <= ub3; ++i3 )
+            {
+                ValueType val = static_cast<ValueType>( matrix[ cnt++ ] );
+
+                if ( val != 0 )
+                {
+                    addPoint( i1, i2, i3, val );
+                }
+            }
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR ( n1 * n2 * n3, cnt, "serious mismatch" )
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -934,7 +1074,7 @@ void Stencil4D<ValueType>::getPoint( int& posX, int& posY, int& posZ, int& posT,
 
 /* ---------------------------------------------------------------------------------- */
 
-}  // namespace lama
+}  // namespace common
 
 }  // namespace scai
 
