@@ -85,7 +85,7 @@ namespace lama
 {
 
 template<typename ValueType>
-StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const Stencil<ValueType>&  stencil ) :
+StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil ) :
 
     MatrixStorage<ValueType>( grid.size(), grid.size() ),
     mGrid( grid ),
@@ -149,17 +149,17 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 {
     IndexType n = this->getNumRows();
 
-    int       stencilPos[SCAI_STENCIL_MAX_POINTS];
+    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
     mGrid.getDistances( gridDistances );
 
-    mStencil.getLinearPositions( stencilPos, gridDistances );
+    mStencil.getLinearPositions( stencilOffsets.get(), gridDistances );
 
     for ( IndexType i = 0; i < mStencil.nPoints(); ++i )
     {
-        SCAI_LOG_DEBUG( logger, "point = " << i << ", pos = " << stencilPos[i] << ", val = " << mStencil.values()[i] )
+        SCAI_LOG_DEBUG( logger, "point = " << i << ", offset = " << stencilOffsets[i] << ", val = " << mStencil.values()[i] )
     }
 
     {
@@ -188,7 +188,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
         sparsekernel::OpenMPStencilKernel::stencilLocalCSR( 
             ja.get(), values.get(), ia.get(),
             mStencil.nDims(), mGrid.sizes(), gridDistances, 
-            mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilPos );
+            mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilOffsets.get() );
     }
 
     if ( typedValues.getValueType() == csrValues.getValueType() )
@@ -222,16 +222,16 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     mStencil.getWidths( lb, ub );
 
-    int stencilLinPos[SCAI_STENCIL_MAX_POINTS];
+    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
 
-    mStencil.getLinearPositions( stencilLinPos, gridDistances );
+    mStencil.getLinearPositions( stencilOffsets.get(), gridDistances );
 
     SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil )
 
     sparsekernel::OpenMPStencilKernel::stencilGEMV( wResult.get(), alpha, rX.get(), 
                  mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
                  mStencil.nPoints(), mStencil.positions(), mStencil.values(),
-                 stencilLinPos );
+                 stencilOffsets.get() );
 
     return NULL;  
 }

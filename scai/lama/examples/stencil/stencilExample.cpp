@@ -34,7 +34,6 @@
 
 #include <scai/lama.hpp>
 
-#include "Stencil.hpp"
 #include "StencilStorage.hpp"
 #include "StencilMatrix.hpp"
 
@@ -70,11 +69,11 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil3D<double> stencil3( 27 ); // 27-point stencil
-    Stencil2D<double> stencil2( 5 );  // 5-point stencil, two dims
-    Stencil1D<double> stencil1( 3 );  // 3-point stencil, one dimension
+    common::Stencil3D<double> stencil3( 27 ); // 27-point stencil
+    common::Stencil2D<double> stencil2( 5 );  // 5-point stencil, two dims
+    common::Stencil1D<double> stencil1( 3 );  // 3-point stencil, one dimension
 
-    Stencil1D<double> stencilFD8;
+    common::Stencil1D<double> stencilFD8;
 
     stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
@@ -87,20 +86,20 @@ int main( int argc, const char* argv[] )
     stencilFD8.addPoint( 3, -49.0/5120.0 );
     stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    Stencil1D<double> stencilDummy( 1 );
+    common::Stencil1D<double> stencilDummy( 1 );
 
     // 1-dimensional stencils can be combined
 
-    Stencil3D<double> stencilX( stencilFD8, stencilDummy, stencilDummy );
-    Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
-    Stencil3D<double> stencilZ( stencilDummy, stencilDummy, stencilFD8 );
+    common::Stencil3D<double> stencilX( stencilFD8, stencilDummy, stencilDummy );
+    common::Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
+    common::Stencil3D<double> stencilZ( stencilDummy, stencilDummy, stencilFD8 );
 
-    Stencil2D<double> stencil2_5( stencil1, stencil1 /*, 1 */ ); 
-    Stencil2D<double> stencil2_9( 9 );
+    common::Stencil2D<double> stencil2_5( stencil1, stencil1 /*, 1 */ ); 
+    common::Stencil2D<double> stencil2_9( 9 );
 
-    Stencil3D<double> stencil3_7( stencil1, stencil1, stencil1 );
-    Stencil3D<double> stencil3_19( 19 );
-    Stencil3D<double> stencil3_27( 27 );
+    common::Stencil3D<double> stencil3_7( stencil1, stencil1, stencil1 );
+    common::Stencil3D<double> stencil3_19( 19 );
+    common::Stencil3D<double> stencil3_27( 27 );
 
     for ( IndexType i = 0; i < stencil3_27.nPoints(); ++i )
     {

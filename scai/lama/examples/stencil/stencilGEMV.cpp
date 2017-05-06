@@ -34,7 +34,6 @@
 
 #include <scai/lama.hpp>
 
-#include "Stencil.hpp"
 #include "StencilStorage.hpp"
 #include "StencilMatrix.hpp"
 
@@ -72,7 +71,7 @@ int main( int argc, const char* argv[] )
 
     // Take a default stencil
 
-    Stencil3D<double> stencil( 27 );
+    common::Stencil3D<double> stencil( 27 );
 
     // Define a grid with same number of dimensions as stencil
 

@@ -42,7 +42,7 @@
 // local library
 #include <scai/lama/storage/CSRStorage.hpp>
 #include "StencilStorage.hpp"
-#include "Stencil.hpp"
+#include <scai/common/Stencil.hpp>
 
 #include <scai/dmemo/GridDistribution.hpp>
 
@@ -80,7 +80,7 @@ public:
 
     /** Constructor, creates a replicated zero-matrix of size numRows x numColums */
 
-    StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil );
+    StencilMatrix( const common::Grid& grid, const common::Stencil<ValueType>& stencil );
 
     /** Constructor of a stencil matrix by a distributed grid and a stencil 
      *
@@ -92,7 +92,7 @@ public:
      *  Note: the stencil matrix is like a sparse matrix where the local part is a stencil storage
      *        and the halo part is given by a CSR storage.
      */
-    StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil );
+    StencilMatrix( dmemo::DistributionPtr dist, const common::Stencil<ValueType>& stencil );
 
     /**
      * @brief Destructor. Releases all allocated resources.
@@ -145,7 +145,7 @@ private:
         hmemo::HArray<IndexType>& haloJA,
         hmemo::HArray<ValueType>& haloValues,
         const dmemo::GridDistribution& gridDist,
-        const Stencil<ValueType>& stencil );
+        const common::Stencil<ValueType>& stencil );
 
 };
 

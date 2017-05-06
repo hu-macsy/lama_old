@@ -34,7 +34,6 @@
 
 #include <scai/lama.hpp>
 
-#include "Stencil.hpp"
 #include "StencilStorage.hpp"
 #include "StencilMatrix.hpp"
 
@@ -69,7 +68,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil1D<double> stencil( 3 );
+    common::Stencil1D<double> stencil( 3 );
 
     const IndexType N = 10000000;
 

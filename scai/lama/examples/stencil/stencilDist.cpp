@@ -34,7 +34,6 @@
 
 #include <scai/lama.hpp>
 
-#include "Stencil.hpp"
 #include "StencilStorage.hpp"
 #include "StencilMatrix.hpp"
 
@@ -71,7 +70,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    Stencil1D<double> stencilFD8;
+    common::Stencil1D<double> stencilFD8;
 
     stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
@@ -84,11 +83,11 @@ int main( int argc, const char* argv[] )
     stencilFD8.addPoint( 3, -49.0/5120.0 );
     stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    Stencil1D<double> stencilDummy( 1 );
+    common::Stencil1D<double> stencilDummy( 1 );
 
-    Stencil2D<double> stencilX( stencilFD8, stencilDummy );
+    common::Stencil2D<double> stencilX( stencilFD8, stencilDummy );
 
-    Stencil3D<double> stencil( 7 );
+    common::Stencil3D<double> stencil( 7 );
 
     const IndexType N = 4; 
 
