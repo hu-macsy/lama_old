@@ -98,12 +98,22 @@ public:
 
     IndexType size() const;
 
-    /** Get stencil positions in linearized grid 
+    /** Get stencil point offsets in linearized grid 
      *  
-     *  @param[in] gridDistances contains for each dim the distance between two neighbored elements in that dim
-     *  @param[out] pos with entry fore each stencil point the relative position in linearized grid
+     *  @param[in] gridDistance contains for each dim the distance between two neighbored elements in that dim
+     *  @param[out] offset contains fore each stencil point the relative offset in linearized grid
+     *
+     *  \code
+     *      common::Stencil3D stencil( 7 );  
+     *      common::Grid3D grid( N1, N2, N3 );
+     *      IndexType distance[3];
+     *      grid.getDistances( distance ); //   returns { N2 * N3, N3, 1 }
+     *      int offset[ 7 ];
+     *      stencil.getLinearOffsets( offset, distance ); 
+     *      // now:  offsets = { 0, 1, -1, -N3, N3, -N2*N3, N2*N3 }
+     *  \endcode
      */
-    inline void getLinearPositions( int pos[], IndexType gridDistances[] ) const;
+    inline void getLinearOffsets( int offset[], const IndexType gridDistance[] ) const;
 
     /** Get valid positions */
 
@@ -228,18 +238,22 @@ void Stencil<ValueType>::addPoint( const int relpos[], const ValueType val )
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void Stencil<ValueType>::getLinearPositions( int pos[], IndexType gridDistances[] ) const
+void Stencil<ValueType>::getLinearOffsets( int offset[], const IndexType gridDistance[] ) const
 {
+     // compute one offset for each stencil point
+
      for ( IndexType k = 0; k < nPoints(); ++k )
      {
-         pos[k] = 0;
+         offset[k] = 0;
          
          for ( IndexType i = 0; i < mNDims; ++i )
          {
-             pos[k] += mPositions[ k * mNDims + i ] * static_cast<int>( gridDistances[ i ] );
+             offset[k] += mPositions[ k * mNDims + i ] * static_cast<int>( gridDistance[ i ] );
          }
      }
 }
+
+/* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 void Stencil<ValueType>::getWidths( IndexType lb[], IndexType ub[] ) const

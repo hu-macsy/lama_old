@@ -71,25 +71,29 @@ int main( int argc, const char* argv[] )
 
     // Take a default stencil
 
-    common::Stencil3D<double> stencil( 27 );
+    common::Stencil1D<double> stencil1( 3 );
+    common::Stencil4D<double> stencil( stencil1, stencil1, stencil1, stencil1 );
 
     // Define a grid with same number of dimensions as stencil
 
-    const IndexType N1 = 300;
-    const IndexType N2 = 300;
-    const IndexType N3 = 300;
+    const IndexType N1 = 40;
+    const IndexType N2 = 40;
+    const IndexType N3 = 50;
+    const IndexType N4 = 50;
 
-    common::Grid3D grid( N1, N2, N3 );
+    common::Grid4D grid( N1, N2, N3, N4 );
 
     // Distibute grid onto default processor array, can be set by --SCAI_NP=2x3x2
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    ContextPtr ctx = Context::getContextPtr();
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
     // The stencil matrix just needs the grid distribution and the stencil
 
     StencilMatrix<double> stencilMatrix( gridDistribution, stencil );
+    stencilMatrix.setContextPtr( ctx );
 
     std::cout << "stencilMatrix " << stencilMatrix << std::endl;
 
@@ -100,6 +104,7 @@ int main( int argc, const char* argv[] )
     CSRSparseMatrix<double> csrMatrix( stencilMatrix );
 
     csrMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+    csrMatrix.setContextPtr( ctx );
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
@@ -107,7 +112,7 @@ int main( int argc, const char* argv[] )
 
     x = 1.0;
 
-    const IndexType NITER = 1;
+    const IndexType NITER = 20;
 
     DenseVector<double> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
     DenseVector<double> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );

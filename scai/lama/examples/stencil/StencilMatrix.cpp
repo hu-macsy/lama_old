@@ -112,7 +112,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
     // get the offsets of the stencil points in the global grid 
 
     common::scoped_array<int> stencilOffsets( new int[ stencil.nPoints() ] );
-    stencil.getLinearPositions( stencilOffsets.get(), globalGridDistances );
+    stencil.getLinearOffsets( stencilOffsets.get(), globalGridDistances );
 
     {
         hmemo::WriteOnlyAccess<IndexType> wIA( haloIA, n + 1 );
