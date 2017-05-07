@@ -52,14 +52,14 @@ public:
 
     /** Read in the pixel data from an input file. 
      *
-     *  Supported formats: *.bmp
+     *  Supported formats: *.png
      */
     template<typename ValueType>
     static void read( GridVector<ValueType>& imageData, const std::string& inputFileName );
 
     /** Write the pixel data to an output file.
      *
-     *  Supported formats: *.bmp
+     *  Supported formats: *.png
      */
     template<typename ValueType>
     static void write( const GridVector<ValueType>& imageData, const std::string& outputFileName );
@@ -67,6 +67,19 @@ public:
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    template<typename ValueType>
+    static void readPNG( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
+
+    template<typename ValueType>
+    static void readBMP( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
+
+    template<typename ValueType>
+    static void writePNG( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
+
+    template<typename ValueType>
+    static void writeBMP( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
+
 };
 
 } /* end namespace lama */

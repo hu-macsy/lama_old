@@ -34,7 +34,7 @@
 
 #include <scai/lama/examples/image/ImageIO.hpp>
 
-#include <scai/lama/examples/stencil/StencilMatrix.hpp>
+#include <scai/lama/matrix/StencilMatrix.hpp>
 
 #include <scai/lama/GridVector.hpp>
 #include <scai/common/Settings.hpp>
@@ -164,9 +164,9 @@ int main( int argc, const char* argv[] )
     {
         // apply edge detection
 
-        Stencil1D<float> stencil1( 3 );
-        Stencil1D<float> stencilDummy( 1 );
-        Stencil3D<float> stencil( stencil1, stencil1, stencilDummy );
+        float edge_pattern[9] = { 0, -1, 0, -1, 4, -1, 0, -1, 0 };
+
+        common::Stencil3D<float> stencil( 3, 3, 1, edge_pattern );
 
         StencilMatrix<float> edgeIt( image.getDistributionPtr(), stencil );
 
