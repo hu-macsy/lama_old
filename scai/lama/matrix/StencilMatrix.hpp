@@ -41,7 +41,7 @@
 
 // local library
 #include <scai/lama/storage/CSRStorage.hpp>
-#include "StencilStorage.hpp"
+#include <scai/lama/storage/StencilStorage.hpp>
 #include <scai/common/Stencil.hpp>
 
 #include <scai/dmemo/GridDistribution.hpp>

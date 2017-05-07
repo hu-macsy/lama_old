@@ -34,8 +34,6 @@
 
 #include <scai/lama.hpp>
 
-#include "StencilStorage.hpp"
-#include "StencilMatrix.hpp"
 
 // Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
@@ -43,6 +41,7 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/matrix/StencilMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GridDistribution.hpp>

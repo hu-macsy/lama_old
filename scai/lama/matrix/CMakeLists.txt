@@ -46,6 +46,7 @@ scai_project (
         JDSSparseMatrix
         Matrix
         SparseMatrix
+        StencilMatrix
 
     HEADERS 
  
