@@ -39,7 +39,7 @@
 // local library
 #include <scai/utilskernel/UtilKernelTrait.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/sparsekernel/DIAKernelTrait.hpp>
+#include <scai/sparsekernel/StencilKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
 #include <scai/lama/Scalar.hpp>
@@ -85,7 +85,7 @@ namespace lama
 {
 
 template<typename ValueType>
-StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const Stencil<ValueType>&  stencil ) :
+StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil ) :
 
     MatrixStorage<ValueType>( grid.size(), grid.size() ),
     mGrid( grid ),
@@ -149,17 +149,17 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 {
     IndexType n = this->getNumRows();
 
-    int       stencilPos[SCAI_STENCIL_MAX_POINTS];
+    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
     mGrid.getDistances( gridDistances );
 
-    mStencil.getLinearPositions( stencilPos, gridDistances );
+    mStencil.getLinearOffsets( stencilOffsets.get(), gridDistances );
 
     for ( IndexType i = 0; i < mStencil.nPoints(); ++i )
     {
-        SCAI_LOG_DEBUG( logger, "point = " << i << ", pos = " << stencilPos[i] << ", val = " << mStencil.values()[i] )
+        SCAI_LOG_DEBUG( logger, "point = " << i << ", offset = " << stencilOffsets[i] << ", val = " << mStencil.values()[i] )
     }
 
     {
@@ -188,7 +188,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
         sparsekernel::OpenMPStencilKernel::stencilLocalCSR( 
             ja.get(), values.get(), ia.get(),
             mStencil.nDims(), mGrid.sizes(), gridDistances, 
-            mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilPos );
+            mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilOffsets.get() );
     }
 
     if ( typedValues.getValueType() == csrValues.getValueType() )
@@ -210,8 +210,11 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
     const HArray<ValueType>& x,
     bool /* async */ ) const
 {
-    ReadAccess<ValueType> rX( x );
-    WriteAccess<ValueType> wResult( result );
+    LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
+
+    ContextPtr loc = this->getContextPtr();
+
+    stencilGEMV.getSupportedContext( loc );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
@@ -222,16 +225,21 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     mStencil.getWidths( lb, ub );
 
-    int stencilLinPos[SCAI_STENCIL_MAX_POINTS];
+    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
 
-    mStencil.getLinearPositions( stencilLinPos, gridDistances );
+    mStencil.getLinearOffsets( stencilOffsets.get(), gridDistances );
 
-    SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil )
+    SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil << ", done at " << *loc )
 
-    sparsekernel::OpenMPStencilKernel::stencilGEMV( wResult.get(), alpha, rX.get(), 
-                 mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
-                 mStencil.nPoints(), mStencil.positions(), mStencil.values(),
-                 stencilLinPos );
+    {
+        ReadAccess<ValueType> rX( x, loc );
+        WriteAccess<ValueType> wResult( result, loc );
+
+        stencilGEMV[loc]( wResult.get(), alpha, rX.get(), 
+                          mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
+                          mStencil.nPoints(), mStencil.positions(), mStencil.values(),
+                          stencilOffsets.get() );
+    }
 
     return NULL;  
 }

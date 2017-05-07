@@ -47,6 +47,7 @@ namespace scai
 {
 
 using common::shared_ptr;
+using common::Stencil;
 using namespace dmemo;
 
 namespace lama
@@ -108,8 +109,10 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
     localGrid.getDistances( localGridDistances );
     globalGrid.getDistances( globalGridDistances );
 
-    int stencilPos[SCAI_STENCIL_MAX_POINTS];  // for the global grid
-    stencil.getLinearPositions( stencilPos, globalGridDistances );
+    // get the offsets of the stencil points in the global grid 
+
+    common::scoped_array<int> stencilOffsets( new int[ stencil.nPoints() ] );
+    stencil.getLinearOffsets( stencilOffsets.get(), globalGridDistances );
 
     {
         hmemo::WriteOnlyAccess<IndexType> wIA( haloIA, n + 1 );
@@ -134,7 +137,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
             wJA.get(), wValues.get(), rIA.get(),
             nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
             globalGrid.sizes(), globalGridDistances, stencil.nPoints(), stencil.positions(),
-            stencil.values(), stencilPos );
+            stencil.values(), stencilOffsets.get() );
     }
 }
 
