@@ -76,6 +76,55 @@ GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, 
     return output;
 
 }
+GridVector<float>  grayScale(GridVector<float> inputImage){
+
+    const common::Grid& grid = inputImage.globalGrid();
+
+    for(IndexType i = 0 ; i<grid.size(0); i++){
+        for(IndexType j = 0 ; j<grid.size(1); j++){
+            Scalar mean =(0.3*inputImage(i,j,0)+ 0.59*inputImage(i,j,1)+ 0.11*inputImage(i,j,3));
+            inputImage(i,j,0)=mean;
+            inputImage(i,j,1)=mean;
+            inputImage(i,j,2)=mean;
+        }
+    }
+    return inputImage;
+}
+
+GridVector<float>  sobelFilter(GridVector<float> inputImage){
+    common::Stencil3D<float> stencil1( 3, 3, 1, imageprocessing::sobelX );
+    common::Stencil3D<float> stencil2( 3, 3, 1, imageprocessing::sobelY );
+
+    const common::Grid& grid = inputImage.globalGrid();
+
+    StencilMatrix<float> matrix1( inputImage.getDistributionPtr(), stencil1 );
+    StencilMatrix<float> matrix2( inputImage.getDistributionPtr(), stencil2 );
+
+    GridVector<float> imageNew1;
+    GridVector<float> imageNew2;
+
+    imageNew1  =  matrix1 * inputImage;
+    imageNew2  =  matrix2 * inputImage;
+    imageNew1.dotProduct(imageNew2);
+    imageNew1 = grayScale(imageNew1);
+    for(IndexType i = 0 ; i<grid.size(0); i++){
+        for(IndexType j = 0 ; j<grid.size(1); j++){
+            for(IndexType x = 0 ; x<3 ; x++){
+                if (imageNew1(i,j,x)<0){
+                    imageNew1(i,j,x)=0;
+                }
+                else if (imageNew1(i,j,x)>255){
+                    imageNew1(i,j,x)=255;
+                }
+            }
+        }
+    }
+
+    return imageNew1;
+}
+
+
+
 
 int main( int argc, const char* argv[] )
 {
@@ -124,8 +173,10 @@ int main( int argc, const char* argv[] )
     GridVector<float> imageNew;
 
     imageNew  =  m * image;
-    GridVector<float> imageGausBlur= gaussianBlur(image, 6, 1.5);
 
+    //GridVector<float> imageGausBlur= gaussianBlur(image, 6, 1.5);
+    //GridVector<float> imageGrey= grayScale(image);
+    //GridVector<float> imagesobelFilter= sobelFilter(image);
 
     // std::cout << "new image = " << imageNew << std::endl;
 
