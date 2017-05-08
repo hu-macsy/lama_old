@@ -42,6 +42,7 @@ set ( CLASSES
         JDSStorage
         MatrixStorage
         SparseAssemblyStorage
+        StencilStorage
         StorageMethods
     )
     

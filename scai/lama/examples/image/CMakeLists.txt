@@ -50,9 +50,8 @@ set ( SOURCES
 add_library( imageLib SHARED ${SOURCES} )
 target_link_libraries( imageLib ${PROJECT_NAME} ${PNG_LIBRARY} )
 
-foreach ( executable imageProcessing )
+foreach ( executable imageProcessing classProcessing )
     add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe stencilLib )
     target_link_libraries( ${executable}.exe imageLib )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )

@@ -34,13 +34,15 @@
 
 #include <scai/lama/examples/image/ImageIO.hpp>
 
-#include <scai/lama/examples/stencil/Stencil.hpp>
-#include <scai/lama/examples/stencil/StencilMatrix.hpp>
+#include <scai/common/Stencil.hpp>
+#include <scai/lama/matrix/StencilMatrix.hpp>
 
 #include <scai/lama/GridVector.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/lama.hpp>
+
+#include "ConvolutionMatrices.hpp" 
 
 // Matrix & vector related includes
 
@@ -50,7 +52,7 @@ using namespace lama;
 
 GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, float sigma){
     /* radius = amount of blur, sigma = standard deviation*/
-    Stencil3D<float> stencil;
+    common::Stencil3D<float> stencil;
     
     float num = 0;
     for(IndexType i = -radius; i<radius+1; i++){
@@ -104,30 +106,28 @@ int main( int argc, const char* argv[] )
 
     // apply stencil on the pixels, do not apply on the colors in 3-rd dimension 
 
-    Stencil1D<float> stencil1( 3 );
-    Stencil1D<float> stencilDummy( 1 );
+    common::Stencil3D<float> stencil( 5, 5, 1, imageprocessing::findEdges );
 
-    Stencil3D<float> stencil( stencil1, stencil1, stencilDummy );
+    // common::Stencil3D<float> stencil( 3, 3, 1, imageprocessing::blur );
 
 
-    StencilMatrix<float> m( image.getDistributionPtr(), stencil);
+    // common::Stencil3D<float> stencil( 3, 3, 1, imageprocessing::sharpen );
+
+
+    // common::Stencil3D<float> stencil( 1 );   // one-point stencil just as dummy
+
+
+    StencilMatrix<float> m( image.getDistributionPtr(), stencil );
 
     std::cout << "stencil matrix = " << m << std::endl;
-
-    // CSRSparseMatrix<float> csr( m );
-
-    // csr.setIdentity( image.getDistributionPtr() );
-
-    // std::cout << "csr matrix = " << csr << std::endl;
-
-    // csr.writeToFile( "stencilM.mtx" );
 
     GridVector<float> imageNew;
 
     imageNew  =  m * image;
     GridVector<float> imageGausBlur= gaussianBlur(image, 6, 1.5);
 
-    //std::cout << "___new image = " << imageNew << std::endl;
+
+    // std::cout << "new image = " << imageNew << std::endl;
 
     // imageNew += image;
 

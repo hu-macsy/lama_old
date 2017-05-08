@@ -40,8 +40,7 @@
 // base classes
 #include <scai/lama/storage/CRTPMatrixStorage.hpp>
 #include <scai/common/Grid.hpp>
-
-#include "Stencil.hpp"
+#include <scai/common/Stencil.hpp>
 
 namespace scai
 {
@@ -83,7 +82,7 @@ public:
     /** Constructor of a stencil stroage
      *
      */
-    StencilStorage( const common::Grid& grid, const Stencil<ValueType>&  stencil );
+    StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil );
 
     /** Override default copy constructor to guarantee same behavior */
 
@@ -417,8 +416,8 @@ protected:
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::mDiagonalProperty;
 
-    common::Grid mGrid;    //! grid for which this matrix storage stands
-    Stencil<ValueType> mStencil;      //! stencil that specifies connections between elements
+    common::Grid mGrid;            //! grid for which this matrix storage stands
+    common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
 
 private:
 

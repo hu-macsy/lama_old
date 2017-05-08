@@ -124,6 +124,13 @@ public:
         DenseVector<ValueType>::swap( data, dist );
     }
 
+    /** Swap with another GridVector */
+
+    void swap( GridVector<ValueType>& other )
+    {
+        DenseVector<ValueType>::swap( other );
+    }
+
     /** Help class to observe the further use of operator[] in LArray */
 
     class GridElemProxy
@@ -157,6 +164,7 @@ public:
         GridElemProxy& operator= ( Scalar val )
         {
             mGridVector.setValue( pos(), Scalar( val ) );
+            return *this;
         }
 
         /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */

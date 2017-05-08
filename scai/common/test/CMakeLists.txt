@@ -56,6 +56,7 @@ set ( CXX_SOURCES
       ConstantsTest
       ScalarTypeTest  
       SettingsTest  
+      StencilTest  
       WalltimeTest  
 )
 
