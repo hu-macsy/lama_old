@@ -42,6 +42,7 @@
 
 // std
 #include <stdint.h>
+#include <iostream>
 
 namespace scai
 {
@@ -212,6 +213,8 @@ Grid::Grid()
 {
     mNDims = 0;
 
+    // initialize all sizes with a default, just in case it is reinterpreted
+
     for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
     {
         mSize[i] = 1;
@@ -277,6 +280,13 @@ Grid::Grid( const IndexType nDims, const IndexType size[] )
     for ( IndexType i = 0; i < nDims; ++i )
     {
         mSize[i] = size[i];
+    }
+
+    // make sure that the other sizes are valid
+
+    for ( IndexType i = nDims; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
     }
 }
 
@@ -352,13 +362,13 @@ IndexType Grid2D::linearPos( const IndexType pos1, const IndexType pos2 ) const
 IndexType Grid3D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
 {
     // 3-dimensional grid has always 3 dimensions, no assert required
-
+  
     return ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3;
 }
 
 IndexType Grid4D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3, const IndexType pos4 ) const
 {
-    // 3-dimensional grid has always 3 dimensions, no assert required
+    // 4-dimensional grid has always 3 dimensions, no assert required
 
     return ( ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3 ) * mSize[3] + pos4;
 }
@@ -430,15 +440,9 @@ const IndexType* Grid::sizes() const
 
 IndexType Grid::size( IndexType dim ) const
 {
-    if ( dim < mNDims )
-    {
-        return mSize[dim];
-    }
-    else
-    {
-        // just helpful for handling two-dimensional grids in three-dimensional context
-        return 1;
-    }
+    SCAI_ASSERT_VALID_INDEX_DEBUG( dim, SCAI_GRID_MAX_DIMENSION, "illegal dim" )
+
+    return mSize[dim];
 }
 
 IndexType Grid::size() const
@@ -467,6 +471,16 @@ std::ostream& operator<<( std::ostream& stream, const Grid& grid )
     for ( IndexType i = 1; i < grid.nDims(); ++i )
     {
         stream << " x " << grid.size(i);
+    }
+
+    // print size values not equal 1, might be helpful for debugging
+
+    for ( IndexType i = grid.nDims(); i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        if ( grid.size( i ) != 1 )
+        {
+            stream << " x " << i << " : " << grid.size(i);
+        }
     }
 
     stream << " )";

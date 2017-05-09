@@ -66,6 +66,43 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( grid1Test )
+{
+    IndexType n1 = 10;
+
+    Grid1D grid1( n1 );
+    Grid1D grid2( grid1 );
+
+    BOOST_CHECK_EQUAL( grid1.nDims(), grid2.nDims() );
+
+    for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        BOOST_CHECK_EQUAL( grid1.size( i ), grid2.size( i ) );
+    }
+
+    Grid1D grid3( 0 );
+    grid3 = grid1;
+
+    BOOST_CHECK_EQUAL( grid1.nDims(), grid3.nDims() );
+
+    for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        BOOST_CHECK_EQUAL( grid1.size( i ), grid2.size( i ) );
+    }
+
+    Grid gridX( 0, NULL );
+    gridX = grid1;
+
+    BOOST_CHECK_EQUAL( grid1.nDims(), gridX.nDims() );
+
+    for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        BOOST_CHECK_EQUAL( gridX.size( i ), gridX.size( i ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE( validTest )
 {
     Grid3D grid3( 2, 3, 2 );

@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( factoryTest, ValueType, scai_numeric_test_types )
 {
     TypedStorages<ValueType> allMatrixStorages;    // is created by factory
     size_t nFormats = Format::UNDEFINED;
+    nFormats -= 1;  // stencil not in Factory
     SCAI_LOG_INFO( logger, "factoryTest<" << common::TypeTraits<ValueType>::id() << "> : "
                    << allMatrixStorages.size() << " storages"                        )
     BOOST_CHECK_EQUAL( nFormats, allMatrixStorages.size() );

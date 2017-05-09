@@ -32,7 +32,7 @@
  # @date 13 04.2017
 ###
 
-foreach ( executable stencilExample stencilConversion stencilGEMV stencilDist )
+foreach ( executable stencilExample stencilConversion stencilGEMV stencilDist csrMult )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
