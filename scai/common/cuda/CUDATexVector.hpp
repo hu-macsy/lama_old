@@ -36,7 +36,6 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 
-/* --------------------------------------------------------------------------- */
 
 /************************************************************************************
  *
@@ -63,6 +62,10 @@ static texture<long, 1> texVectorLref;
 static texture<unsigned int, 1> texVectorUref;
 
 static texture<unsigned long, 1> texVectorULref;
+
+/* --------------------------------------------------------------------------- */
+/*  Bind and Unbind device array data to the texture                           */
+/* --------------------------------------------------------------------------- */
 
 __inline__ static void vectorBindTexture( const float* vector )
 {
@@ -152,23 +155,27 @@ __inline__ static void vectorUnbindTexture( const unsigned long* )
     SCAI_CUDA_RT_CALL( cudaUnbindTexture( texVectorULref ), "unbind unsigned long vector x from texture" )
 }
 
+/* --------------------------------------------------------------------------- */
+/*  GPU device routines to access values of the texture                        */
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType, bool useTexture>
 __inline__ __device__
-static ValueType fetchVectorX( const ValueType* const x, const int i )
+static ValueType fetchVectorX( const ValueType* const x, const IndexType i )
 {
     return x[i];
 }
 
 template<>
 __inline__ __device__
-float fetchVectorX<float, true>( const float* const, const int i )
+float fetchVectorX<float, true>( const float* const, const IndexType i )
 {
     return tex1Dfetch( texVectorSXref, i );
 }
 
 template<>
 __inline__ __device__
-double fetchVectorX<double, true>( const double* const, const int i )
+double fetchVectorX<double, true>( const double* const, const IndexType i )
 {
     int2 v = tex1Dfetch( texVectorDXref, i );
     return __hiloint2double( v.y, v.x );
@@ -176,16 +183,23 @@ double fetchVectorX<double, true>( const double* const, const int i )
 
 template<>
 __inline__ __device__
-int fetchVectorX<int, true>( const int* const, const int i )
+int fetchVectorX<int, true>( const int* const, const IndexType i )
 {
     return tex1Dfetch( texVectorIref, i );
+}
+
+template<>
+__inline__ __device__
+unsigned int fetchVectorX<unsigned int, true>( const unsigned int* const, const IndexType i )
+{
+    return tex1Dfetch( texVectorUref, i );
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 
 template<>
 __inline__ __device__
-ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const int i )
+ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const IndexType i )
 {
     float2 v = tex1Dfetch( texVectorCXref, i );
     return ComplexFloat( v.x, v.y );
@@ -193,7 +207,7 @@ ComplexFloat fetchVectorX<ComplexFloat, true>( const ComplexFloat* const, const 
 
 template<>
 __inline__ __device__
-ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const int i )
+ComplexDouble fetchVectorX<ComplexDouble, true>( const ComplexDouble* const, const IndexType i )
 {
     int4 u = tex1Dfetch( texVectorZXref, i );
     return ComplexDouble( __hiloint2double( u.y, u.x ), __hiloint2double( u.w, u.z ) );
