@@ -111,7 +111,7 @@ void gemv1Kernel(
 
     if ( ( i >= gridLB[0] ) && ( i < gridSizesD[0] - gridUB[0] ) )
     {
-        // gridPoint ( i ) is inner point, we have not to check for valid stenil points
+        // gridPoint ( i ) is inner point, we have not to check for valid stencil points
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
@@ -148,7 +148,7 @@ void CUDAStencilKernel::stencilGEMV1(
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
-    SCAI_REGION( "CUDA.Stencil.GEMV2" )
+    SCAI_REGION( "CUDA.Stencil.GEMV1" )
 
     IndexType n0 = gridSizes[0];
 
@@ -156,7 +156,7 @@ void CUDAStencilKernel::stencilGEMV1(
 
     dim3 threadsPerBlock( 256 );
 
-    dim3 numBlocks( ( n0 + threadsPerBlock.y - 1 ) / threadsPerBlock.y );
+    dim3 numBlocks( ( n0 + threadsPerBlock.x - 1 ) / threadsPerBlock.x );
 
     bool useTexture = true;  // defaut is true, might be disabled explicitly for test
 
@@ -301,9 +301,9 @@ void gemv3Kernel(
 {
     const IndexType k = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType j = blockIdx.y * blockDim.y + threadIdx.y;
-    const IndexType i = blockIdx.z;
+    const IndexType i = blockIdx.z * blockDim.z + threadIdx.z;
 
-    if ( j >= gridSizesD[1]  || k >= gridSizesD[2] )
+    if ( j >= gridSizesD[1]  || k >= gridSizesD[2] || i >= gridSizesD[0] )
     {
         return;
     }
@@ -316,7 +316,7 @@ void gemv3Kernel(
          && ( j >= gridLB[1] ) && ( j < gridSizesD[1] - gridUB[1] ) 
          && ( k >= gridLB[2] ) && ( k < gridSizesD[2] - gridUB[2] ) )
     {
-        // gridPoint ( i, j, k ) is inner point, we have not to check for valid stenil points
+        // gridPoint ( i, j, k ) is inner point, we have not to check for valid stencil points
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
@@ -370,11 +370,11 @@ void CUDAStencilKernel::stencilGEMV3(
     SCAI_LOG_INFO( logger,  "stencilGEMV3<" << common::TypeTraits<ValueType>::id() << "> on " 
                              << n0 << " x " << n1 << " x " << n2 )
 
-    dim3 threadsPerBlock( 16, 16 );
+    dim3 threadsPerBlock( 16, 4, 4 );
 
     dim3 numBlocks( ( n2 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
                     ( n1 + threadsPerBlock.y - 1 ) / threadsPerBlock.y, 
-                      n0 );
+                    ( n0 + threadsPerBlock.y - 1 ) / threadsPerBlock.z );
 
     bool useTexture = true;  // defaut is true, might be disabled explicitly for test
 
@@ -415,15 +415,17 @@ void gemv4Kernel(
     const IndexType m = blockIdx.x * blockDim.x + threadIdx.x;
     const IndexType k = blockIdx.y * blockDim.y + threadIdx.y;
     const IndexType ij = ( blockIdx.z * blockDim.z ) + threadIdx.z;
-    const IndexType i  = ij / gridSizesD[1] ;
+    const IndexType i  = ij / gridSizesD[1];
     const IndexType j  = ij - i * gridSizesD[1];
 
-    if ( j >= gridSizesD[1]  || k >= gridSizesD[2] )
+    // as grid sizes are not always multiple of the corresponding threads, check for valid grid point
+
+    if ( m >= gridSizesD[3]  || k >= gridSizesD[2] || j >= gridSizesD[1] || i >= gridSizesD[0] )
     {
         return;
     }
 
-    IndexType gridPos = i * gridDistancesD[0] + j * gridDistancesD[1] + k * gridDistancesD[2];
+    IndexType gridPos = i * gridDistancesD[0] + j * gridDistancesD[1] + k * gridDistancesD[2] + m * gridDistancesD[3];
 
     ValueType v = 0;
 
@@ -432,7 +434,7 @@ void gemv4Kernel(
          && ( k >= gridLB[2] ) && ( k < gridSizesD[2] - gridUB[2] ) 
          && ( m >= gridLB[3] ) && ( m < gridSizesD[3] - gridUB[3] ) )
     {
-        // gridPoint ( i, j, k ) is inner point, we have not to check for valid stenil points
+        // gridPoint(i, j, k, m) is inner point, we have not to check for valid stencil points
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
@@ -446,19 +448,19 @@ void gemv4Kernel(
 
         for ( IndexType p = 0; p < nPoints; ++p )
         {
-            if ( !isInner( i, fetchVectorX<int, useTexture>( stencilOffset, 4*p ), gridSizesD[0] ) ) 
+            if ( !isInner( i, fetchVectorX<int, useTexture>( stencilOffset, 4 * p ), gridSizesD[0] ) ) 
             {
                 continue;
             }
-            if ( !isInner( j, fetchVectorX<int, useTexture>( stencilOffset, 4*p+1 ), gridSizesD[1] ) ) 
+            if ( !isInner( j, fetchVectorX<int, useTexture>( stencilOffset, 4 * p + 1 ), gridSizesD[1] ) ) 
             {
                 continue;
             }
-            if ( !isInner( k, fetchVectorX<int, useTexture>( stencilOffset, 4*p+2 ), gridSizesD[2] ) ) 
+            if ( !isInner( k, fetchVectorX<int, useTexture>( stencilOffset, 4 * p + 2 ), gridSizesD[2] ) ) 
             {
                 continue;
             }
-            if ( !isInner( m, fetchVectorX<int, useTexture>( stencilOffset, 4*p+3 ), gridSizesD[3] ) ) 
+            if ( !isInner( m, fetchVectorX<int, useTexture>( stencilOffset, 4 * p + 3 ), gridSizesD[3] ) ) 
             {
                 continue;
             }
@@ -481,21 +483,21 @@ void CUDAStencilKernel::stencilGEMV4(
     const ValueType stencilVal[],
     const int stencilOffset[] )
 {
-    SCAI_REGION( "CUDA.Stencil.GEMV3" )
+    SCAI_REGION( "CUDA.Stencil.GEMV4" )
 
     IndexType n0 = gridSizes[0];
     IndexType n1 = gridSizes[1];
     IndexType n2 = gridSizes[2];
     IndexType n3 = gridSizes[3];
 
-    SCAI_LOG_INFO( logger,  "stencilGEMV3<" << common::TypeTraits<ValueType>::id() << "> on " 
+    SCAI_LOG_INFO( logger, "stencilGEMV4<" << common::TypeTraits<ValueType>::id() << "> on " 
                              << n0 << " x " << n1 << " x " << n2 << " x " << n3 )
 
     dim3 threadsPerBlock( 16, 4, 4 );
 
     dim3 numBlocks( ( n3 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
                     ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
-                    ( n0 * n1 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
+                    ( n1 * n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
     bool useTexture = true;  // defaut is true, might be disabled explicitly for test
 
@@ -551,17 +553,16 @@ void CUDAStencilKernel::stencilGEMV(
 
     // copy grid data to GPU, constant memory
 
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridDistancesD, gridDistances, 3 * sizeof(IndexType), 0, cudaMemcpyHostToDevice ),
+    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridDistancesD, gridDistances, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridSizesD, gridSizes, 3 * sizeof(IndexType), 0, cudaMemcpyHostToDevice ),
+    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridSizesD, gridSizes, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridLB, lb, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridUB, ub, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
 
-
-    const IndexType* dStencilOffsetPtr = dStencilOffset.data().get();
+    const int* dStencilOffsetPtr = dStencilOffset.data().get();
     const ValueType* dStencilValPtr = dStencilVal.data().get();
 
     switch ( nDims ) 
