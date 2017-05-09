@@ -97,6 +97,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
     size_t nFormats = Format::UNDEFINED;
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
+    nFormats--;   // STENCIL_STORAGE not used for a matrix
     SCAI_LOG_INFO( logger, "Test all matrices of factory to be empty, #matrices = " << allMatrices.size() )
     BOOST_CHECK_EQUAL( nTypes * nFormats, allMatrices.size() );
 

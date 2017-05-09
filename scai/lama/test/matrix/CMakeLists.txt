@@ -48,6 +48,7 @@ scai_project (
 
         MatrixConstructorTest
         SparseMatrixTest
+        StencilMatrixTest
         DenseMatrixTest
 
         lamaMatrixTest

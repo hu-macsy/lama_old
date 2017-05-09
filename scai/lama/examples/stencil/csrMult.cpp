@@ -1,5 +1,5 @@
 /**
- * @file stencilConversion.cpp
+ * @file stencilGEMV.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Benchmarking for conversion of StencilMatrix to CSRMatrix
+ * @brief Benchmark to compare stencil GEMV with CSR GEMV.
  * @author Thomas Brandes
- * @date 23.02.2017
+ * @date 26.04.2017
  */
 
 #include <scai/lama.hpp>
@@ -58,46 +58,35 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+static const IndexType NITER = 10;
+
 int main( int argc, const char* argv[] )
 {
+    typedef float ValueType;
+
     // relevant SCAI arguments: 
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil2D<double> stencil( 5 );
-
-    const IndexType N = 10;
-
-    common::Grid2D grid( N, N );
-
-    StencilMatrix<double> stencilMatrix( grid, stencil );
-
-    CSRSparseMatrix<double> csrMatrix1;
-
+    if ( argc < 2 )
     {
-        SCAI_REGION( "main.buildPoisson" )
-        MatrixCreator::buildPoisson( csrMatrix1, 2, 5, N, N, N );
+        std::cout << "call: " << argv[0] << " matrix" << std::endl;
+        return -1;
     }
 
-    const CSRStorage<double>& s = csrMatrix1.getLocalStorage();
+    ContextPtr ctx = Context::getContextPtr();
 
-    FileIO::write( s.getIA(), "ia.txt" );
-    FileIO::write( s.getJA(), "ja.txt" );
+    CSRSparseMatrix<ValueType> csrMatrix( argv[1] );
 
-    CSRSparseMatrix<double> csrMatrix2;
+    DenseVector<ValueType> x( csrMatrix.getColDistributionPtr(), 1 );
+    DenseVector<ValueType> y( csrMatrix.getRowDistributionPtr(), 0 );
 
+    for ( IndexType i = 0; i < NITER; ++i )
     {
-        SCAI_REGION( "main.convertStencil" )
-        csrMatrix2 = stencilMatrix;
+        y += csrMatrix * x;
     }
 
-    SCAI_ASSERT_EQUAL( csrMatrix1.getNumRows(), csrMatrix2.getNumRows(), "serious mismatch" )
-
-    csrMatrix1.writeToFile( "poisson.mtx" );
-    csrMatrix2.writeToFile( "stencil.mtx" );
-
-
-    std::cout << "diff = " << csrMatrix1.maxDiffNorm( csrMatrix2 ) << std::endl;
+    std::cout << "y norm = " << y.l2Norm() << std::endl;
 }

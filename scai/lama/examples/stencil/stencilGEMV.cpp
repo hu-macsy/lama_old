@@ -138,22 +138,39 @@ int main( int argc, const char* argv[] )
 
     // on GPUs we can only run smaller problems
 
-    bool isGPU = ctx->getType() == Context::CUDA;
-
     IndexType nDims   = atoi( argv[1] );
     IndexType nPoints = atoi( argv[2] );
 
     std::cout << "Bench " << argv[0] << " nDims = " << nDims << ", nPoints = " << nPoints << std::endl;
 
-    if ( nDims == 3 )
+    if ( nDims == 4 )
+    { 
+        common::Stencil4D<ValueType> stencil( nPoints );
+
+        // Define a grid with same number of dimensions as stencil
+
+        const IndexType N1 = 40;
+        const IndexType N2 = 80;
+        const IndexType N3 = 80;
+        const IndexType N4 = 80;
+    
+        common::Grid4D grid( N1, N2, N3, N4 );
+
+        bench( grid, stencil );
+    }
+    else if ( nDims == 3 )
     { 
         common::Stencil3D<ValueType> stencil( nPoints );
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = isGPU ? 200 : 400;
-        const IndexType N2 = 400;
-        const IndexType N3 = 500;
+        // const IndexType N1 = 200;
+        // const IndexType N2 = 400;
+        // const IndexType N3 = 500;
+
+        const IndexType N1 = 1000;
+        const IndexType N2 = 800;
+        const IndexType N3 = 100;
     
         common::Grid3D grid( N1, N2, N3 );
 
@@ -165,7 +182,7 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = isGPU ? 4000 : 8000;
+        const IndexType N1 =  4000;
         const IndexType N2 = 10000;
     
         common::Grid2D grid( N1, N2 );
@@ -178,7 +195,7 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = isGPU ? 40000000 : 80000000;
+        const IndexType N1 = 40000000;
     
         common::Grid1D grid( N1 );
 

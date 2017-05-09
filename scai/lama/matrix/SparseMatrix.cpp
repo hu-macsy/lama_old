@@ -620,8 +620,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     SCAI_ASSERT_EQ_ERROR( rowDistributionPtr->getGlobalSize(), getNumRows(),
                           "size of new row distribution mismatches #rows" );
 
-    SCAI_ASSERT_ERROR( colDistributionPtr->getGlobalSize() >= getNumColumns(),
-                       "size of new col distribution must be >= #colunns" );
+    SCAI_ASSERT_GE_ERROR( colDistributionPtr->getGlobalSize(), getNumColumns(),
+                       "Size of new col distribution = " << *colDistributionPtr << " must be >= #colunns of " << *this );
 
     // Save the current distribution of this matrix; use shared pointers to avoid freeing
 
