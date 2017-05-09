@@ -272,7 +272,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
 
     IndexType lb[] = { 1, 1 };
     IndexType ub[] = { 1, 1 };
-    int stencilOffset[] = { 0, -n2, n2, -1, 1 };
+
+    int tmpOffset2 = n2;
+    int tmpOffset1 = 1;
+    int stencilOffset[] = { 0, -tmpOffset2, tmpOffset2, -tmpOffset1, tmpOffset1 };
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -376,7 +379,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
     IndexType lb[] = { 1, 0, 1 };
     IndexType ub[] = { 1, 0, 0 };
 
-    int stencilOffset[] = { 0, -n2 * n3, n2 * n3 };
+    int tmpOffset = n2 * n3;
+    int stencilOffset[] = { 0, -tmpOffset, tmpOffset };
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -492,7 +496,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
     IndexType lb[] = { 1, 0, 0, 0 };
     IndexType ub[] = { 1, 0, 0, 0 };
 
-    int stencilOffset[] = { 0, -n2 * n3 * n4, n2 * n3 * n4 };
+    int tmpOffset = n2 * n3 * n4;
+    int stencilOffset[] = { 0, -tmpOffset, tmpOffset };
 
     {
         SCAI_CONTEXT_ACCESS( loc );
