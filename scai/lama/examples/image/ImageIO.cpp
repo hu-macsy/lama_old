@@ -131,13 +131,17 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
     }
 }
 
-// instantiate methods
+// instantiate methods for supported array/vector types
 
-template
-void ImageIO::write( const GridVector<float>&, const std::string& );
+#define SCAI_IMAGE_IO_INSTANTIATIONS( _type )                              \
+                                                                           \
+    template COMMON_DLL_IMPORTEXPORT                                       \
+    void ImageIO::read( GridVector<_type>&, const std::string& );          \
+                                                                           \
+    template COMMON_DLL_IMPORTEXPORT                                       \
+    void ImageIO::write( const GridVector<_type>&, const std::string& );   \
 
-template
-void ImageIO::read( GridVector<float>&, const std::string& );
+SCAI_COMMON_LOOP( SCAI_IMAGE_IO_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
 } /* end namespace lama */
 

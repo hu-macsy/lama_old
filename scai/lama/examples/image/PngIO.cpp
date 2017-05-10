@@ -69,12 +69,22 @@ void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid3D& imageSize, c
         COMMON_THROWEXCEPTION( inputFileName << " is not recognized as a PNG file" )
     }
 
-    /* initialize stuff */
+    /* read basic infomation */
+
     png_structp png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
     SCAI_ASSERT_ERROR( png_ptr, "png_create_read_struct failed" )
+
     png_infop info_ptr = png_create_info_struct( png_ptr );
     SCAI_ASSERT_ERROR( info_ptr, "png_create_info_struct failed" )
-    SCAI_ASSERT_ERROR( !setjmp( png_jmpbuf( png_ptr ) ), " FAIL" )
+
+    // prepare error handling, i.e. define code that is used for error handling
+
+    if ( setjmp( png_ptr->jmpbuf ) )
+    {
+        png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
+        COMMON_THROWEXCEPTION( "Serious error during reading png file " << inputFileName )
+    }
+
     png_init_io( png_ptr, fp );
     png_set_sig_bytes( png_ptr, 8 );
     png_read_info( png_ptr, info_ptr );
@@ -93,16 +103,16 @@ void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid3D& imageSize, c
                     << ", passes = " << number_of_passes )
 
     SCAI_ASSERT_EQ_ERROR( 8, png_bit_depth, "read only 8-bit depth supported" )
-    SCAI_ASSERT_EQ_ERROR( 1, number_of_passes, "multiple passes not supported" )
+
+    if ( number_of_passes != 1 )
+    {
+        SCAI_LOG_WARN( logger, "Reading " << inputFileName << ": multiple passes not supported"
+                               << ", #passes = " << number_of_passes )
+    }
 
     png_read_update_info( png_ptr, info_ptr );
 
     /* read file */
-
-    if ( setjmp( png_jmpbuf( png_ptr ) ) )
-    {
-        COMMON_THROWEXCEPTION( "[read_png_file] Error during read_image" );
-    }
 
     png_bytep* row_pointers = new png_bytep[ height ];
 
@@ -184,13 +194,15 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& grid
     SCAI_ASSERT_ERROR( png_ptr, "png_create_write_struct failed" );
     png_infop info_ptr = png_create_info_struct( png_ptr );
     SCAI_ASSERT_ERROR( info_ptr, "png_create_info_struct failed" );
-    SCAI_ASSERT_ERROR( !setjmp( png_jmpbuf( png_ptr ) ), "failed" )
-    png_init_io( png_ptr, fp );
 
-    if ( setjmp( png_jmpbuf( png_ptr ) ) )
+    // prepare error handling, i.e. define code that is used for error handling
+
+    if ( setjmp( png_ptr->jmpbuf ) )
     {
-        COMMON_THROWEXCEPTION( "[write png file error]" )
+        COMMON_THROWEXCEPTION( "Serious error during writing png file " << outputFileName )
     }
+
+    png_init_io( png_ptr, fp );
 
     /* write header */
     png_byte bit_depth = 8;
@@ -200,19 +212,10 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& grid
                   PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE );
     png_write_info( png_ptr, info_ptr );
 
-    if ( setjmp( png_jmpbuf( png_ptr ) ) )
-    {
-        COMMON_THROWEXCEPTION( "[write png file error]" )
-    }
-
     png_write_image( png_ptr, row_pointers );
 
-    if ( setjmp( png_jmpbuf( png_ptr ) ) )
-    {
-        COMMON_THROWEXCEPTION( "[write png file error]" )
-    }
-
     png_write_end( png_ptr, NULL );
+
     fclose( fp );
 }
 
@@ -221,28 +224,19 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& grid
 
 void PngIO::read( _HArray& data, common::Grid3D& grid, const std::string& inputFileName )
 {
-    if ( data.getValueType() == common::scalar::FLOAT )
-    {
-        HArray<float>& dataF = reinterpret_cast<HArray<float>&>( data );
-        readImpl( dataF, grid, inputFileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "unsupported data type " << data.getValueType() );
-    }
+    ImageIOWrapper<PngIO, SCAI_TYPELIST( float, double )>::read( ( PngIO& ) *this, data, grid, inputFileName );
 }
 
-void PngIO::write( const _HArray& data, const common::Grid3D& grid, const std::string& inputFileName )
+void PngIO::write( const _HArray& data, const common::Grid3D& grid, const std::string& outputFileName )
 {
-    if ( data.getValueType() == common::scalar::FLOAT )
-    {
-        const HArray<float>& dataF = reinterpret_cast<const HArray<float>&>( data );
-        writeImpl( dataF, grid, inputFileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "unsupported data type " << data.getValueType() );
-    }
+    ImageIOWrapper<PngIO, SCAI_TYPELIST( float, double )>::write( ( PngIO& ) *this, data, grid, outputFileName );
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+PngIO::PngIO()
+{
+    SCAI_LOG_INFO( logger, "PngIO uses libpng version " << png_libpng_ver << " using zlib " << zlib_version );
 }
 
 

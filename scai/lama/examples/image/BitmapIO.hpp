@@ -58,20 +58,19 @@ public:
 
     void write( const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& outputFileName );
 
-protected:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
     /** Typed version of BitmapIO::read */
 
     template<typename ValueType>
-    static void readImpl( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
+    void readImpl( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
 
     /** Typed version of BitmapIO::write */
 
     template<typename ValueType>
-    static void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
+    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
 
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } /* end namespace lama */

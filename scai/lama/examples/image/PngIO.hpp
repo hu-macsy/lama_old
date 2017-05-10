@@ -58,19 +58,23 @@ public:
 
     void write( const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& outputFileName );
 
-protected:
+    /** constructor of object required for dynamic creation. */
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+    PngIO();
 
     /** Typed version of PngIO::read */
 
     template<typename ValueType>
-    static void readImpl( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
+    void readImpl( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
 
     /** Typed version of PngIO::write */
 
     template<typename ValueType>
-    static void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
+    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 };
 

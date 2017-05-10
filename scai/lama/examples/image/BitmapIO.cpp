@@ -289,34 +289,13 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& g
 
 void BitmapIO::read( _HArray& data, common::Grid3D& grid, const std::string& inputFileName )
 {
-    if ( data.getValueType() == common::scalar::FLOAT )
-    {
-        HArray<float>& dataF = reinterpret_cast<HArray<float>&>( data );
-        readImpl( dataF, grid, inputFileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "unsupported data type " << data.getValueType() );
-    }
+    ImageIOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::read( ( BitmapIO& ) *this, data, grid, inputFileName );
 }
 
-void BitmapIO::write( const _HArray& data, const common::Grid3D& grid, const std::string& inputFileName )
+void BitmapIO::write( const _HArray& data, const common::Grid3D& grid, const std::string& outputFileName )
 {
-    if ( data.getValueType() == common::scalar::FLOAT )
-    {
-        const HArray<float>& dataF = reinterpret_cast<const HArray<float>&>( data );
-        writeImpl( dataF, grid, inputFileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "unsupported data type " << data.getValueType() );
-    }
+    ImageIOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::write( ( BitmapIO& ) *this, data, grid, outputFileName );
 }
-
-// instantiate methods
-
-// template
-// void BitmapIO::readImpl( HArray<float>&, common::Grid3D& grid, const std::string& );
 
 
 } /* end namespace lama */

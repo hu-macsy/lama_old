@@ -1,0 +1,126 @@
+/**
+ * @file GridWriteAccess.hpp
+ *
+ * @license
+ * Copyright (c) 2009-2017
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Derived class of WriteAccess to write local data of a GridVector
+ * @author Thomas Brandes
+ * @date 10.05.2017
+ */
+
+#pragma once
+
+// for dll_import
+#include <scai/common/config.hpp>
+
+// base classes
+#include <scai/hmemo/WriteAccess.hpp>
+#include <scai/lama/GridVector.hpp>
+
+namespace scai
+{
+
+namespace lama
+{
+
+/**
+ * @brief Write access for the local data of a grid vector.
+ *
+ *
+ * @tparam ValueType is the value type of the data written.
+ */
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT GridWriteAccess: public hmemo::WriteAccess<ValueType>
+{
+public:
+
+    GridWriteAccess( GridVector<ValueType>& gridVector, hmemo::ContextPtr contextPtr );
+
+    GridWriteAccess( GridVector<ValueType>& gridVector );
+
+    /**
+     * @brief Releases the WriteAccess on the associated GridVector
+     */
+    virtual ~GridWriteAccess();
+
+    ValueType& operator() ( const IndexType i1, const IndexType i2, const IndexType i3 );
+
+    ValueType& operator() ( const IndexType i1, const IndexType i2 );
+
+private:
+ 
+    const common::Grid& mGrid;
+};
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+GridWriteAccess<ValueType>::GridWriteAccess( GridVector<ValueType>& gv, hmemo::ContextPtr contextPtr ) :
+
+    hmemo::WriteAccess<ValueType>( gv.getLocalValues(), contextPtr ),
+    mGrid( gv.getLocalGrid() )
+{
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+GridWriteAccess<ValueType>::GridWriteAccess( GridVector<ValueType>& gv ) :
+
+    hmemo::WriteAccess<ValueType>( gv.getLocalValues() ),
+    mGrid( gv.localGrid() )
+{
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+GridWriteAccess<ValueType>::~GridWriteAccess()
+{
+}
+
+template<typename ValueType>
+ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const IndexType i2 )
+{
+    SCAI_ASSERT_EQ_DEBUG( 2, mGrid.nDims(), "illegal indexing" )
+    const common::Grid2D& grid = reinterpret_cast<const common::Grid2D&>( mGrid );
+    IndexType pos = grid.linearPos( i1, i2 );
+    return (*this)[pos];
+}
+
+template<typename ValueType>
+ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const IndexType i2, const IndexType i3 )
+{
+    SCAI_ASSERT_EQ_DEBUG( 3, mGrid.nDims(), "illegal indexing" )
+    const common::Grid3D& grid = reinterpret_cast<const common::Grid3D&>( mGrid );
+    IndexType pos = grid.linearPos( i1, i2, i3 );
+    return (*this)[pos];
+}
+
+} /* end namespace lama */
+
+} /* end namespace scai */

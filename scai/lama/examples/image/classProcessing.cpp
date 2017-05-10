@@ -37,6 +37,8 @@
 #include <scai/lama/matrix/StencilMatrix.hpp>
 
 #include <scai/lama/GridVector.hpp>
+#include <scai/lama/GridWriteAccess.hpp>
+#include <scai/lama/GridReadAccess.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/lama.hpp>
@@ -92,9 +94,9 @@ int main( int argc, const char* argv[] )
     std::cout << "Class image = " << classImage << std::endl;
 
     {
-        hmemo::WriteAccess<float> wClass( classImage.getLocalValues() );
-        hmemo::ReadAccess<float> rImage( image.getLocalValues() );
-        hmemo::WriteAccess<float> wDist( dist.getLocalValues() );
+        GridWriteAccess<float> wClass( classImage );
+        GridReadAccess<float> rImage( image );
+        GridWriteAccess<float> wDist( dist );
 
         for ( IndexType i = 0; i < height; i++ )
         {
@@ -104,17 +106,17 @@ int main( int argc, const char* argv[] )
 
                for ( IndexType c = 0; c < 3; ++c )
                {
-                   float diff = classColor[0][c] - rImage[ width * 3 * i + 3 * j + c ];
+                   float diff = classColor[0][c] - rImage( i, j, c );
                    dist += diff * diff;
                }
 
                dist = common::Math::sqrt( dist );
 
-               wDist[ i * width + j ] = dist;
+               wDist( i, j ) = dist;
 
-               wClass[ ( width * i + j ) * 3 + 0 ] = classColor[0][0];
-               wClass[ ( width * i + j ) * 3 + 1 ] = classColor[0][1];
-               wClass[ ( width * i + j ) * 3 + 2 ] = classColor[0][2];
+               wClass( i, j, 0 ) = classColor[0][0];
+               wClass( i, j, 1 ) = classColor[0][1];
+               wClass( i, j, 2 ) = classColor[0][2];
             }
         }
     }
@@ -130,9 +132,9 @@ int main( int argc, const char* argv[] )
 
     for ( IndexType k = 1; k < nClassColors; ++k )
     {
-        hmemo::WriteAccess<float> wClass( classImage.getLocalValues() );
-        hmemo::ReadAccess<float> rImage( image.getLocalValues() );
-        hmemo::WriteAccess<float> wDist( dist.getLocalValues() );
+        GridWriteAccess<float> wClass( classImage );
+        GridReadAccess<float> rImage( image );
+        GridWriteAccess<float> wDist( dist );
 
         for ( IndexType i = 0; i < height; i++ )
         {
@@ -142,19 +144,19 @@ int main( int argc, const char* argv[] )
 
                for ( IndexType c = 0; c < 3; ++c )
                {
-                   float diff = classColor[k][c] - rImage[ width * 3 * i + 3 * j + c ];
+                   float diff = classColor[k][c] - rImage( i, j, c );
                    dist += diff * diff;
                }
 
                dist = common::Math::sqrt( dist );
 
-               if ( dist < wDist[ i * width + j ] )
+               if ( dist < wDist( i, j ) )
                {
-                   wDist[ i * width + j ] = dist;
+                   wDist( i, j ) = dist;
 
-                   wClass[ ( width * i + j ) * 3 + 0 ] = classColor[k][0];
-                   wClass[ ( width * i + j ) * 3 + 1 ] = classColor[k][1];
-                   wClass[ ( width * i + j ) * 3 + 2 ] = classColor[k][2];
+                   wClass( i, j, 0 ) = classColor[k][0];
+                   wClass( i, j, 1 ) = classColor[k][1];
+                   wClass( i, j, 2 ) = classColor[k][2];
                }
             }
         }

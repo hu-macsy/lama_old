@@ -115,6 +115,8 @@ scai_project (
 
         Vector
 
+        GridSection
+
     HEADERS                  # .hpp only
 
         Scalar

@@ -143,6 +143,14 @@ public:
     /** Constructor of a three-dimensional grid */
 
     inline Grid1D( const IndexType n1 );
+
+    /** More convenient call of linearPos for one-dimensional grid.
+     *  This routine is not really necessary as it is just the identity.
+     */
+
+    inline IndexType linearPos( const IndexType pos ) const;
+
+    using Grid::linearPos;
 };
 
 /** 2-dimensional Grid */
@@ -155,7 +163,7 @@ public:
 
     inline Grid2D( const IndexType n1, const IndexType n2 );
 
-    /** More convenient call of linearPos for tree-dimensional grids */
+    /** More convenient call of linearPos for two-dimensional grids */
 
     inline IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
 
@@ -352,6 +360,11 @@ IndexType Grid::linearPos( const IndexType gridPos[] ) const
     }
 
     return pos;
+}
+
+IndexType Grid1D::linearPos( const IndexType pos1 ) const
+{
+    return pos1;
 }
 
 IndexType Grid2D::linearPos( const IndexType pos1, const IndexType pos2 ) const
