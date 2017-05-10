@@ -182,5 +182,5 @@ int main( int argc, const char* argv[] )
 
     // imageNew += image;
 
-    ImageIO::write( imageNew, outputFileName );
+    ImageIO::write( image, outputFileName );
 }

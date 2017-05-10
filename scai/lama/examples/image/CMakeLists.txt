@@ -45,6 +45,8 @@ mark_as_advanced( PNG_LIBRARY PNG_INCLUDE_DIR )
 
 set ( SOURCES
          ImageIO.cpp
+         BitmapIO.cpp
+         PngIO.cpp
     )
 
 add_library( imageLib SHARED ${SOURCES} )

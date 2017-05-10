@@ -1,5 +1,5 @@
 /**
- * @file ImageIO.hpp
+ * @file PngIO.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of routines to read/write image data
+ * @brief Definition of routines to read/write image data in PNG format
  * @author Thomas Brandes
  * @date 04.05.2017
  */
@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/logging.hpp>
-#include <scai/lama/GridVector.hpp>
+#include <scai/lama/examples/image/ImageIO.hpp>
 
 namespace scai
 {
@@ -45,36 +45,32 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT ImageIO
+class COMMON_DLL_IMPORTEXPORT PngIO : public ImageIO
 {
 
 public:
 
-    /** Read in the pixel data from an input file. 
-     *
-     *  Supported formats: *.png
-     */
-    template<typename ValueType>
-    static void read( GridVector<ValueType>& imageData, const std::string& inputFileName );
+    /** Implementation of virtual routine ImageIO::read for this format */
 
-    /** Write the pixel data to an output file.
-     *
-     *  Supported formats: *.png
-     */
-    template<typename ValueType>
-    static void write( const GridVector<ValueType>& imageData, const std::string& outputFileName );
+    void read( hmemo::_HArray& data, common::Grid3D& grid, const std::string& outputFileName );
 
     /** Implementation of virtual routine ImageIO::write for this format */
 
-    virtual void read( hmemo::_HArray& data, common::Grid3D& grid, const std::string& outputFileName ) = 0;
-
-    /** Implementation of virtual routine ImageIO::write for this format */
-
-    virtual void write( const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& outputFileName ) = 0;
+    void write( const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& outputFileName );
 
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+    /** Typed version of PngIO::read */
+
+    template<typename ValueType>
+    static void readImpl( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
+
+    /** Typed version of PngIO::write */
+
+    template<typename ValueType>
+    static void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
 
 };
 
