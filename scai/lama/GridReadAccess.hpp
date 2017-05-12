@@ -93,7 +93,7 @@ template<typename ValueType>
 GridReadAccess<ValueType>::GridReadAccess( const GridVector<ValueType>& gv, hmemo::ContextPtr contextPtr ) :
 
     hmemo::ReadAccess<ValueType>( gv.getLocalValues(), contextPtr ),
-    mGrid( gv.getLocalGrid() )
+    mGrid( gv.localGrid() )
 {
 }
 

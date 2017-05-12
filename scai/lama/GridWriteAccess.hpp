@@ -67,9 +67,19 @@ public:
      */
     virtual ~GridWriteAccess();
 
+    /**
+     *  Indexing a one-dimensional grid is like a usual write access but added for convenience.
+     */
+    ValueType& operator() ( const IndexType i1 );
+
+    /**
+     *  Indexing a two-dimensional grid encapsulates the linear addressing that is required.
+     */
+    ValueType& operator() ( const IndexType i1, const IndexType i2 );
+
     ValueType& operator() ( const IndexType i1, const IndexType i2, const IndexType i3 );
 
-    ValueType& operator() ( const IndexType i1, const IndexType i2 );
+    ValueType& operator() ( const IndexType i1, const IndexType i2, const IndexType i3, const IndexType i4 );
 
 private:
  
@@ -82,7 +92,7 @@ template<typename ValueType>
 GridWriteAccess<ValueType>::GridWriteAccess( GridVector<ValueType>& gv, hmemo::ContextPtr contextPtr ) :
 
     hmemo::WriteAccess<ValueType>( gv.getLocalValues(), contextPtr ),
-    mGrid( gv.getLocalGrid() )
+    mGrid( gv.localGrid() )
 {
 }
 
@@ -104,6 +114,13 @@ GridWriteAccess<ValueType>::~GridWriteAccess()
 }
 
 template<typename ValueType>
+ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1 )
+{
+    SCAI_ASSERT_EQ_DEBUG( 1, mGrid.nDims(), "illegal indexing" )
+    return (*this)[i1];
+}
+
+template<typename ValueType>
 ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const IndexType i2 )
 {
     SCAI_ASSERT_EQ_DEBUG( 2, mGrid.nDims(), "illegal indexing" )
@@ -118,6 +135,15 @@ ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const In
     SCAI_ASSERT_EQ_DEBUG( 3, mGrid.nDims(), "illegal indexing" )
     const common::Grid3D& grid = reinterpret_cast<const common::Grid3D&>( mGrid );
     IndexType pos = grid.linearPos( i1, i2, i3 );
+    return (*this)[pos];
+}
+
+template<typename ValueType>
+ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const IndexType i2, const IndexType i3, IndexType i4 )
+{
+    SCAI_ASSERT_EQ_DEBUG( 4, mGrid.nDims(), "illegal indexing" )
+    const common::Grid4D& grid = reinterpret_cast<const common::Grid4D&>( mGrid );
+    IndexType pos = grid.linearPos( i1, i2, i3, i4 );
     return (*this)[pos];
 }
 

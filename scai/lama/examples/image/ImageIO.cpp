@@ -88,6 +88,10 @@ void ImageIO::read( GridVector<ValueType>& imageData, const std::string& inputFi
         SCAI_LOG_INFO( logger, "read BMP file " << inputFileName << ", data = " << data << ", grid = " << grid )
         imageData.swap( data, grid );
     }
+    else
+    {
+        COMMON_THROWEXCEPTION( "Unsupported suffix (" << suffix << ") for reading image file, only .bmp or .png" )
+    }
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -127,7 +131,7 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
     }
     else
     {
-        COMMON_THROWEXCEPTION( "unknown suffix for writing image: " << suffix )
+        COMMON_THROWEXCEPTION( "Unsupported suffix (" << suffix << ") for writing image file, only .bmp or .png" )
     }
 }
 

@@ -45,6 +45,7 @@
 #include <scai/dmemo/GridDistribution.hpp>
 #include <scai/dmemo/NoCommunicator.hpp>
 #include <scai/common/Grid.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -138,6 +139,19 @@ public:
         DenseVector<ValueType>::swap( other );
     }
 
+    /** Set this grid vector by another grid vector that is reduced in one dimension */
+
+    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp );
+
+    /** Matrix-matrix multiplication : this += alpha * v1 * v2
+     *
+     *  @param alpha is just an additional scaling factor to avoid temporaries
+     *  @param v1 must be a two-dimensional grid-vector with v1.size( 0 ) == this->size( 0 )
+     *  @param v2 must be a two-dimensional grid-vector with v2.size( 0 ) == v1.size( 1 ) and v2.size( 1 ) == this->size( 1 )
+     */
+
+    void gemm( const ValueType alpha, const GridVector<ValueType>& v1, const GridVector<ValueType>& v2 );
+
     /** Help class to observe the further use of operator[] in LArray */
 
     class GridElemProxy
@@ -179,6 +193,7 @@ public:
         GridElemProxy& operator= ( const GridElemProxy& other )
         {
             mGridVector.setValue( pos(), other.get() );
+            return *this;
         }
 
         IndexType pos() const

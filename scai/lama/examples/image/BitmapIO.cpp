@@ -135,6 +135,12 @@ void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid3D& grid, const st
 
     IndexType imageSize = infoHeader.biSizeImage;
 
+    if ( imageSize == 0 )
+    {
+        imageSize = fileHeader.bfSize - fileHeader.bfOffBits;
+        SCAI_LOG_INFO( logger, "Take image size = " << imageSize << " from fileHeader" )
+    }
+
     IndexType width = infoHeader.biWidth;
     IndexType height = infoHeader.biHeight;
     SCAI_LOG_INFO( logger, "BMP file, imag is " << width << " x " << height )
@@ -158,7 +164,8 @@ void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid3D& grid, const st
         // Image lines are always stored as a multiple of 4
 
         IndexType widthAligned = ( ( width + 3 ) / 4 ) * 4;
-        SCAI_ASSERT_EQ_ERROR( imageSize, widthAligned * height * 3, "unexpected image size, widthAligned = " << widthAligned )
+
+        // SCAI_ASSERT_EQ_ERROR( imageSize, widthAligned * height * 3, "unexpected image size, widthAligned = " << widthAligned )
 
         {
             WriteOnlyAccess<ValueType> wData( data, grid.size() );
