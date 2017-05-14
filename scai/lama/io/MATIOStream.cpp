@@ -487,7 +487,7 @@ uint32_t MATIOStream::writeDenseHeader(
 
 /* --------------------------------------------------------------------------------- */
 
-uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data, bool isCell )
+uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[], const IndexType maxDims, IndexType& nDims, IndexType& nnz, bool& isComplex, const char* data, bool isCell )
 {
     uint32_t dataType;
     uint32_t nBytes;
@@ -498,15 +498,21 @@ uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], Inde
     SCAI_ASSERT_EQ_ERROR( dataType, MATIOStream::MAT_MATRIX, "can only read array as MATRIX - MATLAB array" )
 
     uint32_t header[2];
-    int32_t  mdims[2];
+    int32_t  mdims[8];
 
     uint8_t* headerFlags = reinterpret_cast<uint8_t*>( header );
 
     elementPtr += getData( header, 2, elementPtr );
-    elementPtr += getData( mdims, 2, elementPtr );
 
-    dims[0] = static_cast<IndexType>( mdims[0] );
-    dims[1] = static_cast<IndexType>( mdims[1] );
+    SCAI_LOG_DEBUG( logger, "Read header, header[0] = " << header[0] << ", header[1] = " << header[1] )
+    SCAI_LOG_DEBUG( logger, "header flags = " << ( int ) headerFlags[0] << ", " << ( int ) headerFlags[1] << ", " << ( int ) headerFlags[2] << ", " << ( int ) headerFlags[3] )
+
+    elementPtr += getDataN( mdims, nDims, maxDims, elementPtr );
+ 
+    for ( IndexType i = 0; i < nDims; ++i )
+    {
+        dims[i] = static_cast<IndexType>( mdims[i] );
+    }
 
     matClass  = MATClass( headerFlags[0] );
     isComplex = headerFlags[1] & ( 1 << 3 );

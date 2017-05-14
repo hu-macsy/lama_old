@@ -55,7 +55,7 @@ SCAI_LOG_DEF_LOGGER( PngIO::logger, "ImageIO.Png" )
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid3D& imageSize, const std::string& inputFileName )
+void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid& imageSize, const std::string& inputFileName )
 {
     char header[8];    // 8 is the maximum size that can be checked
     /* open file and test for it being a png */
@@ -160,7 +160,7 @@ void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid3D& imageSize, c
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName )
+void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName )
 {
     SCAI_LOG_INFO( logger, "write image, shape = " << grid )
     const IndexType height = grid.size( 0 );
@@ -222,12 +222,12 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& grid
 /* ------------------------------------------------------------------------------------ */
 /* ------------------------------------------------------------------------------------ */
 
-void PngIO::read( _HArray& data, common::Grid3D& grid, const std::string& inputFileName )
+void PngIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
     ImageIOWrapper<PngIO, SCAI_TYPELIST( float, double )>::read( ( PngIO& ) *this, data, grid, inputFileName );
 }
 
-void PngIO::write( const _HArray& data, const common::Grid3D& grid, const std::string& outputFileName )
+void PngIO::write( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
     ImageIOWrapper<PngIO, SCAI_TYPELIST( float, double )>::write( ( PngIO& ) *this, data, grid, outputFileName );
 }

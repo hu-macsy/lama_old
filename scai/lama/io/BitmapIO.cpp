@@ -98,7 +98,7 @@ struct COLORTABLE
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid3D& grid, const std::string& inputFileName )
+void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& inputFileName )
 {
     FILE* file;
     file = fopen( inputFileName.c_str(), "rb" );
@@ -228,9 +228,11 @@ void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid3D& grid, const st
 }
 
 template<typename ValueType>
-void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName )
+void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName )
 {
     FILE* f = fopen( outputFileName.c_str(), "wb" );
+
+    SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "image data must be 3-dimensional grid data" )
 
     IndexType height  = grid.size( 0 );
     IndexType width   = grid.size( 1 );
@@ -294,12 +296,12 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid3D& g
 /* ------------------------------------------------------------------------------------ */
 /* ------------------------------------------------------------------------------------ */
 
-void BitmapIO::read( _HArray& data, common::Grid3D& grid, const std::string& inputFileName )
+void BitmapIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
     ImageIOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::read( ( BitmapIO& ) *this, data, grid, inputFileName );
 }
 
-void BitmapIO::write( const _HArray& data, const common::Grid3D& grid, const std::string& outputFileName )
+void BitmapIO::write( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
     ImageIOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::write( ( BitmapIO& ) *this, data, grid, outputFileName );
 }

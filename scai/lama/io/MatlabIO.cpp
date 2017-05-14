@@ -42,6 +42,7 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/io/MATIOStream.hpp>
+#include <scai/lama/io/ImageIO.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -203,13 +204,14 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
 
     inFile.readDataElement( dataElement );
 
+    IndexType nDims;
     IndexType dims[2];
     IndexType nnz;
     bool      isComplex;
 
     MATIOStream::MATClass matClass;
 
-    MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElement.get() );
+    MATIOStream::getMatrixInfo( matClass, dims, 2, nDims, nnz, isComplex, dataElement.get() );
 
     n = dims[0] * dims[1];
 
@@ -277,11 +279,12 @@ void MatlabIO::readArrayImpl(
 
     IndexType dims[2];
     IndexType nnz;
+    IndexType nDims;
     bool      isComplex;
 
     MATIOStream::MATClass matClass;
 
-    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, elementPtr );
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, 2, nDims, nnz, isComplex, elementPtr );
 
     SCAI_ASSERT_LE_ERROR( offset, nBytes, "data element insufficient to read matrix info" )
 
@@ -517,11 +520,12 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
     inFile.readDataElement( dataElement );
 
     IndexType dims[2];
+    IndexType nDims;
     bool      isComplex;
 
     MATIOStream::MATClass matClass;
 
-    MATIOStream::getMatrixInfo( matClass, dims, numValues, isComplex, dataElement.get() );
+    MATIOStream::getMatrixInfo( matClass, dims, 2, nDims, numValues, isComplex, dataElement.get() );
 
     numRows    = dims[0];
     numColumns = dims[1];
@@ -645,6 +649,8 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
         IndexType dims[2];
 
         IndexType nnz;
+        IndexType nDims;
+        IndexType maxDims = 2;
         bool      isComplex;
         MATIOStream::MATClass matClass;
 
@@ -655,7 +661,7 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
 
         nBytesField = wBytes; // reset it
 
-        offset1 += MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr + offset + offset1, false );
+        offset1 += MATIOStream::getMatrixInfo( matClass, dims, maxDims, nDims, nnz, isComplex, dataElementPtr + offset + offset1, false );
 
         SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1]
                        << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
@@ -684,10 +690,12 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
 {
     IndexType dims[2];
     IndexType nnz;
+    IndexType nDims;
+    const IndexType maxDims = 2;
     bool      isComplex;
     MATIOStream::MATClass matClass;
 
-    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr );
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, maxDims, nDims, nnz, isComplex, dataElementPtr );
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
@@ -770,7 +778,100 @@ void MatlabIO::readStorageImpl(
     }
 }
 
+template<typename ValueType>
+static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<ValueType>& in, const common::Grid& grid )
+{
+    SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "other dims not supported yet" )
+    hmemo::ReadAccess<ValueType> rIn( in );
+    hmemo::WriteOnlyAccess<ValueType> wOut( out, grid.size() );
+    const IndexType n0 = grid.size(0);
+    const IndexType n1 = grid.size(1);
+    const IndexType n2 = grid.size(2);
+
+    const IndexType dIn0 = 1;
+    const IndexType dIn1 = n0;
+    const IndexType dIn2 = n0 * n1;
+    const IndexType dOut0 = n1 * n2;
+    const IndexType dOut1 = n2;
+    const IndexType dOut2 = 1;
+
+    for ( IndexType i0 = 0; i0 < n0; ++i0 )
+    for ( IndexType i1 = 0; i1 < n1; ++i1 )
+    for ( IndexType i2 = 0; i2 < n2; ++i2 )
+    {
+        wOut[ i0 * dOut0 + i1 * dOut1 + i2 * dOut2 ] = rIn[ i0 * dIn0 + i1 * dIn1 + i2 * dIn2 ];
+    }
+}
+
+/* ------------------------------------------------------------------------------------ */
+/*   Read grid vector data from file                                              */
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void MatlabIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& gridFileName )
+{
+    MATIOStream inFile( gridFileName, ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    inFile.readMATFileHeader( version, endian );
+
+    common::scoped_array<char> dataElement;
+
+    uint32_t nBytes = inFile.readDataElement( dataElement );
+
+    const char* elementPtr = dataElement.get();
+
+    IndexType nDims;
+    IndexType dims[SCAI_GRID_MAX_DIMENSION];
+    IndexType nnz;
+    bool      isComplex;
+
+    MATIOStream::MATClass matClass;
+
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, SCAI_GRID_MAX_DIMENSION, nDims, nnz, isComplex, dataElement.get() );
+
+    if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
+    {
+        COMMON_THROWEXCEPTION( "File " << gridFileName << " contains sparse matrix, but not grid array" )
+    }
+
+    if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    {
+        COMMON_THROWEXCEPTION( "File " << gridFileName << " contains unsupported matrix class = " << matClass )
+    }
+
+    grid = common::Grid( nDims, dims );
+
+    SCAI_ASSERT_LE_ERROR( offset, nBytes, "data element insufficient to read matrix info" )
+
+    // now read the data
+
+    offset += getArrayData( data, elementPtr + offset, nBytes - offset );
+
+    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "serious mismatch" )
+
+    if ( isComplex )
+    {
+        utilskernel::LArray<ValueType> imagValues;
+
+        offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
+
+        buildComplex( data, imagValues );
+    }
+
+    HArray<ValueType> tmpData( grid.size() );
+    changeMajor( tmpData, data, grid );
+    data.swap( tmpData );
+}
+
 /* --------------------------------------------------------------------------------- */
+
+void MatlabIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    ImageIOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::read( ( MatlabIO& ) *this, data, grid, inputFileName );
+}
 
 }  // lama
 

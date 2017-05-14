@@ -50,19 +50,21 @@ class COMMON_DLL_IMPORTEXPORT ImageIO
 
 public:
 
-    /** Read in the pixel data from an input file. 
+    /** Read in a grid vector from an input file.
      *
-     *  Supported formats: *.png
+     *  @param[in] gridData will contain the grid vector data.
+     *  @param[in] inputFileName name of the input file.
+     *
      */
     template<typename ValueType>
-    static void read( GridVector<ValueType>& imageData, const std::string& inputFileName );
+    static void read( GridVector<ValueType>& gridData, const std::string& inputFileName );
 
     /** Write the pixel data to an output file.
      *
      *  Supported formats: *.png
      */
     template<typename ValueType>
-    static void write( const GridVector<ValueType>& imageData, const std::string& outputFileName );
+    static void write( const GridVector<ValueType>& gridData, const std::string& outputFileName );
 
     /** Write a two-dimensional array as scaled image. */
 
@@ -71,11 +73,11 @@ public:
 
     /** Implementation of virtual routine ImageIO::write for this format */
 
-    virtual void read( hmemo::_HArray& data, common::Grid3D& grid, const std::string& outputFileName ) = 0;
+    virtual void read( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName ) = 0;
 
     /** Implementation of virtual routine ImageIO::write for this format */
 
-    virtual void write( const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& outputFileName ) = 0;
+    virtual void write( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName ) = 0;
 
 protected:
 
@@ -97,12 +99,12 @@ struct ImageIOWrapper;
 template<class Derived>
 struct ImageIOWrapper<Derived, common::mepr::NullType>
 {
-    static void write( Derived&, const hmemo::_HArray& data, const common::Grid3D&, const std::string& )
+    static void write( Derived&, const hmemo::_HArray& data, const common::Grid&, const std::string& )
     {
         COMMON_THROWEXCEPTION( "write " << data << " unsupported, unknown type." )
     }
 
-    static void read( Derived&, hmemo::_HArray& data, common::Grid3D&, const std::string& )
+    static void read( Derived&, hmemo::_HArray& data, common::Grid&, const std::string& )
     {
         COMMON_THROWEXCEPTION( "read " << data << " unsupported, unknown type." )
     }
@@ -111,7 +113,7 @@ struct ImageIOWrapper<Derived, common::mepr::NullType>
 template<class Derived, typename ValueType, typename TailTypes>
 struct ImageIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
 {
-    static void write( Derived& io, const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& fileName )
+    static void write( Derived& io, const hmemo::_HArray& data, const common::Grid& grid, const std::string& fileName )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
@@ -123,7 +125,7 @@ struct ImageIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void read( Derived& io, hmemo::_HArray& data, common::Grid3D& grid, const std::string& fileName )
+    static void read( Derived& io, hmemo::_HArray& data, common::Grid& grid, const std::string& fileName )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {

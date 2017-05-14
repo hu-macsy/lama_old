@@ -35,6 +35,7 @@
 #pragma once
 
 #include <scai/lama/io/CRTPFileIO.hpp>
+#include <scai/lama/io/ImageIO.hpp>
 
 namespace scai
 {
@@ -151,9 +152,28 @@ public:
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values,
-        const std::string& fileName );
+        const std::string& fileName )
+    __attribute( ( noinline ) );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
+
+    /** Implementation of virtual routine ImageIO::read for this format */
+
+    void read( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+
+    /** Implementation of virtual routine ImageIO::write for this format */
+
+    void write( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+
+    /** Typed version of BitmapIO::read */
+
+    template<typename ValueType>
+    void readImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
+
+    /** Typed version of BitmapIO::write */
+
+    template<typename ValueType>
+    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
 
 private:
 

@@ -142,6 +142,9 @@ public:
     template<typename ValueType>
     static uint32_t getData( ValueType* data, uint32_t size, const char* buffer );
 
+    template<typename ValueType>
+    static uint32_t getDataN( ValueType* data, IndexType& nSize, const IndexType maxSize, const char* buffer );
+
     inline uint32_t writeString( const char* name, bool dryRun );
 
     static inline uint32_t getString( char* name, uint32_t nameSize, const char* buffer );
@@ -161,7 +164,8 @@ public:
         common::scalar::ScalarType stype,
         bool dryRun );
 
-    static uint32_t getMatrixInfo( MATClass& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data, bool isCell = false );
+    static uint32_t getMatrixInfo( MATClass& matClass, IndexType dims[], const IndexType maxDims, IndexType& ndims,
+                                   IndexType& nnz, bool& isComplex, const char* data, bool isCell = false );
 
 private:
 
@@ -208,6 +212,30 @@ uint32_t MATIOStream::getData( ValueType* data, uint32_t size, const char* buffe
     const char* dataPtr = readDataElementHeader( dataType, nBytes, wBytes, buffer );
 
     SCAI_ASSERT_EQ_ERROR( nBytes, size * sizeof( ValueType ), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
+
+    ::memcpy( data, dataPtr, nBytes );
+
+    return wBytes;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+uint32_t MATIOStream::getDataN( ValueType* data, IndexType& nSize, IndexType maxSize, const char* buffer  )
+{
+    uint32_t dataType;
+    uint32_t nBytes;
+    uint32_t wBytes;
+
+    SCAI_LOG_INFO( logger, "getDataN( " << common::TypeTraits<ValueType>::id() << ", max size = " << maxSize << " )" )
+
+    const char* dataPtr = readDataElementHeader( dataType, nBytes, wBytes, buffer );
+
+    nSize = static_cast<IndexType>( nBytes / sizeof( ValueType ) );
+
+    SCAI_ASSERT_EQ_ERROR( 0, nBytes % sizeof( ValueType ), "nBytes = " << nBytes << " not multiple of " << sizeof( ValueType ) )
+    SCAI_ASSERT_GE_ERROR( maxSize, nSize, "Insuffient buffer for reading values" )
     SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
 
     ::memcpy( data, dataPtr, nBytes );

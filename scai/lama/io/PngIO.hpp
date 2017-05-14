@@ -52,11 +52,11 @@ public:
 
     /** Implementation of virtual routine ImageIO::read for this format */
 
-    void read( hmemo::_HArray& data, common::Grid3D& grid, const std::string& outputFileName );
+    void read( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
 
     /** Implementation of virtual routine ImageIO::write for this format */
 
-    void write( const hmemo::_HArray& data, const common::Grid3D& grid, const std::string& outputFileName );
+    void write( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
 
     /** constructor of object required for dynamic creation. */
 
@@ -65,12 +65,12 @@ public:
     /** Typed version of PngIO::read */
 
     template<typename ValueType>
-    void readImpl( hmemo::HArray<ValueType>& data, common::Grid3D& grid, const std::string& outputFileName );
+    void readImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
 
     /** Typed version of PngIO::write */
 
     template<typename ValueType>
-    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid3D& grid, const std::string& outputFileName );
+    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
 
 protected:
 
