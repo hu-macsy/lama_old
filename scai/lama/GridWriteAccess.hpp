@@ -117,6 +117,7 @@ template<typename ValueType>
 ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1 )
 {
     SCAI_ASSERT_EQ_DEBUG( 1, mGrid.nDims(), "illegal indexing" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i1, this->size(), "out of range pos" )
     return (*this)[i1];
 }
 
@@ -126,6 +127,7 @@ ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const In
     SCAI_ASSERT_EQ_DEBUG( 2, mGrid.nDims(), "illegal indexing" )
     const common::Grid2D& grid = reinterpret_cast<const common::Grid2D&>( mGrid );
     IndexType pos = grid.linearPos( i1, i2 );
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, this->size(), "out of range pos" )
     return (*this)[pos];
 }
 
@@ -135,6 +137,7 @@ ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const In
     SCAI_ASSERT_EQ_DEBUG( 3, mGrid.nDims(), "illegal indexing" )
     const common::Grid3D& grid = reinterpret_cast<const common::Grid3D&>( mGrid );
     IndexType pos = grid.linearPos( i1, i2, i3 );
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, this->size(), "out of range pos" )
     return (*this)[pos];
 }
 
@@ -144,6 +147,7 @@ ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1, const In
     SCAI_ASSERT_EQ_DEBUG( 4, mGrid.nDims(), "illegal indexing" )
     const common::Grid4D& grid = reinterpret_cast<const common::Grid4D&>( mGrid );
     IndexType pos = grid.linearPos( i1, i2, i3, i4 );
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos, this->size(), "out of range pos (" << i1 << ", " << i2 << ", " << i3 << ", " << i4 << " of " << grid )
     return (*this)[pos];
 }
 

@@ -78,9 +78,9 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
 
     // ToDo: not yet for distributed grids
 
-    const IndexType n = resGrid.size( 0 );
-    const IndexType m = resGrid.size( 1 );
-    const IndexType k = grid1.size( 0 );
+    const IndexType m = resGrid.size( 0 );
+    const IndexType n = resGrid.size( 1 );
+    const IndexType k = grid1.size( 1 );
 
     int lda = grid1.size( 1 );
     int ldb = grid2.size( 1 );
