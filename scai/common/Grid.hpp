@@ -352,38 +352,55 @@ bool Grid::validPos( const IndexType gridPos[] ) const
 
 IndexType Grid::linearPos( const IndexType gridPos[] ) const
 {
+    SCAI_ASSERT_VALID_INDEX_DEBUG( gridPos[0], mSize[0], "grid index out of range" )
+
     IndexType pos = gridPos[0];
 
     for ( IndexType i = 1; i < mNDims; ++i )
     {  
         pos = pos * mSize[i] + gridPos[i];
+        SCAI_ASSERT_VALID_INDEX_DEBUG( gridPos[i], mSize[i], "grid index out of range" )
     }
 
     return pos;
 }
 
-IndexType Grid1D::linearPos( const IndexType pos1 ) const
+IndexType Grid1D::linearPos( const IndexType pos0 ) const
 {
-    return pos1;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+
+    return pos0;
 }
 
-IndexType Grid2D::linearPos( const IndexType pos1, const IndexType pos2 ) const
+IndexType Grid2D::linearPos( const IndexType pos0, const IndexType pos1 ) const
 {
-    return pos1 * mSize[1] + pos2;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+
+    return pos0 * mSize[1] + pos1;
 }
 
-IndexType Grid3D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
+IndexType Grid3D::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2 ) const
 {
     // 3-dimensional grid has always 3 dimensions, no assert required
   
-    return ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos2, mSize[2], "grid index out of range" )
+
+    return ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2;
 }
 
-IndexType Grid4D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3, const IndexType pos4 ) const
+IndexType Grid4D::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
 {
-    // 4-dimensional grid has always 3 dimensions, no assert required
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos2, mSize[2], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos3, mSize[3], "grid index out of range" )
 
-    return ( ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3 ) * mSize[3] + pos4;
+    // 4-dimensional grid has always 4 dimensions, no assert required
+
+    return ( ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2 ) * mSize[3] + pos3;
 }
 
 /* ------------------------------------------------------------------------------------ */
