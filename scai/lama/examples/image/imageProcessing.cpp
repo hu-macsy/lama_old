@@ -32,7 +32,7 @@
  * @date 04.05.2017
  */
 
-#include <scai/lama/examples/image/ImageIO.hpp>
+#include <scai/lama/io/ImageIO.hpp>
 
 #include <scai/common/Stencil.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>

@@ -34,7 +34,7 @@
 
 #include <scai/lama/GridVector.hpp>
 
-#include <scai/lama/examples/image/BitmapIO.hpp>
+#include <scai/lama/io/BitmapIO.hpp>
 
 #include<png.h>
 #include<fstream>

@@ -34,7 +34,7 @@
 
 #include <scai/lama/GridVector.hpp>
 
-#include <scai/lama/examples/image/PngIO.hpp>
+#include <scai/lama/io/PngIO.hpp>
 
 #include<png.h>
 #include<fstream>

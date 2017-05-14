@@ -44,10 +44,17 @@ set ( IO_CLASSES
         PETScIO
         TextIO
         PartitionIO
+        ImageIO
+        BitmapIO
+        PngIO
 ) 
 
 if ( ZLIB_FOUND )
     set ( IO_CLASSES ${IO_CLASSES} MatlabIO MATIOStream )
+endif ( ZLIB_FOUND )
+
+if ( PNGLIB_FOUND )
+    set ( IO_CLASSES ${IO_CLASSES} PngIO )
 endif ( ZLIB_FOUND )
 
 scai_project (

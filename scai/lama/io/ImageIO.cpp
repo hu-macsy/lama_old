@@ -36,9 +36,9 @@
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
-#include <scai/lama/examples/image/ImageIO.hpp>
-#include <scai/lama/examples/image/BitmapIO.hpp>
-#include <scai/lama/examples/image/PngIO.hpp>
+#include <scai/lama/io/ImageIO.hpp>
+#include <scai/lama/io/BitmapIO.hpp>
+#include <scai/lama/io/PngIO.hpp>
 
 #include<png.h>
 #include<fstream>

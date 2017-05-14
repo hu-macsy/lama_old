@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/logging.hpp>
-#include <scai/lama/examples/image/ImageIO.hpp>
+#include <scai/lama/io/ImageIO.hpp>
 
 namespace scai
 {

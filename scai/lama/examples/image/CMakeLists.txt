@@ -32,29 +32,9 @@
  # @date 04.05.2017
 ###
 
-find_path( PNG_INCLUDE_DIR png.h
-           /opt/local/include
-           /usr/local/include
-           /usr/include )
-
-find_library( PNG_LIBRARY 
-              NAMES png
-)
-
-mark_as_advanced( PNG_LIBRARY PNG_INCLUDE_DIR )
-
-set ( SOURCES
-         ImageIO.cpp
-         BitmapIO.cpp
-         PngIO.cpp
-    )
-
-add_library( imageLib SHARED ${SOURCES} )
-target_link_libraries( imageLib ${PROJECT_NAME} ${PNG_LIBRARY} )
-
 foreach ( executable imageProcessing classProcessing greyScaling scaledImages )
     add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe imageLib )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
