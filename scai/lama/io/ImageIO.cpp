@@ -275,7 +275,7 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
     SCAI_LOG_ERROR( logger, "array min = " << min )
     ValueType minVal = min.getValue<ValueType>();
     Scalar max = arrayData.max();
-    SCAI_LOG_ERROR( logger, "array max = " << min )
+    SCAI_LOG_ERROR( logger, "array max = " << max )
     ValueType maxVal = max.getValue<ValueType>();
 
     if ( minVal == maxVal )

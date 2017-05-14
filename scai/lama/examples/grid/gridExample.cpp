@@ -36,6 +36,9 @@
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
+#include <scai/lama/io/ImageIO.hpp>
+#include <scai/lama/io/MatlabIO.hpp>
+
 #include <scai/common/Settings.hpp>
 
 #include <scai/lama.hpp>
@@ -45,8 +48,8 @@ using namespace lama;
 
 using namespace common;
 
-typedef double ValueType;
-typedef ComplexDouble ComplexType;
+typedef double real;
+typedef ComplexDouble complex;
 
 SCAI_LOG_DEF_LOGGER( logger, "main" )
 
@@ -61,16 +64,15 @@ int main( int argc, const char* argv[] )
     if ( argc < 1 )
     {
         std::cout << "Wrong call, please use : " << argv[0] << " <inputFileName> <outputFileName>" << std::endl;
-        return -1;
     }
 
     // fixed parameters
 
     const IndexType nx = 101;
     const IndexType nt = 300;
-    const double dt = 0.004;
-    const double fmin = 3;
-    const double fmax = 40;
+    const real dt = 0.004;
+    const real fmin = 3;
+    const real fmax = 40;
 
     // variable parameters
 
@@ -81,7 +83,7 @@ int main( int argc, const char* argv[] )
     //  number of positive frequencies and the increment
 
     const IndexType nf = nt / 2 + 1;
-    const double df = 1 / ( nt * dt );
+    const real df = 1 / ( nt * dt );
 
     // define the minimum and maximum frequency number
 
@@ -103,19 +105,19 @@ int main( int argc, const char* argv[] )
 
     //  calculate sources
 
-    GridVector<double> wave( Grid1D( nfeval ), 0 );
+    GridVector<real> wave( Grid1D( nfeval ), 0 );
 
-    const double PI = 3.141592653589793;
+    const real PI = 3.141592653589793;
 
     {
-        GridWriteAccess<double> wWave( wave );
+        GridWriteAccess<real> wWave( wave );
 
         IndexType iw = 0;
 
         for ( IndexType ifr = ifmin; ifr <= ifmax; ++ifr )
         {
-            double freq = ( ifr - 1 ) * df;
-            double x = ( freq - fmin - df ) / ( 2 * df + fmax - fmin );
+            real freq = ( ifr - 1 ) * df;
+            real x = ( freq - fmin - df ) / ( 2 * df + fmax - fmin );
             x = common::Math::sin( PI * x );
             wWave[ iw ] = x * x;
             iw++;
@@ -126,19 +128,21 @@ int main( int argc, const char* argv[] )
 
     // So=zeros(nx,nsrc,nfeval);
 
-    GridVector<double> So( Grid3D( nx, nsrc, nfeval ), 0 );
+    GridVector<real> So( Grid3D( nx, nsrc, nfeval ), 0 );
 
     // for i=1:nsrc
     // So(floor(nx/(nsrc+1))*i,i,:)=wave;
     // end
 
     {
-        GridWriteAccess<double> wSo( So );
-        GridReadAccess<double> rWave( wave );
+        GridWriteAccess<real> wSo( So );
+        GridReadAccess<real> rWave( wave );
 
         for ( IndexType isrc = 0; isrc < nsrc; ++isrc )
         {
-            IndexType ix = floor( nx / ( nsrc + 2  ) * isrc );
+            IndexType ix = ( nx / ( nsrc + 1 ) ) * ( isrc + 1 ) - 1;
+
+            std::cout << "Set So( " << ix << ", " << isrc << ", :) = wave(:)" << std::endl;
 
             for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
             {
@@ -152,10 +156,10 @@ int main( int argc, const char* argv[] )
     //  R(:,floor(nz/2))=0.2;
     //  R(:,floor(nz/4))=0.2;     % add second reflection
 
-    GridVector<double> R( Grid2D( nx, nz ), 0 );
+    GridVector<real> R( Grid2D( nx, nz ), 0 );
 
     {
-        GridWriteAccess<double> wSo( So );
+        GridWriteAccess<real> wR( R );
 
         IndexType iz1 = nz / 2;
         IndexType iz2 = nz / 4;
@@ -164,9 +168,14 @@ int main( int argc, const char* argv[] )
 
         for ( IndexType ix = 0; ix < nx; ++ix )
         {
-            R( ix, iz1 - 1 ) = 0.2;
-            R( ix, iz2 - 1 ) = 0.2;
+            wR( ix, iz1 - 1 ) = 0.2;
+            wR( ix, iz2 - 1 ) = 0.2;
         }
+
+        // GridSection<real> sec1( R, range(), nz / 2 - 1 );
+        // GridSection<real> sec2( R, range(), nz / 4 - 1 );
+        // sec1 = 0.2;
+        // sec2 = 0.2;
     }
 
     // be careful: file Wx.mtx contains data in column-major order
@@ -174,45 +183,54 @@ int main( int argc, const char* argv[] )
     // load Wx matrix
     // MATALB: load('Wx.mat');
 
-    DenseVector<ComplexType> tmpWx( "Wx.mtx" );
-    GridVector<ComplexType> Wx( Grid3D( nx, nx, nfeval ), 0 );
-
-    SCAI_ASSERT_EQ_ERROR( Wx.size(), tmpWx.size(), "Input data in Wx.mtx does not match" )
-
+    GridVector<complex> Wx( Grid3D( nx, nx, nfeval ), 0 );
+ 
+    if ( false )
     {
-        GridWriteAccess<ComplexType> wWx( Wx );
-        hmemo::ReadAccess<ComplexType> rWx( tmpWx.getLocalValues() );
+        DenseVector<complex> tmpWx( "Wx.mtx" );
 
-        for ( IndexType i = 0; i < nx; ++i )
+        SCAI_ASSERT_EQ_ERROR( Wx.size(), tmpWx.size(), "Input data in Wx.mtx does not match" )
+
         {
-            for ( IndexType j = 0; j < nx; ++j )
+            GridWriteAccess<complex> wWx( Wx );
+            hmemo::ReadAccess<complex> rWx( tmpWx.getLocalValues() );
+    
+            for ( IndexType i = 0; i < nx; ++i )
             {
-                for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
+                for ( IndexType j = 0; j < nx; ++j )
                 {
-                    wWx( i, j, i_f ) = rWx[ i + ( j + i_f * nx ) * nx  ];
+                    for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
+                    {
+                        wWx( i, j, i_f ) = rWx[ i + ( j + i_f * nx ) * nx  ];
+                    }
                 }
             }
         }
-
-        std::cout << "Wx( 3, 3, 4 ) = " << wWx( 3, 3, 4 ) << std::endl;
-        std::cout << "Wx( 3, 4, 3 ) = " << wWx( 3, 4, 3 ) << std::endl;
-        std::cout << "Wx( 4, 2, 3 ) = " << wWx( 4, 2, 3 ) << std::endl;
+    }
+    else
+    {
+        hmemo::HArray<complex> data;
+        common::Grid1D grid( 0 );
+        MatlabIO io;
+        io.read( data, grid, "Wx.mat" );
+        SCAI_ASSERT_EQ_ERROR( grid, Wx.globalGrid(), "mismatch" );
+        Wx.swap( data, grid );
     }
 
     // %% initialise arrays
     // Pmin=zeros(nz,nx,nsrc,nfeval);                     %4D matrices (in general complex)
     // Pplus=zeros(nz,nx,nsrc,nfeval);                    %4D matrices (in general complex)
 
-    GridVector<ComplexType> Pmin( Grid4D( nz, nx, nsrc, nfeval ), 0 );
-    GridVector<ComplexType> Pplus( Grid4D( nz, nx, nsrc, nfeval ), 0 );
+    GridVector<complex> Pmin( Grid4D( nz, nx, nsrc, nfeval ), 0 );
+    GridVector<complex> Pplus( Grid4D( nz, nx, nsrc, nfeval ), 0 );
 
     // temporary vectors, only declared once
 
-    GridVector<ComplexType> pextr( Grid3D( nx, nsrc, nfeval ), 0 );
-    GridVector<ComplexType> pextr_tmp( Grid2D( nx, nsrc ), 0 );
-    GridVector<ComplexType> ptmp( Grid2D( nx, nsrc ), 0 );
-    GridVector<ComplexType> w_tmp( Grid2D( nx, nx ), 0 );
-    GridVector<ComplexType> ri( Grid2D( nx, nx ), 0 );
+    GridVector<complex> pextr( Grid3D( nx, nsrc, nfeval ), 0 );
+    GridVector<complex> pextr_tmp( Grid2D( nx, nsrc ), 0 );
+    GridVector<complex> ptmp( Grid2D( nx, nsrc ), 0 );
+    GridVector<complex> w_tmp( Grid2D( nx, nx ), 0 );
+    GridVector<complex> ri( Grid2D( nx, nx ), 0 );
 
     // %% LOOP 1 (can be parallelized in nsrc and nf direction)
 
@@ -220,17 +238,19 @@ int main( int argc, const char* argv[] )
     {
         for ( IndexType i_f = 0; i_f < nfeval; i_f++ )
         {
-            SCAI_LOG_ERROR( logger, "Loop1: iter ( iz, i_f ) = ( " << iz << ", " << i_f 
+            SCAI_LOG_ERROR( logger, "Loop1: iter ( iz = " << iz << ", i_f = " << i_f 
                                      << " ) of ( " << nz << ", " << nfeval << " )" )
 
             // pextr_tmp=squeeze(pextr(:,:,i_f));
 
-            // ToDo1: GridVector<ComplexType> pextr_tmp( GridSection<ComplexType>( Pextr, Range(), Range(), i_f ) );
-            // ToDo2: GridVector<ComplexType> pextr_tmp = Pextr( Range(), Range(), i_f );
+            // ToDo1: GridVector<complex> pextr_tmp( GridSection<complex>( Pextr, Range(), Range(), i_f ) );
+            // ToDo2: GridVector<complex> pextr_tmp = Pextr( Range(), Range(), i_f );
 
             {
-                GridReadAccess<ComplexType> rPextr( pextr );
-                GridWriteAccess<ComplexType> wPextr_tmp( pextr_tmp );
+                SCAI_LOG_TRACE( logger, "pextr_tmp = pextr" )
+
+                GridReadAccess<complex> rPextr( pextr );
+                GridWriteAccess<complex> wPextr_tmp( pextr_tmp );
 
                 for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                 {
@@ -244,14 +264,16 @@ int main( int argc, const char* argv[] )
             // ptmp=squeeze(Pmin(iz,:,:,i_f));
 
             {
-                GridReadAccess<ComplexType> rPmin( Pmin );
-                GridWriteAccess<ComplexType> wPtmp( ptmp );
+                SCAI_LOG_TRACE( logger, "ptmp = Pmin" )
+
+                GridReadAccess<complex> rPmin( Pmin );
+                GridWriteAccess<complex> wPtmp( ptmp );
 
                 for ( IndexType ix = 0; ix < nx; ix++ )
                 {
                     for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                     {
-                        wPtmp( ix, isrc ) = rPmin( iz, ix, isrc, i_f  );
+                        wPtmp( ix, isrc ) = rPmin( iz, ix, isrc, i_f );
                     }
                 }
             }
@@ -259,8 +281,10 @@ int main( int argc, const char* argv[] )
             // w_tmp=squeeze(Wx(:,:,i_f));                  %simplified!! w_tmp needs to be calculated for each i
 
             {
-                GridReadAccess<ComplexType> rWx( Wx );
-                GridWriteAccess<ComplexType> wTmp( w_tmp );
+                SCAI_LOG_TRACE( logger, "w_tmp = Wx(..)" )
+
+                GridReadAccess<complex> rWx( Wx );
+                GridWriteAccess<complex> wTmp( w_tmp );
 
                 for ( IndexType ix1 = 0; ix1 < nx; ix1++ )
                 {
@@ -275,29 +299,28 @@ int main( int argc, const char* argv[] )
             // r=diag(R(:,i));                            %simplified!! in future R can have secondary diagonals or gets close to a full matrix
 
             {
-                GridWriteAccess<ComplexType> wRi( ri );
-                GridReadAccess<ValueType> rR( R );
+                SCAI_LOG_ERROR( logger, "ri = diag(R(:,iz)" )
+
+                GridWriteAccess<complex> wRi( ri );
+                GridReadAccess<real> rR( R );
 
                 for ( IndexType ix = 0; ix < nx; ++ix )
                 {
-                    wRi( ix, ix ) = rR( ix, i_f );
+                    wRi( ix, ix ) = rR( ix, iz );
                 }
             }
 
             ptmp = pextr_tmp - ptmp;
+            pextr_tmp.gemm( 1, ri, ptmp );  // pextr_tmp = pextr_tmp + 1 * ri * ptmp
 
-            // pextr_tmp = pextr_tmp + r * ptmp
-
-            pextr_tmp.gemm( 1, ri, ptmp );
-
-            if ( i_f == 1 )
+            if ( iz == 0 )
             {
                 // sotmp=squeeze(So(:,:,i_f));   % So(nx,nsrc,nfeval)
                 // pextr_tmp=pextr_tmp+sotmp;
 
                 {
-                    GridReadAccess<ValueType> rSo( So );
-                    GridWriteAccess<ComplexType> wPtmp( pextr_tmp );
+                    GridReadAccess<real> rSo( So );
+                    GridWriteAccess<complex> wPtmp( pextr_tmp );
 
                     for ( IndexType ix = 0; ix < nx; ++ix )
                     {
@@ -315,12 +338,15 @@ int main( int argc, const char* argv[] )
             ptmp = 0;
             ptmp.gemm( 1, w_tmp, pextr_tmp );
 
-            // pextr(:,:,j)=pextr_tmp;
+
+            // pextr(:,:,i_f)=pextr_tmp;
             // pextr( Range(), Range(), i_f ) = ptmp;
 
             {
-                GridWriteAccess<ComplexType> wPextr( pextr );
-                GridReadAccess<ComplexType> rPtmp( ptmp );
+                SCAI_LOG_ERROR( logger, "pextr( :, :, " << i_f << " ) = ptmp" )
+
+                GridWriteAccess<complex> wPextr( pextr );
+                GridReadAccess<complex> rPtmp( ptmp );
 
                 for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                 {
@@ -333,11 +359,13 @@ int main( int argc, const char* argv[] )
 
         }
 
-        // Pplus(i,:,:,:)=pextr;  pextr(nx,nsrc,nfeval )
+        // Pplus( iz, :, :, :) = pextr;  %% pextr( nx, nsrc, nfeval )
 
         {
-            GridWriteAccess<ComplexType> wPplus( Pplus );
-            GridReadAccess<ComplexType> rPextr( pextr );
+            SCAI_LOG_ERROR( logger, "Plus( " << iz << ", :, :, : ) = pextr" )
+
+            GridWriteAccess<complex> wPplus( Pplus );
+            GridReadAccess<complex> rPextr( pextr );
 
             for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
             {
@@ -349,8 +377,14 @@ int main( int argc, const char* argv[] )
                     }
                 }
             }
+
+            SCAI_LOG_ERROR( logger, "Pplus( " << iz << ", 0, 0, 0 ) = " << wPplus( iz, 0, 0, 0 ) )
         }
     }
+
+    SCAI_LOG_ERROR( logger, "Loop 1 -> Loop 2" )
+
+    ptmp.writeToFile( "ptmp1.mtx" );
 
     // %% LOOP 2 (can be parallelized in nsrc and nf direction)
 
@@ -358,17 +392,17 @@ int main( int argc, const char* argv[] )
 
     pextr = 0;
   
-    for ( IndexType iz = nz; iz-- > 0; )
+    for ( IndexType iz = nz; iz-- > 0;  )
     {
         for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
         {
-            SCAI_LOG_ERROR( logger, "Loop2: iter ( iz, i_f ) = ( " << iz << ", " << i_f 
+            SCAI_LOG_ERROR( logger, "Loop2: iter ( iz = " << iz << ", i_f = " << i_f 
                                      << " ) of ( " << nz << ", " << nfeval << " )" )
 
-            // pextr_tmp=squeeze(pextr(:,:,i_f));
+            // pextr_tmp = pextr( :, :, i_f );
             {
-                GridReadAccess<ComplexType> rPextr( pextr );
-                GridWriteAccess<ComplexType> wPextr_tmp( pextr_tmp );
+                GridReadAccess<complex> rPextr( pextr );
+                GridWriteAccess<complex> wPextr_tmp( pextr_tmp );
 
                 for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                 {
@@ -381,11 +415,11 @@ int main( int argc, const char* argv[] )
            
             // ptmp = squeeze(Pplus(iz,:,:,i_f));
 
-            // ToDo: ptmp = Pplus( iz, Range(), Range(), i_f ) );
-
             {
-                GridReadAccess<ComplexType> rPplus( Pplus );
-                GridWriteAccess<ComplexType> wPtmp( ptmp );
+                SCAI_LOG_TRACE( logger, "ptmp = Pplus( " << iz << ", :, :, " << i_f << " )" )
+
+                GridReadAccess<complex> rPplus( Pplus );
+                GridWriteAccess<complex> wPtmp( ptmp );
 
                 for ( IndexType ix = 0; ix < nx; ix++ )
                 {
@@ -394,13 +428,16 @@ int main( int argc, const char* argv[] )
                         wPtmp( ix, isrc ) = rPplus( iz, ix, isrc, i_f  );
                     }
                 }
+
+                SCAI_LOG_TRACE( logger, "Pplus( " << iz << ", 0, 0, 0 ) = " << rPplus( iz, 0, 0, 0 ) )
+                SCAI_LOG_TRACE( logger, "ptmp( 0, 0 ) = " << wPtmp( 0, 0 ) )
             }
 
             // w_tmp=squeeze(Wx(:,:,i_f));                  %simplified!! w_tmp needs to be calculated for each i
 
             {
-                GridReadAccess<ComplexType> rWx( Wx );
-                GridWriteAccess<ComplexType> wTmp( w_tmp );
+                GridReadAccess<complex> rWx( Wx );
+                GridWriteAccess<complex> wTmp( w_tmp );
 
                 for ( IndexType ix1 = 0; ix1 < nx; ix1++ )
                 {
@@ -412,17 +449,17 @@ int main( int argc, const char* argv[] )
             }
 
              // %Apply operator r dependent on R
-             // r=diag(R(:,iz));                              %simplified!! in future R can have secondary diagonals or gets close to a full matrix
+             // r=diag(R(:,iz));                     %simplified!! in future R can have secondary diagonals or gets close to a full matrix
 
-            GridVector<ComplexType> ri( Grid2D( nx, nx ), 0 );
+            GridVector<complex> ri( Grid2D( nx, nx ), 0 );
 
             {
-                GridWriteAccess<ComplexType> wRi( ri );
-                GridReadAccess<ValueType> rR( R );
+                GridWriteAccess<complex> wRi( ri );
+                GridReadAccess<real> rR( R );
 
                 for ( IndexType ix = 0; ix < nx; ++ix )
                 {
-                    wRi( ix, ix ) = rR( ix, i_f );
+                    wRi( ix, ix ) = rR( ix, iz );
                 }
             }
 
@@ -441,8 +478,8 @@ int main( int argc, const char* argv[] )
             // pextr(:,:,i_f)=ptmp;
 
             {
-                GridWriteAccess<ComplexType> wPextr( pextr );
-                GridReadAccess<ComplexType> rPtmp( ptmp );
+                GridWriteAccess<complex> wPextr( pextr );
+                GridReadAccess<complex> rPtmp( ptmp );
 
                 for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                 {
@@ -456,9 +493,10 @@ int main( int argc, const char* argv[] )
         }  // i_f loop
 
         // Pmin(iz,:,:,:)=pextr;
+
         {
-            GridWriteAccess<ComplexType> wPmin( Pmin );
-            GridReadAccess<ComplexType> rPextr( pextr );
+            GridWriteAccess<complex> wPmin( Pmin );
+            GridReadAccess<complex> rPextr( pextr );
 
             for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
             {
@@ -473,6 +511,8 @@ int main( int argc, const char* argv[] )
         }
     }
 
+    ptmp.writeToFile( "ptmp5.mtx" );
+
     // %% LOOP 3 (communication necessary after each depth iteration)
     // % Calculate Difference
 
@@ -480,8 +520,8 @@ int main( int argc, const char* argv[] )
     // pextr=Res;
 
     {
-        GridReadAccess<ComplexType> rPmin( Pmin );
-        GridWriteAccess<ComplexType> wPextr( pextr );
+        GridReadAccess<complex> rPmin( Pmin );
+        GridWriteAccess<complex> wPextr( pextr );
 
         for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
         {
@@ -495,7 +535,7 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    GridVector<ValueType> grad( Grid2D( nx, nz ), 0 );
+    GridVector<real> grad( Grid2D( nx, nz ), 0 );
 
     for ( IndexType iz = 0; iz < nz - 1; ++iz )
     {
@@ -507,8 +547,8 @@ int main( int argc, const char* argv[] )
             // pextr_tmp=squeeze(pextr(:,:,i_f));
 
             {
-                GridReadAccess<ComplexType> rPextr( pextr );
-                GridWriteAccess<ComplexType> wPextr_tmp( pextr_tmp );
+                GridReadAccess<complex> rPextr( pextr );
+                GridWriteAccess<complex> wPextr_tmp( pextr_tmp );
 
                 for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                 {
@@ -523,14 +563,14 @@ int main( int argc, const char* argv[] )
             // w_tmp = w_tmp'
 
             {
-                GridReadAccess<ComplexType> rWx( Wx );
-                GridWriteAccess<ComplexType> wTmp( w_tmp );
+                GridReadAccess<complex> rWx( Wx );
+                GridWriteAccess<complex> wTmp( w_tmp );
 
                 for ( IndexType ix1 = 0; ix1 < nx; ix1++ )
                 {
                     for ( IndexType ix2 = 0; ix2 < nx; ix2++ )
                     {
-                        wTmp( ix2, ix1 ) = rWx( ix1, ix2, i_f );
+                        wTmp( ix2, ix1 ) = common::Math::conj( rWx( ix1, ix2, i_f ) );
                     }
                 }
             }
@@ -544,8 +584,8 @@ int main( int argc, const char* argv[] )
             // pextr(:,:,i_f)=ptmp;
 
             {
-                GridWriteAccess<ComplexType> wPextr( pextr );
-                GridReadAccess<ComplexType> rPtmp( ptmp );
+                GridWriteAccess<complex> wPextr( pextr );
+                GridReadAccess<complex> rPtmp( ptmp );
 
                 for ( IndexType isrc = 0; isrc < nsrc; isrc++ )
                 {
@@ -562,13 +602,13 @@ int main( int argc, const char* argv[] )
         // grad(:,i+1)=sum(sum(real(pextr.*conj(ptmp)),2),3);
 
         {
-            GridWriteAccess<ValueType> wGrad( grad );
-            GridReadAccess<ComplexType> rPextr( pextr );
-            GridReadAccess<ComplexType> rPplus( Pplus );
+            GridWriteAccess<real> wGrad( grad );
+            GridReadAccess<complex> rPextr( pextr );
+            GridReadAccess<complex> rPplus( Pplus );
 
             for ( IndexType ix = 0; ix < nx; ++ix )
             {
-                ValueType s = 0;
+                real s = 0;
 
                 for ( IndexType isrc = 0; isrc < nsrc; ++isrc )
                 {
@@ -583,27 +623,7 @@ int main( int argc, const char* argv[] )
         }
     }
  
-    GridVector<ValueType> gradT( Grid2D( nz, nx ), 0 );
+    grad.writeToFile( "grad.mtx" );
 
-    {
-        GridWriteAccess<ValueType> wGT( gradT );
-        GridReadAccess<ValueType> rG( grad );
-
-        for ( IndexType ix = 0; ix < nx; ++ix )
-        {
-            for ( IndexType iz = 0; iz < nz; ++iz )
-            {
-                wGT( iz, ix ) = rG( ix, iz );
-            }
-        }
-    }
-
-    gradT.writeToFile( "gradLAMA.mtx" );
-
-    // %% final image
-    // figure(4)
-    // imagesc(grad.')
-    // title('image');
-
-    // %% next iteration with new R ....
+    ImageIO::writeSC( grad, "grad.png" );
 }

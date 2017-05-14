@@ -1,5 +1,5 @@
 /**
- * @file gridReduction.cpp
+ * @file gridExample.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -39,16 +39,20 @@
 #include <scai/common/Settings.hpp>
 
 #include <scai/lama.hpp>
-#include <scai/lama/io/MatlabIO.hpp>
 
 using namespace scai;
 using namespace lama;
 
+using namespace common;
+
 typedef double ValueType;
+typedef ComplexDouble ComplexType;
+
+SCAI_LOG_DEF_LOGGER( logger, "main" )
 
 int main( int argc, const char* argv[] )
 {
-    // relevant SCAI arguments: 
+    // relevant SCAI arguments:
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
 
@@ -60,71 +64,61 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    hmemo::HArray<ComplexDouble> a;
+    const IndexType n = 4;
+    const IndexType m = 5;
+    const IndexType p = 6;
 
-    common::Grid1D grid( 1 );
-
-    MatlabIO matIO;
-    matIO.read( a, grid, "Wx.mat" );
-
-    // FileIO::write( a, "out.txt" );
-
-    GridVector<ComplexDouble> vA;
-    vA.swap( a, grid );
-
-    std::cout << "Grid read = " << grid << std::endl;
-    std::cout << "Array a read = " << a << std::endl;
-
-    for ( IndexType i = 0; i < 2; ++i )
-    for ( IndexType j = 0; j < 2; ++j )
-    for ( IndexType k = 0; k < 2; ++k )
-    {
-       Scalar e = vA( i, j, k );
-       std::cout << "A(" << i << ", " << j << ", " << k << " ) = " << e.getValue<ComplexDouble>() << std::endl;
-    }
-
-    const IndexType nx   = 5;
-    const IndexType nz   = 5;
-    const IndexType nsrc = 10;
-    const IndexType nf   = 5;
-
-    GridVector<ValueType> Pplus( common::Grid4D( nx, nz, nsrc, nf ), 1 );
-
-    // %% SUMMATION recalc r
-    // R=sum(sum(abs(Pplus).^2,4),3);
-
-    GridVector<ValueType> R1( common::Grid3D( nx, nz, nsrc ), 0 );
-    GridVector<ValueType> R( common::Grid2D( nx, nz ), 0 );
-    GridVector<ValueType> tmp;
-
-    tmp = R * R;
-
-    // ToDo:
-
-    // R1.reduce( tmp, 3, common::binary::ADD );
-    // R.reduce( R1, 2, common::binary::ADD );
+    GridVector<double> A( Grid2D( m, p ), 1.0 );
+    GridVector<double> B( Grid2D( p, n ), 1.0 );
 
     {
-        GridWriteAccess<ValueType> wR( R );
-        GridReadAccess<ValueType> rPplus( Pplus );
+        GridWriteAccess<double> wA( A );
 
-        for ( IndexType iz = 0; iz < nz; ++iz )
+        for ( IndexType i = 0; i < m; ++i )
         {
-            for ( IndexType ix = 0; ix < nx; ++ix )
+            for ( IndexType k = 0; k < p; ++k )
             {
-                ValueType sum = 0;
-
-                for ( IndexType isrc = 0; isrc < nsrc; ++isrc )
-                {
-                    for ( IndexType i_f = 0; i_f < nf; ++i_f )
-                    {
-                        ValueType s = common::Math::abs( rPplus( iz, ix, isrc, i_f ) );
-                        sum = sum + s * s;
-                    }
-                }
-    
-                wR( ix, iz ) = sum;
+                wA( i, k ) = 10 * i - k;
             }
         }
     }
+
+    {
+        GridWriteAccess<double> wB( B );
+
+        for ( IndexType k = 0; k < p; ++k )
+        {
+            for ( IndexType j = 0; j < n; ++j )
+            {
+                wB( k, j ) = 2 * k + 3 * j;
+            }
+        }
+    }
+
+    GridVector<double> C( Grid2D( m, n ), 0.0 );
+    GridVector<double> C1( Grid2D( m, n ), 0.0 );
+
+    C.gemm( 1, A, B );
+
+    {
+        GridReadAccess<double> rA( A );
+        GridReadAccess<double> rB( B );
+        GridWriteAccess<double> wC( C1 );
+
+        for ( IndexType i = 0; i < m; ++i )
+        {
+            for ( IndexType j = 0; j < n; ++j )
+            {
+                for ( IndexType k = 0; k < p; ++k )
+                {
+                    wC( i, j ) += rA( i, k ) * rB( k, j );
+                }
+            }
+        }
+    }
+
+    C.writeToFile( "C.mtx" );
+    C1.writeToFile( "C1.mtx" );
+
+    std::cout << "diff = " << C.maxDiffNorm( C1 ) << std::endl;
 }

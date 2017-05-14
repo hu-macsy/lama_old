@@ -32,7 +32,7 @@
  # @date 04.05.2017
 ###
 
-foreach ( executable gridReduction gridExample )
+foreach ( executable gridReduction gridExample gemmExample )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
