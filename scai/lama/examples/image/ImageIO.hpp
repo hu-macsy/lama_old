@@ -64,6 +64,11 @@ public:
     template<typename ValueType>
     static void write( const GridVector<ValueType>& imageData, const std::string& outputFileName );
 
+    /** Write a two-dimensional array as scaled image. */
+
+    template<typename ValueType>
+    static void writeSC( const GridVector<ValueType>& arrayData, const std::string& outputFileName );
+
     /** Implementation of virtual routine ImageIO::write for this format */
 
     virtual void read( hmemo::_HArray& data, common::Grid3D& grid, const std::string& outputFileName ) = 0;

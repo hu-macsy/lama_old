@@ -52,7 +52,7 @@ set ( SOURCES
 add_library( imageLib SHARED ${SOURCES} )
 target_link_libraries( imageLib ${PROJECT_NAME} ${PNG_LIBRARY} )
 
-foreach ( executable imageProcessing classProcessing greyScaling )
+foreach ( executable imageProcessing classProcessing greyScaling scaledImages )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe imageLib )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

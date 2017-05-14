@@ -33,6 +33,8 @@
  */
 
 #include <scai/lama/GridVector.hpp>
+#include <scai/lama/GridReadAccess.hpp>
+#include <scai/lama/GridWriteAccess.hpp>
 
 #include <scai/lama/examples/image/ImageIO.hpp>
 #include <scai/lama/examples/image/BitmapIO.hpp>
@@ -135,6 +137,184 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
     }
 }
 
+/* ------------------------------------------------------------------------------------ */
+/*   Write scaled image                                                                 */
+/* ------------------------------------------------------------------------------------ */
+
+static double colorMap[] =
+{
+   0.00000,  0.00000,  0.56250,
+   0.00000,  0.00000,  0.62500,
+   0.00000,  0.00000,  0.68750,
+   0.00000,  0.00000,  0.75000,
+   0.00000,  0.00000,  0.81250,
+   0.00000,  0.00000,  0.87500,
+   0.00000,  0.00000,  0.93750,
+   0.00000,  0.00000,  1.00000,
+   0.00000,  0.06250,  1.00000,
+   0.00000,  0.12500,  1.00000,
+   0.00000,  0.18750,  1.00000,
+   0.00000,  0.25000,  1.00000,
+   0.00000,  0.31250,  1.00000,
+   0.00000,  0.37500,  1.00000,
+   0.00000,  0.43750,  1.00000,
+   0.00000,  0.50000,  1.00000,
+   0.00000,  0.56250,  1.00000,
+   0.00000,  0.62500,  1.00000,
+   0.00000,  0.68750,  1.00000,
+   0.00000,  0.75000,  1.00000,
+   0.00000,  0.81250,  1.00000,
+   0.00000,  0.87500,  1.00000,
+   0.00000,  0.93750,  1.00000,
+   0.00000,  1.00000,  1.00000,
+   0.06250,  1.00000,  0.93750,
+   0.12500,  1.00000,  0.87500,
+   0.18750,  1.00000,  0.81250,
+   0.25000,  1.00000,  0.75000,
+   0.31250,  1.00000,  0.68750,
+   0.37500,  1.00000,  0.62500,
+   0.43750,  1.00000,  0.56250,
+   0.50000,  1.00000,  0.50000,
+   0.56250,  1.00000,  0.43750,
+   0.62500,  1.00000,  0.37500,
+   0.68750,  1.00000,  0.31250,
+   0.75000,  1.00000,  0.25000,
+   0.81250,  1.00000,  0.18750,
+   0.87500,  1.00000,  0.12500,
+   0.93750,  1.00000,  0.06250,
+   1.00000,  1.00000,  0.00000,
+   1.00000,  0.93750,  0.00000,
+   1.00000,  0.87500,  0.00000,
+   1.00000,  0.81250,  0.00000,
+   1.00000,  0.75000,  0.00000,
+   1.00000,  0.68750,  0.00000,
+   1.00000,  0.62500,  0.00000,
+   1.00000,  0.56250,  0.00000,
+   1.00000,  0.50000,  0.00000,
+   1.00000,  0.43750,  0.00000,
+   1.00000,  0.37500,  0.00000,
+   1.00000,  0.31250,  0.00000,
+   1.00000,  0.25000,  0.00000,
+   1.00000,  0.18750,  0.00000,
+   1.00000,  0.12500,  0.00000,
+   1.00000,  0.06250,  0.00000,
+   1.00000,  0.00000,  0.00000,
+   0.93750,  0.00000,  0.00000,
+   0.87500,  0.00000,  0.00000,
+   0.81250,  0.00000,  0.00000,
+   0.75000,  0.00000,  0.00000,
+   0.68750,  0.00000,  0.00000,
+   0.62500,  0.00000,  0.00000,
+   0.56250,  0.00000,  0.00000,
+   0.50000,  0.00000,  0.00000
+};
+
+/** Interpolate a color value between two colors.
+ *
+ *  @param[in]  color1 array with rgb values of 1st color
+ *  @param[in]  color2 array with rgb values of 2nd color
+ *  @param[in]  factor 0.0 stands for color1, 1.0 for color2
+ *  @param[out] color array will contain the interpolated rgb values
+ */
+static void interpolateColor( double color[3], const double color1[3], const double color2[3], const double correction )
+{
+    color[0] = ( 1.0 - correction ) * color1[0] + correction * color2[0];
+    color[1] = ( 1.0 - correction ) * color1[1] + correction * color2[1];
+    color[2] = ( 1.0 - correction ) * color1[2] + correction * color2[2];
+}
+
+/** Compute for a value in range [0:1] a corresponding color entry by a color map 
+ *
+ *  @param[in] value must be between 0.0 and 1.0
+ *  @param[out] color is the computed color 
+ */
+
+static void computeColor( double color[3], const double value )
+{
+    static IndexType nColorsInTable = sizeof( colorMap ) / sizeof( double ) / 3;
+
+    static IndexType nSections = nColorsInTable - 1;
+    static double    width     = double( 1 ) / double( nSections );
+
+    // make sure that value is in range [0,1]
+
+    double v = common::Math::min( 1.0, value );
+    v = common::Math::max( 0.0, v );
+
+    // find entry 
+
+    IndexType colorIndex = common::Math::floor( value * nSections );
+
+    if ( colorIndex >= nSections )
+    {
+        colorIndex = nSections - 1;
+    }
+
+
+    // now scale color betwen two neighbored colors
+
+    double correction = ( value - double( colorIndex ) / nSections ) / width;
+
+    interpolateColor( color, &colorMap[ 3 * colorIndex], &colorMap[ 3 * colorIndex + 3], correction );
+}
+
+template<typename ValueType>
+void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string& outputFileName )
+{
+    SCAI_LOG_ERROR( logger, "write scaled array data = " << arrayData << " to file " << outputFileName )
+
+    SCAI_ASSERT_EQ_ERROR( 2, arrayData.nDims(), "writeSC only for two-dimensional arrays" )
+
+    const common::Grid2D& arrayGrid = reinterpret_cast<const common::Grid2D&>( arrayData.globalGrid() );
+
+    common::Grid3D imageGrid( arrayGrid.size(0), arrayGrid.size(1), 3 );
+
+    GridVector<float> imageData( imageGrid, 0 );
+
+    Scalar min = arrayData.min();
+    SCAI_LOG_ERROR( logger, "array min = " << min )
+    ValueType minVal = min.getValue<ValueType>();
+    Scalar max = arrayData.max();
+    SCAI_LOG_ERROR( logger, "array max = " << min )
+    ValueType maxVal = max.getValue<ValueType>();
+
+    if ( minVal == maxVal )
+    {
+        minVal -= 0.01;
+        maxVal += 0.01;
+    }
+
+    ValueType scale = maxVal - minVal;
+
+    const IndexType nColorsInTable = sizeof( colorMap ) / sizeof( double ) / 3;
+
+    SCAI_LOG_ERROR( logger, "Colormap has " << nColorsInTable << " entries, scale range = " << minVal << " - " << maxVal )
+
+    {
+        GridReadAccess<ValueType> rArray( arrayData );
+        GridWriteAccess<float> wImage( imageData );
+
+        for ( IndexType i = 0; i < arrayGrid.size( 0 ); ++i )
+        {
+            for ( IndexType j = 0; j < arrayGrid.size( 1 ); ++j )
+            {
+                ValueType val = rArray( i, j );
+                ValueType scaledVal = ( val - minVal ) / scale;  // val in [0,1]
+
+                double color[3];
+
+                computeColor( color, scaledVal ); 
+
+                wImage( i, j, 0 ) = color[ 0 ] * 255.0 + 0.5;
+                wImage( i, j, 1 ) = color[ 1 ] * 255.0 + 0.5;
+                wImage( i, j, 2 ) = color[ 2 ] * 255.0 + 0.5;
+            }
+        }
+    }
+
+    ImageIO::write( imageData, outputFileName );
+}
+
 // instantiate methods for supported array/vector types
 
 #define SCAI_IMAGE_IO_INSTANTIATIONS( _type )                              \
@@ -144,6 +324,9 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
                                                                            \
     template COMMON_DLL_IMPORTEXPORT                                       \
     void ImageIO::write( const GridVector<_type>&, const std::string& );   \
+                                                                           \
+    template COMMON_DLL_IMPORTEXPORT                                       \
+    void ImageIO::writeSC( const GridVector<_type>&, const std::string& ); \
 
 SCAI_COMMON_LOOP( SCAI_IMAGE_IO_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
 
