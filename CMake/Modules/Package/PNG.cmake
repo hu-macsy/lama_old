@@ -1,5 +1,5 @@
 ###
- # @file Package/ZLIB.cmake
+ # @file Package/PNG.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,36 +27,44 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief find ZLIB include path and library
+ # @brief find PNG reference library and its include path
  # @author Thomas Brandes
- # @date 25.11.2016
+ # @date 14.05.2017
 ###
 
-find_package( ZLIB ${SCAI_FIND_PACKAGE_FLAGS} )
+#  CMake provides already a module to find the PNG reference library, use it
 
-# returns ZLIB_FOUND, ZLIB_INCLUDE_DIR (cache), ZLIB_LIBRARY
+find_package( PNG ${SCAI_FIND_PACKAGE_FLAGS} )
 
-setAndCheckCache ( ZLIB )
-set ( USE_ZLIB ${USE_ZLIB} CACHE BOOL "Enable / Disable use of ZLIB (data compression)" )
+# returns PNG_FOUND, PNG_INCLUDE_DIRS (cache), PNG_LIBRARIES
+
+message( STATUS "PNG_FOUND=${PNG_FOUND}" )
+message( STATUS "PNG_INCLUDE_DIRS=${PNG_INCLUDE_DIRS}" )
+message( STATUS "PNG_LIBRARIES=${PNG_LIBRARIES}" )
+
+# Now make some adaptions to fit these variables to the SCAI project rules
+
+setAndCheckCache ( PNG )
+set ( USE_PNG ${USE_PNG} CACHE BOOL "Enable / Disable use of PNG libray (read/write PNG images)" )
 
 # set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
-if ( ZLIB_FOUND )
-    set ( SCAI_ZLIB_LIBRARIES ${ZLIB_LIBRARY} CACHE PATH "ZLIB library" )
-    set ( SCAI_ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIR} CACHE PATH "ZLIB include directory" )
+if ( PNG_FOUND )
+    set ( SCAI_PNG_LIBRARIES ${PNG_LIBRARIES} CACHE PATH "PNG library" )
+    set ( SCAI_PNG_INCLUDE_DIR ${PNG_INCLUDE_DIRS} CACHE PATH "PNG include directory" )
 
-    ## get ZLIB version
-    try_run ( ZLIB_RUN_RESULT_VAR ZLIB_COMPILE_RESULT_VAR
+    ## get PNG version
+    try_run ( PNG_RUN_RESULT_VAR PNG_COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}/VersionCheck
-        ${CMAKE_MODULE_PATH}/VersionCheck/zlib.cpp
+        ${CMAKE_MODULE_PATH}/VersionCheck/pnglib.cpp
         CMAKE_FLAGS 
-        -DINCLUDE_DIRECTORIES:STRING=${ZLIB_INCLUDE_DIR}
-        COMPILE_OUTPUT_VARIABLE ZLIB_COMPILE_OUTPUT_VAR
-        RUN_OUTPUT_VARIABLE ZLIB_RUN_OUTPUT_VAR )
+        -DINCLUDE_DIRECTORIES:STRING=${PNG_INCLUDE_DIRS}
+        COMPILE_OUTPUT_VARIABLE PNG_COMPILE_OUTPUT_VAR
+        RUN_OUTPUT_VARIABLE PNG_RUN_OUTPUT_VAR )
 
-    set ( ZLIB_VERSION ${ZLIB_RUN_OUTPUT_VAR} )
+    set ( PNG_VERSION ${PNG_RUN_OUTPUT_VAR} )
 
-endif  ( ZLIB_FOUND )
+endif  ( PNG_FOUND )
 
-mark_as_advanced( SCAI_ZLIB_LIBRARIES )
-mark_as_advanced( SCAI_ZLIB_INCLUDE_DIR )
+mark_as_advanced( SCAI_PNG_LIBRARIES )
+mark_as_advanced( SCAI_PNG_INCLUDE_DIR )

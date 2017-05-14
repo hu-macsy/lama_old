@@ -65,6 +65,7 @@ include ( Summaries/Modules/Accelerator )
 include ( Summaries/Modules/Distributed )
 include ( Summaries/Modules/Graphpartitioning )
 include ( Summaries/Modules/ZLIB )
+include ( Summaries/Modules/PNG )
 
 heading ( "Optional components:" "" )
 heading3 ( "Java:" "USE_JAVA" )

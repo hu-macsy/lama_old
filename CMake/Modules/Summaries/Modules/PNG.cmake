@@ -1,5 +1,5 @@
 ###
- # @file Package/ZLIB.cmake
+ # @file CMake/Modules/Summaries/Modules/PNG.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,36 +27,12 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief find ZLIB include path and library
+ # @brief Summary concerning PNG library to read/write PNG images
  # @author Thomas Brandes
- # @date 25.11.2016
+ # @date 14.05.2017
 ###
 
-find_package( ZLIB ${SCAI_FIND_PACKAGE_FLAGS} )
+# PNG image io
 
-# returns ZLIB_FOUND, ZLIB_INCLUDE_DIR (cache), ZLIB_LIBRARY
-
-setAndCheckCache ( ZLIB )
-set ( USE_ZLIB ${USE_ZLIB} CACHE BOOL "Enable / Disable use of ZLIB (data compression)" )
-
-# set the corresponding SCAI variables to inherit automatic settings by external dependencies
-
-if ( ZLIB_FOUND )
-    set ( SCAI_ZLIB_LIBRARIES ${ZLIB_LIBRARY} CACHE PATH "ZLIB library" )
-    set ( SCAI_ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIR} CACHE PATH "ZLIB include directory" )
-
-    ## get ZLIB version
-    try_run ( ZLIB_RUN_RESULT_VAR ZLIB_COMPILE_RESULT_VAR
-        ${CMAKE_BINARY_DIR}/VersionCheck
-        ${CMAKE_MODULE_PATH}/VersionCheck/zlib.cpp
-        CMAKE_FLAGS 
-        -DINCLUDE_DIRECTORIES:STRING=${ZLIB_INCLUDE_DIR}
-        COMPILE_OUTPUT_VARIABLE ZLIB_COMPILE_OUTPUT_VAR
-        RUN_OUTPUT_VARIABLE ZLIB_RUN_OUTPUT_VAR )
-
-    set ( ZLIB_VERSION ${ZLIB_RUN_OUTPUT_VAR} )
-
-endif  ( ZLIB_FOUND )
-
-mark_as_advanced( SCAI_ZLIB_LIBRARIES )
-mark_as_advanced( SCAI_ZLIB_INCLUDE_DIR )
+heading3 ( "PNG (read/write PNG images)" "USE_PNG" )
+    found_message ( "png" "PNG_FOUND" "OPTIONAL" "Version ${PNG_VERSION} at ${PNG_INCLUDE_DIRS}, lib = ${PNG_LIBRARIES}" )

@@ -67,6 +67,7 @@ heading2 ( "Internal Libraries" "REQUIRED_FOUND" )
 
 heading ( "Optional External Libraries" )
 include ( Summaries/Modules/ZLIB )
+include ( Summaries/Modules/PNG )
 
 include ( Summaries/Modules/Build )  
 
