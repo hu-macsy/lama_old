@@ -41,6 +41,7 @@
 
 #include <scai/lama/GridWriteAccess.hpp>
 #include <scai/lama/GridReadAccess.hpp>
+#include <scai/lama/io/MatlabIO.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/SCAITypes.hpp>
@@ -52,6 +53,25 @@ using namespace hmemo;
 
 namespace lama
 {
+
+template<typename ValueType>
+GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<ValueType>() 
+{
+    readFromFile( filename );
+}
+
+template<typename ValueType>
+void GridVector<ValueType>::readFromFile( const std::string& filename ) 
+{
+    hmemo::HArray<ValueType> data;
+    common::Grid grid;
+
+    // ToDo: allow arbitrary file formats depending on suffix, also images.
+
+    MatlabIO io;
+    io.read( data, grid, filename );
+    swap( data, grid );
+}
 
 template<typename ValueType>
 void GridVector<ValueType>::reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp )

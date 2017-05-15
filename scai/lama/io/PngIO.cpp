@@ -79,7 +79,7 @@ void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid& imageSize, con
 
     // prepare error handling, i.e. define code that is used for error handling
 
-    if ( setjmp( png_ptr->jmpbuf ) )
+    if ( setjmp( png_jmpbuf( png_ptr ) ) )
     {
         png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
         COMMON_THROWEXCEPTION( "Serious error during reading png file " << inputFileName )
@@ -197,7 +197,7 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, 
 
     // prepare error handling, i.e. define code that is used for error handling
 
-    if ( setjmp( png_ptr->jmpbuf ) )
+    if ( setjmp( png_jmpbuf( png_ptr ) ) )
     {
         COMMON_THROWEXCEPTION( "Serious error during writing png file " << outputFileName )
     }
@@ -236,7 +236,7 @@ void PngIO::write( const _HArray& data, const common::Grid& grid, const std::str
 
 PngIO::PngIO()
 {
-    SCAI_LOG_INFO( logger, "PngIO uses libpng version " << png_libpng_ver << " using zlib " << zlib_version );
+    SCAI_LOG_INFO( logger, "PngIO uses libpng version " << png_libpng_ver );
 }
 
 

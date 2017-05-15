@@ -76,11 +76,13 @@ GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, 
     return output;
 
 }
-GridVector<float>  grayScale(GridVector<float> inputImage){
+GridVector<float>  grayScale( const GridVector<float>& inputImage){
 
+    GridVector<float> outputImage;
     const common::Grid& grid = inputImage.globalGrid();
 
-    for(IndexType i = 0 ; i<grid.size(0); i++){
+    for(IndexType i = 0 ; i<grid.size(0); i++)
+    {
         for(IndexType j = 0 ; j<grid.size(1); j++){
             Scalar mean =(0.3*inputImage(i,j,0)+ 0.59*inputImage(i,j,1)+ 0.11*inputImage(i,j,3));
             inputImage(i,j,0)=mean;
@@ -88,7 +90,7 @@ GridVector<float>  grayScale(GridVector<float> inputImage){
             inputImage(i,j,2)=mean;
         }
     }
-    return inputImage;
+    return outputImage;
 }
 
 GridVector<float>  sobelFilter(GridVector<float> inputImage){

@@ -5,7 +5,7 @@
  * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
- *
+ 
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
@@ -67,6 +67,11 @@ class COMMON_DLL_IMPORTEXPORT Grid
 {
 public:
 
+    /** Default constructor provides an empty grid with zero dimensions.
+     *
+     */
+    inline Grid();
+
     /** Constructor of a n-dimensional grid.
      *
      *  @param[in] nDims is the number of dimensions
@@ -126,8 +131,6 @@ public:
     inline bool operator!=( const Grid& other ) const;
 
 protected:
-
-    inline Grid();
 
     IndexType mNDims;
 
@@ -471,27 +474,27 @@ const IndexType* Grid::sizes() const
 IndexType Grid::size( IndexType dim ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( dim, SCAI_GRID_MAX_DIMENSION, "illegal dim" )
+ 
+    // ndims <= dim < SCAI_GRID_MAX_DIMENSION is allowed, returns 1
 
     return mSize[dim];
 }
 
 IndexType Grid::size() const
 {
-    if ( mNDims == 1 )
+    if ( mNDims == 0 )
     {
-        return mSize[0];
+        return 0;
     }
-    else
+
+    IndexType s = mSize[0];
+
+    for ( IndexType i = 1; i < mNDims; ++i )
     {
-        IndexType s = mSize[0];
-
-        for ( IndexType i = 1; i < mNDims; ++i )
-        {
-            s *= mSize[i];
-        }
-
-        return s;
+        s *= mSize[i];
     }
+
+    return s;
 }
 
 std::ostream& operator<<( std::ostream& stream, const Grid& grid )
