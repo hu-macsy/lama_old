@@ -88,6 +88,7 @@ GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, 
 
 }
 
+
 GridVector<float> grayScale(const GridVector<float>& inputImage){
 
     const float red   = 0.3;
@@ -100,10 +101,8 @@ GridVector<float> grayScale(const GridVector<float>& inputImage){
         SCAI_ASSERT_EQ_ERROR( sumOfWeights, 1, "redWeighting + greenWeighting + blueWeighting = " << sumOfWeights << " must be 1" )
     }
 
-    const common::Grid& grid = inputImage.globalGrid();
-
     GridVector<float> outputImage;
-    outputImage.allocate( inputImage.getDistributionPtr() );
+    const common::Grid& grid = inputImage.globalGrid();
 
     GridWriteAccess<float> wImage( outputImage );
     GridReadAccess<float>  rImage( inputImage );

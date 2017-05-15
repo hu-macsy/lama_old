@@ -90,15 +90,38 @@ public:
         // give it a default grid distribution for consistency
 
         dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
-        dmemo::DistributionPtr dist( new dmemo::GridDistribution( common::Grid1D( 0 ), comm ) );
+        dmemo::DistributionPtr dist( new dmemo::GridDistribution( common::Grid(), comm ) );
+        this->allocate( dist );
+    }
+
+    /** Read in a grid from an input file. 
+     *
+     *  Note: suffix of filename decides about file format. 
+     */
+    GridVector( const std::string& inputFileName );
+
+    GridVector( const common::Grid& grid ) : DenseVector<ValueType>()
+    {
+        dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
+        dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
         this->allocate( dist );
     }
 
     GridVector( const common::Grid& grid, const ValueType initVal ) : DenseVector<ValueType>()
-
     {
         dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
         dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
+        this->allocate( dist );
+        this->assign( initVal );
+    }
+
+    GridVector( dmemo::DistributionPtr dist ) : DenseVector<ValueType>()
+    {
+        this->allocate( dist );
+    }
+
+    GridVector( dmemo::DistributionPtr dist, const ValueType initVal ) : DenseVector<ValueType>()
+    {
         this->allocate( dist );
         this->assign( initVal );
     }
@@ -250,6 +273,9 @@ public:
 
     using DenseVector<ValueType>::operator=;
 
+    /** Reads the shape and data from a file. */
+
+    void readFromFile( const std::string& inputFileName );
 };
 
 } /* end namespace lama */

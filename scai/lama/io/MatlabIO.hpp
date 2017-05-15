@@ -114,20 +114,17 @@ public:
      */
 
     template<typename ValueType>
-    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName )
-    __attribute( ( noinline ) );
+    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );
 
     /** Typed version of readStorage */
 
     template<typename ValueType>
-    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows )
-    __attribute( ( noinline ) );
+    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows );
 
     /** Typed version of the writeArray */
 
     template<typename ValueType>
-    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName )
-    __attribute( ( noinline ) );
+    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName );
 
     /** Typed version of the writeSparse */
 
@@ -136,14 +133,12 @@ public:
         const IndexType size,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::HArray<ValueType>& values,
-        const std::string& fileName )
-    __attribute( ( noinline ) );
+        const std::string& fileName );
 
     /** Typed version of readArray */
 
     template<typename ValueType>
-    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
-    __attribute( ( noinline ) );
+    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n );
 
     /** Typed version of readSparse */
 
@@ -152,8 +147,7 @@ public:
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values,
-        const std::string& fileName )
-    __attribute( ( noinline ) );
+        const std::string& fileName );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 

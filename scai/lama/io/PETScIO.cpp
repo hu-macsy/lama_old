@@ -443,6 +443,59 @@ void PETScIO::readStorageImpl(
     }
 }
 
+
+/* --------------------------------------------------------------------------------- */
+
+#define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )           \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void PETScIO::writeArrayImpl(                           \
+        const hmemo::HArray<_type>& array,                  \
+        const std::string& fileName );                      \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void PETScIO::readArrayImpl(                            \
+        hmemo::HArray<_type>& array,                        \
+        const std::string& arrayFileName,                   \
+        const IndexType ,                                   \
+        const IndexType );                                  \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void PETScIO::writeSparseImpl(                          \
+        const IndexType size,                               \
+        const HArray<IndexType>& index,                     \
+        const HArray<_type>& values,                        \
+        const std::string& fileName );                      \
+                                                            \
+    template COMMON_DLL_IMPORTEXPORT                        \
+    void PETScIO::readSparseImpl(                           \
+        IndexType& size,                                    \
+        HArray<IndexType>& indexes,                         \
+        HArray<_type>& values,                              \
+        const std::string& fileName );         
+
+SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
+
+#undef SCAI_PETSC_METHOD_INSTANTIATIONS
+
+#define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )       \
+                                                        \
+    template COMMON_DLL_IMPORTEXPORT                    \
+    void PETScIO::writeStorageImpl(                     \
+        const MatrixStorage<_type>& storage,            \
+        const std::string& fileName );                  \
+                                                        \
+    template COMMON_DLL_IMPORTEXPORT                    \
+    void PETScIO::readStorageImpl(                      \
+        MatrixStorage<_type>& storage,                  \
+        const std::string& matrixFileName,              \
+        const IndexType firstRow,                       \
+        const IndexType nRows );                     
+
+SCAI_COMMON_LOOP( SCAI_PETSC_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
+
+#undef SCAI_PETSC_METHOD_INSTANTIATIONS
+
 }  // lama
 
 }  // scai

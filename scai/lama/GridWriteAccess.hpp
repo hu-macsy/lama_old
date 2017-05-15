@@ -81,6 +81,10 @@ public:
 
     ValueType& operator() ( const IndexType i1, const IndexType i2, const IndexType i3, const IndexType i4 );
 
+    IndexType size( const IndexType dim );
+
+    using hmemo::WriteAccess<ValueType>::size;    // make size() visible
+
 private:
  
     const common::Grid& mGrid;
@@ -112,6 +116,16 @@ template<typename ValueType>
 GridWriteAccess<ValueType>::~GridWriteAccess()
 {
 }
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType GridWriteAccess<ValueType>::size( const IndexType dim )
+{
+    return mGrid.size( dim );
+}
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 ValueType& GridWriteAccess<ValueType>::operator() ( const IndexType i1 )

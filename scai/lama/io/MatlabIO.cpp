@@ -873,6 +873,60 @@ void MatlabIO::read( _HArray& data, common::Grid& grid, const std::string& input
     ImageIOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::read( ( MatlabIO& ) *this, data, grid, inputFileName );
 }
 
+/* --------------------------------------------------------------------------------- */
+
+#define SCAI_MATLAB_METHOD_INSTANTIATIONS( _type )           \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::writeArrayImpl(                           \
+        const hmemo::HArray<_type>& array,                   \
+        const string& fileName );                            \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::readArrayImpl(                            \
+        hmemo::HArray<_type>& array,                         \
+        const string& arrayFileName,                         \
+        const IndexType ,                                    \
+        const IndexType );                                   \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::writeSparseImpl(                          \
+        const IndexType size,                                \
+        const HArray<IndexType>& index,                      \
+        const HArray<_type>& values,                         \
+        const std::string& fileName );                       \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::readSparseImpl(                           \
+        IndexType& size,                                     \
+        HArray<IndexType>& indexes,                          \
+        HArray<_type>& values,                               \
+        const std::string& fileName );         
+
+SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
+
+#undef SCAI_MATLAB_METHOD_INSTANTIATIONS
+
+#define SCAI_MATLAB_METHOD_INSTANTIATIONS( _type )      \
+                                                        \
+    template COMMON_DLL_IMPORTEXPORT                    \
+    void MatlabIO::writeStorageImpl(                    \
+        const MatrixStorage<_type>& storage,            \
+        const string& fileName );                       \
+                                                        \
+    template COMMON_DLL_IMPORTEXPORT                    \
+    void MatlabIO::readStorageImpl(                     \
+        MatrixStorage<_type>& storage,                  \
+        const string& matrixFileName,                   \
+        const IndexType firstRow,                       \
+        const IndexType nRows );                     
+
+SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
+
+#undef SCAI_MATLAB_METHOD_INSTANTIATIONS
+
 }  // lama
 
 }  // scai
+
+

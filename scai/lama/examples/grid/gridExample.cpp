@@ -45,6 +45,7 @@
 
 using namespace scai;
 using namespace lama;
+using namespace dmemo;
 
 using namespace common;
 
@@ -65,6 +66,10 @@ int main( int argc, const char* argv[] )
     {
         std::cout << "Wrong call, please use : " << argv[0] << " <inputFileName> <outputFileName>" << std::endl;
     }
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    IndexType np = comm->getSize();  // number of available processors
 
     // fixed parameters
 
@@ -124,11 +129,17 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    wave.writeToFile( "wave_1.mtx" );
+    DistributionPtr distF( new GridDistribution( Grid1D( nfeval ), comm, Grid1D( np ) ) );
+    wave.redistribute( distF );
+
+    // wave.writeToFile( "wave_1.mtx" );
 
     // So=zeros(nx,nsrc,nfeval);
 
-    GridVector<real> So( Grid3D( nx, nsrc, nfeval ), 0 );
+    DistributionPtr distZXSF( new GridDistribution( Grid4D( nz, nx, nsrc, nfeval ), comm, Grid4D( 1, 1, 1, np ) ) );
+    DistributionPtr distXSF( new GridDistribution( Grid3D( nx, nsrc, nfeval ), comm, Grid3D( 1, 1, np ) ) );
+
+    GridVector<real> So( distXSF, 0 );
 
     // for i=1:nsrc
     // So(floor(nx/(nsrc+1))*i,i,:)=wave;
@@ -144,7 +155,7 @@ int main( int argc, const char* argv[] )
 
             std::cout << "Set So( " << ix << ", " << isrc << ", :) = wave(:)" << std::endl;
 
-            for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
+            for ( IndexType i_f = 0; i_f < wSo.size( 2 ); ++i_f )
             {
                 wSo( ix, isrc, i_f ) = rWave( i_f );
             }
@@ -183,63 +194,43 @@ int main( int argc, const char* argv[] )
     // load Wx matrix
     // MATALB: load('Wx.mat');
 
-    GridVector<complex> Wx( Grid3D( nx, nx, nfeval ), 0 );
+    GridVector<complex> Wx( "Wx.mat" );
+
+    // make sure that the read grid data fits our problem here
+
+    SCAI_ASSERT_EQ_ERROR( Wx.globalGrid(), Grid3D( nx, nx, nfeval ), "Input file Wx.mat does not match" )
  
-    if ( false )
-    {
-        DenseVector<complex> tmpWx( "Wx.mtx" );
-
-        SCAI_ASSERT_EQ_ERROR( Wx.size(), tmpWx.size(), "Input data in Wx.mtx does not match" )
-
-        {
-            GridWriteAccess<complex> wWx( Wx );
-            hmemo::ReadAccess<complex> rWx( tmpWx.getLocalValues() );
-    
-            for ( IndexType i = 0; i < nx; ++i )
-            {
-                for ( IndexType j = 0; j < nx; ++j )
-                {
-                    for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
-                    {
-                        wWx( i, j, i_f ) = rWx[ i + ( j + i_f * nx ) * nx  ];
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        hmemo::HArray<complex> data;
-        common::Grid1D grid( 0 );
-        MatlabIO io;
-        io.read( data, grid, "Wx.mat" );
-        SCAI_ASSERT_EQ_ERROR( grid, Wx.globalGrid(), "mismatch" );
-        Wx.swap( data, grid );
-    }
-
     // %% initialise arrays
     // Pmin=zeros(nz,nx,nsrc,nfeval);                     %4D matrices (in general complex)
     // Pplus=zeros(nz,nx,nsrc,nfeval);                    %4D matrices (in general complex)
 
-    GridVector<complex> Pmin( Grid4D( nz, nx, nsrc, nfeval ), 0 );
-    GridVector<complex> Pplus( Grid4D( nz, nx, nsrc, nfeval ), 0 );
+    // DistributionPtr distZXSF( new GridDistribution( Grid4D( nz, nx, nsrc, nfeval ), comm, Grid4D( 1, 1, 1, np ) ) );
+
+    GridVector<complex> Pmin( distZXSF, 0 );
+    GridVector<complex> Pplus( distZXSF, 0 );
 
     // temporary vectors, only declared once
 
-    GridVector<complex> pextr( Grid3D( nx, nsrc, nfeval ), 0 );
+    GridVector<complex> pextr( distXSF, 0 );
     GridVector<complex> pextr_tmp( Grid2D( nx, nsrc ), 0 );
     GridVector<complex> ptmp( Grid2D( nx, nsrc ), 0 );
     GridVector<complex> w_tmp( Grid2D( nx, nx ), 0 );
     GridVector<complex> ri( Grid2D( nx, nx ), 0 );
 
+    IndexType nfeval_local = wave.localGrid().size( 0 );
+
+    SCAI_LOG_ERROR( logger, *comm << ": nfeval_local = " << nfeval_local << ", nfeval = " << nfeval )
+   
     // %% LOOP 1 (can be parallelized in nsrc and nf direction)
 
     for ( IndexType iz = 0; iz < nz; ++iz )
     {
-        for ( IndexType i_f = 0; i_f < nfeval; i_f++ )
+        SCAI_LOG_ERROR( logger, *comm << ": iz = " << iz << " of " << nz )
+
+        for ( IndexType i_f = 0; i_f < nfeval_local; i_f++ )
         {
-            SCAI_LOG_ERROR( logger, "Loop1: iter ( iz = " << iz << ", i_f = " << i_f 
-                                     << " ) of ( " << nz << ", " << nfeval << " )" )
+            SCAI_LOG_TRACE( logger, "Loop1: iter ( iz = " << iz << ", i_f = " << i_f 
+                                     << " ) of ( " << nz << ", " << nfeval_local << " )" )
 
             // pextr_tmp=squeeze(pextr(:,:,i_f));
 
@@ -299,7 +290,7 @@ int main( int argc, const char* argv[] )
             // r=diag(R(:,i));                            %simplified!! in future R can have secondary diagonals or gets close to a full matrix
 
             {
-                SCAI_LOG_ERROR( logger, "ri = diag(R(:,iz)" )
+                SCAI_LOG_TRACE( logger, "ri = diag( R( :, iz = " << iz << " ) )" )
 
                 GridWriteAccess<complex> wRi( ri );
                 GridReadAccess<real> rR( R );
@@ -343,7 +334,7 @@ int main( int argc, const char* argv[] )
             // pextr( Range(), Range(), i_f ) = ptmp;
 
             {
-                SCAI_LOG_ERROR( logger, "pextr( :, :, " << i_f << " ) = ptmp" )
+                SCAI_LOG_TRACE( logger, "pextr( :, :, " << i_f << " ) = ptmp" )
 
                 GridWriteAccess<complex> wPextr( pextr );
                 GridReadAccess<complex> rPtmp( ptmp );
@@ -362,7 +353,7 @@ int main( int argc, const char* argv[] )
         // Pplus( iz, :, :, :) = pextr;  %% pextr( nx, nsrc, nfeval )
 
         {
-            SCAI_LOG_ERROR( logger, "Plus( " << iz << ", :, :, : ) = pextr" )
+            SCAI_LOG_TRACE( logger, "Plus( " << iz << ", :, :, : ) = pextr" )
 
             GridWriteAccess<complex> wPplus( Pplus );
             GridReadAccess<complex> rPextr( pextr );
@@ -371,20 +362,18 @@ int main( int argc, const char* argv[] )
             {
                 for ( IndexType ix = 0; ix < nx; ix++ )
                 {
-                    for ( IndexType i_f = 0; i_f < nfeval; i_f++ )
+                    for ( IndexType i_f = 0; i_f < wPplus.size( 3 ) ; i_f++ )
                     {
                         wPplus( iz, ix, isrc, i_f  ) = rPextr( ix, isrc, i_f );
                     }
                 }
             }
 
-            SCAI_LOG_ERROR( logger, "Pplus( " << iz << ", 0, 0, 0 ) = " << wPplus( iz, 0, 0, 0 ) )
+            SCAI_LOG_TRACE( logger, "Pplus( " << iz << ", 0, 0, 0 ) = " << wPplus( iz, 0, 0, 0 ) )
         }
     }
 
-    SCAI_LOG_ERROR( logger, "Loop 1 -> Loop 2" )
-
-    ptmp.writeToFile( "ptmp1.mtx" );
+    SCAI_LOG_ERROR( logger, *comm << ": Loop 1 -> Loop 2" )
 
     // %% LOOP 2 (can be parallelized in nsrc and nf direction)
 
@@ -394,10 +383,10 @@ int main( int argc, const char* argv[] )
   
     for ( IndexType iz = nz; iz-- > 0;  )
     {
-        for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
+        for ( IndexType i_f = 0; i_f < nfeval_local; ++i_f )
         {
-            SCAI_LOG_ERROR( logger, "Loop2: iter ( iz = " << iz << ", i_f = " << i_f 
-                                     << " ) of ( " << nz << ", " << nfeval << " )" )
+            SCAI_LOG_TRACE( logger, "Loop2: iter ( iz = " << iz << ", i_f = " << i_f 
+                                     << " ) of ( " << nz << ", " << nfeval_local << " )" )
 
             // pextr_tmp = pextr( :, :, i_f );
             {
@@ -502,7 +491,7 @@ int main( int argc, const char* argv[] )
             {
                 for ( IndexType ix = 0; ix < nx; ix++ )
                 {
-                    for ( IndexType i_f = 0; i_f < nfeval; i_f++ )
+                    for ( IndexType i_f = 0; i_f < nfeval_local; i_f++ )
                     {
                         wPmin( iz, ix, isrc, i_f  ) = rPextr( ix, isrc, i_f );
                     }
@@ -511,7 +500,7 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    ptmp.writeToFile( "ptmp5.mtx" );
+    SCAI_LOG_ERROR( logger, *comm << ": Loop 2 -> Loop 3" )
 
     // %% LOOP 3 (communication necessary after each depth iteration)
     // % Calculate Difference
@@ -527,7 +516,7 @@ int main( int argc, const char* argv[] )
         {
             for ( IndexType ix = 0; ix < nx; ix++ )
             {
-                for ( IndexType i_f = 0; i_f < nfeval; i_f++ )
+                for ( IndexType i_f = 0; i_f < nfeval_local; i_f++ )
                 {
                     wPextr( ix, isrc, i_f  ) = rPmin( 0, ix, isrc, i_f );
                 }
@@ -539,10 +528,10 @@ int main( int argc, const char* argv[] )
 
     for ( IndexType iz = 0; iz < nz - 1; ++iz )
     {
-        for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
+        for ( IndexType i_f = 0; i_f < nfeval_local; ++i_f )
         {
-            SCAI_LOG_ERROR( logger, "Loop3: iter ( iz, i_f ) = ( " << iz << ", " << i_f 
-                                     << " ) of ( " << nz << ", " << nfeval << " )" )
+            SCAI_LOG_TRACE( logger, "Loop3: iter ( iz, i_f ) = ( " << iz << ", " << i_f 
+                                     << " ) of ( " << nz << ", " << nfeval_local << " )" )
 
             // pextr_tmp=squeeze(pextr(:,:,i_f));
 
@@ -612,7 +601,7 @@ int main( int argc, const char* argv[] )
 
                 for ( IndexType isrc = 0; isrc < nsrc; ++isrc )
                 {
-                    for ( IndexType i_f = 0; i_f < nfeval; ++i_f )
+                    for ( IndexType i_f = 0; i_f < nfeval_local; ++i_f )
                     {
                         s += common::Math::real( rPextr( ix, isrc, i_f ) * common::Math::conj( rPplus( iz + 1, ix, isrc, i_f ) ) );
                     }
@@ -621,9 +610,14 @@ int main( int argc, const char* argv[] )
                 wGrad( ix, iz + 1 ) = s;
             }
         }
+
+        // comm->sumArray( grad.getLocalValues() );
+
+        // sum grad( :, iz + 1 ) over all processors
     }
  
-    grad.writeToFile( "grad.mtx" );
-
-    ImageIO::writeSC( grad, "grad.png" );
+    if ( comm->getRank() == 0 )
+    {
+        ImageIO::writeSC( grad, "grad.png" );
+    }
 }
