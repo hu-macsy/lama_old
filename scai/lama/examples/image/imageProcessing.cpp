@@ -38,6 +38,8 @@
 #include <scai/lama/matrix/StencilMatrix.hpp>
 
 #include <scai/lama/GridVector.hpp>
+#include <scai/lama/GridWriteAccess.hpp>
+#include <scai/lama/GridReadAccess.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/lama.hpp>
@@ -51,18 +53,27 @@ using namespace lama;
 
 
 GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, float sigma){
-    /* radius = amount of blur, sigma = standard deviation*/
+
+    // radius = amount of blur, sigma = standard deviation
+
     common::Stencil3D<float> stencil;
     
     float num = 0;
-    for(IndexType i = -radius; i<radius+1; i++){
-        for(IndexType j = -radius; j<radius+1; j++){
+    for(IndexType i = -radius; i<radius+1; i++)
+    {
+        for(IndexType j = -radius; j<radius+1; j++)
+        {
             num = num +(1/(2*M_PI*(sigma*sigma))*pow(M_E, -((i*i+j*j)/(2*sigma*sigma))));
         }
 
     }
-    for(IndexType i = -radius; i<radius+1; i++){
-        for(IndexType j = -radius; j<radius+1; j++){
+
+    // use num so that sum(all points of stencil)=1
+
+    for(IndexType i = -radius; i<radius+1; i++)
+    {
+        for(IndexType j = -radius; j<radius+1; j++)
+        {
             stencil.addPoint(i,j,0,((1/(2*M_PI*(sigma*sigma))*pow(M_E, -((i*i+j*j)/(2*sigma*sigma)))))/num);
         }
 
@@ -76,51 +87,123 @@ GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, 
     return output;
 
 }
-GridVector<float>  grayScale(GridVector<float> inputImage){
+
+GridVector<float> grayScale(const GridVector<float>& inputImage){
+
+    const float red   = 0.3;
+    const float green = 0.59;
+    const float blue  = 0.11;
+    const float sumOfWeights = red + green + blue;
+
+    if(sumOfWeights != 1)
+    {
+        SCAI_ASSERT_EQ_ERROR( sumOfWeights, 1, "redWeighting + greenWeighting + blueWeighting = " << sumOfWeights << " must be 1" )
+    }
 
     const common::Grid& grid = inputImage.globalGrid();
 
-    for(IndexType i = 0 ; i<grid.size(0); i++){
-        for(IndexType j = 0 ; j<grid.size(1); j++){
-            Scalar mean =(0.3*inputImage(i,j,0)+ 0.59*inputImage(i,j,1)+ 0.11*inputImage(i,j,3));
-            inputImage(i,j,0)=mean;
-            inputImage(i,j,1)=mean;
-            inputImage(i,j,2)=mean;
+    GridVector<float> outputImage;
+    outputImage.allocate( inputImage.getDistributionPtr() );
+
+    GridWriteAccess<float> wImage( outputImage );
+    GridReadAccess<float>  rImage( inputImage );
+
+    for(IndexType i = 0 ; i<grid.size(0); i++)
+    {
+        for(IndexType j = 0 ; j<grid.size(1); j++)
+        {
+            Scalar mean =( red*rImage(i,j,0) + green*rImage(i,j,1) + blue*rImage(i,j,3) );
+
+            wImage( i,  j,  0) = mean.getValue<float>();
+            wImage( i,  j,  1) = mean.getValue<float>();
+            wImage( i,  j,  2) = mean.getValue<float>();
         }
-    }
-    return inputImage;
+    } 
+    return outputImage;
 }
 
-GridVector<float>  sobelFilter(GridVector<float> inputImage){
-    common::Stencil3D<float> stencil1( 3, 3, 1, imageprocessing::sobelX );
-    common::Stencil3D<float> stencil2( 3, 3, 1, imageprocessing::sobelY );
+GridVector<float> cutOffColour(const GridVector<float>& inputImage){
+
+    // the range of values of RGB is [0,255], cut off the higher/lower Values
 
     const common::Grid& grid = inputImage.globalGrid();
 
-    StencilMatrix<float> matrix1( inputImage.getDistributionPtr(), stencil1 );
-    StencilMatrix<float> matrix2( inputImage.getDistributionPtr(), stencil2 );
+    GridVector<float> outputImage;
+    outputImage.allocate( inputImage.getDistributionPtr() );
 
-    GridVector<float> imageNew1;
-    GridVector<float> imageNew2;
+    GridWriteAccess<float> wImage( outputImage );
+    GridReadAccess<float>  rImage( inputImage );
 
-    imageNew1  =  matrix1 * inputImage;
-    imageNew2  =  matrix2 * inputImage;
-    imageNew1.dotProduct(imageNew2);
-    imageNew1 = grayScale(imageNew1);
-    for(IndexType i = 0 ; i<grid.size(0); i++){
-        for(IndexType j = 0 ; j<grid.size(1); j++){
-            for(IndexType x = 0 ; x<3 ; x++){
-                if (imageNew1(i,j,x)<0){
-                    imageNew1(i,j,x)=0;
+    for(IndexType i = 0 ; i<grid.size(0); i++) 
+    {
+        for(IndexType j = 0 ; j<grid.size(1); j++)
+        {
+            for(IndexType x = 0 ; x<3 ; x++)
+            {
+                if (rImage(i,j,x)<0)
+                {
+                    wImage(i,j,x)=0;
                 }
-                else if (imageNew1(i,j,x)>255){
-                    imageNew1(i,j,x)=255;
+                else if (rImage(i,j,x)>255)
+                {
+                    wImage(i,j,x)=255;
                 }
             }
         }
     }
 
-    return imageNew1;
+    return outputImage;
+}
+
+GridVector<float>  sobelFilter(GridVector<float> inputImage){
+
+    // sobel filter can be used for Edge detection
+
+    common::Stencil3D<float> stencilSobelX ( 3, 3, 1, imageprocessing::sobelX );
+    common::Stencil3D<float> stencilSobelY ( 3, 3, 1, imageprocessing::sobelY );
+
+    StencilMatrix<float> matrixSobelX( inputImage.getDistributionPtr(), stencilSobelX );
+    StencilMatrix<float> matrixSobelY( inputImage.getDistributionPtr(), stencilSobelY );
+
+    GridVector<float> SobelX;
+    GridVector<float> SobelY;
+    GridVector<float> Gray;
+
+    SobelX  =  matrixSobelX * inputImage;
+    SobelY  =  matrixSobelY * inputImage;
+    SobelX.dotProduct(SobelY); // both x and y filters are applied
+
+    Gray = grayScale(SobelX);
+
+    GridVector<float> outputImage= cutOffColour(Gray);
+
+    return outputImage;
+}
+
+GridVector<float>  meanFilter(GridVector<float> inputImage, IndexType radius){
+    // radius = = amount of blur
+
+    float mean =(radius+radius+1)*(radius+radius+1);
+    mean = 1/mean; 
+
+    common::Stencil3D<float> stencil;
+
+    for(IndexType i = -radius; i<radius+1; i++)
+    {
+        for(IndexType j = -radius; j<radius+1; j++)
+        {
+            stencil.addPoint(i,j,0,mean);
+        }
+
+    }
+
+    StencilMatrix<float> matrix( inputImage.getDistributionPtr(), stencil );
+
+    GridVector<float> outputImage;
+    outputImage.allocate( inputImage.getDistributionPtr() );
+    outputImage = inputImage * matrix;
+
+    return outputImage;
 }
 
 
@@ -155,7 +238,7 @@ int main( int argc, const char* argv[] )
 
     // apply stencil on the pixels, do not apply on the colors in 3-rd dimension 
 
-    common::Stencil3D<float> stencil( 5, 5, 1, imageprocessing::findEdges );
+     common::Stencil3D<float> stencil( 5, 5, 1, imageprocessing::findEdges );
 
     // common::Stencil3D<float> stencil( 3, 3, 1, imageprocessing::blur );
 
@@ -177,10 +260,9 @@ int main( int argc, const char* argv[] )
     //GridVector<float> imageGausBlur= gaussianBlur(image, 6, 1.5);
     //GridVector<float> imageGrey= grayScale(image);
     //GridVector<float> imagesobelFilter= sobelFilter(image);
-
+    //GridVector<float> imageblur = meanFilter(image,1);
     // std::cout << "new image = " << imageNew << std::endl;
 
-    // imageNew += image;
 
-    ImageIO::write( image, outputFileName );
+    ImageIO::write( imageNew, outputFileName );
 }

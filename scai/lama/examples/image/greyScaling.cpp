@@ -116,7 +116,6 @@ void greyScale2( GridVector<ValueType>& imageGrey, const GridVector<ValueType>& 
     sectionR = sectionG;
     sectionB = sectionG;
 
-    sectionG *= 0.5;
 }
 
 int main( int argc, const char* argv[] )

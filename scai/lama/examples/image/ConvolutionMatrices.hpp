@@ -65,6 +65,13 @@ const double sharpen[9] =
     -1, -1, -1
 };
 
+const double median[9] =
+{
+    1/9, 1/9, 1/9,
+    1/9, 1/9, 1/9,
+    1/9, 1/9, 1/9
+};
+
 const double sobelX[9] =
 {
     1, 0, -1,
