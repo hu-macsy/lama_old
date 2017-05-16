@@ -79,6 +79,7 @@ void PngIO::readImpl( HArray<ValueType>& imageData, common::Grid& imageSize, con
 
     // prepare error handling, i.e. define code that is used for error handling
 
+
     if ( setjmp( png_jmpbuf( png_ptr ) ) )
     {
         png_destroy_read_struct( &png_ptr, &info_ptr, NULL );
@@ -197,10 +198,12 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, 
 
     // prepare error handling, i.e. define code that is used for error handling
 
+
     if ( setjmp( png_jmpbuf( png_ptr ) ) )
     {
         COMMON_THROWEXCEPTION( "Serious error during writing png file " << outputFileName )
     }
+
 
     png_init_io( png_ptr, fp );
 

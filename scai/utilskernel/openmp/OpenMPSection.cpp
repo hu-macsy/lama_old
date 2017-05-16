@@ -1,0 +1,280 @@
+/**
+ * @file OpenMPSection.cpp
+ *
+ * @license
+ * Copyright (c) 2009-2017
+ * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ * for Fraunhofer-Gesellschaft
+ *
+ * This file is part of the SCAI framework LAMA.
+ *
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ * @endlicense
+ *
+ * @brief Implementation of kernel operations for multidimension sections with OpenMP 
+ * @author Thomas Brandes
+ * @date 15.05.2017
+ */
+
+// hpp
+#include <scai/utilskernel/openmp/OpenMPSection.hpp>
+
+// local library
+#include <scai/utilskernel/SectionKernelTrait.hpp>
+
+// internal scai libraries
+#include <scai/kregistry/KernelRegistry.hpp>
+#include <scai/tracing.hpp>
+
+namespace scai
+{
+
+using common::binary;
+using common::unary;
+using common::TypeTraits;
+
+namespace utilskernel
+{
+
+SCAI_LOG_DEF_LOGGER( OpenMPSection::logger, "OpenMP.Section" )
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPSection::assign( 
+    ValueType targetSection[],
+    const IndexType nDims,
+    const IndexType sizes[],
+    const IndexType targetDifferences[],
+    const ValueType sourceSection[],
+    const IndexType sourceDifferences[],
+    const common::binary::BinaryOp op,
+    const bool swapOperands )
+{
+    SCAI_REGION( "OpenMP.Section.assign" )
+
+    if ( nDims == 0 )
+    {
+        if ( swapOperands )
+        {
+            *targetSection = applyBinary( *sourceSection, op, *targetSection );
+        }
+        else
+        {
+            *targetSection = applyBinary( *targetSection, op, *sourceSection );
+        }
+    }
+    else if ( nDims == 1 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            ValueType& target = targetSection[i0 * targetDifferences[0]];
+
+            if ( swapOperands )
+            {
+                target = applyBinary( sourceSection[i0 * sourceDifferences[0]], op, target );
+            }
+            else
+            {
+                target = applyBinary( target, op, sourceSection[i0 * sourceDifferences[0]] );
+            }
+        }
+    }
+    else if ( nDims == 2 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                ValueType& target = targetSection[i0 * targetDifferences[0] + i1 * targetDifferences[1]];
+                const ValueType& source = sourceSection[i0 * sourceDifferences[0] + i1 * sourceDifferences[1]];
+
+                if ( swapOperands )
+                {
+                    target = applyBinary( source, op, target );
+                }
+                else
+                {
+                    target = applyBinary( target, op, source );
+                }
+            }
+        }
+    }
+    else if ( nDims == 3 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    ValueType& target = targetSection[i0 * targetDifferences[0] + i1 * targetDifferences[1]
+                                                      + i2 * targetDifferences[2]];
+                    const ValueType& source = sourceSection[i0 * sourceDifferences[0] + i1 * sourceDifferences[1]
+                                                      + i2 * sourceDifferences[2]];
+
+                    if ( swapOperands )
+                    {
+                        target = applyBinary( source, op, target );
+                    }
+                    else
+                    {
+                        target = applyBinary( target, op, source );
+                    }
+                }
+            }
+        }
+    }
+    else if ( nDims == 4 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    for ( IndexType i3 = 0; i3 < sizes[3]; ++i3 )
+                    {
+                        ValueType& target = targetSection[i0 * targetDifferences[0] + i1 * targetDifferences[1]
+                                                        + i2 * targetDifferences[2] + i3 * targetDifferences[3]];
+                        const ValueType& source = sourceSection[i0 * sourceDifferences[0] + i1 * sourceDifferences[1]
+                                                        + i2 * sourceDifferences[2] + i3 * sourceDifferences[3]];
+
+                        if ( swapOperands )
+                        {
+                            target = applyBinary( source, op, target );
+                        }
+                        else
+                        {
+                            target = applyBinary( target, op, source );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "dim = " << nDims << " unsupported number of dims for sections" )
+    }
+}
+
+
+template<typename ValueType>
+void OpenMPSection::assignScalar( 
+    ValueType section[],
+    const IndexType nDims,
+    const IndexType sizes[],
+    const IndexType differences[],
+    ValueType val,
+    const common::binary::BinaryOp op,
+    const bool swapOperands )
+{
+    SCAI_REGION( "OpenMP.Section.assignScalar" )
+
+    if ( nDims == 1 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            ValueType& target = section[i0 * differences[0]];
+
+            if ( swapOperands )
+            {
+                target = applyBinary( target, op, val );
+            }
+            else
+            {
+                target = applyBinary( val, op, target );
+            }
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "dim = " << nDims << " unsupported number of dims for sections" )
+    }
+}
+
+template<typename ValueType>
+void OpenMPSection::unary( 
+    ValueType section[],
+    const IndexType nDims,
+    const IndexType sizes[],
+    const IndexType differences[],
+    const common::unary::UnaryOp op )
+{
+    SCAI_REGION( "OpenMP.Section.assignScalar" )
+
+    if ( nDims == 1 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            ValueType& target = section[i0 * differences[0]];
+            target = applyUnary( op, target );
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "dim = " << nDims << " unsupported number of dims for sections" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+/*    struct ArrayKernels methods                                              */
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void OpenMPSection::ArrayKernels<ValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    const common::context::ContextType ctx = common::context::Host;
+    SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << "]" )
+
+    KernelRegistry::set<SectionKernelTrait::assign<ValueType> >( assign, ctx, flag );
+    KernelRegistry::set<SectionKernelTrait::assignScalar<ValueType> >( assignScalar, ctx, flag );
+    KernelRegistry::set<SectionKernelTrait::unary<ValueType> >( unary, ctx, flag );
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Constructor/Desctructor with registration                                */
+/* --------------------------------------------------------------------------- */
+
+OpenMPSection::OpenMPSection()
+{
+    SCAI_LOG_INFO( logger, "register section OpenMP kernels for Host" )
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
+    kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
+}
+
+OpenMPSection::~OpenMPSection()
+{
+    SCAI_LOG_INFO( logger, "unregister section OpenMP kernels for Host" )
+    const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
+    kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
+}
+
+/* --------------------------------------------------------------------------- */
+/*    Static variable to force registration during static initialization      */
+/* --------------------------------------------------------------------------- */
+
+OpenMPSection OpenMPSection::guard;
+
+} /* end namespace utilskernel */
+
+} /* end namespace scai */
