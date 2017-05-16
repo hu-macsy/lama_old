@@ -39,6 +39,7 @@
 
 // base classes
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/GridSection.hpp>
 
 // other SCAI libraries
 
@@ -276,6 +277,26 @@ public:
     /** Reads the shape and data from a file. */
 
     void readFromFile( const std::string& inputFileName );
+
+    GridSection<ValueType> operator() ( const Range& r1 )
+    {
+        return GridSection<ValueType>( *this, r1 );
+    }
+
+    GridSection<ValueType> operator() ( const Range& r1, const Range& r2 )
+    {
+        return GridSection<ValueType>( *this, r1, r2 );
+    }
+
+    GridSection<ValueType> operator() ( const Range& r1, const Range& r2, const Range& r3 )
+    {
+        return GridSection<ValueType>( *this, r1, r2, r3 );
+    }
+
+    GridSection<ValueType> operator() ( const Range& r1, const Range& r2, const Range& r3, const Range& r4 )
+    {
+        return GridSection<ValueType>( *this, r1, r2, r3, r4 );
+    }
 };
 
 } /* end namespace lama */

@@ -35,6 +35,7 @@
 #include <scai/lama/GridVector.hpp>
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
+#include <scai/lama/GridSection.hpp>
 
 #include <scai/lama/io/ImageIO.hpp>
 #include <scai/lama/io/MatlabIO.hpp>
@@ -110,7 +111,7 @@ int main( int argc, const char* argv[] )
 
     //  calculate sources
 
-    GridVector<real> wave( Grid1D( nfeval ), 0 );
+    GridVector<real> wave( Grid1D( nfeval ), 0 );   // now replicated, will be distributed later
 
     const real PI = 3.141592653589793;
 
@@ -130,22 +131,24 @@ int main( int argc, const char* argv[] )
     }
 
     DistributionPtr distF( new GridDistribution( Grid1D( nfeval ), comm, Grid1D( np ) ) );
+
     wave.redistribute( distF );
 
     // wave.writeToFile( "wave_1.mtx" );
 
-    // So=zeros(nx,nsrc,nfeval);
-
     DistributionPtr distZXSF( new GridDistribution( Grid4D( nz, nx, nsrc, nfeval ), comm, Grid4D( 1, 1, 1, np ) ) );
     DistributionPtr distXSF( new GridDistribution( Grid3D( nx, nsrc, nfeval ), comm, Grid3D( 1, 1, np ) ) );
+    DistributionPtr distXXF( new GridDistribution( Grid3D( nx, nx, nfeval ), comm, Grid3D( 1, 1, np ) ) );
 
-    GridVector<real> So( distXSF, 0 );
+    GridVector<real> So( distXSF, 0 );   // So = zeros( nx, nsrc, nfeval);
 
-    // for i=1:nsrc
-    // So(floor(nx/(nsrc+1))*i,i,:)=wave;
+    // for i = 1 : nsrc
+    //    So( floor( nx / ( nsrc + 1 ) ) * i, i, : ) = wave;
     // end
 
-    {
+    {   
+        // Each processor works on its local parts of So, wave
+
         GridWriteAccess<real> wSo( So );
         GridReadAccess<real> rWave( wave );
 
@@ -153,41 +156,28 @@ int main( int argc, const char* argv[] )
         {
             IndexType ix = ( nx / ( nsrc + 1 ) ) * ( isrc + 1 ) - 1;
 
-            std::cout << "Set So( " << ix << ", " << isrc << ", :) = wave(:)" << std::endl;
+            SCAI_LOG_INFO( logger, "Set So( " << ix << ", " << isrc << ", :) = wave(:)" )
 
             for ( IndexType i_f = 0; i_f < wSo.size( 2 ); ++i_f )
             {
                 wSo( ix, isrc, i_f ) = rWave( i_f );
             }
+
+            So( ix, isrc, Range() ) = wave( Range() ) = 1.0;
         }
     }
 
     //  define R
-    //  R=zeros(nx,nz);
-    //  R(:,floor(nz/2))=0.2;
-    //  R(:,floor(nz/4))=0.2;     % add second reflection
+    //  R = zeros( nx, nz );
+    //  R( :, floor( nz / 2 ) ) = 0.2;
+    //  R( :, floor( nz / 4 ) ) = 0.2;     % add second reflection
 
-    GridVector<real> R( Grid2D( nx, nz ), 0 );
+    GridVector<real> R( Grid2D( nx, nz ), 0 );  // replicated array, each processor has a copy
 
-    {
-        GridWriteAccess<real> wR( R );
+    SCAI_LOG_INFO( logger, "Reflection 1 at " << ( nz / 2 ) << ", 2 at " << ( nz / 4 ) )
 
-        IndexType iz1 = nz / 2;
-        IndexType iz2 = nz / 4;
-
-        std::cout << "Reflection 1 at " << iz1 << ", 2 at " << iz2 << std::endl;
-
-        for ( IndexType ix = 0; ix < nx; ++ix )
-        {
-            wR( ix, iz1 - 1 ) = 0.2;
-            wR( ix, iz2 - 1 ) = 0.2;
-        }
-
-        // GridSection<real> sec1( R, range(), nz / 2 - 1 );
-        // GridSection<real> sec2( R, range(), nz / 4 - 1 );
-        // sec1 = 0.2;
-        // sec2 = 0.2;
-    }
+    R( Range(), nz / 2 - 1 ) = 0.2;
+    R( Range(), nz / 4 - 1 ) = 0.2;
 
     // be careful: file Wx.mtx contains data in column-major order
 
@@ -199,12 +189,14 @@ int main( int argc, const char* argv[] )
     // make sure that the read grid data fits our problem here
 
     SCAI_ASSERT_EQ_ERROR( Wx.globalGrid(), Grid3D( nx, nx, nfeval ), "Input file Wx.mat does not match" )
+
+    // distribute Wx according to the frequencies
+
+    Wx.redistribute( distXXF );
  
     // %% initialise arrays
     // Pmin=zeros(nz,nx,nsrc,nfeval);                     %4D matrices (in general complex)
     // Pplus=zeros(nz,nx,nsrc,nfeval);                    %4D matrices (in general complex)
-
-    // DistributionPtr distZXSF( new GridDistribution( Grid4D( nz, nx, nsrc, nfeval ), comm, Grid4D( 1, 1, 1, np ) ) );
 
     GridVector<complex> Pmin( distZXSF, 0 );
     GridVector<complex> Pplus( distZXSF, 0 );
@@ -440,8 +432,6 @@ int main( int argc, const char* argv[] )
              // %Apply operator r dependent on R
              // r=diag(R(:,iz));                     %simplified!! in future R can have secondary diagonals or gets close to a full matrix
 
-            GridVector<complex> ri( Grid2D( nx, nx ), 0 );
-
             {
                 GridWriteAccess<complex> wRi( ri );
                 GridReadAccess<real> rR( R );
@@ -611,11 +601,11 @@ int main( int argc, const char* argv[] )
             }
         }
 
-        // comm->sumArray( grad.getLocalValues() );
-
         // sum grad( :, iz + 1 ) over all processors
     }
  
+    comm->sumArray( grad.getLocalValues() );
+
     if ( comm->getRank() == 0 )
     {
         ImageIO::writeSC( grad, "grad.png" );

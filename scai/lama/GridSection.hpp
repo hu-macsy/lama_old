@@ -34,17 +34,24 @@
 
 #pragma once
 
+#include <scai/logging.hpp>
+
 // for dll_import
 #include <scai/common/config.hpp>
 
-
-#include <scai/lama/GridVector.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/Grid.hpp>
 
 namespace scai
 {
 
 namespace lama
 {
+
+// Forward declaration of GridVector required here
+
+template<typename ValueType>
+class GridVector;
 
 typedef struct
 {
@@ -85,20 +92,14 @@ class COMMON_DLL_IMPORTEXPORT GridSection
 {
 public:
 
-    GridSection( GridVector<ValueType>& gridVector, const Range& r1, const Range& r2, const Range& r3 ) :
+    GridSection( GridVector<ValueType>& gridVector, const Range& r1 );
+
+    GridSection( GridVector<ValueType>& gridVector, const Range& r1, const Range& r2 );
+
+    GridSection( GridVector<ValueType>& gridVector, const Range& r1, const Range& r2, const Range& r3 );
+
+    GridSection( GridVector<ValueType>& gridVector, const Range& r1, const Range& r2, const Range& r3, const Range& r4 );
      
-        mGridVector( gridVector ), 
-        mGlobalGrid( gridVector.globalGrid() ),
-        mLocalGrid( gridVector.localGrid() )
-
-    {
-        mNDims = 3;
-
-        setDim( 0, r1 );
-        setDim( 1, r2 );
-        setDim( 2, r3 );
-    }
-
     GridSection& operator= ( const GridSection& other );
 
     GridSection& operator= ( const ValueType other );
@@ -133,6 +134,10 @@ public:
        }
     }
 
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
 private:
 
     GridVector<ValueType>& mGridVector;
@@ -145,6 +150,15 @@ private:
     IndexType mNDims;
 
     bool isConst;  // no write access on section allowed
+
+    /** This operation returns a dope vector of the local part of this section.
+     *
+     *  @param[out] offset offset for the first element of the section
+     *  @param[out] sizes  number of entries for each dimension of the section
+     *  @param[out] distances for each dimension
+     *  @returns the number of dimensions of this section
+     */
+    IndexType getDopeVector( IndexType& offset, IndexType sizes[], IndexType distances[] ) const;
 };
 
 } /* end namespace lama */
