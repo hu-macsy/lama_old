@@ -153,6 +153,11 @@ public:
         return globalGrid().nDims();
     }
 
+    IndexType size( const IndexType dim ) const
+    {
+        return globalGrid().size( dim );
+    }
+
     /** Swap available array with data into a grid vector. */
 
     void swap( hmemo::HArray<ValueType>& data, const common::Grid& grid )
@@ -182,6 +187,16 @@ public:
      */
 
     void gemm( const ValueType alpha, const GridVector<ValueType>& v1, const GridVector<ValueType>& v2 );
+
+    /** Set a diagonal on a two-dimensional grid vector. 
+     *
+     *  @param[in] diagonal must be a one-dimensional section
+     *  @param[in] diagonalNumber specifies the diagonal, 0 stands for main diagonal
+     *
+     *  This routine throws an exception if the dimensions are not correct.
+     *  This routine throws an exception if the sizes do not fit.
+     */
+    void setDiagonal( const GridSection<ValueType>& diagonal, const int diagonalNumber );
 
     /** Help class to observe the further use of operator[] in LArray */
 

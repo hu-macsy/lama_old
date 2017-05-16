@@ -168,7 +168,7 @@ int main( int argc, const char* argv[] )
         So( ix, isrc, Range() ) = wave( Range() );
     }
 
-    GridVector<real> R( Grid2D( nx, nz ), 0 );  // replicated array, each processor has a copy
+    GridVector<complex> R( Grid2D( nx, nz ), 0 );  // replicated array, each processor has a copy
 
     SCAI_LOG_INFO( logger, "Reflections at " << ( nz / 2 ) << " and at " << ( nz / 4 ) )
 
@@ -212,6 +212,8 @@ int main( int argc, const char* argv[] )
 
     for ( IndexType iz = 0; iz < nz; ++iz )
     {
+        SCAI_REGION( "main.loop1" )
+
         SCAI_LOG_DEBUG( logger, *comm << ": iz = " << iz << " of " << nz )
 
         for ( IndexType i_f = nf_lb; i_f < nf_ub; i_f++ )
@@ -225,24 +227,11 @@ int main( int argc, const char* argv[] )
             w_tmp( Range(), Range() ) = Wx( Range(), Range(), i_f );
 
             // Apply operator r dependent on R (calculations simplified)
-            // r=diag(R(:,i));                            %simplified!! in future R can have secondary diagonals or gets close to a full matrix
 
-            {
-                SCAI_LOG_TRACE( logger, "ri = diag( R( :, iz = " << iz << " ) )" )
 
-                GridWriteAccess<complex> wRi( ri );
-                GridReadAccess<real> rR( R );
-
-                for ( IndexType ix = 0; ix < nx; ++ix )
-                {
-                    wRi( ix, ix ) = rR( ix, iz );
-                }
-            }
+            ri.setDiagonal( R( Range(), iz ), 0 );  // ri = diag(R(:,iz));
 
             ptmp = pextr_tmp - ptmp;
-
-            // pextr_tmp += ri * ptmp;
-
             pextr_tmp.gemm( 1, ri, ptmp );  // pextr_tmp = pextr_tmp + 1 * ri * ptmp
 
             if ( iz == 0 )
@@ -250,10 +239,8 @@ int main( int argc, const char* argv[] )
                 pextr_tmp( Range(), Range() ) += So( Range(), Range(), i_f );
             }
 
-            // ptmp = w_tmp * pextr_tmp;
-
             ptmp = 0;
-            ptmp.gemm( 1, w_tmp, pextr_tmp );  
+            ptmp.gemm( 1, w_tmp, pextr_tmp );    // ptmp = w_tmp * pextr_tmp;
 
             pextr( Range(), Range(), i_f ) = ptmp( Range(), Range() );
         }
@@ -271,6 +258,8 @@ int main( int argc, const char* argv[] )
   
     for ( IndexType iz = nz; iz-- > 0;  )
     {
+        SCAI_REGION( "main.loop2" )
+
         for ( IndexType i_f = nf_lb; i_f < nf_ub; ++i_f )
         {
             SCAI_LOG_TRACE( logger, "Loop2: iter ( iz = " << iz << ", i_f = " << i_f 
@@ -283,17 +272,8 @@ int main( int argc, const char* argv[] )
             w_tmp( Range(), Range() ) = Wx( Range(), Range(), i_f );  
 
             // %Apply operator r dependent on R
-            // r=diag(R(:,iz));                     %simplified!! in future R can have secondary diagonals or gets close to a full matrix
 
-            {
-                GridWriteAccess<complex> wRi( ri );
-                GridReadAccess<real> rR( R );
-
-                for ( IndexType ix = 0; ix < nx; ++ix )
-                {
-                    wRi( ix, ix ) = rR( ix, iz );
-                }
-            }
+            ri.setDiagonal( R( Range(), iz ), 0 );
 
             // pextr_tmp=pextr_tmp-r*pextr_tmp+r*ptmp;
 
@@ -327,6 +307,8 @@ int main( int argc, const char* argv[] )
 
     for ( IndexType iz = 0; iz < nz - 1; ++iz )
     {
+        SCAI_REGION( "main.loop3" )
+
         for ( IndexType i_f = nf_lb; i_f < nf_ub; ++i_f )
         {
             SCAI_LOG_TRACE( logger, "Loop3: iter ( iz, i_f ) = ( " << iz << ", " << i_f 
@@ -375,7 +357,10 @@ int main( int argc, const char* argv[] )
         }
     }
  
-    comm->sumArray( grad.getLocalValues() );
+    {
+        SCAI_REGION( "main.sumReduce" )
+        comm->sumArray( grad.getLocalValues() );
+    }
 
     if ( comm->getRank() == 0 )
     {

@@ -37,6 +37,7 @@
 // other SCAI libraries
 
 #include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/openmp/OpenMPSection.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/lama/GridWriteAccess.hpp>
@@ -125,6 +126,67 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
                    wRes.get(), ldc );
     }
 }
+
+/* ========================================================================= */
+
+template<typename ValueType>
+void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal, const int diagonalNumber )
+{
+    SCAI_ASSERT_EQ_ERROR( 2, this->nDims(), "setDiagonal only on two-dimensional grids." )
+
+    const IndexType numRows = this->size( 0 );
+    const IndexType numCols = this->size( 1 );
+
+    IndexType offsetTarget = 0;
+    IndexType sizesTarget[SCAI_GRID_MAX_DIMENSION];
+    IndexType distancesTarget[SCAI_GRID_MAX_DIMENSION];
+
+    IndexType expectedDiagSize = numRows;
+
+    if ( diagonalNumber >= 0 )
+    {
+        const IndexType col = diagonalNumber;  // column where the diagonal starts
+        SCAI_ASSERT_VALID_INDEX( col, numCols, "diagonal " << diagonalNumber << " out of range" )
+        expectedDiagSize = common::Math::min( numCols - col, numRows );
+        GridSection<ValueType> colSection = (*this)( Range( 0, expectedDiagSize ), col );
+        colSection.getDopeVector( offsetTarget, sizesTarget, distancesTarget );
+    }
+    else
+    {
+        const IndexType row = -diagonalNumber;  // row where the diagonal starts
+        SCAI_ASSERT_VALID_INDEX( row, numRows, "diagonal " << diagonalNumber << " out of range" );
+        expectedDiagSize = common::Math::min( numRows - row, numCols );
+        GridSection<ValueType> colSection = (*this)( Range( row, expectedDiagSize ), 0 );
+        colSection.getDopeVector( offsetTarget, sizesTarget, distancesTarget );
+    }
+
+    // We cannot define a section for the diagonal directly, but we can do it via a column section
+    // where we fake later the distances
+
+    IndexType offsetSource = 0;
+    IndexType sizesSource[SCAI_GRID_MAX_DIMENSION];
+    IndexType distancesSource[SCAI_GRID_MAX_DIMENSION];
+
+    IndexType dimsSource = diagonal.getDopeVector( offsetSource, sizesSource, distancesSource );
+
+    SCAI_ASSERT_EQ_ERROR( 1, dimsSource, "setDiagonal, diagonal is not one-dimensional" )
+    SCAI_ASSERT_EQ_ERROR( expectedDiagSize, sizesSource[0], "size of diagonal does not match" )
+
+    distancesTarget[0] = distancesTarget[0] + 1;  // this gives the diagonal
+
+    GridReadAccess<ValueType> rSource( diagonal.mGridVector );
+    GridWriteAccess<ValueType> wTarget( *this );
+
+    const ValueType* sourcePtr = rSource.get() + offsetSource;
+    ValueType* targetPtr = wTarget.get() + offsetTarget;
+
+    common::binary::BinaryOp op = common::binary::COPY;
+
+    bool swap = false;
+
+    utilskernel::OpenMPSection::assign( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
+}
+
 
 /* ========================================================================= */
 /*       Template instantiations                                             */
