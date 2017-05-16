@@ -63,12 +63,12 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
     if ( argc < 1 )
     {
         std::cout << "Wrong call, please use : " << argv[0] << " <inputFileName> <outputFileName>" << std::endl;
     }
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     IndexType np = comm->getSize();  // number of available processors
 
@@ -108,6 +108,10 @@ int main( int argc, const char* argv[] )
     }
 
     IndexType nfeval = ifmax - ifmin + 1;
+
+    if ( comm->getRank() == 0 )
+    {
+    }
 
     //  calculate sources
 
@@ -163,7 +167,7 @@ int main( int argc, const char* argv[] )
                 wSo( ix, isrc, i_f ) = rWave( i_f );
             }
 
-            So( ix, isrc, Range() ) = wave( Range() ) = 1.0;
+            // So( ix, isrc, Range() ) = wave( Range() ) = 1.0;
         }
     }
 
@@ -176,8 +180,18 @@ int main( int argc, const char* argv[] )
 
     SCAI_LOG_INFO( logger, "Reflection 1 at " << ( nz / 2 ) << ", 2 at " << ( nz / 4 ) )
 
-    R( Range(), nz / 2 - 1 ) = 0.2;
-    R( Range(), nz / 4 - 1 ) = 0.2;
+    {
+        GridWriteAccess<real> wR( R );
+
+        IndexType iz1 = nz / 2;
+        IndexType iz2 = nz / 4;
+ 
+        for ( IndexType ix = 0; ix < nx; ++ix )
+        {
+            wR( ix, iz1 - 1 ) = 0.2;
+            wR( ix, iz2 - 1 ) = 0.2;
+        }
+    }
 
     // be careful: file Wx.mtx contains data in column-major order
 

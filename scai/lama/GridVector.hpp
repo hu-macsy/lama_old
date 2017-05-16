@@ -141,6 +141,13 @@ public:
         return dist->getLocalGrid();
     }
 
+    const IndexType* localLB() const
+    {
+        const dmemo::GridDistribution* dist = dynamic_cast<const dmemo::GridDistribution*>( this->getDistributionPtr().get() );
+        SCAI_ASSERT_ERROR( dist, "Grid vector has no grid distribution" )
+        return dist->localLB();
+    }
+
     IndexType nDims() const
     {
         return globalGrid().nDims();

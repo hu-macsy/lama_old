@@ -61,9 +61,9 @@ void OpenMPSection::assign(
     ValueType targetSection[],
     const IndexType nDims,
     const IndexType sizes[],
-    const IndexType targetDifferences[],
+    const IndexType targetDistances[],
     const ValueType sourceSection[],
-    const IndexType sourceDifferences[],
+    const IndexType sourceDistances[],
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
@@ -84,15 +84,15 @@ void OpenMPSection::assign(
     {
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
-            ValueType& target = targetSection[i0 * targetDifferences[0]];
+            ValueType& target = targetSection[i0 * targetDistances[0]];
 
             if ( swapOperands )
             {
-                target = applyBinary( sourceSection[i0 * sourceDifferences[0]], op, target );
+                target = applyBinary( sourceSection[i0 * sourceDistances[0]], op, target );
             }
             else
             {
-                target = applyBinary( target, op, sourceSection[i0 * sourceDifferences[0]] );
+                target = applyBinary( target, op, sourceSection[i0 * sourceDistances[0]] );
             }
         }
     }
@@ -102,8 +102,8 @@ void OpenMPSection::assign(
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
             {
-                ValueType& target = targetSection[i0 * targetDifferences[0] + i1 * targetDifferences[1]];
-                const ValueType& source = sourceSection[i0 * sourceDifferences[0] + i1 * sourceDifferences[1]];
+                ValueType& target = targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]];
+                const ValueType& source = sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]];
 
                 if ( swapOperands )
                 {
@@ -124,10 +124,10 @@ void OpenMPSection::assign(
             {
                 for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
                 {
-                    ValueType& target = targetSection[i0 * targetDifferences[0] + i1 * targetDifferences[1]
-                                                      + i2 * targetDifferences[2]];
-                    const ValueType& source = sourceSection[i0 * sourceDifferences[0] + i1 * sourceDifferences[1]
-                                                      + i2 * sourceDifferences[2]];
+                    ValueType& target = targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]
+                                                      + i2 * targetDistances[2]];
+                    const ValueType& source = sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]
+                                                      + i2 * sourceDistances[2]];
 
                     if ( swapOperands )
                     {
@@ -151,10 +151,10 @@ void OpenMPSection::assign(
                 {
                     for ( IndexType i3 = 0; i3 < sizes[3]; ++i3 )
                     {
-                        ValueType& target = targetSection[i0 * targetDifferences[0] + i1 * targetDifferences[1]
-                                                        + i2 * targetDifferences[2] + i3 * targetDifferences[3]];
-                        const ValueType& source = sourceSection[i0 * sourceDifferences[0] + i1 * sourceDifferences[1]
-                                                        + i2 * sourceDifferences[2] + i3 * sourceDifferences[3]];
+                        ValueType& target = targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]
+                                                        + i2 * targetDistances[2] + i3 * targetDistances[3]];
+                        const ValueType& source = sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]
+                                                        + i2 * sourceDistances[2] + i3 * sourceDistances[3]];
 
                         if ( swapOperands )
                         {
@@ -175,13 +175,100 @@ void OpenMPSection::assign(
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
+template<typename TargetValueType, typename SourceValueType>
+void OpenMPSection::unaryOp( 
+    TargetValueType targetSection[],
+    const IndexType nDims,
+    const IndexType sizes[],
+    const IndexType targetDistances[],
+    const SourceValueType sourceSection[],
+    const IndexType sourceDistances[],
+    const common::unary::UnaryOp op )
+{
+    SCAI_REGION( "OpenMP.Section.assign" )
+
+    if ( nDims == 0 )
+    {
+        *targetSection = static_cast<TargetValueType>( applyUnary( op, *sourceSection ) );
+    }
+    else if ( nDims == 1 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            TargetValueType& target = targetSection[i0 * targetDistances[0]];
+            const SourceValueType& source = sourceSection[i0 * sourceDistances[0]];
+
+            target = static_cast<TargetValueType>( applyUnary( op, source ) );
+        }
+    }
+    else if ( nDims == 2 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                TargetValueType& target = targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]];
+                const SourceValueType& source = sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]];
+
+                target = static_cast<TargetValueType>( applyUnary( op, source ) );
+            }
+        }
+    }
+    else if ( nDims == 3 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    TargetValueType& target = targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]
+                                                      + i2 * targetDistances[2]];
+                    const SourceValueType& source = sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]
+                                                      + i2 * sourceDistances[2]];
+
+                    target = static_cast<TargetValueType>( applyUnary( op, source ) );
+                }
+            }
+        }
+    }
+    else if ( nDims == 4 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    for ( IndexType i3 = 0; i3 < sizes[3]; ++i3 )
+                    {
+                        TargetValueType& target = targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]
+                                                        + i2 * targetDistances[2] + i3 * targetDistances[3]];
+                        const SourceValueType& source = sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]
+                                                        + i2 * sourceDistances[2] + i3 * sourceDistances[3]];
+
+                        target = static_cast<TargetValueType>( applyUnary( op, source ) );
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "dim = " << nDims << " unsupported number of dims for sections" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void OpenMPSection::assignScalar( 
     ValueType section[],
     const IndexType nDims,
     const IndexType sizes[],
-    const IndexType differences[],
+    const IndexType distances[],
     ValueType val,
     const common::binary::BinaryOp op,
     const bool swapOperands )
@@ -192,15 +279,49 @@ void OpenMPSection::assignScalar(
     {
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
-            ValueType& target = section[i0 * differences[0]];
-
-            if ( swapOperands )
+            ValueType& target = section[i0 * distances[0]];
+            target = swapOperands ? applyBinary( val, op, target ) : applyBinary( target, op, val );
+        }
+    }
+    else if ( nDims == 2 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
             {
-                target = applyBinary( target, op, val );
+                ValueType& target = section[i0 * distances[0] + i1 * distances[1]];
+                target = swapOperands ? applyBinary( val, op, target ) : applyBinary( target, op, val );
             }
-            else
+        }
+    }
+    else if ( nDims == 3 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
             {
-                target = applyBinary( val, op, target );
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    ValueType& target = section[i0 * distances[0] + i1 * distances[1] + i2 * distances[2]];
+                    target = swapOperands ? applyBinary( val, op, target ) : applyBinary( target, op, val );
+                }
+            }
+        }
+    }
+    else if ( nDims == 4 )
+    {
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    for ( IndexType i3 = 0; i3 < sizes[3]; ++i3 )
+                    {
+                        ValueType& target = section[i0 * distances[0] + i1 * distances[1] + i2 * distances[2] + i3 * distances[3]];
+                        target = swapOperands ? applyBinary( val, op, target ) : applyBinary( target, op, val );
+                    }
+                }
             }
         }
     }
@@ -210,12 +331,14 @@ void OpenMPSection::assignScalar(
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPSection::unary( 
     ValueType section[],
     const IndexType nDims,
     const IndexType sizes[],
-    const IndexType differences[],
+    const IndexType distances[],
     const common::unary::UnaryOp op )
 {
     SCAI_REGION( "OpenMP.Section.assignScalar" )
@@ -224,7 +347,7 @@ void OpenMPSection::unary(
     {
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
-            ValueType& target = section[i0 * differences[0]];
+            ValueType& target = section[i0 * distances[0]];
             target = applyUnary( op, target );
         }
     }
@@ -251,6 +374,18 @@ void OpenMPSection::ArrayKernels<ValueType>::registerKernels( kregistry::KernelR
     KernelRegistry::set<SectionKernelTrait::unary<ValueType> >( unary, ctx, flag );
 }
 
+template<typename ValueType, typename OtherValueType>
+void OpenMPSection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kregistry::KernelRegistry::KernelRegistryFlag flag )
+{
+    using kregistry::KernelRegistry;
+    const common::context::ContextType ctx = common::context::Host;
+
+    SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP-routines for Host at kernel registry [" << flag
+                    << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
+
+    KernelRegistry::set<SectionKernelTrait::unaryOp<ValueType, OtherValueType> >( unaryOp, ctx, flag );
+}
+
 /* --------------------------------------------------------------------------- */
 /*    Constructor/Desctructor with registration                                */
 /* --------------------------------------------------------------------------- */
@@ -260,6 +395,7 @@ OpenMPSection::OpenMPSection()
     SCAI_LOG_INFO( logger, "register section OpenMP kernels for Host" )
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ADD;
     kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<BinOpKernels, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 OpenMPSection::~OpenMPSection()
@@ -267,6 +403,7 @@ OpenMPSection::~OpenMPSection()
     SCAI_LOG_INFO( logger, "unregister section OpenMP kernels for Host" )
     const kregistry::KernelRegistry::KernelRegistryFlag flag = kregistry::KernelRegistry::KERNEL_ERASE;
     kregistry::mepr::RegistratorV<ArrayKernels, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
+    kregistry::mepr::RegistratorVO<BinOpKernels, SCAI_ARRAY_TYPES_HOST_LIST, SCAI_ARRAY_TYPES_HOST_LIST>::registerKernels( flag );
 }
 
 /* --------------------------------------------------------------------------- */

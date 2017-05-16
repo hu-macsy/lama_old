@@ -65,6 +65,7 @@ struct unary
 
     typedef enum
     {
+        COPY,    //!< just identity
         CONJ,    //!< for conjugate of a vector
         ABS,     //!< for absolute value
         ASUM,    //!< sum of magnitudes of real and imaginary part, same as abs for real
@@ -101,6 +102,8 @@ inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
 {
     switch ( op )
     {
+        case unary::COPY:
+            return x;
         case unary::CONJ:
             return common::Math::conj( x );
         case unary::ABS:
@@ -170,7 +173,11 @@ inline std::ostream& operator<<( std::ostream& stream, const unary::UnaryOp& op 
 {
     switch ( op )
     {
-        case unary::unary::CONJ:
+        case unary::COPY:
+            stream << "COPY";
+            break;
+
+        case unary::CONJ:
             stream << "CONJ";
             break;
 

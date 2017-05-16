@@ -41,6 +41,8 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/Grid.hpp>
+#include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 
 namespace scai
 {
@@ -100,50 +102,51 @@ public:
 
     GridSection( GridVector<ValueType>& gridVector, const Range& r1, const Range& r2, const Range& r3, const Range& r4 );
      
+    template<typename OtherValueType>
+    GridSection& operator= ( const GridSection<OtherValueType>& other )
+    {
+        unaryOp( other, common::unary::COPY );
+        return *this;
+    }
+
     GridSection& operator= ( const GridSection& other );
+
+    GridSection& operator*= ( const GridSection& other );
+
+    GridSection& operator+= ( const GridSection& other );
+
+    GridSection& operator-= ( const GridSection& other );
+
+    GridSection& operator/= ( const GridSection& other );
 
     GridSection& operator= ( const ValueType other );
 
     GridSection& operator*= ( const ValueType other );
 
-    void setDim( IndexType k, const Range& r )
-    {
-       SecDimInfo& sec = mDimension[k];
+    GridSection& operator+= ( const ValueType other );
 
-       sec.globalRange[0] = r.mLB;
-       sec.globalRange[1] = r.mUB;
-       sec.globalRange[2] = r.mStride;
+    GridSection& operator-= ( const ValueType other );
 
-       sec.isLocalized = false;
-       sec.isRange     = r.mStride != 0;
+    GridSection& operator/= ( const ValueType other );
 
-       if ( r.mUB == nIndex )
-       {
-           sec.globalRange[1] = mGlobalGrid.size( k );
-       }
+    /** Transpose for two-dimensional sections */
 
-       if ( r.mStride != 0 )
-       {
-           sec.isRange = true;
-           sec.globalRange[2] = r.mStride;
-       }
-       else
-       {
-           sec.isRange = false;
-           sec.globalRange[2] = 1;
-       }
-    }
+    void assignTranspose( const GridSection<ValueType>& other, bool conjFlag );
 
-protected:
+    void conj( const GridSection<ValueType>& other );
+
+    void setDim( IndexType k, const Range& r );
+
+public:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-private:
 
     GridVector<ValueType>& mGridVector;
 
     const common::Grid& mGlobalGrid;
     const common::Grid& mLocalGrid;
+
+    const IndexType* localLB;  // lower bounds
 
     SecDimInfo mDimension[SCAI_GRID_MAX_DIMENSION];
  
@@ -159,6 +162,15 @@ private:
      *  @returns the number of dimensions of this section
      */
     IndexType getDopeVector( IndexType& offset, IndexType sizes[], IndexType distances[] ) const;
+
+    void binOp( const GridSection<ValueType>& other, common::binary::BinaryOp, bool swap );
+
+    void binOpScalar( const ValueType other, common::binary::BinaryOp, bool swap );
+
+    template<typename OtherValueType>
+    void unaryOp( const GridSection<OtherValueType>& other, common::unary::UnaryOp op );
+
+    void localize();
 };
 
 } /* end namespace lama */

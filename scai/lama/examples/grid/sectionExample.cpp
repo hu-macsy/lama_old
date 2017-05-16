@@ -68,10 +68,17 @@ int main( int argc, const char* argv[] )
         std::cout << "Wrong call, please use : " << argv[0] << " <inputFileName> <outputFileName>" << std::endl;
     }
 
-    GridVector<double> x( Grid2D( 5, 5 ), 1 );
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    x( Range(), 2 ) = 5;
-    x( Range(), 3 ) *= 2.5;
+    IndexType np = comm->getSize();
+
+    DistributionPtr dist( new GridDistribution( Grid1D( 100 ), comm, Grid1D( np ) ) );
+
+    GridVector<double> x( dist, 1.0 );
+
+    x( Range( 25, 45, 3 ) ) = 2.0;
+
+    std::cout << "x = " << x << std::endl;
 
     x.writeToFile( "x.txt" );
 }

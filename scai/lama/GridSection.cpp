@@ -38,7 +38,10 @@
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
+#include <scai/utilskernel/openmp/OpenMPSection.hpp>
+
 #include <scai/common/macros/instantiate.hpp>
+#include <scai/common/macros/loop.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 namespace scai
@@ -54,12 +57,144 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GridSection<ValueTyp
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+void GridSection<ValueType>::setDim( IndexType k, const Range& r )
+{
+   SecDimInfo& sec = mDimension[k];
+
+   sec.globalRange[0] = r.mLB;
+   sec.globalRange[1] = r.mUB;
+   sec.globalRange[2] = r.mStride;
+
+   sec.isLocalized = false;
+   sec.isRange     = r.mStride != 0;
+
+   if ( r.mUB == nIndex )
+   {
+       sec.globalRange[1] = mGlobalGrid.size( k );
+   }
+
+   if ( r.mStride != 0 )
+   {
+       sec.isRange = true;
+       sec.globalRange[2] = r.mStride;
+   }
+   else
+   {
+       sec.isRange = false;
+       sec.globalRange[2] = 1;
+   }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+static IndexType correctUB( const IndexType lb, const IndexType ub, const IndexType str )
+{
+    if ( lb >= ub )
+    {
+        return ub;
+    }
+    else
+    {
+        return lb + ( ( ub - lb - 1 ) / str ) * str + 1;
+    }
+}
+
+static int raiseLB ( const IndexType lb1, const IndexType lb2, const IndexType stride )
+{ 
+    if ( lb1 < lb2 )
+    {
+        return lb1 + ( ( lb2 - lb1 - 1 ) / stride + 1 ) * stride;
+    }
+    else
+    {
+        return lb1;
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+static void intersect( IndexType localRange[], const IndexType globalRange[], IndexType lb, IndexType size )
+{
+    // compute the local range of the global range for the owned values
+
+    if ( globalRange[2] == 1 )
+    {
+        localRange[0] = common::Math::max( globalRange[0], lb );
+        localRange[1] = common::Math::min( globalRange[1], lb + size );
+        localRange[2] = 1;
+    }
+    else 
+    {
+        IndexType high = common::Math::min( correctUB( globalRange[0], globalRange[1], globalRange[2] ), lb + size );
+        localRange[0] = raiseLB( globalRange[0], lb, globalRange[2] );
+        localRange[1] = correctUB( localRange[0], high, globalRange[2] );
+        localRange[2] = globalRange[2];
+    }
+
+    // move it back to origin
+
+    // localRange[0] -= lb;
+    // localRange[1] -= lb;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void GridSection<ValueType>::localize()
+{
+    const IndexType* localLB = mGridVector.localLB();
+
+    // compute the local ranges of the global section
+
+    for ( IndexType i = 0; i < mNDims; ++i )
+    {
+        SecDimInfo& sec = mDimension[i];
+
+        if ( sec.isLocalized )
+        {
+            continue;
+        }
+
+        // localRange = intersect( globalRange, [lb,ub] )
+
+        intersect( sec.localRange, sec.globalRange, localLB[i], mLocalGrid.size( i ) );
+
+        if ( mGlobalGrid.size( i ) != mLocalGrid.size( i ) )
+        {
+            SCAI_LOG_INFO( logger, "dim " << i << ", (global) range = " << sec.globalRange[0] << ":" << sec.globalRange[1] 
+                                   << ":" << sec.globalRange[2] << " is on " << localLB[i] << ":" << localLB[i] + mLocalGrid.size( i ) 
+                                   << " (local) range = " << sec.localRange[0] << ":" << sec.localRange[1] << ":" << sec.localRange[2] )
+        }
+        else
+        {
+            SCAI_ASSERT_EQ_ERROR( sec.localRange[0], sec.globalRange[0], "mismatch" )
+            // ub adapted SCAI_ASSERT_EQ_ERROR( sec.localRange[1], sec.globalRange[1], "mismatch" )
+            SCAI_ASSERT_EQ_ERROR( sec.localRange[2], sec.globalRange[2], "mismatch" )
+        }
+
+        if ( sec.localRange[1] > sec.localRange[0] )
+        {
+            sec.localRange[0] -= localLB[i];
+            sec.localRange[1] -= localLB[i];
+        } 
+        else
+        { 
+            sec.localRange[0] -= localLB[i];
+            sec.localRange[1] = sec.localRange[0];
+        }
+
+        sec.isLocalized = true;
+    }
+}   
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 GridSection<ValueType>::GridSection( GridVector<ValueType>& gridVector, const Range& r0 ) :
 
     mGridVector( gridVector ),
     mGlobalGrid( gridVector.globalGrid() ),
     mLocalGrid( gridVector.localGrid() )
-
 {
     mNDims = 1;
 
@@ -111,8 +246,11 @@ GridSection<ValueType>::GridSection( GridVector<ValueType>& gridVector, const Ra
 template<typename ValueType>
 IndexType GridSection<ValueType>::getDopeVector( IndexType& offset, IndexType sizes[], IndexType distances[] ) const
 {
-    SCAI_LOG_ERROR( logger, "get dope vector grid section, #dims = " << mNDims )
+    SCAI_LOG_DEBUG( logger, "get dope vector grid section, #dims = " << mNDims )
 
+    GridSection<ValueType>& tmp = const_cast<GridSection<ValueType>&>( *this );
+    tmp.localize();
+ 
     mLocalGrid.getDistances( distances );
 
     offset = 0;
@@ -123,27 +261,44 @@ IndexType GridSection<ValueType>::getDopeVector( IndexType& offset, IndexType si
     {
         const SecDimInfo& sec = mDimension[i];
 
-        SCAI_LOG_ERROR( logger, "secDim[" << i << "] : " << sec.globalRange[0] << ":" << sec.globalRange[1] << ":" << sec.globalRange[2] 
+        SCAI_LOG_DEBUG( logger, "secDim[" << i << "] : " << sec.globalRange[0] << ":" << sec.globalRange[1] << ":" << sec.globalRange[2] 
                                  << ", is range = " << sec.isRange )
 
-        offset += sec.globalRange[0] * distances[i];
+        offset += sec.localRange[0] * distances[i];
 
-        SCAI_LOG_ERROR( logger, "offset = " << offset )
+        SCAI_LOG_DEBUG( logger, "offset = " << offset )
 
         if ( sec.isRange )
         {
-            SCAI_ASSERT_EQ_ERROR( 1, sec.globalRange[2], "stride != 1 not supported yet" )
-            sizes[ nSectionDims ] = sec.globalRange[1] - sec.globalRange[0];
-            distances[ nSectionDims] = distances[ i ];
+            if ( sec.localRange[2] == 1 )
+            {
+                sizes[ nSectionDims ] = sec.localRange[1] - sec.localRange[0];
+                distances[ nSectionDims] = distances[ i ];
+            }
+            else if ( sec.localRange[2] > 1 )
+            {
+                IndexType str = sec.localRange[2];
+                sizes[ nSectionDims ] = ( sec.localRange[1] - sec.localRange[0] + str - 1 ) / str;
+                distances[ nSectionDims] = distances[ i ] * str;
+            }
             nSectionDims++;
         }
+    }
+
+    SCAI_LOG_DEBUG( logger, "section dims = " << nSectionDims << ", offset = " << offset );
+
+    for ( IndexType k = 0; k < nSectionDims; ++k )
+    {
+        SCAI_LOG_DEBUG( logger, "size[" << k << "] = " << sizes[k] << ", distance = " << distances[k] )
     }
 
     return nSectionDims;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+
 template<typename ValueType>
-GridSection<ValueType>& GridSection<ValueType>::operator= ( const GridSection<ValueType>& other )
+void GridSection<ValueType>::binOp ( const GridSection<ValueType>& other, common::binary::BinaryOp op, bool swap )
 {
     IndexType offsetSource = 0;
     IndexType offsetTarget = 0;
@@ -163,97 +318,97 @@ GridSection<ValueType>& GridSection<ValueType>::operator= ( const GridSection<Va
         SCAI_ASSERT_EQ_ERROR( sizesSource[i], sizesTarget[i], "size mismatch for section dim = " << i )
     }
 
-    hmemo::ReadAccess<ValueType> rSourceSection( other.mGridVector.getLocalValues() );
-    hmemo::WriteAccess<ValueType> wTargetSection( mGridVector.getLocalValues() );
+    GridReadAccess<ValueType> rSource( other.mGridVector );
+    GridWriteAccess<ValueType> wTarget( mGridVector );
 
-    const ValueType* sourcePtr = rSourceSection.get() + offsetSource;
-    ValueType* targetPtr = wTargetSection.get() + offsetTarget;
+    const ValueType* sourcePtr = rSource.get() + offsetSource;
+    ValueType* targetPtr = wTarget.get() + offsetTarget;
 
-    if ( dimsSource == 3 )
-    {
-        for ( IndexType i0 = 0; i0 < sizesSource[0]; ++i0 )
-        {
-            for ( IndexType i1 = 0; i1 < sizesSource[1]; ++i1 )
-            {
-                for ( IndexType i2 = 0; i2 < sizesSource[2]; ++i2 )
-                {
-                    targetPtr[ i0 * distancesTarget[0] + i1 * distancesTarget[1] + i2 * distancesTarget[2]] = 
-                        sourcePtr[ i0 * distancesSource[0] + i1 * distancesSource[1] + i2 * distancesSource[2]];
-                }
-            }
-        }
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "section dims = " << dimsSource << " not supported yet" )
-    }
-
-    return *this;
+    utilskernel::OpenMPSection::assign( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
 }
 
+/* ---------------------------------------------------------------------------------------*/
+
 template<typename ValueType>
-GridSection<ValueType>& GridSection<ValueType>::operator= ( const ValueType other )
+template<typename OtherValueType>
+void GridSection<ValueType>::unaryOp( const GridSection<OtherValueType>& other, common::unary::UnaryOp op )
 {
-    GridWriteAccess<ValueType> wTargetSection( mGridVector );
+    IndexType offsetSource = 0;
+    IndexType offsetTarget = 0;
 
-    if ( mNDims ==  3)
+    IndexType sizesSource[SCAI_GRID_MAX_DIMENSION];
+    IndexType sizesTarget[SCAI_GRID_MAX_DIMENSION];
+    IndexType distancesSource[SCAI_GRID_MAX_DIMENSION];
+    IndexType distancesTarget[SCAI_GRID_MAX_DIMENSION];
+
+    IndexType dimsSource = other.getDopeVector( offsetSource, sizesSource, distancesSource );
+    IndexType dimsTarget = getDopeVector( offsetTarget, sizesTarget, distancesTarget );
+
+    SCAI_ASSERT_EQ_ERROR( dimsSource, dimsTarget, "section dimensions do not match" )
+
+    for ( IndexType i = 0; i < dimsSource; ++i )
     {
-        const IndexType* tRange0 = mDimension[0].globalRange;
-        const IndexType* tRange1 = mDimension[1].globalRange;
-        const IndexType* tRange2 = mDimension[2].globalRange;
-
-        std::cout << "target range 0 = " << tRange0[0] << " - " << tRange0[1] << std::endl;
-        std::cout << "target range 1 = " << tRange1[0] << " - " << tRange1[1] << std::endl;
-        std::cout << "target range 2 = " << tRange2[0] << " - " << tRange2[1] << std::endl;
-    
-        for ( IndexType i0 = tRange0[0]; i0 < tRange0[1]; i0++ )
-        {
-            for ( IndexType i1 = tRange1[0]; i1 < tRange1[1]; i1++ )
-            {
-                for ( IndexType i2 = tRange2[0]; i2 < tRange2[1]; i2++ )
-                {
-                    wTargetSection( i0, i1, i2) = other;
-                }
-            }
-        }
-    }
-    else if ( mNDims == 2 )
-    {
-        const IndexType* tRange0 = mDimension[0].globalRange;
-        const IndexType* tRange1 = mDimension[1].globalRange;
-
-        std::cout << "target range 0 = " << tRange0[0] << " - " << tRange0[1] << std::endl;
-        std::cout << "target range 1 = " << tRange1[0] << " - " << tRange1[1] << std::endl;
-
-        for ( IndexType i0 = tRange0[0]; i0 < tRange0[1]; i0++ )
-        {
-            for ( IndexType i1 = tRange1[0]; i1 < tRange1[1]; i1++ )
-            {
-                wTargetSection( i0, i1 ) = other;
-            }
-        }
-    }
-    else if ( mNDims == 1 )
-    {
-        const IndexType* tRange0 = mDimension[0].globalRange;
-
-        std::cout << "target range 0 = " << tRange0[0] << " - " << tRange0[1] << std::endl;
-
-        for ( IndexType i0 = tRange0[0]; i0 < tRange0[1]; i0++ )
-        {
-            wTargetSection( i0 ) = other;
-        }
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "only 2,3 dims are supported" )
+        SCAI_ASSERT_EQ_ERROR( sizesSource[i], sizesTarget[i], "size mismatch for section dim = " << i )
     }
 
+    GridReadAccess<OtherValueType> rSource( other.mGridVector );
+    GridWriteAccess<ValueType> wTarget( mGridVector );
+
+    const OtherValueType* sourcePtr = rSource.get() + offsetSource;
+    ValueType* targetPtr = wTarget.get() + offsetTarget;
+
+    utilskernel::OpenMPSection::unaryOp( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator= ( const GridSection<ValueType>& other )
+{
+    binOp( other, common::binary::COPY, false );
     return *this;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+
 template<typename ValueType>
-GridSection<ValueType>& GridSection<ValueType>::operator*= ( const ValueType other )
+GridSection<ValueType>& GridSection<ValueType>::operator+= ( const GridSection<ValueType>& other )
+{
+    binOp( other, common::binary::ADD, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator-= ( const GridSection<ValueType>& other )
+{
+    binOp( other, common::binary::SUB, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator*= ( const GridSection<ValueType>& other )
+{
+    binOp( other, common::binary::MULT, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator/= ( const GridSection<ValueType>& other )
+{
+    binOp( other, common::binary::DIVIDE, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void GridSection<ValueType>::binOpScalar ( const ValueType other, common::binary::BinaryOp op, bool swap )
 {
     IndexType sectionOffset = 0;
     IndexType sectionSizes[SCAI_GRID_MAX_DIMENSION];
@@ -268,31 +423,118 @@ GridSection<ValueType>& GridSection<ValueType>::operator*= ( const ValueType oth
         SCAI_LOG_ERROR( logger, "size[" << k << "] = " << sectionSizes[k] << ", distance = " << sectionDistances[k] )
     }
 
-    SCAI_ASSERT_EQ_ERROR( 3, mNDims, "other than 3 dims not supported yet" );
+    GridWriteAccess<ValueType> wGridVector( mGridVector );
 
-    GridWriteAccess<ValueType> wTargetSection( mGridVector );
+    ValueType* sectionPtr = wGridVector.get() + sectionOffset;
 
-    const IndexType* tRange0 = mDimension[0].globalRange;
-    const IndexType* tRange1 = mDimension[1].globalRange;
-    const IndexType* tRange2 = mDimension[2].globalRange;
+    utilskernel::OpenMPSection::assignScalar( sectionPtr, sectionDims, sectionSizes, sectionDistances, other, op, swap );
+}
 
-    std::cout << "target range 0 = " << tRange0[0] << " - " << tRange0[1] << std::endl;
-    std::cout << "target range 1 = " << tRange1[0] << " - " << tRange1[1] << std::endl;
-    std::cout << "target range 2 = " << tRange2[0] << " - " << tRange2[1] << std::endl;
+/* ---------------------------------------------------------------------------------------*/
 
-    for ( IndexType i0 = tRange0[0]; i0 < tRange0[1]; i0++ )
-    {
-        for ( IndexType i1 = tRange1[0]; i1 < tRange1[1]; i1++ )
-        {
-            for ( IndexType i2 = tRange2[0]; i2 < tRange2[1]; i2++ )
-            {
-                wTargetSection( i0, i1, i2) *= other;
-            }
-        }
-    }
-
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator= ( const ValueType other )
+{
+    binOpScalar( other, common::binary::COPY, false );
     return *this;
 }
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator+= ( const ValueType other )
+{
+    binOpScalar( other, common::binary::ADD, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator-= ( const ValueType other )
+{
+    binOpScalar( other, common::binary::SUB, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator*= ( const ValueType other )
+{
+    binOpScalar( other, common::binary::MULT, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+GridSection<ValueType>& GridSection<ValueType>::operator/= ( const ValueType other )
+{
+    binOpScalar( other, common::binary::DIVIDE, false );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void GridSection<ValueType>::conj( const GridSection<ValueType>& other )
+{
+    unaryOp( other, common::unary::CONJ );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& other, bool conjFlag )
+{
+    IndexType offsetSource = 0;
+    IndexType offsetTarget = 0;
+
+    IndexType sizesSource[SCAI_GRID_MAX_DIMENSION];
+    IndexType sizesTarget[SCAI_GRID_MAX_DIMENSION];
+    IndexType distancesSource[SCAI_GRID_MAX_DIMENSION];
+    IndexType distancesTarget[SCAI_GRID_MAX_DIMENSION];
+
+    IndexType dimsSource = other.getDopeVector( offsetSource, sizesSource, distancesSource );
+    IndexType dimsTarget = getDopeVector( offsetTarget, sizesTarget, distancesTarget );
+
+    SCAI_ASSERT_EQ_ERROR( 2, dimsSource, "transpose only for two-dimensional sections." )
+    SCAI_ASSERT_EQ_ERROR( 2, dimsTarget, "transpose only for two-dimensional sections." )
+
+    SCAI_ASSERT_EQ_ERROR( sizesSource[0], sizesTarget[1], "not matching for transpose" );
+    SCAI_ASSERT_EQ_ERROR( sizesSource[1], sizesTarget[0], "not matching for transpose" );
+
+    // section kernels work fine if we just switch distances of source section
+ 
+    std::swap( distancesSource[0], distancesSource[1] );
+
+    GridReadAccess<ValueType> rSource( other.mGridVector );
+    GridWriteAccess<ValueType> wTarget( mGridVector );
+
+    const ValueType* sourcePtr = rSource.get() + offsetSource;
+    ValueType* targetPtr = wTarget.get() + offsetTarget;
+
+    common::unary::UnaryOp op = conjFlag ? common::unary::CONJ : common::unary::COPY;
+
+    utilskernel::OpenMPSection::unaryOp( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+// template GridSection<double>& GridSection<double>::operator= ( const GridSection<float>& other );
+
+#define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
+    template void GridSection<TargetType>::unaryOp(           \
+            const GridSection<SourceType>& other, common::unary::UnaryOp );           \
+
+#define HARRAYUTILS_SPECIFIER( ValueType )                                      \
+    SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )
+
+SCAI_COMMON_LOOP( HARRAYUTILS_SPECIFIER, SCAI_ARRAY_TYPES_HOST )
+
+#undef HARRAYUTILS_SPECIFIER
+#undef HARRAYUTILS_SPECIFIER_LVL2
 
 /* ========================================================================= */
 /*       Template instantiations                                             */

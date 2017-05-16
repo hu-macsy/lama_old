@@ -55,7 +55,7 @@ endif ( ZLIB_FOUND )
 
 if ( PNGLIB_FOUND )
     set ( IO_CLASSES ${IO_CLASSES} PngIO )
-endif ( ZLIB_FOUND )
+endif ( PNGLIB_FOUND )
 
 scai_project (
 

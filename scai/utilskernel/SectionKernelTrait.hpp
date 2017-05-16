@@ -72,14 +72,42 @@ struct SectionKernelTrait
         typedef void ( *FuncType ) ( ValueType targetSection[],
                                      const IndexType nDims,
                                      const IndexType sizes[],
-                                     const IndexType targetDifferences[],
+                                     const IndexType targetDistances[],
                                      const ValueType sourceSection[],
-                                     const IndexType sourceDifferences[],
+                                     const IndexType sourceDistances[],
                                      const common::binary::BinaryOp op,
                                      const bool swapOperands );
         static const char* getId()
         {
             return "Section.assign";
+        }
+    };
+
+    /** @brief Trait for conversion kernel
+     *
+     *  @tparam SourceValueType specifies the value type used in the reduction.
+     *  @tparam TargetValueType specifies the value type used in the reduction.
+     */
+    template <typename TargetValueType, typename SourceValueType>
+    struct unaryOp
+    {
+        /** @brief assign one section to another
+         *
+         *  \code
+         *     targetSection = unaryOp( sourceSection );
+         *  \endcode
+         */
+        typedef void ( *FuncType ) ( TargetValueType targetSection[],
+                                     const IndexType nDims,
+                                     const IndexType sizes[],
+                                     const IndexType targetDistances[],
+                                     const SourceValueType sourceSection[],
+                                     const IndexType sourceDistances[],
+                                     const common::unary::UnaryOp op );
+
+        static const char* getId()
+        {
+            return "Section.unaryOp";
         }
     };
 
@@ -99,7 +127,7 @@ struct SectionKernelTrait
         typedef void ( *FuncType ) ( ValueType section[],
                                      const IndexType nDims,
                                      const IndexType sizes[],
-                                     const IndexType differences[],
+                                     const IndexType distances[],
                                      ValueType val,
                                      const common::binary::BinaryOp op,
                                      const bool swapOperands );
@@ -127,7 +155,7 @@ struct SectionKernelTrait
         typedef void ( *FuncType ) ( ValueType section[],
                                      const IndexType nDims,
                                      const IndexType sizes[],
-                                     const IndexType differences[],
+                                     const IndexType distances[],
                                      const common::unary::UnaryOp op );
         static const char* getId()
         {

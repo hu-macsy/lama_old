@@ -66,9 +66,9 @@ public:
         ValueType targetSection[],
         const IndexType nDims,
         const IndexType sizes[],
-        const IndexType targetDifferences[],
+        const IndexType targetDistances[],
         const ValueType sourceSection[],
-        const IndexType sourceDifferences[],
+        const IndexType sourceDistances[],
         const common::binary::BinaryOp op,
         const bool swapOperands );
 
@@ -79,10 +79,22 @@ public:
         ValueType section[],
         const IndexType nDims,
         const IndexType sizes[],
-        const IndexType differences[],
+        const IndexType distances[],
         ValueType val, 
         const common::binary::BinaryOp op,
         const bool swapOperands );
+
+    /** OpenMP implementation on host for SectionKernelTrait::unaryOp */
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void unaryOp( 
+        TargetValueType targetSection[],
+        const IndexType nDims,
+        const IndexType sizes[],
+        const IndexType targetDistances[],
+        const SourceValueType sourceSection[],
+        const IndexType sourceDistances[],
+        const common::unary::UnaryOp op );
 
     /** OpenMP implementation on host for SectionKernelTrait::unary */
 
@@ -91,13 +103,19 @@ public:
         ValueType section[],
         const IndexType nDims,
         const IndexType sizes[],
-        const IndexType differences[],
+        const IndexType distances[],
         const common::unary::UnaryOp op );
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     template<typename ValueType>
     struct ArrayKernels
+    {
+        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
+    };
+
+    template<typename ValueType, typename OtherValueType>
+    struct BinOpKernels
     {
         static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
