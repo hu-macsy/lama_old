@@ -129,6 +129,13 @@ public:
 
     GridSection& operator/= ( const ValueType other );
 
+    /** Get value of a section with section rank == 0 
+     *
+     *  On a distributed grid vector this operation implies broadcast
+     *  of the value to all other processors.
+     */
+    ValueType get() const;
+
     /** Transpose for two-dimensional sections */
 
     void assignTranspose( const GridSection<ValueType>& other, bool conjFlag );

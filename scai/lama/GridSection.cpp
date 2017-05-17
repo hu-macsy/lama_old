@@ -363,6 +363,28 @@ void GridSection<ValueType>::unaryOp( const GridSection<OtherValueType>& other, 
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+ValueType GridSection<ValueType>::get() const
+{
+    // ToDo: not yet for distributed grids
+
+    SCAI_ASSERT_ERROR( mGridVector.getDistribution().isReplicated(), "get not yet supported for distributed vectors." )
+
+    IndexType offset;
+    IndexType sizes[SCAI_GRID_MAX_DIMENSION];
+    IndexType distances[SCAI_GRID_MAX_DIMENSION];
+
+    IndexType rank = getDopeVector( offset, sizes, distances );
+
+    SCAI_ASSERT_EQ_ERROR( 0, rank, "section must have rank 0 to get the value" )
+
+    const utilskernel::LArray<ValueType>& vals = mGridVector.getLocalValues();
+
+    return vals[ offset ];
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 GridSection<ValueType>& GridSection<ValueType>::operator= ( const GridSection<ValueType>& other )
 {
     binOp( other, common::binary::COPY, false );

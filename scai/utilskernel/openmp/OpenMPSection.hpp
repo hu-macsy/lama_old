@@ -106,6 +106,18 @@ public:
         const IndexType distances[],
         const common::unary::UnaryOp op );
 
+private:
+
+    /** optimized version of assign with op == COPY */
+
+    template <typename ValueType>
+    static void copy2(
+        ValueType targetSection[],
+        const IndexType sizes[],
+        const IndexType targetDistances[],
+        const ValueType sourceSection[],
+        const IndexType sourceDistances[] );
+
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     template<typename ValueType>

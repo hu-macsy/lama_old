@@ -57,6 +57,29 @@ SCAI_LOG_DEF_LOGGER( OpenMPSection::logger, "OpenMP.Section" )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPSection::copy2( 
+    ValueType targetSection[],
+    const IndexType sizes[],
+    const IndexType targetDistances[],
+    const ValueType sourceSection[],
+    const IndexType sourceDistances[] )
+{
+    SCAI_REGION( "OpenMP.Section.copy2" )
+
+    #pragma omp parallel for
+    for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+    {
+        for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+        {
+            targetSection[i0 * targetDistances[0] + i1 * targetDistances[1]] = 
+                sourceSection[i0 * sourceDistances[0] + i1 * sourceDistances[1]];
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPSection::assign( 
     ValueType targetSection[],
     const IndexType nDims,
@@ -67,10 +90,10 @@ void OpenMPSection::assign(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    SCAI_REGION( "OpenMP.Section.assign" )
-
     if ( nDims == 0 )
     {
+        SCAI_REGION( "OpenMP.Section.assign0" )
+
         if ( swapOperands )
         {
             *targetSection = applyBinary( *sourceSection, op, *targetSection );
@@ -82,6 +105,9 @@ void OpenMPSection::assign(
     }
     else if ( nDims == 1 )
     {
+        SCAI_REGION( "OpenMP.Section.assign1" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             ValueType& target = targetSection[i0 * targetDistances[0]];
@@ -98,6 +124,15 @@ void OpenMPSection::assign(
     }
     else if ( nDims == 2 )
     {
+        if ( op == common::binary::COPY && !swapOperands )
+        {
+            copy2( targetSection, sizes, targetDistances, sourceSection, sourceDistances );
+            return;
+        }
+
+        SCAI_REGION( "OpenMP.Section.assign2" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -118,6 +153,9 @@ void OpenMPSection::assign(
     }
     else if ( nDims == 3 )
     {
+        SCAI_REGION( "OpenMP.Section.assign3" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -143,6 +181,9 @@ void OpenMPSection::assign(
     }
     else if ( nDims == 4 )
     {
+        SCAI_REGION( "OpenMP.Section.assign4" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -187,14 +228,17 @@ void OpenMPSection::unaryOp(
     const IndexType sourceDistances[],
     const common::unary::UnaryOp op )
 {
-    SCAI_REGION( "OpenMP.Section.assign" )
-
     if ( nDims == 0 )
     {
+        SCAI_REGION( "OpenMP.Section.unary0" )
+
         *targetSection = static_cast<TargetValueType>( applyUnary( op, *sourceSection ) );
     }
     else if ( nDims == 1 )
     {
+        SCAI_REGION( "OpenMP.Section.unary1" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             TargetValueType& target = targetSection[i0 * targetDistances[0]];
@@ -205,6 +249,9 @@ void OpenMPSection::unaryOp(
     }
     else if ( nDims == 2 )
     {
+        SCAI_REGION( "OpenMP.Section.unary2" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -218,6 +265,9 @@ void OpenMPSection::unaryOp(
     }
     else if ( nDims == 3 )
     {
+        SCAI_REGION( "OpenMP.Section.unary3" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -236,6 +286,9 @@ void OpenMPSection::unaryOp(
     }
     else if ( nDims == 4 )
     {
+        SCAI_REGION( "OpenMP.Section.unary4" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -273,10 +326,17 @@ void OpenMPSection::assignScalar(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    SCAI_REGION( "OpenMP.Section.assignScalar" )
-
-    if ( nDims == 1 )
+    if ( nDims == 0 )
     {
+        SCAI_REGION( "OpenMP.Section.assignScalar0" )
+
+        *section = swapOperands ? applyBinary( val, op, *section ) : applyBinary( *section, op, val );
+    }
+    else if ( nDims == 1 )
+    {
+        SCAI_REGION( "OpenMP.Section.assignScalar1" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             ValueType& target = section[i0 * distances[0]];
@@ -285,6 +345,9 @@ void OpenMPSection::assignScalar(
     }
     else if ( nDims == 2 )
     {
+        SCAI_REGION( "OpenMP.Section.assignScalar2" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -296,6 +359,9 @@ void OpenMPSection::assignScalar(
     }
     else if ( nDims == 3 )
     {
+        SCAI_REGION( "OpenMP.Section.assignScalar3" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -310,6 +376,9 @@ void OpenMPSection::assignScalar(
     }
     else if ( nDims == 4 )
     {
+        SCAI_REGION( "OpenMP.Section.assignScalar4" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
@@ -341,10 +410,11 @@ void OpenMPSection::unary(
     const IndexType distances[],
     const common::unary::UnaryOp op )
 {
-    SCAI_REGION( "OpenMP.Section.assignScalar" )
-
     if ( nDims == 1 )
     {
+        SCAI_REGION( "OpenMP.Section.applyUnary1" )
+
+        #pragma omp parallel for
         for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
         {
             ValueType& target = section[i0 * distances[0]];
