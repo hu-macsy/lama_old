@@ -223,7 +223,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     mGrid.getDistances( gridDistances );
 
-    mStencil.getWidths( lb, ub );
+    mStencil.getWidth( lb, ub );
 
     common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
 

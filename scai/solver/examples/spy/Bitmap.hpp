@@ -37,6 +37,8 @@
 #include <scai/lama.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/throw.hpp>
+#include <scai/common/Math.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 #include <scai/lama/GridWriteAccess.hpp>
 #include <scai/lama/io/ImageIO.hpp>
@@ -49,17 +51,18 @@ public:
 
     /** Generate an empty bitmap of a certain size.
      *
-     *  @param[in] w width of the bitmap
-     *  @param[in] h height of the bitmap
-     *  @param[in] s scaling, e.g, 1, 2, .. 10
-     *
-     *  One pixel corresponds will be presented by s x s pixels in the final written bitmap.
+     *  @param[in] width of the bitmap
+     *  @param[in] height of the bitmap
      */
 
     Bitmap( const IndexType width, const IndexType height ) :
 
         mPixelData( lama::GridVector<float>( common::Grid2D( width, height ), -10.0 ) )
     {
+        // set min and max with the neutral elements
+
+        mMinVal = common::TypeTraits<float>::getMax();
+        mMaxVal = common::TypeTraits<float>::getMin();
     }
 
     ~Bitmap()
@@ -78,9 +81,14 @@ public:
         {
             for ( IndexType j = ia[i]; j < ia[i + 1]; ++j )
             {
+                float matrixValue = static_cast<float>( values[j] );
+
                 const IndexType iRow = static_cast<IndexType>( i * multRow );
                 const IndexType iCol = static_cast<IndexType>( ja[j] * multCol );
-                wPixel( iRow, iCol ) = static_cast<float>( values[j] );
+                wPixel( iRow, iCol ) = matrixValue;
+
+                mMinVal = common::Math::min( mMinVal, matrixValue );
+                mMaxVal = common::Math::max( mMaxVal, matrixValue );
             }
         }
 
@@ -102,10 +110,13 @@ public:
 
     void write( const std::string outFileName )
     {
-        lama::ImageIO::writeSC( mPixelData, outFileName );
+        lama::ImageIO::writeSC( mPixelData, mMinVal, mMaxVal, outFileName );
     }
 
 private:
 
     lama::GridVector<float> mPixelData;
+
+    float mMinVal;
+    float mMaxVal;
 };

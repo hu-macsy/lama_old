@@ -46,35 +46,47 @@ int main( int argc, char** argv )
 {
     CSRStorage<ValueType> matrix;
 
-    if ( argc < 2 )
+    if ( argc < 3 )
     {
         std::cerr << "Missing filename for input matrix" << std::endl;
-        std::cerr << "spy matrix_filename [ width [ height [ scale ] ] ]" << std::endl;
+        std::cerr << "spy matrix_filename bitmap_filename [ width [ height ] ]" << std::endl;
         exit( 1 );
     }
 
-    const char* filename = argv[1];
+    std::string matrixFileName( argv[1] );
+    std::string imageFileName( argv[2] );
 
-    matrix.readFromFile( filename );
+    matrix.readFromFile( matrixFileName );
 
     IndexType height = matrix.getNumRows();
     IndexType width = matrix.getNumColumns();
 
-    while ( width > 2048 || height > 2048 )
-    {
-        width = width / 2;
-        height = height / 2;
-    }
-
-    if ( argc > 2 )
-    {
-        sscanf( argv[2], "%d",  &width );
-        height = width;
-    }
-
     if ( argc > 3 )
     {
-        sscanf( argv[3], "%d",  &height );
+        std::istringstream input( argv[3] );
+        input >> width;
+        height = width;
+    
+        if ( argc > 4 )
+        {
+            std::istringstream input( argv[3] );
+            input >> height;
+        }
+
+        SCAI_ASSERT_GE_ERROR( matrix.getNumRows(), width, "width cannot be greater than #cols in matrix" );
+        SCAI_ASSERT_GE_ERROR( matrix.getNumColumns(), height, "height cannot be greater than #rows in matrix" );
+    }
+
+    else
+    {
+        height = matrix.getNumRows();
+        width = matrix.getNumColumns();
+
+        while ( width > 2048 || height > 2048 )
+        {
+            width = width / 2;
+            height = height / 2;
+        }
     }
 
     const HArray<IndexType>& ia = matrix.getIA();
@@ -86,9 +98,12 @@ int main( int argc, char** argv )
     ReadAccess<ValueType> csrValues( values );
 
     std::cout << "Write png of size " << height << " x " << width << std::endl;
+
     Bitmap pic( height, width );
     pic.drawCSR( matrix.getNumRows(), matrix.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-    const std::string out_filename = "lama.png";
-    pic.write( out_filename );
-    std::cout << "png files has been written as " << out_filename << std::endl;
+    pic.write( imageFileName );
+
+    std::cout << "Done: written matrix " << matrixFileName 
+              << " into image file " << imageFileName 
+              << ", " << width << " x " << height << std::endl;
 }

@@ -95,7 +95,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
     IndexType lb[ SCAI_GRID_MAX_DIMENSION ];
     IndexType ub[ SCAI_GRID_MAX_DIMENSION ];
 
-    stencil.getWidths( lb, ub );
+    stencil.getWidth( lb, ub );
 
     const common::Grid& localGrid  = gridDist.getLocalGrid();
     const common::Grid& globalGrid = gridDist.getGlobalGrid();
