@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementation of general utilities with OpenMP
+ * @brief Implementation of kernel routines for sections with OpenMP
  * @author Thomas Brandes
- * @date 02.07.2012
+ * @date 15.05.2017
  */
 
 #pragma once
@@ -53,7 +53,7 @@ namespace scai
 namespace utilskernel
 {
 
-/** General utilities of the LAMA Interface implemented in OpenMP  */
+/** Copy and operations on sections implemented in OpenMP  */
 
 class COMMON_DLL_IMPORTEXPORT OpenMPSection
 {

@@ -37,7 +37,9 @@
 scai_project(
 
     CUDA_CLASSES
+
         CUDAUtils
+        CUDASection
         
     ADD_PARENT_SCOPE
 )

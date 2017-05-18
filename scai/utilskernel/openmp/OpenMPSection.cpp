@@ -228,6 +228,9 @@ void OpenMPSection::unaryOp(
     const IndexType sourceDistances[],
     const common::unary::UnaryOp op )
 {
+    SCAI_LOG_INFO( logger, "unaryOp<" << common::TypeTraits<TargetValueType>::id() 
+                            << ", " << common::TypeTraits<SourceValueType>::id() 
+                            << ">, #dims = " << nDims << ", op = " << op )
     if ( nDims == 0 )
     {
         SCAI_REGION( "OpenMP.Section.unary0" )
@@ -419,6 +422,20 @@ void OpenMPSection::unary(
         {
             ValueType& target = section[i0 * distances[0]];
             target = applyUnary( op, target );
+        }
+    }
+    else if ( nDims == 2 )
+    {
+        SCAI_REGION( "OpenMP.Section.applyUnary2" )
+
+        #pragma omp parallel for
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                ValueType& target = section[i0 * distances[0] + i1 * distances[1]];
+                target = applyUnary( op, target );
+            }
         }
     }
     else
