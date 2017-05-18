@@ -259,7 +259,11 @@ static void computeColor( double color[3], const double value )
 }
 
 template<typename ValueType>
-void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string& outputFileName )
+void ImageIO::writeSC( 
+    const GridVector<ValueType>& arrayData, 
+    const ValueType minVal,
+    const ValueType maxVal,
+    const std::string& outputFileName )
 {
     SCAI_LOG_ERROR( logger, "write scaled array data = " << arrayData << " to file " << outputFileName )
 
@@ -270,19 +274,6 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
     common::Grid3D imageGrid( arrayGrid.size(0), arrayGrid.size(1), 3 );
 
     GridVector<float> imageData( imageGrid, 0 );
-
-    Scalar min = arrayData.min();
-    SCAI_LOG_ERROR( logger, "array min = " << min )
-    ValueType minVal = min.getValue<ValueType>();
-    Scalar max = arrayData.max();
-    SCAI_LOG_ERROR( logger, "array max = " << max )
-    ValueType maxVal = max.getValue<ValueType>();
-
-    if ( minVal == maxVal )
-    {
-        minVal -= 0.01;
-        maxVal += 0.01;
-    }
 
     ValueType scale = maxVal - minVal;
 
@@ -299,11 +290,23 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
             for ( IndexType j = 0; j < arrayGrid.size( 1 ); ++j )
             {
                 ValueType val = rArray( i, j );
-                ValueType scaledVal = ( val - minVal ) / scale;  // val in [0,1]
 
                 double color[3];
 
-                computeColor( color, scaledVal ); 
+                if ( val < minVal || val > maxVal )
+
+                {   // take grey as background color
+                    color[0] = 0.8;
+                    color[1] = 0.8;
+                    color[2] = 0.8;
+                }
+                else
+                {
+                    // interpolate color by color table
+
+                    ValueType scaledVal = ( val - minVal ) / scale;  // val in [0,1]
+                    computeColor( color, scaledVal ); 
+                }
 
                 wImage( i, j, 0 ) = color[ 0 ] * 255.0 + 0.5;
                 wImage( i, j, 1 ) = color[ 1 ] * 255.0 + 0.5;
@@ -313,6 +316,30 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
     }
 
     ImageIO::write( imageData, outputFileName );
+}
+
+// instantiate methods for supported array/vector types
+
+template<typename ValueType>
+void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string& outputFileName )
+{
+    // do the scaling via minimal and maximal value of the array data
+
+    Scalar min = arrayData.min();
+    Scalar max = arrayData.max();
+
+    ValueType minVal = min.getValue<ValueType>();
+    ValueType maxVal = max.getValue<ValueType>();
+
+    SCAI_LOG_ERROR( logger, "arrayData = " << arrayData << " has min = " << minVal << ", max = " << maxVal )
+
+    if ( minVal == maxVal )
+    {
+        minVal -= 0.01;
+        maxVal += 0.01;
+    }
+
+    writeSC( arrayData, minVal, maxVal, outputFileName );
 }
 
 // instantiate methods for supported array/vector types

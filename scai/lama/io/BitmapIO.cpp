@@ -238,14 +238,18 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& gri
     IndexType width   = grid.size( 1 );
     IndexType nColor  = grid.size( 2 );
 
+    SCAI_ASSERT_EQ_ERROR( 3, nColor, "only RGB images are supported" )
+
     IndexType alignSize    = 4;
-    IndexType widthAligned = ( ( width + alignSize ) / alignSize ) * alignSize;
+    IndexType widthAligned = ( ( width * nColor  + alignSize - 1 ) / alignSize ) * alignSize;
+
+    SCAI_LOG_ERROR( logger, "row size = " << width * nColor << ", aligned = " << widthAligned )
 
     BITMAPFILEHEADER fileHeader;
     BITMAPINFOHEADER infoHeader;
 
     IndexType headerBytes = sizeof( fileHeader ) + sizeof( infoHeader );
-    IndexType imageBytes  = widthAligned * height * nColor;
+    IndexType imageBytes  = widthAligned * height;
 
     fileHeader.bfType     = 0x4D42;
     fileHeader.bfSize     = imageBytes + headerBytes;
@@ -277,8 +281,8 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& gri
         {
             // BMP has data from top to bottom, but we need the inverse
 
-            IndexType bmpPos = 3 * ( i * widthAligned + j );
-            IndexType imgPos = 3 * ( ( height - 1 - i ) * width + j );
+            IndexType bmpPos = i * widthAligned + nColor * j ;
+            IndexType imgPos = nColor * ( ( height - 1 - i ) * width + j );
 
             tmpData[ bmpPos   ] = static_cast<unsigned char>( rPixelData[imgPos + 2] );
             tmpData[ bmpPos + 1 ] = static_cast<unsigned char>( rPixelData[imgPos + 1] );
