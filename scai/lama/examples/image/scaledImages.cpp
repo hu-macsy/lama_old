@@ -49,9 +49,9 @@ int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
 
-    if ( argc != 1 )
+    if ( argc < 2 )
     {
-        std::cout << "Wrong call, please use : " << argv[0] << std::endl;
+        std::cout << "Wrong call, please use : " << argv[0] << " outputFileName [minval] [maxval]" << std::endl;
         return -1;
     }
 
@@ -72,9 +72,40 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    std::string outfileName = "array.png";
+    std::string outfileName( argv[1] );
 
-    ImageIO::writeSC( arrayData, outfileName );
+    if ( argc == 2 )
+    {
+        // uses autoscaling 
+
+        ImageIO::writeSC( arrayData, outfileName );
+    }
+    else
+    {
+        float minVal = arrayData.min().getValue<float>();
+        float maxVal = arrayData.max().getValue<float>();
+
+        float scaleMin = minVal;
+        float scaleMax = maxVal;
+        
+        if ( argc > 2 )
+        {
+            std::istringstream input( argv[2] );
+            input >> scaleMin;
+            std::cout << "reset scaleMin = " << scaleMin << std::endl;
+        }
+
+        if ( argc > 3 )
+        {
+            std::istringstream input( argv[3] );
+            input >> scaleMax;
+            std::cout << "reset scaleMax = " << scaleMax << std::endl;
+        }
+
+        std::cout << "Scale " << scaleMin << " - " << scaleMax << " instead of default " << minVal << " x " << maxVal << std::endl;
+
+        ImageIO::writeSC( arrayData, scaleMin, scaleMax, outfileName );
+    }
 
     std::cout << "written scaled image of size " << M << " x " << N << " to file " << outfileName << std::endl;
 }
