@@ -52,6 +52,12 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
 
         // check if all strings are correct
 
+        if ( type == unary::COPY )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "COPY" );
+            count++;
+        }
+
         if ( type == unary::CONJ )
         {
             BOOST_CHECK_EQUAL( s.str(), "CONJ" );

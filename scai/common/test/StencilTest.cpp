@@ -79,6 +79,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest1, ValueType, scai_numeric_test_type
     // only 8 points are relevant 
 
     BOOST_CHECK_EQUAL( 8, stencil.nPoints() );
+
+    IndexType lb[1];
+    IndexType ub[1];
+
+    stencil.getWidth( lb, ub );
+
+    BOOST_CHECK_EQUAL( 3, lb[0] );
+    BOOST_CHECK_EQUAL( 4, ub[0] );
+
+    BOOST_REQUIRE_EQUAL( 8, stencil.getMatrixSize() );
+
+    ValueType matrix[8];
+
+    stencil.getMatrix( matrix );
+
+    for ( IndexType i = 0; i < 8; ++i )
+    {
+        BOOST_CHECK_CLOSE( FD8[i+1], static_cast<double>( matrix[i] ), 0.1 );
+    }
 }
 
 /* --------------------------------------------------------------------- */
@@ -97,6 +116,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest2, ValueType, scai_array_test_types 
     // only 3 points are relevant 
 
     BOOST_CHECK_EQUAL( 3, stencil.nPoints() );
+
+    IndexType lb[2];
+    IndexType ub[2];
+
+    stencil.getWidth( lb, ub );
+
+    BOOST_CHECK_EQUAL( 2, lb[0] );
+    BOOST_CHECK_EQUAL( 0, lb[1] );
+    BOOST_CHECK_EQUAL( 0, ub[0] );
+    BOOST_CHECK_EQUAL( 0, ub[1] );
 }
 
 /* --------------------------------------------------------------------- */
@@ -113,6 +142,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest3, ValueType, scai_array_test_types 
     // all points are relevant 
 
     BOOST_CHECK_EQUAL( 27, stencil.nPoints() );
+
+    // and it is the same as the default 27 point stencil
+
+    Stencil3D<ValueType> stencil27( 27 );
+    BOOST_CHECK_EQUAL( stencil, stencil27 );
 }
 
 /* --------------------------------------------------------------------- */

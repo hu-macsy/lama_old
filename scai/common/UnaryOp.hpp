@@ -140,6 +140,8 @@ inline IndexType applyUnary( const unary::UnaryOp op, const IndexType& x )
 {
     switch ( op )
     {
+        case unary::COPY:
+            return x;
         case unary::CONJ:
             return x;
         case unary::ABS:
