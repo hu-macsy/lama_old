@@ -55,8 +55,8 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    const IndexType M = 1920;
-    const IndexType N = 1024;
+    const IndexType M = 1024;
+    const IndexType N = 1920;
 
     GridVector<float> arrayData( common::Grid2D( M, N ), 0 );
 
@@ -67,10 +67,14 @@ int main( int argc, const char* argv[] )
         {
             for ( IndexType j = 0; j < N; ++j )
             {
-                wArray( i, j ) = static_cast<float>( M + N );
+                wArray( i, j ) = static_cast<float>( i + j );
             }
         }
     }
 
-    ImageIO::writeSC( arrayData, "array.png" );
+    std::string outfileName = "array.png";
+
+    ImageIO::writeSC( arrayData, outfileName );
+
+    std::cout << "written scaled image of size " << M << " x " << N << " to file " << outfileName << std::endl;
 }
