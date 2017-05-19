@@ -92,62 +92,7 @@ public:
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
 };
-
-/** Metaprogramming structure to call a routine for each type in a typelist 
- *
- *  This struct should be used by all derived classes.
- */
-
-template<class Derived, typename TList>
-struct ImageIOWrapper;
-
-/*
- * Termination
- */
-template<class Derived>
-struct ImageIOWrapper<Derived, common::mepr::NullType>
-{
-    static void write( Derived&, const hmemo::_HArray& data, const common::Grid&, const std::string& )
-    {
-        COMMON_THROWEXCEPTION( "write " << data << " unsupported, unknown type." )
-    }
-
-    static void read( Derived&, hmemo::_HArray& data, common::Grid&, const std::string& )
-    {
-        COMMON_THROWEXCEPTION( "read " << data << " unsupported, unknown type." )
-    }
-};
-
-template<class Derived, typename ValueType, typename TailTypes>
-struct ImageIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
-{
-    static void write( Derived& io, const hmemo::_HArray& data, const common::Grid& grid, const std::string& fileName )
-    {
-        if ( data.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.writeImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( data ), grid, fileName );
-        }
-        else
-        {
-            ImageIOWrapper<Derived, TailTypes>::write( io, data, grid, fileName );
-        }
-    }
-
-    static void read( Derived& io, hmemo::_HArray& data, common::Grid& grid, const std::string& fileName )
-    {
-        if ( data.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.readImpl( reinterpret_cast<hmemo::HArray<ValueType>& >( data ), grid, fileName );
-        }
-        else
-        {
-            ImageIOWrapper<Derived, TailTypes>::read( io, data, grid, fileName );
-        }
-    }
-};
-
 
 } /* end namespace lama */
 

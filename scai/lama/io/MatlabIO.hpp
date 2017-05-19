@@ -151,13 +151,13 @@ public:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
-    /** Implementation of virtual routine ImageIO::read for this format */
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
 
-    void read( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
 
-    /** Implementation of virtual routine ImageIO::write for this format */
+    /** Implementation of writing array with grid information */
 
-    void write( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
 
     /** Typed version of BitmapIO::read */
 

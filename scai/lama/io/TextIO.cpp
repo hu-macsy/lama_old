@@ -261,6 +261,18 @@ void TextIO::readArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void TextIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
+    }
+
+    CRTPFileIO<TextIO>::writeArray( data, outputFileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void TextIO::readSparseImpl(
     IndexType& size,

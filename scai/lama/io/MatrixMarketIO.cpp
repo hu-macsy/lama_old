@@ -1291,6 +1291,18 @@ void MatrixMarketIO::readStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void MatrixMarketIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to Matrix Market file" )
+    }
+
+    CRTPFileIO<MatrixMarketIO>::writeArray( data, outputFileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
 }  // lama
 
 }  // scai

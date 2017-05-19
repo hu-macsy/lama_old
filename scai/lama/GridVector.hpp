@@ -200,10 +200,6 @@ public:
 
     using DenseVector<ValueType>::operator=;
 
-    /** Reads the shape and data from a file. */
-
-    void readFromFile( const std::string& inputFileName );
-
     GridSection<ValueType> operator() ( const Range& r1 )
     {
         return GridSection<ValueType>( *this, r1 );
@@ -223,6 +219,22 @@ public:
     {
         return GridSection<ValueType>( *this, r1, r2, r3, r4 );
     }
+
+    /** Override of DenseVector::writeLocalToFile 
+     *
+     *  In contrary to DenseVector this method tries also to save the information about the grid shape
+     */
+    virtual void writeLocalToFile(
+        const std::string& fileName,
+        const std::string& fileType,
+        const common::scalar::ScalarType dataType,
+        const FileIO::FileMode fileMode ) const;
+
+    /** Override of Vector::readLocalFromFile 
+     *
+     *  This method reads the local part of a grid vector and tries to read also the shape.
+     */
+    virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
 };
 
 } /* end namespace lama */

@@ -443,6 +443,19 @@ void PETScIO::readStorageImpl(
     }
 }
 
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "size of array does not match the grid size" )
+
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to PETSc file" )
+    }
+
+    CRTPFileIO<PETScIO>::writeArray( data, outputFileName );
+}
 
 /* --------------------------------------------------------------------------------- */
 

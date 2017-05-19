@@ -35,6 +35,7 @@
 #include <scai/lama/GridVector.hpp>
 
 #include <scai/lama/io/PngIO.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
 
 #include<png.h>
 #include<fstream>
@@ -227,12 +228,12 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, 
 
 void PngIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
-    ImageIOWrapper<PngIO, SCAI_TYPELIST( float, double )>::read( ( PngIO& ) *this, data, grid, inputFileName );
+    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::read( ( PngIO& ) *this, data, grid, inputFileName );
 }
 
 void PngIO::write( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
-    ImageIOWrapper<PngIO, SCAI_TYPELIST( float, double )>::write( ( PngIO& ) *this, data, grid, outputFileName );
+    IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::write( ( PngIO& ) *this, data, grid, outputFileName );
 }
 
 /* ------------------------------------------------------------------------------------ */

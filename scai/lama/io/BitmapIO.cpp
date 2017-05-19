@@ -35,6 +35,7 @@
 #include <scai/lama/GridVector.hpp>
 
 #include <scai/lama/io/BitmapIO.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
 
 #include<png.h>
 #include<fstream>
@@ -302,12 +303,12 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& gri
 
 void BitmapIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
-    ImageIOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::read( ( BitmapIO& ) *this, data, grid, inputFileName );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::read( ( BitmapIO& ) *this, data, grid, inputFileName );
 }
 
 void BitmapIO::write( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
-    ImageIOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::write( ( BitmapIO& ) *this, data, grid, outputFileName );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::write( ( BitmapIO& ) *this, data, grid, outputFileName );
 }
 
 

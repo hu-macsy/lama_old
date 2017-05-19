@@ -35,6 +35,7 @@
 #pragma once
 
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
 
 #include <cstdio>
@@ -116,151 +117,6 @@ public:
 };
 
 /* --------------------------------------------------------------------------------- */
-/*  Metaprogramming for different Value Types                                        */
-/* --------------------------------------------------------------------------------- */
-
-/** Metaprogramming structure to call a routine for each type in a typelist */
-
-template<class Derived, typename TList>
-struct FileIOWrapper;
-
-/*
- * Termination
- */
-template<class Derived>
-struct FileIOWrapper<Derived, common::mepr::NullType>
-{
-    static void writeStorageImpl( Derived&, const _MatrixStorage& storage, const std::string& )
-    {
-        COMMON_THROWEXCEPTION( "writeStorage " << storage << " unsupported, unknown type." )
-    }
-
-    static void readStorageImpl( Derived&, _MatrixStorage& storage, const std::string&, const IndexType, const IndexType )
-    {
-        COMMON_THROWEXCEPTION( "readStorage " << storage << " unsupported, unknown type." )
-    }
-
-    static void writeArrayImpl( Derived&, const hmemo::_HArray& array, const std::string& )
-    {
-        COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
-    }
-
-    static void writeSparseImpl( Derived&, const IndexType, const hmemo::HArray<IndexType>&, const hmemo::_HArray& array, const std::string& )
-    {
-        COMMON_THROWEXCEPTION( "writeArray " << array << " unsupported, unknown type." )
-    }
-
-    static void readArrayImpl( Derived&, hmemo::_HArray& array, const std::string&, const IndexType, const IndexType )
-    {
-        COMMON_THROWEXCEPTION( "readArray " << array << " unsupported, unknown type." )
-    }
-
-    static void readSparseImpl( Derived&, IndexType&, hmemo::HArray<IndexType>&, hmemo::_HArray& array, const std::string& )
-    {
-        COMMON_THROWEXCEPTION( "readSparse unsupported, " << array.getValueType() << " not in SCAI_ARRAY_TYPES"  )
-    }
-};
-
-/*
- * Step n
- */
-template<class Derived, typename ValueType, typename TailTypes>
-struct FileIOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
-{
-    static void writeStorageImpl( Derived& io, const _MatrixStorage& storage, const std::string& fileName )
-    {
-        if ( storage.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.writeStorageImpl( reinterpret_cast<const MatrixStorage<ValueType>& >( storage ), fileName );
-        }
-        else
-        {
-            FileIOWrapper<Derived, TailTypes>::writeStorageImpl( io, storage, fileName );
-        }
-    }
-
-    static void readStorageImpl(
-        Derived& io,
-        _MatrixStorage& storage,
-        const std::string& fileName,
-        const IndexType offsetRow,
-        const IndexType nRows )
-    {
-        if ( storage.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.readStorageImpl( reinterpret_cast< MatrixStorage<ValueType>& >( storage ), fileName, offsetRow, nRows );
-        }
-        else
-        {
-            FileIOWrapper<Derived, TailTypes>::readStorageImpl( io, storage, fileName, offsetRow, nRows );
-        }
-    }
-
-    static void writeArrayImpl( Derived& io, const hmemo::_HArray& array, const std::string& fileName )
-    {
-        if ( array.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.writeArrayImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( array ), fileName );
-        }
-        else
-        {
-            FileIOWrapper<Derived, TailTypes>::writeArrayImpl( io, array, fileName );
-        }
-    }
-
-    static void writeSparseImpl( 
-        Derived& io, 
-        const IndexType size, 
-        const hmemo::HArray<IndexType>& indexes, 
-        const hmemo::_HArray& values, 
-        const std::string& fileName )
-    {
-        if ( values.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.writeSparseImpl( size, indexes, reinterpret_cast<const hmemo::HArray<ValueType>& >( values ), fileName );
-        }
-        else
-        {
-            FileIOWrapper<Derived, TailTypes>::writeSparseImpl( io, size, indexes, values, fileName );
-        }
-    }
-
-    static void readArrayImpl(
-        Derived& io,
-        hmemo::_HArray& array,
-        const std::string& fileName,
-        const IndexType offset,
-        const IndexType n )
-    {
-        if ( array.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.readArrayImpl( reinterpret_cast< hmemo::HArray<ValueType>& >( array ), fileName, offset, n );
-        }
-        else
-        {
-            FileIOWrapper<Derived, TailTypes>::readArrayImpl( io, array, fileName, offset, n );
-        }
-    }
-
-    static void readSparseImpl(
-        Derived& io,
-        IndexType& size, 
-        hmemo::HArray<IndexType>& indexes, 
-        hmemo::_HArray& values, 
-        const std::string& fileName )
-    {
-        if ( values.getValueType() == common::getScalarType<ValueType>() )
-        {
-            io.readSparseImpl( size, indexes, reinterpret_cast< hmemo::HArray<ValueType>& >( values ), fileName );
-        }
-        else
-        {
-            FileIOWrapper<Derived, TailTypes>::readSparseImpl( io, size, indexes, values, fileName );
-        }
-    }
-};
-
-/* --------------------------------------------------------------------------------- */
 /*    Implementation of methods for CRTPFileIO                                       */
 /* --------------------------------------------------------------------------------- */
 
@@ -272,7 +128,7 @@ void CRTPFileIO<Derived>::writeStorage( const _MatrixStorage& storage, const std
     SCAI_ASSERT( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ),
                  fileName << " illegal file name for storage, must have suffix " << getMatrixFileSuffix() )
 
-    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( Derived& ) *this, storage, fileName );
+    IOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( Derived& ) *this, storage, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -291,7 +147,7 @@ void CRTPFileIO<Derived>::readStorage(
 
     // just call the corresponding typed routine
 
-    FileIOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName, offsetRow, nRows );
+    IOWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( Derived& ) *this, storage, fileName, offsetRow, nRows );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -306,7 +162,7 @@ void CRTPFileIO<Derived>::writeArray( const hmemo::_HArray& array, const std::st
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
 
-    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
+    IOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( Derived& ) *this, array, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -321,7 +177,7 @@ void CRTPFileIO<Derived>::writeSparse( const IndexType n, const hmemo::HArray<In
 
     // now call the corresponding typed routine, use meta-programming to get the correct type
 
-    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( Derived& ) *this, n, indexes, values, fileName );
+    IOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( Derived& ) *this, n, indexes, values, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -336,7 +192,7 @@ void CRTPFileIO<Derived>::readArray( hmemo::_HArray& array, const std::string& f
 
     // just call the corresponding typed routine
 
-    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, offset, n );
+    IOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( Derived& ) *this, array, fileName, offset, n );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -351,7 +207,7 @@ void CRTPFileIO<Derived>::readSparse( IndexType& size, hmemo::HArray<IndexType>&
 
     // just call the corresponding typed routine
 
-    FileIOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( Derived& ) *this, size, indexes, values, fileName );
+    IOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( Derived& ) *this, size, indexes, values, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

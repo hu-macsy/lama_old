@@ -86,6 +86,12 @@ public:
 
     virtual void readArrayInfo( IndexType& size, const std::string& fileName );
 
+    /** Implementation of writing array with grid information */
+
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+
 public:
 
     /** Typed version of writeStorage

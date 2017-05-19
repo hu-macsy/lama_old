@@ -1,5 +1,5 @@
 ###
- # @file examples/image/CMakeLists.txt
+ # @file examples/grid/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,12 +27,12 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for example of image processing
+ # @brief CMake configuration file for example of using grids
  # @author Thomas Brandes
- # @date 04.05.2017
+ # @date 19.05.2017
 ###
 
-foreach ( executable imageProcessing classProcessing greyScaling scaledImages imageGen gridSection )
+foreach ( executable gridIO )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

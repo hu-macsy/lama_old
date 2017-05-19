@@ -47,6 +47,8 @@
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/SCAITypes.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 
@@ -58,20 +60,7 @@ namespace lama
 template<typename ValueType>
 GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<ValueType>() 
 {
-    readFromFile( filename );
-}
-
-template<typename ValueType>
-void GridVector<ValueType>::readFromFile( const std::string& filename ) 
-{
-    hmemo::HArray<ValueType> data;
-    common::Grid grid;
-
-    // ToDo: allow arbitrary file formats depending on suffix, also images.
-
-    MatlabIO io;
-    io.read( data, grid, filename );
-    swap( data, grid );
+    Vector::readFromFile( filename );
 }
 
 template<typename ValueType>
@@ -188,6 +177,74 @@ void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal,
     utilskernel::OpenMPSection::assign( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
 }
 
+/* -- IO ------------------------------------------------------------------- */
+
+template<typename ValueType>
+void GridVector<ValueType>::writeLocalToFile(
+    const std::string& fileName,
+    const std::string& fileType,
+    const common::scalar::ScalarType dataType,
+    const FileIO::FileMode fileMode
+) const
+{
+    std::string suffix = fileType;
+
+    if ( suffix == "" )
+    {
+        suffix = FileIO::getSuffix( fileName );
+    }
+
+    if ( FileIO::canCreate( suffix ) )
+    {
+        // okay, we can use FileIO class from factory
+
+        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+
+        if ( dataType != common::scalar::UNKNOWN )
+        {
+            // overwrite the default settings
+
+            fileIO->setDataType( dataType );
+        }
+
+        if ( fileMode != FileIO::DEFAULT_MODE )
+        {
+            // overwrite the default settings
+
+            fileIO->setMode( fileMode );
+        }
+
+        fileIO->writeGridArray( this->getLocalValues(), this->localGrid(), fileName );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "File : " << fileName << ", unknown suffix" )
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType GridVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
+{
+    SCAI_REGION( "Vector.grid.readLocal" )
+
+    HArray<ValueType> data;
+    common::Grid grid;
+
+    FileIO::read( data, grid, fileName );
+
+    IndexType localN = data.size();
+
+    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "read data does not match this grid " << grid );
+
+    swap( data, grid );
+
+    SCAI_ASSERT_EQ_ERROR( 0, first, "block read not supported for sparse data" )
+    SCAI_ASSERT_EQ_ERROR( nIndex, n, "block read not supported for sparse data" )
+
+    return localN;
+}
 
 /* ========================================================================= */
 /*       Template instantiations                                             */

@@ -147,6 +147,12 @@ public:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
+    /** Implementation of writing array with grid information */
+
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+
 private:
 
     /** Help routine to read storage data */

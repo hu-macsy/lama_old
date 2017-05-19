@@ -688,6 +688,25 @@ void SAMGIO::readStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void SAMGIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
+    }
+
+    CRTPFileIO<SAMGIO>::writeArray( data, outputFileName );
+}
+
+void SAMGIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    CRTPFileIO<SAMGIO>::readArray( data, inputFileName );
+    grid = common::Grid1D( data.size() );
+    SCAI_LOG_WARN( logger, "SAMG does not support multidimensional array, take default shape " << grid )
+}
+
+/* --------------------------------------------------------------------------------- */
+
 SAMGIO::Guard SAMGIO::mGuard;
 
 SAMGIO::Guard::Guard()
