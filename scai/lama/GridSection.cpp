@@ -38,7 +38,8 @@
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
-#include <scai/utilskernel/openmp/OpenMPSection.hpp>
+#include <scai/utilskernel/SectionKernelTrait.hpp>
+#include <scai/utilskernel/LAMAKernel.hpp>
 
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/loop.hpp>
@@ -318,13 +319,23 @@ void GridSection<ValueType>::binOp ( const GridSection<ValueType>& other, common
         SCAI_ASSERT_EQ_ERROR( sizesSource[i], sizesTarget[i], "size mismatch for section dim = " << i )
     }
 
-    GridReadAccess<ValueType> rSource( other.mGridVector );
-    GridWriteAccess<ValueType> wTarget( mGridVector );
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::assign<ValueType> > assign;
 
-    const ValueType* sourcePtr = rSource.get() + offsetSource;
-    ValueType* targetPtr = wTarget.get() + offsetTarget;
+    hmemo::ContextPtr loc = mGridVector.getContextPtr();
 
-    utilskernel::OpenMPSection::assign( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
+    assign.getSupportedContext( loc );
+
+    {
+        GridReadAccess<ValueType> rSource( other.mGridVector, loc );
+        GridWriteAccess<ValueType> wTarget( mGridVector, loc );
+    
+        const ValueType* sourcePtr = rSource.get() + offsetSource;
+        ValueType* targetPtr = wTarget.get() + offsetTarget;
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        assign[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -351,13 +362,23 @@ void GridSection<ValueType>::unaryOp( const GridSection<OtherValueType>& other, 
         SCAI_ASSERT_EQ_ERROR( sizesSource[i], sizesTarget[i], "size mismatch for section dim = " << i )
     }
 
-    GridReadAccess<OtherValueType> rSource( other.mGridVector );
-    GridWriteAccess<ValueType> wTarget( mGridVector );
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::unaryOp<ValueType, OtherValueType> > unaryOp;
 
-    const OtherValueType* sourcePtr = rSource.get() + offsetSource;
-    ValueType* targetPtr = wTarget.get() + offsetTarget;
+    hmemo::ContextPtr loc = mGridVector.getContextPtr();
 
-    utilskernel::OpenMPSection::unaryOp( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+    unaryOp.getSupportedContext( loc );
+
+    {
+        GridReadAccess<OtherValueType> rSource( other.mGridVector, loc );
+        GridWriteAccess<ValueType> wTarget( mGridVector, loc );
+
+        const OtherValueType* sourcePtr = rSource.get() + offsetSource;
+        ValueType* targetPtr = wTarget.get() + offsetTarget;
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        unaryOp[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -445,11 +466,18 @@ void GridSection<ValueType>::binOpScalar ( const ValueType other, common::binary
         SCAI_LOG_ERROR( logger, "size[" << k << "] = " << sectionSizes[k] << ", distance = " << sectionDistances[k] )
     }
 
-    GridWriteAccess<ValueType> wGridVector( mGridVector );
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::assignScalar<ValueType> > assignScalar;
+    hmemo::ContextPtr loc = mGridVector.getContextPtr();
+    assignScalar.getSupportedContext( loc );
 
-    ValueType* sectionPtr = wGridVector.get() + sectionOffset;
+    {
+        GridWriteAccess<ValueType> wGridVector( mGridVector, loc );
+        ValueType* sectionPtr = wGridVector.get() + sectionOffset;
 
-    utilskernel::OpenMPSection::assignScalar( sectionPtr, sectionDims, sectionSizes, sectionDistances, other, op, swap );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        assignScalar[loc]( sectionPtr, sectionDims, sectionSizes, sectionDistances, other, op, swap );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -531,15 +559,25 @@ void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& othe
  
     std::swap( distancesSource[0], distancesSource[1] );
 
-    GridReadAccess<ValueType> rSource( other.mGridVector );
-    GridWriteAccess<ValueType> wTarget( mGridVector );
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::unaryOp<ValueType, ValueType> > unaryOp;
 
-    const ValueType* sourcePtr = rSource.get() + offsetSource;
-    ValueType* targetPtr = wTarget.get() + offsetTarget;
+    hmemo::ContextPtr loc = mGridVector.getContextPtr();
 
-    common::unary::UnaryOp op = conjFlag ? common::unary::CONJ : common::unary::COPY;
+    unaryOp.getSupportedContext( loc );
 
-    utilskernel::OpenMPSection::unaryOp( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+    {
+        GridReadAccess<ValueType> rSource( other.mGridVector, loc );
+        GridWriteAccess<ValueType> wTarget( mGridVector, loc );
+
+        const ValueType* sourcePtr = rSource.get() + offsetSource;
+        ValueType* targetPtr = wTarget.get() + offsetTarget;
+
+        common::unary::UnaryOp op = conjFlag ? common::unary::CONJ : common::unary::COPY;
+
+        SCAI_CONTEXT_ACCESS( loc )
+
+        unaryOp[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+    }
 }
 
 /* ---------------------------------------------------------------------------------------*/

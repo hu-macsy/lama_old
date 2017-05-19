@@ -358,6 +358,8 @@ void CUDASection::assign(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
+    SCAI_CHECK_CUDA_ACCESS
+
     if ( nDims == 0 )
     {
         // apply kernel on scalar arguments, no section sizes, differences are needed
@@ -606,6 +608,8 @@ void CUDASection::unaryOp(
     const IndexType sourceDistances[],
     const common::unary::UnaryOp op )
 {
+    SCAI_CHECK_CUDA_ACCESS
+
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( sectionSizesD, sizes, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( targetDistancesD, targetDistances, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
@@ -935,6 +939,8 @@ void CUDASection::assignScalar(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
+    SCAI_CHECK_CUDA_ACCESS
+
     if ( nDims == 0 )
     {
         // apply kernel on scalar arguments, no section sizes, differences are needed
@@ -1157,6 +1163,8 @@ void CUDASection::unary(
     const IndexType distances[],
     const common::unary::UnaryOp op )
 {
+    SCAI_CHECK_CUDA_ACCESS
+
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( sectionSizesD, sizes, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( targetDistancesD, distances, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),

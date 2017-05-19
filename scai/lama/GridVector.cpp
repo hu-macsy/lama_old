@@ -111,7 +111,8 @@ void GridVector<ValueType>::gemm( const ValueType alpha, const GridVector<ValueT
     {
         static utilskernel::LAMAKernel<blaskernel::BLASKernelTrait::gemm<ValueType> > gemm;
 
-        ContextPtr loc = Context::getHostPtr();
+        ContextPtr loc = this->getContextPtr();
+
         gemm.getSupportedContext( loc );
 
         GridWriteAccess<ValueType> wRes( *this, loc );
