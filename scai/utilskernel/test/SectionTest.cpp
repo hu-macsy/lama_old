@@ -616,6 +616,68 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_types )
+{
+    typedef RealType TargetValueType;
+
+    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+
+    ContextPtr loc = testContext;
+
+    unaryOp.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
+    SCAI_LOG_INFO( logger, "unaryOp1Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+                                           << common::TypeTraits<SourceValueType>::id() << "> for " 
+                                           << *testContext << ", done on " << *loc )
+
+    const IndexType n1 = 8;
+
+    // work on this array:   0   1   2   3   4  5  6  7 
+
+    TargetValueType rawValues[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+    const IndexType nValues = sizeof( rawValues ) / sizeof( TargetValueType );
+
+    BOOST_REQUIRE_EQUAL( n1, nValues );
+
+    // array[0:3:2] = array[ 6:8 ]
+    //   gives this array:   6  1   7   3    4   5  6  7
+
+    TargetValueType expValues[] = { 6, 1, 7, 3,  4, 5,  6,  7 };
+    const IndexType nValues1 = sizeof( expValues ) / sizeof( TargetValueType );
+
+    BOOST_REQUIRE_EQUAL( n1, nValues1 );
+
+    const IndexType sizes[] = { 2 };
+    const IndexType sourceOffset      = 6;
+    const IndexType sourceDistances[] = { 1 };
+    const IndexType targetOffset      = 0;
+    const IndexType targetDistances[] = { 2 };
+
+    LArray<SourceValueType> source( nValues, rawValues );
+    LArray<TargetValueType> target( source );
+
+    IndexType nDims = 1;
+
+    {
+        WriteAccess<TargetValueType> wTarget( target, loc );
+        ReadAccess<SourceValueType> rSource( source, loc );
+        unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+    }
+
+    ReadAccess<TargetValueType> rTarget( target );
+
+    for ( IndexType i = 0; i < nValues; i++ )
+    {
+        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_types )
 {
     typedef RealType TargetValueType;
@@ -628,7 +690,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unaryOp2Test<" << common::TypeTraits<SourceValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "unaryOp2Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+                                           << common::TypeTraits<SourceValueType>::id() << "> for " 
+                                           << *testContext << ", done on " << *loc )
 
     const IndexType n1 = 3;
     const IndexType n2 = 4;
@@ -679,6 +743,185 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_types )
+{
+    typedef RealType TargetValueType;
+
+    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+
+    ContextPtr loc = testContext;
+
+    unaryOp.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
+    SCAI_LOG_INFO( logger, "unaryOp3Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+                                           << common::TypeTraits<SourceValueType>::id() << "> for " 
+                                           << *testContext << ", done on " << *loc )
+
+    const IndexType n1 = 3;
+    const IndexType n2 = 1;
+    const IndexType n3 = 4;
+
+    SourceValueType rawValues[] = { 0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23 };
+
+    const IndexType nValues = sizeof( rawValues ) / sizeof( SourceValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3, nValues );
+
+    // array[0:3:2,0:2] = array[1:3,2:4]
+    //   gives this array:  12  13   2   3
+    //                      10  11  12  13
+    //                      22  23  22  23
+
+    TargetValueType expValues[] = { 12, 13, 2, 3, 10, 11, 12, 13, 22, 23, 22, 23 };
+    const IndexType nValues1 = sizeof( expValues ) / sizeof( TargetValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3, nValues1 );
+
+    const IndexType sizes[] = { 2, 1, 2 };
+    const IndexType sourceOffset      = n3 + 2;
+    const IndexType sourceDistances[] = { n2 * n3, n3, 1 };
+    const IndexType targetOffset      = 0;
+    const IndexType targetDistances[] = { 2 * n2 * n3, n3, 1 };
+
+    LArray<SourceValueType> source( nValues, rawValues );
+    LArray<TargetValueType> target( source );
+
+    IndexType nDims = 3;
+
+    {
+        WriteAccess<TargetValueType> wTarget( target, loc );
+        ReadAccess<SourceValueType> rSource( source, loc );
+        unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+    }
+
+    ReadAccess<TargetValueType> rTarget( target );
+
+    for ( IndexType i = 0; i < nValues; i++ )
+    {
+        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_types )
+{
+    typedef RealType TargetValueType;
+
+    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+
+    ContextPtr loc = testContext;
+
+    unaryOp.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
+    SCAI_LOG_INFO( logger, "unaryOp4Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+                                           << common::TypeTraits<SourceValueType>::id() << "> for " 
+                                           << *testContext << ", done on " << *loc )
+
+    IndexType nDims = 4;
+
+    const IndexType n1 = 3;
+    const IndexType n2 = 1;
+    const IndexType n3 = 4;
+    const IndexType n4 = 1;
+
+    SourceValueType rawValues[] = { 0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23 };
+
+    const IndexType nValues = sizeof( rawValues ) / sizeof( SourceValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3 * n4, nValues );
+
+    // array[0:3:2,0:2] = array[1:3,2:4]
+    //   gives this array:  12  13   2   3
+    //                      10  11  12  13
+    //                      22  23  22  23
+
+    TargetValueType expValues[] = { 12, 13, 2, 3, 10, 11, 12, 13, 22, 23, 22, 23 };
+    const IndexType nValues1 = sizeof( expValues ) / sizeof( TargetValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3 * n4, nValues1 );
+
+    const IndexType sizes[] = { 2, 1, 2, 1 };
+    const IndexType sourceOffset      = n3 * n4 + 2;
+    const IndexType sourceDistances[] = { n2 * n3 * n4, n3 * n4,  n4, 1 };
+    const IndexType targetOffset      = 0;
+    const IndexType targetDistances[] = { 2 * n2 * n3 * n4, n3 * n4, n4, 1 };
+
+    LArray<SourceValueType> source( nValues, rawValues );
+    LArray<TargetValueType> target( source );
+
+    {
+        WriteAccess<TargetValueType> wTarget( target, loc );
+        ReadAccess<SourceValueType> rSource( source, loc );
+        unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+    }
+
+    ReadAccess<TargetValueType> rTarget( target );
+
+    for ( IndexType i = 0; i < nValues; i++ )
+    {
+        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( unary1Test, ValueType, scai_numeric_test_types )
+{
+    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+
+    ContextPtr loc = testContext;
+
+    unary.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
+    SCAI_LOG_INFO( logger, "unary1Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
+    const IndexType n1 = 8;
+
+    ValueType rawValues[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+    const IndexType nValues = sizeof( rawValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1, nValues );
+
+    // array[1:4:2] = -array[1:4:2]
+
+    ValueType expValues[] = { 0, -1, 2, -3,  4, 5,  6,  7 };
+    const IndexType nValues1 = sizeof( expValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1, nValues1 );
+
+    const IndexType sizes[] = { 2 };
+    const IndexType targetOffset      = 1;
+    const IndexType targetDistances[] = { 2 };
+
+    LArray<ValueType> target( nValues, rawValues );
+
+    IndexType nDims = 1;
+
+    {
+        WriteAccess<ValueType> wTarget( target, loc );
+        unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
+    }
+
+    ReadAccess<ValueType> rTarget( target );
+
+    for ( IndexType i = 0; i < nValues; i++ )
+    {
+        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
 {
     static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
@@ -689,7 +932,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unaryOp2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "unary2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
     const IndexType n1 = 3;
     const IndexType n2 = 4;
@@ -722,6 +965,105 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         unary[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, common::unary::MINUS );
+    }
+
+    ReadAccess<ValueType> rTarget( target );
+
+    for ( IndexType i = 0; i < nValues; i++ )
+    {
+        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( unary3Test, ValueType, scai_numeric_test_types )
+{
+    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+
+    ContextPtr loc = testContext;
+
+    unary.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
+    SCAI_LOG_INFO( logger, "unary3Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
+    const IndexType n1 = 3;
+    const IndexType n2 = 1;
+    const IndexType n3 = 4;
+
+    ValueType rawValues[] = { 0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23 };
+
+    const IndexType nValues = sizeof( rawValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3, nValues );
+
+    ValueType expValues[] = { 0, -1, 2, 3, 10, 11, 12, 13, -20, -21, 22, 23 };
+    const IndexType nValues1 = sizeof( expValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3, nValues1 );
+
+    const IndexType sizes[] = { 2, 1, 2 };
+    const IndexType targetOffset      = 0;
+    const IndexType targetDistances[] = { 2 * n2 * n3, n2, 1 };
+
+    const IndexType nDims = 3;
+
+    LArray<ValueType> target( nValues, rawValues );
+    {
+        WriteAccess<ValueType> wTarget( target, loc );
+        unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
+    }
+
+    ReadAccess<ValueType> rTarget( target );
+
+    for ( IndexType i = 0; i < nValues; i++ )
+    {
+        BOOST_CHECK_EQUAL( expValues[i], rTarget[i] );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( unary4Test, ValueType, scai_numeric_test_types )
+{
+    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+
+    ContextPtr loc = testContext;
+
+    unary.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc.get(), testContext.get() );
+
+    SCAI_LOG_INFO( logger, "unary4Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+
+    const IndexType n1 = 3;
+    const IndexType n2 = 1;
+    const IndexType n3 = 4;
+    const IndexType n4 = 1;
+
+    ValueType rawValues[] = { 0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23 };
+
+    const IndexType nValues = sizeof( rawValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3 * n4, nValues );
+
+    ValueType expValues[] = { 0, -1, 2, 3, 10, 11, 12, 13, -20, -21, 22, 23 };
+    const IndexType nValues1 = sizeof( expValues ) / sizeof( ValueType );
+
+    BOOST_REQUIRE_EQUAL( n1 * n2 * n3 * n4, nValues1 );
+
+    const IndexType sizes[] = { 2, 1, 2, 1 };
+    const IndexType targetOffset      = 0;
+    const IndexType targetDistances[] = { 2 * n2 * n3 * n4, n3 * n4, n4, 1 };
+
+    const IndexType nDims = 4;
+
+    LArray<ValueType> target( nValues, rawValues );
+    {
+        WriteAccess<ValueType> wTarget( target, loc );
+        unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
     }
 
     ReadAccess<ValueType> rTarget( target );

@@ -200,6 +200,20 @@ private:
         const IndexType sizes[],
         const common::unary::UnaryOp op );
 
+    template<typename TargetValueType, typename SourceValueType>
+    static void unaryOp3(
+        TargetValueType targetSection[],
+        const SourceValueType sourceSection[],
+        const IndexType sizes[],
+        const common::unary::UnaryOp op );
+
+    template<typename TargetValueType, typename SourceValueType>
+    static void unaryOp4(
+        TargetValueType targetSection[],
+        const SourceValueType sourceSection[],
+        const IndexType sizes[],
+        const common::unary::UnaryOp op );
+
     template<typename ValueType>
     static void unary1(
         ValueType section[],
@@ -208,6 +222,18 @@ private:
 
     template<typename ValueType>
     static void unary2(
+        ValueType section[],
+        const IndexType sizes[],
+        const common::unary::UnaryOp op );
+
+    template<typename ValueType>
+    static void unary3(
+        ValueType section[],
+        const IndexType sizes[],
+        const common::unary::UnaryOp op );
+
+    template<typename ValueType>
+    static void unary4(
         ValueType section[],
         const IndexType sizes[],
         const common::unary::UnaryOp op );

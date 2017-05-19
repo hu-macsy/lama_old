@@ -77,20 +77,20 @@ void assign0Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i > 0 )
+    if ( i0 > 0 )
     {
         return;  // only one element
     }
 
     if ( swapOperands )
     {   
-        target[i] = applyBinary( source[i], op, target[i] );
+        target[i0] = applyBinary( source[i0], op, target[i0] );
     }
     else
     {   
-        target[i] = applyBinary( target[i], op, source[i] );
+        target[i0] = applyBinary( target[i0], op, source[i0] );
     }
 }
 
@@ -121,15 +121,15 @@ void assign1Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i >= sectionSizesD[0] )
+    if ( i0 >= sectionSizesD[0] )
     {
         return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0]];
-    const ValueType& source = sourceSection[i * sourceDistancesD[0]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0]];
+    const ValueType& source = sourceSection[i0 * sourceDistancesD[0]];
 
     if ( swapOperands )
     {   
@@ -173,16 +173,16 @@ void assign2Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType j = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType i = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if ( j >= sectionSizesD[1]  || i >= sectionSizesD[0] )
+    if ( i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
     {
         return;
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1]];
-    const ValueType& source = sourceSection[i * sourceDistancesD[0] + j * sourceDistancesD[1]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1]];
+    const ValueType& source = sourceSection[i0 * sourceDistancesD[0] + i1 * sourceDistancesD[1]];
 
     if ( swapOperands )
     {   
@@ -229,17 +229,17 @@ void assign3Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType k = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType j = blockIdx.y * blockDim.y + threadIdx.y;
-    const IndexType i = blockIdx.z;
+    const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i1 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i0 = blockIdx.z;
 
-    if ( j >= sectionSizesD[1]  || k >= sectionSizesD[2] )
+    if ( i1 >= sectionSizesD[1]  || i2 >= sectionSizesD[2] )
     {
         return;
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1] + k * targetDistancesD[2]];
-    const ValueType& source = sourceSection[i * sourceDistancesD[0] + j * sourceDistancesD[1] + k * sourceDistancesD[2]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1] + i2 * targetDistancesD[2]];
+    const ValueType& source = sourceSection[i0 * sourceDistancesD[0] + i1 * sourceDistancesD[1] + i2 * sourceDistancesD[2]];
 
     if ( swapOperands )
     {   
@@ -288,24 +288,24 @@ void assign4Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType m = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType k = blockIdx.y * blockDim.y + threadIdx.y;
-    const IndexType ij = ( blockIdx.z * blockDim.z ) + threadIdx.z;
-    const IndexType i  = ij / sectionSizesD[1] ;
-    const IndexType j  = ij - i * sectionSizesD[1];
+    const IndexType i3 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i2 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i10 = ( blockIdx.z * blockDim.z ) + threadIdx.z;
+    const IndexType i0  = i10 / sectionSizesD[1] ;
+    const IndexType i1  = i10 - i0 * sectionSizesD[1];
 
-    // i and j will always be legal, but m or might be out of range
+    // i and i1 will always be legal, but i3 or might be out of range
 
-    if ( m >= sectionSizesD[3]  || k >= sectionSizesD[2] || j >= sectionSizesD[1] || i >= sectionSizesD[0] )
+    if ( i3 >= sectionSizesD[3]  || i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1] || i0 >= sectionSizesD[0] )
     {
         return;
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1] 
-                                    + k * targetDistancesD[2] + m * targetDistancesD[3]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1] 
+                                    + i2 * targetDistancesD[2] + i3 * targetDistancesD[3]];
 
-    const ValueType& source = sourceSection[i * sourceDistancesD[0] + j * sourceDistancesD[1] 
-                                          + k * sourceDistancesD[2] + m * sourceDistancesD[3]];
+    const ValueType& source = sourceSection[i0 * sourceDistancesD[0] + i1 * sourceDistancesD[1] 
+                                          + i2 * sourceDistancesD[2] + i3 * sourceDistancesD[3]];
 
     if ( swapOperands )
     {   
@@ -400,15 +400,15 @@ void unaryOp1Kernel(
     const SourceValueType sourceSection[],
     const common::unary::UnaryOp op )
 {
-    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i >= sectionSizesD[0] )
+    if ( i0 >= sectionSizesD[0] )
     {
         return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
     }
 
-    TargetValueType& target = targetSection[i * targetDistancesD[0]];
-    const SourceValueType& source = sourceSection[i * sourceDistancesD[0]];
+    TargetValueType& target = targetSection[i0 * targetDistancesD[0]];
+    const SourceValueType& source = sourceSection[i0 * sourceDistancesD[0]];
 
     target = static_cast<TargetValueType>( applyUnary( op, source ) );
 }
@@ -444,16 +444,16 @@ void unaryOp2Kernel(
     const SourceValueType sourceSection[],
     const common::unary::UnaryOp op )
 {
-    const IndexType j = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType i = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.y * blockDim.y + threadIdx.y;
       
-    if ( j >= sectionSizesD[1]  || i >= sectionSizesD[0] )
+    if ( i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
     {
         return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
     }
 
-    TargetValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1]];
-    const SourceValueType& source = sourceSection[i * sourceDistancesD[0] + j * sourceDistancesD[1]];
+    TargetValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1]];
+    const SourceValueType& source = sourceSection[i0 * sourceDistancesD[0] + i1 * sourceDistancesD[1]];
 
     target = static_cast<TargetValueType>( applyUnary( op, source ) );
 }
@@ -487,6 +487,116 @@ void CUDASection::unaryOp2(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
+__global__
+void unaryOp3Kernel( 
+    TargetValueType targetSection[],
+    const SourceValueType sourceSection[],
+    const common::unary::UnaryOp op )
+{
+    const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i1 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i0 = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if ( i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
+    {
+        return;
+    }
+
+    TargetValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1] + i2 * targetDistancesD[2]];
+    const SourceValueType& source = sourceSection[i0 * sourceDistancesD[0] + i1 * sourceDistancesD[1] + i2 * sourceDistancesD[2]];
+
+    target = static_cast<TargetValueType>( applyUnary( op, source ) );
+}
+
+template<typename TargetValueType, typename SourceValueType>
+void CUDASection::unaryOp3(
+    TargetValueType targetSection[],
+    const SourceValueType sourceSection[],
+    const IndexType sizes[],
+    const common::unary::UnaryOp op )
+{
+    SCAI_REGION( "CUDA.Section.unaryOp3" )
+
+    IndexType n0 = sizes[0];
+    IndexType n1 = sizes[1];
+    IndexType n2 = sizes[2];
+
+    SCAI_LOG_INFO( logger, "unaryOp3<" << common::TypeTraits<TargetValueType>::id() << 
+                           ", " << common::TypeTraits<SourceValueType>::id() 
+                           << "> on " << n0 << " x " << n1 << " x " << n2 << " grid" )
+
+    dim3 threadsPerBlock( 16, 4, 4 );
+
+    dim3 numBlocks( ( n2 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
+                    ( n1 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
+                    ( n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
+
+    unaryOp3Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unaryOp2Kernel failed" ) ;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename TargetValueType, typename SourceValueType>
+__global__
+void unaryOp4Kernel( 
+    TargetValueType targetSection[],
+    const SourceValueType sourceSection[],
+    const common::unary::UnaryOp op )
+{
+    const IndexType i3  = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i2  = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i10 = ( blockIdx.z * blockDim.z ) + threadIdx.z;
+    const IndexType i0  = i10 / sectionSizesD[1] ;
+    const IndexType i1  = i10 - i0 * sectionSizesD[1];
+
+    if ( i3 >= sectionSizesD[3] || i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
+    {
+        return;
+    }
+
+    TargetValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1]
+                                          + i2 * targetDistancesD[2] + i3 * targetDistancesD[3]];
+
+    const SourceValueType& source = sourceSection[i0 * sourceDistancesD[0] + i1 * sourceDistancesD[1] 
+                                                + i2 * sourceDistancesD[2] + i3 * sourceDistancesD[3]];
+
+    target = static_cast<TargetValueType>( applyUnary( op, source ) );
+}
+
+template<typename TargetValueType, typename SourceValueType>
+void CUDASection::unaryOp4(
+    TargetValueType targetSection[],
+    const SourceValueType sourceSection[],
+    const IndexType sizes[],
+    const common::unary::UnaryOp op )
+{
+    SCAI_REGION( "CUDA.Section.unaryOp3" )
+
+    IndexType n0 = sizes[0];
+    IndexType n1 = sizes[1];
+    IndexType n2 = sizes[2];
+    IndexType n3 = sizes[3];
+
+    SCAI_LOG_INFO( logger, "unaryOp3<" << common::TypeTraits<TargetValueType>::id() << 
+                           ", " << common::TypeTraits<SourceValueType>::id() 
+                           << "> on " << n0 << " x " << n1 << " x " << n2 << " x " << n3 << " grid" )
+
+    dim3 threadsPerBlock( 16, 4, 4 );
+
+    dim3 numBlocks( ( n3 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
+                    ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
+                    ( n0 * n1 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
+
+    unaryOp4Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, sourceSection, op );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unaryOp2Kernel failed" ) ;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename TargetValueType, typename SourceValueType>
 void CUDASection::unaryOp( 
     TargetValueType targetSection[],
     const IndexType nDims,
@@ -511,6 +621,12 @@ void CUDASection::unaryOp(
         case 2 : unaryOp2( targetSection, sourceSection, sizes, op );
                  break;
 
+        case 3 : unaryOp3( targetSection, sourceSection, sizes, op );
+                 break;
+
+        case 4 : unaryOp4( targetSection, sourceSection, sizes, op );
+                 break;
+
         default: COMMON_THROWEXCEPTION( "unaryOp for nDims = " << nDims << " not supported yet" )
     }
 }
@@ -527,20 +643,20 @@ void assignScalar0Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i > 0 )
+    if ( i0 > 0 )
     {
         return;  // only one element
     }
 
     if ( swap )
     {   
-        target[i] = applyBinary( source, op, target[i] );
+        target[i0] = applyBinary( source, op, target[i0] );
     }
     else
     {   
-        target[i] = applyBinary( target[i], op, source );
+        target[i0] = applyBinary( target[i0], op, source );
     }
 }
 
@@ -582,14 +698,14 @@ void assignScalar1Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i >= sectionSizesD[0] )
+    if ( i0 >= sectionSizesD[0] )
     {   
         return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0]];
 
     if ( swapOperands )
     {
@@ -635,15 +751,15 @@ void assignScalar2Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType j = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType i = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if ( j >= sectionSizesD[1]  || i >= sectionSizesD[0] )
+    if ( i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
     {
         return;
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1]];
 
     if ( swapOperands )
     {   
@@ -693,16 +809,16 @@ void assignScalar3Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType k = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType j = blockIdx.y * blockDim.y + threadIdx.y;
-    const IndexType i = blockIdx.z * blockDim.z + threadIdx.z;
+    const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i1 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i0 = blockIdx.z * blockDim.z + threadIdx.z;
 
-    if ( k >= sectionSizesD[2] || j >= sectionSizesD[1]  || i >= sectionSizesD[0] )
+    if ( i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
     {
         return;
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1] + k * targetDistancesD[2]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1] + i2 * targetDistancesD[2]];
 
     if ( swapOperands )
     {   
@@ -754,19 +870,19 @@ void assignScalar4Kernel(
     const common::binary::BinaryOp op,
     const bool swapOperands )
 {
-    const IndexType m = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType k = blockIdx.y * blockDim.y + threadIdx.y;
-    const IndexType ij = ( blockIdx.z * blockDim.z ) + threadIdx.z;
-    const IndexType i  = ij / sectionSizesD[1] ;
-    const IndexType j  = ij - i * sectionSizesD[1];
+    const IndexType i3 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i2 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i10 = ( blockIdx.z * blockDim.z ) + threadIdx.z;
+    const IndexType i0  = i10 / sectionSizesD[1] ;
+    const IndexType i1  = i10 - i0 * sectionSizesD[1];
 
-    if ( m >= sectionSizesD[3] || k >= sectionSizesD[2] || j >= sectionSizesD[1]  || i >= sectionSizesD[0] )
+    if ( i3 >= sectionSizesD[3] || i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
     {
         return;
     }
 
-    ValueType& target = targetSection[i * targetDistancesD[0] + j * targetDistancesD[1]
-                                    + k * targetDistancesD[2] + m * targetDistancesD[3]];
+    ValueType& target = targetSection[i0 * targetDistancesD[0] + i1 * targetDistancesD[1]
+                                    + i2 * targetDistancesD[2] + i3 * targetDistancesD[3]];
 
     if ( swapOperands )
     {   
@@ -802,7 +918,7 @@ void CUDASection::assignScalar4(
                     ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
                     ( n0 * n1 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
 
-    assignScalar3Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, val, op, swapOperands );
+    assignScalar4Kernel<<< numBlocks, threadsPerBlock>>>( targetSection, val, op, swapOperands );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "assignScalar1Kernel failed" ) ;
 }
@@ -858,14 +974,14 @@ void unary1Kernel(
     ValueType section[],
     const common::unary::UnaryOp op )
 {
-    const IndexType i = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if ( i >= sectionSizesD[0] )
+    if ( i0 >= sectionSizesD[0] )
     {
         return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
     }
 
-    ValueType& target = section[i * targetDistancesD[0]];
+    ValueType& target = section[i0 * targetDistancesD[0]];
     target = applyUnary( op, target );
 }
 
@@ -897,15 +1013,15 @@ void unary2Kernel(
     ValueType section[],
     const common::unary::UnaryOp op )
 {
-    const IndexType j = blockIdx.x * blockDim.x + threadIdx.x;
-    const IndexType i = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i1 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i0 = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if ( j >= sectionSizesD[1]  || i >= sectionSizesD[0] )
+    if ( i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
     {
         return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
     }
 
-    ValueType& target = section[i * targetDistancesD[0] + j * targetDistancesD[1]];
+    ValueType& target = section[i0 * targetDistancesD[0] + i1 * targetDistancesD[1]];
     target = applyUnary( op, target );
 }
 
@@ -918,7 +1034,7 @@ void CUDASection::unary2(
     SCAI_REGION( "CUDA.Section.unary2" )
 
     IndexType n0 = sizes[0];
-    IndexType n1 = sizes[0];
+    IndexType n1 = sizes[1];
 
     SCAI_LOG_INFO( logger,  "unary2<" << common::TypeTraits<ValueType>::id() << "> on " << n0 << " x " << n1 << " grid" )
 
@@ -930,6 +1046,105 @@ void CUDASection::unary2(
     unary2Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary2Kernel failed" ) ;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void unary3Kernel( 
+    ValueType section[],
+    const common::unary::UnaryOp op )
+{
+    const IndexType i2 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i1 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i0 = blockIdx.z * blockDim.z + threadIdx.z;
+
+    if ( i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
+    {
+        return;   // might happen if sectionSizesD[0] is not multiple of blockDim.x
+    }
+
+    ValueType& target = section[i0 * targetDistancesD[0] + i1 * targetDistancesD[1] + i2 * targetDistancesD[2]];
+    target = applyUnary( op, target );
+}
+
+template<typename ValueType>
+void CUDASection::unary3(
+    ValueType section[],
+    const IndexType sizes[],
+    const common::unary::UnaryOp op )
+{
+    SCAI_REGION( "CUDA.Section.unary3" )
+
+    IndexType n0 = sizes[0];
+    IndexType n1 = sizes[1];
+    IndexType n2 = sizes[2];
+
+    SCAI_LOG_INFO( logger,  "unary3<" << common::TypeTraits<ValueType>::id() << "> on " 
+                                      << n0 << " x " << n1 << " x " << n2 << " grid" )
+
+    dim3 threadsPerBlock( 16, 4, 4 );
+
+    dim3 numBlocks( ( n2 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
+                    ( n1 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
+                    ( n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
+
+    unary3Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary3Kernel failed" ) ;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+__global__
+void unary4Kernel( 
+    ValueType section[],
+    const common::unary::UnaryOp op )
+{
+    const IndexType i3 = blockIdx.x * blockDim.x + threadIdx.x;
+    const IndexType i2 = blockIdx.y * blockDim.y + threadIdx.y;
+    const IndexType i10 = ( blockIdx.z * blockDim.z ) + threadIdx.z;
+    const IndexType i0  = i10 / sectionSizesD[1] ;
+    const IndexType i1  = i10 - i0 * sectionSizesD[1];
+
+    if ( i3 >= sectionSizesD[3] || i2 >= sectionSizesD[2] || i1 >= sectionSizesD[1]  || i0 >= sectionSizesD[0] )
+    {
+        return;   // might happen if sizes[i0] is not multiple of threads in that dim
+    }
+
+    ValueType& target = section[i0 * targetDistancesD[0] + i1 * targetDistancesD[1] 
+                              + i2 * targetDistancesD[2] + i3 * targetDistancesD[3]];
+
+    target = applyUnary( op, target );
+}
+
+template<typename ValueType>
+void CUDASection::unary4(
+    ValueType section[],
+    const IndexType sizes[],
+    const common::unary::UnaryOp op )
+{
+    SCAI_REGION( "CUDA.Section.unary4" )
+
+    IndexType n0 = sizes[0];
+    IndexType n1 = sizes[1];
+    IndexType n2 = sizes[2];
+    IndexType n3 = sizes[3];
+
+    SCAI_LOG_INFO( logger,  "unary4<" << common::TypeTraits<ValueType>::id() << "> on " 
+                                      << n0 << " x " << n1 << " x " << n2 << " x " << n3 << " grid" )
+
+    dim3 threadsPerBlock( 16, 4, 4 );
+
+    dim3 numBlocks( ( n3 + threadsPerBlock.x - 1 ) / threadsPerBlock.x,
+                    ( n2 + threadsPerBlock.y - 1 ) / threadsPerBlock.y,
+                    ( n1 * n0 + threadsPerBlock.z - 1 ) / threadsPerBlock.z );
+
+    unary4Kernel<<< numBlocks, threadsPerBlock>>>( section, op );
+
+    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "unary4Kernel failed" ) ;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -952,6 +1167,12 @@ void CUDASection::unary(
                  break;
 
         case 2 : unary2( section, sizes, op );
+                 break;
+
+        case 3 : unary3( section, sizes, op );
+                 break;
+
+        case 4 : unary4( section, sizes, op );
                  break;
 
         default: COMMON_THROWEXCEPTION( "unary for nDims = " << nDims << " not supported yet" )

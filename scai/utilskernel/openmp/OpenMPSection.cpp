@@ -438,6 +438,43 @@ void OpenMPSection::unary(
             }
         }
     }
+    else if ( nDims == 3 )
+    {
+        SCAI_REGION( "OpenMP.Section.applyUnary3" )
+
+        #pragma omp parallel for
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    ValueType& target = section[i0 * distances[0] + i1 * distances[1] + i2 * distances[2]];
+                    target = applyUnary( op, target );
+                }
+            }
+        }
+    }
+    else if ( nDims == 4 )
+    {
+        SCAI_REGION( "OpenMP.Section.applyUnary4" )
+
+        #pragma omp parallel for
+        for ( IndexType i0 = 0; i0 < sizes[0]; ++i0 )
+        {
+            for ( IndexType i1 = 0; i1 < sizes[1]; ++i1 )
+            {
+                for ( IndexType i2 = 0; i2 < sizes[2]; ++i2 )
+                {
+                    for ( IndexType i3 = 0; i3 < sizes[3]; ++i3 )
+                    {
+                        ValueType& target = section[i0 * distances[0] + i1 * distances[1] + i2 * distances[2]];
+                        target = applyUnary( op, target );
+                    }
+                }
+            }
+        }
+    }
     else
     {
         COMMON_THROWEXCEPTION( "dim = " << nDims << " unsupported number of dims for sections" )
