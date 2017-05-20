@@ -37,7 +37,7 @@
 #include <scai/common/config.hpp>
 
 #include <scai/logging.hpp>
-#include <scai/lama/io/ImageIO.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 namespace scai
 {
@@ -45,24 +45,83 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT PngIO : public ImageIO
+class COMMON_DLL_IMPORTEXPORT PngIO : 
+
+    public FileIO,
+    public FileIO::Register<PngIO>    // register at factory
+
 {
 
 public:
 
-    /** Implementation of virtual routine ImageIO::read for this format */
-
-    void read( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
-
-    /** Implementation of virtual routine ImageIO::write for this format */
-
-    void write( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
-
-    /** constructor of object required for dynamic creation. */
+    /** Default constructor, used to create IO object by factory. */
 
     PngIO();
 
-    /** Typed version of PngIO::read */
+    /** Implementation of pure methdod FileIO::readStorageInfo */
+
+    virtual void readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& fileName );
+
+    /** Implementation of pure methdod FileIO::readArrayInfo */
+
+    virtual void readArrayInfo( IndexType& size, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::writeStorage for all derived classes */
+
+    virtual void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readStorage  */
+
+    virtual void readStorage( _MatrixStorage& storage, const std::string& fileName, const IndexType offsetRow, const IndexType nRows );
+
+    /** Implementation of pure virtual method FileIO::writeArray  */
+
+    virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::writeSparse  */
+
+    virtual void writeSparse(
+        const IndexType size,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::_HArray& array,
+        const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readArray using same defaults */
+
+    virtual void readArray(
+        hmemo::_HArray& array,
+        const std::string& fileName,
+        const IndexType offset = 0,
+        const IndexType n = nIndex );
+
+    /** Implementation of pure virtual method FileIO::readSparse 
+     *
+     *  This CRTP class calls Derived::readSparseImpl with a typed value array.
+     */
+
+    virtual void readSparse(
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::_HArray& values,
+        const std::string& fileName );
+
+    /** Default implementation for query matrix file suffix, is createValue of derived class */
+
+    virtual std::string getMatrixFileSuffix() const;
+
+    /** Default implementation for query vector file suffix, is createValue of derived class */
+
+    virtual std::string getVectorFileSuffix() const;
+
+    /** Implementation of pure methdod FileIO::isSupportedMode */
+
+    virtual bool isSupportedMode( const FileMode mode ) const;
+
+    void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
+
+    void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+
+    /** Typed version of BitmapIO::read */
 
     template<typename ValueType>
     void readImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
@@ -71,6 +130,18 @@ public:
 
     template<typename ValueType>
     void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
+
+    /** Implementation for Printable.:writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
+
+    // registration key for factory
+
+    static std::string createValue();
+
+    // static method to create an FileIO object for this derived class
+
+    static FileIO* create();
 
 protected:
 

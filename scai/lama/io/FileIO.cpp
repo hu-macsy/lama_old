@@ -146,6 +146,28 @@ void FileIO::writeMode( std::ostream& stream ) const
 
 /* --------------------------------------------------------------------------------- */
 
+int FileIO::deleteFile( const std::string& fileName )
+{
+    int rc = -1;
+
+    if ( hasSuffix( fileName, getMatrixFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else if ( hasSuffix( fileName, getVectorFileSuffix() ) )
+    {
+        rc = std::remove( fileName.c_str() );
+    }
+    else
+    {
+        SCAI_LOG_WARN( logger, "do not delete file with unknown suffix" )
+    }
+
+    return rc;
+}
+
+/* --------------------------------------------------------------------------------- */
+
 void FileIO::setIndexType( common::scalar::ScalarType type )
 {
     mScalarTypeIndex = type;
@@ -314,6 +336,28 @@ void FileIO::read(
 
     fileIO->setDataType( dataType );
     fileIO->readArray( array, inFileName, first, n );
+}
+
+/* -------------------------------------------------------------------------- */
+
+void FileIO::read(
+    hmemo::_HArray& array,
+    common::Grid& grid,
+    const std::string& inFileName,
+    const common::scalar::ScalarType dataType )
+{
+    std::string suffix = getSuffix( inFileName );
+
+    if ( !canCreate( suffix ) )
+    {
+        SCAI_THROWEXCEPTION( common::IOException, "ERROR: read from file " << inFileName <<
+                             ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
+    }
+
+    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+
+    fileIO->setDataType( dataType );
+    fileIO->readGridArray( array, grid, inFileName );
 }
 
 /* -------------------------------------------------------------------------- */

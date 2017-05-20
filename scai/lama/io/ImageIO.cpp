@@ -124,12 +124,12 @@ void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& 
     if ( suffix == ".png" )
     {
         PngIO io;
-        io.write( pixelData, pixelGrid, outputFileName );
+        io.writeGridArray( pixelData, pixelGrid, outputFileName );
     }
     else if ( suffix == ".bmp" )
     {
         BitmapIO io;
-        io.write( pixelData, pixelGrid, outputFileName );
+        io.writeGridArray( pixelData, pixelGrid, outputFileName );
     }
     else
     {

@@ -37,8 +37,13 @@
 #include <scai/lama/io/BitmapIO.hpp>
 #include <scai/lama/io/IOWrapper.hpp>
 
+#include <scai/common/exception/UnsupportedException.hpp>
+
 #include<png.h>
 #include<fstream>
+
+
+#define MAT_SUFFIX ".bmp" 
 
 namespace scai
 {
@@ -50,6 +55,34 @@ namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( BitmapIO::logger, "ImageIO.Bitmap" )
+
+/* --------------------------------------------------------------------------------- */
+/*    Implementation of Factory methods                                              */
+/* --------------------------------------------------------------------------------- */
+
+FileIO* BitmapIO::create()
+{
+    return new BitmapIO();
+}
+
+std::string BitmapIO::createValue()
+{
+    return MAT_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool BitmapIO::isSupportedMode( const FileMode mode ) const
+{
+    // binary is not supported
+
+    if ( mode == BINARY )
+    {
+        return false;
+    }
+
+    return true;
+}
 
 /* ------------------------------------------------------------------------------------ */
 /*   Data structures for BITMAP file                                                    */
@@ -299,18 +332,132 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& gri
 }
 
 /* ------------------------------------------------------------------------------------ */
-/* ------------------------------------------------------------------------------------ */
 
-void BitmapIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+void BitmapIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
     IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::read( ( BitmapIO& ) *this, data, grid, inputFileName );
 }
 
-void BitmapIO::write( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void BitmapIO::writeGridArray( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
     IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::write( ( BitmapIO& ) *this, data, grid, outputFileName );
 }
 
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::writeStorage( const _MatrixStorage& storage, const std::string& outputFileName )
+{
+    // todo: write dense storage as bitmap, maybe greyscale 
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "write storage " << storage << " to " << outputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& inputFileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    storage.clear();
+
+    SCAI_ASSERT_EQ_ERROR( 0, offsetRow, "No chunk read for bitmap file" )
+    SCAI_ASSERT_EQ_ERROR( nIndex, nRows, "No chunk read for bitmap file" )
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read storage from " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string BitmapIO::getMatrixFileSuffix() const
+{
+    return createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string BitmapIO::getVectorFileSuffix() const
+{
+    return createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::writeArray( const hmemo::_HArray& array, const std::string& outputFileName )
+{
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: write array " << array << " to " << outputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::writeSparse( 
+    const IndexType n, 
+    const hmemo::HArray<IndexType>& indexes, 
+    const hmemo::_HArray& values, 
+    const std::string& outputFileName )
+{
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: write spare array ( n = " << n 
+                         << ", indexes = " << indexes << ", values = " << values << " ) to " << outputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& inputFileName )
+{
+    numRows    = 0;
+    numColumns = 0;
+    numValues  = 0;
+
+    COMMON_THROWEXCEPTION( "Unsupported for bitmap file: read storage info from file " << inputFileName )
+}
+
+void BitmapIO::readArrayInfo( IndexType& size, const std::string& inputFileName )
+{
+    size = 0;
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read array info from file " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::readArray( hmemo::_HArray& array, const std::string& inputFileName, const IndexType offset, const IndexType n )
+{
+    array.clear();
+
+    SCAI_ASSERT_EQ_ERROR( 0, offset, "chunk read not supported" )
+    SCAI_ASSERT_EQ_ERROR( n, nIndex, "chunk read not supported" )
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read array ( offset = " << offset << ", n = " << " ) from file " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& inputFileName )
+{
+    size = 0;
+    indexes.clear();
+    values.clear();
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read sparse array from " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void BitmapIO::writeAt( std::ostream& stream ) const
+{
+    stream << "BitmapIO ( suffix = " << MAT_SUFFIX << ", ";
+    stream << ", only image data )";
+}
+
+/* --------------------------------------------------------------------------------- */
 
 } /* end namespace lama */
 

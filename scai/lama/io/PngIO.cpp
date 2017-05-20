@@ -32,24 +32,60 @@
  * @date 04.05.2017
  */
 
-#include <scai/lama/GridVector.hpp>
-
 #include <scai/lama/io/PngIO.hpp>
 #include <scai/lama/io/IOWrapper.hpp>
+
+#include <scai/common/exception/UnsupportedException.hpp>
 
 #include<png.h>
 #include<fstream>
 
+#define MAT_SUFFIX ".png" 
+
 namespace scai
 {
 
-using namespace utilskernel;
 using namespace hmemo;
 
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( PngIO::logger, "ImageIO.Png" )
+SCAI_LOG_DEF_LOGGER( PngIO::logger, "FileIO.Png" )
+
+/* --------------------------------------------------------------------------------- */
+/*    Implementation of Factory methods                                              */
+/* --------------------------------------------------------------------------------- */
+
+FileIO* PngIO::create()
+{
+    return new PngIO();
+}
+
+std::string PngIO::createValue()
+{
+    return MAT_SUFFIX;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+bool PngIO::isSupportedMode( const FileMode mode ) const
+{
+    // binary is not supported
+
+    if ( mode == BINARY )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+PngIO::PngIO()
+{
+    SCAI_LOG_INFO( logger, "PngIO uses libpng version " << png_libpng_ver );
+}
 
 /* ------------------------------------------------------------------------------------ */
 /*   Read PNG File                                                                   */
@@ -226,23 +262,131 @@ void PngIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, 
 /* ------------------------------------------------------------------------------------ */
 /* ------------------------------------------------------------------------------------ */
 
-void PngIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+void PngIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
     IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::read( ( PngIO& ) *this, data, grid, inputFileName );
 }
 
-void PngIO::write( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void PngIO::writeGridArray( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
     IOWrapper<PngIO, SCAI_TYPELIST( float, double )>::write( ( PngIO& ) *this, data, grid, outputFileName );
 }
 
-/* ------------------------------------------------------------------------------------ */
+/* --------------------------------------------------------------------------------- */
 
-PngIO::PngIO()
+void PngIO::writeStorage( const _MatrixStorage& storage, const std::string& outputFileName )
 {
-    SCAI_LOG_INFO( logger, "PngIO uses libpng version " << png_libpng_ver );
+    // todo: write dense storage as bitmap, maybe greyscale 
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "write storage " << storage << " to " << outputFileName )
 }
 
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& inputFileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    storage.clear();
+
+    SCAI_ASSERT_EQ_ERROR( 0, offsetRow, "No chunk read for bitmap file" )
+    SCAI_ASSERT_EQ_ERROR( nIndex, nRows, "No chunk read for bitmap file" )
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read storage from " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string PngIO::getMatrixFileSuffix() const
+{
+    return createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string PngIO::getVectorFileSuffix() const
+{
+    return createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::writeArray( const hmemo::_HArray& array, const std::string& outputFileName )
+{
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: write array " << array << " to " << outputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::writeSparse( 
+    const IndexType n, 
+    const hmemo::HArray<IndexType>& indexes, 
+    const hmemo::_HArray& values, 
+    const std::string& outputFileName )
+{
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: write spare array ( n = " << n 
+                         << ", indexes = " << indexes << ", values = " << values << " ) to " << outputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, IndexType& numValues, const std::string& inputFileName )
+{
+    numRows    = 0;
+    numColumns = 0;
+    numValues  = 0;
+
+    COMMON_THROWEXCEPTION( "Unsupported for bitmap file: read storage info from file " << inputFileName )
+}
+
+void PngIO::readArrayInfo( IndexType& size, const std::string& inputFileName )
+{
+    size = 0;
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read array info from file " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::readArray( hmemo::_HArray& array, const std::string& inputFileName, const IndexType offset, const IndexType n )
+{
+    array.clear();
+
+    SCAI_ASSERT_EQ_ERROR( 0, offset, "chunk read not supported" )
+    SCAI_ASSERT_EQ_ERROR( n, nIndex, "chunk read not supported" )
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read array ( offset = " << offset << ", n = " << " ) from file " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& inputFileName )
+{
+    size = 0;
+    indexes.clear();
+    values.clear();
+
+    SCAI_THROWEXCEPTION( common::UnsupportedException, 
+                         "Unsupported for bitmap file: read sparse array from " << inputFileName )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PngIO::writeAt( std::ostream& stream ) const
+{
+    stream << "PngIO ( suffix = " << MAT_SUFFIX << ", ";
+    stream << ", only image data )";
+}
+
+/* --------------------------------------------------------------------------------- */
 
 } /* end namespace lama */
 

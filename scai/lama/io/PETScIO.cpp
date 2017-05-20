@@ -445,16 +445,21 @@ void PETScIO::readStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void PETScIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void PETScIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
-    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "size of array does not match the grid size" )
-
     if ( grid.nDims() > 1 )
     {
-        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to PETSc file" )
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
     }
 
     CRTPFileIO<PETScIO>::writeArray( data, outputFileName );
+}
+
+void PETScIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    CRTPFileIO<PETScIO>::readArray( data, inputFileName );
+    grid = common::Grid1D( data.size() );
+    SCAI_LOG_WARN( logger, "PETSc does not support multidimensional array, take default shape " << grid )
 }
 
 /* --------------------------------------------------------------------------------- */

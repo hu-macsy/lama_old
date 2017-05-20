@@ -255,7 +255,7 @@ public:
      *  @param[in] fileName file to delete
      *  @returns   0 on success
      */
-    virtual int deleteFile( const std::string& fileName ) = 0;
+    virtual int deleteFile( const std::string& fileName );
 
     /** Setter for representation type used for indexes in file. */
 

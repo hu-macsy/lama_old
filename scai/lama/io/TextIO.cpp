@@ -261,7 +261,7 @@ void TextIO::readArrayImpl(
 
 /* --------------------------------------------------------------------------------- */
 
-void TextIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void TextIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
     if ( grid.nDims() > 1 )
     {
@@ -269,6 +269,13 @@ void TextIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, c
     }
 
     CRTPFileIO<TextIO>::writeArray( data, outputFileName );
+}
+
+void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    CRTPFileIO<TextIO>::readArray( data, inputFileName );
+    grid = common::Grid1D( data.size() );
+    SCAI_LOG_WARN( logger, "Text does not support multidimensional array, take default shape " << grid )
 }
 
 /* --------------------------------------------------------------------------------- */

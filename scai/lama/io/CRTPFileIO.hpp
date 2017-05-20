@@ -103,10 +103,6 @@ public:
         hmemo::_HArray& values,
         const std::string& fileName );
 
-    /** Default implementation for removeFile */
-
-    virtual int deleteFile( const std::string& fileName );
-
     /** Default implementation for query matrix file suffix, is createValue of derived class */
 
     virtual std::string getMatrixFileSuffix() const;
@@ -208,29 +204,6 @@ void CRTPFileIO<Derived>::readSparse( IndexType& size, hmemo::HArray<IndexType>&
     // just call the corresponding typed routine
 
     IOWrapper<Derived, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( Derived& ) *this, size, indexes, values, fileName );
-}
-
-/* --------------------------------------------------------------------------------- */
-
-template<class Derived>
-int CRTPFileIO<Derived>::deleteFile( const std::string& fileName )
-{
-    int rc = -1;
-
-    if ( FileIO::hasSuffix( fileName, this->getMatrixFileSuffix() ) )
-    {
-        rc = std::remove( fileName.c_str() );
-    }
-    else if ( FileIO::hasSuffix( fileName, this->getVectorFileSuffix() ) )
-    {
-        rc = std::remove( fileName.c_str() );
-    }
-    else
-    {
-        SCAI_LOG_WARN( Derived::logger, "do not delete file with unknown suffix" )
-    }
-
-    return rc;
 }
 
 /* --------------------------------------------------------------------------------- */

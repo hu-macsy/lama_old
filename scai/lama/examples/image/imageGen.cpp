@@ -105,5 +105,15 @@ int main( int argc, const char* argv[] )
     // bottom left: green
     image( Range( height - border, height), Range( width - border, width ), 1 ) = 255;
 
-    ImageIO::write( image, outputFileName );
+    // ImageIO::write( image, outputFileName );
+
+    try 
+    {
+        image.writeToFile( outputFileName );
+        std::cout << "Image successfully written to file " << outputFileName << std::endl;
+    }
+    catch ( common::Exception& ex )
+    {
+        std::cout << "Failed to write image: " << ex.what() << std::endl;
+    }
 }

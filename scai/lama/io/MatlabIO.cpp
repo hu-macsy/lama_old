@@ -868,14 +868,14 @@ void MatlabIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std:
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::read( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+void MatlabIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
     IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::read( ( MatlabIO& ) *this, data, grid, inputFileName );
 }
 
 /* --------------------------------------------------------------------------------- */
 
-void MatlabIO::writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
     SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "size of array does not match the grid size" )
 
