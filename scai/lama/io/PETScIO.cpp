@@ -1,4 +1,4 @@
-/**
+/*
  * @file PETScIO.cpp
  *
  * @license
@@ -33,12 +33,14 @@
  */
 
 
-#include "PETScIO.hpp"
+#include <scai/lama/io/PETScIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
+
 #include <scai/lama/io/IOStream.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/tracing.hpp>
 
@@ -452,16 +454,85 @@ void PETScIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& gr
         SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
     }
 
-    CRTPFileIO<PETScIO>::writeArray( data, outputFileName );
+    writeArray( data, outputFileName );
 }
 
 void PETScIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
-    CRTPFileIO<PETScIO>::readArray( data, inputFileName );
+    readArray( data, inputFileName );
     grid = common::Grid1D( data.size() );
     SCAI_LOG_WARN( logger, "PETSc does not support multidimensional array, take default shape " << grid )
 }
 
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+{
+    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( PETScIO& ) *this, storage, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<PETScIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( PETScIO& ) *this, storage, fileName, offsetRow, nRows );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( PETScIO& ) *this, array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( PETScIO& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( PETScIO& ) *this, array, fileName, offset, n );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void PETScIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<PETScIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( PETScIO& ) *this, size, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string PETScIO::getMatrixFileSuffix() const
+{
+    return PETScIO::createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string PETScIO::getVectorFileSuffix() const
+{
+    return PETScIO::createValue();
+}
 /* --------------------------------------------------------------------------------- */
 
 #define SCAI_PETSC_METHOD_INSTANTIATIONS( _type )           \

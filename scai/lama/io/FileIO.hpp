@@ -62,7 +62,7 @@ class _MatrixStorage;
  *        make the correct output. But pure virtual methods can not
  *        have a template argument.
  *
- *        The class CRTPFileIO is a helper class that provides this
+ *        The struct IOWrapper is a helper struct that provides this
  *        funtionality.
  */
 

@@ -32,14 +32,15 @@
  * @date 10.06.2016
  */
 
+#include <scai/lama/io/TextIO.hpp>
 
-#include "TextIO.hpp"
+#include <scai/lama/io/IOStream.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
-#include <scai/lama/io/IOStream.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/exception/IOException.hpp>
@@ -268,12 +269,12 @@ void TextIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& gri
         SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
     }
 
-    CRTPFileIO<TextIO>::writeArray( data, outputFileName );
+    writeArray( data, outputFileName );
 }
 
 void TextIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
-    CRTPFileIO<TextIO>::readArray( data, inputFileName );
+    readArray( data, inputFileName );
     grid = common::Grid1D( data.size() );
     SCAI_LOG_WARN( logger, "Text does not support multidimensional array, take default shape " << grid )
 }
@@ -462,6 +463,76 @@ void TextIO::readStorageImpl(
     {
         coo.copyBlockTo( storage, firstRow, nRows );
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void TextIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+{
+    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( TextIO& ) *this, storage, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void TextIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<TextIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( TextIO& ) *this, storage, fileName, offsetRow, nRows );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void TextIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( TextIO& ) *this, array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void TextIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( TextIO& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void TextIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( TextIO& ) *this, array, fileName, offset, n );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void TextIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<TextIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( TextIO& ) *this, size, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string TextIO::getMatrixFileSuffix() const
+{
+    return TextIO::createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string TextIO::getVectorFileSuffix() const
+{
+    return TextIO::createValue();
 }
 
 /* --------------------------------------------------------------------------------- */

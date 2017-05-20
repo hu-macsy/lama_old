@@ -32,7 +32,7 @@
  * @date 23.11.2016
  */
 
-#include "scai/lama/io/MATIOStream.hpp"
+#include <scai/lama/io/MATIOStream.hpp>
 
 #include <zlib.h>
 

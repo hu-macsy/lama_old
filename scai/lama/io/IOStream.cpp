@@ -32,7 +32,7 @@
  * @date 16.03.2016
  */
 
-#include "scai/lama/io/IOStream.hpp"
+#include <scai/lama/io/IOStream.hpp>
 
 namespace scai
 {

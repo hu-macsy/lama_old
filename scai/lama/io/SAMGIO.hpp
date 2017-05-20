@@ -34,7 +34,8 @@
 
 #pragma once
 
-#include <scai/lama/io/CRTPFileIO.hpp>
+#include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/storage/MatrixStorage.hpp>
 
 namespace scai
 {
@@ -51,7 +52,7 @@ namespace lama
 
 class SAMGIO :
 
-    public CRTPFileIO<SAMGIO>,         // use type conversions
+    public FileIO,
     public FileIO::Register<SAMGIO>    // register at factory
 {
 
@@ -61,15 +62,57 @@ public:
 
     SAMGIO();
 
+    /** Implementation of pure virtual method FileIO::writeStorage */
+
+    void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readStorage  */
+
+    void readStorage(
+        _MatrixStorage& storage,
+        const std::string& fileName,
+        const IndexType offsetRow,
+        const IndexType nRows );
+
+    /** Implementation of FileIO::writeArray */
+
+    void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::writeSparse  */
+
+    virtual void writeSparse(
+        const IndexType size,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::_HArray& array,
+        const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readArray using same defaults */
+
+    virtual void readArray(
+        hmemo::_HArray& array,
+        const std::string& fileName,
+        const IndexType offset = 0,
+        const IndexType n = nIndex );
+
+    /** Implementation of pure virtual method FileIO::readSparse */
+
+    virtual void readSparse(
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::_HArray& values,
+        const std::string& fileName );
+
+    /** Implementation of FileIO::getMatrixFileSuffix */
+
+    std::string getMatrixFileSuffix() const;
+
+    /** Implementation of FileIO::getVectorFileSuffix */
+
+    std::string getVectorFileSuffix() const;
+
     /** Implementation of pure methdod FileIO::isSupportedMode */
 
     virtual bool isSupportedMode( const FileMode mode ) const;
-
-    /** File suffix is used to decide about choice of output class */
-
-    virtual std::string getVectorFileSuffix() const;
-
-    virtual std::string getMatrixFileSuffix() const;
 
     /** Implementation for Printable.:writeAt */
 
@@ -97,27 +140,20 @@ public:
 
 public:
 
-    /** Typed version of writeStorage
-     *
-     *  This method must be available for implementation of
-     *  CRTPFileIO::writeStorage
-     */
+    /** Typed version of writeStorage called vi IOWrapper::writeStorageImpl  */
 
     template<typename ValueType>
-    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName )
-    __attribute( ( noinline ) );
+    void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );
 
     /** Typed version of readStorageBlock */
 
     template<typename ValueType>
-    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows )
-    __attribute( ( noinline ) );
+    void readStorageImpl( MatrixStorage<ValueType>& storage, const std::string& fileName, const IndexType firstRow, const IndexType nRows );
 
     /** Typed version of the writeArray */
 
     template<typename ValueType>
-    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName )
-    __attribute( ( noinline ) );
+    void writeArrayImpl( const hmemo::HArray<ValueType>& array, const std::string& fileName );
 
     /** Typed version of the writeSparse */
 
@@ -126,14 +162,12 @@ public:
         const IndexType size,
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::HArray<ValueType>& values,
-        const std::string& fileName )
-    __attribute( ( noinline ) );
+        const std::string& fileName );
 
     /** Typed version of readArrayBlock */
 
     template<typename ValueType>
-    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n )
-    __attribute( ( noinline ) );
+    void readArrayImpl( hmemo::HArray<ValueType>& array, const std::string& fileName, const IndexType first, const IndexType n );
 
     /** Typed version of readSparse */
 

@@ -34,8 +34,9 @@
 
 #pragma once
 
-#include <scai/lama/io/CRTPFileIO.hpp>
-#include <scai/lama/io/ImageIO.hpp>
+#include <scai/lama/io/FileIO.hpp>
+
+#include <scai/lama/storage/MatrixStorage.hpp>
 
 namespace scai
 {
@@ -75,11 +76,59 @@ namespace lama
 
 class MatlabIO :
 
-    public CRTPFileIO<MatlabIO>,         // use type conversions
+    public FileIO,        
     public FileIO::Register<MatlabIO>    // register at factory
 {
 
 public:
+
+    /** Implementation of pure virtual method FileIO::writeStorage */
+
+    void writeStorage( const _MatrixStorage& storage, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readStorage  */
+
+    void readStorage(
+        _MatrixStorage& storage,
+        const std::string& fileName,
+        const IndexType offsetRow,
+        const IndexType nRows );
+
+    /** Implementation of FileIO::writeArray */
+
+    void writeArray( const hmemo::_HArray& array, const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::writeSparse  */
+
+    virtual void writeSparse(
+        const IndexType size,
+        const hmemo::HArray<IndexType>& indexes,
+        const hmemo::_HArray& array,
+        const std::string& fileName );
+
+    /** Implementation of pure virtual method FileIO::readArray using same defaults */
+
+    virtual void readArray(
+        hmemo::_HArray& array,
+        const std::string& fileName,
+        const IndexType offset = 0,
+        const IndexType n = nIndex );
+
+    /** Implementation of pure virtual method FileIO::readSparse */
+
+    virtual void readSparse(
+        IndexType& size,
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::_HArray& values,
+        const std::string& fileName );
+
+    /** Implementation of FileIO::getMatrixFileSuffix */
+
+    std::string getMatrixFileSuffix() const;
+
+    /** Implementation of FileIO::getVectorFileSuffix */
+
+    std::string getVectorFileSuffix() const;
 
     /** Implementation of pure methdod FileIO::isSupportedMode */
 
@@ -107,11 +156,7 @@ public:
 
 public:
 
-    /** Typed version of writeStorage
-     *
-     *  This method must be available for implementation of
-     *  CRTPFileIO::writeStorage
-     */
+    /** Typed version of writeStorage */
 
     template<typename ValueType>
     void writeStorageImpl( const MatrixStorage<ValueType>& storage, const std::string& fileName );

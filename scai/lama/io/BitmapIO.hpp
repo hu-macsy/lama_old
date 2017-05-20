@@ -90,10 +90,7 @@ public:
         const IndexType offset = 0,
         const IndexType n = nIndex );
 
-    /** Implementation of pure virtual method FileIO::readSparse 
-     *
-     *  This CRTP class calls Derived::readSparseImpl with a typed value array.
-     */
+    /** Implementation of pure virtual method FileIO::readSparse */
 
     virtual void readSparse(
         IndexType& size,

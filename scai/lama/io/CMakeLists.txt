@@ -65,7 +65,6 @@ scai_project (
 
     HEADERS
 
-        CRTPFileIO
         IOWrapper
 
     ADD_PARENT_SCOPE

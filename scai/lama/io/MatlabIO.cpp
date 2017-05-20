@@ -32,7 +32,7 @@
  * @date 10.06.2016
  */
 
-#include "MatlabIO.hpp"
+#include <scai/lama/io/MatlabIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -43,6 +43,8 @@
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/io/MATIOStream.hpp>
 #include <scai/lama/io/ImageIO.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -884,7 +886,77 @@ void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& g
         SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to Matlab file" )
     }
 
-    CRTPFileIO<MatlabIO>::writeArray( data, outputFileName );
+    writeArray( data, outputFileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+{
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( MatlabIO& ) *this, storage, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( MatlabIO& ) *this, storage, fileName, offsetRow, nRows );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( MatlabIO& ) *this, array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( MatlabIO& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( MatlabIO& ) *this, array, fileName, offset, n );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( MatlabIO& ) *this, size, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string MatlabIO::getMatrixFileSuffix() const
+{
+    return MatlabIO::createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string MatlabIO::getVectorFileSuffix() const
+{
+    return MatlabIO::createValue();
 }
 
 /* --------------------------------------------------------------------------------- */

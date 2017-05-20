@@ -32,7 +32,7 @@
  * @date 20.06.2016
  */
 
-#include "FileIO.hpp"
+#include <scai/lama/io/FileIO.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/exception/IOException.hpp>
