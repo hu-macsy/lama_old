@@ -808,7 +808,7 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void MatlabIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& gridFileName )
+void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& gridFileName )
 {
     MATIOStream inFile( gridFileName, ios::in );
 
@@ -870,7 +870,7 @@ void MatlabIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std:
 
 void MatlabIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::read( ( MatlabIO& ) *this, data, grid, inputFileName );
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( ( MatlabIO& ) *this, data, grid, inputFileName );
 }
 
 /* --------------------------------------------------------------------------------- */

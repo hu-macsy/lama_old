@@ -121,15 +121,15 @@ public:
 
     void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
 
-    /** Typed version of BitmapIO::read */
+    /** Typed version of BitmapIO::readGridArray */
 
     template<typename ValueType>
-    void readImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
 
-    /** Typed version of PngIO::write */
+    /** Typed version of PngIO::writeGridArray */
 
     template<typename ValueType>
-    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
+    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
 
     /** Implementation for Printable.:writeAt */
 

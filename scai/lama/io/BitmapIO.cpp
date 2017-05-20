@@ -132,7 +132,7 @@ struct COLORTABLE
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& inputFileName )
+void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& inputFileName )
 {
     FILE* file;
     file = fopen( inputFileName.c_str(), "rb" );
@@ -262,7 +262,7 @@ void BitmapIO::readImpl( HArray<ValueType>& data, common::Grid& grid, const std:
 }
 
 template<typename ValueType>
-void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName )
+void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName )
 {
     FILE* f = fopen( outputFileName.c_str(), "wb" );
 
@@ -335,12 +335,12 @@ void BitmapIO::writeImpl( const HArray<ValueType>& data, const common::Grid& gri
 
 void BitmapIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
 {
-    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::read( ( BitmapIO& ) *this, data, grid, inputFileName );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::readGridImpl( ( BitmapIO& ) *this, data, grid, inputFileName );
 }
 
 void BitmapIO::writeGridArray( const _HArray& data, const common::Grid& grid, const std::string& outputFileName )
 {
-    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::write( ( BitmapIO& ) *this, data, grid, outputFileName );
+    IOWrapper<BitmapIO, SCAI_TYPELIST( float, double )>::writeGridImpl( ( BitmapIO& ) *this, data, grid, outputFileName );
 }
 
 /* --------------------------------------------------------------------------------- */

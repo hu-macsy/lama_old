@@ -90,12 +90,12 @@ struct IOWrapper<Derived, common::mepr::NullType>
         COMMON_THROWEXCEPTION( "readSparse unsupported, " << array.getValueType() << " not in SCAI_ARRAY_TYPES"  )
     }
 
-    static void write( Derived&, const hmemo::_HArray& data, const common::Grid&, const std::string& )
+    static void writeGridImpl( Derived&, const hmemo::_HArray& data, const common::Grid&, const std::string& )
     {
         COMMON_THROWEXCEPTION( "write " << data << " unsupported, unknown type." )
     }
 
-    static void read( Derived&, hmemo::_HArray& data, common::Grid&, const std::string& )
+    static void readGridImpl( Derived&, hmemo::_HArray& data, common::Grid&, const std::string& )
     {
         COMMON_THROWEXCEPTION( "read " << data << " unsupported, unknown type." )
     }
@@ -199,27 +199,27 @@ struct IOWrapper<Derived, common::mepr::TypeList<ValueType, TailTypes> >
         }
     }
 
-    static void write( Derived& io, const hmemo::_HArray& data, const common::Grid& grid, const std::string& fileName )
+    static void writeGridImpl( Derived& io, const hmemo::_HArray& data, const common::Grid& grid, const std::string& fileName )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.writeImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( data ), grid, fileName );
+            io.writeGridImpl( reinterpret_cast<const hmemo::HArray<ValueType>& >( data ), grid, fileName );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::write( io, data, grid, fileName );
+            IOWrapper<Derived, TailTypes>::writeGridImpl( io, data, grid, fileName );
         }
     }
 
-    static void read( Derived& io, hmemo::_HArray& data, common::Grid& grid, const std::string& fileName )
+    static void readGridImpl( Derived& io, hmemo::_HArray& data, common::Grid& grid, const std::string& fileName )
     {
         if ( data.getValueType() == common::getScalarType<ValueType>() )
         {
-            io.readImpl( reinterpret_cast<hmemo::HArray<ValueType>& >( data ), grid, fileName );
+            io.readGridImpl( reinterpret_cast<hmemo::HArray<ValueType>& >( data ), grid, fileName );
         }
         else
         {
-            IOWrapper<Derived, TailTypes>::read( io, data, grid, fileName );
+            IOWrapper<Derived, TailTypes>::readGridImpl( io, data, grid, fileName );
         }
     }
 };

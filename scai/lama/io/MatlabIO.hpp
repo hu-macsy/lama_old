@@ -162,7 +162,7 @@ public:
     /** Typed version of BitmapIO::read */
 
     template<typename ValueType>
-    void readImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
+    void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
 
     /** Typed version of BitmapIO::write */
 
