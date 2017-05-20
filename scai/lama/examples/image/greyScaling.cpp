@@ -137,16 +137,19 @@ int main( int argc, const char* argv[] )
 
     // read in the image file, must be a png file
 
-    GridVector<ValueType> image;   // size will be ( width , height, ncolors )
-
-    ImageIO::read( image, inputFileName );
+    GridVector<ValueType> image( inputFileName );   // size will be ( width , height, ncolors )
 
     std::cout << "read image as grid vector : " << image << std::endl;
+
+    const common::Grid& grid = image.globalGrid();
+
+    SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "not an image" );
+    SCAI_ASSERT_EQ_ERROR( 3, grid.size( 2 ), "not RGB pixels" );
 
     GridVector<ValueType> imageGrey;
 
     // greyScale1( imageGrey, image );
     greyScale2( imageGrey, image );
  
-    ImageIO::write( imageGrey, outputFileName );
+    imageGrey.writeToFile( outputFileName );
 }

@@ -65,18 +65,20 @@ int main( int argc, const char* argv[] )
     std::string inputFileName = argv[1];
     std::string outputFileName = argv[2];
 
-    // read in the image file, must be a png file
+    // read in the image file, must be a png/bmp file
 
     GridVector<float> image;   // size will be ( width , height, ncolors )
-
-    ImageIO::read( image, inputFileName );
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
     const common::Grid& grid = image.globalGrid();
 
+    SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "not an image" );
+
     const IndexType height = grid.size( 0 );
     const IndexType width  = grid.size( 1 );
+
+    SCAI_ASSERT_EQ_ERROR( 3, grid.size( 2 ), "not RGB pixels" );
 
     GridVector<float> dist ( common::Grid2D( height, width ), 0.0f );
 
@@ -181,5 +183,5 @@ int main( int argc, const char* argv[] )
 
     std::cout << "new image = " << classImage << std::endl;
 
-    ImageIO::write( classImage, outputFileName );
+    classImage.writeToFile( outputFileName );
 }

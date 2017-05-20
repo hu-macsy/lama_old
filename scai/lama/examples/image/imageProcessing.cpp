@@ -229,7 +229,7 @@ int main( int argc, const char* argv[] )
 
     GridVector<float> image;   // size will be ( width , height, ncolors )
 
-    ImageIO::read( image, inputFileName );
+    image.readFromFile( inputFileName );
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
@@ -263,5 +263,5 @@ int main( int argc, const char* argv[] )
     // std::cout << "new image = " << imageNew << std::endl;
 
 
-    ImageIO::write( imageNew, outputFileName );
+    imageNew.writeToFile( outputFileName );
 }

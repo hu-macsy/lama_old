@@ -50,22 +50,6 @@ class COMMON_DLL_IMPORTEXPORT ImageIO
 
 public:
 
-    /** Read in a grid vector from an input file.
-     *
-     *  @param[in] gridData will contain the grid vector data.
-     *  @param[in] inputFileName name of the input file.
-     *
-     */
-    template<typename ValueType>
-    static void read( GridVector<ValueType>& gridData, const std::string& inputFileName );
-
-    /** Write the pixel data to an output file.
-     *
-     *  Supported formats: *.png
-     */
-    template<typename ValueType>
-    static void write( const GridVector<ValueType>& gridData, const std::string& outputFileName );
-
     /** Write a two-dimensional array as scaled image. */
 
     template<typename ValueType>

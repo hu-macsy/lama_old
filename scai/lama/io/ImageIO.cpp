@@ -55,89 +55,6 @@ namespace lama
 SCAI_LOG_DEF_LOGGER( ImageIO::logger, "ImageIO" )
 
 /* ------------------------------------------------------------------------------------ */
-/*   Read image file, make choice by suffix                                             */
-/* ------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void ImageIO::read( GridVector<ValueType>& imageData, const std::string& inputFileName )
-{
-    std::string suffix;
-    size_t pos = inputFileName.find_last_of( "." );
-
-    if ( pos != std::string::npos )
-    {
-        suffix = inputFileName.substr( pos );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( inputFileName << " as image input file has no suffix." )
-    }
-
-    LArray<ValueType> data;   // pixel data
-    common::Grid3D grid( 0, 0, 0 );  // default grid
-
-    if ( suffix == ".png" )
-    {
-        PngIO io;
-        io.read( data, grid, inputFileName );
-        SCAI_LOG_INFO( logger, "read PNG file " << inputFileName << ", data = " << data << ", grid = " << grid )
-        imageData.swap( data, grid );
-    }
-    else if ( suffix == ".bmp" )
-    {
-        BitmapIO io;
-        io.read( data, grid, inputFileName );
-        SCAI_LOG_INFO( logger, "read BMP file " << inputFileName << ", data = " << data << ", grid = " << grid )
-        imageData.swap( data, grid );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Unsupported suffix (" << suffix << ") for reading image file, only .bmp or .png" )
-    }
-}
-
-/* ------------------------------------------------------------------------------------ */
-/*   Write image file, make choice by suffix                                            */
-/* ------------------------------------------------------------------------------------ */
-
-template<typename ValueType>
-void ImageIO::write( const GridVector<ValueType>& imageData, const std::string& outputFileName )
-{
-    SCAI_LOG_INFO( logger, "write image data = " << imageData << " to file " << outputFileName )
-    std::string suffix;
-    size_t pos = outputFileName.find_last_of( "." );
-
-    if ( pos != std::string::npos )
-    {
-        suffix = outputFileName.substr( pos );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( outputFileName << " as image output file has no suffix." )
-    }
-
-    const HArray<ValueType>& pixelData = imageData.getLocalValues();
-    const common::Grid& grid = imageData.globalGrid();
-    SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "no RGB image data" );
-    const common::Grid3D& pixelGrid = reinterpret_cast<const common::Grid3D&>( grid );
-
-    if ( suffix == ".png" )
-    {
-        PngIO io;
-        io.writeGridArray( pixelData, pixelGrid, outputFileName );
-    }
-    else if ( suffix == ".bmp" )
-    {
-        BitmapIO io;
-        io.writeGridArray( pixelData, pixelGrid, outputFileName );
-    }
-    else
-    {
-        COMMON_THROWEXCEPTION( "Unsupported suffix (" << suffix << ") for writing image file, only .bmp or .png" )
-    }
-}
-
-/* ------------------------------------------------------------------------------------ */
 /*   Write scaled image                                                                 */
 /* ------------------------------------------------------------------------------------ */
 
@@ -315,7 +232,7 @@ void ImageIO::writeSC(
         }
     }
 
-    ImageIO::write( imageData, outputFileName );
+    imageData.writeToFile( outputFileName );
 }
 
 // instantiate methods for supported array/vector types
@@ -345,12 +262,6 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
 // instantiate methods for supported array/vector types
 
 #define SCAI_IMAGE_IO_INSTANTIATIONS( _type )                              \
-                                                                           \
-    template COMMON_DLL_IMPORTEXPORT                                       \
-    void ImageIO::read( GridVector<_type>&, const std::string& );          \
-                                                                           \
-    template COMMON_DLL_IMPORTEXPORT                                       \
-    void ImageIO::write( const GridVector<_type>&, const std::string& );   \
                                                                            \
     template COMMON_DLL_IMPORTEXPORT                                       \
     void ImageIO::writeSC( const GridVector<_type>&, const std::string& ); \
