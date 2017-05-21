@@ -158,6 +158,10 @@ public:
         return globalGrid().size( dim );
     }
 
+    /** Make size() of Vector visible */
+
+    using Vector::size;
+
     /** Swap available array with data into a grid vector. */
 
     void swap( hmemo::HArray<ValueType>& data, const common::Grid& grid )

@@ -45,6 +45,8 @@
 #include <scai/lama/io/ImageIO.hpp>
 #include <scai/lama/io/IOWrapper.hpp>
 
+#include <scai/utilskernel/openmp/OpenMPSection.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -64,6 +66,10 @@ using namespace utilskernel;
 
 namespace lama
 {
+
+/* --------------------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
 
 /* --------------------------------------------------------------------------------- */
 /*    Implementation of Factory methods                                              */
@@ -101,10 +107,6 @@ void MatlabIO::writeAt( ostream& stream ) const
     writeMode( stream );
     stream << ", only formatted )";
 }
-
-/* --------------------------------------------------------------------------------- */
-
-SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -258,6 +260,50 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<ValueType>& in, const common::Grid& grid, bool isRow2Col )
+{
+    IndexType nDims = grid.nDims();
+
+    // arrays for distances between elements, one for row-major ordering, one for col-major
+
+    IndexType rowMajorDist[ SCAI_GRID_MAX_DIMENSION ];  // used in LAMA
+    IndexType colMajorDist[ SCAI_GRID_MAX_DIMENSION ];  // required for MATLAB
+
+    grid.getDistances( rowMajorDist );  
+
+    // column major ordering of grid( n1, n2, n3, n4 ) is dist (1, n1, n1*n2, n1*n2*n3 )
+
+    colMajorDist[ 0 ] = 1;
+
+    for ( IndexType i = 1; i < nDims; ++i )
+    {
+        colMajorDist[i] = colMajorDist[ i - 1 ] * grid.size( i - 1 );
+    }
+
+    hmemo::ReadAccess<ValueType> rIn( in );
+    hmemo::WriteOnlyAccess<ValueType> wOut( out, grid.size() );
+
+    if ( isRow2Col )
+    {
+        // convert row-major ordering to column-major ordering
+
+        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), colMajorDist, 
+                                            rIn.get(), rowMajorDist, 
+                                            common::binary::COPY, false );
+    }
+    else
+    {
+        // convert column-major ordering to row-major ordering
+
+        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), rowMajorDist, 
+                                            rIn.get(), colMajorDist, 
+                                            common::binary::COPY, false );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const string& arrayFileName,
@@ -366,15 +412,15 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, IndexType dims[] )
+void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, const common::Grid& grid )
 {
-    SCAI_ASSERT_EQ_ERROR( array.size(), dims[0] * dims[1], "array size / dims mismatch" )
+    SCAI_ASSERT_EQ_ERROR( array.size(), grid.size(), "array size / dims mismatch" )
 
     common::scalar::ScalarType stype = array.getValueType();
 
     if ( mScalarTypeData == common::scalar::PATTERN )
     {
-        COMMON_THROWEXCEPTION( "Cannot write dense data as pattern" )
+        COMMON_THROWEXCEPTION( "Cannot write data as pattern" )
     }
 
     if ( mScalarTypeData != common::scalar::INTERNAL )
@@ -389,19 +435,20 @@ void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueT
 
     bool dryRun = true;   // make a dryRun at first to determine the size of written bytes
 
-    uint32_t wBytes = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
+    uint32_t wBytes = outFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
+
     wBytes += writeArrayData( outFile, array, dryRun );
 
     nBytes = wBytes - 8;  // subtract for the first header
 
-    SCAI_LOG_INFO( logger, "writeDenseArray, dryrun gives written bytes = " << wBytes << ", now write" )
+    SCAI_LOG_INFO( logger, "writeDenseGrid, dryrun gives written bytes = " << wBytes << ", now write" )
 
     dryRun = false;  // now write it with the correct value of nBytes
 
-    wBytes  = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
+    wBytes  = outFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
     wBytes += writeArrayData( outFile, array, dryRun );
 
-    SCAI_LOG_INFO( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1]
+    SCAI_LOG_INFO( logger, "written shaped array " << array << " with shape " << grid
                    << ", wBytes = " << wBytes )
 }
 
@@ -418,9 +465,44 @@ void MatlabIO::writeArrayImpl(
 
     outFile.writeMATFileHeader();
 
-    IndexType dims[2] = { array.size(), 1 };
+    // Matlab expects even for a vector a two-dimensional grid.
 
-    writeDenseArray( outFile, array, dims );
+    const common::Grid2D grid( array.size(), 1 );
+
+    writeDenseGrid( outFile, array, grid );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGridImpl( ( MatlabIO& ) *this, data, grid, outputFileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeGridImpl(
+    const hmemo::HArray<ValueType>& data,
+    const common::Grid& grid,
+    const string& outputFileName )
+{
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
+
+    SCAI_LOG_INFO( logger, "writeGridImpl<" << common::TypeTraits<ValueType>::id() 
+                            << ">, shape = " << grid << ", data = " << data )
+
+    MATIOStream outFile( outputFileName, ios::out );
+
+    outFile.writeMATFileHeader();
+
+    HArray<ValueType> tmpData( grid.size() );
+ 
+    bool isRow2Col = true;
+
+    changeMajor( tmpData, data, grid, isRow2Col );
+
+    writeDenseGrid( outFile, tmpData, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -466,9 +548,9 @@ void MatlabIO::writeStorageImpl(
 
         HArray<ValueType>& array = denseStorage.getData();
 
-        IndexType dims[2] = { numRows, numCols };
+        common::Grid2D grid( numRows, numCols );
 
-        writeDenseArray( outFile, array, dims );
+        writeDenseGrid( outFile, array, grid );
     }
     else
     {
@@ -780,34 +862,18 @@ void MatlabIO::readStorageImpl(
     }
 }
 
-template<typename ValueType>
-static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<ValueType>& in, const common::Grid& grid )
-{
-    SCAI_ASSERT_EQ_ERROR( 3, grid.nDims(), "other dims not supported yet" )
-    hmemo::ReadAccess<ValueType> rIn( in );
-    hmemo::WriteOnlyAccess<ValueType> wOut( out, grid.size() );
-    const IndexType n0 = grid.size(0);
-    const IndexType n1 = grid.size(1);
-    const IndexType n2 = grid.size(2);
-
-    const IndexType dIn0 = 1;
-    const IndexType dIn1 = n0;
-    const IndexType dIn2 = n0 * n1;
-    const IndexType dOut0 = n1 * n2;
-    const IndexType dOut1 = n2;
-    const IndexType dOut2 = 1;
-
-    for ( IndexType i0 = 0; i0 < n0; ++i0 )
-    for ( IndexType i1 = 0; i1 < n1; ++i1 )
-    for ( IndexType i2 = 0; i2 < n2; ++i2 )
-    {
-        wOut[ i0 * dOut0 + i1 * dOut1 + i2 * dOut2 ] = rIn[ i0 * dIn0 + i1 * dIn1 + i2 * dIn2 ];
-    }
-}
-
 /* ------------------------------------------------------------------------------------ */
 /*   Read grid vector data from file                                              */
 /* ------------------------------------------------------------------------------------ */
+
+void MatlabIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    // use the IO wrapper to call a typed version of readGrid
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( ( MatlabIO& ) *this, data, grid, inputFileName );
+}
+
+/* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
 void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& gridFileName )
@@ -864,29 +930,8 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
     }
 
     HArray<ValueType> tmpData( grid.size() );
-    changeMajor( tmpData, data, grid );
+    changeMajor( tmpData, data, grid, false );
     data.swap( tmpData );
-}
-
-/* --------------------------------------------------------------------------------- */
-
-void MatlabIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
-{
-    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( ( MatlabIO& ) *this, data, grid, inputFileName );
-}
-
-/* --------------------------------------------------------------------------------- */
-
-void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
-{
-    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "size of array does not match the grid size" )
-
-    if ( grid.nDims() > 1 )
-    {
-        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to Matlab file" )
-    }
-
-    writeArray( data, outputFileName );
 }
 
 /* --------------------------------------------------------------------------------- */

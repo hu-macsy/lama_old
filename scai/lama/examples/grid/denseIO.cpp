@@ -49,7 +49,7 @@ using namespace lama;
 
 int main( int argc, const char* argv[] )
 {
-    // relevant SCAI arguments: 
+    // relevant SCAI arguments:
     //   SCAI_CONTEXT = ...    set default context
     //   SCAI_DEVICE  = ...    set default device
 
@@ -63,55 +63,36 @@ int main( int argc, const char* argv[] )
 
     std::string fileName = argv[1];
 
-    const IndexType n1 = 5;
-    const IndexType n2 = 3;
-    const IndexType n3 = 2;
-    const IndexType n4 = 4;
-
-    GridVector<double> gv1( common::Grid4D( n1, n2, n3, n4 ) );
-
-    {
-        GridWriteAccess<double> wGV1( gv1 );
-
-        for ( IndexType i1 = 0; i1 < n1; ++i1 )
-        for ( IndexType i2 = 0; i2 < n2; ++i2 )
-        for ( IndexType i3 = 0; i3 < n3; ++i3 )
-        for ( IndexType i4 = 0; i4 < n4; ++i4 )
-
-        wGV1( i1, i2, i3, i4 ) = 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1;
-    }
-
-    gv1.writeToFile( fileName );
-
-    GridVector<double> gv2( fileName );
-
-    SCAI_ASSERT_EQ_ERROR( gv1.globalGrid(), gv2.globalGrid(), "mismatch" );
-
-    {
-        GridReadAccess<double> rGV1( gv1 );
-        GridReadAccess<double> rGV2( gv2 );
-
-        for ( IndexType i = 0; i < gv1.size(); ++i )
-        {
-            SCAI_ASSERT_EQ_ERROR( rGV1[i], rGV2[i], "different val at i = " << i )
-        }
-    }
-
-    IndexType m = 7;
-    IndexType n = 5;
+    const IndexType m = 9;
+    const IndexType n = 5;
 
     DenseMatrix<float> dMatrix( m, n );
 
+    std::cout << "dMatrix = " << dMatrix << std::endl;
+
     {
+        hmemo::HArray<float>& denseData = dMatrix.getLocalStorage().getData();
+
+        std::cout << "denseData = " << denseData << std::endl;
+
         hmemo::WriteAccess<float> wDense( dMatrix.getLocalStorage().getData() );
 
         for ( IndexType i = 0; i < m; ++i )
-        for ( IndexType j = 0; j < n; ++j )
+        {
+            for ( IndexType j = 0; j < n; ++j )
 
-        wDense[ i * m + j ] = 10 * i + j ;
+            {
+                wDense[ i * n + j ] = 10 * i + j ;
+            }
+        }
     }
 
     dMatrix.writeToFile( fileName );
+
+    if ( true )
+    {
+        return 0;
+    }
 
     GridVector<float> dg( fileName );
 

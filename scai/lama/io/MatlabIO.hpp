@@ -196,23 +196,23 @@ public:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );  //!< logger for IO class
 
+    /** Implementation of pure method FileIO::writeGridArray.
+     *
+     *  The MATLAB format supports writing the shape information.
+     */  
     void writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
+
+    /** Typed version of MatlabIO::writeGridArray */
+
+    template<typename ValueType>
+    void writeGridImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
 
     void readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& outputFileName );
 
-    /** Implementation of writing array with grid information */
-
-    void writeArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName );
-
-    /** Typed version of BitmapIO::read */
+    /** Typed version of MatlabIO::readGridArray */
 
     template<typename ValueType>
     void readGridImpl( hmemo::HArray<ValueType>& data, common::Grid& grid, const std::string& outputFileName );
-
-    /** Typed version of BitmapIO::write */
-
-    template<typename ValueType>
-    void writeImpl( const hmemo::HArray<ValueType>& data, const common::Grid& grid, const std::string& outputFileName );
 
 private:
 
@@ -260,6 +260,10 @@ private:
 
     template<typename ValueType>
     void writeDenseArray( class MATIOStream& outFile, const hmemo::HArray<ValueType>& array, IndexType dims[] );
+
+    template<typename ValueType>
+    void writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, const common::Grid& grid );
+
 };
 
 }

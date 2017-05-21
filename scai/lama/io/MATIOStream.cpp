@@ -449,9 +449,9 @@ uint32_t MATIOStream::writeSparseHeader(
 
 /* --------------------------------------------------------------------------------- */
 
-uint32_t MATIOStream::writeDenseHeader(
-    const IndexType m,
-    const IndexType n,
+uint32_t MATIOStream::writeShapeHeader(
+    const IndexType shape[],
+    const IndexType nDims,
     const uint32_t nBytes,
     common::scalar::ScalarType stype,
     bool dryRun )
@@ -459,7 +459,7 @@ uint32_t MATIOStream::writeDenseHeader(
     MATClass matClass = MATIOStream::scalarType2Class( stype );
     bool    isComplex = common::isComplex( stype );
 
-    SCAI_LOG_INFO( logger, "writeDenseHeader, nBytes = " << nBytes << ", complex = " << isComplex )
+    SCAI_LOG_INFO( logger, "writeShapeHeader, nBytes = " << nBytes << ", complex = " << isComplex )
 
     uint32_t dataType = MAT_MATRIX;
     uint32_t wBytes   = writeDataElementHeader( dataType, nBytes, dryRun );
@@ -477,9 +477,16 @@ uint32_t MATIOStream::writeDenseHeader(
 
     wBytes += writeData( header, 2, dryRun );
 
-    int dims[2] = { static_cast<int>( m ), static_cast<int>( n ) };
+    SCAI_ASSERT_LE_ERROR( nDims, 8, "array shape with too many dimensions" )
 
-    wBytes += writeData( dims, 2, dryRun );
+    int iShape[8];   // shape needs to be converted to int
+
+    for ( IndexType idim = 0; idim < nDims; ++idim )
+    {
+        iShape[idim] = static_cast<int>( shape[idim] );
+    }
+
+    wBytes += writeData( iShape, nDims, dryRun );
     wBytes += writeString( "LAMA", dryRun );
 
     return wBytes;

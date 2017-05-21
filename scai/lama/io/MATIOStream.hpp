@@ -157,9 +157,18 @@ public:
         bool isComplex,
         bool dryRun );
 
-    uint32_t writeDenseHeader(
-        const IndexType m,
-        const IndexType n,
+    /** Write header for a multidimensional array
+     *
+     *  @param[in] shape are the extensions for each dimension of the array
+     *  @param[in] nDims number of dimensions
+     *  @param[in] nBytes total number of bytes used for the header + array data
+     *  @param[in] stype specifies the scalar type of the array data
+     *  @param[in] dryRun if true no data is written
+     *  @returns[in] number of bytes written for the header
+     */
+    uint32_t writeShapeHeader(
+        const IndexType shape[],
+        const IndexType nDims,
         const uint32_t nBytes,
         common::scalar::ScalarType stype,
         bool dryRun );

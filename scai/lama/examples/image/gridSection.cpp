@@ -362,8 +362,5 @@ int main( int argc, const char* argv[] )
         comm->sumArray( grad.getLocalValues() );
     }
 
-    if ( comm->getRank() == 0 )
-    {
-        ImageIO::writeSC( grad, "grad.png" );
-    }
+    ImageIO::writeSC( grad, "grad.png" );
 }

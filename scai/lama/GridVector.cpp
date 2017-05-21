@@ -60,7 +60,10 @@ namespace lama
 template<typename ValueType>
 GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<ValueType>() 
 {
-    Vector::readFromFile( filename );
+    // currently each processor reads the file, no distributed IO
+    // Problem: GridDistribution onto a single processor not supported yet
+
+    GridVector::readLocalFromFile( filename, 0, nIndex );
 }
 
 template<typename ValueType>
