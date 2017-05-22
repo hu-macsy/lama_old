@@ -478,11 +478,11 @@ void GridSection<ValueType>::binOpScalar ( const ValueType other, common::binary
 
     IndexType sectionDims = getDopeVector( sectionOffset, sectionSizes, sectionDistances );
 
-    SCAI_LOG_ERROR( logger, "section dims = " << sectionDims << ", offset = " << sectionOffset );
+    SCAI_LOG_DEBUG( logger, "section dims = " << sectionDims << ", offset = " << sectionOffset );
 
     for ( IndexType k = 0; k < sectionDims; ++k )
     {
-        SCAI_LOG_ERROR( logger, "size[" << k << "] = " << sectionSizes[k] << ", distance = " << sectionDistances[k] )
+        SCAI_LOG_TRACE( logger, "size[" << k << "] = " << sectionSizes[k] << ", distance = " << sectionDistances[k] )
     }
 
     static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::assignScalar<ValueType> > assignScalar;

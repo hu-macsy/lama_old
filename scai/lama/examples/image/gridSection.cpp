@@ -74,6 +74,7 @@ int main( int argc, const char* argv[] )
     // use default communicator, usually MPI
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     IndexType np = comm->getSize();    // number of available processors
     IndexType rank = comm->getRank();  // id of this processor, 0 <= rank < np
@@ -148,6 +149,7 @@ int main( int argc, const char* argv[] )
     DistributionPtr distF( new GridDistribution( Grid1D( nfeval ), comm, Grid1D( np ) ) );
 
     wave.redistribute( distF );  
+    wave.setContextPtr( ctx );
 
     DistributionPtr distZXSF( new GridDistribution( Grid4D( nz, nx, nsrc, nfeval ), comm, Grid4D( 1, 1, 1, np ) ) );
     DistributionPtr distXSF( new GridDistribution( Grid3D( nx, nsrc, nfeval ), comm, Grid3D( 1, 1, np ) ) );
@@ -156,6 +158,7 @@ int main( int argc, const char* argv[] )
     // So is complex here, avoids later type conversion when added to a complex section
 
     GridVector<complex> So( distXSF, 0 );   // So( nX, nSrc, nFeval)
+    So.setContextPtr( ctx );
 
     // initialize So:  So( floor( nx / ( nsrc + 1 ) ) * i, i, : ) = wave, i = 1, nsrc
 
@@ -186,11 +189,14 @@ int main( int argc, const char* argv[] )
     // distribute Wx according to the frequencies
 
     Wx.redistribute( distXXF );
+    Wx.setContextPtr( ctx );
  
     // allocate and initialize arrays Pmin, Pplus
 
     GridVector<complex> Pmin( distZXSF, 0 );    // shape is ( nz, nx, nsrc, block::nfeval )
     GridVector<complex> Pplus( distZXSF, 0 );   // shape is ( nz, nx, nsrc, block::nfeval )
+    Pmin.setContextPtr( ctx );
+    Pplus.setContextPtr( ctx );
 
     // temporary vectors, only declared once
 
@@ -200,6 +206,12 @@ int main( int argc, const char* argv[] )
     GridVector<complex> w_tmp( Grid2D( nx, nx ), 0 );
     GridVector<complex> ri( Grid2D( nx, nx ), 0 );
 
+    pextr.setContextPtr( ctx );
+    pextr_tmp.setContextPtr( ctx );
+    ptmp.setContextPtr( ctx );
+    w_tmp.setContextPtr( ctx );
+    ri.setContextPtr( ctx );
+
     // Determine the local range owned by this processor
 
     IndexType nf_lb = wave.localLB()[0];
@@ -207,7 +219,7 @@ int main( int argc, const char* argv[] )
     IndexType nf_ub = nf_lb + nfeval_local;
 
     SCAI_LOG_INFO( logger, *comm << ": my range is : " << nf_lb << ":" << nf_ub << ", nfeval_local = " << nfeval_local << ", nfeval = " << nfeval )
-   
+
     // %% LOOP 1 (can be parallelized in nsrc and nf direction)
 
     for ( IndexType iz = 0; iz < nz; ++iz )
@@ -226,7 +238,6 @@ int main( int argc, const char* argv[] )
             w_tmp     = Wx( Range(), Range(), i_f );
 
             // Apply operator r dependent on R (calculations simplified)
-
 
             ri.setDiagonal( R( Range(), iz ), 0 );  // ri = diag(R(:,iz));
 
@@ -303,6 +314,11 @@ int main( int argc, const char* argv[] )
 
     GridVector<real> grad( Grid2D( nx, nz ), 0 );
 
+    // two temporary vectors needed due to complex reduction
+
+    GridVector<complex> tmpC( distXSF );      // ( nx, nsrc, nf )
+    GridVector<real> tmpR( distXSF );         // ( nx, nsrc, nf )
+
     for ( IndexType iz = 0; iz < nz - 1; ++iz )
     {
         SCAI_REGION( "main.loop3" )
@@ -333,6 +349,7 @@ int main( int argc, const char* argv[] )
         // ptmp=squeeze(Pplus(i+1,:,:,:));
         // grad(:,i+1)=sum(sum(real(pextr.*conj(ptmp)),2),3);
 
+        if ( false )
         {
             GridWriteAccess<real> wGrad( grad );
             GridReadAccess<complex> rPextr( pextr );
@@ -347,6 +364,38 @@ int main( int argc, const char* argv[] )
                     for ( IndexType i_f = 0; i_f < nfeval_local; ++i_f )
                     {
                         s += common::Math::real( rPextr( ix, isrc, i_f ) * common::Math::conj( rPplus( iz + 1, ix, isrc, i_f ) ) );
+                    }
+                }
+
+                wGrad( ix, iz + 1 ) = s;
+            }
+        }
+        else
+        {
+            // solution on GPU
+
+
+            tmpC = Pplus( iz + 1, Range(), Range(), Range() );
+            tmpC.conj();
+            tmpC *= pextr;
+            tmpR = tmpC;    // implicit conversion
+
+            GridWriteAccess<real> wGrad( grad );
+            GridReadAccess<real> rTmp( tmpR );
+
+            // not yet
+            // tmpR2.sum( tmpR, 1, 2 );
+            // WGrad( Range(), iz + 1 ) = tmpR2;
+
+            for ( IndexType ix = 0; ix < nx; ++ix )
+            {
+                real s = 0;
+
+                for ( IndexType isrc = 0; isrc < nsrc; ++isrc )
+                {
+                    for ( IndexType i_f = 0; i_f < nfeval_local; ++i_f )
+                    {
+                        s += rTmp( ix, isrc, i_f );
                     }
                 }
 
