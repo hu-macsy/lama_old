@@ -52,8 +52,9 @@ using namespace scai;
 using namespace lama;
 
 
-GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, float sigma){
+void gaussianBlur(GridVector<float>& outputImage, const GridVector<float>& inputImage, const IndexType radius, const float sigma){
 
+    // low pass filter
     // radius = amount of blur, sigma = standard deviation
 
     common::Stencil3D<float> stencil;
@@ -81,27 +82,45 @@ GridVector<float>  gaussianBlur(GridVector<float> inputImage, IndexType radius, 
 
     StencilMatrix<float> blur( inputImage.getDistributionPtr(), stencil);
 
-    GridVector<float> output;
-    output = blur*inputImage;
+    outputImage = blur*inputImage;
+}
 
-    return output;
+void meanFilter(GridVector<float>& outputImage, const GridVector<float>& inputImage, IndexType radius){
+
+    // low pass filter
+    // radius = amount of blur
+
+    float mean =(radius+radius+1)*(radius+radius+1);
+    mean = 1/mean; 
+
+    common::Stencil3D<float> stencil;
+
+    for(IndexType i = -radius; i<radius+1; i++)
+    {
+        for(IndexType j = -radius; j<radius+1; j++)
+        {
+            stencil.addPoint(i,j,0,mean);
+        }
+
+    }
+
+    StencilMatrix<float> matrix( inputImage.getDistributionPtr(), stencil );
+
+    outputImage = matrix* inputImage;
 
 }
 
 
-GridVector<float> grayScale(const GridVector<float>& inputImage){
+void grayScale(GridVector<float>& outputImage, const GridVector<float>& inputImage){
 
     const float red   = 0.3;
     const float green = 0.59;
     const float blue  = 0.11;
     const float sumOfWeights = red + green + blue;
 
-    if(sumOfWeights != 1)
-    {
-        SCAI_ASSERT_EQ_ERROR( sumOfWeights, 1, "redWeighting + greenWeighting + blueWeighting = " << sumOfWeights << " must be 1" )
-    }
+    SCAI_ASSERT_EQ_ERROR( sumOfWeights, 1, "redWeighting + greenWeighting + blueWeighting = " << sumOfWeights << " must be 1" )
 
-    GridVector<float> outputImage;
+    outputImage.allocate( inputImage.getDistributionPtr() );
     const common::Grid& grid = inputImage.globalGrid();
 
     GridWriteAccess<float> wImage( outputImage );
@@ -118,17 +137,14 @@ GridVector<float> grayScale(const GridVector<float>& inputImage){
             wImage( i,  j,  2) = mean.getValue<float>();
         }
     } 
-    return outputImage;
 }
 
-GridVector<float> cutOffColour(const GridVector<float>& inputImage){
+void cutOffColour(GridVector<float>& outputImage, const GridVector<float>& inputImage){
 
     // the range of values of RGB is [0,255], cut off the higher/lower Values
 
     const common::Grid& grid = inputImage.globalGrid();
-
-    GridVector<float> outputImage;
-    outputImage.allocate( inputImage.getDistributionPtr() );
+    outputImage=inputImage;
 
     GridWriteAccess<float> wImage( outputImage );
     GridReadAccess<float>  rImage( inputImage );
@@ -151,10 +167,9 @@ GridVector<float> cutOffColour(const GridVector<float>& inputImage){
         }
     }
 
-    return outputImage;
 }
 
-GridVector<float>  sobelFilter(GridVector<float> inputImage){
+void sobelFilter(GridVector<float>& outputImage, const GridVector<float>& inputImage){
 
     // sobel filter can be used for Edge detection
 
@@ -172,40 +187,34 @@ GridVector<float>  sobelFilter(GridVector<float> inputImage){
     SobelY  =  matrixSobelY * inputImage;
     SobelX.dotProduct(SobelY); // both x and y filters are applied
 
-    Gray = grayScale(SobelX);
+    grayScale(Gray, SobelX);
 
-    GridVector<float> outputImage= cutOffColour(Gray);
+    cutOffColour(outputImage, Gray);
 
-    return outputImage;
 }
 
-GridVector<float>  meanFilter(GridVector<float> inputImage, IndexType radius){
-    // radius = = amount of blur
+void unsharpMask(GridVector<float>& outputImage, const GridVector<float>& inputImage, const float amount, const IndexType radius){
 
-    float mean =(radius+radius+1)*(radius+radius+1);
-    mean = 1/mean; 
+    // the unsharp mask is used to sharpen an image by using a blurred copy
+    // amount = strength of sharpening
+    // radius = amount of blur
 
-    common::Stencil3D<float> stencil;
+    const float sigma = 1.5;
 
-    for(IndexType i = -radius; i<radius+1; i++)
-    {
-        for(IndexType j = -radius; j<radius+1; j++)
-        {
-            stencil.addPoint(i,j,0,mean);
-        }
+    GridVector<float> blur;
+    GridVector<float> mask;
+    GridVector<float> shapen;
 
-    }
 
-    StencilMatrix<float> matrix( inputImage.getDistributionPtr(), stencil );
+    mask.allocate( inputImage.getDistributionPtr() );
 
-    GridVector<float> outputImage;
-    outputImage.allocate( inputImage.getDistributionPtr() );
-    outputImage = inputImage * matrix;
+    gaussianBlur(blur, inputImage, radius, sigma);
+    mask= inputImage-blur;
+    cutOffColour(shapen, mask);
 
-    return outputImage;
+    shapen = shapen * amount + inputImage;
+    cutOffColour(outputImage, shapen);
 }
-
-
 
 
 int main( int argc, const char* argv[] )
@@ -227,17 +236,18 @@ int main( int argc, const char* argv[] )
 
     // read in the image file, must be a png file
 
-    GridVector<float> image;   // size will be ( width , height, ncolors )
-
-    image.readFromFile( inputFileName );
+    GridVector<float> image( inputFileName ); 
 
     std::cout << "read image as grid vector : " << image << std::endl;
 
-    SCAI_ASSERT_EQ_ERROR( image.nDims(), 3, "no color image data" )
+    SCAI_ASSERT_EQ_ERROR( image.nDims(), 3, "no color image data" );
+
+    const common::Grid& grid = image.globalGrid(); 
+    SCAI_ASSERT_EQ_ERROR( 3, grid.size( 2 ), "not RGB pixels" );
 
     // apply stencil on the pixels, do not apply on the colors in 3-rd dimension 
 
-     common::Stencil3D<float> stencil( 5, 5, 1, imageprocessing::findEdges );
+    common::Stencil3D<float> stencil( 5, 5, 1, imageprocessing::findEdges );
 
     // common::Stencil3D<float> stencil( 3, 3, 1, imageprocessing::blur );
 
@@ -252,15 +262,18 @@ int main( int argc, const char* argv[] )
 
     std::cout << "stencil matrix = " << m << std::endl;
 
-    GridVector<float> imageNew;
+    GridVector<float> imageNew; 
 
     imageNew  =  m * image;
 
-    //GridVector<float> imageGausBlur= gaussianBlur(image, 6, 1.5);
-    //GridVector<float> imageGrey= grayScale(image);
-    //GridVector<float> imagesobelFilter= sobelFilter(image);
-    //GridVector<float> imageblur = meanFilter(image,1);
-    // std::cout << "new image = " << imageNew << std::endl;
+    //gaussianBlur(imageNew, image, 6, 1.5); 
+    //grayScale(imageNew,image);
+    //cutOffColour(imageNew,image);
+    //sobelFilter(imageNew, image);
+    //meanFilter(imageNew,image,6);
+    //unsharpMask(imageNew,image,0.5,4);
+
+    std::cout << "new image = " << imageNew << std::endl;
 
 
     imageNew.writeToFile( outputFileName );
