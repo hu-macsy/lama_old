@@ -37,7 +37,7 @@
 // other SCAI libraries
 
 #include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/openmp/OpenMPSection.hpp>
+#include <scai/utilskernel/SectionKernelTrait.hpp>
 #include <scai/blaskernel/BLASKernelTrait.hpp>
 
 #include <scai/lama/GridWriteAccess.hpp>
@@ -167,17 +167,27 @@ void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal,
 
     distancesTarget[0] = distancesTarget[0] + 1;  // this gives the diagonal
 
-    GridReadAccess<ValueType> rSource( diagonal.mGridVector );
-    GridWriteAccess<ValueType> wTarget( *this );
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::assign<ValueType> > assign;
 
-    const ValueType* sourcePtr = rSource.get() + offsetSource;
-    ValueType* targetPtr = wTarget.get() + offsetTarget;
+    hmemo::ContextPtr loc = this->getContextPtr();
 
-    common::binary::BinaryOp op = common::binary::COPY;
+    assign.getSupportedContext( loc );
 
-    bool swap = false;
+    {
+        GridReadAccess<ValueType> rSource( diagonal.mGridVector, loc );
+        GridWriteAccess<ValueType> wTarget( *this, loc );
 
-    utilskernel::OpenMPSection::assign( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
+        SCAI_CONTEXT_ACCESS( loc )
+
+        const ValueType* sourcePtr = rSource.get() + offsetSource;
+        ValueType* targetPtr = wTarget.get() + offsetTarget;
+    
+        common::binary::BinaryOp op = common::binary::COPY;
+
+        bool swap = false;
+
+        assign[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op, swap );
+    }
 }
 
 /* -- IO ------------------------------------------------------------------- */
