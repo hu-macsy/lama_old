@@ -228,6 +228,15 @@ void GridVector<ValueType>::writeLocalToFile(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void GridVector<ValueType>:: operator=( const GridSection<ValueType>& other )
+{
+    GridSection<ValueType> fullSection = *this;
+    fullSection = other;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 IndexType GridVector<ValueType>::readLocalFromFile( const std::string& fileName, const IndexType first, const IndexType n )
 {
     SCAI_REGION( "Vector.grid.readLocal" )

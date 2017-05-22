@@ -221,10 +221,9 @@ int main( int argc, const char* argv[] )
             SCAI_LOG_TRACE( logger, "Loop1: iter ( iz = " << iz << ", i_f = " << i_f 
                                      << " ) of ( " << nz << ", " << nfeval_local << " )" )
 
-            pextr_tmp( Range(), Range() ) = pextr( Range(), Range(), i_f );
-            ptmp( Range(), Range() ) = Pmin( iz, Range(), Range(), i_f );
-
-            w_tmp( Range(), Range() ) = Wx( Range(), Range(), i_f );
+            pextr_tmp = pextr( Range(), Range(), i_f );
+            ptmp      = Pmin( iz, Range(), Range(), i_f );
+            w_tmp     = Wx( Range(), Range(), i_f );
 
             // Apply operator r dependent on R (calculations simplified)
 
@@ -242,10 +241,10 @@ int main( int argc, const char* argv[] )
             ptmp = 0;
             ptmp.gemm( 1, w_tmp, pextr_tmp );    // ptmp = w_tmp * pextr_tmp;
 
-            pextr( Range(), Range(), i_f ) = ptmp( Range(), Range() );
+            pextr( Range(), Range(), i_f ) = ptmp;
         }
 
-        Pplus( iz, Range(), Range(), Range() ) = pextr( Range(), Range(), Range() );
+        Pplus( iz, Range(), Range(), Range() ) = pextr;
     }
 
     SCAI_LOG_ERROR( logger, *comm << ": Loop 1 -> Loop 2" )
@@ -265,11 +264,10 @@ int main( int argc, const char* argv[] )
             SCAI_LOG_TRACE( logger, "Loop2: iter ( iz = " << iz << ", i_f = " << i_f 
                                      << " ) of ( " << nz << ", " << nfeval_local << " )" )
 
-            pextr_tmp( Range(), Range() )  = pextr( Range(), Range(), i_f );
+            pextr_tmp = pextr( Range(), Range(), i_f );
 
-            ptmp( Range(), Range() ) = Pplus( iz, Range(), Range(), i_f );
-
-            w_tmp( Range(), Range() ) = Wx( Range(), Range(), i_f );  
+            ptmp  = Pplus( iz, Range(), Range(), i_f );
+            w_tmp = Wx( Range(), Range(), i_f );  
 
             // %Apply operator r dependent on R
 
@@ -286,11 +284,11 @@ int main( int argc, const char* argv[] )
             ptmp = 0;
             ptmp.gemm( 1, w_tmp, pextr_tmp );
 
-            pextr( Range(), Range(), i_f ) = ptmp( Range(), Range() );
+            pextr( Range(), Range(), i_f ) = ptmp;
 
         }  // i_f loop
 
-        Pmin( iz, Range(), Range(), Range() ) = pextr( Range(), Range(), Range() );
+        Pmin( iz, Range(), Range(), Range() ) = pextr;
     }
 
     SCAI_LOG_ERROR( logger, *comm << ": Loop 2 -> Loop 3" )
@@ -301,7 +299,7 @@ int main( int argc, const char* argv[] )
     // Res=squeeze(Pmin(1,:,:,:));
     // pextr=Res;
 
-    pextr( Range(), Range(), Range() ) = Pmin( 0, Range(), Range(), Range() );
+    pextr = Pmin( 0, Range(), Range(), Range() );
 
     GridVector<real> grad( Grid2D( nx, nz ), 0 );
 
@@ -314,7 +312,7 @@ int main( int argc, const char* argv[] )
             SCAI_LOG_TRACE( logger, "Loop3: iter ( iz, i_f ) = ( " << iz << ", " << i_f 
                                      << " ) of ( " << nz << ", " << nfeval_local << " )" )
 
-            pextr_tmp( Range(), Range() ) = pextr( Range(), Range(), i_f );
+            pextr_tmp = pextr( Range(), Range(), i_f );
 
             // w_tmp=squeeze(Wx(:,:,j));                    %simplified!! w_tmp needs to be calculated for each i 
             // w_tmp = w_tmp'
@@ -328,7 +326,7 @@ int main( int argc, const char* argv[] )
             ptmp = 0;
             ptmp.gemm( 1, w_tmp, pextr_tmp );
 
-            pextr( Range(), Range(), i_f ) = ptmp( Range(), Range() );
+            pextr( Range(), Range(), i_f ) = ptmp;
         }
 
         // %summation over nsrc & nf (problematic???)

@@ -94,6 +94,10 @@ class COMMON_DLL_IMPORTEXPORT GridSection
 {
 public:
 
+    /** This constructor might generate a full section from a grid vector. */
+
+    GridSection( const GridVector<ValueType>& gridVector );
+
     GridSection( GridVector<ValueType>& gridVector, const Range& r1 );
 
     GridSection( GridVector<ValueType>& gridVector, const Range& r1, const Range& r2 );
@@ -109,6 +113,16 @@ public:
         return *this;
     }
 
+    /*
+    template<typename OtherValueTyper>
+    GridSection& operator= ( const GridVector<OtherValueType>& other )
+    {
+        unaryOp( static_cast<GridSection<OtherValueType> >( other ), common::unary::COPY );
+        return *this;
+    }
+    */
+
+   
     GridSection& operator= ( const GridSection& other );
 
     GridSection& operator*= ( const GridSection& other );

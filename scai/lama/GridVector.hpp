@@ -204,6 +204,8 @@ public:
 
     using DenseVector<ValueType>::operator=;
 
+    void operator=( const GridSection<ValueType>& other );
+
     GridSection<ValueType> operator() ( const Range& r1 )
     {
         return GridSection<ValueType>( *this, r1 );

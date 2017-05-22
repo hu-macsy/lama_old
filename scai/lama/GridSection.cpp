@@ -191,6 +191,25 @@ void GridSection<ValueType>::localize()
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+GridSection<ValueType>::GridSection( const GridVector<ValueType>& gridVector ) :
+
+    mGridVector( const_cast<GridVector<ValueType>& >( gridVector ) ),
+    mGlobalGrid( gridVector.globalGrid() ),
+    mLocalGrid( gridVector.localGrid() )
+{
+    Range r;   // full range
+
+    mNDims = mGlobalGrid.nDims();
+   
+    for ( IndexType idim = 0; idim < mNDims; idim++ )
+    {
+       setDim( idim, r );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 GridSection<ValueType>::GridSection( GridVector<ValueType>& gridVector, const Range& r0 ) :
 
     mGridVector( gridVector ),
