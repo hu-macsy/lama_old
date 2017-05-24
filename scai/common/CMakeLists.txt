@@ -196,6 +196,7 @@ set ( COMMON_HEADERS
         Math
         OpenMP
         NonCopyable
+        Stencil
         UnaryOp
         Utils
 )

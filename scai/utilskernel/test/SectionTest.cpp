@@ -93,9 +93,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign0Test, ValueType, scai_array_test_types )
 
     IndexType nDims = 0;
 
-    {
+    { 
         WriteAccess<ValueType> wTarget( target, loc );
         ReadAccess<ValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                      rSource.get() + sourceOffset, sourceDistances, binary::ADD, false );
     }
@@ -154,6 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign1Test, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         ReadAccess<ValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                      rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
     }
@@ -215,6 +217,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign2Test, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         ReadAccess<ValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, 
                      rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
     }
@@ -272,6 +275,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign3Test, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         ReadAccess<ValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                      rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
     }
@@ -330,6 +334,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign4Test, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         ReadAccess<ValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                      rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
     }
@@ -372,6 +377,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar0Test, ValueType, scai_array_test_typ
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                            scalar, binary::SUB, true );
     }
@@ -427,6 +433,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar1Test, ValueType, scai_array_test_typ
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                            scalar, binary::SUB, true );
     }
@@ -488,6 +495,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar2Test, ValueType, scai_array_test_typ
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                            scalarVal, binary::MULT, swap );
     }
@@ -541,6 +549,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar3Test, ValueType, scai_array_test_typ
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                            scalarVal, binary::MULT, swap );
     }
@@ -602,6 +611,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                            scalarVal, binary::MULT, swap );
     }
@@ -664,6 +674,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
     {
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                       rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
     }
@@ -729,6 +740,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
     {
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unaryOp[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, 
                       rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
     }
@@ -793,6 +805,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_ty
     {
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                       rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
     }
@@ -858,6 +871,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_ty
     {
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
                       rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
     }
@@ -909,6 +923,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary1Test, ValueType, scai_numeric_test_types )
 
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
     }
 
@@ -964,6 +979,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
     LArray<ValueType> target( nValues, rawValues );
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unary[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, common::unary::MINUS );
     }
 
@@ -1013,6 +1029,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary3Test, ValueType, scai_numeric_test_types )
     LArray<ValueType> target( nValues, rawValues );
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
     }
 
@@ -1063,6 +1080,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary4Test, ValueType, scai_numeric_test_types )
     LArray<ValueType> target( nValues, rawValues );
     {
         WriteAccess<ValueType> wTarget( target, loc );
+        SCAI_CONTEXT_ACCESS( loc );
         unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
     }
 
