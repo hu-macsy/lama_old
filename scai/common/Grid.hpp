@@ -5,7 +5,7 @@
  * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
- *
+ 
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
@@ -67,6 +67,11 @@ class COMMON_DLL_IMPORTEXPORT Grid
 {
 public:
 
+    /** Default constructor provides an empty grid with zero dimensions.
+     *
+     */
+    inline Grid();
+
     /** Constructor of a n-dimensional grid.
      *
      *  @param[in] nDims is the number of dimensions
@@ -127,8 +132,6 @@ public:
 
 protected:
 
-    inline Grid();
-
     IndexType mNDims;
 
     IndexType mSize[ SCAI_GRID_MAX_DIMENSION];
@@ -143,6 +146,14 @@ public:
     /** Constructor of a three-dimensional grid */
 
     inline Grid1D( const IndexType n1 );
+
+    /** More convenient call of linearPos for one-dimensional grid.
+     *  This routine is not really necessary as it is just the identity.
+     */
+
+    inline IndexType linearPos( const IndexType pos ) const;
+
+    using Grid::linearPos;
 };
 
 /** 2-dimensional Grid */
@@ -155,7 +166,7 @@ public:
 
     inline Grid2D( const IndexType n1, const IndexType n2 );
 
-    /** More convenient call of linearPos for tree-dimensional grids */
+    /** More convenient call of linearPos for two-dimensional grids */
 
     inline IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
 
@@ -225,6 +236,11 @@ Grid1D::Grid1D( const IndexType n1 )
 {
     mNDims = 1;
     mSize[0] = n1;
+
+    for ( IndexType i = 1; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid2D::Grid2D( const IndexType n1, const IndexType n2 ) 
@@ -232,6 +248,11 @@ Grid2D::Grid2D( const IndexType n1, const IndexType n2 )
     mNDims = 2;
     mSize[0] = n1;
     mSize[1] = n2;
+
+    for ( IndexType i = 2; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid3D::Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 ) 
@@ -241,6 +262,11 @@ Grid3D::Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 )
     mSize[0] = n1;
     mSize[1] = n2;
     mSize[2] = n3;
+
+    for ( IndexType i = 3; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid4D::Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 )
@@ -251,6 +277,11 @@ Grid4D::Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, cons
     mSize[1] = n2;
     mSize[2] = n3;
     mSize[3] = n4;
+ 
+    for ( IndexType i = 4; i < SCAI_GRID_MAX_DIMENSION; ++i )
+    {
+        mSize[i] = 1;
+    }
 }
 
 Grid::Grid( const IndexType nDims, const IndexType size[] )
@@ -324,33 +355,55 @@ bool Grid::validPos( const IndexType gridPos[] ) const
 
 IndexType Grid::linearPos( const IndexType gridPos[] ) const
 {
+    SCAI_ASSERT_VALID_INDEX_DEBUG( gridPos[0], mSize[0], "grid index out of range" )
+
     IndexType pos = gridPos[0];
 
     for ( IndexType i = 1; i < mNDims; ++i )
     {  
         pos = pos * mSize[i] + gridPos[i];
+        SCAI_ASSERT_VALID_INDEX_DEBUG( gridPos[i], mSize[i], "grid index out of range" )
     }
 
     return pos;
 }
 
-IndexType Grid2D::linearPos( const IndexType pos1, const IndexType pos2 ) const
+IndexType Grid1D::linearPos( const IndexType pos0 ) const
 {
-    return pos1 * mSize[1] + pos2;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+
+    return pos0;
 }
 
-IndexType Grid3D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
+IndexType Grid2D::linearPos( const IndexType pos0, const IndexType pos1 ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+
+    return pos0 * mSize[1] + pos1;
+}
+
+IndexType Grid3D::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2 ) const
 {
     // 3-dimensional grid has always 3 dimensions, no assert required
   
-    return ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3;
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos2, mSize[2], "grid index out of range" )
+
+    return ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2;
 }
 
-IndexType Grid4D::linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3, const IndexType pos4 ) const
+IndexType Grid4D::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
 {
-    // 4-dimensional grid has always 3 dimensions, no assert required
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos2, mSize[2], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos3, mSize[3], "grid index out of range" )
 
-    return ( ( pos1 * mSize[1] + pos2 ) * mSize[2] + pos3 ) * mSize[3] + pos4;
+    // 4-dimensional grid has always 4 dimensions, no assert required
+
+    return ( ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2 ) * mSize[3] + pos3;
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -421,27 +474,27 @@ const IndexType* Grid::sizes() const
 IndexType Grid::size( IndexType dim ) const
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( dim, SCAI_GRID_MAX_DIMENSION, "illegal dim" )
+ 
+    // ndims <= dim < SCAI_GRID_MAX_DIMENSION is allowed, returns 1
 
     return mSize[dim];
 }
 
 IndexType Grid::size() const
 {
-    if ( mNDims == 1 )
+    if ( mNDims == 0 )
     {
-        return mSize[0];
+        return 0;
     }
-    else
+
+    IndexType s = mSize[0];
+
+    for ( IndexType i = 1; i < mNDims; ++i )
     {
-        IndexType s = mSize[0];
-
-        for ( IndexType i = 1; i < mNDims; ++i )
-        {
-            s *= mSize[i];
-        }
-
-        return s;
+        s *= mSize[i];
     }
+
+    return s;
 }
 
 std::ostream& operator<<( std::ostream& stream, const Grid& grid )

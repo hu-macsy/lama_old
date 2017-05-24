@@ -41,6 +41,7 @@ using scai::common::Grid;
 using scai::common::Grid1D;
 using scai::common::Grid2D;
 using scai::common::Grid3D;
+using scai::common::Grid4D;
 
 /* --------------------------------------------------------------------- */
 
@@ -205,6 +206,62 @@ BOOST_AUTO_TEST_CASE( pos3Test )
                 BOOST_CHECK_EQUAL( i1, newPos[0] );
                 BOOST_CHECK_EQUAL( i2, newPos[1] );
                 BOOST_CHECK_EQUAL( i3, newPos[2] );
+            }
+        }
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( pos4Test )
+{
+    const IndexType n1 = 5;
+    const IndexType n2 = 3;
+    const IndexType n3 = 4;
+    const IndexType n4 = 2;
+
+    Grid4D grid( n1, n2, n3, n4 );
+
+    const IndexType n = grid.size();
+
+    IndexType p0[] = { 3, 1, 2, 1 };
+    IndexType p1[] = { 3, 1, 3, 1 };
+    IndexType p2[] = { 3, 2, 2, 1  };
+    IndexType p3[] = { 4, 1, 2, 1 };
+
+    // verify linearPos( x, y, z ) == linearPos( { x, y, z } )
+
+    BOOST_CHECK_EQUAL( grid.linearPos( p1), grid.linearPos( p1[0], p1[1], p1[2], p1[3] ) );
+
+    // verify row-major ordering
+
+    BOOST_CHECK_EQUAL( grid.linearPos( p0 ) + n4, grid.linearPos( p1 ) );
+    BOOST_CHECK_EQUAL( grid.linearPos( p0 ) + n3 * n4, grid.linearPos( p2 ) );
+    BOOST_CHECK_EQUAL( grid.linearPos( p0 ) + n2 * n3 * n4, grid.linearPos( p3 ) );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        IndexType pos[4];
+        grid.gridPos( pos, i );
+        BOOST_CHECK_EQUAL( i, grid.linearPos( pos ) );
+    }
+
+    for ( IndexType i1 = 0; i1 < n1; ++i1 )
+    {
+        for ( IndexType i2 = 0; i2 < n2; ++i2 )
+        {
+            for ( IndexType i3 = 0; i3 < n3; ++i3 )
+            {
+                for ( IndexType i4 = 0; i4 < n4; ++i4 )
+                {
+                    IndexType linearPos = grid.linearPos( i1, i2, i3, i4 );
+                    IndexType newPos[4];
+                    grid.gridPos( newPos, linearPos );
+                    BOOST_CHECK_EQUAL( i1, newPos[0] );
+                    BOOST_CHECK_EQUAL( i2, newPos[1] );
+                    BOOST_CHECK_EQUAL( i3, newPos[2] );
+                    BOOST_CHECK_EQUAL( i4, newPos[3] );
+                }
             }
         }
     }

@@ -34,16 +34,13 @@
 
 #pragma once
 
-// for dll_import
-
 #include <scai/common/config.hpp>
 #include <scai/common/Utils.hpp>
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
-
-// std
-#include <stdint.h>
+#include <scai/common/Constants.hpp>
 
 namespace scai
 {
@@ -90,8 +87,11 @@ public:
 
     void reserve( const IndexType npoints );
 
-    /** Add a stencil point */
-
+    /** Add a stencil point  
+     *
+     * @param[in] relpos array with nDims values to specify stencil point distance
+     * @param[in] val is the value to be used for scaling with the stencil point
+     */
     void addPoint( const int relpos[], const ValueType val );
 
     /** Return the total number of stencil points. */
@@ -124,7 +124,17 @@ public:
      *  @param[out] lb is array with width to the left for each dimension
      *  @param[out] ub is array with width to the right for each dimension
      */
-    inline void getWidths( IndexType lb[], IndexType ub[] ) const;
+    inline void getWidth( IndexType lb[], IndexType ub[] ) const;
+
+    /** Return number of entries required for the stencil matrix. 
+     * 
+     *  @returns ( ub[0] + lb[0] + 1 ) * ( ub[1] + lb[1] + 1 ) .... 
+     */
+    inline IndexType getMatrixSize() const;
+
+    /** Set the values of the stencil matrix */
+
+    inline void getMatrix( ValueType matrix[] ) const;
 
     /** Compares two stencils for equality. */
 
@@ -264,7 +274,7 @@ void Stencil<ValueType>::getLinearOffsets( int offset[], const IndexType gridDis
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void Stencil<ValueType>::getWidths( IndexType lb[], IndexType ub[] ) const
+void Stencil<ValueType>::getWidth( IndexType lb[], IndexType ub[] ) const
 {
     // initialize lb and ub arrays with 0
 
@@ -302,6 +312,145 @@ void Stencil<ValueType>::getWidths( IndexType lb[], IndexType ub[] ) const
          }
     }
 }
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+IndexType Stencil<ValueType>::getMatrixSize() const
+{
+    common::scoped_array<IndexType> lb( new IndexType[ mNDims ] );
+    common::scoped_array<IndexType> ub( new IndexType[ mNDims ] );
+  
+    getWidth( lb.get(), ub.get() );
+ 
+    IndexType size = 1;
+ 
+    for ( IndexType i = 0; i < mNDims; ++i )
+    {
+        size *= lb[i] + ub[i] + 1;
+    }
+
+    return size;
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void Stencil<ValueType>::getMatrix( ValueType matrix[] ) const
+{
+    common::scoped_array<IndexType> lb( new IndexType[ mNDims ] );
+    common::scoped_array<IndexType> ub( new IndexType[ mNDims ] );
+  
+    getWidth( lb.get(), ub.get() );
+
+    IndexType size = 1;
+ 
+    for ( IndexType i = 0; i < mNDims; ++i )
+    {
+        size *= lb[i] + ub[i] + 1;
+    }
+
+    // Initialize matrix with 0 
+
+    for ( IndexType matrixPos = 0; matrixPos < size; ++matrixPos )
+    {
+        matrix[matrixPos] = ValueType( 0 );
+    }
+
+    for ( IndexType k = 0; k < nPoints(); ++k )
+    {
+        IndexType matrixPos = 0;
+
+         for ( IndexType i = 0; i < mNDims; ++i )
+         {
+             int pos = mPositions[ k * mNDims + i ];
+
+             IndexType kDim = lb[i];
+
+             if ( pos < 0 )
+             {
+                 kDim -= static_cast<IndexType>( -pos );
+             }
+             else
+             {
+                 kDim += static_cast<IndexType>( pos );
+             }
+
+             if ( i == 0 )
+             {
+                 matrixPos = kDim;
+             }
+             else
+             {
+                 matrixPos = matrixPos * ( lb[i] + ub[i] + 1 ) + kDim;
+             }
+         }
+
+         matrix[ matrixPos ] = mValues[k];
+    }
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+bool Stencil<ValueType>::operator==( const Stencil<ValueType>& other ) const
+{
+    // stencils are never the same if they have different dims
+
+    if ( mNDims != other.mNDims )
+    {
+        return false;
+    }
+
+    // now check for equal width in all directions
+
+    common::scoped_array<IndexType> bound( new IndexType[ 4 * mNDims ] );
+
+    IndexType* lb1 = &bound[0];
+    IndexType* ub1 = &bound[mNDims];
+    IndexType* lb2 = &bound[2*mNDims];
+    IndexType* ub2 = &bound[3*mNDims];
+
+    getWidth( lb1, ub1 );
+    other.getWidth( lb2, ub2 );
+
+    IndexType size = 1;  // determine also the size of stencil matrix for later
+
+    for ( IndexType i = 0; i < mNDims; ++i ) 
+    {
+        if ( lb1[i] != lb2[i] ) return false;
+        if ( ub1[i] != ub2[i] ) return false;
+
+        size *= lb1[i] + ub1[i] + 1;
+    }
+
+    common::scoped_array<ValueType> matrix( new ValueType[ 2 * size ] );
+
+    ValueType* matrix1 = &matrix[0];
+    ValueType* matrix2 = &matrix[size];
+
+    getMatrix( matrix1 );
+    other.getMatrix( matrix2 );
+
+    for ( IndexType k = 0; k < size; ++k )
+    {
+        if ( matrix1[k] != matrix2[k] ) 
+        {
+            // std::cout << "mismtach at k = " << k << ": " <<  matrix1[k] << ", " << matrix2[k] << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+template<typename ValueType>
+bool Stencil<ValueType>::operator!=( const Stencil<ValueType>& other ) const
+{
+    return ! operator==( other );
+}
+
+/* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 IndexType Stencil<ValueType>::getValidPoints( bool valid[], const IndexType gridSizes[], const IndexType gridPos[] ) const
@@ -341,7 +490,9 @@ IndexType Stencil<ValueType>::getValidPoints( bool valid[], const IndexType grid
     return cnt;
 }
 
-/* ------------------------------------------------------------------------------------ */
+/* ==================================================================================== */
+/*   Stencil1D  one-dimensional stencil                                                 */
+/* ==================================================================================== */
 
 template<typename ValueType>
 void Stencil<ValueType>::scale( const ValueType scaling )
@@ -499,7 +650,9 @@ void Stencil1D<ValueType>::getPoint( int& pos, ValueType& val, IndexType k ) con
     val = mValues[ k ];
 }
 
-/* ------------------------------------------------------------------------------------ */
+/* ==================================================================================== */
+/*   Stencil2D  two-dimensional stencil                                                 */
+/* ==================================================================================== */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Stencil2D : public Stencil<ValueType>
@@ -512,7 +665,7 @@ public:
 
     /** Create a default stencil with a certain number of points 
      * 
-     *  @param[in] nPoints, can be 5 or 9
+     *  @param[in] nPoints is the number of stencil points, can be 5 or 9
      */
     Stencil2D( const IndexType nPoints );
 
@@ -689,7 +842,9 @@ void Stencil2D<ValueType>::getPoint( int& posX, int& posY, ValueType& val, Index
     val = mValues[ k ];
 }
 
-/* ------------------------------------------------------------------------------------ */
+/* ==================================================================================== */
+/*   Stencil3D  three-dimensional stencil                                               */
+/* ==================================================================================== */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Stencil3D : public Stencil<ValueType>
@@ -931,9 +1086,9 @@ void Stencil3D<ValueType>::getPoint( int& posX, int& posY, int& posZ, ValueType&
     val = mValues[ k ];
 }
 
-/* ------------------------------------------------------------------------------------ */
-/*  4-dimensional stencil                                                               */
-/* ------------------------------------------------------------------------------------ */
+/* ==================================================================================== */
+/*   Stencil4D  four-dimensional stencil                                                */
+/* ==================================================================================== */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Stencil4D : public Stencil<ValueType>
@@ -979,8 +1134,6 @@ Stencil4D<ValueType>::Stencil4D() : Stencil<ValueType>( 4 )
 {
 }
 
-/* ------------------------------------------------------------------------------------ */
-
 template<typename ValueType>
 Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>( 4 )
 {
@@ -1001,7 +1154,7 @@ Stencil4D<ValueType>::Stencil4D( const IndexType nPoints ) : Stencil<ValueType>(
             addPoint(  0,  0,  0, -1, minusOne );
             addPoint(  0,  0,  0,  1, minusOne );
 
-            // no break here, continue with points for Stencil3D( 1 )
+            // no break here, continue with points for Stencil4D( 1 )
         }
         case 1 :
         {

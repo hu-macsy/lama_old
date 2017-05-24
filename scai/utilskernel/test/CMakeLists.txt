@@ -44,6 +44,7 @@ scai_project (
 
         UtilsKernelTest
         HArrayUtilsTest
+        SectionTest
         UtilsTest
         LArrayTest
 )

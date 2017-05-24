@@ -35,12 +35,16 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/Stencil.hpp>
+#include <scai/common/unique_ptr.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
-using scai::common::Stencil;
-using scai::common::Stencil1D;
-using scai::common::Stencil2D;
-using scai::common::Stencil3D;
+using namespace scai;
+
+using common::Stencil;
+using common::Stencil1D;
+using common::Stencil2D;
+using common::Stencil3D;
+using common::Stencil4D;
 
 /* --------------------------------------------------------------------- */
 
@@ -79,6 +83,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest1, ValueType, scai_numeric_test_type
     // only 8 points are relevant 
 
     BOOST_CHECK_EQUAL( 8, stencil.nPoints() );
+
+    IndexType lb[1];
+    IndexType ub[1];
+
+    stencil.getWidth( lb, ub );
+
+    BOOST_CHECK_EQUAL( 3, lb[0] );
+    BOOST_CHECK_EQUAL( 4, ub[0] );
+
+    BOOST_REQUIRE_EQUAL( 8, stencil.getMatrixSize() );
+
+    ValueType matrix[8];
+
+    stencil.getMatrix( matrix );
+
+    for ( IndexType i = 0; i < 8; ++i )
+    {
+        BOOST_CHECK_CLOSE( FD8[i+1], static_cast<double>( matrix[i] ), 0.1 );
+    }
 }
 
 /* --------------------------------------------------------------------- */
@@ -97,6 +120,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest2, ValueType, scai_array_test_types 
     // only 3 points are relevant 
 
     BOOST_CHECK_EQUAL( 3, stencil.nPoints() );
+
+    IndexType lb[2];
+    IndexType ub[2];
+
+    stencil.getWidth( lb, ub );
+
+    BOOST_CHECK_EQUAL( 2, lb[0] );
+    BOOST_CHECK_EQUAL( 0, lb[1] );
+    BOOST_CHECK_EQUAL( 0, ub[0] );
+    BOOST_CHECK_EQUAL( 0, ub[1] );
 }
 
 /* --------------------------------------------------------------------- */
@@ -113,6 +146,149 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest3, ValueType, scai_array_test_types 
     // all points are relevant 
 
     BOOST_CHECK_EQUAL( 27, stencil.nPoints() );
+
+    // and it is the same as the default 27 point stencil
+
+    Stencil3D<ValueType> stencil27( 27 );
+
+    BOOST_CHECK_EQUAL( stencil, stencil27 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( stencil2Test )
+{
+    typedef float ValueType;
+
+    Stencil1D<ValueType> stencil1( 3 );   // stencil in one-direction
+
+    Stencil2D<ValueType> stencil2a( 5 );   
+    Stencil2D<ValueType> stencil2b( stencil1, stencil1 );   
+
+    BOOST_CHECK_EQUAL( stencil2a, stencil2b );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( stencil3Test )
+{
+    typedef float ValueType;
+
+    Stencil1D<ValueType> stencil1( 3 );   // stencil in one-direction
+
+    Stencil3D<ValueType> stencil3a( 7 );
+    Stencil3D<ValueType> stencil3b( stencil1, stencil1, stencil1 );
+
+    BOOST_CHECK_EQUAL( stencil3a, stencil3b );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( stencil4Test )
+{
+    typedef double ValueType;
+
+    Stencil1D<ValueType> stencil1( 3 );   // stencil in one-direction
+
+    Stencil4D<ValueType> stencil4a( 9 );   
+    Stencil4D<ValueType> stencil4b( stencil1, stencil1, stencil1, stencil1 );
+
+    BOOST_CHECK_EQUAL( stencil4a, stencil4b );
+
+    Stencil4D<ValueType> stencil4c;
+
+    stencil4c.addPoint( 0, 0, 0, 0, 8 );
+    stencil4c.addPoint( 0, 0, 0, 1, -1 );
+    stencil4c.addPoint( 0, 0, 0, -1, -1 );
+    stencil4c.addPoint( 0, 0, 1, 0, -1 );
+    stencil4c.addPoint( 0, 0, -1, 0,  -1 );
+    stencil4c.addPoint( 0, 1, 0 , 0, -1 );
+    stencil4c.addPoint( 0, -1, 0, 0,  -1 );
+
+    // some points are misssing, so not equal 
+
+    BOOST_CHECK( stencil4c != stencil4a );
+
+    // add the missing two points
+
+    stencil4c.addPoint( 1, 0, 0 , 0, -1 );
+    stencil4c.addPoint( -1, 0, 0, 0,  -1 );
+ 
+    // now we have the same stencil
+
+    BOOST_CHECK( stencil4c == stencil4a );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( validPointTest )
+{
+    typedef double ValueType;
+
+    const IndexType nPoints = 7;
+
+    Stencil3D<ValueType> stencil3( nPoints );
+
+    const IndexType gridSizes[3] = { 4, 5, 4 };
+
+    IndexType pos[3];
+
+    common::scoped_array<bool> valid( new bool[nPoints] );
+
+    for ( IndexType i0 = 0; i0 < gridSizes[0]; ++i0 )
+    {
+        pos[0] = i0;
+
+        for ( IndexType i1 = 0; i1 < gridSizes[1]; ++i1 )
+        {
+            pos[1] = i1;
+
+            for ( IndexType i2 = 0; i2 < gridSizes[2]; ++i2 )
+            {
+                pos[2] = i2;
+                
+                const IndexType validPoints = stencil3.getValidPoints( valid.get(), gridSizes, pos );
+
+                BOOST_CHECK( validPoints <= nPoints );
+
+                IndexType cnt = 0;
+
+                for ( IndexType k = 0; k < nPoints; ++k )
+                {
+                    if ( valid[k] ) 
+                    { 
+                        cnt++;
+                    }
+                    else
+                    {
+                        int p0, p1, p2;
+
+                        ValueType v;
+ 
+                        stencil3.getPoint( p0, p1, p2, v, k );
+
+                        if ( false )
+                        {
+                            std::cout << "Point( " << i0 << ", " << i1 << ", " << i2 
+                                      << " ) has no valid neighbor for stencil point " << k 
+                                      << " = (" << p0 << ", " << p1 << ", " << p2 << " )" << std::endl;
+                        }
+
+                        if ( p0 == 1 )
+                        {
+                            BOOST_CHECK_EQUAL( i0 + 1, gridSizes[0] );
+                        }
+                        if ( p0 == -1 )
+                        {
+                            BOOST_CHECK_EQUAL( i0, 0 );
+                        }
+                    }
+                }
+
+                BOOST_CHECK_EQUAL( cnt, validPoints );
+            }
+        }
+    }
 }
 
 /* --------------------------------------------------------------------- */
