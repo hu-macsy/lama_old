@@ -46,49 +46,64 @@ int main( int argc, char** argv )
 {
     CSRStorage<ValueType> matrix;
 
-    if ( argc < 2 )
+    if ( argc < 3 )
     {
         std::cerr << "Missing filename for input matrix" << std::endl;
-        std::cerr << "spy matrix_filename [ width [ height [ scale ] ] ]" << std::endl;
+        std::cerr << "spy matrix_filename bitmap_filename [ width [ height ] ]" << std::endl;
         exit( 1 );
     }
 
-    const char* filename = argv[1];
+    std::string matrixFileName( argv[1] );
+    std::string imageFileName( argv[2] );
 
-    int nRows = 800;
+    matrix.readFromFile( matrixFileName );
 
-    if ( argc > 2 )
-    {
-        sscanf( argv[2], "%d",  &nRows );
-    }
-
-    int nColumns = nRows;
+    IndexType height = matrix.getNumRows();
+    IndexType width = matrix.getNumColumns();
 
     if ( argc > 3 )
     {
-        sscanf( argv[3], "%d",  &nColumns );
+        std::istringstream input( argv[3] );
+        input >> width;
+        height = width;
+    
+        if ( argc > 4 )
+        {
+            std::istringstream input( argv[3] );
+            input >> height;
+        }
+
+        SCAI_ASSERT_GE_ERROR( matrix.getNumRows(), width, "width cannot be greater than #cols in matrix" );
+        SCAI_ASSERT_GE_ERROR( matrix.getNumColumns(), height, "height cannot be greater than #rows in matrix" );
     }
 
-    int nZoom = 1;
-
-    if ( argc > 4 )
+    else
     {
-        sscanf( argv[4], "%d",  &nZoom );
+        height = matrix.getNumRows();
+        width = matrix.getNumColumns();
+
+        while ( width > 2048 || height > 2048 )
+        {
+            width = width / 2;
+            height = height / 2;
+        }
     }
 
-    matrix.readFromFile( filename );
     const HArray<IndexType>& ia = matrix.getIA();
     const HArray<IndexType>& ja = matrix.getJA();
     const HArray<ValueType>& values = matrix.getValues();
+
     ReadAccess<IndexType> csrIA( ia );
     ReadAccess<IndexType> csrJA( ja );
     ReadAccess<ValueType> csrValues( values );
-    std::cout << "Write png of size " << nRows << " x " << nColumns << ", zoom = " << nZoom << std::endl;
-    Bitmap pic( nRows, nColumns, nZoom );
-    pic.setColor( 240, 120, 0 );  // color for smallest value
-    // pic.setColor( 0, 0, 255 );    // color for largetst value
+
+    std::cout << "Write png of size " << height << " x " << width << std::endl;
+
+    Bitmap pic( height, width );
     pic.drawCSR( matrix.getNumRows(), matrix.getNumColumns(), csrIA.get(), csrJA.get(), csrValues.get() );
-    const std::string out_filename = "lama.png";
-    pic.write_png_file( out_filename.c_str() );
-    std::cout << "png files has been written as " << out_filename << std::endl;
+    pic.write( imageFileName );
+
+    std::cout << "Done: written matrix " << matrixFileName 
+              << " into image file " << imageFileName 
+              << ", " << width << " x " << height << std::endl;
 }

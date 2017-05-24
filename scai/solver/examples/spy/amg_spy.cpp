@@ -73,13 +73,6 @@ int main( int argc, char** argv )
         sscanf( argv[3], "%d",  &nColumns );
     }
 
-    int nZoom = 1;
-
-    if ( argc > 4 )
-    {
-        sscanf( argv[4], "%d",  &nZoom );
-    }
-
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     if ( comm->getSize() > 1 )
@@ -119,7 +112,6 @@ int main( int argc, char** argv )
 
         IndexType m = nRows;
         IndexType n = nColumns;
-        IndexType s = nZoom;
 
         if ( m > local.getNumRows() )
         {
@@ -128,14 +120,11 @@ int main( int argc, char** argv )
 
         if ( n > local.getNumColumns() )
         {
-            s *= n / local.getNumColumns();
             n = local.getNumColumns();
         }
 
-        std::cout << "Write png of size " << m << " x " << n << ", zoom = " << s << std::endl;
-        Bitmap pic( m, n, s );
-        pic.setColor( 240, 120, 0 );  // color for smallest value
-        // pic.setColor( 0, 0, 255 );    // color for largest value
+        std::cout << "Write png of size " << m << " x " << n << std::endl;
+        Bitmap pic( m, n );
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
         ReadAccess<ValueType> csrValues( values );
@@ -153,7 +142,7 @@ int main( int argc, char** argv )
 
         out_filename << ".galerkin_" << level << "." << local.getNumRows() << "x" << local.getNumColumns()
                      << "_" << values.size() << ".png";
-        pic.write_png_file( out_filename.str().c_str() );
+        pic.write( out_filename.str().c_str() );
         std::cout << "png files has been written as " << out_filename.str() << std::endl;
     }
 
@@ -169,19 +158,15 @@ int main( int argc, char** argv )
 
         IndexType m = nRows;
         IndexType n = nRows * local.getNumColumns() / local.getNumRows();
-        IndexType s = nZoom;
 
         if ( m > local.getNumRows() )
         {
             m = local.getNumRows();
             n = local.getNumColumns();
-            s *= n / local.getNumColumns();
         }
 
-        std::cout << "Write png of size " << m << " x " << n << ", zoom = " << s << std::endl;
-        Bitmap pic( m, n, s );
-        pic.setColor( 240, 120, 0 );  // color for smallest value
-        // pic.setColor( 0, 0, 255 );    // color for largest value
+        std::cout << "Write png of size " << m << " x " << n << std::endl;
+        Bitmap pic( m, n );
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
         ReadAccess<ValueType> csrValues( values );
@@ -199,7 +184,7 @@ int main( int argc, char** argv )
 
         out_filename << ".interpolation_" << level << "." << local.getNumRows() << "x" << local.getNumColumns()
                      << "_" << values.size() << ".png";
-        pic.write_png_file( out_filename.str().c_str() );
+        pic.write( out_filename.str().c_str() );
         std::cout << "png files has been written as " << out_filename.str() << std::endl;
     }
 }
