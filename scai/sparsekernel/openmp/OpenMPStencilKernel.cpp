@@ -1277,10 +1277,12 @@ void OpenMPStencilKernel::stencilGEMV2Border(
     SCAI_LOG_INFO( logger,  "stencilGEMV2Border on " << i0 << " - " << i1 
                              << " x " << j0 << " - " << j1 )
 
-    #pragma omp parallel for if ( i1 - i0 > 7 )
+    bool outer_parallel = ( i1 - i0 ) > 7;
+
+    #pragma omp parallel for if ( outer_parallel )
     for ( IndexType i = i0; i < i1; i++ )
     {
-        #pragma omp parallel for
+        #pragma omp parallel for if ( !outer_parallel )
         for ( IndexType j = j0; j < j1; j++ )
         {
             IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
@@ -1328,10 +1330,12 @@ void OpenMPStencilKernel::stencilGEMV3Border(
                              << " x " << j0 << " - " << j1 
                              << " x " << k0 << " - " << k1  )
 
-    #pragma omp parallel for if ( i1 - i0 > 7 )
+    bool outer_parallel = ( i1 - i0 ) > 7 ;
+
+    #pragma omp parallel for if ( outer_parallel )
     for ( IndexType i = i0; i < i1; i++ )
     {
-        #pragma omp parallel for
+        #pragma omp parallel for if ( !outer_parallel )
         for ( IndexType j = j0; j < j1; j++ )
         {
             for ( IndexType k = k0; k < k1; k++ )
@@ -1385,10 +1389,14 @@ void OpenMPStencilKernel::stencilGEMV4Border(
                              << " x " << k0 << " - " << k1  
                              << " x " << m0 << " - " << m1  )
 
-    #pragma omp parallel for if ( i1 - i0 > 7 )
+    // take decision which of the two nested loops to take for OpenMP parallelization
+
+    bool outer_parallel = ( i1 - i0 ) > 7 ;
+
+    #pragma omp parallel for if ( outer_parallel )
     for ( IndexType i = i0; i < i1; i++ )
     {
-        #pragma omp parallel for
+        #pragma omp parallel for if ( !outer_parallel )
         for ( IndexType j = j0; j < j1; j++ )
         {
             for ( IndexType k = k0; k < k1; k++ )

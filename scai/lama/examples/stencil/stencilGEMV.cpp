@@ -58,28 +58,12 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+static const IndexType NITER = 10;
 
-int main( int argc, const char* argv[] )
+template<typename ValueType> 
+void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil )
 {
-    // relevant SCAI arguments: 
-    //   SCAI_CONTEXT = ...    set default context
-    //   SCAI_DEVICE  = ...    set default device
-
-    common::Settings::parseArgs( argc, argv );
-
-    // Take a default stencil
-
-    common::Stencil1D<double> stencil1( 3 );
-    common::Stencil4D<double> stencil( stencil1, stencil1, stencil1, stencil1 );
-
-    // Define a grid with same number of dimensions as stencil
-
-    const IndexType N1 = 40;
-    const IndexType N2 = 40;
-    const IndexType N3 = 50;
-    const IndexType N4 = 50;
-
-    common::Grid4D grid( N1, N2, N3, N4 );
+    std::cout << "Benchmark: grid = " << grid << ", stencil = " << stencil << std::endl;
 
     // Distibute grid onto default processor array, can be set by --SCAI_NP=2x3x2
 
@@ -90,7 +74,7 @@ int main( int argc, const char* argv[] )
 
     // The stencil matrix just needs the grid distribution and the stencil
 
-    StencilMatrix<double> stencilMatrix( gridDistribution, stencil );
+    StencilMatrix<ValueType> stencilMatrix( gridDistribution, stencil );
     stencilMatrix.setContextPtr( ctx );
 
     std::cout << "stencilMatrix " << stencilMatrix << std::endl;
@@ -99,24 +83,22 @@ int main( int argc, const char* argv[] )
 
     // Conversion stencil matrix -> CSR matrix is full supported
 
-    CSRSparseMatrix<double> csrMatrix( stencilMatrix );
+    CSRSparseMatrix<ValueType> csrMatrix( stencilMatrix );
 
     csrMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
     csrMatrix.setContextPtr( ctx );
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
-    DenseVector<double> x( stencilMatrix.getColDistributionPtr() );
+    DenseVector<ValueType> x( stencilMatrix.getColDistributionPtr() );
 
     x = 1.0;
 
-    const IndexType NITER = 20;
-
-    DenseVector<double> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
-    DenseVector<double> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
+    DenseVector<ValueType> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
+    DenseVector<ValueType> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
 
     {
-        SCAI_REGION( "main.stencilGEMV" )
+        SCAI_REGION( "bench.stencilGEMV" )
 
         for ( IndexType iter = 0; iter < NITER; ++iter )
         {
@@ -124,7 +106,7 @@ int main( int argc, const char* argv[] )
         }
     }
     {
-        SCAI_REGION( "main.csrGEMV" )
+        SCAI_REGION( "bench.csrGEMV" )
         for ( IndexType iter = 0; iter < NITER; ++iter )
         {
             y2 += csrMatrix * x;
@@ -134,4 +116,93 @@ int main( int argc, const char* argv[] )
     // stencil and CSR matrix are same, so result vectors y1 and y2 must be same or close
 
     std::cout << "diff = " << y1.maxDiffNorm( y2 ) << std::endl;
+}
+
+int main( int argc, const char* argv[] )
+{
+    typedef float ValueType;
+
+    // relevant SCAI arguments: 
+    //   SCAI_CONTEXT = ...    set default context
+    //   SCAI_DEVICE  = ...    set default device
+
+    common::Settings::parseArgs( argc, argv );
+
+    if ( argc < 3 )
+    {
+        std::cout << "call: " << argv[0] << " <ndims> <stencilType>" << std::endl;
+        return -1;
+    }
+
+    ContextPtr ctx = Context::getContextPtr();
+
+    // on GPUs we can only run smaller problems
+
+    IndexType nDims   = atoi( argv[1] );
+    IndexType nPoints = atoi( argv[2] );
+
+    std::cout << "Bench " << argv[0] << " nDims = " << nDims << ", nPoints = " << nPoints << std::endl;
+
+    if ( nDims == 4 )
+    { 
+        common::Stencil4D<ValueType> stencil( nPoints );
+
+        // Define a grid with same number of dimensions as stencil
+
+        const IndexType N1 = 40;
+        const IndexType N2 = 80;
+        const IndexType N3 = 80;
+        const IndexType N4 = 80;
+    
+        common::Grid4D grid( N1, N2, N3, N4 );
+
+        bench( grid, stencil );
+    }
+    else if ( nDims == 3 )
+    { 
+        common::Stencil3D<ValueType> stencil( nPoints );
+
+        // Define a grid with same number of dimensions as stencil
+
+        // const IndexType N1 = 200;
+        // const IndexType N2 = 400;
+        // const IndexType N3 = 500;
+
+        const IndexType N1 = 1000;
+        const IndexType N2 = 800;
+        const IndexType N3 = 100;
+    
+        common::Grid3D grid( N1, N2, N3 );
+
+        bench( grid, stencil );
+    }
+    else if ( nDims == 2 )
+    { 
+        common::Stencil2D<ValueType> stencil( nPoints );
+
+        // Define a grid with same number of dimensions as stencil
+
+        const IndexType N1 =  4000;
+        const IndexType N2 = 10000;
+    
+        common::Grid2D grid( N1, N2 );
+
+        bench( grid, stencil );
+    }
+    else if ( nDims == 1 )
+    { 
+        common::Stencil1D<ValueType> stencil( nPoints );
+
+        // Define a grid with same number of dimensions as stencil
+
+        const IndexType N1 = 40000000;
+    
+        common::Grid1D grid( N1 );
+
+        bench( grid, stencil );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "ndims = " << nDims << " not supported yet" );
+    }
 }
