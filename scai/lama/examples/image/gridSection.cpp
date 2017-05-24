@@ -302,6 +302,8 @@ int main( int argc, const char* argv[] )
         Pmin( iz, Range(), Range(), Range() ) = pextr;
     }
 
+    if ( true ) return 0;
+
     SCAI_LOG_ERROR( logger, *comm << ": Loop 2 -> Loop 3" )
 
     // %% LOOP 3 (communication necessary after each depth iteration)

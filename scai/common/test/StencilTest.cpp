@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE( validPointTest )
                         }
                         if ( p0 == -1 )
                         {
-                            BOOST_CHECK_EQUAL( i0, 0 );
+                            BOOST_CHECK_EQUAL( i0, IndexType( 0 ) );
                         }
                     }
                 }
