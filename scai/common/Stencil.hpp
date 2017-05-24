@@ -152,6 +152,14 @@ public:
 
     const ValueType* values() const;
 
+    /** Set this stencil by transpose of other stencil. */
+
+    void transpose( const Stencil& other );
+
+    /** Scale this stencily by a certain value. */
+
+    void scale( const ValueType scaling );
+
 protected:
 
     std::vector<ValueType> mValues;
@@ -485,6 +493,32 @@ IndexType Stencil<ValueType>::getValidPoints( bool valid[], const IndexType grid
 /* ==================================================================================== */
 /*   Stencil1D  one-dimensional stencil                                                 */
 /* ==================================================================================== */
+
+template<typename ValueType>
+void Stencil<ValueType>::scale( const ValueType scaling )
+{
+    for ( IndexType p = 0; p < nPoints(); ++p )
+    {
+        mValues[p] *= scaling;
+    }
+}
+
+/* ------------------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void Stencil<ValueType>::transpose( const Stencil<ValueType>& other )
+{
+    mNDims = other.mNDims;
+    mValues = other.mValues;
+    mPositions = other.mPositions;
+
+    for ( size_t k = 0; k < mPositions.size(); k++ )
+    {
+        mPositions[ k ] = -mPositions[k];
+    }
+}
+
+/* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Stencil1D : public Stencil<ValueType>
