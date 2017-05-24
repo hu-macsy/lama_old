@@ -111,6 +111,8 @@ scai_project (
         _SparseVector
 
         DenseVector
+        GridVector
+        GridSection
         SparseVector
 
         Vector
@@ -121,6 +123,8 @@ scai_project (
     HEADERS                  # .hpp only
 
         Scalar
+        GridReadAccess
+        GridWriteAccess
     )
 
 ### add subdirectories
