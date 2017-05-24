@@ -46,6 +46,8 @@ scai_project (
     SOURCES
 
         DenseVectorTest
+        GridVectorTest
+        GridSectionTest
         L1NormTest
         L2NormTest
         MaxNormTest

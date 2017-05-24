@@ -32,15 +32,19 @@
  * @date 10.06.2016
  */
 
-#include "MatrixMarketIO.hpp"
+#include <scai/lama/io/MatrixMarketIO.hpp>
 
-#include <scai/utilskernel/LAMAKernel.hpp>
-#include <scai/utilskernel/LArray.hpp>
-#include <scai/sparsekernel/CSRKernelTrait.hpp>
+#include <scai/lama/io/IOStream.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
+
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/DenseStorage.hpp>
-#include <scai/lama/io/IOStream.hpp>
+
+#include <scai/sparsekernel/CSRKernelTrait.hpp>
+
+#include <scai/utilskernel/LAMAKernel.hpp>
+#include <scai/utilskernel/LArray.hpp>
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
@@ -1287,6 +1291,82 @@ void MatrixMarketIO::readStorageImpl(
     {
         coo.copyBlockTo( storage, firstRow, nRows );
     }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
+    }
+
+    writeArray( data, outputFileName );
+}
+
+void MatrixMarketIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    readArray( data, inputFileName );
+
+    grid = common::Grid1D( data.size() );
+    SCAI_LOG_WARN( logger, "MatrixMarket does not support multidimensional array, take default shape " << grid )
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+{
+    IOWrapper<MatrixMarketIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( MatrixMarketIO& ) *this, storage, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatrixMarketIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( MatrixMarketIO& ) *this, storage, fileName, offsetRow, nRows );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( MatrixMarketIO& ) *this, array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( MatrixMarketIO& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( MatrixMarketIO& ) *this, array, fileName, offset, n );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatrixMarketIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatrixMarketIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( MatrixMarketIO& ) *this, size, indexes, values, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */
