@@ -1153,7 +1153,7 @@ Stencil4D<ValueType>::Stencil4D(
 
     Stencil<ValueType>::reserve( nPoints );
 
-    IndexType pos;
+    int pos;         // must be signed 
     ValueType val;
 
     for ( IndexType i = 0; i < stencilX.nPoints(); ++i )
