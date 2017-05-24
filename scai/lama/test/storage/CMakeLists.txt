@@ -53,6 +53,7 @@ scai_project (
         DIAStorageTest
         JDSStorageTest
         SparseAssemblyStorageTest
+        StencilStorageTest
         DenseStorageTest
 
         IOStreamTest
