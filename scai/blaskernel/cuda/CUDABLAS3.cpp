@@ -49,6 +49,8 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 
@@ -81,6 +83,8 @@ void CUDABLAS3::gemm(
     ValueType* const C,
     const IndexType ldc )
 {
+    SCAI_REGION( "CUDA.BLAS3.gemm" )
+
     typedef CUBLASTrait::BLASTrans BLASTrans;
     BLASTrans transA_char = CUBLAS_OP_N;
     BLASTrans transB_char = CUBLAS_OP_N;
