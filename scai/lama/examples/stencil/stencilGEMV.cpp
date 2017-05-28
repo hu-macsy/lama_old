@@ -65,19 +65,21 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 {
     std::cout << "Benchmark: grid = " << grid << ", stencil = " << stencil << std::endl;
 
-    // Distibute grid onto default processor array, can be set by --SCAI_NP=2x3x2
+    // Distribute grid onto default processor array, can be set by --SCAI_NP=2x3x2
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     ContextPtr ctx = Context::getContextPtr();
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
+    std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
+
     // The stencil matrix just needs the grid distribution and the stencil
 
     StencilMatrix<ValueType> stencilMatrix( gridDistribution, stencil );
     stencilMatrix.setContextPtr( ctx );
 
-    std::cout << "stencilMatrix " << stencilMatrix << std::endl;
+    std::cout << *comm << ": stencilMatrix " << stencilMatrix << std::endl;
 
     stencilMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
 
@@ -182,10 +184,13 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 =  4000;
-        const IndexType N2 = 10000;
+        const IndexType N1 =  40;
+        const IndexType N2 = 100;
     
         common::Grid2D grid( N1, N2 );
+
+        grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+        grid.setBorderType( 0, common::Grid::BORDER_CIRCULAR, common::Grid::BORDER_CIRCULAR );
 
         bench( grid, stencil );
     }
@@ -195,9 +200,11 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = 40000000;
+        const IndexType N1 = 20;
     
         common::Grid1D grid( N1 );
+
+        grid.setBorderType( 0, common::Grid::BORDER_CIRCULAR );
 
         bench( grid, stencil );
     }

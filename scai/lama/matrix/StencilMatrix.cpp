@@ -119,7 +119,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
 
         sparsekernel::OpenMPStencilKernel::stencilHaloSizes( 
             wIA.get(), nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
-            globalGrid.sizes(), stencil.nPoints(), stencil.positions() );
+            globalGrid.sizes(), globalGrid.borders(), stencil.nPoints(), stencil.positions() );
 
         wIA.resize( n );
     }
@@ -136,7 +136,8 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
         sparsekernel::OpenMPStencilKernel::stencilHaloCSR(
             wJA.get(), wValues.get(), rIA.get(),
             nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
-            globalGrid.sizes(), globalGridDistances, stencil.nPoints(), stencil.positions(),
+            globalGrid.sizes(), globalGridDistances, globalGrid.borders(),
+            stencil.nPoints(), stencil.positions(),
             stencil.values(), stencilOffsets.get() );
     }
 }
