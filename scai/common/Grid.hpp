@@ -156,6 +156,10 @@ public:
 
     inline bool operator!=( const Grid& other ) const;
 
+    /** This method allows to set a border type for one dimension at both sides  */
+
+    inline void setBorderType( const IndexType dim, const BorderType type );
+
     /** This method allows to set individual border types for the grid. */
 
     inline void setBorderType( const IndexType dim, const BorderType left, const BorderType right );
@@ -327,6 +331,14 @@ bool Grid::validPos( const IndexType gridPos[] ) const
 }
 
 /* ------------------------------------------------------------------------------------ */
+
+void Grid::setBorderType( const IndexType dim, const BorderType type )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( dim, mNDims, "illegal dim used" )
+
+    mBorder[2 * dim    ] = type;
+    mBorder[2 * dim + 1] = type;
+}
 
 void Grid::setBorderType( const IndexType dim, const BorderType left, const BorderType right )
 {
