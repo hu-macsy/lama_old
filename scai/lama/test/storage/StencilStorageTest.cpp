@@ -117,36 +117,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( transposeTest, ValueType, scai_numeric_test_types )
+// BOOST_AUTO_TEST_CASE_TEMPLATE( transposeTest, ValueType, scai_numeric_test_types )
+
+BOOST_AUTO_TEST_CASE( transposeTest )
 {
-    const IndexType N1 = 7;
-    const IndexType N2 = 4;
+    typedef RealType ValueType;
 
-    common::Grid2D grid( N1, N2 );
+    for ( int b1 = 2; b1 < 3; b1++ )
+    {
+        for ( int b2 = 2; b2 < 3; b2++ )
+        {
+            const IndexType N1 = 3;
+            const IndexType N2 = 3;
 
-    const int stencilData[9] = {  -1, -2, 1,
-                                  -1, 4, 5,
-                                   3, 2, 1   };
+            common::Grid2D grid( N1, N2 );
 
-    common::Stencil2D<ValueType> stencil( 3, 3, stencilData );
-    common::Stencil2D<ValueType> stencilT;
-    stencilT.transpose( stencil );
+            // Be careful: transpose only okay with same boundary types for left/right in each dim
 
-    StencilStorage<ValueType> stencilStorage( grid, stencil );
-    StencilStorage<ValueType> stencilStorageT( grid, stencilT );
+            grid.setBorderType( 0, common::Grid::BorderType( b1 ), common::Grid::BorderType( b1 ) );
+            grid.setBorderType( 1, common::Grid::BorderType( b2 ), common::Grid::BorderType( b2 ) );
 
-    CSRStorage<ValueType> csrStorage( stencilStorage );
-    csrStorage.writeToFile( "csr1.mtx" );
-    CSRStorage<ValueType> csrStorageT( stencilStorageT );
-    csrStorageT.writeToFile( "csr2.mtx" );
+        //    const int stencilData[9] = {  -1, -2, 1,
+        //                                  -1, 4, 5,
+        //                                   3, 2, 1   };
 
-    CSRStorage<ValueType> csrStorageT1;
-    csrStorageT1.assignTranspose( csrStorage );
-    csrStorageT.writeToFile( "csr3.mtx" );
+            const int stencilData[9] = {   0, -2, 0,
+                                          -1, 4, 3,
+                                           0, -1, 0   };
 
-    BOOST_CHECK_EQUAL( ValueType( 0 ), csrStorageT.maxDiffNorm( csrStorageT1 ) );
+            common::Stencil2D<ValueType> stencil( 3, 3, stencilData );
+
+            common::Stencil2D<ValueType> stencilT;
+            stencilT.transpose( stencil );
+
+            StencilStorage<ValueType> stencilStorage( grid, stencil );
+
+            SCAI_LOG_ERROR( logger, "Test stencil tranpose on this storage: " << stencilStorage )
+
+            StencilStorage<ValueType> stencilStorageT( grid, stencilT );
+        
+            CSRStorage<ValueType> csrStorage( stencilStorage );
+            csrStorage.sortRows( false );
+            csrStorage.compress( ValueType( 0 ) );
+            csrStorage.writeToFile( "csrStencil.mtx" );
+
+            CSRStorage<ValueType> csrStorageT( stencilStorageT );
+            csrStorageT.sortRows( false );
+            csrStorageT.compress( ValueType( 0 ) );
+            csrStorageT.writeToFile( "csrStencilT.mtx" );
+        
+            CSRStorage<ValueType> csrStorageT1;
+            csrStorageT1.assignTranspose( csrStorage );
+            csrStorageT1.writeToFile( "csrTStencil.mtx" );
+
+            CSRStorage<ValueType> diff;
+            diff.matrixPlusMatrix( 1.0, csrStorageT, -1.0, csrStorageT1 );
+            diff.compress( ValueType( 0 ) );
+            diff.writeToFile( "diff.mtx" );
+        
+            BOOST_CHECK_EQUAL( ValueType( 0 ), csrStorageT.maxDiffNorm( csrStorageT1 ) );
+        }
+    }
 }
 
+        
 /* ------------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_SUITE_END();

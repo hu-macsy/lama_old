@@ -190,7 +190,7 @@ int main( int argc, const char* argv[] )
         common::Grid2D grid( N1, N2 );
 
         grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
-        grid.setBorderType( 0, common::Grid::BORDER_CIRCULAR, common::Grid::BORDER_CIRCULAR );
+        grid.setBorderType( 0, common::Grid::BORDER_PERIODIC, common::Grid::BORDER_PERIODIC );
 
         bench( grid, stencil );
     }
@@ -204,7 +204,7 @@ int main( int argc, const char* argv[] )
     
         common::Grid1D grid( N1 );
 
-        grid.setBorderType( 0, common::Grid::BORDER_CIRCULAR );
+        grid.setBorderType( 0, common::Grid::BORDER_PERIODIC );
 
         bench( grid, stencil );
     }

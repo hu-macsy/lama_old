@@ -73,7 +73,7 @@ public:
     typedef enum
     {
         BORDER_ABSORBING,    //!   factor 0 if neighbored pos is not available
-        BORDER_CIRCULAR,     //!   take it from other side
+        BORDER_PERIODIC,     //!   take it from other side
         BORDER_REFLECTING    //!   take the side as reflecting
     } BorderType;
 
@@ -197,7 +197,7 @@ protected:
 
     IndexType mSize[ SCAI_GRID_MAX_DIMENSION];
 
-    BorderType mBorder[2 * SCAI_GRID_MAX_DIMENSION];
+    BorderType mBorder[SCAI_GRID_MAX_DIMENSION][2];
 };
 
 /** 1-dimensional Grid */
@@ -336,16 +336,16 @@ void Grid::setBorderType( const IndexType dim, const BorderType type )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( dim, mNDims, "illegal dim used" )
 
-    mBorder[2 * dim    ] = type;
-    mBorder[2 * dim + 1] = type;
+    mBorder[dim][0] = type;
+    mBorder[dim][1] = type;
 }
 
 void Grid::setBorderType( const IndexType dim, const BorderType left, const BorderType right )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( dim, mNDims, "illegal dim used" )
 
-    mBorder[2 * dim    ] = left;
-    mBorder[2 * dim + 1] = right;
+    mBorder[dim][0] = left;
+    mBorder[dim][1] = right;
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -417,7 +417,7 @@ const IndexType* Grid::sizes() const
 
 const Grid::BorderType* Grid::borders() const
 {
-    return mBorder;
+    return mBorder[0];
 }
 
 IndexType Grid::size( IndexType dim ) const

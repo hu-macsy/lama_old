@@ -112,8 +112,8 @@ void Grid::init( const IndexType nDims )
     for ( IndexType iDim = 0; iDim < SCAI_GRID_MAX_DIMENSION; iDim++ )
     {
         mSize[iDim] = 1;
-        mBorder[ 2 * iDim    ] = BORDER_ABSORBING;
-        mBorder[ 2 * iDim + 1] = BORDER_ABSORBING;
+        mBorder[iDim][0] = BORDER_ABSORBING;
+        mBorder[iDim][1] = BORDER_ABSORBING;
     }
 }
 
@@ -178,8 +178,8 @@ static inline char codeBorder( Grid::BorderType border )
     {
         case Grid::BORDER_ABSORBING:
             return 'A';
-        case Grid::BORDER_CIRCULAR:
-            return 'C';
+        case Grid::BORDER_PERIODIC:
+            return 'P';
         case Grid::BORDER_REFLECTING:
             return 'R';
         default:
@@ -231,7 +231,7 @@ static bool inline getBorderPosL( IndexType& pos, const IndexType offset, const 
     {
         valid = false;
     }
-    else if ( border == Grid::BORDER_CIRCULAR )
+    else if ( border == Grid::BORDER_PERIODIC )
     {
         pos = ( pos + size ) - offset;
     }
@@ -263,7 +263,7 @@ static bool inline getBorderPosR( IndexType& pos, const IndexType offset, const 
     {
         valid = false;
     }
-    else if ( border == Grid::BORDER_CIRCULAR )
+    else if ( border == Grid::BORDER_PERIODIC )
     {
         pos = ( pos + offset ) - size;
     }
@@ -310,7 +310,7 @@ bool Grid::getOffsetPos( IndexType pos[], const int offsets[] ) const
 {
     // call the static method with my member variables
 
-    return getOffsetPos( pos, offsets, mSize, mBorder, mNDims );
+    return getOffsetPos( pos, offsets, mSize, mBorder[0], mNDims );
 }
 
 

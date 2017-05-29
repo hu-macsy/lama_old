@@ -635,7 +635,7 @@ void CSRStorage<ValueType>::compress( const ValueType eps )
 
     // now compute the new offsets from the sizes, gives also new numValues
     IndexType newNumValues = HArrayUtils::scan1( newIa, this->getContextPtr() );
-    SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements" )
+    SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements, was " << mNumValues << " before" )
 
     // ready if there are no new non-zero values
 
