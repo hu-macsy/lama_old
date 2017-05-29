@@ -98,6 +98,5 @@ int main( int argc, const char* argv[] )
     csrMatrix1.writeToFile( "poisson.mtx" );
     csrMatrix2.writeToFile( "stencil.mtx" );
 
-
     std::cout << "diff = " << csrMatrix1.maxDiffNorm( csrMatrix2 ) << std::endl;
 }

@@ -170,9 +170,9 @@ int main( int argc, const char* argv[] )
         // const IndexType N2 = 400;
         // const IndexType N3 = 500;
 
-        const IndexType N1 = 1000;
-        const IndexType N2 = 800;
-        const IndexType N3 = 100;
+        const IndexType N1 = 200;
+        const IndexType N2 = 400;
+        const IndexType N3 = 500;
     
         common::Grid3D grid( N1, N2, N3 );
 
@@ -200,7 +200,7 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = 20;
+        const IndexType N1 = 40 * 1000 * 1000;
     
         common::Grid1D grid( N1 );
 
