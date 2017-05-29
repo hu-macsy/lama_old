@@ -46,6 +46,7 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Grid.hpp>
 
 #define PETSC_SUFFIX ".psc"
 

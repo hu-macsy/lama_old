@@ -57,6 +57,7 @@ public:
         const IndexType gridSizes[],
         const IndexType width[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],

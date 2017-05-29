@@ -41,8 +41,10 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
+#include <scai/common/Grid.hpp>
 #include <scai/common/exception/IOException.hpp>
 
 #include <sstream>

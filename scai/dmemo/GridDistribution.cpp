@@ -76,9 +76,10 @@ GridDistribution::GridDistribution( const Grid& globalGrid, const CommunicatorPt
 
     mGlobalGrid( globalGrid ),
     mLocalGrid( globalGrid ),
-    mProcGrid( globalGrid )
+    mProcGrid( globalGrid.nDims() )
 {
     // Build a correct processor grid by the communicator
+    // Note: border type of the processor grid does not matter
 
     IndexType nDims = globalGrid.nDims();
 
@@ -189,15 +190,47 @@ void GridDistribution::localize()
 
         for ( IndexType idim = 0; idim < mGlobalGrid.nDims(); ++idim )
         {
-            BlockDistribution::getLocalRange( mLB[idim], mUB[idim], mGlobalGrid.size( idim ), mRank[idim], mProcGrid.size( idim ) );
-
-            if ( mLB[idim] <= mUB[idim] )
+            if ( mProcGrid.size( idim ) == 1 )
             {
-                mLocalGrid.setSize( idim, mUB[idim] - mLB[idim] );
+                 // this dimension is not distributed at all
+
+                 mLB[idim] = 0;
+                 mUB[idim] = mGlobalGrid.size( idim );
+
+                 // note: border types of the local grid do not change in this dimension
             }
             else
-            {
-                mLocalGrid.setSize( idim, 0 );
+            {  
+                BlockDistribution::getLocalRange( mLB[idim], mUB[idim], mGlobalGrid.size( idim ), mRank[idim], mProcGrid.size( idim ) );
+
+                // Be careful: size = 5, np = 4 ->  0:2, 2:4, 4:5, 6:5
+
+                if ( mLB[idim] <= mUB[idim] )
+                {
+                    mLocalGrid.setSize( idim, mUB[idim] - mLB[idim] );
+
+                }
+                else
+                {
+                    mLocalGrid.setSize( idim, 0 );
+                }
+
+                // only reflecting dimensions are kept at the borders, all other will be ABSORBIC
+
+                Grid::BorderType left  = Grid::BORDER_ABSORBING;
+                Grid::BorderType right = Grid::BORDER_ABSORBING;
+
+                if ( mGlobalGrid.borders()[2 * idim] == Grid::BORDER_REFLECTING && mRank[idim] == 0 )
+                {
+                    left = Grid::BORDER_REFLECTING;
+                } 
+
+                if ( mGlobalGrid.borders()[2 * idim + 1] == Grid::BORDER_REFLECTING && mRank[idim] == mProcGrid.size( idim ) - 1 )
+                {
+                    right = Grid::BORDER_REFLECTING;
+                } 
+
+                mLocalGrid.setBorderType ( idim, left, right );
             }
         }
     }
@@ -530,7 +563,8 @@ void GridDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
 
-    stream << "GridDistribution( comm = " << *mCommunicator << ", grid = " << mGlobalGrid << " onto " << mProcGrid;
+    stream << "GridDistribution( comm = " << *mCommunicator << ", grid = " << mGlobalGrid 
+           << " onto " << mProcGrid << ", local grid = " << mLocalGrid << " )";
 }
 
 /* ---------------------------------------------------------------------------------*

@@ -46,8 +46,9 @@ Some very common stencils can be constructed as follows:
 
 .. code-block:: c++
 
-     Stencil1D stencil1D3P( 3 );
-     Stencil2D stencil2D5P( 5 );
-     Stencil2D stencil2D9P( 9 );
-     Stencil3D stencil3D7P( 7 );
-     Stencil3D stencil3D27P( 27 );
+     Stencil1D<float> stencil1D3P( 3 );
+     Stencil2D<int> stencil2D5P( 5 );
+     Stencil2D<double> stencil2D9P( 9 );
+     Stencil3D<ComplexFloat> stencil3D7P( 7 );
+     Stencil3D<ComplexDouble> stencil3D27P( 27 );
+

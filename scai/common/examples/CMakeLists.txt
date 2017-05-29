@@ -61,6 +61,7 @@ set ( EXECUTABLE_FILES ${EXECUTABLE_FILES}
           DemoFactory
           DemoFactory1
           DemoFunction 
+          DemoGrid
           DemoLoopMacro
           DemoMath
           DemoMetaProgramming

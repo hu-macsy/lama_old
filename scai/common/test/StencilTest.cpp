@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE( validPointTest )
                         }
                         if ( p0 == -1 )
                         {
-                            BOOST_CHECK_EQUAL( i0, 0 );
+                            BOOST_CHECK_EQUAL( i0, IndexType( 0 ) );
                         }
                     }
                 }
@@ -287,6 +287,49 @@ BOOST_AUTO_TEST_CASE( validPointTest )
             }
         }
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( transposeTest, ValueType, scai_array_test_types )
+{   
+    const int stencilData[9] = {  -1, -2, 1,
+                                  -1, 4, 5,
+                                   3, 2, 1   };
+
+    // transposed stencil is given by point symmetry
+
+    const int stencilDataT[9] = {   1,  2,  3,
+                                    5,  4, -1,
+                                    1, -2, -1  };
+
+    Stencil2D<ValueType> stencil( 3, 3, stencilData );
+    Stencil2D<ValueType> stencilT1( 3, 3, stencilDataT );
+    Stencil2D<ValueType> stencilT2;
+    stencilT2.transpose( stencil );
+
+    BOOST_CHECK_EQUAL( stencilT1, stencilT2 );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
+{
+    const int stencilData[9] = {  -1, -2, 1,
+                                  -1, 4, 3,
+                                   3, 2, 1   };
+
+    // scaled stencil is given by scaling each value
+
+    const int stencilDataS[9] = {  -2, -4, 2,
+                                   -2, 8, 6,
+                                    6, 4, 2   };
+
+    Stencil2D<ValueType> stencilS1( 3, 3, stencilDataS );
+    Stencil2D<ValueType> stencilS2( 3, 3, stencilData );
+    stencilS2.scale( 2 );
+
+    BOOST_CHECK_EQUAL( stencilS1, stencilS2 );
 }
 
 /* --------------------------------------------------------------------- */

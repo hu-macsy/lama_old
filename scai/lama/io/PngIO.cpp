@@ -36,6 +36,7 @@
 #include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/common/exception/UnsupportedException.hpp>
+#include <scai/common/Grid.hpp>
 
 #include<png.h>
 #include<fstream>

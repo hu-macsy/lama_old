@@ -80,6 +80,7 @@ using common::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
 using common::binary;
+using common::Grid;
 
 namespace lama
 {
@@ -101,10 +102,12 @@ StencilStorage<ValueType>::~StencilStorage()
 {
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 MatrixStorageCreateKeyType StencilStorage<ValueType>::getCreateValue() const
 {
-    return MatrixStorageCreateKeyType( Format::CSR, common::getScalarType<ValueType>() );
+    return MatrixStorageCreateKeyType( Format::STENCIL, common::getScalarType<ValueType>() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -166,7 +169,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
         WriteOnlyAccess<IndexType> sizes( csrIA, n );
   
         sparsekernel::OpenMPStencilKernel::stencilLocalSizes( 
-            sizes.get(), mStencil.nDims(), mGrid.sizes(), gridDistances, 
+            sizes.get(), mStencil.nDims(), mGrid.sizes(), gridDistances, mGrid.borders(),
             mStencil.nPoints(), mStencil.positions() );
     }
 
@@ -187,7 +190,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
  
         sparsekernel::OpenMPStencilKernel::stencilLocalCSR( 
             ja.get(), values.get(), ia.get(),
-            mStencil.nDims(), mGrid.sizes(), gridDistances, 
+            mStencil.nDims(), mGrid.sizes(), gridDistances, mGrid.borders(),
             mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilOffsets.get() );
     }
 
@@ -198,6 +201,91 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
     else
     {
         HArrayUtils::assign( csrValues, typedValues );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const
+{
+    IndexType curPos[SCAI_GRID_MAX_DIMENSION];   // grid position that corresponds to this row i
+    IndexType newPos[SCAI_GRID_MAX_DIMENSION];   // for neighbored stencil points
+
+    mGrid.gridPos( curPos, i );
+
+    const IndexType nPoints = mStencil.nPoints();
+    const IndexType nDims = mGrid.nDims();
+
+    HArray<ValueType> typedValues;
+
+    IndexType countValidPoints = 0;
+
+    const int* stencilOffset = mStencil.positions();
+    const ValueType* stencilValue = mStencil.values();
+
+    {
+        // we allocate the arrays with sufficient size but resize later
+
+        WriteOnlyAccess<IndexType> wJA( jA, nPoints );
+        WriteOnlyAccess<ValueType> wValues( typedValues, nPoints );
+
+        for ( IndexType p = 0; p < nPoints; ++p )
+        {
+            // Build the new point
+                
+            for ( IndexType i = 0; i < nDims; ++i )
+            {
+                newPos[i] = curPos[i];
+            }
+
+            bool valid = mGrid.getOffsetPos( newPos, &stencilOffset[ p * nDims ] );
+
+            if ( !valid ) 
+            {
+                continue;
+            }
+
+            IndexType col = mGrid.linearPos( newPos );
+    
+            // due to reflecting boundaries a col pos can appear twice
+
+            bool found = false;
+ 
+            for ( IndexType jj = 0; jj < countValidPoints; ++jj )
+            {
+                if ( wJA[jj] == col )
+                {
+                    found = true;
+                    wValues[jj] += stencilValue[ p ];
+                    break;
+                }
+            }
+
+            if ( !found )
+            {
+                wJA[ countValidPoints ] = col;
+                wValues[ countValidPoints ] = stencilValue[ p ];
+
+                countValidPoints++;
+            }
+        }
+    
+        wJA.resize( countValidPoints );
+        wValues.resize( countValidPoints );
+    }
+
+    // sorting is not required here.
+
+    if ( values.getValueType() == typedValues.getValueType () )
+    {
+        values.swap( typedValues );
+    }
+    else
+    {
+        // conversion required
+
+        utilskernel::HArrayUtils::assign( values, typedValues );
     }
 }
 
@@ -235,7 +323,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
         WriteAccess<ValueType> wResult( result, loc );
 
         stencilGEMV[loc]( wResult.get(), alpha, rX.get(), 
-                          mGrid.nDims(), mGrid.sizes(), width, gridDistances,
+                          mGrid.nDims(), mGrid.sizes(), width, gridDistances, mGrid.borders(),
                           mStencil.nPoints(), mStencil.positions(), mStencil.values(),
                           stencilOffsets.get() );
     }

@@ -94,7 +94,7 @@ public:
     {
         _MatrixStorage::setContextPtr( other.getContextPtr() );
     }
- 
+
     /** 
      * @brief Implementation of pure method _MatrixStorage::allocate
      */
@@ -153,6 +153,10 @@ public:
         return Format::STENCIL;
     }
 
+    /** Implementiation of virtual method MatrixStorage::getCreateValue */
+
+    virtual scai::lama::MatrixStorageCreateKeyType getCreateValue() const;
+
     /** Implementation of pure method.  */
 
     virtual void setIdentity( const IndexType )
@@ -180,8 +184,6 @@ public:
     {
         COMMON_THROWEXCEPTION( "getTypeName unsuported" )
     }
-
-    virtual scai::lama::MatrixStorageCreateKeyType getCreateValue() const;
 
     /** _MatrixStorage */
 
@@ -281,10 +283,7 @@ public:
 
     /** Implementation of pure method MatrixStorage::getSparseRow */
 
-    virtual void getSparseRow( hmemo::HArray<IndexType>& /* jA */, hmemo::_HArray& /* values */, const IndexType /* i */ ) const
-    {
-        COMMON_THROWEXCEPTION( "unsupported" )
-    }
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const;
 
     /** Implementation of pure method MatrixStorage::getColumn */
 
@@ -416,7 +415,7 @@ protected:
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::mDiagonalProperty;
 
-    common::Grid mGrid;            //! grid for which this matrix storage stands
+    common::Grid mGrid;                    //! grid for which this matrix storage stands
     common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
 
 private:
