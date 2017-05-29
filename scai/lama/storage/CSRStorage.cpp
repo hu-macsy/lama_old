@@ -616,57 +616,79 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CSRStorage<ValueType>::compress( const ValueType eps )
+void CSRStorage<ValueType>::compress( HArray<IndexType>& ia, HArray<IndexType>& ja, HArray<ValueType>& values, 
+                                      const bool diagonalFlag, const ValueType eps, ContextPtr prefContext )
 {
     static LAMAKernel<CSRKernelTrait::countNonZeros<ValueType> > countNonZeros;
-    LArray<IndexType> newIa;
+
+    const IndexType numRows = ia.size() - 1;
+    const IndexType numValues = ja.size();
+
+    HArray<IndexType> newIA;
     {
-        ContextPtr loc = this->getContextPtr();
+        ContextPtr loc = prefContext;
         countNonZeros.getSupportedContext( loc );
         SCAI_CONTEXT_ACCESS( loc )
-        ReadAccess<IndexType> ia( mIa, loc );
-        ReadAccess<IndexType> ja( mJa, loc );
-        ReadAccess<ValueType> values( mValues, loc );
-        WriteOnlyAccess<IndexType> new_ia( newIa, loc, mNumRows + 1 );  // allocate already for offsets
-        countNonZeros[loc]( new_ia.get(), ia.get(), ja.get(), values.get(), mNumRows, eps, mDiagonalProperty );
+        ReadAccess<IndexType> rIA( ia, loc );
+        ReadAccess<IndexType> rJA( ja, loc );
+        ReadAccess<ValueType> rValues( values, loc );
+        WriteOnlyAccess<IndexType> wNewIA( newIA, loc, numRows + 1 );  // allocate already for offsets
+        countNonZeros[loc]( wNewIA.get(), rIA.get(), rJA.get(), rValues.get(), numRows, eps, diagonalFlag );
     }
 
-    newIa.resize( mNumRows );  //  reset size for scan1 operation
+    newIA.resize( numRows );  //  reset size for scan1 operation
 
     // now compute the new offsets from the sizes, gives also new numValues
-    IndexType newNumValues = HArrayUtils::scan1( newIa, this->getContextPtr() );
-    SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements, was " << mNumValues << " before" )
+
+    IndexType newNumValues = HArrayUtils::scan1( newIA, prefContext );
+
+    SCAI_LOG_INFO( logger, "compress: " << newNumValues << " non-diagonal zero elements, was " << numValues << " before" )
 
     // ready if there are no new non-zero values
 
-    if ( newNumValues == mNumValues )
+    if ( newNumValues == numValues )
     {
         return;
     }
 
     // All information is available how to fill the compressed data
-    LArray<ValueType> newValues;
-    LArray<IndexType> newJa;
+
+    HArray<ValueType> newValues;
+    HArray<IndexType> newJA;
+
     {
         static LAMAKernel<CSRKernelTrait::compress<ValueType> > compressData;
-        ContextPtr loc = this->getContextPtr();
+        ContextPtr loc = prefContext;
         compressData.getSupportedContext( loc );
         SCAI_CONTEXT_ACCESS( loc )
-        ReadAccess<IndexType> new_ia( newIa, loc );
-        ReadAccess<IndexType> ia( mIa, loc );
-        ReadAccess<IndexType> ja( mJa, loc );
-        ReadAccess<ValueType> values( mValues, loc );
-        WriteOnlyAccess<IndexType> new_ja( newJa, loc, newNumValues );
-        WriteOnlyAccess<ValueType> new_values( newValues, loc, newNumValues );
-        compressData[loc]( new_ja.get(), new_values.get(), new_ia.get(),
-                           ia.get(), ja.get(), values.get(), mNumRows,
-                           eps, mDiagonalProperty );
+        ReadAccess<IndexType> rNewIA( newIA, loc );
+        ReadAccess<IndexType> rIA( ia, loc );
+        ReadAccess<IndexType> rJA( ja, loc );
+        ReadAccess<ValueType> rValues( values, loc );
+        WriteOnlyAccess<IndexType> wNewJA( newJA, loc, newNumValues );
+        WriteOnlyAccess<ValueType> wNewValues( newValues, loc, newNumValues );
+
+        compressData[loc]( wNewJA.get(), wNewValues.get(), rNewIA.get(),
+                           rIA.get(), rJA.get(), rValues.get(), numRows,
+                           eps, diagonalFlag );
     }
+
     // now switch in place to the new data
-    mIa.swap( newIa );
-    mJa.swap( newJa );
-    mValues.swap( newValues );
-    mNumValues = newNumValues;
+
+    ia.swap( newIA );
+    ja.swap( newJA );
+    values.swap( newValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void CSRStorage<ValueType>::compress( const ValueType eps )
+{
+    compress( mIa, mJa, mValues, mDiagonalProperty, eps, this->getContextPtr() );
+
+    mNumValues = mJa.size(); 
+
     // Note: temporary data is freed implicitly
 }
 

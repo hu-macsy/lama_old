@@ -42,6 +42,7 @@
 #include <scai/sparsekernel/StencilKernelTrait.hpp>
 
 #include <scai/lama/storage/StorageMethods.hpp>
+#include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/dmemo/Redistributor.hpp>
@@ -150,6 +151,8 @@ ValueType StencilStorage<ValueType>::maxNorm() const
 template<typename ValueType>
 void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<IndexType>& csrJA, _HArray& csrValues ) const
 {
+    ContextPtr ctx = Context::getHostPtr();    //  we build all data on the host
+
     IndexType n = this->getNumRows();
 
     common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
@@ -193,6 +196,20 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
             mStencil.nDims(), mGrid.sizes(), gridDistances, mGrid.borders(),
             mStencil.nPoints(), mStencil.positions(), mStencil.values(), stencilOffsets.get() );
     }
+
+    bool diagonalProperty = true;  // usually each stencil has diagonal entry
+
+    // a stencil with reflecting boundaries might contain multiple column entries
+    // therefore we sort the row entries and remove zero elements
+
+    {
+        ReadAccess<IndexType> ia( csrIA );
+        WriteAccess<IndexType> ja( csrJA );
+        WriteAccess<ValueType> values( typedValues );
+        sparsekernel::OpenMPCSRUtils::sortRowElements( ja.get(), values.get(), ia.get(), n, diagonalProperty );
+    }
+
+    CSRStorage<ValueType>::compress( csrIA, csrJA, typedValues, diagonalProperty, ValueType( 0 ), ctx );
 
     if ( typedValues.getValueType() == csrValues.getValueType() )
     {
