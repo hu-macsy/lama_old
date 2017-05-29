@@ -84,13 +84,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest1, ValueType, scai_numeric_test_type
 
     BOOST_CHECK_EQUAL( 8, stencil.nPoints() );
 
-    IndexType lb[1];
-    IndexType ub[1];
+    IndexType width[2];
 
-    stencil.getWidth( lb, ub );
+    stencil.getWidth( width );
 
-    BOOST_CHECK_EQUAL( 3, lb[0] );
-    BOOST_CHECK_EQUAL( 4, ub[0] );
+    BOOST_CHECK_EQUAL( 3, width[0] );
+    BOOST_CHECK_EQUAL( 4, width[1] );
 
     BOOST_REQUIRE_EQUAL( 8, stencil.getMatrixSize() );
 
@@ -121,15 +120,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest2, ValueType, scai_array_test_types 
 
     BOOST_CHECK_EQUAL( 3, stencil.nPoints() );
 
-    IndexType lb[2];
-    IndexType ub[2];
+    IndexType width[4] = { nIndex, nIndex, nIndex, nIndex };
 
-    stencil.getWidth( lb, ub );
+    stencil.getWidth( width );
 
-    BOOST_CHECK_EQUAL( 2, lb[0] );
-    BOOST_CHECK_EQUAL( 0, lb[1] );
-    BOOST_CHECK_EQUAL( 0, ub[0] );
-    BOOST_CHECK_EQUAL( 0, ub[1] );
+    BOOST_CHECK_EQUAL( 2, width[0] );
+    BOOST_CHECK_EQUAL( 0, width[1] );
+    BOOST_CHECK_EQUAL( 0, width[2] );
+    BOOST_CHECK_EQUAL( 0, width[3] );
 }
 
 /* --------------------------------------------------------------------- */

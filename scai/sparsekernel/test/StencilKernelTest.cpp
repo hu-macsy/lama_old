@@ -165,8 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1 };
-    IndexType ub[] = { 1 };
+    IndexType width[] = { 1, 1 };
     int stencilOffset[] = { 0, -1, 1 };
 
     {
@@ -178,7 +177,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
         ValueType alpha = 1;
         IndexType nPoints = 3;
 
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
@@ -270,8 +269,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1, 1 };
-    IndexType ub[] = { 1, 1 };
+    IndexType width[] = { 1, 1, 1, 1 };
 
     int tmpOffset2 = n2;
     int tmpOffset1 = 1;
@@ -284,7 +282,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
         ReadAccess<ValueType> rX( x, loc );
 
         ValueType alpha = 1;
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
@@ -376,8 +374,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1, 0, 1 };
-    IndexType ub[] = { 1, 0, 0 };
+    IndexType width[] = { 1, 1, 0, 0, 1, 0 };
 
     int tmpOffset = n2 * n3;
     int stencilOffset[] = { 0, -tmpOffset, tmpOffset };
@@ -390,7 +387,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
 
         ValueType alpha = 1;
         const IndexType nPoints = 1;
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
@@ -493,8 +490,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1, 0, 0, 0 };
-    IndexType ub[] = { 1, 0, 0, 0 };
+    IndexType width[] = { 1, 1, 0, 0, 0, 0, 0, 0 };
 
     int tmpOffset = n2 * n3 * n4;
     int stencilOffset[] = { 0, -tmpOffset, tmpOffset };
@@ -506,7 +502,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
         ReadAccess<ValueType> rX( x, loc );
 
         ValueType alpha = 1;
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, 
+                          nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );

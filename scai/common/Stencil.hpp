@@ -121,10 +121,12 @@ public:
 
     /** Return widths of a stencil in each dimension, both directions
      *
-     *  @param[out] lb is array with width to the left for each dimension
-     *  @param[out] ub is array with width to the right for each dimension
+     *  @param[out] width result array with nDims * 2 entries
+     *
+     *  Biggest distance to the left side for a dimension i is stored in width[2*i]
+     *  biggest distance to the right side is at width[2*i+1]
      */
-    inline void getWidth( IndexType lb[], IndexType ub[] ) const;
+    inline void getWidth( IndexType width[] ) const;
 
     /** Return number of entries required for the stencil matrix. 
      * 
@@ -266,14 +268,13 @@ void Stencil<ValueType>::getLinearOffsets( int offset[], const IndexType gridDis
 /* ------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-void Stencil<ValueType>::getWidth( IndexType lb[], IndexType ub[] ) const
+void Stencil<ValueType>::getWidth( IndexType width[] ) const
 {
-    // initialize lb and ub arrays with 0
+    // initialize width array with 0
 
-    for ( IndexType i = 0; i < mNDims; ++i )
+    for ( IndexType i = 0; i < 2 * mNDims; ++i )
     {
-        lb[i] = 0;
-        ub[i] = 0;
+        width[i] = 0;
     }
 
     for ( IndexType k = 0; k < nPoints(); ++k )
@@ -286,9 +287,9 @@ void Stencil<ValueType>::getWidth( IndexType lb[], IndexType ub[] ) const
              {
                  IndexType lbi = static_cast<IndexType>( -pos );
 
-                 if ( lbi > lb[ i ] )
+                 if ( lbi > width[2 * i ] )
                  { 
-                     lb[i] = lbi;    // new max value here
+                     width[2 * i] = lbi;    // new max value here
                  }
              }
           
@@ -296,9 +297,9 @@ void Stencil<ValueType>::getWidth( IndexType lb[], IndexType ub[] ) const
              {
                  IndexType ubi = static_cast<IndexType>( pos );
 
-                 if ( ubi > ub[ i ] )
+                 if ( ubi > width[2 * i + 1] )
                  { 
-                     ub[i] = ubi;    // new max value here
+                     width[2 * i + 1] = ubi;    // new max value here
                  }
              }
          }
@@ -310,16 +311,15 @@ void Stencil<ValueType>::getWidth( IndexType lb[], IndexType ub[] ) const
 template<typename ValueType>
 IndexType Stencil<ValueType>::getMatrixSize() const
 {
-    common::scoped_array<IndexType> lb( new IndexType[ mNDims ] );
-    common::scoped_array<IndexType> ub( new IndexType[ mNDims ] );
+    common::scoped_array<IndexType> width( new IndexType[ 2 * mNDims ] );
   
-    getWidth( lb.get(), ub.get() );
+    getWidth( width.get() );
  
     IndexType size = 1;
  
     for ( IndexType i = 0; i < mNDims; ++i )
     {
-        size *= lb[i] + ub[i] + 1;
+        size *= width[2 * i] + width[2 * i + 1] + 1;
     }
 
     return size;
@@ -330,16 +330,15 @@ IndexType Stencil<ValueType>::getMatrixSize() const
 template<typename ValueType>
 void Stencil<ValueType>::getMatrix( ValueType matrix[] ) const
 {
-    common::scoped_array<IndexType> lb( new IndexType[ mNDims ] );
-    common::scoped_array<IndexType> ub( new IndexType[ mNDims ] );
+    common::scoped_array<IndexType> width( new IndexType[ 2 * mNDims ] );
   
-    getWidth( lb.get(), ub.get() );
-
+    getWidth( width.get() );
+ 
     IndexType size = 1;
  
     for ( IndexType i = 0; i < mNDims; ++i )
     {
-        size *= lb[i] + ub[i] + 1;
+        size *= width[2 * i] + width[2 * i + 1] + 1;
     }
 
     // Initialize matrix with 0 
@@ -357,7 +356,7 @@ void Stencil<ValueType>::getMatrix( ValueType matrix[] ) const
          {
              int pos = mPositions[ k * mNDims + i ];
 
-             IndexType kDim = lb[i];
+             IndexType kDim = width[2 * i];
 
              if ( pos < 0 )
              {
@@ -374,7 +373,7 @@ void Stencil<ValueType>::getMatrix( ValueType matrix[] ) const
              }
              else
              {
-                 matrixPos = matrixPos * ( lb[i] + ub[i] + 1 ) + kDim;
+                 matrixPos = matrixPos * ( width[2 * i] + width[2 * i + 1] + 1 ) + kDim;
              }
          }
 
@@ -396,24 +395,22 @@ bool Stencil<ValueType>::operator==( const Stencil<ValueType>& other ) const
 
     // now check for equal width in all directions
 
-    common::scoped_array<IndexType> bound( new IndexType[ 4 * mNDims ] );
+    common::scoped_array<IndexType> width( new IndexType[ 4 * mNDims ] );
 
-    IndexType* lb1 = &bound[0];
-    IndexType* ub1 = &bound[mNDims];
-    IndexType* lb2 = &bound[2*mNDims];
-    IndexType* ub2 = &bound[3*mNDims];
+    IndexType* width1 = &width[0];
+    IndexType* width2 = &width[2 * mNDims];
 
-    getWidth( lb1, ub1 );
-    other.getWidth( lb2, ub2 );
+    getWidth( width1 );
+    other.getWidth( width2 );
 
     IndexType size = 1;  // determine also the size of stencil matrix for later
 
     for ( IndexType i = 0; i < mNDims; ++i ) 
     {
-        if ( lb1[i] != lb2[i] ) return false;
-        if ( ub1[i] != ub2[i] ) return false;
+        if ( width1[2 * i] != width2[2 * i] ) return false;
+        if ( width1[2 * i + 1] != width2[2 * i + 1] ) return false;
 
-        size *= lb1[i] + ub1[i] + 1;
+        size *= width1[2 * i] + width1[2 * i + 1] + 1;
     }
 
     common::scoped_array<ValueType> matrix( new ValueType[ 2 * size ] );

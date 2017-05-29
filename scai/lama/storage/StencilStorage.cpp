@@ -218,12 +218,11 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
-    IndexType lb[SCAI_GRID_MAX_DIMENSION];
-    IndexType ub[SCAI_GRID_MAX_DIMENSION];
+    IndexType width[2 * SCAI_GRID_MAX_DIMENSION];
 
     mGrid.getDistances( gridDistances );
 
-    mStencil.getWidth( lb, ub );
+    mStencil.getWidth( width );
 
     common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
 
@@ -236,7 +235,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
         WriteAccess<ValueType> wResult( result, loc );
 
         stencilGEMV[loc]( wResult.get(), alpha, rX.get(), 
-                          mGrid.nDims(), mGrid.sizes(), lb, ub, gridDistances,
+                          mGrid.nDims(), mGrid.sizes(), width, gridDistances,
                           mStencil.nPoints(), mStencil.positions(), mStencil.values(),
                           stencilOffsets.get() );
     }

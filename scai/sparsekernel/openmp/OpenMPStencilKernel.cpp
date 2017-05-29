@@ -1013,7 +1013,9 @@ void OpenMPStencilKernel::stencilGEMV1Inner(
     SCAI_LOG_INFO( logger,  "stencilGEMV1Inner on " << i0 << " - " << i1 )
 
     #pragma omp parallel for
+#if defined( __INTEL_COMPILER )
     #pragma unroll_and_jam( 4 )
+#endif
     for ( IndexType i = i0; i < i1; i++ )
     {
         IndexType gridPos = i * gridDistances[0];
@@ -1054,7 +1056,9 @@ void OpenMPStencilKernel::stencilGEMV2Inner(
     #pragma omp parallel for
     for ( IndexType i = i0; i < i1; i++ )
     {
+#if defined( __INTEL_COMPILER )
         #pragma unroll_and_jam( 4 )
+#endif
         for ( IndexType j = j0; j < j1; j++ )
         {
             IndexType gridPos = i * gridDistances[0] + j * gridDistances[1];
@@ -1102,7 +1106,9 @@ void OpenMPStencilKernel::stencilGEMV3Inner(
     {
         for ( IndexType j = j0; j < j1; j++ )
         {
+#if defined( __INTEL_COMPILER )
             #pragma unroll_and_jam( 4 )
+#endif
             for ( IndexType k = k0; k < k1; k++ )
             {
                 IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2];
@@ -1156,7 +1162,9 @@ void OpenMPStencilKernel::stencilGEMV4Inner(
         {
             for ( IndexType k = k0; k < k1; k++ )
             {
+#if defined( __INTEL_COMPILER )
                 #pragma unroll_and_jam( 4 )
+#endif
                 for ( IndexType m = m0; m < m1; m++ )
                 {
                     IndexType gridPos = i * gridDistances[0] + j * gridDistances[1] + k * gridDistances[2] + m * gridDistances[3];
@@ -1470,8 +1478,7 @@ void OpenMPStencilKernel::stencilGEMVCaller(
     const ValueType x[],
     const IndexType nDims,
     const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
+    const IndexType width[],
     const IndexType gridDistances[],
     const IndexType currentDim,
     const IndexType nPoints,
@@ -1481,7 +1488,7 @@ void OpenMPStencilKernel::stencilGEMVCaller(
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( currentDim, nDims, "illegal current dimension" )
 
-    if ( gridSizes[currentDim] <= lb[currentDim] + ub[currentDim] )
+    if ( gridSizes[currentDim] <= width[2 * currentDim] + width[2 * currentDim + 1] )
     {
         // no inner part in current dimension, call boundary routine, afterwards all is done
 
@@ -1492,18 +1499,18 @@ void OpenMPStencilKernel::stencilGEMVCaller(
 
     // if left boundary, handle it
 
-    if ( lb[currentDim] > 0 )
+    if ( width[2 * currentDim] > 0 )
     {
         gridBounds[2 * currentDim] = 0;
-        gridBounds[2 * currentDim + 1] = lb[currentDim];
+        gridBounds[2 * currentDim + 1] = width[2 * currentDim];
 
         stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
     }
 
     // set inner boundaries,
 
-    gridBounds[2 * currentDim] = lb[currentDim];
-    gridBounds[2 * currentDim + 1] = gridSizes[currentDim] - ub[currentDim];
+    gridBounds[2 * currentDim] = width[2 * currentDim];
+    gridBounds[2 * currentDim + 1] = gridSizes[currentDim] - width[2 * currentDim + 1];
 
     if ( currentDim + 1 == nDims )
     {
@@ -1515,15 +1522,15 @@ void OpenMPStencilKernel::stencilGEMVCaller(
     { 
         // recursive call to set grid bounds for the next dimension 
 
-        stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, lb, ub, gridDistances, currentDim + 1, 
+        stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, width, gridDistances, currentDim + 1, 
                            nPoints, stencilNodes, stencilVal, stencilOffset );
     }
 
     // if right boundary, travere it
 
-    if ( ub[currentDim] > 0 )
+    if ( width[2 * currentDim + 1] > 0 )
     {
-        gridBounds[2 * currentDim] = gridSizes[currentDim] - ub[currentDim];
+        gridBounds[2 * currentDim] = gridSizes[currentDim] - width[2 * currentDim + 1];
         gridBounds[2 * currentDim + 1] = gridSizes[currentDim];
 
         stencilGEMVBorder( result, alpha, x, nDims, gridSizes, gridBounds, gridDistances, nPoints, stencilNodes, stencilVal, stencilOffset );
@@ -1544,8 +1551,7 @@ void OpenMPStencilKernel::stencilGEMV(
     const ValueType x[],
     const IndexType nDims, 
     const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
+    const IndexType width[],
     const IndexType gridDistances[],
     const IndexType nPoints,
     const int stencilNodes[],
@@ -1564,7 +1570,7 @@ void OpenMPStencilKernel::stencilGEMV(
 
     IndexType currentDim = 0;
 
-    stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, lb, ub, gridDistances, currentDim,
+    stencilGEMVCaller( gridBounds, result, alpha, x, nDims, gridSizes, width, gridDistances, currentDim,
                        nPoints, stencilNodes, stencilVal, stencilOffset );
 }
 

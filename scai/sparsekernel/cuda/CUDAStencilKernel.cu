@@ -59,9 +59,7 @@ SCAI_LOG_DEF_LOGGER( CUDAStencilKernel::logger, "CUDA.StencilKernel" )
 
 __constant__ IndexType gridDistancesD[SCAI_GRID_MAX_DIMENSION];
 __constant__ IndexType gridSizesD[SCAI_GRID_MAX_DIMENSION];
-__constant__ IndexType gridLB[SCAI_GRID_MAX_DIMENSION];
-__constant__ IndexType gridUB[SCAI_GRID_MAX_DIMENSION];
-
+__constant__ IndexType gridWidthD[2 * SCAI_GRID_MAX_DIMENSION];
 
 /** This routine checks whether a point pos is an inner point 
  *
@@ -109,7 +107,7 @@ void gemv1Kernel(
 
     ValueType v = 0;
 
-    if ( ( i >= gridLB[0] ) && ( i < gridSizesD[0] - gridUB[0] ) )
+    if ( ( i >= gridWidthD[0] ) && ( i < gridSizesD[0] - gridWidthD[1] ) )
     {
         // gridPoint ( i ) is inner point, we have not to check for valid stencil points
 
@@ -206,8 +204,8 @@ void gemv2Kernel(
 
     ValueType v = 0;
 
-    if (    ( i >= gridLB[0] ) && ( i < gridSizesD[0] - gridUB[0] ) 
-         && ( j >= gridLB[1] ) && ( j < gridSizesD[1] - gridUB[1] ) )
+    if (    ( i >= gridWidthD[0] ) && ( i < gridSizesD[0] - gridWidthD[1] ) 
+         && ( j >= gridWidthD[2] ) && ( j < gridSizesD[1] - gridWidthD[3] ) )
     {
         // gridPoint(i,j) is inner point, all stencil points can be applied
 
@@ -312,9 +310,9 @@ void gemv3Kernel(
 
     ValueType v = 0;
 
-    if (    ( i >= gridLB[0] ) && ( i < gridSizesD[0] - gridUB[0] ) 
-         && ( j >= gridLB[1] ) && ( j < gridSizesD[1] - gridUB[1] ) 
-         && ( k >= gridLB[2] ) && ( k < gridSizesD[2] - gridUB[2] ) )
+    if (    ( i >= gridWidthD[0] ) && ( i < gridSizesD[0] - gridWidthD[1] ) 
+         && ( j >= gridWidthD[2] ) && ( j < gridSizesD[1] - gridWidthD[3] ) 
+         && ( k >= gridWidthD[4] ) && ( k < gridSizesD[2] - gridWidthD[5] ) )
     {
         // gridPoint ( i, j, k ) is inner point, we have not to check for valid stencil points
 
@@ -429,10 +427,10 @@ void gemv4Kernel(
 
     ValueType v = 0;
 
-    if (    ( i >= gridLB[0] ) && ( i < gridSizesD[0] - gridUB[0] ) 
-         && ( j >= gridLB[1] ) && ( j < gridSizesD[1] - gridUB[1] ) 
-         && ( k >= gridLB[2] ) && ( k < gridSizesD[2] - gridUB[2] ) 
-         && ( m >= gridLB[3] ) && ( m < gridSizesD[3] - gridUB[3] ) )
+    if (    ( i >= gridWidthD[0] ) && ( i < gridSizesD[0] - gridWidthD[1] ) 
+         && ( j >= gridWidthD[2] ) && ( j < gridSizesD[1] - gridWidthD[3] ) 
+         && ( k >= gridWidthD[4] ) && ( k < gridSizesD[2] - gridWidthD[5] ) 
+         && ( m >= gridWidthD[6] ) && ( m < gridSizesD[3] - gridWidthD[7] ) )
     {
         // gridPoint(i, j, k, m) is inner point, we have not to check for valid stencil points
 
@@ -532,8 +530,7 @@ void CUDAStencilKernel::stencilGEMV(
     const ValueType x[],
     const IndexType nDims, 
     const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
+    const IndexType width[],
     const IndexType gridDistances[],
     const IndexType nPoints,
     const int stencilNodes[],
@@ -557,9 +554,7 @@ void CUDAStencilKernel::stencilGEMV(
                        "copy2Device failed" );
     SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridSizesD, gridSizes, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridLB, lb, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
-                       "copy2Device failed" );
-    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridUB, ub, nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
+    SCAI_CUDA_RT_CALL( cudaMemcpyToSymbol( gridWidthD, width, 2 * nDims * sizeof( IndexType ), 0, cudaMemcpyHostToDevice ),
                        "copy2Device failed" );
 
     const int* dStencilOffsetPtr = dStencilOffset.data().get();
