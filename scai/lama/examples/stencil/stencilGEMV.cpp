@@ -151,10 +151,10 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = 40;
+        const IndexType N1 = 50;
         const IndexType N2 = 80;
-        const IndexType N3 = 80;
-        const IndexType N4 = 80;
+        const IndexType N3 = 100;
+        const IndexType N4 = 100;
     
         common::Grid4D grid( N1, N2, N3, N4 );
 
@@ -165,10 +165,6 @@ int main( int argc, const char* argv[] )
         common::Stencil3D<ValueType> stencil( nPoints );
 
         // Define a grid with same number of dimensions as stencil
-
-        // const IndexType N1 = 200;
-        // const IndexType N2 = 400;
-        // const IndexType N3 = 500;
 
         const IndexType N1 = 200;
         const IndexType N2 = 400;
@@ -184,13 +180,13 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 =  40;
-        const IndexType N2 = 100;
+        const IndexType N1 =  4000;
+        const IndexType N2 = 10000;
     
         common::Grid2D grid( N1, N2 );
 
-        grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
-        grid.setBorderType( 0, common::Grid::BORDER_PERIODIC, common::Grid::BORDER_PERIODIC );
+        // grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+        // grid.setBorderType( 0, common::Grid::BORDER_PERIODIC, common::Grid::BORDER_PERIODIC );
 
         bench( grid, stencil );
     }
@@ -204,7 +200,7 @@ int main( int argc, const char* argv[] )
     
         common::Grid1D grid( N1 );
 
-        grid.setBorderType( 0, common::Grid::BORDER_PERIODIC );
+        // grid.setBorderType( 0, common::Grid::BORDER_PERIODIC );
 
         bench( grid, stencil );
     }

@@ -160,7 +160,7 @@ static void computeColor( double color[3], const double value )
 
     // find entry 
 
-    IndexType colorIndex = common::Math::floor( value * nSections );
+    IndexType colorIndex = static_cast<IndexType>( common::Math::floor( value * nSections ) );
 
     if ( colorIndex >= nSections )
     {
@@ -221,13 +221,13 @@ void ImageIO::writeSC(
                 {
                     // interpolate color by color table
 
-                    ValueType scaledVal = ( val - minVal ) / scale;  // val in [0,1]
+                    double scaledVal = static_cast<double>( ( val - minVal ) / scale );  // val in [0,1]
                     computeColor( color, scaledVal ); 
                 }
 
-                wImage( i, j, 0 ) = color[ 0 ] * 255.0 + 0.5;
-                wImage( i, j, 1 ) = color[ 1 ] * 255.0 + 0.5;
-                wImage( i, j, 2 ) = color[ 2 ] * 255.0 + 0.5;
+                wImage( i, j, 0 ) = static_cast<float>( color[ 0 ] * 255.0 + 0.5 );
+                wImage( i, j, 1 ) = static_cast<float>( color[ 1 ] * 255.0 + 0.5 );
+                wImage( i, j, 2 ) = static_cast<float>( color[ 2 ] * 255.0 + 0.5 );
             }
         }
     }

@@ -78,6 +78,12 @@ public:
 
     static const char* typeName();
 
+    /** Default constructor, creates a replicated matrix of size 0 x 0 */
+
+    StencilMatrix();
+
+    void define( const common::Grid& grid, const common::Stencil<ValueType>& stencil );
+
     /** Constructor, creates a replicated zero-matrix of size numRows x numColums */
 
     StencilMatrix( const common::Grid& grid, const common::Stencil<ValueType>& stencil );

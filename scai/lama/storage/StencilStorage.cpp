@@ -87,6 +87,15 @@ namespace lama
 {
 
 template<typename ValueType>
+StencilStorage<ValueType>::StencilStorage() :
+
+    MatrixStorage<ValueType>( 0, 0 ),
+    mGrid( common::Grid1D( 0 ) ),
+    mStencil( common::Stencil1D<ValueType>() )
+{
+}
+
+template<typename ValueType>
 StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const common::Stencil<ValueType>&  stencil ) :
 
     MatrixStorage<ValueType>( grid.size(), grid.size() ),
@@ -144,6 +153,14 @@ ValueType StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::scale( const ValueType val )
+{
+    mStencil.scale( val );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -401,6 +418,40 @@ void StencilStorage<ValueType>::matrixTimesVector(
     SyncToken* token = incGEMV( result, alpha, x, async );
 
     SCAI_ASSERT( token == NULL, "syncrhonous execution cannot have token" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& other )
+{
+    _MatrixStorage::setDimension( other.getNumColumns(), other.getNumRows() );
+
+    SCAI_ASSERT_EQ_ERROR( Format::STENCIL, other.getFormat(),
+                          "stencil matrix/storage: transposed argument must also be stencil matrix" );
+
+    const StencilStorage<ValueType> otherStencilStorage = reinterpret_cast<const StencilStorage<ValueType>&>( other );
+
+    // Important: swap the border types in each, border type must not be BORDER_REFLECTING
+
+    mGrid = otherStencilStorage.mGrid;
+
+    const common::Grid::BorderType* borders = mGrid.borders();
+
+    for ( IndexType i = 0; i < mGrid.nDims(); ++i )
+    {
+        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i], 
+                              "no transpose possible with reflecting boundary" )
+
+        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i + 1], 
+                              "no transpose possible with reflecting boundary" )
+
+        mGrid.setBorderType( i, borders[ 2 * i + 1 ], borders[ 2 * i ] );
+    }
+
+    mStencil.transpose( otherStencilStorage.mStencil );
+
+    mDiagonalProperty = other.hasDiagonalProperty();
 }
 
 /* --------------------------------------------------------------------------- */

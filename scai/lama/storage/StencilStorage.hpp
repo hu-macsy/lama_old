@@ -79,6 +79,8 @@ public:
 
     static const char* typeName();
 
+    StencilStorage();
+
     /** Constructor of a stencil stroage
      *
      */
@@ -253,12 +255,11 @@ public:
         COMMON_THROWEXCEPTION( "setDIAData unsuported" )
     }
 
-    /** MatrixStorage<ValueType> */
-
- 	void scale(ValueType)
-    {
-        COMMON_THROWEXCEPTION( "scale unsuported" )
-    }
+    /** Implementation of pure method MatrixStorage<ValueType>::scale
+     *
+     *  This operation is supported as scale is available for a stencil.
+     */
+ 	void scale( const ValueType factor );
 
     /** MatrixStorage<ValueType> */
 
@@ -397,6 +398,13 @@ public:
         COMMON_THROWEXCEPTION( "print unsupported" )
     }
    
+    /** Override the default implementation MatrixStorage<ValueType>::assignTranspose 
+     *
+     *  Assign transpose is only supported if other matrix is also a stencil storage.
+     *  Otherwise an exception is thrown.
+     */
+    virtual void assignTranspose( const MatrixStorage<ValueType>& other );
+
     /** Implementation of MatrixStorage::matrixTimesVector for stencil storage */
 
     virtual void matrixTimesVector(

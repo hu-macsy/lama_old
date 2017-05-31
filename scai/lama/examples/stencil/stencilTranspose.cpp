@@ -35,7 +35,8 @@
 #include <scai/lama.hpp>
 
 // Matrix & vector related includes
-#include <scai/lama/GridVector.hpp>
+#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -60,53 +61,46 @@ using namespace dmemo;
 
 int main( int argc, const char* argv[] )
 {
-    // relevant SCAI arguments: 
-    //   SCAI_CONTEXT = ...    set default context
-    //   SCAI_DEVICE  = ...    set default device
-
     common::Settings::parseArgs( argc, argv );
 
     common::Stencil1D<double> stencilFD8;
 
-    stencilFD8.reserve( 8 );   // just for convenience, not mandatory
+    stencilFD8.reserve( 4 );   // just for convenience, not mandatory
 
-    stencilFD8.addPoint( -3, -5.0/7168.0 );
-    stencilFD8.addPoint( -2, 49.0/5120.0 );
-    stencilFD8.addPoint( -1, -245.0/3072.0 );
-    stencilFD8.addPoint( 0, 1225.0/1024.0 );
-    stencilFD8.addPoint( 1, -1225.0/1024.0 );
-    stencilFD8.addPoint( 2, 245.0/3072.0 ) ;
-    stencilFD8.addPoint( 3, -49.0/5120.0 );
-    stencilFD8.addPoint( 4, 5.0/7168.0 );
+    stencilFD8.addPoint( -1, -5 );
+    stencilFD8.addPoint( 0, 3  );
+    stencilFD8.addPoint( 1, -3 );
+    stencilFD8.addPoint( 2, 5 ) ;
 
-    common::Stencil1D<double> stencilDummy( 1 );
+    // stencilFD8.addPoint( -3, -5.0/7168.0 );
+    // stencilFD8.addPoint( -2, 49.0/5120.0 );
+    // stencilFD8.addPoint( -1, -245.0/3072.0 );
+    // stencilFD8.addPoint( 0, 1225.0/1024.0 );
+    // stencilFD8.addPoint( 1, -1225.0/1024.0 );
+    // stencilFD8.addPoint( 2, 245.0/3072.0 ) ;
+    // stencilFD8.addPoint( 3, -49.0/5120.0 );
+    // stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    // 1-dimensional stencils can be combined
+    common::Stencil1D<double> stencilBD8;
+    stencilBD8.transpose( stencilFD8 );
 
-    common::Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
+    common::Grid1D grid1( 5 );
+    common::Grid1D grid2( 5 );
+ 
+    grid1.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+    grid2.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
 
-    common::Grid3D grid( 20, 20, 20 );
+    StencilStorage<double> s1( grid1, stencilFD8 );
+    StencilStorage<double> s2( grid2, stencilBD8 );
 
-    StencilMatrix<double> m( grid, stencilY );
+    CSRStorage<double> csr1( s1 );
+    csr1.writeToFile( "csr1.mtx" );
+    CSRStorage<double> csr2( s2 );
+    csr2.writeToFile( "csr2.mtx" );
+    CSRStorage<double> csrT;
+    csrT.assignTranspose( csr1 );
+    csr2.writeToFile( "csrT.mtx" );
 
-    m.scale( 0.3 );
-
-    CSRSparseMatrix<double> m1;
-
-    m1.assignTranspose( m );
-    m1.writeToFile( "m1.mtx" );
-
-    StencilMatrix<double> m2;
-
-    m2.assignTranspose( m );
-    m2.writeToFile( "m2.mtx" );
-
-    GridVector<double> v( grid, 1.0 );
-
-    GridVector<double> v1;
-    v1 = m * v;
-    GridVector<double> v2;
-    v2 = v * m2;
-
-    std::cout << "max diff = " << v1.maxDiffNorm( v2 ) << std::endl;
+    double diff = csr2.maxDiffNorm( csrT );
+    std::cout << "max diff = " << diff << std::endl;
 }
