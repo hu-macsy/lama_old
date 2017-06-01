@@ -84,6 +84,8 @@ public:
 
     void define( const common::Grid& grid, const common::Stencil<ValueType>& stencil );
 
+    void define( dmemo::DistributionPtr dist, const common::Stencil<ValueType>& stencil );
+
     /** Constructor, creates a replicated zero-matrix of size numRows x numColums */
 
     StencilMatrix( const common::Grid& grid, const common::Stencil<ValueType>& stencil );

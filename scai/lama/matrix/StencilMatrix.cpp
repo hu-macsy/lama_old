@@ -170,10 +170,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
-
-    : SparseMatrix<ValueType>()
-
+void StencilMatrix<ValueType>::define( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
 {
     SCAI_ASSERT_ERROR( dist.get(), "NULL dist" )
 
@@ -212,6 +209,17 @@ StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Sten
 
     haloStorage->allocate( haloIA.size() - 1, haloNumColumns );
     haloStorage->swap( haloIA, haloJA, haloValues );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
+
+    : SparseMatrix<ValueType>()
+
+{
+    define( dist, stencil );
 }
 
 /* -------------------------------------------------------------------------- */
