@@ -987,7 +987,7 @@ void OpenMPStencilKernel::stencilHaloCSR3(
                 {
                     IndexType globalPos[] = { iGlobal, jGlobal, kGlobal };
                 
-                    bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, 3 );
+                    bool valid = common::Grid::getOffsetPos( globalPos, &stencilNodes[nDims * p], globalGridSizes, globalGridBorders, nDims );
                 
                     if ( !valid )
                     {   
@@ -1001,8 +1001,8 @@ void OpenMPStencilKernel::stencilHaloCSR3(
                     
                     csrJA[offset] = globalPos[0] * globalGridDistances[0] + globalPos[1] * globalGridDistances[1] +
                                     globalPos[2] * globalGridDistances[2];
-
                     csrValues[offset] = stencilVal[p];
+                    ++offset;
                 }
      
                 SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
@@ -1075,8 +1075,8 @@ void OpenMPStencilKernel::stencilHaloCSR4(
                     
                         csrJA[offset] = globalPos[0] * globalGridDistances[0] + globalPos[1] * globalGridDistances[1] +
                                         globalPos[2] * globalGridDistances[2] + globalPos[3] * globalGridDistances[3];
-                        
                         csrValues[offset] = stencilVal[p];
+                        ++offset;
                     }
 
                     SCAI_ASSERT_EQ_ERROR( offset, csrIA[ localIndex + 1 ], "serious mismatch" );
