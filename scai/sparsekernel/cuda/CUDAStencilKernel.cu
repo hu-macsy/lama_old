@@ -33,6 +33,7 @@
 #include <scai/common/Grid.hpp>
 #include <scai/sparsekernel/cuda/CUDAStencilKernel.hpp>
 #include <scai/sparsekernel/StencilKernelTrait.hpp>
+#include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 
 #include <scai/common/Settings.hpp>
 
@@ -42,6 +43,7 @@
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/Grid.hpp>
+#include <scai/common/bind.hpp>
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -445,6 +447,8 @@ void CUDAStencilKernel::stencilGEMV3(
 {
     SCAI_REGION( "CUDA.Stencil.GEMV3" )
 
+    SCAI_CHECK_CUDA_ACCESS
+
     IndexType n0 = gridSizes[0];
     IndexType n1 = gridSizes[1];
     IndexType n2 = gridSizes[2];
@@ -462,24 +466,49 @@ void CUDAStencilKernel::stencilGEMV3(
 
     common::Settings::getEnvironment( useTexture, "SCAI_CUDA_USE_TEXTURE" );
 
+    cudaStream_t stream = 0; // default stream if no syncToken is given
+
+    tasking::CUDAStreamSyncToken* syncToken = tasking::CUDAStreamSyncToken::getCurrentSyncToken();
+
+    if ( syncToken )
+    {
+        // asynchronous execution takes other stream and will not synchronize later
+        stream = syncToken->getCUDAStream();
+    }
+
     if ( useTexture )
     {
         vectorBindTexture( stencilOffset );
         vectorBindTexture( stencilVal );
 
-        gemv3Kernel<ValueType, true><<< numBlocks, threadsPerBlock>>>( 
+        gemv3Kernel<ValueType, true><<< numBlocks, threadsPerBlock, 0, stream>>>( 
             result, alpha, x, nPoints, stencilVal, stencilOffset );
 
-        vectorUnbindTexture( stencilVal );
-        vectorUnbindTexture( stencilOffset );
+        if ( !syncToken )
+        {
+            vectorUnbindTexture( stencilVal );
+            vectorUnbindTexture( stencilOffset );
+        }
+        else
+        {
+            // get routine with the right signature
+            void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
+            void ( *unbind1 ) ( const IndexType* ) = &vectorUnbindTexture;
+            // delay unbind until synchroniziaton
+            syncToken->pushRoutine( common::bind( unbind, stencilVal ) );
+            syncToken->pushRoutine( common::bind( unbind1, stencilOffset ) );
+        }
     }
     else
     {
-        gemv3Kernel<ValueType, false><<< numBlocks, threadsPerBlock>>>( 
+        gemv3Kernel<ValueType, false><<< numBlocks, threadsPerBlock, 0, stream>>>( 
             result, alpha, x, nPoints, stencilVal, stencilOffset );
     }
 
-    SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv3Kernel failed" ) ;
+    if ( !syncToken )
+    {
+        SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "gemv3Kernel failed" ) ;
+    }
 }
 
 /* --------------------------------------------------------------------------- */

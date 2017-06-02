@@ -414,6 +414,15 @@ public:
         const ValueType beta,
         const hmemo::HArray<ValueType>& y ) const;
 
+    /** Implementation of MatrixStorage::matrixTimesVectorAsync for stencil storage */
+
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y ) const;
+
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
 

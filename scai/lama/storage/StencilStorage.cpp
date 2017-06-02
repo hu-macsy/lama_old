@@ -330,13 +330,24 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
     HArray<ValueType>& result,
     const ValueType alpha,
     const HArray<ValueType>& x,
-    bool /* async */ ) const
+    bool async ) const
 {
     LAMAKernel<sparsekernel::StencilKernelTrait::stencilGEMV<ValueType> > stencilGEMV;
 
     ContextPtr loc = this->getContextPtr();
 
     stencilGEMV.getSupportedContext( loc );
+
+    unique_ptr<SyncToken> syncToken;
+
+    if ( async )
+    {
+        syncToken.reset( loc->getSyncToken() );
+    }
+
+    SCAI_ASYNCHRONOUS( syncToken.get() );
+
+    SCAI_CONTEXT_ACCESS( loc )
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
@@ -352,17 +363,21 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     SCAI_LOG_INFO ( logger, "incGEMV, grid = " << mGrid << ", stencil = " << mStencil << ", done at " << *loc )
 
-    {
-        ReadAccess<ValueType> rX( x, loc );
-        WriteAccess<ValueType> wResult( result, loc );
+    ReadAccess<ValueType> rX( x, loc );
+    WriteAccess<ValueType> wResult( result, loc );
 
-        stencilGEMV[loc]( wResult.get(), alpha, rX.get(), 
-                          mGrid.nDims(), mGrid.sizes(), width, gridDistances, mGrid.borders(),
-                          mStencil.nPoints(), mStencil.positions(), mStencil.values(),
-                          stencilOffsets.get() );
+    stencilGEMV[loc]( wResult.get(), alpha, rX.get(), 
+                      mGrid.nDims(), mGrid.sizes(), width, gridDistances, mGrid.borders(),
+                      mStencil.nPoints(), mStencil.positions(), mStencil.values(),
+                      stencilOffsets.get() );
+
+    if ( async )
+    {
+        syncToken->pushRoutine( wResult.releaseDelayed() );
+        syncToken->pushRoutine( rX.releaseDelayed() );
     }
 
-    return NULL;  
+    return syncToken.release();
 }
 
 /* --------------------------------------------------------------------------- */
@@ -418,6 +433,61 @@ void StencilStorage<ValueType>::matrixTimesVector(
     SyncToken* token = incGEMV( result, alpha, x, async );
 
     SCAI_ASSERT( token == NULL, "syncrhonous execution cannot have token" )
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
+
+    HArray<ValueType>& result,
+    const ValueType alpha,
+    const HArray<ValueType>& x,
+    const ValueType beta,
+    const HArray<ValueType>& y ) const
+
+{
+    if ( mGrid.size() == 0 )
+    {
+        return NULL;
+    }
+
+    SCAI_LOG_INFO( logger,
+                   *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x 
+                         << ", beta = " << beta << ", y = " << y )
+
+    SCAI_REGION( "Storage.Stencil.matrixTimesVectorAsync" )
+
+    if ( alpha == common::constants::ZERO )
+    {
+        // so we just have result = beta * y, will be done synchronously
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        return NULL;
+    }
+
+    ContextPtr loc = this->getContextPtr();
+
+    // GEMV only implemented as y += A * x, so split
+
+    // Step 1: result = beta * y
+
+    if ( beta == common::constants::ZERO )
+    {
+        result.clear();
+        result.resize( mNumRows );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+    }
+    else
+    {
+        SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
+        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+    }
+
+    bool async = true;
+
+    SyncToken* token = incGEMV( result, alpha, x, async );
+
+    return token;
 }
 
 /* --------------------------------------------------------------------------- */
