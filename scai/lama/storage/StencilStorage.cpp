@@ -91,6 +91,8 @@ StencilStorage<ValueType>::StencilStorage( const common::Grid& grid, const commo
     mGrid( grid ),
     mStencil( stencil )
 {
+    mDiagonalProperty = true;
+
     // #dimension of grid and stencil must be equal
 
     SCAI_ASSERT_EQ_ERROR( grid.nDims(), stencil.nDims(), "dimensions of grid an stencil must be equal" )
@@ -140,6 +142,66 @@ ValueType StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+size_t StencilStorage<ValueType>::getMemoryUsageImpl() const
+{
+    // just take the memory needed for the stencil data
+
+    size_t nBytes1 = sizeof( IndexType ) * mStencil.nDims() * mStencil.nPoints();
+    size_t nBytes2 = sizeof( ValueType ) * mStencil.nPoints();
+
+    return nBytes1 + nBytes2;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static const ValueType* getDiagonalPtr( const common::Stencil<ValueType>& stencil )
+{
+    const IndexType nDims = stencil.nDims();
+
+    const IndexType* stencilPositions = stencil.positions();
+    const ValueType* stencilValues    = stencil.values();
+
+    for ( IndexType k = 0; k < stencil.nPoints(); ++k )
+    {
+        bool isZero = true;
+
+        for ( IndexType idim = 0; idim < nDims; ++idim )
+        {
+            isZero = isZero && stencilPositions[ k * nDims + idim ] == 0;
+        }
+
+        if ( isZero )
+        {
+            return stencilValues + k;
+        }
+    }
+
+    return NULL;
+}
+
+template<typename ValueType>
+void StencilStorage<ValueType>::getDiagonal( _HArray& array ) const
+{
+    ValueType diagonalValue = 0;   // stencil matrix has one single diagonal value
+
+    const ValueType* diagonalPtr = getDiagonalPtr( mStencil );
+
+    if ( diagonalPtr != NULL )
+    {
+        diagonalValue = *diagonalPtr;
+    }
+
+    SCAI_LOG_ERROR( logger, "diagonal value is = " << diagonalValue );
+
+    HArrayUtils::assignScalar( array, diagonalValue, common::binary::COPY );
+
+    // Attention: reflecting boundaries can imply changes on the diagonal values
 }
 
 /* --------------------------------------------------------------------------- */
@@ -242,6 +304,48 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
     }
 
     return NULL;  
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::jacobiIterate1(
+    HArray<ValueType>& solution,
+    const HArray<ValueType>& oldSolution,
+    const HArray<ValueType>& rhs,
+    const ValueType omega ) const
+{
+    SCAI_REGION( "Storage.CSR.jacobiIterate" )
+
+    SCAI_LOG_ERROR( logger, *this << ": Jacobi iteration for local stencil data, omega = " << omega )
+
+    SCAI_ASSERT_EQ_DEBUG( mNumRows, oldSolution.size(), "illegal size for old solution" )
+    SCAI_ASSERT_EQ_DEBUG( mNumRows, rhs.size(), "illegal size for rhs" )
+    SCAI_ASSERT_EQ_DEBUG( mNumRows, mNumColumns, "jacobiIterate only on square matrices" )
+
+    // solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
+    // solution = omega * rhs + ( 1 - omega ) * oldSolution;
+    // solution += B * oldSolution * ( omega * dinv )
+
+    HArrayUtils::arrayPlusArray( solution, omega, rhs, ValueType( 1 ) - omega, oldSolution, getContextPtr() );
+
+    // okay that is tricky stuff, swap the diagonal entry with 0
+
+    ValueType* diagonalPtr = const_cast<ValueType*>( getDiagonalPtr( mStencil ) );
+
+    ValueType diagonalValue = *diagonalPtr;
+
+    *diagonalPtr = ValueType( 0 );
+
+    bool async = false;
+
+    ValueType alpha = omega / diagonalValue;
+
+    SCAI_LOG_ERROR( logger, "alpha = " << alpha );
+
+    incGEMV( solution, alpha, oldSolution, async );
+
+    *diagonalPtr = diagonalValue;
 }
 
 /* --------------------------------------------------------------------------- */
