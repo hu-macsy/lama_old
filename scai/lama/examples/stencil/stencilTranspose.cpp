@@ -1,5 +1,5 @@
 /**
- * @file stencilConversion.cpp
+ * @file stencilExample.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Benchmarking for conversion of StencilMatrix to CSRMatrix
+ * @brief Demo of stencil class and generation of Stencil matrix
  * @author Thomas Brandes
  * @date 23.02.2017
  */
@@ -58,45 +58,49 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+
 int main( int argc, const char* argv[] )
 {
-    // relevant SCAI arguments: 
-    //   SCAI_CONTEXT = ...    set default context
-    //   SCAI_DEVICE  = ...    set default device
-
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil2D<double> stencil( 5 );
+    common::Stencil1D<double> stencilFD8;
 
-    const IndexType N = 10;
+    stencilFD8.reserve( 4 );   // just for convenience, not mandatory
 
-    common::Grid2D grid( N, N );
+    stencilFD8.addPoint( -1, -5 );
+    stencilFD8.addPoint( 0, 3  );
+    stencilFD8.addPoint( 1, -3 );
+    stencilFD8.addPoint( 2, 5 ) ;
 
-    StencilMatrix<double> stencilMatrix( grid, stencil );
+    // stencilFD8.addPoint( -3, -5.0/7168.0 );
+    // stencilFD8.addPoint( -2, 49.0/5120.0 );
+    // stencilFD8.addPoint( -1, -245.0/3072.0 );
+    // stencilFD8.addPoint( 0, 1225.0/1024.0 );
+    // stencilFD8.addPoint( 1, -1225.0/1024.0 );
+    // stencilFD8.addPoint( 2, 245.0/3072.0 ) ;
+    // stencilFD8.addPoint( 3, -49.0/5120.0 );
+    // stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    CSRSparseMatrix<double> csrMatrix1;
+    common::Stencil1D<double> stencilBD8;
+    stencilBD8.transpose( stencilFD8 );
 
-    {
-        SCAI_REGION( "main.buildPoisson" )
-        MatrixCreator::buildPoisson( csrMatrix1, 2, 5, N, N, N );
-    }
+    common::Grid1D grid1( 5 );
+    common::Grid1D grid2( 5 );
+ 
+    grid1.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+    grid2.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
 
-    const CSRStorage<double>& s = csrMatrix1.getLocalStorage();
+    StencilStorage<double> s1( grid1, stencilFD8 );
+    StencilStorage<double> s2( grid2, stencilBD8 );
 
-    FileIO::write( s.getIA(), "ia.txt" );
-    FileIO::write( s.getJA(), "ja.txt" );
+    CSRStorage<double> csr1( s1 );
+    csr1.writeToFile( "csr1.mtx" );
+    CSRStorage<double> csr2( s2 );
+    csr2.writeToFile( "csr2.mtx" );
+    CSRStorage<double> csrT;
+    csrT.assignTranspose( csr1 );
+    csr2.writeToFile( "csrT.mtx" );
 
-    CSRSparseMatrix<double> csrMatrix2;
-
-    {
-        SCAI_REGION( "main.convertStencil" )
-        csrMatrix2 = stencilMatrix;
-    }
-
-    SCAI_ASSERT_EQUAL( csrMatrix1.getNumRows(), csrMatrix2.getNumRows(), "serious mismatch" )
-
-    csrMatrix1.writeToFile( "poisson.mtx" );
-    csrMatrix2.writeToFile( "stencil.mtx" );
-
-    std::cout << "diff = " << csrMatrix1.maxDiffNorm( csrMatrix2 ) << std::endl;
+    double diff = csr2.maxDiffNorm( csrT );
+    std::cout << "max diff = " << diff << std::endl;
 }

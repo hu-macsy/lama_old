@@ -1,4 +1,4 @@
-/**
+;/**
  * @file GridTest.cpp
  *
  * @license
@@ -108,8 +108,10 @@ BOOST_AUTO_TEST_CASE( validTest )
 {
     Grid3D grid3( 2, 3, 2 );
 
-    IndexType p1[] = { 1, 2, 1 };
-    IndexType p2[] = { 1, 2, 2 };
+    // Define points with full size to avoid warning messages of overcautious compiler
+
+    IndexType p1[] = { 1, 2, 1, nIndex };
+    IndexType p2[] = { 1, 2, 2, nIndex };
 
     BOOST_CHECK( grid3.validPos( p1 ) );
     BOOST_CHECK( !grid3.validPos( p2 ) );
@@ -126,9 +128,11 @@ BOOST_AUTO_TEST_CASE( pos2Test )
 
     const IndexType n = grid.size();
 
-    IndexType p1[] = { 3, 5 };
-    IndexType p2[] = { 3, 6 };
-    IndexType p3[] = { 4, 5 };
+    // Define points with full size to avoid warning messages of overcautious compiler
+
+    IndexType p1[] = { 3, 5, nIndex, nIndex };
+    IndexType p2[] = { 3, 6, nIndex, nIndex };
+    IndexType p3[] = { 4, 5, nIndex, nIndex };
 
     BOOST_CHECK_EQUAL( grid.linearPos( p1), grid.linearPos( p1[0], p1[1] ) );
 
@@ -172,10 +176,10 @@ BOOST_AUTO_TEST_CASE( pos3Test )
 
     const IndexType n = grid.size();
 
-    IndexType p0[] = { 3, 1, 2 };
-    IndexType p1[] = { 3, 1, 3 };
-    IndexType p2[] = { 3, 2, 2  };
-    IndexType p3[] = { 4, 1, 2 };
+    IndexType p0[] = { 3, 1, 2, nIndex };
+    IndexType p1[] = { 3, 1, 3, nIndex };
+    IndexType p2[] = { 3, 2, 2, nIndex };
+    IndexType p3[] = { 4, 1, 2, nIndex };
 
     // verify linearPos( x, y, z ) == linearPos( { x, y, z } )
 

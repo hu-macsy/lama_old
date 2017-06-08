@@ -179,6 +179,8 @@ public:
         DenseVector<ValueType>::swap( other );
     }
 
+    using Vector::swap;
+
     /** Set this grid vector by another grid vector that is reduced in one dimension */
 
     void reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp );

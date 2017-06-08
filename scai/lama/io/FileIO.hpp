@@ -38,7 +38,6 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
-#include <scai/common/Grid.hpp>
 
 #include <scai/logging.hpp>
 
@@ -46,6 +45,11 @@
 
 namespace scai
 {
+
+namespace common
+{
+    class Grid;
+}
 
 namespace lama
 {

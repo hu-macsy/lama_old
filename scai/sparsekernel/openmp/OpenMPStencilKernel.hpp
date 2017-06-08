@@ -53,6 +53,7 @@ public:
         const IndexType nDims, 
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -66,6 +67,7 @@ public:
         const IndexType nDims,
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -80,6 +82,7 @@ public:
         const IndexType localGridDistances[],
         const IndexType localLB[],
         const IndexType globalGridSizes[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -96,6 +99,7 @@ public:
         const IndexType localLB[],
         const IndexType globalGridSizes[],
         const IndexType globalGridDistances[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -110,9 +114,9 @@ public:
         const ValueType x[],
         const IndexType nDims, 
         const IndexType gridSizes[],
-        const IndexType lb[],
-        const IndexType ub[],
+        const IndexType width[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -126,6 +130,7 @@ private:
         IndexType sizes[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -135,6 +140,7 @@ private:
         IndexType sizes[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -144,6 +150,7 @@ private:
         IndexType sizes[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -153,6 +160,7 @@ private:
         IndexType sizes[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -165,6 +173,7 @@ private:
         const IndexType csrIA[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -179,6 +188,7 @@ private:
         const IndexType csrIA[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -193,6 +203,7 @@ private:
         const IndexType csrIA[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -207,6 +218,7 @@ private:
         const IndexType csrIA[],
         const IndexType gridSizes[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -220,6 +232,7 @@ private:
         const IndexType localGridDistances[],
         const IndexType localLB[],
         const IndexType globalGridSizes[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -231,6 +244,7 @@ private:
         const IndexType localGridDistances[],
         const IndexType localLB[],
         const IndexType globalGridSizes[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -242,6 +256,7 @@ private:
         const IndexType localGridDistances[],
         const IndexType localLB[],
         const IndexType globalGridSizes[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -253,6 +268,7 @@ private:
         const IndexType localGridDistances[],
         const IndexType localLB[],
         const IndexType globalGridSizes[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[] );
 
@@ -268,6 +284,7 @@ private:
         const IndexType localLB[],
         const IndexType globalGridSizes[],
         const IndexType globalGridDistances[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -285,6 +302,7 @@ private:
         const IndexType localLB[],
         const IndexType globalGridSizes[],
         const IndexType globalGridDistances[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -302,6 +320,7 @@ private:
         const IndexType localLB[],
         const IndexType globalGridSizes[],
         const IndexType globalGridDistances[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -319,6 +338,7 @@ private:
         const IndexType localLB[],
         const IndexType globalGridSizes[],
         const IndexType globalGridDistances[],
+        const common::Grid::BorderType globalGridBorders[],
         const IndexType nPoints,
         const int stencilNodes[],
         const ValueType stencilVal[],
@@ -388,6 +408,7 @@ private:
         const IndexType gridSizes[],
         const IndexType gridBounds[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -401,6 +422,7 @@ private:
         const IndexType gridSizes[],
         const IndexType gridBounds[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -414,6 +436,7 @@ private:
         const IndexType gridSizes[],
         const IndexType gridBounds[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -427,6 +450,7 @@ private:
         const IndexType gridSizes[],
         const IndexType gridBounds[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -441,6 +465,7 @@ private:
         const IndexType gridSizes[],
         const IndexType gridBounds[],
         const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
         const IndexType nPoints,
         const int stencilNodes[], 
         const ValueType stencilVal[],
@@ -448,20 +473,20 @@ private:
 
     template<typename ValueType>
     static void stencilGEMVCaller(
-    IndexType gridBounds[],
-    ValueType result[],
-    const ValueType alpha,
-    const ValueType x[],
-    const IndexType nDims,
-    const IndexType gridSizes[],
-    const IndexType lb[],
-    const IndexType ub[],
-    const IndexType gridDistances[],
-    const IndexType currentDim,
-    const IndexType nPoints,
-    const int stencilNodes[],
-    const ValueType stencilVal[],
-    const int stencilOffset[] );
+        IndexType gridBounds[],
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const IndexType nDims,
+        const IndexType gridSizes[],
+        const IndexType width[],
+        const IndexType gridDistances[],
+        const common::Grid::BorderType gridBorders[],
+        const IndexType currentDim,
+        const IndexType nPoints,
+        const int stencilNodes[],
+        const ValueType stencilVal[],
+        const int stencilOffset[] );
 
     /** Struct for registration of methods without template arguments */
 

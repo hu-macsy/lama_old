@@ -35,8 +35,7 @@
 #include <scai/lama.hpp>
 
 // Matrix & vector related includes
-#include <scai/lama/DenseVector.hpp>
-#include <scai/lama/SparseVector.hpp>
+#include <scai/lama/GridVector.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
@@ -67,10 +66,6 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil3D<double> stencil3( 27 ); // 27-point stencil
-    common::Stencil2D<double> stencil2( 5 );  // 5-point stencil, two dims
-    common::Stencil1D<double> stencil1( 3 );  // 3-point stencil, one dimension
-
     common::Stencil1D<double> stencilFD8;
 
     stencilFD8.reserve( 8 );   // just for convenience, not mandatory
@@ -88,21 +83,30 @@ int main( int argc, const char* argv[] )
 
     // 1-dimensional stencils can be combined
 
-    common::Stencil3D<double> stencilX( stencilFD8, stencilDummy, stencilDummy );
     common::Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
-    common::Stencil3D<double> stencilZ( stencilDummy, stencilDummy, stencilFD8 );
 
-    common::Stencil2D<double> stencil2_5( stencil1, stencil1 /*, 1 */ ); 
-    common::Stencil2D<double> stencil2_9( 9 );
+    common::Grid3D grid( 20, 20, 20 );
 
-    common::Stencil3D<double> stencil3_7( stencil1, stencil1, stencil1 );
-    common::Stencil3D<double> stencil3_19( 19 );
-    common::Stencil3D<double> stencil3_27( 27 );
+    StencilMatrix<double> m( grid, stencilY );
 
-    for ( IndexType i = 0; i < stencil3_27.nPoints(); ++i )
-    {
-        int i1, i2, i3;  // relative position
-        double val;
-        stencil3_27.getPoint( i1, i2, i3, val, i );
-    }
+    m.scale( 0.3 );
+
+    CSRSparseMatrix<double> m1;
+
+    m1.assignTranspose( m );
+    m1.writeToFile( "m1.mtx" );
+
+    StencilMatrix<double> m2;
+
+    m2.assignTranspose( m );
+    m2.writeToFile( "m2.mtx" );
+
+    GridVector<double> v( grid, 1.0 );
+
+    GridVector<double> v1;
+    v1 = m * v;
+    GridVector<double> v2;
+    v2 = v * m2;
+
+    std::cout << "max diff = " << v1.maxDiffNorm( v2 ) << std::endl;
 }

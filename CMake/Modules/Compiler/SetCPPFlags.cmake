@@ -104,7 +104,9 @@ endif ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
 
-    set ( SCAI_WARNING_FLAGS       "-Wall -Werror -Wno-deprecated-declarations" ) # "-Weverything" # wow this creates so much warnings
+    # "-Weverything" # wow this creates so much warnings
+
+    set ( SCAI_WARNING_FLAGS "-Wall -Werror -Wno-deprecated-declarations -Wno-unknown-pragmas" ) 
 
 	if    ( CXX_SUPPORTS_C11 )
 	    set ( SCAI_CXX_FLAGS           "-stdlib=libc++" )

@@ -1,5 +1,5 @@
 /**
- * @file stencilConversion.cpp
+ * @file stencilExample.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Benchmarking for conversion of StencilMatrix to CSRMatrix
+ * @brief Demo of stencil class and generation of Stencil matrix
  * @author Thomas Brandes
  * @date 23.02.2017
  */
@@ -58,6 +58,7 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+
 int main( int argc, const char* argv[] )
 {
     // relevant SCAI arguments: 
@@ -66,37 +67,72 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil2D<double> stencil( 5 );
+    common::Stencil1D<double> stencilFD8;
 
-    const IndexType N = 10;
+    stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
-    common::Grid2D grid( N, N );
+    stencilFD8.addPoint( -3, -11 );
+    stencilFD8.addPoint( -2, +7 );
+    stencilFD8.addPoint( -1, -3 );
+    stencilFD8.addPoint( 0, 1 );
+    stencilFD8.addPoint( 1, -1 );
+    stencilFD8.addPoint( 2, 3 ) ;
+    stencilFD8.addPoint( 3, -7 );
+    stencilFD8.addPoint( 4, 11 );
 
-    StencilMatrix<double> stencilMatrix( grid, stencil );
+    // 1-dimensional stencils can be combined
 
-    CSRSparseMatrix<double> csrMatrix1;
+    const IndexType N1 = 10;
 
+    common::Grid1D grid( N1 );
+
+    grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+
+    StencilStorage<double> st( grid, stencilFD8 );
+
+    for ( IndexType i = 0; i < N1; ++i )
     {
-        SCAI_REGION( "main.buildPoisson" )
-        MatrixCreator::buildPoisson( csrMatrix1, 2, 5, N, N, N );
+        HArray<double> vals;
+        HArray<IndexType> ja;
+
+        st.getSparseRow( ja, vals, i );
+
+        SCAI_ASSERT_EQ_ERROR( ja.size(), vals.size(), "serious mismatch"  );
+
+        hmemo::ReadAccess<double> rValues( vals );
+        hmemo::ReadAccess<IndexType> rJA( ja );
+
+        std::cout << "Row " << i << " : ";
+
+        for ( IndexType jj = 0; jj < ja.size(); ++jj )
+        {
+            std::cout << " " << rJA[jj] << ":" << rValues[jj];
+        }
+
+        std::cout << std::endl;
     }
 
-    const CSRStorage<double>& s = csrMatrix1.getLocalStorage();
+    CSRStorage<double> csr( st );
 
-    FileIO::write( s.getIA(), "ia.txt" );
-    FileIO::write( s.getJA(), "ja.txt" );
-
-    CSRSparseMatrix<double> csrMatrix2;
-
+    for ( IndexType i = 0; i < N1; ++i )
     {
-        SCAI_REGION( "main.convertStencil" )
-        csrMatrix2 = stencilMatrix;
+        HArray<double> vals;
+        HArray<IndexType> ja;
+
+        csr.getSparseRow( ja, vals, i );
+
+        SCAI_ASSERT_EQ_ERROR( ja.size(), vals.size(), "serious mismatch"  );
+
+        hmemo::ReadAccess<double> rValues( vals );
+        hmemo::ReadAccess<IndexType> rJA( ja );
+
+        std::cout << "Row " << i << " : ";
+
+        for ( IndexType jj = 0; jj < ja.size(); ++jj )
+        {
+            std::cout << " " << rJA[jj] << ":" << rValues[jj];
+        }
+
+        std::cout << std::endl;
     }
-
-    SCAI_ASSERT_EQUAL( csrMatrix1.getNumRows(), csrMatrix2.getNumRows(), "serious mismatch" )
-
-    csrMatrix1.writeToFile( "poisson.mtx" );
-    csrMatrix2.writeToFile( "stencil.mtx" );
-
-    std::cout << "diff = " << csrMatrix1.maxDiffNorm( csrMatrix2 ) << std::endl;
 }

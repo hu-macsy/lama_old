@@ -79,6 +79,8 @@ public:
 
     static const char* typeName();
 
+    StencilStorage();
+
     /** Constructor of a stencil stroage
      *
      */
@@ -94,7 +96,7 @@ public:
     {
         _MatrixStorage::setContextPtr( other.getContextPtr() );
     }
- 
+
     /** 
      * @brief Implementation of pure method _MatrixStorage::allocate
      */
@@ -153,6 +155,10 @@ public:
         return Format::STENCIL;
     }
 
+    /** Implementiation of virtual method MatrixStorage::getCreateValue */
+
+    virtual scai::lama::MatrixStorageCreateKeyType getCreateValue() const;
+
     /** Implementation of pure method.  */
 
     virtual void setIdentity( const IndexType )
@@ -180,8 +186,6 @@ public:
     {
         COMMON_THROWEXCEPTION( "getTypeName unsuported" )
     }
-
-    virtual scai::lama::MatrixStorageCreateKeyType getCreateValue() const;
 
     /** _MatrixStorage */
 
@@ -248,12 +252,11 @@ public:
         COMMON_THROWEXCEPTION( "setDIAData unsuported" )
     }
 
-    /** MatrixStorage<ValueType> */
-
- 	void scale(ValueType)
-    {
-        COMMON_THROWEXCEPTION( "scale unsuported" )
-    }
+    /** Implementation of pure method MatrixStorage<ValueType>::scale
+     *
+     *  This operation is supported as scale is available for a stencil.
+     */
+ 	void scale( const ValueType factor );
 
     /** MatrixStorage<ValueType> */
 
@@ -278,10 +281,7 @@ public:
 
     /** Implementation of pure method MatrixStorage::getSparseRow */
 
-    virtual void getSparseRow( hmemo::HArray<IndexType>& /* jA */, hmemo::_HArray& /* values */, const IndexType /* i */ ) const
-    {
-        COMMON_THROWEXCEPTION( "unsupported" )
-    }
+    virtual void getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_HArray& values, const IndexType i ) const;
 
     /** Implementation of pure method MatrixStorage::getColumn */
 
@@ -391,6 +391,13 @@ public:
         COMMON_THROWEXCEPTION( "print unsupported" )
     }
    
+    /** Override the default implementation MatrixStorage<ValueType>::assignTranspose 
+     *
+     *  Assign transpose is only supported if other matrix is also a stencil storage.
+     *  Otherwise an exception is thrown.
+     */
+    virtual void assignTranspose( const MatrixStorage<ValueType>& other );
+
     /** Implementation of MatrixStorage::matrixTimesVector for stencil storage */
 
     virtual void matrixTimesVector(
@@ -407,6 +414,14 @@ public:
         const hmemo::HArray<ValueType>& oldSolution,
         const hmemo::HArray<ValueType>& rhs,
         const ValueType omega ) const;
+    /** Implementation of MatrixStorage::matrixTimesVectorAsync for stencil storage */
+
+    virtual tasking::SyncToken* matrixTimesVectorAsync(
+        hmemo::HArray<ValueType>& result,
+        const ValueType alpha,
+        const hmemo::HArray<ValueType>& x,
+        const ValueType beta,
+        const hmemo::HArray<ValueType>& y ) const;
 
     using MatrixStorage<ValueType>::prefetch;
     using MatrixStorage<ValueType>::getContextPtr;
@@ -417,7 +432,7 @@ protected:
     using MatrixStorage<ValueType>::mNumColumns;
     using MatrixStorage<ValueType>::mDiagonalProperty;
 
-    common::Grid mGrid;            //! grid for which this matrix storage stands
+    common::Grid mGrid;                    //! grid for which this matrix storage stands
     common::Stencil<ValueType> mStencil;   //! stencil that specifies the linear mapping  with involved neighbors
 
 private:

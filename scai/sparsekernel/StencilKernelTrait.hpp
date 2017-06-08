@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include <scai/common/Grid.hpp>
+
 namespace scai
 {
 namespace sparsekernel
@@ -44,6 +46,7 @@ struct StencilKernelTrait
          *  @param[in] nDims is the number of dimensions for the grid
          *  @param[in] gridSizes contains the dimensions of the grid 
          *  @param[in] gridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] gridBorders contains for each dim two entries to specify kind of border
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *
@@ -55,6 +58,7 @@ struct StencilKernelTrait
             const IndexType nDims,
             const IndexType gridSizes[],
             const IndexType gridDistances[],
+            const common::Grid::BorderType gridBorders[],
             const IndexType nPoints,
             const int stencilNodes[] );
 
@@ -75,6 +79,7 @@ struct StencilKernelTrait
          *  @param[in] nDims is the number of dimensions for the grid
          *  @param[in] gridSizes contains the dimensions of the grid 
          *  @param[in] gridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] gridBorders contains for each dim two entries to specify kind of border
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
@@ -89,6 +94,7 @@ struct StencilKernelTrait
             const IndexType nDims,
             const IndexType gridSizes[],
             const IndexType gridDistances[],
+            const common::Grid::BorderType gridBorders[],
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],
@@ -114,6 +120,7 @@ struct StencilKernelTrait
          *  @param[in] localLB where the local grid is positioned in the global grid
          *  @param[in] globalGridSizes contains the dimensions of the global grid 
          *  @param[in] globalGridDistances contains the distance between two neighbored points for each dim
+         *  @param[in] globalGridBorders contains for each dimension two entries specifying how to deal with border
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
          *  @param[in] stencilVal contains the scale value for each stencil point
@@ -131,6 +138,7 @@ struct StencilKernelTrait
             const IndexType localLB[],
             const IndexType globalGridSizes[],
             const IndexType globalGridDistances[],
+            const common::Grid::BorderType globalGridBorders[],
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],
@@ -152,8 +160,7 @@ struct StencilKernelTrait
          *  @param[in] x is the vector which one element for each grid point
          *  @param[in] nDims specifies the dimension of the grid
          *  @param[in] gridSizes contains the dimensions of the grid 
-         *  @param[in] lb contains maximal left distance for each dimension given by stencil
-         *  @param[in] ub contains maximal right distance for each dimension given by stencil
+         *  @param[in] width contains maximal left/rights distance for each dimension given by stencil
          *  @param[in] gridDistances contains the distance between two neighbored points for each dim
          *  @param[in] nPoints number of stencil points
          *  @param[in] stencilNodes contins nDims * nPoints direction values for the stencil points
@@ -161,7 +168,7 @@ struct StencilKernelTrait
          *  @param[in] stencilOffset array with offset for each stencil point in linearized grid
          *
          *  result and x have one value for each grid point corresponding the linearized grid with nDims dimensions.
-         *  lb and ub might be recomputed by stencilNodes but are passed to avoid a recomputation.
+         *  width might be recomputed by stencilNodes but are passed to avoid a recomputation.
          *  gridDistances might also be recomputed by gridSizes but is used here to be independent from 
          *  column or row-major linearization of grids.
          */
@@ -171,9 +178,9 @@ struct StencilKernelTrait
             const ValueType x[],
             const IndexType nDims,
             const IndexType gridSizes[],
-            const IndexType lb[],
-            const IndexType ub[],
+            const IndexType width[],
             const IndexType gridDistances[],
+            const common::Grid::BorderType gridBorders[],
             const IndexType nPoints,
             const int stencilNodes[],
             const ValueType stencilVal[],

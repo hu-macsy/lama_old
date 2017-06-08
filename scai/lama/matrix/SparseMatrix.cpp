@@ -2034,9 +2034,21 @@ const Halo& SparseMatrix<ValueType>::getHalo() const
 template<typename ValueType>
 void SparseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << getTypeName() << "( size = " << getNumRows() << " x " << getNumColumns() << ", local = " << *mLocalData
-           << ", halo = " << *mHaloData << ", rowdist = " << getRowDistribution() << ", coldist = "
-           << getColDistribution() << ")";
+    stream << getTypeName() << "( size = " << getNumRows() << " x " << getNumColumns() 
+           << ", local = " << *mLocalData
+           << ", halo = " << *mHaloData;
+
+    // if column and row distribution are equal, write it only once
+
+    if ( getRowDistribution() == getColDistribution() )
+    {
+        stream << ", dist = " << getRowDistribution() << ")";
+    }
+    else
+    {
+        stream << ", rowdist = " << getRowDistribution() 
+               << ", coldist = " << getColDistribution() << ")";
+    }
 }
 
 /* ------------------------------------------------------------------------- */

@@ -53,6 +53,7 @@ using namespace hmemo;
 using namespace sparsekernel;
 using namespace utilskernel;
 using common::TypeTraits;
+using common::Grid;
 
 /* --------------------------------------------------------------------- */
 
@@ -82,6 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilLocalTest, ValueType, scai_numeric_test_ty
     IndexType nDims = 1;
     IndexType gridSizes[] = { 100 };
     IndexType gridDistances[] = { 1 };
+    Grid::BorderType gridBorders[] = { Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING };
     IndexType nPoints = 3;
     int stencilNodes[] = { -1, 0, 1 };
     // ValueType stencilValues[] = { -1, 2, -1 };
@@ -89,7 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilLocalTest, ValueType, scai_numeric_test_ty
     {
         IndexType n = gridSizes[0];   // number of grid points
         WriteOnlyAccess<IndexType> wIA( csrIA, loc, n + 1 );
-        stencilLocalSizes[loc]( wIA.get(), nDims, gridSizes, gridDistances, nPoints, stencilNodes );
+        stencilLocalSizes[loc]( wIA.get(), nDims, gridSizes, gridDistances, gridBorders, nPoints, stencilNodes );
         wIA.resize( n );
     }
 
@@ -135,68 +137,94 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV1Test, ValueType, scai_numeric_test_ty
 
     BOOST_CHECK_EQUAL( n, n1 );
     BOOST_CHECK_EQUAL( nPoints * nDims, nNodes );
+  
+    // For one-dimensional stencil we check for all border types 
 
-    LArray<ValueType> x ( n, xRaw );
-
-    LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
-    LArray<ValueType> y2;   // result by hand
-
-    // apply stencil manually
-
-    { 
-        WriteOnlyAccess<ValueType> wY( y2, n );
-        ReadAccess<ValueType> rX( x );
-
-        for ( IndexType i = 0; i < n1; ++i )
-        {
-            wY[ i ] = 2 * rX[ i ];
-
-            if ( i > 0 )
-            {
-                wY[ i ] -= rX[ i - 1  ];
-            }
-
-            if ( i < n1 - 1 )
-            {
-                wY[ i ] -= rX[ i + 1 ];
-            }
-        }
-    }
-
-    // apply stencil by kernel
-
-    IndexType lb[] = { 1 };
-    IndexType ub[] = { 1 };
-    int stencilOffset[] = { 0, -1, 1 };
-
+    for ( int b1 = 0; b1 < 3; b1++ )
     {
-        SCAI_CONTEXT_ACCESS( loc );
-
-        WriteAccess<ValueType> wY( y1, loc, n );
-        ReadAccess<ValueType> rX( x, loc );
-
-        ValueType alpha = 1;
-        IndexType nPoints = 3;
-
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
-    }
-
-    BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
-
-    if ( y1.maxDiffNorm( y2 ) != 0 )
-    {
-        ReadAccess<ValueType> rY1( y1 );
-        ReadAccess<ValueType> rY2( y2 );
-
-        for ( IndexType i = 0; i < n1; ++i )
+        for ( int b2 = 0; b2 < 3; b2++ )
         {
-            if ( rY1[i] == rY2[i] )
+            Grid::BorderType gridBorders[] = { Grid::BorderType( b1 ), Grid::BorderType( b2 ) };
+
+            LArray<ValueType> x ( n, xRaw );
+
+            LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
+            LArray<ValueType> y2;                         // result by manual evaluation
+
+            // apply stencil manually
+
             {
-                continue;
+                WriteOnlyAccess<ValueType> wY( y2, n );
+                ReadAccess<ValueType> rX( x );
+
+                for ( IndexType i = 0; i < n1; ++i )
+                {
+                    wY[ i ] = 2 * rX[ i ];
+
+                    if ( i > 0 )
+                    {
+                        wY[ i ] -= rX[ i - 1  ];
+                    }
+                    else if ( gridBorders[0] == Grid::BORDER_PERIODIC )
+                    {
+                        wY[ i ] -= rX[ n1 - 1 ];
+                    }
+                    else if ( gridBorders[0] == Grid::BORDER_REFLECTING )
+                    {
+                        wY[ i ] -= rX[ 0 ];
+                    }
+
+                    if ( i < n1 - 1 )
+                    {
+                        wY[ i ] -= rX[ i + 1 ];
+                    }
+                    else if ( gridBorders[1] == Grid::BORDER_PERIODIC )
+                    {
+                        wY[ i ] -= rX[ 0 ];
+                    }
+                    else if ( gridBorders[1] == Grid::BORDER_REFLECTING )
+                    {
+                        wY[ i ] -= rX[ n1 - 1 ];
+                    }
+                }
             }
 
-            SCAI_LOG_ERROR( logger, "point (" << i << " ) : by kernel: " << rY1[ i ] 
-                                     << ", by hand " << rY2[ i ] )
+            // apply stencil by kernel
+
+            IndexType width[] = { 1, 1 };
+            int stencilOffset[] = { 0, -1, 1 };
+
+            {
+                SCAI_CONTEXT_ACCESS( loc );
+
+                WriteAccess<ValueType> wY( y1, loc, n );
+                ReadAccess<ValueType> rX( x, loc );
+
+                ValueType alpha = 1;
+                IndexType nPoints = 3;
+
+                stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, gridBorders,
+                                  nPoints, stencilNodes, stencilValues, stencilOffset );
+            }
+
+            BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
+
+            if ( y1.maxDiffNorm( y2 ) != 0 )
+            {
+                ReadAccess<ValueType> rY1( y1 );
+                ReadAccess<ValueType> rY2( y2 );
+
+                for ( IndexType i = 0; i < n1; ++i )
+                {
+                    if ( rY1[i] == rY2[i] )
+                    {
+                        continue;
+                    }
+
+                    SCAI_LOG_ERROR( logger, "point (" << i << " ) : by kernel: " << rY1[ i ]
+                                    << ", by hand " << rY2[ i ] )
+                }
+            }
         }
     }
 }
@@ -219,6 +247,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
     IndexType nDims = 2;
     IndexType gridSizes[] = { n1, n2 };
     IndexType gridDistances[] = { n2, 1 };
+
+    // Each combination of border types should work correctly
+
+    Grid::BorderType gridBorders[] = { Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING,
+                                       Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING
+                                     };
     int stencilNodes[] = { 0, 0, -1, 0, 1, 0, 0, -1, 0, 1 };
     ValueType stencilValues[] = { 6, -1, -1, -2, -2 };
 
@@ -234,11 +268,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
     LArray<ValueType> x ( n, xRaw );
 
     LArray<ValueType> y1 ( n, ValueType( 0 ) );   // result by kernel, must be initialized
-    LArray<ValueType> y2;   // result by hand
+    LArray<ValueType> y2;                         // result by hand
 
     // apply stencil manually
 
-    { 
+    {
         WriteOnlyAccess<ValueType> wY( y2, n );
         ReadAccess<ValueType> rX( x );
 
@@ -252,14 +286,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
                 {
                     wY[ i * n2 + j ] -= rX[ ( i - 1 ) * n2 + j ];
                 }
+                else if ( gridBorders[0] == Grid::BORDER_PERIODIC )
+                {
+                    wY[ i * n2 + j ] -= rX[ ( n1 - 1 ) * n2 + j ];
+                }
+                else if ( gridBorders[0] == Grid::BORDER_REFLECTING )
+                {
+                    wY[ i * n2 + j ] -= rX[ 0 * n2 + j ];
+                }
+
                 if ( i < n1 - 1 )
                 {
                     wY[ i * n2 + j ] -= rX[ ( i + 1 ) * n2 + j ];
                 }
+                else if ( gridBorders[1] == Grid::BORDER_PERIODIC )
+                {
+                    wY[ i * n2 + j ] -= rX[ ( 0 ) * n2 + j ];
+                }
+                else if ( gridBorders[1] == Grid::BORDER_REFLECTING )
+                {
+                    wY[ i * n2 + j ] -= rX[ ( n1 - 1 ) * n2 + j ];
+                }
+
                 if ( j > 0 )
                 {
                     wY[ i * n2 + j ] -= 2 * rX[ i * n2 + j - 1 ];
                 }
+
                 if ( j < n2 - 1 )
                 {
                     wY[ i * n2 + j ] -= 2 * rX[ i * n2 + j + 1 ];
@@ -270,8 +323,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1, 1 };
-    IndexType ub[] = { 1, 1 };
+    IndexType width[] = { 1, 1, 1, 1 };
 
     int tmpOffset2 = n2;
     int tmpOffset1 = 1;
@@ -284,7 +336,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
         ReadAccess<ValueType> rX( x, loc );
 
         ValueType alpha = 1;
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, gridBorders,
+                          nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
@@ -298,8 +351,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV2Test, ValueType, scai_numeric_test_ty
         {
             for ( IndexType j = 0; j < gridSizes[1]; ++j )
             {
-                SCAI_LOG_INFO( logger, "point (" << i << ", " << j << " ) : by kernel: " << rY1[ i * n2 + j ] 
-                                        << ", by hand " << rY2[ i * n2 + j ] )
+                SCAI_LOG_INFO( logger, "point (" << i << ", " << j << " ) : by kernel: " << rY1[ i * n2 + j ]
+                               << ", by hand " << rY2[ i * n2 + j ] )
             }
         }
     }
@@ -326,12 +379,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
     IndexType nDims = 3;
     IndexType gridSizes[] = { n1, n2, n3 };
     IndexType gridDistances[] = { n2 * n3, n3, 1 };
+    Grid::BorderType gridBorders[] = { Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING,
+                                       Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING,
+                                       Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING
+                                     };
     int stencilNodes[] = { 0, 0, 0, -1, 0, 0, 1, 0, 0 };
     ValueType stencilValues[] = { 2, -1, -1 };
 
-    const ValueType xRaw[] = { 1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 0, 1, 
-                               1, 1, 2, 5, 3, 4, 1, 2, 3, 3, 0, 2, 
-                               4, 1, 2, 3, 1, 0, 1, 2, 2, 3, 1, 1 };
+    const ValueType xRaw[] = { 1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 0, 1,
+                               1, 1, 2, 5, 3, 4, 1, 2, 3, 3, 0, 2,
+                               4, 1, 2, 3, 1, 0, 1, 2, 2, 3, 1, 1
+                             };
 
     const IndexType n = sizeof( xRaw ) / sizeof( ValueType );
     const IndexType nPoints = sizeof( stencilValues ) / sizeof( ValueType );
@@ -347,7 +405,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
 
     // apply stencil manually
 
-    { 
+    {
         WriteOnlyAccess<ValueType> wY( y2, n );
         ReadAccess<ValueType> rX( x );
 
@@ -365,6 +423,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
                     {
                         wY[ i * n2 * n3 + j * n3 + k ] -= rX[ ( i - 1 ) * n2 * n3 + j * n3 + k ];
                     }
+
                     if ( i < n1 - 1 )
                     {
                         wY[ i * n2 * n3 + j * n3 + k ] -= rX[ ( i + 1 ) * n2 * n3 + j * n3 + k ];
@@ -376,8 +435,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1, 0, 1 };
-    IndexType ub[] = { 1, 0, 0 };
+    IndexType width[] = { 1, 1, 0, 0, 1, 0 };
 
     int tmpOffset = n2 * n3;
     int stencilOffset[] = { 0, -tmpOffset, tmpOffset };
@@ -390,7 +448,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV3Test, ValueType, scai_numeric_test_ty
 
         ValueType alpha = 1;
         const IndexType nPoints = 1;
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, gridBorders,
+                          nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
@@ -439,13 +498,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
 
     IndexType nDims = 4;
     IndexType gridSizes[] = { n1, n2, n3, n4 };
-    IndexType gridDistances[] = { n2 * n3 * n4, n3 * n4, n4, 1 };
+    IndexType gridDistances[] = { n2* n3 * n4, n3 * n4, n4, 1 };
+    Grid::BorderType gridBorders[] = { Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING,
+                                       Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING,
+                                       Grid::BORDER_ABSORBING, Grid::BORDER_ABSORBING
+                                     };
     int stencilNodes[] = { 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 };
     ValueType stencilValues[] = { 2, -1, -1 };
 
-    const ValueType xRaw[] = { 1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 0, 1, 
-                               1, 1, 2, 5, 3, 4, 1, 2, 3, 3, 0, 2, 
-                               4, 1, 2, 3, 1, 0, 1, 2, 2, 3, 1, 1 };
+    const ValueType xRaw[] = { 1, 2, 3, 4, 5, 2, 3, 4, 5, 6, 0, 1,
+                               1, 1, 2, 5, 3, 4, 1, 2, 3, 3, 0, 2,
+                               4, 1, 2, 3, 1, 0, 1, 2, 2, 3, 1, 1
+                             };
 
     const IndexType n = sizeof( xRaw ) / sizeof( ValueType );
     const IndexType nPoints = sizeof( stencilValues ) / sizeof( ValueType );
@@ -461,7 +525,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
 
     // apply stencil manually
 
-    { 
+    {
         WriteOnlyAccess<ValueType> wY( y2, n );
         ReadAccess<ValueType> rX( x );
 
@@ -481,6 +545,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
                         {
                             wY[ pos ] -= rX[ pos - n2 * n3 * n4 ];
                         }
+
                         if ( i < n1 - 1 )
                         {
                             wY[ pos ] -= rX[ pos + n2 * n3 * n4 ];
@@ -493,8 +558,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
 
     // apply stencil by kernel
 
-    IndexType lb[] = { 1, 0, 0, 0 };
-    IndexType ub[] = { 1, 0, 0, 0 };
+    IndexType width[] = { 1, 1, 0, 0, 0, 0, 0, 0 };
 
     int tmpOffset = n2 * n3 * n4;
     int stencilOffset[] = { 0, -tmpOffset, tmpOffset };
@@ -506,7 +570,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
         ReadAccess<ValueType> rX( x, loc );
 
         ValueType alpha = 1;
-        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, lb, ub, gridDistances, nPoints, stencilNodes, stencilValues, stencilOffset );
+        stencilGEMV[loc]( wY.get(), alpha, rX.get(), nDims, gridSizes, width, gridDistances, gridBorders,
+                          nPoints, stencilNodes, stencilValues, stencilOffset );
     }
 
     BOOST_CHECK_EQUAL( 0, y1.maxDiffNorm( y2 ) );
@@ -531,9 +596,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stencilGEMV4Test, ValueType, scai_numeric_test_ty
                         {
                             continue;
                         }
-    
-                        SCAI_LOG_ERROR( logger, "point (" << i << ", " << j << ", " << k << ", " << m 
-                                                 << " ) : by kernel: " << v1 << ", by hand " << v2 )
+
+                        SCAI_LOG_ERROR( logger, "point (" << i << ", " << j << ", " << k << ", " << m
+                                        << " ) : by kernel: " << v1 << ", by hand " << v2 )
                     }
                 }
             }

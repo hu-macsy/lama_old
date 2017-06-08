@@ -403,6 +403,14 @@ public:
      */
     void compress( const ValueType eps = 0.0 );
 
+    static void compress( 
+        hmemo::HArray<IndexType>& ia, 
+        hmemo::HArray<IndexType>& ja, 
+        hmemo::HArray<ValueType>& values,
+        const bool diagonalFlag, 
+        const ValueType eps, 
+        hmemo::ContextPtr prefContext );
+
     /** Swap this CSR storage data with another CSR storage.
      *
      *  @param[in,out] other is the CSR storage with with this storage is swapped

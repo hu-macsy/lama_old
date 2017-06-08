@@ -49,6 +49,7 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Math.hpp>
+#include <scai/common/Grid.hpp>
 
 #include <scai/tracing.hpp>
 

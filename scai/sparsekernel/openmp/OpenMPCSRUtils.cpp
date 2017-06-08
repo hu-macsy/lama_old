@@ -297,9 +297,6 @@ void OpenMPCSRUtils::sortRowElements(
             for ( IndexType jj = start; jj < end; ++jj )
             {
                 bool swapIt = false;
-                SCAI_ASSERT_DEBUG(
-                    csrJA[jj] != csrJA[jj + 1],
-                    "row " << i << ": " << jj << ", column index " << csrJA[jj] << ", " << csrJA[ jj + 1] << " appears twice" );
 
                 // if diagonalFlag is set, column i is the smallest one
 
@@ -326,6 +323,21 @@ void OpenMPCSRUtils::sortRowElements(
             }
 
             --end;
+        }
+   
+        // make a final traverse to detect/combine entries for same column
+
+        end = csrIA[i + 1] - 1;   // reset end, start is still okay
+
+        for ( IndexType jj = end; jj > start; jj-- )
+        {
+            if ( csrJA[jj] != csrJA[jj-1] )
+            {
+                continue;
+            }
+
+            csrValues[jj-1] += csrValues[jj];
+            csrValues[jj] = 0;
         }
     }
 }
@@ -397,16 +409,26 @@ void OpenMPCSRUtils::countNonZeros(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
+        bool foundDiagonal = false;  // may be there are more diagonal elements that are zero
+
         IndexType cnt = 0;
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
-            bool nonZero    = common::Math::abs( values[jj] ) > eps;
-            SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj]
-                            << ", isDiagonal = " << isDiagonal << ", nonZero = " << nonZero )
+            bool countDiagonal = false;
 
-            if ( nonZero || isDiagonal )
+            if ( diagonalFlag && ( ja[jj] == i ) && !foundDiagonal )
+            {
+                foundDiagonal = true;
+                countDiagonal = true;
+            }
+
+            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+
+            SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj]
+                            << ", isDiagonal = " << countDiagonal << ", nonZero = " << nonZero )
+
+            if ( nonZero || countDiagonal )
             {
                 ++cnt;
             }
@@ -438,15 +460,25 @@ void OpenMPCSRUtils::compress(
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
+        bool foundDiagonal = false;  // may be there are more diagonal elements that are zero
+
         IndexType offs = newIA[i];
+
         SCAI_LOG_TRACE( logger, "row i: " << ia[i] << ":" << ia[i + 1] << " -> " << newIA[i] << ":" << newIA[i + 1] )
 
         for ( IndexType jj = ia[i]; jj < ia[i + 1]; ++jj )
         {
-            bool isDiagonal = diagonalFlag && ( ja[jj] == i );
+            bool countDiagonal = false;
+
+            if ( diagonalFlag && ( ja[jj] == i ) && !foundDiagonal )
+            {
+                foundDiagonal = true;
+                countDiagonal = true;
+            }
+
             bool nonZero    = common::Math::abs( values[jj] ) > eps;
 
-            if ( nonZero || isDiagonal )
+            if ( nonZero || countDiagonal )
             {
                 newJA[ offs ]     = ja[jj];
                 newValues[ offs ] = values[jj];
@@ -455,7 +487,7 @@ void OpenMPCSRUtils::compress(
         }
 
         // make sure that filling the compressed data fits to the computed offsets
-        SCAI_ASSERT_EQUAL_DEBUG( offs, newIA[i + 1] )
+        SCAI_ASSERT_EQUAL_ERROR( offs, newIA[i + 1] )
     }
 }
 

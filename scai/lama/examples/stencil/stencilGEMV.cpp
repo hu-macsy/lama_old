@@ -65,28 +65,43 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 {
     std::cout << "Benchmark: grid = " << grid << ", stencil = " << stencil << std::endl;
 
-    // Distibute grid onto default processor array, can be set by --SCAI_NP=2x3x2
+    // Distribute grid onto default processor array, can be set by --SCAI_NP=2x3x2
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     ContextPtr ctx = Context::getContextPtr();
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
+    std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
+
+    lama::Matrix::SyncKind syncKind = lama::Matrix::SYNCHRONOUS;
+
+    // by default do matrix-vector operations synchronously, but can be set via environment
+
+    bool isSet;
+
+    if ( common::Settings::getEnvironment( isSet, "SCAI_ASYNCHRONOUS" ) )
+    {
+        if ( isSet )
+        {
+            syncKind = scai::lama::Matrix::ASYNCHRONOUS;
+        }
+    }
+
     // The stencil matrix just needs the grid distribution and the stencil
 
     StencilMatrix<ValueType> stencilMatrix( gridDistribution, stencil );
     stencilMatrix.setContextPtr( ctx );
+    stencilMatrix.setCommunicationKind( syncKind );
 
-    std::cout << "stencilMatrix " << stencilMatrix << std::endl;
-
-    stencilMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+    std::cout << *comm << ": stencilMatrix " << stencilMatrix << std::endl;
 
     // Conversion stencil matrix -> CSR matrix is full supported
 
     CSRSparseMatrix<ValueType> csrMatrix( stencilMatrix );
 
-    csrMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
     csrMatrix.setContextPtr( ctx );
+    csrMatrix.setCommunicationKind( syncKind );
 
     std::cout << "csrStencilMatrix " << csrMatrix << std::endl;
 
@@ -97,25 +112,47 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     DenseVector<ValueType> y1 ( stencilMatrix.getRowDistributionPtr(), 0.0 );
     DenseVector<ValueType> y2 ( csrMatrix.getRowDistributionPtr(), 0.0 );
 
+    double timeStencil;
+    double timeCSR;
+
     {
         SCAI_REGION( "bench.stencilGEMV" )
+
+        double time = common::Walltime::get();
 
         for ( IndexType iter = 0; iter < NITER; ++iter )
         {
             y1 += stencilMatrix * x;
         }
+
+        timeStencil = common::Walltime::get() - time;
+
+        // compute time for one stencil in ms
+
+        timeStencil = ( timeStencil / NITER) * 1000.0;
     }
     {
         SCAI_REGION( "bench.csrGEMV" )
+
+        double time = common::Walltime::get();
+
         for ( IndexType iter = 0; iter < NITER; ++iter )
         {
             y2 += csrMatrix * x;
         }
+
+        timeCSR = common::Walltime::get() - time;
+
+        // compute time for one stencil in ms
+
+        timeCSR = ( timeCSR / NITER) * 1000.0;
     }
 
     // stencil and CSR matrix are same, so result vectors y1 and y2 must be same or close
 
     std::cout << "diff = " << y1.maxDiffNorm( y2 ) << std::endl;
+
+    std::cout << "Time (ms): stencil = " << timeStencil << ", csr = " << timeCSR << std::endl;
 }
 
 int main( int argc, const char* argv[] )
@@ -130,7 +167,10 @@ int main( int argc, const char* argv[] )
 
     if ( argc < 3 )
     {
-        std::cout << "call: " << argv[0] << " <ndims> <stencilType>" << std::endl;
+        std::cout << "call: " << argv[0] << " [options] <ndims> <stencilType>" << std::endl;
+        std::cout << "  possible options:" << std::endl;
+        std::cout << "    --SCAI_ASYNCHRONOUS=0|1" << std::endl;
+        std::cout << "    --SCAI_CONTEXt=Host|CUDA" << std::endl;
         return -1;
     }
 
@@ -149,10 +189,10 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = 40;
+        const IndexType N1 = 50;
         const IndexType N2 = 80;
-        const IndexType N3 = 80;
-        const IndexType N4 = 80;
+        const IndexType N3 = 100;
+        const IndexType N4 = 100;
     
         common::Grid4D grid( N1, N2, N3, N4 );
 
@@ -164,13 +204,9 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        // const IndexType N1 = 200;
-        // const IndexType N2 = 400;
-        // const IndexType N3 = 500;
-
-        const IndexType N1 = 1000;
-        const IndexType N2 = 800;
-        const IndexType N3 = 100;
+        const IndexType N1 = 200;
+        const IndexType N2 = 400;
+        const IndexType N3 = 500;
     
         common::Grid3D grid( N1, N2, N3 );
 
@@ -187,6 +223,9 @@ int main( int argc, const char* argv[] )
     
         common::Grid2D grid( N1, N2 );
 
+        // grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
+        // grid.setBorderType( 0, common::Grid::BORDER_PERIODIC, common::Grid::BORDER_PERIODIC );
+
         bench( grid, stencil );
     }
     else if ( nDims == 1 )
@@ -195,9 +234,11 @@ int main( int argc, const char* argv[] )
 
         // Define a grid with same number of dimensions as stencil
 
-        const IndexType N1 = 40000000;
+        const IndexType N1 = 40 * 1000 * 1000;
     
         common::Grid1D grid( N1 );
+
+        // grid.setBorderType( 0, common::Grid::BORDER_PERIODIC );
 
         bench( grid, stencil );
     }

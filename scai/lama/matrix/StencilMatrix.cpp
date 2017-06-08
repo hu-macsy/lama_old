@@ -61,10 +61,29 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, StencilMatrix<ValueT
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil )
+StencilMatrix<ValueType>::StencilMatrix()
 
     : SparseMatrix<ValueType>()
 
+{
+    SCAI_LOG_INFO( logger, "create default stencil matrix" )
+
+    common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>() );
+    common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
+
+    haloData->allocate( localData->getNumRows(), 0 );
+
+    DistributionPtr dist( new NoDistribution( localData->getNumRows() ) );
+
+    Halo halo;
+
+    this->set( localData, haloData, halo, dist, dist );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilMatrix<ValueType>::define( const common::Grid& grid, const Stencil<ValueType>& stencil )
 {
     SCAI_LOG_INFO( logger, "create stencil matrix, grid = " << grid << ", stencil = " << stencil )
 
@@ -83,6 +102,17 @@ StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+StencilMatrix<ValueType>::StencilMatrix( const common::Grid& grid, const Stencil<ValueType>& stencil )
+
+    : SparseMatrix<ValueType>()
+
+{
+    define( grid, stencil );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void StencilMatrix<ValueType>::buildStencilHaloStorage(
     hmemo::HArray<IndexType>& haloIA,
     hmemo::HArray<IndexType>& haloJA,
@@ -91,11 +121,6 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
     const Stencil<ValueType>& stencil )
 {
     // Determine all non-local grid points of the boundaries
-
-    IndexType lb[ SCAI_GRID_MAX_DIMENSION ];
-    IndexType ub[ SCAI_GRID_MAX_DIMENSION ];
-
-    stencil.getWidth( lb, ub );
 
     const common::Grid& localGrid  = gridDist.getLocalGrid();
     const common::Grid& globalGrid = gridDist.getGlobalGrid();
@@ -119,7 +144,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
 
         sparsekernel::OpenMPStencilKernel::stencilHaloSizes( 
             wIA.get(), nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
-            globalGrid.sizes(), stencil.nPoints(), stencil.positions() );
+            globalGrid.sizes(), globalGrid.borders(), stencil.nPoints(), stencil.positions() );
 
         wIA.resize( n );
     }
@@ -136,7 +161,8 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
         sparsekernel::OpenMPStencilKernel::stencilHaloCSR(
             wJA.get(), wValues.get(), rIA.get(),
             nDims, localGrid.sizes(), localGridDistances, gridDist.localLB(),
-            globalGrid.sizes(), globalGridDistances, stencil.nPoints(), stencil.positions(),
+            globalGrid.sizes(), globalGridDistances, globalGrid.borders(),
+            stencil.nPoints(), stencil.positions(),
             stencil.values(), stencilOffsets.get() );
     }
 }
@@ -144,10 +170,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
-
-    : SparseMatrix<ValueType>()
-
+void StencilMatrix<ValueType>::define( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
 {
     SCAI_ASSERT_ERROR( dist.get(), "NULL dist" )
 
@@ -186,6 +209,17 @@ StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Sten
 
     haloStorage->allocate( haloIA.size() - 1, haloNumColumns );
     haloStorage->swap( haloIA, haloJA, haloValues );
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>::StencilMatrix( dmemo::DistributionPtr dist, const Stencil<ValueType>& stencil )
+
+    : SparseMatrix<ValueType>()
+
+{
+    define( dist, stencil );
 }
 
 /* -------------------------------------------------------------------------- */

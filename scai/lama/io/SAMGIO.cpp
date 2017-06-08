@@ -42,6 +42,7 @@
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
+#include <scai/common/Grid.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/ScalarType.hpp>
