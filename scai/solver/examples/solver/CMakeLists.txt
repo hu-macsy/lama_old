@@ -34,7 +34,7 @@
 
 set ( HEADER LamaConfig.hpp LamaTiming.hpp )
 
-foreach ( executable lamaSolver lamaInfo matrixStencilGenerator matrixRandomGenerator vectorGenerator )
+foreach ( executable lamaSolver lamaInfo matrixStencilGenerator matrixRandomGenerator stencilSolver vectorGenerator )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
