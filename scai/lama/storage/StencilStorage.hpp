@@ -409,7 +409,7 @@ public:
 
     /** Implementation of MatrixStorage::jacobiIterate for stencil storage */
 
-    virtual void jacobiIterate1(
+    virtual void jacobiIterate(
         hmemo::HArray<ValueType>& solution,
         const hmemo::HArray<ValueType>& oldSolution,
         const hmemo::HArray<ValueType>& rhs,

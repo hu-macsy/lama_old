@@ -198,6 +198,8 @@ static const ValueType* getDiagonalPtr( const common::Stencil<ValueType>& stenci
     return NULL;
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void StencilStorage<ValueType>::getDiagonal( _HArray& array ) const
 {
@@ -219,6 +221,7 @@ void StencilStorage<ValueType>::getDiagonal( _HArray& array ) const
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
 void StencilStorage<ValueType>::scale( const ValueType val )
 {
     mStencil.scale( val );
@@ -444,7 +447,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void StencilStorage<ValueType>::jacobiIterate1(
+void StencilStorage<ValueType>::jacobiIterate(
     HArray<ValueType>& solution,
     const HArray<ValueType>& oldSolution,
     const HArray<ValueType>& rhs,
@@ -452,19 +455,18 @@ void StencilStorage<ValueType>::jacobiIterate1(
 {
     SCAI_REGION( "Storage.CSR.jacobiIterate" )
 
-    SCAI_LOG_ERROR( logger, *this << ": Jacobi iteration for local stencil data, omega = " << omega )
+    SCAI_LOG_INFO( logger, *this << ": Jacobi iteration for local stencil data, omega = " << omega )
 
     SCAI_ASSERT_EQ_DEBUG( mNumRows, oldSolution.size(), "illegal size for old solution" )
     SCAI_ASSERT_EQ_DEBUG( mNumRows, rhs.size(), "illegal size for rhs" )
     SCAI_ASSERT_EQ_DEBUG( mNumRows, mNumColumns, "jacobiIterate only on square matrices" )
 
-    // solution = omega * ( rhs + B * oldSolution) * dinv  + ( 1 - omega ) * oldSolution
-    // solution = omega * rhs + ( 1 - omega ) * oldSolution;
-    // solution += B * oldSolution * ( omega * dinv )
-
-    HArrayUtils::arrayPlusArray( solution, omega, rhs, ValueType( 1 ) - omega, oldSolution, getContextPtr() );
+    // solution = omega * ( rhs - B * oldSolution ) * dinv  + ( 1 - omega ) * oldSolution
+    // solution = omega * rhs * dinv + ( 1 - omega ) * oldSolution;
+    // solution -= B * oldSolution * ( omega * dinv )
 
     // okay that is tricky stuff, swap the diagonal entry with 0
+    // would cause serious problems if stencil storage is used in other operation
 
     ValueType* diagonalPtr = const_cast<ValueType*>( getDiagonalPtr( mStencil ) );
 
@@ -472,13 +474,13 @@ void StencilStorage<ValueType>::jacobiIterate1(
 
     *diagonalPtr = ValueType( 0 );
 
-    bool async = false;
-
     ValueType alpha = omega / diagonalValue;
 
-    SCAI_LOG_ERROR( logger, "alpha = " << alpha );
+    HArrayUtils::arrayPlusArray( solution, alpha, rhs, ValueType( 1 ) - omega, oldSolution, getContextPtr() );
 
-    incGEMV( solution, alpha, oldSolution, async );
+    const bool async = false;
+
+    incGEMV( solution, -alpha, oldSolution, async );
 
     *diagonalPtr = diagonalValue;
 }
