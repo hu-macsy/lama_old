@@ -34,6 +34,8 @@
 
 #include <scai/lama.hpp>
 
+#include <scai/solver/examples/eigenvalue/HouseholderTransformedMatrix.hpp>
+
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
@@ -108,45 +110,6 @@ void makeLaplacian( CSRSparseMatrix<double>& L )
     SCAI_ASSERT_LT_ERROR( y.maxNorm(), Scalar( 1e-8 ), "L not Laplacian matrix" )
 }
 
-/** CG solver where L * w is replaced with L * w - s' * w * r - r' * w * s */
-
-void solve( Vector& x, Matrix& L, Vector& r, Vector& s, const Vector& b, const Scalar& eps )
-{
-    DenseVector<double> res ( b - L * x );
-
-    res += s.dotProduct( x ) * r;
-    res += r.dotProduct( x ) * s;
-    res[0] = 0.0;
-
-    DenseVector<double> d ( res );
-
-    Scalar rOld = res.dotProduct( res );
-    L2Norm norm; 
-    
-    IndexType maxIter = 20;
-
-    Scalar rNorm = norm( res );
-
-    for ( int k = 0 ; k < maxIter and rNorm > eps; k++ )
-    {
-        DenseVector<double> z( L * d );
-
-        z -= s.dotProduct( d ) * r;
-        z -= r.dotProduct( d ) * s;
-        z[0] = 0.0;
-
-        Scalar alpha = rOld / d.dotProduct( z );
-        x = x + alpha * d;
-        res = res - alpha * z;
-        Scalar rNew = res.dotProduct( res );
-        Scalar beta = rNew / rOld;
-        d = res + beta * d;
-        rOld = rNew; 
-        rNorm = norm( res );
-        std::cout << "Iter k = " << k << " : norm( r ) = " << rNorm.getValue<double>() << std::endl;
-    }
-}
-
 /** Main program to determine the Fiedler vector for a Laplacian matrix
  *
  *  Method: Inverse power method incorporated with Householder deflation
@@ -193,34 +156,36 @@ int main( int argc, const char* argv[] )
  
     Scalar alpha = n + n12;
 
-    DenseVector<double> h ( L * u );
-    h /= alpha;
-
-    Scalar gamma = u.dotProduct( h ) / alpha * 0.5;
-
-    DenseVector<double> v( h - gamma * u );
-
-    DenseVector<double> r( u ); r[0] = 0.0;
-    DenseVector<double> s( v ); s[0] = 0.0;
+    HouseholderTransformedMatrix HLH( L, u, alpha );
 
     DenseVector<double> t( L.getRowDistributionPtr(), 1.0 );
 
     DenseVector<double> y;
     DenseVector<double> diff;
 
+
     t[0] = 0.0;
+
     DenseVector<double> z( t );
     
+    // set up the CG solver that is used for the inverse power method
+
+    CG cgSolver( "InversePowerMethodSolver" );
+    CriterionPtr criterion1( new IterationCount( 20 ) );
+    NormPtr norm( Norm::create( "L2" ) );   // Norm from factory
+    CriterionPtr criterion2( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
+    CriterionPtr criterion( new Criterion( criterion1, criterion2, Criterion::OR ) );
+
+    cgSolver.setStoppingCriterion( criterion );
+    cgSolver.initialize( HLH );
+
     for ( IndexType k = 0; k < kmax; ++k )
     {
         // normalize t
 
         t = t / t.l2Norm();
 
-        y = L * t;
-        y[0] = 0.0;                  // fill element as we actually use L[2:n,2:n] 
-        y -= s.dotProduct( t ) * r;  
-        y -= r.dotProduct( t ) * s;
+        y = HLH * t;
 
         Scalar lambda = t.dotProduct( y );
         diff = y - lambda * t;
@@ -233,7 +198,8 @@ int main( int argc, const char* argv[] )
             break;
         }
 
-        solve( z, L, r, s, t, eps );
+        // solve( z, HLH, t, eps );
+        cgSolver.solve( z, t );
 
         t = z;
     }
