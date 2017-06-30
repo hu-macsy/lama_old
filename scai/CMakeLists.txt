@@ -56,7 +56,7 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 
 set ( SCAI_PROJECT_LIST common logging tracing tasking kregistry hmemo blaskernel utilskernel sparsekernel dmemo lama solver )
 
-foreach ( SCAI_PROJECT ${SCAL_PROJECT_LIST} )
+foreach ( SCAI_PROJECT ${SCAI_PROJECT_LIST} )
 
     message( STATUS "Configuring SCAI project ${SCAI_PROJECT}" )
 

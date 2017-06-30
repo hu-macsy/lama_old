@@ -6,6 +6,7 @@
 
 VERSION 2.2.0 (in preparation):
 
+ * CMake build system simplified, one single build step for all SCAI projects
  * SparseVector now available, especially helpful for operations with rows and/or columns of sparse matrices
  * Grid added as data structure for multidimensional indexing
  * GridDistribution added for mapping of data grids to processor grids
