@@ -204,7 +204,7 @@ int main( int argc, const char* argv[] )
             }
         }
 
-        std::cout << "Stencil matrix = " << *matrixPtr << std::cout;
+        std::cout << "Stencil matrix = " << *matrixPtr << std::endl;
 
         scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
         scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );

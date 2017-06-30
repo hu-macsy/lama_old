@@ -44,8 +44,6 @@ set ( SCAI_LAMA_ALL_VERSION 2.2.0 )
 
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/Modules" )
 
-set ( SCAI_COMPLETE_BUILD FALSE )
-
 ### set cmake quiet for untyped messages
 if    ( NOT SCAI_CMAKE_VERBOSE )
     include ( Functions/setCMakeQuiet )

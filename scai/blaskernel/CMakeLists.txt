@@ -145,8 +145,8 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAM
 
 ## add link libraries
 
-target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo 
-                                       scai_kregistry scai_blaskernel )
+target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking 
+                                       scai_hmemo scai_kregistry )
 
 target_link_libraries( ${PROJECT_NAME} ${SCAI_CUDA_LIBRARIES} )
 target_link_libraries( ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )

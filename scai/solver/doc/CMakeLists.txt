@@ -33,7 +33,7 @@
 ###
 
 if ( SPHINX_FOUND AND BUILD_DOC )
-    set ( ${PROJECT_NAME}_DOC_DIR "${CMAKE_SOURCE_DIR}/doc" )
+    set ( ${PROJECT_NAME}_DOC_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
     set ( SPHINX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/${SCAI_DOC_TYPE}" )
 
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
@@ -75,7 +75,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
 
     # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
-        doc ALL
+        doc_solver ALL
         DEPENDS ${OUTPUT_DEPENDENCIES}
     )
     
