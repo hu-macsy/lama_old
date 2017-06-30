@@ -46,16 +46,15 @@ set ( IO_CLASSES
         PartitionIO
         ImageIO
         BitmapIO
-        PngIO
 ) 
 
-if ( ZLIB_FOUND )
+if ( ZLIB_FOUND AND USE_ZLIB )
     set ( IO_CLASSES ${IO_CLASSES} MatlabIO MATIOStream )
-endif ( ZLIB_FOUND )
+endif ( ZLIB_FOUND AND USE_ZLIB )
 
-if ( PNGLIB_FOUND )
+if ( PNGLIB_FOUND AND USE_PNG )
     set ( IO_CLASSES ${IO_CLASSES} PngIO )
-endif ( PNGLIB_FOUND )
+endif ( PNGLIB_FOUND AND USE_PNG )
 
 scai_project (
 

@@ -39,9 +39,7 @@
 
 #include <scai/common/exception/UnsupportedException.hpp>
 
-#include<png.h>
 #include<fstream>
-
 
 #define MAT_SUFFIX ".bmp" 
 
