@@ -32,27 +32,14 @@
  # @date 25.01.2016
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
-
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_solver CXX )
+### Set PROJECT NAME 
+project ( scai_solver )
 
 ### includes ###
 
 ## important Variables for project
-include ( VersionDefinition )
-include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
+set ( SCAI_SOLVER_VERSION 1.0.0 )
+include ( SetProjectVariables)                    # sets many project related directories
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -61,33 +48,27 @@ include ( Functions/scaiProject )
 include ( Functions/relativeInstall )
 
 ### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-    include ( Functions/CheckValueAtCompleteBuild )
-    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
+include ( SetBuildFlags )
+include ( VersionCheck/Compiler )
+include ( Compiler/SetCPPFlags )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
     include( Package/BoostTest )
 endif ( BUILD_TEST )
 
-### include all search packages
-addInternalAndExternalPackages()
-
 ## finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions ###
 
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_TRACING_FLAG} )
+include ( Settings/logging )
+include ( Settings/tracing )
+
+add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
@@ -98,9 +79,9 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
+
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -164,10 +145,13 @@ endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_SOLVER_VERSION} )
 
 ## add link libraries
-addInternalAndExternalLinkLibraries()
+
+target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo 
+                                       scai_kregistry scai_blaskernel scai_utilskernel scai_dmemo scai_lama )
+
 # Might be some additional solver libraries have been defined
 #message ( STATUS "SOLVER uses following solver libraries: ${SOLVER_SUB_LIBRARIES}" )
 if    ( SOLVER_SUB_LIBRARIES )
@@ -197,7 +181,3 @@ install ( FILES ../solver.hpp DESTINATION include/scai )
 ## add custum target distClean
 include ( CustomCommands/DistClean )
 
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/solver )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

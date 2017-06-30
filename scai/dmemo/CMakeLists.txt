@@ -32,27 +32,15 @@
  # @date 16.02.2016
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
-
 ### Set PROJECT NAME / supported LANGUAGES
-project ( scai_dmemo CXX )
+project ( scai_dmemo )
 
 ### includes ###
 
 ## important Variables for project
-include ( VersionDefinition )
+set ( SCAI_DMEMO_VERSION      1.0.0 )
 include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
+set ( SCAI_DMEMO_EXTERNAL_DEPS        OpenMP                    MPI GPI GraphPartitioning ) # 10
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -61,32 +49,39 @@ include ( Functions/scaiProject )
 include ( Functions/relativeInstall )
 
 ### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-    include ( Functions/CheckValueAtCompleteBuild )
-    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
+include ( SetBuildFlags )
+include ( VersionCheck/Compiler )
+include ( Compiler/SetCPPFlags )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
     include( Package/BoostTest )
 endif ( BUILD_TEST )
 
-### include all search packages
-addInternalAndExternalPackages()
+### include all external packages ( optional )
+
+include( Package/OpenMP )
+include( Package/MPI )
+include( Package/GPI )
+include( Package/GraphPartitioning )
+
+message( STATUS "OpenMP: ${SCAI_OPENMP_INLCUDE_DIR} ${SCAI_OPENMP_LIBRARIES}" )
+message( STATUS "MPI: ${SCAI_MPI_INLCUDE_DIR} ${SCAI_MPI_LIBRARIES}" )
+message( STATUS "GPI: ${SCAI_GPI_INLCUDE_DIR} ${SCAI_GPI_LIBRARIES}" )
+message( STATUS "GraphPartitioning: ${SCAI_GRAPHPARTITIONING_INLCUDE_DIR} ${SCAI_GRAPHPARTITIONING_LIBRARIES}" )
 
 ## finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions ###
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+
+include ( Settings/logging )
+include ( Settings/tracing )
+
+add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_TRACING_FLAG} )
+add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
@@ -99,7 +94,11 @@ endif ( WIN32 )
 ### Project System-Include ( also configured files )
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
+
+include_directories ( ${SCAI_OPENMP_INCLUDE_DIR} )
+include_directories ( ${SCAI_MPI_INCLUDE_DIR} )
+include_directories ( ${SCAI_GPI_INCLUDE_DIR} )
+include_directories ( ${SCAI_GRAPHPARTITIONING_INCLUDE_DIR} )
 
 if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
     if    ( SCAI_INDEX_TYPE STREQUAL "int" )
@@ -168,7 +167,13 @@ set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAM
 
 ## add link libraries
 
-addInternalAndExternalLinkLibraries()
+target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo 
+                                       scai_kregistry scai_utilskernel )
+
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_OPENMP_LIBRARIES} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_MPI_LIBRARIES} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_GPI_LIBRARIES} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_GRAPHPARTITIONING_LIBRARIES} )
 
 ### install ###
 
@@ -184,7 +189,3 @@ install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 ## add custum target distClean
 include ( CustomCommands/DistClean )
 
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/${PROJECT_SURNAME} )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

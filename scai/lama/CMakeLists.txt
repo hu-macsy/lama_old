@@ -32,27 +32,15 @@
  # @date 29.03.2012
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
-
 ### Set PROJECT NAME / supported LANGUAGES
-project ( scai_lama CXX )
+project ( scai_lama )
 
 ### includes ###
 
 ## important Variables for project
-include ( VersionDefinition )
+set ( SCAI_LAMA_VERSION       2.0.0 )
 include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
+set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP ZLIB PNG ) # 11
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -61,32 +49,37 @@ include ( Functions/scaiProject )
 include ( Functions/relativeInstall )
 
 ### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-    include ( Functions/CheckValueAtCompleteBuild )
-    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
+include ( SetBuildFlags )
+include ( VersionCheck/Compiler )
+include ( Compiler/SetCPPFlags )
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
     include( Package/BoostTest )
 endif ( BUILD_TEST )
 
-### include all search packages
-addInternalAndExternalPackages()
+### include all external packages ( optional )
+
+include( Package/OpenMP )
+include( Package/ZLIB )
+include( Package/PNG )
+
+message( STATUS "OpenMP: ${SCAI_OPENMP_INCLUDE_DIR} ${SCAI_OPENMP_LIBRARIES}" )
+message( STATUS "ZLIB: ZLIB_FOUND=${ZLIB_FOUND}, USE_ZLIB=${USE_ZLIB}, ${SCAI_ZLIB_INCLUDE_DIR} ${SCAI_ZLIB_LIBRARIES}" )
+message( STATUS "PNG: ${SCAI_PNG_INCLUDE_DIR} ${SCAI_PNG_LIBRARIES}" )
 
 ## finalize build flags
 include ( ConcludeFlags )
 
 ### add definitions ###
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+
+include ( Settings/logging )
+include ( Settings/tracing )
+
+add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_TRACING_FLAG} )
+add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
@@ -99,7 +92,9 @@ endif ( WIN32 )
 ### Project System-Include ( also configured files )
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
+
+include_directories ( ${SCAI_PNG_INCLUDE_DIR} )
+include_directories ( ${SCAI_ZLIB_INCLUDE_DIR} )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -130,27 +125,21 @@ scai_project (
 ### add subdirectories
 add_subdirectory ( doc )
 
-if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
 add_subdirectory ( expression )
-
-if ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    add_subdirectory( gpi )
-endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-
 add_subdirectory ( io )
 add_subdirectory ( matrix )
 add_subdirectory ( matutils )
 add_subdirectory ( mepr )
-
 add_subdirectory ( norm )
 add_subdirectory ( storage )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+
+if    ( BUILD_EXAMPLES )
+add_subdirectory ( examples )
+endif ( BUILD_EXAMPLES )
 
 ### set link directories ###
 if ( WIN32 )
@@ -159,23 +148,18 @@ endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_LAMA_VERSION} )
 
 ## add link libraries
-addInternalAndExternalLinkLibraries()
+
+target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo 
+                                       scai_kregistry scai_blaskernel scai_utilskernel scai_sparsekernel scai_dmemo )
 
 # external libraries
-if    ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
-    target_link_libraries ( ${PROJECT_NAME} ${GPI2_LIBRARIES} ${IBVERBS_LIBRARIES} )
-endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 
-if ( USE_ZLIB AND ZLIB_FOUND ) 
-    target_link_libraries ( ${PROJECT_NAME} ${ZLIB_LIBRARY} )
-endif ( USE_ZLIB AND ZLIB_FOUND ) 
-
-if ( USE_PNGLIB AND PNGLIB_FOUND ) 
-    target_link_libraries ( ${PROJECT_NAME} ${PNGLIB_LIBRARY} )
-endif ( USE_PNGLIB AND PNGLIB_FOUND ) 
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_OPENMP_LIBRARIES} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_ZLIB_LIBRARIES} )
+target_link_libraries ( ${PROJECT_NAME} ${SCAI_PNG_LIBRARIES} )
 
 ### install ###
 
@@ -183,16 +167,9 @@ endif ( USE_PNGLIB AND PNGLIB_FOUND )
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
-relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+relative_install( FILES ${CXX_HEADERS} DESTINATION ${SCAI_LAMA_INCLUDE_DIR} )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
 install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
 
-## add custum target distClean
-include ( CustomCommands/DistClean )
-
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/${PROJECT_SURNAME} )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

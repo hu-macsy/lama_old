@@ -49,13 +49,13 @@ set ( IO_CLASSES
         PngIO
 ) 
 
-if ( ZLIB_FOUND )
+if ( ZLIB_FOUND AND USE_ZLIB )
     set ( IO_CLASSES ${IO_CLASSES} MatlabIO MATIOStream )
-endif ( ZLIB_FOUND )
+endif ()
 
-if ( PNGLIB_FOUND )
+if ( PNGLIB_FOUND AND USE_PNG )
     set ( IO_CLASSES ${IO_CLASSES} PngIO )
-endif ( PNGLIB_FOUND )
+endif ()
 
 scai_project (
 

@@ -29,30 +29,16 @@
  #
  # @brief CMake configuration file for common library
  # @author Thomas Brandes
- # @date 09.06.2015
+ # @date 01.07.2017
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
-
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_common CXX )
-
-### includes ###
+project( scai_common )
 
 ## important Variables for project
-include ( VersionDefinition )
+
+set ( SCAI_COMMON_VERSION     1.0.0 )
 include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
+set ( SCAI_COMMON_EXTERNAL_DEPS       OpenMP CUDA MIC           dl Thread                 ) # 1
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -60,16 +46,9 @@ include ( Functions/scaiFunctions )
 include ( Functions/scaiProject )
 include ( Functions/relativeInstall )
 
-### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
+include ( SetBuildFlags )
+include ( VersionCheck/Compiler )
+include ( Compiler/SetCPPFlags )
 
 ## C++11 or Boost
 include ( Compiler/CheckC++11 )
@@ -297,7 +276,3 @@ install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 ### add custum target distClean
 include ( CustomCommands/DistClean )
 
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/${PROJECT_SURNAME} )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

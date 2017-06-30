@@ -32,27 +32,15 @@
  # @date 30.06.2015
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
-
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_hmemo CXX )
 
 ### includes ###
 
 ## important Variables for project
-include ( VersionDefinition )
+set ( SCAI_HMEMO_VERSION  1.0.0 )
 include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
+set ( SCAI_HMEMO_EXTERNAL_DEPS        OpenMP CUDA MIC                                     ) 
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -83,15 +71,17 @@ addInternalAndExternalPackages()
 include ( ConcludeFlags )
 
 ### add definitions
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_TRACING_FLAG} )
+include ( Settings/logging )
+include ( Settings/tracing )
+
+add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
+add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
-
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -159,7 +149,8 @@ add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-addInternalAndExternalLinkLibraries()
+
+target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking )
 
 ### install ###
 

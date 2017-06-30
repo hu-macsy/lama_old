@@ -52,8 +52,9 @@ prepareExamplesMakeInc()
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
 
 ## install examples
+
 install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
 
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/cuda/Makefile" COPYONLY )
+install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/../install_Makefile
+          DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda
+          RENAME      Makefile  )

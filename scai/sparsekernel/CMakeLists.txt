@@ -32,27 +32,15 @@
  # @date 18.02.2016
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
-
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
-
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
-
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_sparsekernel CXX )
 
 ### includes ###
 
 ## important Variables for project
-include ( VersionDefinition )
+set ( SCAI_SPARSEKERNEL_VERSION 1.0.0 )
 include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
+set ( SCAI_SPARSEKERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS                           ) 
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -61,16 +49,10 @@ include ( Functions/scaiProject )
 include ( Functions/relativeInstall )
 
 ### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-    include ( Package/Sphinx )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-    include ( Functions/CheckValueAtCompleteBuild )
-    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
+include ( SetBuildFlags )
+include ( VersionCheck/Compiler )
+include ( Compiler/SetCPPFlags )
+include ( Package/Sphinx )
 
 ## Boost for Test
 if ( BUILD_TEST )
@@ -84,16 +66,19 @@ addInternalAndExternalPackages()
 include ( ConcludeFlags )
 
 ### add definitions
+### add definitions
+
+include ( Settings/logging )
+include ( Settings/tracing )
+
 add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
+add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
 
 if ( SCAI_OMP_SCHEDULE_FLAG )
     add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
-
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -D${SCAI_TRACING_FLAG} )
 
 if    ( WIN32 )
 	add_definitions ( -DCOMMON_COMPILING_DLL )
@@ -156,7 +141,9 @@ add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
 
 ## add link libraries
-addInternalAndExternalLinkLibraries()
+
+target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo 
+                                       scai_kregistry scai_blaskernel scai_utilskernel )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )
@@ -178,7 +165,3 @@ install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 ### add custum target distClean
 include ( CustomCommands/DistClean )
 
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-    include ( Summaries/${PROJECT_SURNAME} )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
