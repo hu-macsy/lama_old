@@ -40,9 +40,10 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/SingleDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/norm/Norm.hpp>
+#include <scai/lama/matrix/StencilMatrix.hpp>
 
 #include <scai/solver/GMRES.hpp>
 #include <scai/solver/SimpleAMG.hpp>
@@ -155,14 +156,56 @@ int main( int argc, const char* argv[] )
 
     try
     {
-        std::string matrixFilename        = argv[1];
+        std::istringstream stencilSpecification( argv[1] );
         std::string rhsFilename           = argc <= 2 ? "" : argv[2];
         std::string startSolutionFilename = argc <= 3 ? "" : argv[3];
         std::string finalSolutionFilename = argc <= 4 ? "" : argv[4];
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
+        IndexType nDims = 0;
+        IndexType nPoints = 0;
+        IndexType n1 = 0;
+
+        stencilSpecification >> nDims >> nPoints >> n1;
+
+        scai::common::unique_ptr<Matrix> matrixPtr;
+
+        switch ( nDims )
+        {
+            case 1:  
+            {
+                common::Stencil1D<double> stencil( nPoints );
+                common::Grid1D grid( n1 );
+                matrixPtr.reset( new StencilMatrix<double>( grid, stencil ) );
+                break;
+            }
+         
+            case 2:  
+            {
+                common::Stencil2D<double> stencil( nPoints );
+                IndexType n2 = n1;
+                stencilSpecification >> n2;
+                common::Grid2D grid( n1, n2 );
+                matrixPtr.reset( new StencilMatrix<double>( grid, stencil ) );
+                break;
+            }
+         
+            case 3:  
+            {
+                common::Stencil3D<double> stencil( nPoints );
+                IndexType n2 = n1;
+                stencilSpecification >> n2;
+                IndexType n3 = n2;
+                stencilSpecification >> n3;
+                common::Grid3D grid( n1, n2, n3 );
+                matrixPtr.reset( new StencilMatrix<double>( grid, stencil ) );
+                break;
+            }
+        }
+
+        std::cout << "Stencil matrix = " << *matrixPtr << std::cout;
+
         scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
         scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
 
@@ -170,77 +213,23 @@ int main( int argc, const char* argv[] )
         Vector& rhs      = *rhsPtr;
         Vector& solution = *solutionPtr;
 
-        // input matrix will be CSR format
-
-        scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
-        Matrix& inMatrix = *inMatrixPtr;
-
-        // Here each processor should print its configuration
-
-        cout << lamaconf << endl;
-
-        // Now read in matrix and rhs
-
         HOST_PRINT( 0, "Setup matrix, rhs, initial solution" )
 
         {
             SCAI_REGION( "Main.loadData" )
 
-            LamaTiming timer( comm, "Loading data" );
-
-            // read matrix + rhs from disk
-
-            std::string distFilename = "";
-
-            if ( common::Settings::getEnvironment( distFilename, "SCAI_DISTRIBUTION" ) )
-            {
-                if ( distFilename.size() < 2 )
-                {
-                    distFilename = "";
-                    HOST_PRINT( 0 , "Read matrix from file " << matrixFilename << ", with mapping by cols" )
-                }
-                else
-                {
-                    HOST_PRINT( 0, "Read matrix from file " << matrixFilename << ", with mapping from file " << distFilename )
-                }
-
-                inMatrix.readFromFile( matrixFilename, distFilename );
-            }
-            else
-            {
-                HOST_PRINT( myRank, "Read matrix from file " << matrixFilename )
-                inMatrix.readFromFile( matrixFilename );
-            }
-
-            SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), inMatrix.getNumColumns(), "solver only with square matrices" )
-
-            HOST_PRINT( myRank, "Matrix from file " << matrixFilename << " : " << inMatrix )
-
-            if ( rhsFilename.size() == 0 && FileIO::hasSuffix( matrixFilename, "frm" ) )
-            {
-                // this filename can also be taken for vector
-
-                rhsFilename = matrixFilename.substr( 0, matrixFilename.size() - 4 ) + ".frv";
-
-                if ( ! FileIO::fileExists( rhsFilename ) )
-                {
-                    HOST_PRINT( myRank, "rhs file " << rhsFilename << " does not exist, take default rhs" )
-                    rhsFilename = "";
-                }
-            }
-
             double val;
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.allocate( inMatrix.getRowDistributionPtr() );
+                rhs.allocate( matrix.getRowDistributionPtr() );
                 rhs = Scalar( val );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
             else if ( rhsFilename.size() )
             {
-                rhs.readFromFile( rhsFilename, inMatrix.getRowDistributionPtr() );
+                rhs.readFromFile( rhsFilename, matrix.getRowDistributionPtr() );
 
                 HOST_PRINT( myRank, "Read rhs from file " << rhsFilename << " : " << rhs )
             }
@@ -250,41 +239,37 @@ int main( int argc, const char* argv[] )
 
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
-                x.allocate( inMatrix.getColDistributionPtr() );
+                x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
-                rhs = inMatrix * x;
+                rhs = matrix * x;
 
                 HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )
             {
-                solution.allocate( inMatrix.getRowDistributionPtr() );
+                solution.allocate( matrix.getRowDistributionPtr() );
                 solution = Scalar( val );
                 HOST_PRINT( myRank, "Set initial solution = " << val )
             }
             else if ( startSolutionFilename.size() )
             {
-                solution.readFromFile( startSolutionFilename, inMatrix.getRowDistributionPtr() );
+                solution.readFromFile( startSolutionFilename, matrix.getRowDistributionPtr() );
                 HOST_PRINT( myRank, "Read initial solution from file " << startSolutionFilename << ": " << solution )
             }
             else
             {
-                solution.allocate( inMatrix.getRowDistributionPtr() );
+                solution.allocate( matrix.getRowDistributionPtr() );
                 solution = Scalar( 0 );   // initialize of a vector
                 HOST_PRINT( myRank, "Set initial solution = 0" )
             }
 
             // only square matrices are accetpted
 
-            SCAI_ASSERT_EQUAL( inMatrix.getNumRows(), rhs.size(), "size mismatch: #rows of matrix must be equal size of rhs" )
-            SCAI_ASSERT_EQUAL( inMatrix.getNumColumns(), solution.size(),
+            SCAI_ASSERT_EQUAL( matrix.getNumRows(), rhs.size(), "size mismatch: #rows of matrix must be equal size of rhs" )
+            SCAI_ASSERT_EQUAL( matrix.getNumColumns(), solution.size(),
                                "size mismatch: #cols of matrix must be equal size of initial solution" )
         }
-
-        // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
-
-        int numRows = inMatrix.getNumRows();
 
         // distribute data (trivial block partitioning)
 
@@ -293,49 +278,19 @@ int main( int argc, const char* argv[] )
             SCAI_REGION( "Main.redistribute" )
 
             LamaTiming timer( comm, "Redistribution" );
-            // determine a new distribution so that each processor gets part of the matrix according to its weight
-            float weight = lamaconf.getWeight();
 
-            DistributionPtr oldDist = inMatrix.getRowDistributionPtr();
+            DistributionPtr oldDist = matrix.getRowDistributionPtr();
 
-            DistributionPtr dist;
-
-            if ( lamaconf.useMetis() )
-            {
-                LamaTiming timer( comm, "Metis" );
-                // dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), inMatrix, weight ) );
-            }
-            else if ( *oldDist == dmemo::SingleDistribution( numRows, oldDist->getCommunicatorPtr(), 0 ) )
-            {
-                // one single processor only has read the matrix, redistribute among all available processors
-
-                dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
-            }
-            else
-            {
-                // was a distributed read, so take this as distribution
-
-                dist = inMatrix.getRowDistributionPtr();
-            }
-
-            inMatrix.redistribute( dist, dist );
+            DistributionPtr dist = matrix.getRowDistributionPtr();
 
             rhs.redistribute ( dist );
             solution.redistribute ( dist );
 
-            HOST_PRINT( myRank, "matrix redistributed = " << inMatrix )
+            HOST_PRINT( myRank, "matrix redistributed = " << matrix )
         }
 
         // Now convert to th desired matrix format
 
-        {
-            LamaTiming timer( comm, "Type conversion from CSR<ValueType> to target format" );
-            matrix = inMatrix;
-        }
-
-        cout << "matrix = " << matrix << endl;
-
-        inMatrix.clear();
         double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 
         HOST_PRINT( myRank,  "Matrix Size = " << matrixSize << " MB" )
@@ -364,12 +319,9 @@ int main( int argc, const char* argv[] )
 
         loggerName << solverName << ", " << lamaconf.getCommunicator() << ": ";
 
-        bool suppressWriting = comm.getRank() > 0;   // only host processor logs
-
         LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                              lamaconf.getLogLevel(),
-                                             LoggerWriteBehaviour::toConsoleOnly,
-                                             suppressWriting ) );
+                                             LoggerWriteBehaviour::toConsoleOnly ) );
 
         mySolver->setLogger( logger );
 
