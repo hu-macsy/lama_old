@@ -32,13 +32,16 @@
  # @date 10.06.2015
 ###
 
-### Set PROJECT NAME / supported LANGUAGES
+## Define name of the SCAI module project
 
-project ( scai_tasking )
+set ( MODULE_NAME tasking )
 
 set ( INTERNAL_DEPS common logging tracing )
 set ( SCAI_TASKING_EXTERNAL_DEPS CUDA MIC ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
@@ -114,10 +117,8 @@ if    ( USE_MIC )
     add_subdirectory ( mic )
 endif ( USE_MIC )
 
-add_subdirectory ( doc )
-
 if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
+    add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 if ( FOUND_BOOST_TEST AND BUILD_TEST )
@@ -148,5 +149,6 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCL
 ## install library.hpp
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
-## add custum target distClean
-include ( CustomCommands/DistClean )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
+

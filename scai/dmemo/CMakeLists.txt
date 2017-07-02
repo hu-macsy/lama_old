@@ -32,12 +32,16 @@
  # @date 16.02.2016
 ###
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_dmemo )
+## Define name of the SCAI module project
+
+set ( MODULE_NAME dmemo )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel )
 set ( SCAI_DMEMO_EXTERNAL_DEPS OpenMP MPI GPI GraphPartitioning ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
@@ -138,10 +142,8 @@ scai_project (
 
 ### add subdirectories
 
-add_subdirectory ( doc )
-
 if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
+    add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 if ( GPI_FOUND AND USE_GPI )
@@ -187,6 +189,6 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLU
 ## install "<library>.hpp"
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
-## add custum target distClean
-include ( CustomCommands/DistClean )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
 

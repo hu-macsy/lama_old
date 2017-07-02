@@ -32,14 +32,19 @@
  # @date 01.07.2017
 ###
 
-project( scai_common )
+## Define name of the SCAI module project
 
-## Dependencies
+set ( MODULE_NAME common )
+
+## Specifiy all internal and external dependencies
 
 set ( INTERNAL_DEPS )
 set ( SCAI_COMMON_EXTERNAL_DEPS OpenMP CUDA MIC dl Thread ) 
 
-# string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
+string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ## important Variables for project
 
@@ -189,14 +194,16 @@ if    ( ${USE_COMPLEX} )
     list ( APPEND COMMON_HEADERS Complex )
 endif ( ${USE_COMPLEX} )
 
+## Boost used -> generate and add a boost check version file 
+
+if ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
+    install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
+endif ()
+
 ## configure c++11/boost dependent sources
 
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
-    install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-
-if    ( NOT CXX_SUPPORTS_C11 )
+if ( NOT CXX_SUPPORTS_C11 )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
@@ -206,13 +213,13 @@ if    ( NOT CXX_SUPPORTS_C11 )
         configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     endif ( ${Boost_VERSION} GREATER "105700" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-else  ( NOT CXX_SUPPORTS_C11 )
+else ()
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-endif ( NOT CXX_SUPPORTS_C11 )
+endif ()
 
 ## configure c++11/pthread dependent headers, add specific sources
 
@@ -228,7 +235,7 @@ install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
                 ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
                 ${CONFIGURE_DIR}/Thread.hpp 
-          DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+          DESTINATION "include/scai/${MODULE_NAME}" )
 
 scai_project( 
 
@@ -241,10 +248,8 @@ scai_project(
 
 add_subdirectory ( cuda )
 
-include( CustomCommands/SphinxDoc )
-
-if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
+if ( BUILD_EXAMPLES )
+    add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 add_subdirectory ( exception )
@@ -274,11 +279,10 @@ addExternalLinkLibraries()
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
-relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
-install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
+install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
-### add custum target distClean
-include ( CustomCommands/DistClean )
-
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )

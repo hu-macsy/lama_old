@@ -32,14 +32,18 @@
  # @date 11.11.2015
 ###
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_blaskernel )
+## Define name of the SCAI module project
+
+set ( MODULE_NAME blaskernel )
 
 ### includes ###
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry )
 set ( SCAI_BLASKERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ## important Variables for project
@@ -124,7 +128,6 @@ if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
-add_subdirectory ( doc )
 add_subdirectory ( external )
 
 if ( USE_MIC )
@@ -169,6 +172,6 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLU
 ## install library.hpp
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
-### add custum target distClean
-include ( CustomCommands/DistClean )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
 

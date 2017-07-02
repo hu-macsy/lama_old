@@ -32,12 +32,16 @@
  # @date 30.06.2015
 ###
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_hmemo CXX )
+## Define name of the SCAI module project
+
+set ( MODULE_NAME hmemo )
 
 set ( INTERNAL_DEPS common logging tracing tasking )
 set ( SCAI_HMEMO_EXTERNAL_DEPS OpenMP CUDA MIC ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
@@ -119,10 +123,8 @@ if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND USE_CUDA )
 
-add_subdirectory ( doc )
-
 if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
+    add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 add_subdirectory ( exception )
@@ -158,4 +160,7 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLU
 
 ## install library.hpp
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
+
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
 

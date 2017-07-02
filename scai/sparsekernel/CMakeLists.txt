@@ -32,12 +32,16 @@
  # @date 18.02.2016
 ###
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_sparsekernel )
+## Define name of the SCAI module project
+
+set ( MODULE_NAME sparsekernel )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel ) 
 set ( SCAI_SPARSEKERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
@@ -121,7 +125,6 @@ if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
-add_subdirectory ( doc )
 add_subdirectory ( external )
 
 if ( USE_MIC )
@@ -159,11 +162,11 @@ endif ( USE_MIC )
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
-relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/${MODULE_NAME} )
 
 ## install library.hpp
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
 
-### add custum target distClean
-include ( CustomCommands/DistClean )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 
+include ( CustomCommands/SphinxDoc )

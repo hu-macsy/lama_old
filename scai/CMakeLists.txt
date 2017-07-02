@@ -70,17 +70,25 @@ foreach ( SCAI_PROJECT ${SCAI_PROJECT_LIST} )
 
 endforeach ()
 
-# ToDo: enable Documentation
+include ( Package/Sphinx )
+include ( Package/Doxygen )
 
-# find_package ( Sphinx )
-# include ( Package/Sphinx )
-# find_package ( Doxygen )
-# include ( Package/Doxygen )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 
-## add custum target distClean
+set ( MODULE_NAME "lama_all" )
+set ( INTERNAL_DEPS ${SCAI_PROJECT_LIST} )
+
+include ( CustomCommands/SphinxDoc )
+
+## add custom target doxygendoc
+
+include ( CustomCommands/DoxygenDoc )
+
+## add custom target distClean
 
 include ( CustomCommands/DistClean )
 
 ## summary of what is found
+
 include ( Summaries/scai )
 

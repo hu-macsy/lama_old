@@ -32,12 +32,15 @@
  # @date 25.01.2016
 ###
 
-### Set PROJECT NAME 
+## Define name of the SCAI module project
 
-project ( scai_solver )
+set ( MODULE_NAME solver )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo lama ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
@@ -121,7 +124,6 @@ scai_project (
 
 ## add subdirectories
 add_subdirectory ( criteria )
-add_subdirectory ( doc )
 
 if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
@@ -181,6 +183,6 @@ install ( FILES ../solver.hpp DESTINATION include/scai )
 #file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 #install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
 
-## add custum target distClean
-include ( CustomCommands/DistClean )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
 

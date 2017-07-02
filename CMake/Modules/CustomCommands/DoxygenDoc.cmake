@@ -1,5 +1,5 @@
 ###
- # @file doc/doxygen/CMakeLists.txt
+ # @file DoxygenDoc.cmake
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,31 +27,34 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief configuration of doxygen
+ # @brief Commands to generate custom target doxygendoc
  # @author Jan Ecker
- # @date 25.04.2013
+ # @date 03.07.2017
 ###
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/LAMA.Doxyfile.in" "${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile" )
+if ( DOXYGEN_FOUND )
 
-file ( MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html )
+    set ( DOXYGEN_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen" )
 
-# The initial rm command gets rid of everything previously built by this
-# custom command.
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/doc/doxygen/LAMA.Doxyfile.in" "${DOXYGEN_BINARY_DIR}/LAMA.Doxyfile" )
 
-add_custom_command (
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-    #COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}
-    #COMMAND mkdir ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/LAMA.Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+    file ( MAKE_DIRECTORY ${DOXYGEN_BINARY_DIR}/html )
 
-add_custom_target (
-    doxygendoc
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/system
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/html/ ${CMAKE_INSTALL_PREFIX}/${DOC_ROOT_DIR}/system
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
-    COMMENT "Creating doxygen doc."
-)
+    add_custom_command (
+        OUTPUT ${DOXYGEN_BINARY_DIR}/html/index.html
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_BINARY_DIR}/LAMA.Doxyfile
+        DEPENDS ${DOXYGEN_BINARY_DIR}/LAMA.Doxyfile
+        WORKING_DIRECTORY ${DOXYGEN_BINARY_DIR}
+    )
+
+    add_custom_target (
+        doxygendoc
+        DEPENDS ${DOXYGEN_BINARY_DIR}/html/index.html
+        COMMENT "Creating doxygen doc."
+    )
+
+    install ( DIRECTORY   ${DOXYGEN_BINARY_DIR}/html 
+              DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/system )
+
+endif ( DOXYGEN_FOUND )
+

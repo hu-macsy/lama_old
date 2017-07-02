@@ -32,12 +32,16 @@
  # @date 29.03.2012
 ###
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_lama )
+## Define name of the SCAI module project
+
+set ( MODULE_NAME lama )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo ) 
 set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP ZLIB PNG ) 
 
+## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+
+set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
@@ -126,7 +130,6 @@ scai_project (
     )
 
 ### add subdirectories
-add_subdirectory ( doc )
 
 add_subdirectory ( expression )
 add_subdirectory ( io )
@@ -174,4 +177,7 @@ relative_install( FILES ${CXX_HEADERS} DESTINATION ${SCAI_LAMA_INCLUDE_DIR} )
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
 install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
+
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
 
