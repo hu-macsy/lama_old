@@ -41,28 +41,12 @@ set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel ut
 ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
 
 ## important Variables for project
 include ( SetProjectVariables)                    # sets many project related directories
 include ( Dependencies/minimalSupportedVersions )
-
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
-
-### Include compile dependent things
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-
-## Use Boost if BUILD_TEST is enabled
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -82,7 +66,7 @@ if ( SCAI_OMP_SCHEDULE_FLAG )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
@@ -150,39 +134,24 @@ if ( WIN32 )
 endif ( WIN32 )
 
 ### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
 
-## add link libraries
-
-target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
 # Might be some additional solver libraries have been defined
-#message ( STATUS "SOLVER uses following solver libraries: ${SOLVER_SUB_LIBRARIES}" )
-if    ( SOLVER_SUB_LIBRARIES )
-#    message ( STATUS "linked to solver: ${SOLVER_SUB_LIBRARIES}" )
-    target_link_libraries( ${PROJECT_NAME} ${SOLVER_SUB_LIBRARIES} )
-endif ( SOLVER_SUB_LIBRARIES )
+
+scai_library ( OTHER_LINK ${SOLVER_SUB_LIBRARIES} )
 
 ### install ###
 
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
-
 ## install headers
+
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
 install ( FILES ../solver.hpp DESTINATION include/scai )
 
-# generate file make.inc + install it
-#configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/examples/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" )
-#install ( FILES "${CMAKE_CURRENT_BINARY_DIR}/examples/make.inc" DESTINATION share/examples )
-
-# copy examples in build directory + install it
-#file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-#install ( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples DESTINATION share )
-
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+
 include ( CustomCommands/SphinxDoc )
 

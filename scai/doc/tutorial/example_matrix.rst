@@ -28,7 +28,7 @@ Our multiplication looks like this:
     7 \\
     -9.3 \end{matrix}\right)
 
-.. literalinclude:: ../../../lama/examples/tutorial/matrix.cpp 
+.. literalinclude:: ../../lama/examples/tutorial/matrix.cpp 
    :language: c++
    :lines: 53-122
     
@@ -51,5 +51,5 @@ The result is:
     0 \\
     -14.6 \end{matrix}\right)    
     
-The full example program can be found here :download:`matrix.cpp <../../../lama/examples/tutorial/matrix.cpp>`
+The full example program can be found here :download:`matrix.cpp <../../lama/examples/tutorial/matrix.cpp>`
 	

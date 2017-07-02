@@ -37,34 +37,15 @@
 set ( MODULE_NAME logging )
 
 set ( INTERNAL_DEPS common )
-set ( SCAI_LOGGING_EXTERNAL_DEPS ) 
+set ( EXTERNAL_DEPS )             # no external dependencies 
 
 ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ## important Variables for project
 include ( SetProjectVariables)
 include ( Dependencies/minimalSupportedVersions )
-
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
-
-### Include compile dependent things
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-
-## Boost for Test
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include all search packages
-addInternalAndExternalPackages()
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -77,13 +58,13 @@ add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
+
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -142,14 +123,10 @@ if ( WIN32 )
   link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-## ToDo: add link libraries
-# addInternalAndExternalLinkLibraries()
-
-target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
+scai_library ()
 
 ### install ###
 

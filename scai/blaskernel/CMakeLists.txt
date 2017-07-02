@@ -39,41 +39,21 @@ set ( MODULE_NAME blaskernel )
 ### includes ###
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry )
-set ( SCAI_BLASKERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS ) 
+set ( EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS ) 
 
 ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ## important Variables for project
 include ( SetProjectVariables)
 include ( Dependencies/minimalSupportedVersions )
 
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
+### find all external packages via the provided wrappers of CMake modules
 
-### Include compile dependent things
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-
-## Boost for Test
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include [optional] packages, use SCAI wrappers of CMake modules
-
-include( Package/OpenMP )
-include( Package/CUDA )
-include( Package/MIC )
-include( Package/SCAI_BLAS )
-
-message( STATUS "CUDA: found = ${CUDA_FOUND}, inc = ${SCAI_CUDA_INCLUDE_DIR}, lib = ${SCAI_CUDA_LIBRARIES}" )
-message( STATUS "SCAI_BLAS: found = ${SCAI_BLAS_FOUND}, name = ${SCAI_BLAS_NAME}, inc = ${SCAI_SCAI_BLAS_INCLUDE_DIR}, lib = ${SCAI_SCAI_BLAS_LIBRARIES}" )
+foreach ( module ${EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ()
 
 ### finalize build flags
 include ( ConcludeFlags )
@@ -83,7 +63,7 @@ include ( ConcludeFlags )
 include ( Settings/logging )
 include ( Settings/tracing )
 
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
+add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
 add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
 add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
 add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
@@ -93,16 +73,20 @@ if ( SCAI_OMP_SCHEDULE_FLAG )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
 
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
+set ( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
 
-include_directories ( ${SCAI_SCAI_BLAS_INCLUDE_DIR} )
-include_directories ( ${SCAI_CUDA_INCLUDE_DIR} )
+### add includes for external packages
+
+foreach ( module ${EXTERNAL_DEPS} )
+    string ( TOUPPER ${module} upper_module )
+    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
+endforeach ()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 scai_project (
@@ -120,8 +104,8 @@ scai_project (
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-	cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 if    ( BUILD_EXAMPLES )
@@ -145,15 +129,10 @@ if ( WIN32 )
     link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-## add link libraries
-
-target_link_libraries( ${PROJECT_NAME} ${INTERNAL_LIBS} )
-target_link_libraries( ${PROJECT_NAME} ${SCAI_CUDA_LIBRARIES} )
-target_link_libraries( ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )
+scai_library ()
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )
@@ -162,9 +141,6 @@ if ( USE_MIC )
 endif ( USE_MIC )
 
 ### install ###
-
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )

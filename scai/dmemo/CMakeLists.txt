@@ -37,12 +37,11 @@
 set ( MODULE_NAME dmemo )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel )
-set ( SCAI_DMEMO_EXTERNAL_DEPS OpenMP MPI GPI GraphPartitioning ) 
+set ( EXTERNAL_DEPS OpenMP MPI GPI GraphPartitioning ) 
 
 ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
 
@@ -50,32 +49,11 @@ string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${I
 include ( SetProjectVariables)
 include ( Dependencies/minimalSupportedVersions )
 
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
+### find all external packages via the provided wrappers of CMake modules
 
-### Include compile dependent things
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-
-## Use Boost if BUILD_TEST is enabled
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include all external packages ( optional )
-
-include( Package/OpenMP )
-include( Package/MPI )
-include( Package/GPI )
-include( Package/GraphPartitioning )
-
-message( STATUS "OpenMP: ${SCAI_OPENMP_INLCUDE_DIR} ${SCAI_OPENMP_LIBRARIES}" )
-message( STATUS "MPI: ${SCAI_MPI_INLCUDE_DIR} ${SCAI_MPI_LIBRARIES}" )
-message( STATUS "GPI: ${SCAI_GPI_INLCUDE_DIR} ${SCAI_GPI_LIBRARIES}" )
-message( STATUS "GraphPartitioning: ${SCAI_GRAPHPARTITIONING_INLCUDE_DIR} ${SCAI_GRAPHPARTITIONING_LIBRARIES}" )
+foreach ( module ${EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ()
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -95,7 +73,7 @@ if ( SCAI_OMP_SCHEDULE_FLAG )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
@@ -163,25 +141,15 @@ endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 ### set link directories ###
 if ( WIN32 )
-	link_directories ( ${Boost_LIBRARY_DIRS} )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-## add link libraries
-
-target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_OPENMP_LIBRARIES} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_MPI_LIBRARIES} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_GPI_LIBRARIES} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_GRAPHPARTITIONING_LIBRARIES} )
+scai_library ()
 
 ### install ###
-
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )

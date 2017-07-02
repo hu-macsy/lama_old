@@ -37,6 +37,7 @@ cmake_minimum_required ( VERSION 2.8.8 )
 project ( LAMA_ALL CXX )
 
 ### Define all modules that are used ( inclusive all dependent ones )
+### dependencies are not resolved here but will be verified during configuration
 
 set ( SCAI_PROJECT_LIST common logging tracing tasking kregistry hmemo blaskernel utilskernel sparsekernel dmemo lama solver )
 
@@ -56,9 +57,36 @@ if    ( NOT SCAI_CMAKE_VERBOSE )
     include ( Functions/setCMakeQuiet )
 endif ( NOT SCAI_CMAKE_VERBOSE )
 
-### specify the list of SCAI projects that are used
-### dependencies are not resolved here but will be verified during configuration
+### General stuff for all projects
 
+include ( SetBuildFlags )
+include ( VersionCheck/Compiler )
+include ( Compiler/SetCPPFlags )
+
+## C++11 or Boost
+include ( Compiler/CheckC++11 )
+if ( NOT CXX_SUPPORTS_C11 )
+    include( Package/Boost )
+endif ( NOT CXX_SUPPORTS_C11 )
+
+## Use Boost if BUILD_TEST is enabled
+if ( BUILD_TEST )
+    include( Package/BoostTest )
+endif ( BUILD_TEST )
+
+### Sphinx is used for user documentation and a module project 
+### does not have to specify it as external dependency
+
+include ( Package/Sphinx )
+
+## include all needed functions
+
+include ( Functions/scaiFunctions )
+include ( Functions/scaiProject )
+include ( Functions/relativeInstall )
+include ( Functions/scai_library )
+
+### Traverse all module projects for configuration
 
 foreach ( SCAI_PROJECT ${SCAI_PROJECT_LIST} )
 
@@ -70,7 +98,6 @@ foreach ( SCAI_PROJECT ${SCAI_PROJECT_LIST} )
 
 endforeach ()
 
-include ( Package/Sphinx )
 include ( Package/Doxygen )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 

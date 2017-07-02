@@ -37,37 +37,24 @@
 set ( MODULE_NAME utilskernel )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel ) 
-set ( SCAI_UTILSKERNEL_EXTERNAL_DEPS  OpenMP CUDA MIC ) 
+set ( EXTERNAL_DEPS OpenMP CUDA MIC ) 
 
 ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
 
 ## important Variables for project
+
 include ( SetProjectVariables)
 include ( Dependencies/minimalSupportedVersions )
 
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
+### find all external packages via the provided wrappers of CMake modules
 
-### Include compile dependent things
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-include ( Package/Sphinx )
-
-## Boost for Test
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include all search packages
-addInternalAndExternalPackages()
+foreach ( module ${EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ()
 
 ### finalize build flags
 include ( ConcludeFlags )
@@ -87,12 +74,19 @@ if ( SCAI_OMP_SCHEDULE_FLAG )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ## Project System-Include
+
 include_directories ( ../.. ${CMAKE_BINARY_DIR}/include )
-addInternalAndExternalIncludes()
+
+### add includes for external packages
+
+foreach ( module ${EXTERNAL_DEPS} )
+    string ( TOUPPER ${module} upper_module )
+    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
+endforeach ()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 scai_project (
@@ -115,8 +109,8 @@ scai_project (
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-	cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-	set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 if    ( BUILD_EXAMPLES )
@@ -142,24 +136,12 @@ if ( WIN32 )
     link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-## add link libraries
-
-target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
-
-if ( USE_MIC )
-    set ( MKLROOT $ENV{MKLROOT} )
-    set ( CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-offload-option,mic,compiler,\"-L${MKLROOT}/lib/mic -Wl,--start-group -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group\"" )
-    #ToDo: set_target_properties not working, any better way?
-endif ( USE_MIC )
+scai_library ()
 
 ### install ###
-
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )

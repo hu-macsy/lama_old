@@ -37,12 +37,9 @@
 set ( MODULE_NAME lama )
 
 set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo ) 
-set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP ZLIB PNG ) 
-
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+set ( EXTERNAL_DEPS OpenMP ZLIB PNG ) 
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
 
@@ -50,30 +47,11 @@ string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${I
 include ( SetProjectVariables)
 include ( Dependencies/minimalSupportedVersions )
 
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
+### find all external packages via the provided wrappers of CMake modules
 
-### Include compile dependent things
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-
-## Use Boost if BUILD_TEST is enabled
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include all external packages ( optional )
-
-include( Package/OpenMP )
-include( Package/ZLIB )
-include( Package/PNG )
-
-message( STATUS "OpenMP: ${SCAI_OPENMP_INCLUDE_DIR} ${SCAI_OPENMP_LIBRARIES}" )
-message( STATUS "ZLIB: ZLIB_FOUND=${ZLIB_FOUND}, USE_ZLIB=${USE_ZLIB}, ${SCAI_ZLIB_INCLUDE_DIR} ${SCAI_ZLIB_LIBRARIES}" )
-message( STATUS "PNG: ${SCAI_PNG_INCLUDE_DIR} ${SCAI_PNG_LIBRARIES}" )
+foreach ( module ${EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ()
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -93,7 +71,7 @@ if ( SCAI_OMP_SCHEDULE_FLAG )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
@@ -144,40 +122,31 @@ if ( FOUND_BOOST_TEST AND BUILD_TEST )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
 if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
+    add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 ### set link directories ###
 if ( WIN32 )
-	link_directories ( ${Boost_LIBRARY_DIRS} )
+    link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-## add link libraries
-
-target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
-
-# external libraries
-
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_OPENMP_LIBRARIES} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_ZLIB_LIBRARIES} )
-target_link_libraries ( ${PROJECT_NAME} ${SCAI_PNG_LIBRARIES} )
+scai_library()
 
 ### install ###
 
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
-
 ## install headers
+
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
+
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
 install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+
 include ( CustomCommands/SphinxDoc )
 

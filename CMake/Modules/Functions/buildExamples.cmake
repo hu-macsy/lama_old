@@ -32,6 +32,31 @@
  # @date 02.03.2016
 ###
 
+## This macro generates make.inc and makefile for examples in the installation 
+## directory.
+##
+##  - make.inc is configured from examples_make.inc.in
+##  - Makefile is configured from examples_Makefile.in
+##
+## Note: the configured files are generated in the binary directory before they 
+##       will be installed later. Due to name conflics with the cmake build 
+##       the file makefile is temporarily renamed to install_Makefile.
+##
+## The following variables in make.inc/makefile are configured:
+##
+##   - CMAKE_CXX_COMPILER, CMAKE_CXX_FLAGS, CMAKE_CXX_FLAGS_RELEASE
+##   - CMAKE_EXE_LINKER_FLAGS
+##   - CUDA_NVCC_EXECUTABLE, CUDA_NVCC_FLAGS_CLEAN
+##   - CMAKE_INSTALL_PREFIX
+##   - SCAI_BOOST_INCLUDE_DIR
+##   - SCAI_CUDA_INCLUDE_DIR  
+##   - SCAI_CUDA_LIBRARY_PATH
+##   - SCAI_EXAMPLE_LINK_LIBRARIES
+##   - SCAI_DEFINES
+##   - EXAMPLE_EXECUTABLES
+##   - EXAMPLE_MODULES
+##   - EXAMPLE_LIBS
+
 macro ( genExampleMakefile )
 
     ## set SCAI_EXAMPLE_LINK_LIBRARIES with own project and all dependent libraries
@@ -46,21 +71,21 @@ macro ( genExampleMakefile )
             set ( library "${SCAI_LIBRARY_PREFIX}${module}" )
             set ( SCAI_EXAMPLE_LINK_LIBRARIES "${SCAI_EXAMPLE_LINK_LIBRARIES} -l${library}" )
         endforeach ( module ${REVERT_LIST} )
-    endif ( REVERT_LIST )
+    endif ()
 
     ## set project specific SCAI_DEFINES
 
-    if    ( SCAI_ASSERT_LEVEL )
+    if ( SCAI_ASSERT_LEVEL )
         set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL}" )
-    endif ( SCAI_ASSERT_LEVEL )
+    endif ()
     
-    if    ( SCAI_LOGGING_LEVEL )
+    if ( SCAI_LOGGING_LEVEL )
         set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL}" )
-    endif ( SCAI_LOGGING_LEVEL )
+    endif ()
 
-    if    ( SCAI_TRACING )
+    if ( SCAI_TRACING )
         set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACING_${SCAI_TRACING}" )
-    endif ( SCAI_TRACING_FLAG )
+    endif ()
 
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_Makefile.in" "${CMAKE_CURRENT_BINARY_DIR}/install_Makefile" COPYONLY )
@@ -73,6 +98,8 @@ macro ( genExampleMakefile )
               RENAME      Makefile  )
 
 endmacro ()
+
+## This macro copies an executable file from current source dir in installatin dir
 
 macro ( genRunScript )
 

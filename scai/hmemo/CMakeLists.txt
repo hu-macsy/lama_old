@@ -37,12 +37,11 @@
 set ( MODULE_NAME hmemo )
 
 set ( INTERNAL_DEPS common logging tracing tasking )
-set ( SCAI_HMEMO_EXTERNAL_DEPS OpenMP CUDA MIC ) 
+set ( EXTERNAL_DEPS OpenMP CUDA MIC ) 
 
 ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
 ### includes ###
 
@@ -50,22 +49,11 @@ string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${I
 include ( SetProjectVariables)
 include ( Dependencies/minimalSupportedVersions )
 
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
+### find all external packages via the provided wrappers of CMake modules
 
-include ( SetBuildFlags )
-include ( VersionCheck/Compiler )
-include ( Compiler/SetCPPFlags )
-
-##  Boost for Test
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include all search packages
-addInternalAndExternalPackages()
+foreach ( module ${EXTERNAL_DEPS} )
+    include( Package/${module} )
+endforeach ()
 
 ## finalize build flags
 include ( ConcludeFlags )
@@ -84,13 +72,20 @@ if ( SCAI_OMP_SCHEDULE_FLAG )
 endif ( SCAI_OMP_SCHEDULE_FLAG )
 
 if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
+    add_definitions ( -DCOMMON_COMPILING_DLL )
 endif ( WIN32 )
 
 ### Project System-Include ( also configured files )
+
 set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
 include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
+
+### add includes for external packages
+
+foreach ( module ${EXTERNAL_DEPS} )
+    string ( TOUPPER ${module} upper_module )
+    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
+endforeach ()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -142,18 +137,12 @@ if ( WIN32 )
     link_directories ( ${Boost_LIBRARY_DIRS} )
 endif ( WIN32 )
 
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-## add link libraries
-
-target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
+scai_library ()
 
 ### install ###
-
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
