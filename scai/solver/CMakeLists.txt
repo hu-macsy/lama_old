@@ -170,7 +170,7 @@ endif ( SOLVER_SUB_LIBRARIES )
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
-relative_install( FILES ${CXX_HEADERS} DESTINATION include/scai/solver )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
 install ( FILES ../solver.hpp DESTINATION include/scai )

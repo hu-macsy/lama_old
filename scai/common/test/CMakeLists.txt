@@ -33,31 +33,32 @@
 ###
 
 set ( CXX_SOURCES
-	    atomicOpenMPTest
-	    bindFunctionTest
-      commonTest
-      BinaryOpTest
-      ConstantsTest
-      ContextTypeTest
-      ExceptionTest  
-      FactoryTest  
-      Factory1Test  
-      FactoryTest
-      GridTest
-      LibModuleTest
-      MathTest
-      ptrTest
-      PrintableTest
-      ThreadTest  
-      TypeListTest
-      TypeLoopTest
-      TypeTraitsTest  
-      UnaryOpTest
-      ConstantsTest
-      ScalarTypeTest  
-      SettingsTest  
-      StencilTest  
-      WalltimeTest  
+
+          atomicOpenMPTest
+          bindFunctionTest
+          commonTest
+          BinaryOpTest
+          ConstantsTest
+          ContextTypeTest
+          ExceptionTest  
+          FactoryTest  
+          Factory1Test  
+          FactoryTest
+          GridTest
+          LibModuleTest
+          MathTest
+          ptrTest
+          PrintableTest
+          ThreadTest  
+          TypeListTest
+          TypeLoopTest
+          TypeTraitsTest  
+          UnaryOpTest
+          ConstantsTest
+          ScalarTypeTest  
+          SettingsTest  
+          StencilTest  
+          WalltimeTest  
 )
 
 if    ( ${USE_COMPLEX} )
@@ -76,7 +77,7 @@ endif ( CUDA_FOUND AND USE_CUDA )
 
 file ( GLOB LOCAL_HEADERS "*.hpp" )
 
-install ( FILES ${LOCAL_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR}/test )
+install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/${COMMON}/test )
 
 ### Copy the xmltest.sh file in build directory ### 
 file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 

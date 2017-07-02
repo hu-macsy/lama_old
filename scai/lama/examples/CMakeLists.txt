@@ -44,8 +44,13 @@ add_subdirectory ( nbody )
 add_subdirectory ( tutorial )
 add_subdirectory ( io )
 
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}" )
 
-## install examples
-install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+include ( Functions/buildExamples )
+
+genRunScript()             #  copy run_all.sh and install it later
+
+## copy Makefile from source directory, not configured here
+
+install ( FILES       ${CMAKE_CURRENT_SOURCE_DIR}/Makefile 
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

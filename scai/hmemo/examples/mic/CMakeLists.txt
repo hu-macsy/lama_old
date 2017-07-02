@@ -47,14 +47,13 @@ foreach ( executable MICExample1 )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/mic" )
 
-## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/mic )
+include ( Functions/buildExamples )
 
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/mic/Makefile" COPYONLY )
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+
+## install examples sources
+
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

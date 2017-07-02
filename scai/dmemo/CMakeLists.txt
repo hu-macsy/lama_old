@@ -184,7 +184,7 @@ target_link_libraries ( ${PROJECT_NAME} ${SCAI_GRAPHPARTITIONING_LIBRARIES} )
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
-relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install "<library>.hpp"
 install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )

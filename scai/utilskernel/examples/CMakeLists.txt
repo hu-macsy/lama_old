@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file utilskernle/examples/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for common examples
+ # @brief CMake configuration file for utilskernel examples
  # @author Thomas Brandes
  # @date 16.06.2015
 ###
@@ -39,32 +39,14 @@ foreach ( executable LArrayDemo vectorAdd SingleAccess BenchSort BenchOps )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-#if    ( CUDA_FOUND AND USE_CUDA )
-#    add_subdirectory ( cuda )
-#endif ( CUDA_FOUND AND USE_CUDA )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}" )
 
-#if ( USE_MIC )
-#    add_subdirectory ( mic )
-#endif ( USE_MIC )
+include ( Functions/buildExamples )
 
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+genRunScript()             #  copy run_all.sh and install it later
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
-
-## install examples sources, (install_)Makefile, make.inc, run_all.sh
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS    run_all.sh
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_DIR}
-          RENAME      Makefile  )
-
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

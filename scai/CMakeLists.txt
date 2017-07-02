@@ -90,5 +90,13 @@ include ( CustomCommands/DistClean )
 
 ## summary of what is found
 
+## ToDo: Summary uses info from module projects no more available here, so redo it
+
+set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
+
+foreach ( package ${EXTERNAL_DEPS} )
+    include ( Package/${package} )
+endforeach ()
+
 include ( Summaries/scai )
 

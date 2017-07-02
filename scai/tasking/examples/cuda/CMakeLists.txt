@@ -46,15 +46,16 @@ foreach ( executable BenchStream DemoTasking DemoStream DemoAsync )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-## install examples
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+include ( Functions/buildExamples )
 
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/../install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda
-          RENAME      Makefile  )
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+
+## install examples sources
+
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
+

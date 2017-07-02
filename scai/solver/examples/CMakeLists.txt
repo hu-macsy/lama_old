@@ -43,8 +43,12 @@ add_subdirectory ( spy )
 add_subdirectory ( eigenvalue )
 add_subdirectory ( leastsquare )
 
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}" )
 
-## install examples
-install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+include ( Functions/buildExamples )
+
+genRunScript()             #  copy run_all.sh and install it later
+
+## copy the Makefile from the source directory to installation
+
+install ( FILES Makefile DESTINATION ${INSTALL_EXAMPLE_DIR} )

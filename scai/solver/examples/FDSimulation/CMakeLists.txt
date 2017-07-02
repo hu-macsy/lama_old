@@ -36,6 +36,7 @@ set ( EXECUTABLE_FILE FDSimulation.cpp )
 set ( EXECUTABLE FDSimulation.exe )
 
 #build main for FDSimulation
+
 add_executable( ${EXECUTABLE} ${EXECUTABLE_FILE} )
 target_link_libraries( ${EXECUTABLE} ${PROJECT_NAME})
 
@@ -47,23 +48,15 @@ configure_file( seismogram.gnuplot seismogram.gnuplot COPYONLY )
 # Configuration.txt: copy only to build directory
 configure_file( Configuration.txt Configuration.txt COPYONLY )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/FDSimulation" )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-#install examples
+include ( Functions/buildExamples )
 
-install ( FILES       ${EXAMPLE_FILES} ${HEADER} ${CMAKE_CURRENT_BINARY_DIR}/make.inc 
-                      seismogram.gnuplot Configuration.txt Configuration.hpp
-		  DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
 
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+## install examples sources and additional files
 
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
+install ( FILES       ${EXAMPLE_FILES} seismogram.gnuplot Configuration.txt Configuration.hpp
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

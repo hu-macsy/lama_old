@@ -172,7 +172,7 @@ target_link_libraries ( ${PROJECT_NAME} ${SCAI_PNG_LIBRARIES} )
 install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
 
 ## install headers
-relative_install( FILES ${CXX_HEADERS} DESTINATION ${SCAI_LAMA_INCLUDE_DIR} )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )

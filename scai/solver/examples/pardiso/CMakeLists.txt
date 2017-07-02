@@ -34,31 +34,28 @@
 
 include ( Package/SCAI_BLAS )
 
-if    ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )
+if ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )
 
-	include_directories ( ${SCAI_SCAI_BLAS_INCLUDE_DIR} )
+    include_directories ( ${SCAI_SCAI_BLAS_INCLUDE_DIR} )
 
-	foreach ( executable directSolver )
-	    add_executable( ${executable}.exe ${executable}.cpp )
-	    target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )
-	    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-	    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-	endforeach ( executable )
+    foreach ( executable directSolver )
+        add_executable( ${executable}.exe ${executable}.cpp )
+        target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )
+        set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+        set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+    endforeach ( executable )
 
-	# configure make.inc for examples
-	include ( Functions/prepareExamplesMakeInc )
-	prepareExamplesMakeInc()
-	configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-	configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+    get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-	## install examples
+    set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-	set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/pardiso" )
+    include ( Functions/buildExamples )
 
-	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-	          RENAME      Makefile  )
+    genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+
+    ## install examples sources
+
+    install ( FILES       ${EXAMPLE_FILES}
+              DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 endif ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )

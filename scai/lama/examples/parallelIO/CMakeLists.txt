@@ -32,6 +32,8 @@
  # @date 03.07.2016
 ###
 
+get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+
 set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
 
 add_executable( writeParallel.exe writeParallel.cpp )
@@ -40,20 +42,13 @@ add_executable( readParallel.exe readParallel.cpp )
 target_link_libraries( writeParallel.exe ${PROJECT_NAME} )
 target_link_libraries( readParallel.exe ${PROJECT_NAME} )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-## install examples
+include ( Functions/buildExamples )
 
-set ( PROJECT_EXAMPLE_SUB_DIR ${PROJECT_EXAMPLE_DIR}/io )
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
           DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )

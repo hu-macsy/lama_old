@@ -35,7 +35,7 @@
 set ( EXECUTABLES task0 task1a task1b task2 task2a task3 task4 )
 
 if    ( CUDA_FOUND AND USE_CUDA )
-	set ( EXECUTABLES ${EXECUTABLES} task5 )
+    set ( EXECUTABLES ${EXECUTABLES} task5 )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 foreach ( executable ${EXECUTABLES} )
@@ -45,24 +45,15 @@ foreach ( executable ${EXECUTABLES} )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
-# configure make.inc for examples
+get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-file ( COPY gr_30_30.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+include ( Functions/buildExamples )
 
-## install examples
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/lecture" )
+## install examples sources
 
-install ( FILES       ${EXAMPLE_FILES} gr_30_30.mtx log_config
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
-
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

@@ -32,32 +32,22 @@
  # @date 02.12.2015
 ###
 
-set ( EXAMPLE_FILES matrixConvert.cpp vectorConvert.cpp matrixRepartition.cpp vectorRepartition.cpp )
+get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-add_executable( matrixConvert.exe matrixConvert.cpp )
-add_executable( vectorConvert.exe vectorConvert.cpp )
-add_executable( matrixRepartition.exe matrixRepartition.cpp )
-add_executable( vectorRepartition.exe vectorRepartition.cpp )
+foreach ( executable matrixConvert vectorConvert matrixRepartition vectorRepartition )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+endforeach ( executable )
 
-target_link_libraries( matrixConvert.exe ${PROJECT_NAME} )
-target_link_libraries( vectorConvert.exe ${PROJECT_NAME} )
-target_link_libraries( matrixRepartition.exe ${PROJECT_NAME} )
-target_link_libraries( vectorRepartition.exe ${PROJECT_NAME} )
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+include ( Functions/buildExamples )
 
-## install examples
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
 
-set ( PROJECT_EXAMPLE_SUB_DIR ${PROJECT_EXAMPLE_DIR}/io )
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

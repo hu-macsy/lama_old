@@ -32,6 +32,8 @@
  # @date 02.12.2015
 ###
 
+get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+
 foreach ( executable labelrank )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
@@ -48,23 +50,14 @@ set ( EXAMPLE_FILES ${EXAMPLE_FILES} affinity.mtx labels.mtx )
 # copy mtx files to build dir
 file( COPY affinity.mtx labels.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
+set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+include ( Functions/buildExamples )
 
-## install examples
+genExampleMakefile()       #  build make.inc, makefile.install -> makefile
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/labelrank" )
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
-
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
