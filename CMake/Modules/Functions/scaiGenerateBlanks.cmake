@@ -33,7 +33,7 @@
 ###
 
 function    ( createBlanks OUTPUT LENGTH )
-	set ( MESSAGE_BLANKS "")
+    set ( MESSAGE_BLANKS "")
     foreach    ( SCAI_I RANGE ${LENGTH} )
         set ( MESSAGE_BLANKS "${MESSAGE_BLANKS} " )
     endforeach ( SCAI_I RANGE ${LENGTH} )

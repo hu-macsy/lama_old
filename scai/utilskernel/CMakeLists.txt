@@ -36,12 +36,15 @@
 
 project ( scai_utilskernel )
 
+set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel ) 
+set ( SCAI_UTILSKERNEL_EXTERNAL_DEPS  OpenMP CUDA MIC ) 
+
+string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}" )
+
 ### includes ###
 
 ## important Variables for project
-set ( SCAI_UTILSKERNEL_VERSION 1.0.0 )
 include ( SetProjectVariables)
-set ( SCAI_UTILSKERNEL_EXTERNAL_DEPS  OpenMP CUDA MIC                                     ) # 8
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -139,11 +142,11 @@ endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
 
 ## add link libraries
 
-target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo scai_kregistry )
+target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )

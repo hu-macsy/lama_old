@@ -35,12 +35,15 @@
 ### Set PROJECT NAME / supported LANGUAGES
 project ( scai_lama )
 
+set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo ) 
+set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP ZLIB PNG ) 
+
+string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
+
 ### includes ###
 
 ## important Variables for project
-set ( SCAI_LAMA_VERSION       2.0.0 )
 include ( SetProjectVariables)
-set ( SCAI_LAMA_EXTERNAL_DEPS OpenMP ZLIB PNG ) # 11
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -148,12 +151,11 @@ endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_LAMA_VERSION} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
 
 ## add link libraries
 
-target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking scai_hmemo 
-                                       scai_kregistry scai_blaskernel scai_utilskernel scai_sparsekernel scai_dmemo )
+target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
 
 # external libraries
 

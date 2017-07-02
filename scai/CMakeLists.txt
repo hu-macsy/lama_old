@@ -36,9 +36,16 @@ cmake_minimum_required ( VERSION 2.8.8 )
 
 project ( LAMA_ALL CXX )
 
+### Define all modules that are used ( inclusive all dependent ones )
+
+set ( SCAI_PROJECT_LIST common logging tracing tasking kregistry hmemo blaskernel utilskernel sparsekernel dmemo lama solver )
+
+### Define some general variables used for identifaction 
+
 set ( SCAI_VERSION_NAME "Barrancas Blancas" )
 set ( SCAI_COPYRIGHT_YEAR 2017 )
-set ( SCAI_LAMA_ALL_VERSION 2.2.0 )
+set ( SCAI_VERSION 2.2.0 )
+set ( SCAI_LIBRARY_PREFIX "scai_" )             # more unique names for all SCAI module libraries
 
 ### Set Module Path
 
@@ -52,7 +59,6 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 ### specify the list of SCAI projects that are used
 ### dependencies are not resolved here but will be verified during configuration
 
-set ( SCAI_PROJECT_LIST common logging tracing tasking kregistry hmemo blaskernel utilskernel sparsekernel dmemo lama solver )
 
 foreach ( SCAI_PROJECT ${SCAI_PROJECT_LIST} )
 

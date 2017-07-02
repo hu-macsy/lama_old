@@ -37,10 +37,13 @@ project ( scai_blaskernel )
 
 ### includes ###
 
+set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry )
+set ( SCAI_BLASKERNEL_EXTERNAL_DEPS OpenMP CUDA MIC SCAI_BLAS ) 
+
+string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
+
 ## important Variables for project
-set ( SCAI_BLASKERNEL_VERSION 1.0.0 )
 include ( SetProjectVariables)
-set ( SCAI_BLASKERNEL_EXTERNAL_DEPS   OpenMP CUDA MIC SCAI_BLAS                           ) 
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -141,13 +144,11 @@ endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
 
 ## add link libraries
 
-target_link_libraries( ${PROJECT_NAME} scai_common scai_logging scai_tracing scai_tasking 
-                                       scai_hmemo scai_kregistry )
-
+target_link_libraries( ${PROJECT_NAME} ${INTERNAL_LIBS} )
 target_link_libraries( ${PROJECT_NAME} ${SCAI_CUDA_LIBRARIES} )
 target_link_libraries( ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )
 

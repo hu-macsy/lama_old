@@ -34,11 +34,16 @@
 
 project( scai_common )
 
+## Dependencies
+
+set ( INTERNAL_DEPS )
+set ( SCAI_COMMON_EXTERNAL_DEPS OpenMP CUDA MIC dl Thread ) 
+
+# string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
+
 ## important Variables for project
 
-set ( SCAI_COMMON_VERSION     1.0.0 )
 include ( SetProjectVariables)
-set ( SCAI_COMMON_EXTERNAL_DEPS       OpenMP CUDA MIC           dl Thread                 ) # 1
 include ( Dependencies/minimalSupportedVersions )
 
 ## needed functions
@@ -235,7 +240,8 @@ scai_project(
 ## add subdirectories
 
 add_subdirectory ( cuda )
-add_subdirectory ( doc )
+
+include( CustomCommands/SphinxDoc )
 
 if    ( BUILD_EXAMPLES )
 add_subdirectory ( examples )
@@ -257,7 +263,7 @@ endif ( WIN32 )
 
 ### add library ###
 add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
+set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
 
 ## add link libraries
 addExternalLinkLibraries()
