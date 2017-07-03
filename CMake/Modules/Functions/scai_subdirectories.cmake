@@ -35,49 +35,49 @@
 ## This macro adds subdirectories specified in the argument list with
 ## some special handling:
 ##
-##   test      - only if TEST enabled
-##   cuda      - only if CUDA enabled
-##   examples  - only if BUILD_EXAMPLES has added it
-##   mic       - only if MIC is used
+##   TEST      - add test only if TEST enabled and BOOST_TEST available
+##   CUDA      - add cuda only if CUDA enabled
+##   EXAMPLES  - add examples only if BUILD_EXAMPLES has been set
+##   MIC       - add mic only if USE_MIC
 
 macro ( scai_subdirectories )
 
-    foreach ( dir ${ARGN} )
+    ## Note: no need to check if dir exists as CMake will give error message
 
-        ## redundant to check if dir exists as CMake gives already message
+    set ( options TEST CUDA MIC EXAMPLES )
+    set ( oneValueArgs )
+    set ( multiValueArgs )
 
-        if ( ${dir} STREQUAL "examples" )
+    cmake_parse_arguments ( scai_subdirectories "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-            if ( BUILD_EXAMPLES )
-                add_subdirectory ( examples )
-            endif ()
+    # message ( STATUS "subdirs = ${scai_subdirectories_UNPARSED_ARGUMENTS}" )
 
-        elseif ( ${dir} STREQUAL "test" )
-
-            if ( FOUND_BOOST_TEST AND BUILD_TEST )
-                add_subdirectory ( test )
-            endif ()
-
-        elseif ( ${dir} STREQUAL "cuda" )
-
-            if ( CUDA_FOUND AND USE_CUDA )
-                add_subdirectory ( cuda )
-                cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
-                set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
-            endif ()
-
-        elseif ( ${dir} STREQUAL "mic" )
-
-            if ( USE_MIC )
-                add_subdirectory ( mic )
-            endif ()
-
-        else ()
-
-            add_subdirectory( ${dir} )
-
+    if ( ${scai_subdirectories_EXAMPLES} )
+        if ( BUILD_EXAMPLES )
+            add_subdirectory ( examples )
         endif ()
+    endif ()
 
+    if ( ${scai_subdirectories_TEST} )
+        if ( FOUND_BOOST_TEST AND BUILD_TEST )
+            add_subdirectory ( test )
+        endif ()
+    endif ()
+
+    if ( ${scai_subdirectories_CUDA} )
+        if ( CUDA_FOUND AND USE_CUDA )
+            add_subdirectory ( cuda )
+        endif ()
+    endif ()
+
+    if ( ${scai_subdirectories_MIC} )
+        if ( USE_MIC )
+            add_subdirectory ( mic )
+        endif ()
+    endif ()
+
+    foreach ( dir ${scai_subdirectories_UNPARSED_ARGUMENTS} )
+        add_subdirectory( ${dir} )
     endforeach ()
 
 endmacro ()

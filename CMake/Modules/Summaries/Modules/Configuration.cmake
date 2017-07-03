@@ -36,11 +36,7 @@
 heading ( "Configuration Details:" )
 emptyline()
 
-set ( PROJECT_TEXT "SCAI ${PROJECT_SURNAME} Version ${SCAI_${UPPER_PROJECT_SURNAME}_VERSION}" )
-
-if    ( ${PROJECT_NAME} MATCHES "LAMA_ALL" )
-	set ( PROJECT_TEXT "SCAI ${PROJECT_SURNAME} Version ${SCAI_LAMA_ALL_VERSION} ${SCAI_VERSION_NAME}" )
-endif ( ${PROJECT_NAME} MATCHES "LAMA_ALL" )
+set ( PROJECT_TEXT "SCAI ${MODULE_NAME} Version ${SCAI_VERSION}" )
 
 include ( Functions/listToString )
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" INST_LIST )

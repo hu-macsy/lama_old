@@ -61,7 +61,7 @@ macro ( genExampleMakefile )
 
     ## set SCAI_EXAMPLE_LINK_LIBRARIES with own project and all dependent libraries
 
-    set ( SCAI_EXAMPLE_LINK_LIBRARIES "-l${PROJECT_NAME}" )
+    set ( SCAI_EXAMPLE_LINK_LIBRARIES "-l${MODULE_LIBRARY}" )
 
     set ( REVERT_LIST ${INTERNAL_DEPS} ) # because list does not accept variable recursion
 

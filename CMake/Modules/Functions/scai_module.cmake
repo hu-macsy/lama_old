@@ -37,7 +37,7 @@
 ##  Output variables (for further use):
 ##
 ##    MODULE_NAME
-##    PROJECT_NAME
+##    MODULE_LIBRARY
 ##    INTERNAL_DEPS
 ##    EXTERNAL_DEPS
 ###
@@ -58,8 +58,8 @@ macro ( scai_module )
 
     ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
-    set ( MODULE_NAME "${scai_module_MODULE_NAME}" )
-    set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
+    set ( MODULE_NAME    "${scai_module_MODULE_NAME}" )
+    set ( MODULE_LIBRARY "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
   
     set ( INTERNAL_DEPS ${scai_module_INTERNAL_DEPS} )
     set ( EXTERNAL_DEPS ${scai_module_EXTERNAL_DEPS} )
@@ -91,10 +91,14 @@ macro ( scai_module )
         add_definitions ( -DCOMMON_COMPILING_DLL )
     endif ( WIN32 )
 
-    ### set include directories ( same for all module projects ) 
+    ### set one include directoriy for all internal SCAI projects
 
-    include_directories ( ${CMAKE_SOURCE_DIR}/.. )       #  for all internal projects
-    include_directories ( ${CMAKE_BINARY_DIR}/include )  #  for all configured includes
+    include_directories ( ${CMAKE_SOURCE_DIR}/.. )       
+
+    ##  set one include directory for all configured includes
+    ##  Note: define it as SYSTEM to avoid reconfiguration with each call of make
+
+    include_directories ( SYSTEM ${CMAKE_BINARY_DIR}/include )  #  for all configured includes
 
     ### add includes for external packages
 

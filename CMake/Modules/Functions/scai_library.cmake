@@ -42,29 +42,29 @@ macro ( scai_library )
 
     ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
-    set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
+    set ( MODULE_LIBRARY "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 
     ### add library ###
 
-    add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+    add_library ( ${MODULE_LIBRARY} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${SCAI_VERSION} )
+    set_target_properties ( ${MODULE_LIBRARY} PROPERTIES VERSION ${SCAI_VERSION} )
 
     ## link internal libraries via internal dependencies, but add library prefix
 
     string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
-    target_link_libraries ( ${PROJECT_NAME} ${INTERNAL_LIBS} )
+    target_link_libraries ( ${MODULE_LIBRARY} ${INTERNAL_LIBS} )
 
     ## link external libraries via external libraries, SCAI external package wrappers respect naming conventions
 
     foreach ( module ${EXTERNAL_DEPS} )
         string ( TOUPPER ${module} upper_module )
-        target_link_libraries( ${PROJECT_NAME} ${SCAI_${upper_module}_LIBRARIES} )
+        target_link_libraries( ${MODULE_LIBRARY} ${SCAI_${upper_module}_LIBRARIES} )
     endforeach ()
 
     ## install lib
 
-    install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
+    install ( TARGETS ${MODULE_LIBRARY} DESTINATION lib )
 
 endmacro ()

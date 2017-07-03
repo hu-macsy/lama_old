@@ -1,5 +1,5 @@
 ###
- # @file scaiProject.cmake
+ # @file scai_project.cmake
  #
  # @license
  # Copyright (c) 2009-2016
