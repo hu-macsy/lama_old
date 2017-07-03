@@ -38,10 +38,20 @@ emptyline()
 
 set ( PROJECT_TEXT "SCAI ${MODULE_NAME} Version ${SCAI_VERSION}" )
 
+set ( SCAI_UNUSED_MODULES ${SCAI_ALL_MODULES} )
+foreach ( module ${SCAI_USED_MODULES} )
+   list ( REMOVE_ITEM SCAI_UNUSED_MODULES ${module} )
+endforeach()
+
 include ( Functions/listToString )
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" INST_LIST )
+listToString ( ", " "${SCAI_USED_MODULES}" AVAIL_LIST )
+listToString ( ", " "${SCAI_UNUSED_MODULES}" UNAVAIL_LIST )
 
 indent_message ( "1" "${PROJECT_TEXT}" )
+emptyline()
+indent_message ( "1" "Used SCAI modules   : ${TextGreen}${AVAIL_LIST}${TextColorReset}" )
+indent_message ( "1" "Unused SCAI modules : ${TextRed}${UNAVAIL_LIST}${TextColorReset}" )
 emptyline()
 indent_message ( "1" "Build Type          : ${CMAKE_BUILD_TYPE}" )
 indent_message ( "1" "Library Type        : ${SCAI_LIBRARY_TYPE}" )
