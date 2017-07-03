@@ -39,8 +39,8 @@ set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
 add_executable( writeParallel.exe writeParallel.cpp )
 add_executable( readParallel.exe readParallel.cpp )
 
-target_link_libraries( writeParallel.exe ${PROJECT_NAME} )
-target_link_libraries( readParallel.exe ${PROJECT_NAME} )
+target_link_libraries( writeParallel.exe ${MODULE_LIBRARY} )
+target_link_libraries( readParallel.exe ${MODULE_LIBRARY} )
 
 set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 

@@ -38,7 +38,7 @@ set ( EXECUTABLE FDSimulation.exe )
 #build main for FDSimulation
 
 add_executable( ${EXECUTABLE} ${EXECUTABLE_FILE} )
-target_link_libraries( ${EXECUTABLE} ${PROJECT_NAME})
+target_link_libraries( ${EXECUTABLE} ${MODULE_LIBRARY})
 
 set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${EXECUTABLE_FILE} ${MODULE_FILE} )
 set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )

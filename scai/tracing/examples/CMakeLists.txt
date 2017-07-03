@@ -37,7 +37,7 @@ set ( SCAI_TRACING_FLAG SCAI_TRACE_ON ) # also needed in prepareExamplesMakeInc 
 
 foreach ( executable TraceTest TraceCalls TraceThreads )
     add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
     set_target_properties( ${executable}.exe PROPERTIES COMPILE_FLAGS -D${SCAI_TRACING_FLAG} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )

@@ -69,7 +69,7 @@ include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( commonTest ${CXX_SOURCES} )
 
-target_link_libraries ( commonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( commonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )

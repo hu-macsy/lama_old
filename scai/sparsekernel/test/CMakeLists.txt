@@ -48,7 +48,7 @@ include_directories ( ${Boost_INCLUDE_DIR} )
 
 add_executable ( sparsekernelTest ${CXX_SOURCES} )
 
-target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 
 ### Copy the xmltest.sh file in build directory ### 
 

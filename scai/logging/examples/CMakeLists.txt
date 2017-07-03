@@ -40,7 +40,7 @@ set ( SCAI_LOGGING_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for mak
 add_executable( LogLevels.exe LogLevels.cpp )
 set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogLevels.cpp )
 set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogLevels.exe" )
-target_link_libraries( LogLevels.exe ${PROJECT_NAME} )
+target_link_libraries( LogLevels.exe ${MODULE_LIBRARY} )
 set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL} )
 
 # OpenMPTest example
@@ -53,7 +53,7 @@ if    ( OPENMP_FOUND )
     add_executable( LogOpenMP.exe LogOpenMP.cpp )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogOpenMP.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogOpenMP.exe" )
-    target_link_libraries( LogOpenMP.exe ${PROJECT_NAME} )
+    target_link_libraries( LogOpenMP.exe ${MODULE_LIBRARY} )
 else  ( OPENMP_FOUND )
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
 endif ( OPENMP_FOUND )

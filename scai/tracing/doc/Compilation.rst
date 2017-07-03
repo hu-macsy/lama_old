@@ -83,15 +83,15 @@ Currently this feature is not supported via the CMake modules. Therefore it has 
 
 .. code-block:: bash
 
-   add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+   add_library ( ${MODULE_LIBRARY} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
 
 with the following entries:
 
 .. code-block:: bash
 
    add_definitions ( -DUSE_VAMPIRTRACE )
-   add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-   target_link_libraries( ${PROJECT_NAME} ${VT_LIB_DIR}/libvt.so )
+   add_library ( ${MODULE_LIBRARY} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+   target_link_libraries( ${MODULE_LIBRARY} ${VT_LIB_DIR}/libvt.so )
  
 where ``VT_LIB_DIR`` specifies the corresponding directory where the VampirTrace library has been installed.
 
@@ -100,8 +100,8 @@ processes. Therefore replace in ``scai/dmemo/CMakeLists.txt`` the corresponding 
 
 .. code-block:: bash
 
-   add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-   target_link_libraries( ${PROJECT_NAME} ${OTF_LIB_DIR}/libvt-mpi.so )
+   add_library ( ${MODULE_LIBRARY} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+   target_link_libraries( ${MODULE_LIBRARY} ${OTF_LIB_DIR}/libvt-mpi.so )
 
 Attention: The development of the Open Trace Format has ended and support is not offered anymore. 
 As a successor of OTF the enhanced Open Trace Format 2 (OTF2) is available in the context of the new 

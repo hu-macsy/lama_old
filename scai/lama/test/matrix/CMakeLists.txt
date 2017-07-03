@@ -75,7 +75,7 @@ add_executable ( lamaMatrixTest ${CXX_SOURCES} )
 
 ### target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} )
+    target_link_libraries ( lamaMatrixTest ${MODULE_LIBRARY} )
 else ( WIN32 )
-    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    target_link_libraries ( lamaMatrixTest ${MODULE_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 endif ( WIN32 )

@@ -42,7 +42,7 @@ set ( EXAMPLE_EXECUTABLES "" )
 
 foreach ( executable MICExample1 )
     add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )

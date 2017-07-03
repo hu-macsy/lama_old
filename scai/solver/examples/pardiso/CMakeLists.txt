@@ -40,7 +40,7 @@ if ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )
 
     foreach ( executable directSolver )
         add_executable( ${executable}.exe ${executable}.cpp )
-        target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${SCAI_SCAI_BLAS_LIBRARIES} )
+        target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} ${SCAI_SCAI_BLAS_LIBRARIES} )
         set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
         set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
     endforeach ( executable )

@@ -47,7 +47,7 @@ if    ( OPENGL_FOUND AND GLUT_FOUND )
 
     foreach ( executable ${EXECUTABLES} )
         add_executable( ${executable}.exe ${executable}.cpp )
-        target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+        target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
         set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
         set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
     endforeach ( executable )

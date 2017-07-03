@@ -49,5 +49,5 @@ include_directories ( ${BOOST_INCLUDE_DIR} )
 
 cuda_add_executable ( taskingCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
 
-target_link_libraries ( taskingCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( taskingCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 

@@ -87,9 +87,9 @@ add_executable ( dmemoTest dmemoTest.cpp ${CXX_SOURCES} )
 
 ### target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( dmemoTest ${PROJECT_NAME} )
+    target_link_libraries ( dmemoTest ${MODULE_LIBRARY} )
 else ( WIN32 )
-    target_link_libraries ( dmemoTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    target_link_libraries ( dmemoTest ${MODULE_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 endif ( WIN32 )
 
 ### Copy the README and xmltest.sh file in build directory ### 

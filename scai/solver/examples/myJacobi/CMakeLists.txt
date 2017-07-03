@@ -40,7 +40,7 @@ set ( EXECUTABLE myJacobi.exe )
 
 # build MyJacobiModule
 add_library( MyJacobiModule SHARED ${MODULE_FILE} )
-target_link_libraries( MyJacobiModule ${PROJECT_NAME} )
+target_link_libraries( MyJacobiModule ${MODULE_LIBRARY} )
 
 #build main for MyJacobiModule
 add_executable( ${EXECUTABLE} ${EXECUTABLE_FILE} )

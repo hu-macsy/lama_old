@@ -45,7 +45,7 @@ include_directories ( ${BOOST_INCLUDE_DIR} )
 
 add_executable ( hmemoTest ${CXX_SOURCES} )
 
-target_link_libraries ( hmemoTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+target_link_libraries ( hmemoTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 
 if    ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )

@@ -84,7 +84,7 @@ add_executable ( lamaStorageTest ${CXX_SOURCES} )
 
 ### target link libraries ###
 if ( WIN32 )
-    target_link_libraries ( lamaStorageTest ${PROJECT_NAME} )
+    target_link_libraries ( lamaStorageTest ${MODULE_LIBRARY} )
 else ( WIN32 )
-    target_link_libraries ( lamaStorageTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    target_link_libraries ( lamaStorageTest ${MODULE_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 endif ( WIN32 )

@@ -36,7 +36,7 @@ get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
 foreach ( executable stencilExample stencilConversion stencilGEMV stencilDist csrMult stencilBorder stencilTranspose )
     add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
