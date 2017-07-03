@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file tasking/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -29,7 +29,7 @@
  #
  # @brief CMake configuration file for scai_tasking tests
  # @author Thomas Brandes
- # @date 08.03.2016
+ # @date 04.07.2017
 ###
 
 set ( CXX_SOURCES
@@ -38,30 +38,12 @@ set ( CXX_SOURCES
       TaskSyncTokenTest  
 ) 
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
+scai_unit_test( EXECUTABLE taskingTest 
+                FILES      ${CXX_SOURCES} )
 
-add_executable ( taskingTest ${CXX_SOURCES} )
+scai_subdirectories( CUDA )
 
-target_link_libraries ( taskingTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
+###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-### Copy the xmltest.sh file in build directory ### 
-
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-
-### Copy the README in build directory ### 
-
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+scai_test_scripts( SCRIPTS       xmltest.sh
+                   CODE_COVERAGE ${USE_CODE_COVERAGE} )

@@ -27,17 +27,17 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief scai/lama/test/CMakeLists.txt
- # @author Jan Ecker
- # @date 03.04.2013
+ # @brief CMake configuration file for SCAI module dmemo
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 
-if    ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
+if ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
     set ( MetisDistributionTest MetisDistributionTest )
-else  ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
+else  ()
     set ( MetisDistributionTest )
-endif ( USE_GRAPHPARTIONING AND ( METIS_FOUND OR PARMETIS_FOUND ) )
+endif ()
 
 ### set this dir as lama source dir ###
 
@@ -64,6 +64,8 @@ scai_project (
 
         RedistributorTest
 
+        dmemoTest
+
     HEADERS
 
         TestDistributions
@@ -74,35 +76,15 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
-### set include directories ###
-include_directories ( ${BOOST_INCLUDE_DIR} )
+scai_unit_test ( EXECUTABLE dmemoTest 
+                 FILES      ${CXX_SOURCES} 
+)   
 
-### add link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
-### add executeable ###
-add_executable ( dmemoTest dmemoTest.cpp ${CXX_SOURCES} )
-
-### target link libraries ###
-if ( WIN32 )
-    target_link_libraries ( dmemoTest ${MODULE_LIBRARY} )
-else ( WIN32 )
-    target_link_libraries ( dmemoTest ${MODULE_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-endif ( WIN32 )
-
-### Copy the README and xmltest.sh file in build directory ### 
+### Copy the README in build directory ### 
 
 file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
 
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+
+scai_test_scripts( SCRIPTS       xmltest.sh
+                   CODE_COVERAGE ${USE_CODE_COVERAGE} )

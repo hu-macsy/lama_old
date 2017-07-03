@@ -40,22 +40,12 @@ set ( CXX_SOURCES
       TraitTest  
 )
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
+## Build test executable, include and link libraries will be set correctly
 
-add_executable ( kregistryTest ${CXX_SOURCES} )
+scai_unit_test ( EXECUTABLE kregistryTest 
+                 FILES      ${CXX_SOURCES} )
 
-target_link_libraries ( kregistryTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
+###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-### Copy the xmltest.sh file in build directory ### 
- 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+scai_test_scripts( SCRIPTS       xmltest.sh
+                   CODE_COVERAGE ${USE_CODE_COVERAGE} )

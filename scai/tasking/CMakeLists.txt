@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for tasking library
+ # @brief CMake configuration file for SCAI module tasking
  # @author Thomas Brandes
- # @date 10.06.2015
+ # @date 04.07.2017
 ###
 
 ## Define name of the SCAI module project
@@ -74,7 +74,10 @@ endif ( WIN32 )
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-scai_library ()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 ### install ###
 

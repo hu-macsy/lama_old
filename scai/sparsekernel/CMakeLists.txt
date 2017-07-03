@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief scai/sparsekernel/CMakeLists.txt
- # @author Eric Schricker
- # @date 18.02.2016
+ # @brief CMake configuration file for SCAI module sparsekernel
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 ## Define name of the SCAI module project
@@ -71,7 +71,10 @@ endif()
 
 ### add library ###
 
-scai_library()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 if ( USE_MIC )
     set ( MKLROOT $ENV{MKLROOT} )

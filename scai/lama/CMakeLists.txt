@@ -27,8 +27,8 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration for module project lama
- # @author Thomas Brandes, Jiri Kraus
+ # @brief CMake configuration for module project lama ( linear algebra math )
+ # @author Thomas Brandes
  # @date 04.07.2017
 ###
 
@@ -77,7 +77,10 @@ scai_subdirectories( expression io matrix matutils mepr norm storage TEST EXAMPL
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-scai_library()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 ### install ###
 

@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Main specification file for CMake
- # @author Lauretta Schubert
- # @date 25.01.2016
+ # @brief CMake configuration file for SCAI module solver
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 ## Define name of the SCAI module project
@@ -95,7 +95,12 @@ endif ( AMG_SUBDIRPRESENT )
 
 # Might be some additional solver libraries have been defined
 
-scai_library ( OTHER_LINK ${SOLVER_SUB_LIBRARIES} )
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
+
+target_link_libraries ( ${MODULE_LIBRARY} ${SOLVER_SUB_LIBRARIES} )
 
 ### install ###
 

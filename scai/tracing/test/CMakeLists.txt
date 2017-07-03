@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/tracing/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,32 +27,34 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for SCAI module hmemo
+ # @brief scai/tracing/CMakeLists.txt
  # @author Thomas Brandes
- # @date 04.07.2017
+ # @date 10.06.2015
 ###
 
-set ( CXX_SOURCES
-      hmemoTest
-      ContextTest  
-      AccessTest  
-      HArrayTest  
-      HArrayRefTest  
-      MemoryTest
-) 
+# The shell script test.sh uses NUM_THREADS_TEST to verify tracing for threads
 
-scai_unit_test ( EXECUTABLE hmemoTest 
-                 FILES      ${CXX_SOURCES} )
+if ( USE_OPENMP )
+   set ( NUM_THREADS_TEST 4 )
+else ()
+   set ( NUM_THREADS_TEST 1 )
+endif ()
 
+## make.inc and test.sh need configuration
 
-scai_subdirectories( CUDA MIC )
+scai_test_scripts ( FILES           make.inc
+                    SCRIPTS         test.sh
+                    CONFIGURE 
+)
 
-### Copy the README and xmltest.sh file in build directory ### 
+## other files are just copied
 
-file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
+scai_test_scripts ( FILES           Makefile README simpleTracing.cpp )
 
-###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+scai_test_scripts ( CODE_COVERAGE   ${USE_CODE_COVERAGE} )
 
-scai_test_scripts( SCRIPTS       xmltest.sh
-                   CODE_COVERAGE ${USE_CODE_COVERAGE} )
+# add test
 
+enable_testing()
+
+add_test ( tracing_test test.sh )

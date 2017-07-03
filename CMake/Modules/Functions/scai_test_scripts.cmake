@@ -1,0 +1,134 @@
+###
+ # @file scai_test_scripts.cmake
+ #
+ # @license
+ # Copyright (c) 2009-2016
+ # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+ # for Fraunhofer-Gesellschaft
+ #
+ # This file is part of the SCAI framework LAMA.
+ #
+ # LAMA is free software: you can redistribute it and/or modify it under the
+ # terms of the GNU Affero General Public License as published by the Free
+ # Software Foundation, either version 3 of the License, or (at your option)
+ # any later version.
+ #
+ # LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ # FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ # more details.
+ #
+ # You should have received a copy of the GNU Affero General Public License
+ # along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ #
+ # Other Usage
+ # Alternatively, this file may be used in accordance with the terms and
+ # conditions contained in a signed written agreement between you and
+ # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+ # @endlicense
+ #
+ # @brief Macros for building test and run scripts
+ # @author Thomas Brandes
+ # @date 03.07.2017
+###
+
+##   scai_test_scripts( SCRITPS       <script_file1> ...
+##                      FILES         <file1> <file2> ...
+##                      CODE_COVERGE  <bool_value>
+##                      [CONFIGURE]                
+##
+##   - scripts and files are copied from current source directory to current build directory
+##   - scripts get an executable permission
+##   - if CONFIGURE is set scripts and files are configured from file with suffix ".in"
+##   - if CODE_COVERAGE is true, code_coverage.sh will be configured as script
+
+set ( EXECUTABLE_FILE_PERMISSIONS WORLD_READ OWNER_WRITE WORLD_EXECUTE )
+
+macro ( scai_test_scripts )
+
+    set ( options CONFIGURE )
+    set ( oneValueArgs CODE_COVERAGE )
+    set ( multiValueArgs FILES SCRIPTS )
+
+    cmake_parse_arguments ( scai_test_scripts "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    ### Copy the scripts in build directory ### 
+
+    foreach ( test_file ${scai_test_scripts_SCRIPTS} )
+
+        if ( ${scai_test_CONFIGURE} )
+
+            configure_file( "${test_file}.in" "${CMAKE_FILES_DIRECTORY}/${test_file}" @ONLY )
+
+            file ( COPY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${test_file} 
+                   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+                   FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} )
+
+        else()
+
+            file ( COPY "${CMAKE_CURRENT_SOURCE_DIR}/${test_file}" 
+                   DESTINATION ${CMAKE_CURRENT_BINARY_DIR} 
+                   FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} 
+                 ) 
+
+        endif()
+
+    endforeach() 
+
+    ### Copy the files in build directory, no permissions set  ### 
+
+    foreach ( test_file ${scai_test_scripts_FILES} )
+
+        if ( ${scai_test_CONFIGURE} )
+
+            ## configure_file is always from CURRENT_SOURCE to CURRENT_BINARY 
+
+            configure_file ( "${test_file}.in" "${test_file}" )
+
+        else()
+
+            file ( COPY "${CMAKE_CURRENT_SOURCE_DIR}/${test_file}" 
+                   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}  )
+
+        endif()
+
+    endforeach() 
+
+    if ( ${scai_test_scripts_CODE_COVERAGE} )
+
+        configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
+
+        file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+               FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} )
+
+        file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
+               DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+               FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} )
+
+    endif ()
+
+endmacro ()
+
+macro ( scai_unit_test )
+
+    set ( options )
+    set ( oneValueArgs EXECUTABLE )
+    set ( multiValueArgs FILES )
+
+    cmake_parse_arguments ( scai_unit_test "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    include_directories ( ${BOOST_INCLUDE_DIR} )
+
+    add_executable ( ${scai_unit_test_EXECTUABLE}  ${scai_unit_test_FILES} )
+
+    if ( WIN32 )
+        link_directories ( ${Boost_LIBRARY_DIRS} )
+        target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${MODULE_LIBRARY} )
+    else ()
+        target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${MODULE_LIBRARY} )
+        target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+    endif ()
+
+
+endmacro ()

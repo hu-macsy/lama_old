@@ -35,24 +35,40 @@
 ##  Be careful: global variables are used
 ##
 ##   MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
-##   SCAI_LIBRARY_PREFIX, SCAI_VERSION
-##   CXX_SOURCES
+##
+##   scai_libary ( PREFIX scai_ VERSION 1.0.1 TYPE STATIC <source_files> )
+##
+##   sets: MODULE_LIBRARY ( = <PREFIX><MODULE_NAME> )
 
 macro ( scai_library )
 
-    ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
+    # specify the keywors supported in arguments 
 
-    set ( MODULE_LIBRARY "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
+    set ( options )
+    set ( oneValueArgs PREFIX VERSION TYPE )
+    set ( multiValueArgs CLASSES HEADERS SOURCES CUDA_CLASSES CUDA_SOURCES )
+
+    cmake_parse_arguments ( scai_library "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if ( ${scai_library_TYPE} STREQUAL "SHARED" )
+    elseif ( ${scai_library_TYPE} STREQUAL "STATIC" )
+    else ()
+        message ( ERROR "library TYPE ${scai_library_TYPE} illegal, must be SHARED or STATIC" )
+    endif ()
+
+    ## Use for all library names the specified prefix
+
+    set ( MODULE_LIBRARY "${scai_library_PREFIX}${MODULE_NAME}" )
 
     ### add library ###
 
-    add_library ( ${MODULE_LIBRARY} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
+    add_library ( ${MODULE_LIBRARY} ${scai_library_TYPE} ${scai_library_UNPARSED_ARGUMENTS} )
 
-    set_target_properties ( ${MODULE_LIBRARY} PROPERTIES VERSION ${SCAI_VERSION} )
+    set_target_properties ( ${MODULE_LIBRARY} PROPERTIES VERSION ${scai_library_VERSION} )
 
     ## link internal libraries via internal dependencies, but add library prefix
 
-    string ( REGEX REPLACE "([a-z]+)" "${SCAI_LIBRARY_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
+    string ( REGEX REPLACE "([a-z]+)" "${scai_library_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
     target_link_libraries ( ${MODULE_LIBRARY} ${INTERNAL_LIBS} )
 

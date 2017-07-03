@@ -82,6 +82,7 @@ endif ()
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
     include( Package/BoostTest )
+    include( Functions/scai_test_scripts )  # macros used in test directories
 endif ( BUILD_TEST )
 
 ### Sphinx is used for user documentation and a module project 

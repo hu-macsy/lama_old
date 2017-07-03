@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief scai/kregistry/CMakeLists.txt
+ # @brief CMake configuration file for SCAI module kregistry (kernel registry)
  # @author Thomas Brandes
- # @date 30.06.2015
+ # @date 04.07.2017
 ###
 
 scai_module(
@@ -65,7 +65,10 @@ endif()
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-scai_library ()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 ### install ###
 

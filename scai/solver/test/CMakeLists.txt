@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Main specification file for CMake
- # @author Lauretta Schubert
- # @date 25.01.2016
+ # @brief CMake configuration file for tests of SCAI module solver
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 scai_project ( 
@@ -73,32 +73,11 @@ scai_project (
         solverTest
    )
    
-### set include directories ###
-
-include_directories ( ${BOOST_INCLUDE_DIR} )
-
-### add definitions ###
-
-add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
+add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
    
-add_executable ( solverTest ${CXX_SOURCES} )
+scai_unit_test ( EXECUTABLE solverTest FILES ${CXX_SOURCES} )
 
-target_link_libraries ( solverTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
-    
-file ( GLOB LOCAL_HEADERS "*.hpp" )
+###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-install ( FILES ${LOCAL_HEADERS} DESTINATION include/scai/solver/test )
-
-### Copy the README and xmltest.sh file in build directory ### 
-
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+scai_test_scripts( SCRIPTS       xmltest.sh
+                   CODE_COVERAGE ${USE_CODE_COVERAGE} )

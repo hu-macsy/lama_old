@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file scai/logging/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,32 +27,24 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for SCAI module hmemo
+ # @brief CMake configuration file for tests of SCAI module logging
  # @author Thomas Brandes
  # @date 04.07.2017
 ###
 
-set ( CXX_SOURCES
-      hmemoTest
-      ContextTest  
-      AccessTest  
-      HArrayTest  
-      HArrayRefTest  
-      MemoryTest
-) 
+## Note: logging has no Boost unit test, but own test script
 
-scai_unit_test ( EXECUTABLE hmemoTest 
-                 FILES      ${CXX_SOURCES} )
+## make.inc used by Makefile, will be configured
 
+scai_test_scripts( FILES make.inc CONFIGURE )
 
-scai_subdirectories( CUDA MIC )
-
-### Copy the README and xmltest.sh file in build directory ### 
-
-file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-
-###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
-
-scai_test_scripts( SCRIPTS       xmltest.sh
+scai_test_scripts( SCRIPTS       test.sh
+                   FILES         Makefile README complexLogging.cpp simpleLogging.cpp
                    CODE_COVERAGE ${USE_CODE_COVERAGE} )
+
+# add test ( cmake commands )
+
+enable_testing()
+
+add_test ( logging_test test.sh )
 

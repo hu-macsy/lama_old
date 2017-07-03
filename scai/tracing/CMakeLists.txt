@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief scai/tracing/CMakeLists.txt
+ # @brief CMake configuration file for SCAI module tracing
  # @author Thomas Brandes
- # @date 10.06.2015
+ # @date 04.07.2017
 ###
 
 ## Define SCAI module project by name and internal/external dependencies
@@ -64,59 +64,15 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories ( EXAMPLES )
-
-## begin subdir test
-# prepare test
-if ( USE_CODE_COVERAGE )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
-
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )
-
-# The shell script test.sh uses NUM_THREADS_TEST to verify tracing for threads
-
-if ( USE_OPENMP )
-   set ( NUM_THREADS_TEST 4 )
-else ( USE_OPENMP )
-   set ( NUM_THREADS_TEST 1 )
-endif ( USE_OPENMP )
-
-# Now configure test.sh and set correct permission
-
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/test.sh.in"
-                 "${CMAKE_CURRENT_BINARY_DIR}/test/conf/test.sh" @ONLY )
-
-file ( COPY "${CMAKE_CURRENT_BINARY_DIR}/test/conf/test.sh" 
-       DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/test"
-       FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-
-set ( TEST_FILES Makefile README simpleTracing.cpp )
-
-foreach    ( TEST_FILE ${TEST_FILES} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/test/${TEST_FILE}
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endforeach ( TEST_FILE ${TEST_FILES} )
-
-# add test
-enable_testing()
-add_test ( tracing_test test/test.sh )
-## end subdir test
-
-add_subdirectory( gui )
-add_subdirectory ( macros )
+scai_subdirectories ( EXAMPLES TEST gui macros )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-scai_library ()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 ## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )

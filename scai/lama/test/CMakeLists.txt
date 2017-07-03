@@ -57,15 +57,13 @@ scai_project (
         SparseVectorTest
         VectorTest
         VersionTest
+
     )
 
 ### checks ####
 if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-
-### set include directories ###
-include_directories ( ${BOOST_INCLUDE_DIR} )
 
 if ( SCAI_BLAS_NAME STREQUAL "MKL" )
     include_directories ( ${MKL_INCLUDE_DIRS} )
@@ -79,31 +77,14 @@ add_subdirectory ( matrix )
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-### add link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
-### add executeable ###
-add_executable ( lamaTest lamaTest.cpp ${CXX_SOURCES} )
-
-### target link libraries ###
-if ( WIN32 )
-    target_link_libraries ( lamaTest ${MODULE_LIBRARY} )
-else ( WIN32 )
-    target_link_libraries ( lamaTest ${MODULE_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-endif ( WIN32 )
+scai_unit_test ( EXECUTALBE lamaTest SOURCES lamaTest.cpp ${CXX_SOURCES} )
 
 ### Copy the README and xmltest.sh file in build directory ### 
-file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
 
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+
+scai_test_scripts( SCRIPTS       xmltest.sh
+                   CODE_COVERAGE ${USE_CODE_COVERAGE} )
+
