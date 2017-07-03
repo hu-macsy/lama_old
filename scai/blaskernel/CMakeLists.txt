@@ -55,7 +55,12 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( external openmp examples cuda mic test )
+scai_subdirectories( external openmp EXAMPLES CUDA MIC TEST )
+
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
 ### set link directories ###
 if ( WIN32 )

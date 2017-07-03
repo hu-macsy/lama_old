@@ -72,7 +72,7 @@ scai_project (
 
 ### add subdirectories
 
-scai_subdirectories( expression io matrix matutils mepr norm storage test examples )
+scai_subdirectories( expression io matrix matutils mepr norm storage TEST EXAMPLES )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
@@ -88,7 +88,7 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}
 ## install library.hpp
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_BINARY_DIR}/include/scai/lama.hpp" )
-install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
+install ( FILES "${CMAKE_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 

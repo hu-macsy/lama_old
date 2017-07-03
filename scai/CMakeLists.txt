@@ -36,10 +36,16 @@ cmake_minimum_required ( VERSION 2.8.8 )
 
 project ( LAMA_ALL CXX )
 
-### Define all modules that are used ( inclusive all dependent ones )
+##  Define the list of all SCAI module projects
+
+set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo 
+                       blaskernel utilskernel sparsekernel dmemo lama solver  )
+
+### Define modules that should be used ( inclusive all dependent ones )
+### Default: use all modules; but it can be changed via cmake gui
 ### dependencies are not resolved here but will be verified during configuration
 
-set ( SCAI_PROJECT_LIST common logging tracing tasking kregistry hmemo blaskernel utilskernel sparsekernel dmemo lama solver )
+set ( SCAI_USED_MODULES ${SCAI_ALL_MODULES} CACHE STRING "Used SCAI module projects" )
 
 ### Define some general variables used for identifaction 
 
@@ -90,18 +96,17 @@ include ( Package/CUDA )
 
 include ( ConcludeFlags )
 
-## include all needed functions
+## Include all  functions that might be called in any module project
 
-include ( Functions/scaiFunctions )
-include ( Functions/relativeInstall )
+include ( Functions/relative_install )
 include ( Functions/scai_module )
-include ( Functions/scaiProject )
+include ( Functions/scai_project )
 include ( Functions/scai_subdirectories )
 include ( Functions/scai_library )
 
 ### Traverse all module projects for configuration
 
-foreach ( SCAI_PROJECT ${SCAI_PROJECT_LIST} )
+foreach ( SCAI_PROJECT ${SCAI_USED_MODULES} )
 
     message( STATUS "Configuring SCAI project ${SCAI_PROJECT}" )
 
@@ -116,7 +121,7 @@ include ( Package/Doxygen )
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 
 set ( MODULE_NAME "lama_all" )
-set ( INTERNAL_DEPS ${SCAI_PROJECT_LIST} )
+set ( INTERNAL_DEPS ${SCAI_USED_MODULES} )
 
 include ( CustomCommands/SphinxDoc )
 

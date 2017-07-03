@@ -60,7 +60,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( examples macros )
+scai_subdirectories( EXAMPLES macros )
 
 ## begin subdir test
 # prepare test

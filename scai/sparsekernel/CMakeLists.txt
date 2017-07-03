@@ -62,7 +62,12 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( cuda examples external mic openmp test )
+scai_subdirectories( CUDA EXAMPLES external MIC openmp TEST )
+
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
 ### add library ###
 

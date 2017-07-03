@@ -64,9 +64,7 @@ scai_project (
 
 ## add subdirectories
 
-if    ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
+scai_subdirectories ( EXAMPLES )
 
 ## begin subdir test
 # prepare test

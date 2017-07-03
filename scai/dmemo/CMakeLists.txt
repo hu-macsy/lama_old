@@ -89,7 +89,7 @@ if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
 endif ( MPI_FOUND AND USE_MPI )
 
-scai_subdirectories( examples test )
+scai_subdirectories( EXAMPLES TEST )
 
 ### set link directories ###
 if ( WIN32 )

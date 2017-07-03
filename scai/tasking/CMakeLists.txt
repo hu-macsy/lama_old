@@ -59,7 +59,12 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( cuda mic examples test )
+scai_subdirectories( CUDA MIC EXAMPLES TEST )
+
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
 ### set link directories ###
 if ( WIN32 )

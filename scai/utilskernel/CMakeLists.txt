@@ -28,8 +28,8 @@
  # @endlicense
  #
  # @brief scai/utilskernel/CMakeLists.txt
- # @author Eric Schricker
- # @date 18.02.2016
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 ## Define name of the SCAI module project and its dependencies
@@ -58,9 +58,14 @@ scai_project (
         SparseKernelTrait
 )
 
-## add subdirectories
+## add subdirectories, uppercase for OPTIONAL stuff
 
-scai_subdirectories( cuda examples mepr mic openmp test )
+scai_subdirectories( CUDA EXAMPLES mepr MIC openmp TEST )
+
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

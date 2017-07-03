@@ -55,7 +55,12 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( examples exception mepr test )
+scai_subdirectories( EXAMPLES exception mepr TEST )
+
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

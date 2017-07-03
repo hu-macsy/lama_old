@@ -191,9 +191,14 @@ scai_project(
     HEADERS ${COMMON_HEADERS}
 )
 
-## add subdirectories
+## add subdirectories, add mic even if MIC disabled for include file
 
-scai_subdirectories( cuda examples exception macros mepr mic test )
+scai_subdirectories( CUDA EXAMPLES exception macros mepr mic TEST )
+
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
 ### set link directories ###
 if ( WIN32 )

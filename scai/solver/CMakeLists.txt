@@ -76,7 +76,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories ( criteria examples logger test )
+scai_subdirectories ( criteria EXAMPLES logger TEST )
 
 ### for external amg ###
 
