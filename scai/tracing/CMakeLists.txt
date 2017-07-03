@@ -32,48 +32,14 @@
  # @date 10.06.2015
 ###
 
-## Define name of the SCAI module project
+## Define SCAI module project by name and internal/external dependencies
 
-set ( MODULE_NAME tracing )
+scai_module(
 
-set ( INTERNAL_DEPS common logging ) 
-set ( EXTERNAL_DEPS Java ) 
-
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-### find all external packages via the provided wrappers of CMake modules
-
-foreach ( module ${EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ()
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions
-
-include ( Settings/logging )
-
-add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-
-if    ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-
-### add includes for external packages
-
-foreach ( module ${EXTERNAL_DEPS} )
-    string ( TOUPPER ${module} upper_module )
-    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
-endforeach ()
+    MODULE_NAME   tracing
+    INTERNAL_DEPS common logging
+    EXTERNAL_DEPS 
+)
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -102,7 +68,6 @@ if    ( BUILD_EXAMPLES )
     add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
-add_subdirectory ( macros )
 ## begin subdir test
 # prepare test
 if ( USE_CODE_COVERAGE )
@@ -148,11 +113,7 @@ add_test ( tracing_test test/test.sh )
 ## end subdir test
 
 add_subdirectory( gui )
-
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
+add_subdirectory ( macros )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

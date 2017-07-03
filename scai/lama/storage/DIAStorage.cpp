@@ -737,7 +737,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
         lowerDiagonalUsed[i] = false;
     }
 
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -755,7 +755,7 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     {
         ReadAccess<IndexType> offset( mOffset );
         WriteOnlyAccess<ValueType> myValues( mValues, mNumDiagonals * mNumRows );
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp parallel for 
 
         for ( IndexType i = 0; i < mNumRows; i++ )
         {

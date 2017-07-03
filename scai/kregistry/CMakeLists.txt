@@ -32,48 +32,12 @@
  # @date 30.06.2015
 ###
 
-## Define name of the SCAI module project
+scai_module(
 
-set ( MODULE_NAME kregistry )
-
-set ( INTERNAL_DEPS common logging )
-set ( EXTERNAL_DEPS )
-
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-### find all external packages via the provided wrappers of CMake modules
-
-foreach ( module ${EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ()
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions
-
-include ( Settings/logging )
-
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-
-if    ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-
-### add includes for external packages
-
-foreach ( module ${EXTERNAL_DEPS} )
-    string ( TOUPPER ${module} upper_module )
-    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
-endforeach ()
+    MODULE_NAME   kregistry
+    INTERNAL_DEPS common logging
+    EXTERNAL_DEPS 
+)
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -91,21 +55,7 @@ scai_project (
 
 ## add subdirectories
 
-if ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
-add_subdirectory ( exception )
-add_subdirectory ( mepr )
-
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
-
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
+scai_subdirectories( examples exception mepr test )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

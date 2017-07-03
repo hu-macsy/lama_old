@@ -34,48 +34,12 @@
 
 ## Define name of the SCAI module project
 
-set ( MODULE_NAME tasking )
+scai_module (
 
-set ( INTERNAL_DEPS common logging tracing )
-set ( EXTERNAL_DEPS CUDA MIC ) 
-
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-### find all external packages via the provided wrappers of CMake modules
-
-foreach ( module ${EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ()
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions
-
-include ( Settings/logging )
-include ( Settings/tracing )
-
-add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
-
-if    ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-
-### add includes for external packages
-
-foreach ( module ${EXTERNAL_DEPS} )
-    string ( TOUPPER ${module} upper_module )
-    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
-endforeach ()
+    MODULE_NAME   tasking
+    INTERNAL_DEPS common logging tracing
+    EXTERNAL_DEPS CUDA MIC
+)
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -95,21 +59,7 @@ scai_project (
 
 ## add subdirectories
 
-if ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-if    ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
-
-if    ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+scai_subdirectories( cuda mic examples test )
 
 ### set link directories ###
 if ( WIN32 )

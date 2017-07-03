@@ -34,39 +34,13 @@
 
 ## Define name of the SCAI module project
 
-set ( MODULE_NAME solver )
+scai_module (
 
-set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo lama ) 
+    MODULE_NAME   solver 
 
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions ###
-
-include ( Settings/logging )
-include ( Settings/tracing )
-
-add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
-
-if ( SCAI_OMP_SCHEDULE_FLAG )
-    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
-endif ( SCAI_OMP_SCHEDULE_FLAG )
-
-if ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
+    INTERNAL_DEPS common logging tracing tasking hmemo kregistry 
+                  blaskernel utilskernel sparsekernel dmemo lama 
+) 
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -101,19 +75,11 @@ scai_project (
     )
 
 ## add subdirectories
-add_subdirectory ( criteria )
 
-if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
-add_subdirectory ( logger )
-
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+scai_subdirectories ( criteria examples logger test )
 
 ### for external amg ###
+
 file ( GLOB AMG_SUBDIRPRESENT "amg" )
 
 if ( AMG_SUBDIRPRESENT )
@@ -121,11 +87,6 @@ if ( AMG_SUBDIRPRESENT )
     message ( STATUS "amg subdir provides following solver libraries: ${SOLVER_SUB_LIBRARIES}" )
     #set ( SOLVER_SUB_LIBRARIES ${SOLVER_SUB_LIBRARIES} PARENT_SCOPE )
 endif ( AMG_SUBDIRPRESENT )
-
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
 
 ### add library ###
 

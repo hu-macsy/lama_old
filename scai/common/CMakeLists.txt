@@ -32,53 +32,15 @@
  # @date 01.07.2017
 ###
 
-## Define name of the SCAI module project
+scai_module(
 
-set ( MODULE_NAME common )
+    MODULE_NAME   common
+    EXTERNAL_DEPS OpenMP CUDA MIC dl Thread 
+)
 
-## Specifiy all internal and external dependencies
+## Common now configures some include files
 
-set ( INTERNAL_DEPS )
-set ( EXTERNAL_DEPS OpenMP CUDA MIC dl Thread ) 
-
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-### find all external packages via the provided wrappers of CMake modules
-
-foreach ( module ${EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ()
-
-### finalize build flags
-include ( ConcludeFlags )
-
-### add definitions
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-
-if    ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include
-
-set ( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-
-### add includes for external packages
-
-foreach ( module ${EXTERNAL_DEPS} )
-    string ( TOUPPER ${module} upper_module )
-    include_directories( ${SCAI_${upper_module}_INCLUDE_DIR} )
-endforeach ()
-
-if    ( NOT CXX_SUPPORTS_C11 )
-    include_directories ( ${BOOST_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${MODULE_NAME}" )
+set ( CONFIGURE_DIR "${CMAKE_BINARY_DIR}/include/scai/${MODULE_NAME}" )
 
 ## begin for configuring SCAITypes.hpp
 
@@ -231,20 +193,7 @@ scai_project(
 
 ## add subdirectories
 
-add_subdirectory ( cuda )
-
-if ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
-add_subdirectory ( exception )
-add_subdirectory ( macros )
-add_subdirectory ( mepr )
-add_subdirectory ( mic )
-
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+scai_subdirectories( cuda examples exception macros mepr mic test )
 
 ### set link directories ###
 if ( WIN32 )

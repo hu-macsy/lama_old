@@ -64,10 +64,14 @@ include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
 ## C++11 or Boost
+
 include ( Compiler/CheckC++11 )
+
 if ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 )
+    message( STATUS "No C11 support, use Boost include dir ${BOOST_INCLUDE_DIR}" )
+    include_directories( ${BOOST_INCLUDE_DIR} )
+endif ()
 
 ## Use Boost if BUILD_TEST is enabled
 if ( BUILD_TEST )
@@ -79,11 +83,20 @@ endif ( BUILD_TEST )
 
 include ( Package/Sphinx )
 
+### CUDA and OpenMP are required to set compiler flags
+
+include ( Package/OpenMP )
+include ( Package/CUDA )
+
+include ( ConcludeFlags )
+
 ## include all needed functions
 
 include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
 include ( Functions/relativeInstall )
+include ( Functions/scai_module )
+include ( Functions/scaiProject )
+include ( Functions/scai_subdirectories )
 include ( Functions/scai_library )
 
 ### Traverse all module projects for configuration

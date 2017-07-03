@@ -105,7 +105,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
     {
         ValueType threadVal = 0;
 
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -168,7 +168,7 @@ void OpenMPDIAUtils::getCSRValues(
         {
             IndexType n = std::min( numRows, numColumns );
             SCAI_ASSERT_EQUAL_DEBUG( n, csrIA[numRows] )
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -198,7 +198,7 @@ void OpenMPDIAUtils::getCSRValues(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.getCSR" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -261,7 +261,7 @@ void OpenMPDIAUtils::getCSRSizes(
     SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns
                    << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -359,7 +359,7 @@ void OpenMPDIAUtils::normalGEMV(
     {
         SCAI_REGION( "OpenMP.DIA.normalGEMV" )
 
-        #pragma omp for schedule ( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -493,7 +493,7 @@ void OpenMPDIAUtils::jacobi(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.DIA.Jacobi" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {

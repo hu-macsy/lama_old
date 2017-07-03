@@ -103,7 +103,6 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
 {
     // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
     // For more threads, we do it in parallel
-    // Attention: MUST USE schedule(static)
     scoped_array<IndexType> threadCounter( new IndexType[numThreads] );
     SCAI_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
     #pragma omp parallel
@@ -163,7 +162,7 @@ bool OpenMPCSRUtils::validOffsets( const IndexType array[], const IndexType n, c
 {
     SCAI_LOG_INFO( logger, "check offset array[ " << n << "] for validity, total = " << total )
     bool validFlag = true;
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE) reduction( && : validFlag )
+    #pragma omp parallel for reduction( && : validFlag )
 
     for ( IndexType i = 0; i < n; i++ )
     {
@@ -207,7 +206,7 @@ void OpenMPCSRUtils::offsets2sizes( IndexType sizes[], const IndexType offsets[]
     }
     else
     {
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp parallel for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -224,7 +223,7 @@ void OpenMPCSRUtils::offsets2sizesGather(
     const IndexType rowIndexes[],
     const IndexType numRows )
 {
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -500,7 +499,7 @@ void OpenMPCSRUtils::scaleRows(
     const IndexType numRows,
     const ValueType2 values[] )
 {
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -662,7 +661,7 @@ void OpenMPCSRUtils::normalGEMV_s(
     {
         // Note: region will be entered by each thread
         SCAI_REGION( "OpenMP.CSR.normalGEMV" )
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; ++i )
         {
@@ -825,7 +824,7 @@ void OpenMPCSRUtils::sparseGEMV(
     {
         // Note: region will be entered by each thread
         SCAI_REGION( "OpenMP.CSR.sparseGEMV" )
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
         {
@@ -930,7 +929,7 @@ void OpenMPCSRUtils::gemm(
         SCAI_LOG_ERROR( logger, "asynchronous execution not supported here" )
     }
 
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < m; ++i )
     {
@@ -977,7 +976,7 @@ void OpenMPCSRUtils::jacobi(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.CSR.jacobi" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -1027,7 +1026,7 @@ void OpenMPCSRUtils::jacobiHalo(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.CSR.jacabiHalo" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -1077,7 +1076,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.CSR.jacabiHaloWithDiag" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -1697,7 +1696,7 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     #pragma omp parallel
     {
         ValueType threadVal = static_cast<ValueType>( 0.0 );
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; ++i )
         {

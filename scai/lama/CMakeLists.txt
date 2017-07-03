@@ -27,53 +27,22 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Main specification file for CMake
+ # @brief CMake configuration for module project lama
  # @author Thomas Brandes, Jiri Kraus
- # @date 29.03.2012
+ # @date 04.07.2017
 ###
 
 ## Define name of the SCAI module project
 
-set ( MODULE_NAME lama )
+scai_module(
 
-set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo ) 
-set ( EXTERNAL_DEPS OpenMP ZLIB PNG ) 
+    MODULE_NAME   lama
 
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
+    INTERNAL_DEPS common logging tracing tasking hmemo kregistry 
+                  blaskernel utilskernel sparsekernel dmemo 
 
-### find all external packages via the provided wrappers of CMake modules
-
-foreach ( module ${EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ()
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions ###
-
-include ( Settings/logging )
-include ( Settings/tracing )
-
-add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
-
-if ( SCAI_OMP_SCHEDULE_FLAG )
-    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
-endif ( SCAI_OMP_SCHEDULE_FLAG )
-
-if ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-
-include_directories ( ${SCAI_PNG_INCLUDE_DIR} )
-include_directories ( ${SCAI_ZLIB_INCLUDE_DIR} )
+    EXTERNAL_DEPS OpenMP ZLIB PNG
+)
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -103,26 +72,7 @@ scai_project (
 
 ### add subdirectories
 
-add_subdirectory ( expression )
-add_subdirectory ( io )
-add_subdirectory ( matrix )
-add_subdirectory ( matutils )
-add_subdirectory ( mepr )
-add_subdirectory ( norm )
-add_subdirectory ( storage )
-
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
-
-if    ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
+scai_subdirectories( expression io matrix matutils mepr norm storage test examples )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
@@ -137,7 +87,7 @@ relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}
 
 ## install library.hpp
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_BINARY_DIR}/include/scai/lama.hpp" )
 install ( FILES "${CONFIGURE_INCLUDE_DIR}/scai/lama.hpp" DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 

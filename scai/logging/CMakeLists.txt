@@ -34,33 +34,11 @@
 
 ## Define name of the SCAI module project
 
-set ( MODULE_NAME logging )
+scai_module (
 
-set ( INTERNAL_DEPS common )
-set ( EXTERNAL_DEPS )             # no external dependencies 
-
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-# logging level for logging library
-# GenLogger uses also logging during initialization, here we make a fixed setting
-add_definitions ( -DSCAI_LOG_LEVEL_DEBUG )
-
-if    ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
+     MODULE_NAME   logging 
+     INTERNAL_DEPS common 
+)
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -82,21 +60,25 @@ scai_project (
 
 ## add subdirectories
 
-if ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
+scai_subdirectories( examples macros )
 
-add_subdirectory ( macros )
 ## begin subdir test
 # prepare test
+
 if ( USE_CODE_COVERAGE )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh" @ONLY)
+
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/code_coverage.sh.in" 
+                     "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh"
+                     @ONLY )
+
     file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/test/code_coverage.sh 
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
            FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+
     file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../scai_code_coverage_functions.sh 
            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test
            FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
+
 endif ( USE_CODE_COVERAGE )
 
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/test/make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/test/make.inc" )

@@ -32,7 +32,6 @@
  # @date 25.04.2013
 ###
 
-
 ##  Help function 
 
 function    ( createBlanks OUTPUT LENGTH )
@@ -195,8 +194,6 @@ function    ( formatText )
     list ( GET ARGV 0 RESULT_NAME )
     list ( REMOVE_AT ARGV 0 )
 
-    include ( Settings/bashFormats )
-
     set ( coloron FALSE )
     set ( str "" )
     foreach    ( arg ${ARGV} )
@@ -236,14 +233,12 @@ function    ( indent_message LEVEL MSG )
 endfunction ( indent_message LEVEL MSG )
 
 function    ( heading TEXT )
-    include ( Functions/formatText )
     emptyline()
     formatText ( H1 "TextUnderline" "${TEXT}" )
     indent_message ( "1" "${H1}" )
 endfunction ( heading TEXT )
 
 function    ( heading2 TEXT VAR )
-    include ( Functions/formatText )
     emptyline()
 
     if    ( VAR STREQUAL "" )
@@ -264,7 +259,6 @@ function    ( heading2 TEXT VAR )
 endfunction ( heading2 TEXT )
 
 function    ( heading3 TEXT VAR )
-    include ( Functions/formatText )
     emptyline()
     if    ( VAR STREQUAL "" )
         set ( H2 "" )
@@ -283,7 +277,6 @@ function    ( heading3 TEXT VAR )
 endfunction ( heading3 TEXT )
 
 function    ( found_message TEXT VAR OPTIONAL ADDITIONAL_TEXT )
-    include ( Functions/formatText )
 
     set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
     scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${TEXT} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
@@ -306,4 +299,5 @@ function    ( found_message TEXT VAR OPTIONAL ADDITIONAL_TEXT )
     formatText ( H4 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
         
     indent_message ( "4" "${TEXT}${SCAI_PACKAGE_NAME_BLANKS}${H4} ${ADDITIONAL_TEXT}" )
+
 endfunction ( found_message TEXT )

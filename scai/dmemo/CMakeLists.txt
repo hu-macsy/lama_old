@@ -34,50 +34,14 @@
 
 ## Define name of the SCAI module project
 
-set ( MODULE_NAME dmemo )
+scai_module(
 
-set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel )
-set ( EXTERNAL_DEPS OpenMP MPI GPI GraphPartitioning ) 
+    MODULE_NAME   dmemo
+    INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel 
+    EXTERNAL_DEPS OpenMP MPI GPI GraphPartitioning 
+)
 
-## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
-
-set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
-
-### find all external packages via the provided wrappers of CMake modules
-
-foreach ( module ${EXTERNAL_DEPS} )
-    include( Package/${module} )
-endforeach ()
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions ###
-
-include ( Settings/logging )
-include ( Settings/tracing )
-
-add_definitions ( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
-
-if ( SCAI_OMP_SCHEDULE_FLAG )
-    add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
-endif ( SCAI_OMP_SCHEDULE_FLAG )
-
-if ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-
-include_directories ( ${SCAI_OPENMP_INCLUDE_DIR} )
-include_directories ( ${SCAI_MPI_INCLUDE_DIR} )
-include_directories ( ${SCAI_GPI_INCLUDE_DIR} )
-include_directories ( ${SCAI_GRAPHPARTITIONING_INCLUDE_DIR} )
+## MetisDistribution only added as source if graph partitioning is available
 
 if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
     if    ( SCAI_INDEX_TYPE STREQUAL "int" )
@@ -114,10 +78,6 @@ scai_project (
 
 ### add subdirectories
 
-if    ( BUILD_EXAMPLES )
-    add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
-
 if ( GPI_FOUND AND USE_GPI )
     include( Package/Boost )
     message( STATUS "add BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
@@ -129,9 +89,7 @@ if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
 endif ( MPI_FOUND AND USE_MPI )
 
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+scai_subdirectories( examples test )
 
 ### set link directories ###
 if ( WIN32 )

@@ -104,7 +104,7 @@ void OpenMPBLAS2::gemv(
 
             if ( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
 
                 for ( IndexType i = 0; i < M; i++ )
                 {
@@ -121,7 +121,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
                 for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
@@ -143,7 +143,7 @@ void OpenMPBLAS2::gemv(
 
             if ( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
 
                 for ( IndexType i = 0; i < N; i++ )
                 {
@@ -160,7 +160,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
                 for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
@@ -176,7 +176,7 @@ void OpenMPBLAS2::gemv(
         }
         else if ( TransA == CblasConjTrans )
         {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < N; i++ )
             {
@@ -204,7 +204,7 @@ void OpenMPBLAS2::gemv(
 
             if ( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
 
                 for ( IndexType i = 0; i < M; i++ )
                 {
@@ -221,7 +221,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
                 for ( IndexType i = 0; i < M; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
@@ -242,7 +242,7 @@ void OpenMPBLAS2::gemv(
 
             if ( incX == 1 && incY == 1 )
             {
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
 
                 for ( IndexType i = 0; i < N; i++ )
                 {
@@ -259,7 +259,7 @@ void OpenMPBLAS2::gemv(
             else
             {
                 //incX != 1 || incY != 1
-                #pragma omp parallel for private(Z) schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for private(Z) 
                 for ( IndexType i = 0; i < N; i++ )
                 {
                     Z = static_cast<ValueType>( 0.0 );
@@ -275,7 +275,7 @@ void OpenMPBLAS2::gemv(
         }
         else if ( TransA == CblasConjTrans )
         {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < N; i++ )
             {

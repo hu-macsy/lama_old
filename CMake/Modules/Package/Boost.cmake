@@ -44,15 +44,17 @@
 # set ( Boost_USE_STATIC_LIBS OFF )
 # set ( Boost_USE_MULTITHREADED OFF )
 
-if ( NOT DEFINED BOOST_INCLUDE_DIR )
+if ( DEFINED BOOST_INCLUDE_DIR )
+
+    message ( STATUS "BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
+
+else()
 
     if    ( WIN32 )
         message ( STATUS "Setting special Boost options on Windows" )
         #set ( Boost_USE_STATIC_LIBS ON )
         set ( Boost_USE_MULTITHREADED ON )
     endif ( WIN32 )
-
-    # Finds packages with custom search options 
 
     # FindBoost Debug options comment
     if    ( SCAI_CMAKE_VERBOSE )
@@ -66,17 +68,15 @@ if ( NOT DEFINED BOOST_INCLUDE_DIR )
 
     set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
 
-    if    ( Boost_INCLUDE_DIR )
+    if ( Boost_INCLUDE_DIR )
         set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
-    else  ( Boost_INCLUDE_DIR )
-	if    ( CXX_SUPPORTS_C11 )
-            message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
-        else  ( CXX_SUPPORTS_C11 )
-            message ( FATAL_ERROR "No C++11 compiler detected, thus boost is needed but not found")
-	endif ( CXX_SUPPORTS_C11 )
-    endif ( Boost_INCLUDE_DIR )
+    elseif ( CXX_SUPPORTS_C11 )
+        message ( FATAL_ERROR "No Boost_INCLUDE_DIR found, need boost header libraries.")
+    else ()
+        message ( FATAL_ERROR "No C++11 compiler detected, thus boost is needed but not found")
+	endif ()
 
     # LAMA irrelevant entries will be removed from cmake GUI completely
     set ( Boost_DIR "${Boost_DIR}" CACHE INTERNAL "" )
 
-endif ( NOT DEFINED BOOST_INCLUDE_DIR )
+endif ()

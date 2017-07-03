@@ -200,7 +200,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
             {
                 ValueType* array = static_cast<ValueType*>( arrayPtr );
                 ValueType value = static_cast<ValueType>( *valPtr );
-                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -222,7 +222,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
 
-                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                    #pragma omp parallel for 
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
@@ -247,7 +247,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
 
-                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                    #pragma omp parallel for 
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
@@ -277,7 +277,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
 
-                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                    #pragma omp parallel for 
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
@@ -307,7 +307,7 @@ void MICUtils::setVal( ValueType array[], const IndexType n, const ValueType val
                     ValueType* array = static_cast<ValueType*>( arrayPtr );
                     ValueType value = static_cast<ValueType>( *valPtr );
 
-                    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                    #pragma omp parallel for 
 
                     for ( IndexType i = 0; i < n; i++ )
                     {
@@ -669,7 +669,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
         {
             case binary::COPY :
             {
-                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -681,7 +681,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
             case binary::ADD :
             {
-                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -693,7 +693,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
             case binary::SUB :
             {
-                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -705,7 +705,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
             case binary::MULT :
             {
-                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -717,7 +717,7 @@ void MICUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, 
 
             case binary::DIVIDE :
             {
-                #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -834,7 +834,7 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
         }
         else if ( op == binary::ADD )
         {
-            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -843,7 +843,7 @@ void MICUtils::setScatter( ValueType1 out[], const IndexType indexes[], const Va
         }
         else if ( op == binary::SUB )
         {
-            #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -927,7 +927,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
 
             case unary::MINUS :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -940,7 +940,7 @@ void MICUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n
 
             case unary::ABS :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1171,7 +1171,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
 
             case binary::MIN :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1183,7 +1183,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
 
             case binary::MAX :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1195,7 +1195,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
 
             case binary::ABS_MAX :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1208,7 +1208,7 @@ void MICUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType
 
             default:
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1252,7 +1252,7 @@ void MICUtils::binaryOpScalar1(
         {
             case binary::ADD :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1264,7 +1264,7 @@ void MICUtils::binaryOpScalar1(
 
             case binary::SUB :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1302,7 +1302,7 @@ void MICUtils::binaryOpScalar1(
 
             case binary::MIN :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1314,7 +1314,7 @@ void MICUtils::binaryOpScalar1(
 
             case binary::MAX :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1326,7 +1326,7 @@ void MICUtils::binaryOpScalar1(
 
             default:
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1370,7 +1370,7 @@ void MICUtils::binaryOpScalar2(
         {
             case binary::ADD :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1382,7 +1382,7 @@ void MICUtils::binaryOpScalar2(
 
             case binary::SUB :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1406,7 +1406,7 @@ void MICUtils::binaryOpScalar2(
 
             case binary::DIVIDE :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1418,7 +1418,7 @@ void MICUtils::binaryOpScalar2(
 
             case binary::POW :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1430,7 +1430,7 @@ void MICUtils::binaryOpScalar2(
 
             case binary::MIN :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1442,7 +1442,7 @@ void MICUtils::binaryOpScalar2(
 
             case binary::MAX :
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
@@ -1454,7 +1454,7 @@ void MICUtils::binaryOpScalar2(
 
             default:
             {
-                #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+                #pragma omp parallel for 
 
                 for ( IndexType i = 0; i < n; i++ )
                 {
