@@ -43,13 +43,6 @@ set ( EXTERNAL_DEPS OpenMP CUDA MIC )
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 
-### includes ###
-
-## important Variables for project
-
-include ( SetProjectVariables)
-include ( Dependencies/minimalSupportedVersions )
-
 ### find all external packages via the provided wrappers of CMake modules
 
 foreach ( module ${EXTERNAL_DEPS} )
@@ -114,7 +107,7 @@ if    ( CUDA_FOUND AND USE_CUDA )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
+    add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
 add_subdirectory ( mepr )
@@ -127,7 +120,7 @@ endif ( USE_MIC )
 
 add_subdirectory ( openmp )
 
-if    ( FOUND_BOOST_TEST AND BUILD_TEST )
+if ( FOUND_BOOST_TEST AND BUILD_TEST )
     add_subdirectory ( test )
 endif ( FOUND_BOOST_TEST AND BUILD_TEST )
 
@@ -147,7 +140,7 @@ scai_library ()
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
-install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
+install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 include ( CustomCommands/SphinxDoc )

@@ -42,12 +42,6 @@ set ( INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel ut
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 
-### includes ###
-
-## important Variables for project
-include ( SetProjectVariables)                    # sets many project related directories
-include ( Dependencies/minimalSupportedVersions )
-
 ## finalize build flags
 include ( ConcludeFlags )
 

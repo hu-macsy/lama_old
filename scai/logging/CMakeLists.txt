@@ -43,10 +43,6 @@ set ( EXTERNAL_DEPS )             # no external dependencies
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 
-## important Variables for project
-include ( SetProjectVariables)
-include ( Dependencies/minimalSupportedVersions )
-
 ## finalize build flags
 include ( ConcludeFlags )
 
@@ -86,7 +82,7 @@ scai_project (
 
 ## add subdirectories
 
-if    ( BUILD_EXAMPLES )
+if ( BUILD_EXAMPLES )
     add_subdirectory ( examples )
 endif ( BUILD_EXAMPLES )
 
@@ -130,14 +126,11 @@ scai_library ()
 
 ### install ###
 
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
-
 ## install headers
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
-## install library.hpp
-install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
+## install logging.hpp
+install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 include ( CustomCommands/SphinxDoc )

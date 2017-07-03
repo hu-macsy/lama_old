@@ -41,12 +41,6 @@ set ( EXTERNAL_DEPS OpenMP ZLIB PNG )
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 
-### includes ###
-
-## important Variables for project
-include ( SetProjectVariables)
-include ( Dependencies/minimalSupportedVersions )
-
 ### find all external packages via the provided wrappers of CMake modules
 
 foreach ( module ${EXTERNAL_DEPS} )

@@ -45,15 +45,6 @@ set ( EXTERNAL_DEPS OpenMP CUDA MIC dl Thread )
 
 set ( PROJECT_NAME "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
 
-## important Variables for project
-
-## ToDo: get rid of this include file, most variables are already obsolete
-## Note: must be called by each module project individually
-
-include ( SetProjectVariables)
-include ( Dependencies/minimalSupportedVersions )
-
-
 ### find all external packages via the provided wrappers of CMake modules
 
 foreach ( module ${EXTERNAL_DEPS} )
@@ -87,7 +78,7 @@ if    ( NOT CXX_SUPPORTS_C11 )
     include_directories ( ${BOOST_INCLUDE_DIR} )
 endif ( NOT CXX_SUPPORTS_C11 )
 
-set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
+set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${MODULE_NAME}" )
 
 ## begin for configuring SCAITypes.hpp
 

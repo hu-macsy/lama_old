@@ -41,14 +41,16 @@
 
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
 
+set ( OPENMP_MINIMUM_VERSION 3.0 ) # because of use of collapse
+
 # LAMA irrelevant entries will be removed from cmake GUI completely
 if ( OpenMP_C_FLAGS )
-	set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
+    set ( OpenMP_C_FLAGS "${OpenMP_C_FLAGS}" CACHE INTERNAL "" )
 endif ( OpenMP_C_FLAGS )
 
 ## get OpenMP version
 if    ( OPENMP_FOUND )
-	try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
+    try_run ( OPENMP_RUN_RESULT_VAR OPENMP_COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}/VersionCheck
         ${CMAKE_MODULE_PATH}/VersionCheck/openmp.cpp
         CMAKE_FLAGS 
@@ -58,10 +60,10 @@ if    ( OPENMP_FOUND )
 
     set ( OPENMP_VERSION ${OPENMP_RUN_OUTPUT_VAR} )
 
-    if    ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
-			message ( WARNING "Found OpenMP version (${OPENMP_VERSION}) of your compiler (${CMAKE_CXX_COMPILER_ID} v ${CXX_COMPILER_VERSION}) is to old - must be at least ${OMP_MINIMUM_VERSION}, disable OpenMP support!!!" )
-		set ( OPENMP_FOUND FALSE )
-	endif ( ${OPENMP_VERSION} VERSION_LESS ${OMP_MINIMUM_VERSION} )
+    if    ( ${OPENMP_VERSION} VERSION_LESS ${OPENMP_MINIMUM_VERSION} )
+        message ( WARNING "Found OpenMP version (${OPENMP_VERSION}) of your compiler (${CMAKE_CXX_COMPILER_ID} v ${CXX_COMPILER_VERSION}) is to old - must be at least ${OPENMP_MINIMUM_VERSION}, disable OpenMP support!!!" )
+        set ( OPENMP_FOUND FALSE )
+    endif ()
 endif ( OPENMP_FOUND )
 
 include ( Functions/setAndCheckCache )
@@ -70,16 +72,16 @@ set ( USE_OPENMP ${USE_OPENMP} CACHE BOOL "Enable / Disable use of OpenMP" )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )
 
-	if    ( NOT SCAI_OMP_SCHEDULE )
-    	set ( SCAI_OMP_SCHEDULE "static" )
-	endif ( NOT SCAI_OMP_SCHEDULE )
+    if    ( NOT SCAI_OMP_SCHEDULE )
+        set ( SCAI_OMP_SCHEDULE "static" )
+    endif ( NOT SCAI_OMP_SCHEDULE )
 
-	#### Compile/Link flag for OpenMP will be set for all source files and all targets
+    #### Compile/Link flag for OpenMP will be set for all source files and all targets
 
-	set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
-	
-	# Note: files using omp scheduling should be compiled with the corresponding flag
-	# add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
+    set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
+    
+    # Note: files using omp scheduling should be compiled with the corresponding flag
+    # add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
 
 endif ( OPENMP_FOUND AND USE_OPENMP )
 
@@ -89,4 +91,5 @@ endif ( USE_OPENMP AND NOT OPENMP_FOUND )
 
 set ( ADDITIONAL_CXX_FLAGS_OPENMP "${OpenMP_CXX_FLAGS}" CACHE STRING "OpenMP flag (only if enabled)" )
 set ( ADDITIONAL_CXX_FLAGS_NO_OPENMP "-Wno-unknown-pragmas" ) # Supress unknown pragma warnings if OpenMP is disabled
+
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_OPENMP ADDITIONAL_CXX_FLAGS_NO_OPENMP )

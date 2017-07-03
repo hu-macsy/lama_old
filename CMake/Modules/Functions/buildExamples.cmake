@@ -1,5 +1,5 @@
 ###
- # @file prepareExamplesMakeInc.cmake
+ # @file buildExamples.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Macro setting the configuration for make.inc in examples: right link libraries and -D flags
- # @author Lauretta Schubert
- # @date 02.03.2016
+ # @brief Macros for building examples in SCAI module projects
+ # @author Thomas Brandes
+ # @date 03.07.2017
 ###
 
 ## This macro generates make.inc and makefile for examples in the installation 

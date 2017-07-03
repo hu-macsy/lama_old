@@ -28,21 +28,21 @@
  # @endlicense
  #
  # @brief Important CMake variable definitions
- # @author Jan Ecker
+ # @author Thomas Brandes, Lauretta Schubert, Jan Ecker
  # @date 16.04.2013
 ###
 
 # Check if verbose mode for CMAKE is selected
-if    ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+if ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
     set ( SCAI_FIND_PACKAGE_FLAGS )
-else  ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+else ()
     set ( SCAI_FIND_PACKAGE_FLAGS QUIET )
-endif ( DEFINED SCAI_CMAKE_VERBOSE AND SCAI_CMAKE_VERBOSE )
+endif ()
 
-if    ( SCAI_BUILD_LIB_ONLY )
-	set ( BUILD_DOC OFF )
-	set ( BUILD_EXAMPLES OFF )
-	set ( BUILD_TEST OFF )
+if ( SCAI_BUILD_LIB_ONLY )
+    set ( BUILD_DOC OFF )
+    set ( BUILD_EXAMPLES OFF )
+    set ( BUILD_TEST OFF )
 endif ( SCAI_BUILD_LIB_ONLY )
 
 # Makefile outputs
@@ -105,7 +105,7 @@ endif ( DOC_FOUND AND BUILD_DOC )
 
 # Choose Doc type
 if    ( DEFINED SCAI_DOC_TYPE )
-	# do nothing
+    # do nothing
 else  ( DEFINED SCAI_DOC_TYPE )
     set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE_DEFAULT} )
 endif ( DEFINED SCAI_DOC_TYPE )
@@ -120,7 +120,9 @@ if    ( DEFINED BUILD_EXAMPLES )
 else  ( DEFINED BUILD_EXAMPLES )
     set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
 endif ( DEFINED BUILD_EXAMPLES )
+
 checkValue ( ${BUILD_EXAMPLES} "${TRUE_FALSE_CHOICES}" )
+
 set ( BUILD_EXAMPLES ${BUILD_EXAMPLES} CACHE BOOL "Enable / Disable building of examples" )
 
 ## TEST
@@ -137,8 +139,8 @@ set ( BUILD_TEST ${BUILD_TEST} CACHE BOOL "Enable / Disable building of tests" )
 ## CODE COVERAGE
 
 ## Check if lama should be build for code coverage
-if    ( DEFINED USE_CODE_COVERAGE )
-	# do nothing
+if ( DEFINED USE_CODE_COVERAGE )
+    # do nothing
     parseBoolean( USE_CODE_COVERAGE )
 else  ( DEFINED USE_CODE_COVERAGE )
     set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
@@ -148,7 +150,7 @@ set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE} CACHE BOOL "Enable / Disable use of
 
 ##  CMAKE_BUILD_TYPE
 if    ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE ) # variable may be defined empty
-	# do nothing
+    # do nothing
 else  ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
     set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE_DEFAULT} )
 endif ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
@@ -170,7 +172,7 @@ set ( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Choose level of ASSER
 
 ## SCAI_LIBRARY_TYPE ( static or shared )
 if    ( DEFINED SCAI_LIBRARY_TYPE )
-	# do nothing
+    # do nothing
 else  ( DEFINED SCAI_LIBRARY_TYPE )
     set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE_DEFAULT} )
 endif ( DEFINED SCAI_LIBRARY_TYPE )

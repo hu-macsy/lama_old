@@ -132,7 +132,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     if    ( SCAI_DOC_TYPE STREQUAL latex )
         install(
             FILES ${PDF_OUTPUT_NAME}
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/${SPHINX_ROOT_DIR}
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/user//${SCAI_DOC_TYPE}/scai-${SCAI_LAMA_ALL_VERSION}
         )
     else  ( SCAI_DOC_TYPE STREQUAL latex )
         install(
