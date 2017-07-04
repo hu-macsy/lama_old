@@ -38,6 +38,13 @@
 ### SCAI_CUDA_INCLUDE_DIR - CUDA include directory
 ### SCAI_CUDA_LIBRARIES   - all needed CUDA libraries
 
+### As several SCAI modules might depend on CUDA we try to prevent
+### callling this configuration file several times
+
+if ( SCAI_CUDA_CHECK_DONE )
+    return ()
+endif ()
+
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
 # MINIMUM_VERSION 4.0 because we explicitly use cublas_v2
@@ -134,3 +141,5 @@ set ( CUDA_rt_LIBRARY "${CUDA_rt_LIBRARY}" CACHE INTERNAL "" )
 if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
 endif ( USE_CUDA AND NOT CUDA_FOUND )
+
+set ( SCAI_CUDA_CHECK_DONE True )

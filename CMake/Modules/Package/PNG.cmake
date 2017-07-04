@@ -38,9 +38,9 @@ find_package( PNG ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # returns PNG_FOUND, PNG_INCLUDE_DIRS (cache), PNG_LIBRARIES
 
-message( STATUS "PNG_FOUND=${PNG_FOUND}" )
-message( STATUS "PNG_INCLUDE_DIRS=${PNG_INCLUDE_DIRS}" )
-message( STATUS "PNG_LIBRARIES=${PNG_LIBRARIES}" )
+# message( STATUS "PNG_FOUND=${PNG_FOUND}" )
+# message( STATUS "PNG_INCLUDE_DIRS=${PNG_INCLUDE_DIRS}" )
+# message( STATUS "PNG_LIBRARIES=${PNG_LIBRARIES}" )
 
 # Now make some adaptions to fit these variables to the SCAI project rules
 

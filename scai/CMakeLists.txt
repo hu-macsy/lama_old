@@ -112,6 +112,7 @@ include ( Functions/scai_module )
 include ( Functions/scai_project )
 include ( Functions/scai_subdirectories )
 include ( Functions/scai_library )
+include ( Functions/scai_summary )
 
 ### Traverse all module projects for configuration
 
@@ -146,11 +147,11 @@ include ( CustomCommands/DistClean )
 
 ## ToDo: Summary uses info from module projects no more available here, so redo it
 
-set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
+# set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
 
-foreach ( package ${EXTERNAL_DEPS} )
-    include ( Package/${package} )
-endforeach ()
+# foreach ( package ${EXTERNAL_DEPS} )
+#     include ( Package/${package} )
+# endforeach ()
 
 include ( Summaries/scai )
 
