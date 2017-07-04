@@ -59,7 +59,7 @@ macro ( scai_module )
     ## Define all library names with the (global) prefix SCAI_LIBRARY_PREFIX
 
     set ( MODULE_NAME    "${scai_module_MODULE_NAME}" )
-    set ( MODULE_LIBRARY "${SCAI_LIBRARY_PREFIX}${MODULE_NAME}" )
+    set ( MODULE_LIBRARY "${SCAI_LIBRARY_PREFIX}_${MODULE_NAME}" )
   
     set ( INTERNAL_DEPS ${scai_module_INTERNAL_DEPS} )
     set ( EXTERNAL_DEPS ${scai_module_EXTERNAL_DEPS} )

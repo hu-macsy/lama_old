@@ -32,8 +32,6 @@
  # @date 03.07.2016
 ###
 
-get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
-
 set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
 
 add_executable( writeParallel.exe writeParallel.cpp )
@@ -42,9 +40,11 @@ add_executable( readParallel.exe readParallel.cpp )
 target_link_libraries( writeParallel.exe ${MODULE_LIBRARY} )
 target_link_libraries( readParallel.exe ${MODULE_LIBRARY} )
 
-set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 

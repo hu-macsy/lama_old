@@ -32,6 +32,20 @@
  # @date 03.07.2017
 ###
 
+## Macro to get the prefered installation directory for examples
+
+function ( scai_example_directory output_var )
+
+   get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+
+   if ( "${SUBDIR}" STREQUAL "examples" )
+       set( ${output_var} "share/examples/${SCAI_LIBRARY_PREFIX}-${MODULE_NAME}-${SCAI_VERSION}" PARENT_SCOPE )
+   else ()
+       set( ${output_var} "share/examples/${SCAI_LIBRARY_PREFIX}-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" PARENT_SCOPE )
+   endif ()
+
+endfunction ()
+
 ## This macro generates make.inc and makefile for examples in the installation 
 ## directory.
 ##
@@ -74,7 +88,7 @@ macro ( scai_example_makefile )
     if ( REVERT_LIST ) # is empty for common
         list ( REVERSE REVERT_LIST )
         foreach    ( module ${REVERT_LIST} )
-            set ( library "${SCAI_LIBRARY_PREFIX}${module}" )
+            set ( library "${SCAI_LIBRARY_PREFIX}_${module}" )
             set ( SCAI_EXAMPLE_LINK_LIBRARIES "${SCAI_EXAMPLE_LINK_LIBRARIES} -l${library}" )
         endforeach ( module ${REVERT_LIST} )
     endif ()

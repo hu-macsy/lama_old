@@ -88,11 +88,14 @@ if ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
 endif ( CUDA_FOUND AND USE_CUDA )
 
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}" )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
-scai_run_script( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
+# copy the script to run all examples
+scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 install ( FILES       ${EXAMPLE_FILES} 
           DESTINATION ${INSTALL_EXAMPLE_DIR} )
