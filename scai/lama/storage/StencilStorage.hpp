@@ -210,10 +210,7 @@ public:
 
     /** _MatrixStorage */
 
- 	virtual void getDiagonal(scai::hmemo::_HArray&) const
-    {
-        COMMON_THROWEXCEPTION( "getDiagonal unsuported" )
-    }
+ 	virtual void getDiagonal(scai::hmemo::_HArray&) const;
 
     /** _MatrixStorage */
 
@@ -329,22 +326,18 @@ public:
 
     virtual void prefetch( const hmemo::ContextPtr ) const
     {
-        COMMON_THROWEXCEPTION( "print unsupported" )
+        // nothing to do here
     }
 
     /** Will wait for all outstanding asynchronous data transfers. */
 
     void wait() const
     {
-        COMMON_THROWEXCEPTION( "print unsupported" )
     }
 
     /** Implementation for pure method is provided. */
 
-    virtual size_t getMemoryUsageImpl() const
-    {
-        COMMON_THROWEXCEPTION( "print unsupported" )
-    }
+    virtual size_t getMemoryUsageImpl() const;
 
     /** Override splitHalo with version that avoids unnecessary conversions.
      *
@@ -414,6 +407,13 @@ public:
         const ValueType beta,
         const hmemo::HArray<ValueType>& y ) const;
 
+    /** Implementation of MatrixStorage::jacobiIterate for stencil storage */
+
+    virtual void jacobiIterate(
+        hmemo::HArray<ValueType>& solution,
+        const hmemo::HArray<ValueType>& oldSolution,
+        const hmemo::HArray<ValueType>& rhs,
+        const ValueType omega ) const;
     /** Implementation of MatrixStorage::matrixTimesVectorAsync for stencil storage */
 
     virtual tasking::SyncToken* matrixTimesVectorAsync(

@@ -47,7 +47,7 @@ configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" ins
 
 ## install examples
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/labelrank" )
+set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/grid" )
 
 install ( FILES       ${EXAMPLE_FILES}
           DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
