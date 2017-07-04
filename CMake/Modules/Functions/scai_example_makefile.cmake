@@ -1,5 +1,5 @@
 ###
- # @file buildExamples.cmake
+ # @file scai_example_makefile.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -57,7 +57,13 @@
 ##   - EXAMPLE_MODULES
 ##   - EXAMPLE_LIBS
 
-macro ( genExampleMakefile )
+macro ( scai_example_makefile )
+
+    set ( options )
+    set ( oneValueArgs DESTINATION )
+    set ( multiValueArgs )
+
+    cmake_parse_arguments ( scai_example_makefile "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
     ## set SCAI_EXAMPLE_LINK_LIBRARIES with own project and all dependent libraries
 
@@ -91,26 +97,11 @@ macro ( genExampleMakefile )
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_Makefile.in" "${CMAKE_CURRENT_BINARY_DIR}/install_Makefile" COPYONLY )
 
     install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc 
-              DESTINATION ${INSTALL_EXAMPLE_DIR} )
+              DESTINATION ${scai_example_makefile_DESTINATION} )
 
     install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-              DESTINATION ${INSTALL_EXAMPLE_DIR}
+              DESTINATION ${scai_example_makefile_DESTINATION} 
               RENAME      Makefile  )
-
-endmacro ()
-
-## This macro copies an executable file from current source dir in installatin dir
-
-macro ( genRunScript )
-
-    ## run script might be called in build/binary directory
-
-    file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-
-    ## but also later in installation directory
-
-    install ( PROGRAMS    run_all.sh
-              DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 endmacro ()
 
