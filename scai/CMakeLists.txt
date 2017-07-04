@@ -81,11 +81,17 @@ if ( NOT CXX_SUPPORTS_C11 )
 endif ()
 
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
+
 if ( BUILD_TEST )
     include( Package/BoostTest )
     include( Functions/scai_test_scripts )  # macro used in test directories
     include( Functions/scai_unit_test    )  # macro used in test directories
-endif ( BUILD_TEST )
+endif ()
+
+if ( BUILD_EXAMPLES )
+    include( Functions/scai_run_script        )  # macro used in example directories
+    include( Functions/scai_example_makefile  )  # macro used in example directories
+endif ()
 
 ### Sphinx is used for user documentation and a module project 
 ### does not have to specify it as external dependency
