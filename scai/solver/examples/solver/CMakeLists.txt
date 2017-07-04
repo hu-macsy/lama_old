@@ -48,9 +48,7 @@ get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
 set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-include ( Functions/buildExamples )
-
-genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 

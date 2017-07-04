@@ -51,10 +51,8 @@ endif ( USE_MIC )
 
 set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}" )
 
-include ( Functions/buildExamples )
-
-genExampleMakefile()       #  build make.inc, makefile.install -> makefile
-genRunScript()             #  copy run_all.sh and install it later
+scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+scai_run_script( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 

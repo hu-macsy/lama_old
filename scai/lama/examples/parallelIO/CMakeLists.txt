@@ -44,9 +44,7 @@ target_link_libraries( readParallel.exe ${MODULE_LIBRARY} )
 
 set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
 
-include ( Functions/buildExamples )
-
-genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 

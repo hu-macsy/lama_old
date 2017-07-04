@@ -66,11 +66,6 @@ if ( CUDA_FOUND AND USE_CUDA )
     set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif()
 
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 

@@ -46,9 +46,7 @@ add_subdirectory ( io )
 
 set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}" )
 
-include ( Functions/buildExamples )
-
-genRunScript()             #  copy run_all.sh and install it later
+scai_run_script( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## copy Makefile from source directory, not configured here
 

@@ -50,9 +50,7 @@ if    ( OPENGL_FOUND AND GLUT_FOUND )
 
     set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/mic" )
 
-    include ( Functions/buildExamples )
-     
-    genExampleMakefile()       #  build make.inc, makefile.install -> makefile
+    scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
     ## install examples sources
 

@@ -109,13 +109,13 @@ include ( Functions/scai_library )
 
 ### Traverse all module projects for configuration
 
-foreach ( SCAI_PROJECT ${SCAI_USED_MODULES} )
+foreach ( module ${SCAI_USED_MODULES} )
 
-    message( STATUS "Configuring SCAI project ${SCAI_PROJECT}" )
+    message( STATUS "Configuring SCAI module ${module}" )
 
-    # Note: names of subdirectories are same as SCAI_PROJECT names
+    # Note: names of subdirectories are same as module names
 
-    add_subdirectory( ${SCAI_PROJECT} )
+    add_subdirectory( ${module} )
 
 endforeach ()
 
