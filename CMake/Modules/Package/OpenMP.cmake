@@ -89,7 +89,6 @@ if    ( USE_OPENMP AND NOT OPENMP_FOUND )
     message( FATAL_ERROR "Build of LAMA with OpenMP support enabled, but configuration is incomplete!")
 endif ( USE_OPENMP AND NOT OPENMP_FOUND )
 
-set ( ADDITIONAL_CXX_FLAGS_OPENMP "${OpenMP_CXX_FLAGS}" CACHE STRING "OpenMP flag (only if enabled)" )
-set ( ADDITIONAL_CXX_FLAGS_NO_OPENMP "-Wno-unknown-pragmas" ) # Supress unknown pragma warnings if OpenMP is disabled
+set ( ADDITIONAL_CXX_FLAGS_NO_OPENMP "-Wno-unknown-pragmas" CACHE STRING "ignore OpenMP pragmas (only if disabled)" )
 
-mark_as_advanced ( ADDITIONAL_CXX_FLAGS_OPENMP ADDITIONAL_CXX_FLAGS_NO_OPENMP )
+mark_as_advanced ( ADDITIONAL_CXX_FLAGS_NO_OPENMP )

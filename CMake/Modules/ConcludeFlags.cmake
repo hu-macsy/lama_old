@@ -60,7 +60,6 @@ endif ( UNIX AND NOT APPLE )
 
 # moved to packages
 #set ( ADDITIONAL_CXX_FLAGS_LANG          "${SCAI_LANG_FLAGS}"          CACHE STRING "Addition language flags for using C++11 (if compiler capable)" )
-#set ( ADDITIONAL_CXX_FLAGS_OPENMP        "${OpenMP_CXX_FLAGS}"         CACHE STRING "OpenMP flag (only if enabled)" )
 
 set ( ADDITIONAL_CXX_FLAGS               "${SCAI_CXX_FLAGS}"           CACHE STRING "Additional CXX flags" )
 set ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE "${SCAI_CODE_COVERAGE_FLAGS}" CACHE STRING "CXX flags used for code coverage (only if CC enabled)" )
@@ -72,7 +71,7 @@ set ( ADDITIONAL_LINKER_FLAGS            "${SCAI_LINKER_FLAGS}"        CACHE STR
 set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STRING "Compilation flags concerning warnings" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBUG  ADDITIONAL_CXX_FLAGS_RELEASE
-                   ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG   ADDITIONAL_CXX_FLAGS_OPENMP
+                   ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG  
                    ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS    ADDITIONAL_CXX_FLAGS
                    ADDITIONAL_CXX_FLAGS_STATIC
                  )
@@ -84,7 +83,7 @@ if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 
 if    ( USE_OPENMP )
-    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_OPENMP}" )
+    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
 else  ( USE_OPENMP )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OPENMP}" )
 endif ( USE_OPENMP)

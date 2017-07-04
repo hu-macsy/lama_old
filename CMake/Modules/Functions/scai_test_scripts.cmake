@@ -42,7 +42,7 @@
 ##   - if CONFIGURE is set scripts and files are configured from file with suffix ".in"
 ##   - if CODE_COVERAGE is true, code_coverage.sh will be configured as script
 
-set ( EXECUTABLE_FILE_PERMISSIONS WORLD_READ OWNER_WRITE WORLD_EXECUTE )
+set ( EXECUTABLE_FILE_PERMISSIONS WORLD_READ WORLD_EXECUTE OWNER_READ GROUP_READ GROUP_EXECUTE OWNER_WRITE OWNER_EXECUTE )
 
 macro ( scai_test_scripts )
 
