@@ -56,20 +56,6 @@ if    ( UNIX AND NOT APPLE )
     endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endif ( UNIX AND NOT APPLE )
 
-# check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
-include ( Functions/checkValue )
-include ( Functions/parseBoolean )
-
-set ( USE_COMPLEX FALSE )
-foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
-    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
-    if    ( ${BOOLVALUE} GREATER -1 )
-        set ( USE_COMPLEX TRUE )
-    endif ( ${BOOLVALUE} GREATER -1 )
-endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
-parseBoolean( USE_COMPLEX )
-checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
-
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
 # moved to packages

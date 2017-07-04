@@ -32,6 +32,9 @@
  # @date 04.07.2017
 ###
 
+## Note: common requires also configuration of some include files that
+##       might be used in all other modules
+
 scai_module(
 
     MODULE_NAME   common
@@ -42,31 +45,94 @@ scai_module(
 
 set ( CONFIGURE_DIR "${CMAKE_BINARY_DIR}/include/scai/${MODULE_NAME}" )
 
-## begin for configuring SCAITypes.hpp
+###################################################################
+## Define numeric types for which classes will be instantiated   ##
+###################################################################
+
+include ( Settings/switchChoices )
+include ( Functions/checkValue )
+include ( Functions/listToString )
+include ( Functions/parseBoolean )
+
+# Possible choices for numeric types ( more than one can be selected )
+
+set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
+set ( COMPLEX_VALUES      "ComplexFloat" "ComplexDouble" "ComplexLongDouble" )
+set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
+set ( LONG_DOUBLE_VALUES  "long double" "ComplexLongDouble" )
+
+## define SCAI_HOST_TYPES_LIST ( might be configured )
+
+set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
+
+## external host types = host types without 'long' types
 
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
-set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )      #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
-set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} )       #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+
+## CUDA and MIC do not support 'long' types
+
+set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
+set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) 
+
+## USE_COMPLEX : set it true if at least one complex type is instantiated
+
+set ( USE_COMPLEX FALSE )
+
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    if ( ${BOOLVALUE} GREATER -1 )
+        set ( USE_COMPLEX TRUE )
+    endif ()
+endforeach ()
+
+parseBoolean( USE_COMPLEX )
+checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
 
 # make strings out of list
-include ( Functions/listToString )
+
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
 listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+
+###################################################################
+## Define index type that is used for addressing 32 or 64 bit    ##
+###################################################################
+
+# Possible and default choices for IndexType ( only one can be selected )
+
+set ( INDEX_TYPE_OPTIONS  "int" "long" "unsigned int" "unsigned long" )
+set ( INDEX_TYPE_DEFAULT  "int" )
+
+## define SCAI_INDEX_TYPE, used to configure file SCAITypes.hpp
+## uses global variable INDEX_TYPE_OPTIONS, set in switchChoices.cmake
+
+if ( DEFINED INDEX_TYPE )
+    set ( INDEX_TYPE_VALUE "${INDEX_TYPE}" )
+else ( DEFINED INDEX_TYPE )
+    set ( INDEX_TYPE_VALUE "${INDEX_TYPE_DEFAULT}" )
+endif ( DEFINED INDEX_TYPE )
+
+listToString ( ", " "${INDEX_TYPE_OPTIONS}" INDEX_TYPE_OPTIONS1 )
+
+set ( SCAI_INDEX_TYPE "${INDEX_TYPE_VALUE}" CACHE STRING "IndexType, choose from ${INDEX_TYPE_OPTIONS1}" )
+checkValue( "${SCAI_INDEX_TYPE}" "${INDEX_TYPE_OPTIONS}" )
+
 # add IndexType for the array types, be careful about empty string
 concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
 concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
 concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
 concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
 
-# set "biggest" common type as ScalarRepType
-# last found element in TYPE_LIST_VALUES
+# SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
 set ( INDEX1 -1 )
 set ( INDEX2 -1 )
-foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
+
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+
     list ( FIND NONE_COMPLEX_VALUES ${ITEM} FOUND_INDEX1 )
     if    ( FOUND_INDEX1 GREATER INDEX1 )
         set ( INDEX1 ${FOUND_INDEX1})
@@ -79,9 +145,9 @@ foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
         endif ( FOUND_INDEX2 GREATER INDEX2 )
     endif ( ${USE_COMPLEX} )
 
-endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+endforeach ()
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     if    ( INDEX1 GREATER INDEX2 )
         list ( LENGTH NONE_COMPLEX_VALUES INDEX )
         math ( EXPR INDEX "${INDEX}+${INDEX1}")
@@ -89,17 +155,30 @@ if    ( ${USE_COMPLEX} )
     else  ( INDEX1 GREATER INDEX2 )
         list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
-    set ( SCAI_USE_COMPLEX 1 )
-else  ( ${USE_COMPLEX} )
+else  ()
     list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+endif ()
+
+# SCAI_USE_COMPLEX ( 0 or 1 ) is required 
+
+if ( ${USE_COMPLEX} )
+    set ( SCAI_USE_COMPLEX 1 )
+else ()
     set ( SCAI_USE_COMPLEX 0 )
-endif ( ${USE_COMPLEX} )
+endif ()
+
+###################################
+## configuring SCAITypes.hpp     ##
+################################### 
 
 # SCAI_USE_COMPLEX is used here for conditional compilation
 # SCAI_yyy_TYPES_LIST will be replaced with supported types
+
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )    
 
-## end for configuring SCAITypes.hpp
+##############################################
+## Define source file for module 'common'   ##
+##############################################
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -137,7 +216,7 @@ set ( COMMON_HEADERS
         Utils
 )
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     list ( APPEND COMMON_HEADERS Complex )
 endif ( ${USE_COMPLEX} )
 
@@ -199,11 +278,6 @@ if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
     set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
 endif()
-
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

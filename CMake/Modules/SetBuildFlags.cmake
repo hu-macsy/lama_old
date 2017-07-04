@@ -55,25 +55,6 @@ include ( Functions/checkValue )
 include ( Functions/listToString )
 include ( Functions/parseBoolean )
 
-## define SCAI_HOST_TYPES
-
-set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
-checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
-
-## define SCAI_INDEX_TYPE, used to configure file SCAITypes.hpp
-## uses global variable INDEX_TYPE_OPTIONS, set in switchChoices.cmake
-
-if ( DEFINED INDEX_TYPE )
-    set ( INDEX_TYPE_VALUE "${INDEX_TYPE}" )
-else ( DEFINED INDEX_TYPE )
-    set ( INDEX_TYPE_VALUE "${INDEX_TYPE_DEFAULT}" )
-endif ( DEFINED INDEX_TYPE )
-
-listToString ( ", " "${INDEX_TYPE_OPTIONS}" INDEX_TYPE_OPTIONS1 )
-
-set ( SCAI_INDEX_TYPE "${INDEX_TYPE_VALUE}" CACHE STRING "IndexType, choose from ${INDEX_TYPE_OPTIONS1}" )
-checkValue( "${SCAI_INDEX_TYPE}" "${INDEX_TYPE_OPTIONS}" )
-
 ## DOC
 
 include( Package/doc )
