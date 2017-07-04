@@ -40,7 +40,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
@@ -305,7 +305,7 @@ int main( int argc, const char* argv[] )
                 LamaTiming timer( comm, "Metis" );
                 // dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), inMatrix, weight ) );
             }
-            else if ( *oldDist == dmemo::CyclicDistribution( numRows, numRows, oldDist->getCommunicatorPtr() ) )
+            else if ( *oldDist == dmemo::SingleDistribution( numRows, oldDist->getCommunicatorPtr(), 0 ) )
             {
                 dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
             }
@@ -360,9 +360,11 @@ int main( int argc, const char* argv[] )
 
         loggerName << solverName << ", " << lamaconf.getCommunicator() << ": ";
 
+        bool ignoreRank = comm.getRank() > 0;
+
         LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                              lamaconf.getLogLevel(),
-                                             LoggerWriteBehaviour::toConsoleOnly ) );
+                                             LoggerWriteBehaviour::toConsoleOnly, ignoreRank ) );
 
         mySolver->setLogger( logger );
 
