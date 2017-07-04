@@ -56,11 +56,13 @@ macro ( scai_test_scripts )
 
     foreach ( test_file ${scai_test_scripts_SCRIPTS} )
 
-        if ( ${scai_test_CONFIGURE} )
+        if ( ${scai_test_scripts_CONFIGURE} )
 
-            configure_file( "${test_file}.in" "${CMAKE_FILES_DIRECTORY}/${test_file}" @ONLY )
+            configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/${test_file}.in" 
+                            "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${test_file}"
+                             @ONLY )
 
-            file ( COPY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/${test_file} 
+            file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${test_file} 
                    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
                    FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} )
 
@@ -79,7 +81,7 @@ macro ( scai_test_scripts )
 
     foreach ( test_file ${scai_test_scripts_FILES} )
 
-        if ( ${scai_test_CONFIGURE} )
+        if ( ${scai_test_scripts_CONFIGURE} )
 
             ## configure_file is always from CURRENT_SOURCE to CURRENT_BINARY 
 
@@ -110,25 +112,3 @@ macro ( scai_test_scripts )
 
 endmacro ()
 
-macro ( scai_unit_test )
-
-    set ( options )
-    set ( oneValueArgs EXECUTABLE )
-    set ( multiValueArgs FILES )
-
-    cmake_parse_arguments ( scai_unit_test "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-    include_directories ( ${BOOST_INCLUDE_DIR} )
-
-    add_executable ( ${scai_unit_test_EXECTUABLE}  ${scai_unit_test_FILES} )
-
-    if ( WIN32 )
-        link_directories ( ${Boost_LIBRARY_DIRS} )
-        target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${MODULE_LIBRARY} )
-    else ()
-        target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${MODULE_LIBRARY} )
-        target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-    endif ()
-
-
-endmacro ()

@@ -77,7 +77,8 @@ add_subdirectory ( matrix )
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-scai_unit_test ( EXECUTALBE lamaTest SOURCES lamaTest.cpp ${CXX_SOURCES} )
+scai_unit_test ( EXECUTABLE lamaTest 
+                 FILES      lamaTest.cpp ${CXX_SOURCES} )
 
 ### Copy the README and xmltest.sh file in build directory ### 
 

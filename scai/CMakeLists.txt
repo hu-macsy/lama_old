@@ -29,7 +29,7 @@
  #
  # @brief CMake configuration file for involved SCAI projects.
  # @author Thomas Brandes
- # @date 01.07.2017
+ # @date 03.07.2017
 ###
 
 cmake_minimum_required ( VERSION 2.8.8 )
@@ -37,6 +37,7 @@ cmake_minimum_required ( VERSION 2.8.8 )
 project ( LAMA_ALL CXX )
 
 ##  Define the list of all SCAI module projects
+##  NOTE: list can be extended
 
 set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo 
                        blaskernel utilskernel sparsekernel dmemo lama solver  )
@@ -79,10 +80,11 @@ if ( NOT CXX_SUPPORTS_C11 )
     include_directories( ${BOOST_INCLUDE_DIR} )
 endif ()
 
-## Use Boost if BUILD_TEST is enabled
+## BUILD_TEST is enabled -> search BoostTest, load macro files
 if ( BUILD_TEST )
     include( Package/BoostTest )
-    include( Functions/scai_test_scripts )  # macros used in test directories
+    include( Functions/scai_test_scripts )  # macro used in test directories
+    include( Functions/scai_unit_test    )  # macro used in test directories
 endif ( BUILD_TEST )
 
 ### Sphinx is used for user documentation and a module project 
