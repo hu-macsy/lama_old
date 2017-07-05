@@ -37,7 +37,7 @@
 scai_module (
 
      MODULE_NAME   logging 
-     INTERNAL_DEPS common 
+     INTERNAL_DEPS common
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...

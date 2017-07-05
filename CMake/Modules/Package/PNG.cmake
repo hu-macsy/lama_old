@@ -27,7 +27,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief find PNG reference library and its include path
+ # @brief SCAI wrapper for find_package( PNG )
  # @author Thomas Brandes
  # @date 14.05.2017
 ###

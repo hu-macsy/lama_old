@@ -34,12 +34,17 @@
 
 ## adapted to example from: http://stackoverflow.com/questions/10509380/tell-cmake-to-be-quiet
 
-function    ( message )
-	list ( GET ARGV 0 MessageType )
-  	if    ( MessageType STREQUAL FATAL_ERROR OR MessageType STREQUAL SEND_ERROR OR
-      	    MessageType STREQUAL WARNING     OR MessageType STREQUAL AUTHOR_WARNING OR
-	      	MessageType STREQUAL STATUS )
-  		list ( REMOVE_AT ARGV 0 )
-    	_message( ${MessageType} ${ARGV} )
-  	endif ( )
-endfunction ( message )
+function ( message )
+
+    list ( GET ARGV 0 MessageType )
+
+    if    ( MessageType STREQUAL FATAL_ERROR OR MessageType STREQUAL SEND_ERROR OR
+            MessageType STREQUAL WARNING     OR MessageType STREQUAL AUTHOR_WARNING OR
+            MessageType STREQUAL STATUS )
+
+        list ( REMOVE_AT ARGV 0 )
+        _message( ${MessageType} ${ARGV} )
+
+    endif ( )
+
+endfunction ()

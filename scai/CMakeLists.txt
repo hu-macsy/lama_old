@@ -84,13 +84,13 @@ endif ()
 
 if ( BUILD_TEST )
     include( Package/BoostTest )
-    include( Functions/scai_test_scripts )  # macro used in test directories
-    include( Functions/scai_unit_test    )  # macro used in test directories
+    include( scai_macro/scai_test_scripts )  # macro used in test directories
+    include( scai_macro/scai_unit_test    )  # macro used in test directories
 endif ()
 
 if ( BUILD_EXAMPLES )
-    include( Functions/scai_run_script        )  # macro used in example directories
-    include( Functions/scai_example_makefile  )  # macro used in example directories
+    include( scai_macro/scai_run_script        )  # macro used in example directories
+    include( scai_macro/scai_example_makefile  )  # macro used in example directories
 endif ()
 
 ### Sphinx is used for user documentation and a module project 
@@ -107,12 +107,13 @@ include ( ConcludeFlags )
 
 ## Include all  functions that might be called in any module project
 
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+include ( scai_macro/scai_summary )
+
 include ( Functions/relative_install )
-include ( Functions/scai_module )
-include ( Functions/scai_project )
-include ( Functions/scai_subdirectories )
-include ( Functions/scai_library )
-include ( Functions/scai_summary )
 
 ### Traverse all module projects for configuration
 
@@ -145,13 +146,5 @@ include ( CustomCommands/DistClean )
 
 ## summary of what is found
 
-## ToDo: Summary uses info from module projects no more available here, so redo it
-
-# set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
-
-# foreach ( package ${EXTERNAL_DEPS} )
-#     include ( Package/${package} )
-# endforeach ()
-
-include ( Summaries/scai )
+include ( Summary )
 
