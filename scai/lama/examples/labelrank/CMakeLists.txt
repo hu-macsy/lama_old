@@ -32,8 +32,6 @@
  # @date 02.12.2015
 ###
 
-get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
-
 foreach ( executable labelrank )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
@@ -50,8 +48,10 @@ set ( EXAMPLE_FILES ${EXAMPLE_FILES} affinity.mtx labels.mtx )
 # copy mtx files to build dir
 file( COPY affinity.mtx labels.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
-set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
+# generate build file in example directory
 scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources

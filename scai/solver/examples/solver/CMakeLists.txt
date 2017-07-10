@@ -44,11 +44,11 @@ endforeach ( executable )
 # GenMatrices.py: copy only to build and install directory
 configure_file( GenMatrices.py GenMatrices.py COPYONLY )
 
-get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
-
-scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 

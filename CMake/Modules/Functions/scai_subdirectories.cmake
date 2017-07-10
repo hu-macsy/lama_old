@@ -76,6 +76,8 @@ macro ( scai_subdirectories )
         endif ()
     endif ()
 
+    # all other subdirectories are just added in the usual way
+
     foreach ( dir ${scai_subdirectories_UNPARSED_ARGUMENTS} )
         add_subdirectory( ${dir} )
     endforeach ()

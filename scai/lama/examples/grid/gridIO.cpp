@@ -108,7 +108,7 @@ int main( int argc, const char* argv[] )
         for ( IndexType i = 0; i < m; ++i )
         for ( IndexType j = 0; j < n; ++j )
 
-        wDense[ i * m + j ] = 10 * i + j ;
+        wDense[ i * m + j ] = static_cast<float>( 10 * i + j ) ;
     }
 
     dMatrix.writeToFile( fileName );

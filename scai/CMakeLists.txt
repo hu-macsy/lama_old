@@ -53,7 +53,7 @@ set ( SCAI_USED_MODULES ${SCAI_ALL_MODULES} CACHE STRING "Used SCAI module proje
 set ( SCAI_VERSION_NAME "Barrancas Blancas" )
 set ( SCAI_COPYRIGHT_YEAR 2017 )
 set ( SCAI_VERSION 2.2.0 )
-set ( SCAI_LIBRARY_PREFIX "scai_" )             # more unique names for all SCAI module libraries
+set ( SCAI_LIBRARY_PREFIX "scai" )             # more unique names for all SCAI module libraries
 
 ### Set Module Path
 
@@ -112,6 +112,7 @@ include ( Functions/scai_module )
 include ( Functions/scai_project )
 include ( Functions/scai_subdirectories )
 include ( Functions/scai_library )
+include ( Functions/scai_summary )
 
 ### Traverse all module projects for configuration
 
@@ -146,11 +147,11 @@ include ( CustomCommands/DistClean )
 
 ## ToDo: Summary uses info from module projects no more available here, so redo it
 
-set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
+# set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
 
-foreach ( package ${EXTERNAL_DEPS} )
-    include ( Package/${package} )
-endforeach ()
+# foreach ( package ${EXTERNAL_DEPS} )
+#     include ( Package/${package} )
+# endforeach ()
 
 include ( Summaries/scai )
 

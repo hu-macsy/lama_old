@@ -87,3 +87,38 @@ install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 include ( CustomCommands/SphinxDoc )
 
+
+## Add summary of this module
+
+if ( SCAI_BLAS_NAME MATCHES "Internal" )
+
+    scai_summary_external ( NAME      BLAS
+                            FOUND     ${BLAS_FOUND} 
+                            VERSION   "Internal" )
+
+elseif ( MKL_FOUND )
+
+    scai_summary_external ( NAME      MKL
+                            FOUND     ${MKL_FOUND} 
+                            VERSION   ${MKL_VERSION}
+                            INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+
+    scai_summary_newline ()
+
+else ()
+
+    scai_summary_external ( NAME      BLAS
+                            FOUND     ${BLAS_FOUND} 
+                            VERSION   ${BLAS_VERSION}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+
+    scai_summary_newline ()
+
+    scai_summary_external ( NAME      Lapack
+                            FOUND     ${LAPACK_FOUND} 
+                            VERSION   ${LAPACK_VERSION}
+                            LIBRARIES ${SCAI_SCAI_LAPACK_LIBRARIES} )
+endif ()
+
+scai_summary_newline ()

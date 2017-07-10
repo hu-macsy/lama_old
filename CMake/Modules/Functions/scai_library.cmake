@@ -58,7 +58,7 @@ macro ( scai_library )
 
     ## Use for all library names the specified prefix
 
-    set ( MODULE_LIBRARY "${scai_library_PREFIX}${MODULE_NAME}" )
+    set ( MODULE_LIBRARY "${scai_library_PREFIX}_${MODULE_NAME}" )
 
     ### add library ###
 
@@ -68,7 +68,7 @@ macro ( scai_library )
 
     ## link internal libraries via internal dependencies, but add library prefix
 
-    string ( REGEX REPLACE "([a-z]+)" "${scai_library_PREFIX}\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
+    string ( REGEX REPLACE "([a-z]+)" "${scai_library_PREFIX}_\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
     target_link_libraries ( ${MODULE_LIBRARY} ${INTERNAL_LIBS} )
 

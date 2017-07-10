@@ -80,4 +80,3 @@ install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 include ( CustomCommands/SphinxDoc )
-

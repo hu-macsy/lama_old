@@ -48,9 +48,11 @@ if    ( OPENGL_FOUND AND GLUT_FOUND )
         set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
     endforeach ( executable )
 
-    set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/mic" )
+    # use the recommended installation directory for this example directory
+    scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-    scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+    # generate build file in example directory
+    scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
     ## install examples sources
 

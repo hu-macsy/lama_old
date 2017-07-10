@@ -50,13 +50,12 @@ set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${EXECUTABLE_FILE} ${MODULE_FILE} )
 set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )
 set ( EXAMPLE_LIBS "MyJacobiModule" ) # for make.inc
 
-get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
-
-scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
-
 install ( FILES       ${EXAMPLE_FILES} ${HEADER}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )

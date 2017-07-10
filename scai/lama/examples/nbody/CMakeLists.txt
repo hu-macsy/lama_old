@@ -39,8 +39,6 @@ find_package( GLUT )
 
 if    ( OPENGL_FOUND AND GLUT_FOUND )
 
-    get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
-
     include_directories( ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} )
 
     set ( EXECUTABLES nbody test )
@@ -52,12 +50,13 @@ if    ( OPENGL_FOUND AND GLUT_FOUND )
         set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
     endforeach ( executable )
 
-    set ( INSTALL_EXAMPLE_DIR "share/examples/scai-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" )
-    
-    scai_example_makefile( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+    # use the recommended installation directory for this example directory
+    scai_example_directory ( INSTALL_EXAMPLE_DIR )
+
+    # generate build file in example directory
+    scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
     ## install examples sources
-
     install ( FILES       ${EXAMPLE_FILES}
               DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
