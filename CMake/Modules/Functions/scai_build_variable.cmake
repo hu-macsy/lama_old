@@ -1,5 +1,5 @@
 ###
- # @file scai_cache_variable.cmake  
+ # @file scai_build_variable.cmake  
  #
  # @license
  # Copyright (c) 2009-2016
@@ -36,21 +36,27 @@
 
 ## Macro to define SCAI variables ( always in cache )
 
-macro ( scai_cache_variable )
+macro ( scai_build_variable )
 
     set ( options BOOL )
     set ( oneValueArgs NAME DEFAULT DOCSTRING )
     set ( multiValueArgs CHOICES )
 
-    cmake_parse_arguments ( scai_cache_variable "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+    cmake_parse_arguments ( scai_build_variable "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-    if ( DEFINED ${scai_cache_variable_NAME} )
-        set ( _value ${${scai_cache_variable_NAME}} )
+    if ( DEFINED ${scai_build_variable_NAME} )
+        set ( _value ${${scai_build_variable_NAME}} )
     else  ()
-        set ( _value ${scai_cache_variable_DEFAULT} )
+        set ( _value "" )
     endif ()
 
-    if ( ${scai_cache_variable_BOOL} )
+    # message ( STATUS "var ${scai_build_variable_NAME} = \"${_value}\"" )
+
+    if ( "${_value}" STREQUAL "" )
+        set ( _value ${scai_build_variable_DEFAULT} )
+    endif ()
+
+    if ( ${scai_build_variable_BOOL} )
 
         ## make sure that _value is either ON or OFF
 
@@ -60,24 +66,29 @@ macro ( scai_cache_variable )
             set ( _value OFF )
         endif ()
 
-        set( ${scai_cache_variable_NAME} ${_value} CACHE BOOL ${scai_cache_variable_DOCSTRING} FORCE )
+       #  FORCE it in cache so variables can be redefined via cmake --Dscai_var=value
+
+        set( ${scai_build_variable_NAME} ${_value} CACHE BOOL ${scai_build_variable_DOCSTRING} FORCE )
 
     else ()
 
         ## make sure that _value is a legel value
 
-        list ( FIND scai_cache_variable_CHOICES ${_value} _index )
+        listToString ( ", " "${scai_build_variable_CHOICES}" _str_choices )
+
+        # message ( STATUS "check legal value: \"${_value}\" must be in ${_str_choices}" )
+
+        list ( FIND scai_build_variable_CHOICES "${_value}" _index )
 
         if ( ${_index} EQUAL -1 )
-            message ( FATAL_ERROR "Value ${_value} is not choice out of ${scai_cache_variable_CHOICES}" )
+            message ( FATAL_ERROR "Value ${_value} is not choice out of ${scai_build_variable_CHOICES}" )
         endif ()
 
-        listToString ( ", " scai_cache_variable_CHOICES _str_choices )
+       #  FORCE it in cache so variables can be redefined via cmake --Dscai_var=value
 
-        set( ${scai_cache_variable_NAME} ${_value} CACHE STRING
-             "${scai_cache_variable_DOCSTRING} ${_str_choices}" FORCE )
+        set( ${scai_build_variable_NAME} ${_value} CACHE STRING
+             "${scai_build_variable_DOCSTRING} ${_str_choices}" FORCE )
 
     endif ()
 
 endmacro ()
-

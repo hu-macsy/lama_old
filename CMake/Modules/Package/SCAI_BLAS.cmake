@@ -43,18 +43,15 @@ enable_language ( C )
 
 if ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 
-if ( NOT DEFINED SCAI_BLAS_LIBRARY )
-    set ( SCAI_BLAS_LIBRARY "auto" )
-endif ( NOT DEFINED SCAI_BLAS_LIBRARY )
-set ( CACHE SCAI_BLAS_LIBRARY PROPERTY STRINGS ${SCAI_BLAS_LIBRARY_CHOICES} )
-checkValue( ${SCAI_BLAS_LIBRARY} "${SCAI_BLAS_LIBRARY_CHOICES}" )
-set ( SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE STRING "Choose the used BLAS Library: ${SCAI_BLAS_LIBRARY_CHOICES}" )
+    scai_build_variable( NAME      SCAI_BLAS_LIBRARY
+                         CHOICES   "auto" "MKL" "BLAS" "INTERNALBLAS" 
+                         DEFAULT   "auto"
+                         DOCSTRING "Choose the used BLAS library" )
 
 else ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 
-#message ( STATUS "Choosen BLAS_LIBRARY: ${SCAI_BLAS_LIBRARY}" )
+    #message ( STATUS "Choosen BLAS_LIBRARY: ${SCAI_BLAS_LIBRARY}" )
 
-#if ( DEFINED LAST_SCAI_BLAS_LIBRARY )
     if ( NOT LAST_SCAI_BLAS_LIBRARY STREQUAL SCAI_BLAS_LIBRARY )
         set ( SCAI_BLAS_FOUND FALSE )
         set ( SCAI_BLAS_NAME "" )
@@ -67,7 +64,7 @@ else ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
         set ( BLAS_FOUND FALSE )
         
     endif ( NOT LAST_SCAI_BLAS_LIBRARY STREQUAL SCAI_BLAS_LIBRARY )
-#endif ( DEFINED LAST_SCAI_BLAS_LIBRARY )
+
 endif ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 
 # try to find one of this blas libraries in this order: MKL, ACML, GOTOBLAS, FortranBLAS

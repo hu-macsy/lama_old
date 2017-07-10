@@ -50,7 +50,6 @@ set ( CMAKE_VERBOSE_MAKEFILE OFF )
 
 ## set default switches or check user input
 
-include ( Settings/switchChoices )
 include ( Functions/checkValue )
 include ( Functions/listToString )
 include ( Functions/parseBoolean )
@@ -83,49 +82,8 @@ if     ( DOC_FOUND AND BUILD_DOC )
     set( DOC_ENABLED ON )
 endif ( DOC_FOUND AND BUILD_DOC )
 
-## EXAMPLES
-
-# Check if examples should be build
-if    ( DEFINED BUILD_EXAMPLES )
-    parseBoolean( BUILD_EXAMPLES )
-else  ( DEFINED BUILD_EXAMPLES )
-    set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
-endif ( DEFINED BUILD_EXAMPLES )
-
-set ( BUILD_EXAMPLES ${BUILD_EXAMPLES} CACHE BOOL "Enable / Disable building of examples" )
-
 ## TEST
 
 ## CODE COVERAGE
 
-## Check if lama should be build for code coverage
-if ( DEFINED USE_CODE_COVERAGE )
-    # do nothing
-    parseBoolean( USE_CODE_COVERAGE )
-else  ( DEFINED USE_CODE_COVERAGE )
-    set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
-endif ( DEFINED USE_CODE_COVERAGE )
-set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE} CACHE BOOL "Enable / Disable use of Code Coverage" )
-
-##  CMAKE_BUILD_TYPE
-if    ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE ) # variable may be defined empty
-    # do nothing
-else  ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
-    set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE_DEFAULT} )
-endif ( DEFINED CMAKE_BUILD_TYPE AND CMAKE_BUILD_TYPE )
-checkValue ( ${CMAKE_BUILD_TYPE} "${CMAKE_BUILD_TYPE_CHOICES}" )
-set ( CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build, options are: ${CMAKE_BUILD_TYPE_CHOICES}." )
-
-## SCAI_ASSERT_LEVEL
-if    ( NOT SCAI_ASSERT_LEVEL )
-    if     ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-        set ( SCAI_ASSERT_LEVEL "ERROR" )
-    elseif ( CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
-        set ( SCAI_ASSERT_LEVEL "DEBUG" )
-    else   ( )
-        set ( SCAI_ASSERT_LEVEL "DEBUG" )
-    endif  ( )
-endif ( NOT SCAI_ASSERT_LEVEL )
-
-set ( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Choose level of ASSERT: ${SCAI_ASSERT_CHOICES}" )
 

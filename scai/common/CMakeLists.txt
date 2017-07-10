@@ -49,7 +49,6 @@ set ( CONFIGURE_DIR "${CMAKE_BINARY_DIR}/include/scai/${MODULE_NAME}" )
 ## Define numeric types for which classes will be instantiated   ##
 ###################################################################
 
-include ( Settings/switchChoices )
 include ( Functions/checkValue )
 include ( Functions/listToString )
 include ( Functions/parseBoolean )
@@ -100,7 +99,7 @@ listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
 
 # Possible and default choices for IndexType ( only one can be selected )
 
-scai_cache_variable ( NAME      SCAI_INDEX_TYPE
+scai_build_variable ( NAME      SCAI_INDEX_TYPE
                       CHOICES   "int" "long" "unsigned int" "unsigned long" 
                       DEFAULT   "int"
                       DOCSTRING "IndexType" )
