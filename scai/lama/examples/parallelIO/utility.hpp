@@ -36,11 +36,9 @@
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-using namespace scai;
-
 /** Help routine to read a scalar value type --SCAI_TYPE=... */
 
-static common::scalar::ScalarType getType()
+static scai::common::scalar::ScalarType getType()
 {
     common::scalar::ScalarType type = common::TypeTraits<double>::stype;
 

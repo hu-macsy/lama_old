@@ -36,9 +36,6 @@
 
 #include <scai/solver/examples/eigenvalue/AbstractMatrix.hpp>
 
-using namespace scai;
-using namespace lama;
-
 namespace scai
 {
 
