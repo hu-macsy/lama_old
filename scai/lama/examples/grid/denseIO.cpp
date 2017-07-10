@@ -82,7 +82,7 @@ int main( int argc, const char* argv[] )
             for ( IndexType j = 0; j < n; ++j )
 
             {
-                wDense[ i * n + j ] = 10 * i + j ;
+                wDense[ i * n + j ] = static_cast<float>( 10 * i + j );
             }
         }
     }
