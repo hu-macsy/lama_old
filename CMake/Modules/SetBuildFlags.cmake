@@ -76,22 +76,12 @@ else  ( DEFINED BUILD_DOC )
     endif ( DOC_FOUND )
 
 endif ( DEFINED BUILD_DOC )
-checkValue ( ${BUILD_DOC} "${TRUE_FALSE_CHOICES}" )
 set ( BUILD_DOC ${BUILD_DOC} CACHE BOOL "Enable / Disable building of doc" )
 
 set( DOC_ENABLED OFF )
 if     ( DOC_FOUND AND BUILD_DOC )
     set( DOC_ENABLED ON )
 endif ( DOC_FOUND AND BUILD_DOC )
-
-# Choose Doc type
-if    ( DEFINED SCAI_DOC_TYPE )
-    # do nothing
-else  ( DEFINED SCAI_DOC_TYPE )
-    set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE_DEFAULT} )
-endif ( DEFINED SCAI_DOC_TYPE )
-checkValue ( ${SCAI_DOC_TYPE} "${SCAI_DOC_TYPE_CHOICES}" )
-set ( SCAI_DOC_TYPE ${SCAI_DOC_TYPE} CACHE STRING "Choose the type of documentation, options are: ${SCAI_DOC_TYPE_CHOICES}." )
 
 ## EXAMPLES
 
@@ -102,20 +92,9 @@ else  ( DEFINED BUILD_EXAMPLES )
     set ( BUILD_EXAMPLES ${BUILD_EXAMPLES_DEFAULT} )
 endif ( DEFINED BUILD_EXAMPLES )
 
-checkValue ( ${BUILD_EXAMPLES} "${TRUE_FALSE_CHOICES}" )
-
 set ( BUILD_EXAMPLES ${BUILD_EXAMPLES} CACHE BOOL "Enable / Disable building of examples" )
 
 ## TEST
-
-## Check if tests should be build
-if    ( DEFINED BUILD_TEST )
-    parseBoolean( BUILD_TEST )
-else  ( DEFINED BUILD_TEST )
-    set ( BUILD_TEST ${BUILD_TEST_DEFAULT} )
-endif ( DEFINED BUILD_TEST )
-checkValue ( ${BUILD_TEST} "${TRUE_FALSE_CHOICES}" )
-set ( BUILD_TEST ${BUILD_TEST} CACHE BOOL "Enable / Disable building of tests" )
 
 ## CODE COVERAGE
 
@@ -126,7 +105,6 @@ if ( DEFINED USE_CODE_COVERAGE )
 else  ( DEFINED USE_CODE_COVERAGE )
     set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE_DEFAULT} )
 endif ( DEFINED USE_CODE_COVERAGE )
-checkValue ( ${USE_CODE_COVERAGE} "${TRUE_FALSE_CHOICES}" )
 set ( USE_CODE_COVERAGE ${USE_CODE_COVERAGE} CACHE BOOL "Enable / Disable use of Code Coverage" )
 
 ##  CMAKE_BUILD_TYPE
@@ -148,14 +126,6 @@ if    ( NOT SCAI_ASSERT_LEVEL )
         set ( SCAI_ASSERT_LEVEL "DEBUG" )
     endif  ( )
 endif ( NOT SCAI_ASSERT_LEVEL )
-checkValue ( ${SCAI_ASSERT_LEVEL} "${SCAI_ASSERT_CHOICES}" )
+
 set ( SCAI_ASSERT_LEVEL ${SCAI_ASSERT_LEVEL} CACHE STRING "Choose level of ASSERT: ${SCAI_ASSERT_CHOICES}" )
 
-## SCAI_LIBRARY_TYPE ( static or shared )
-if    ( DEFINED SCAI_LIBRARY_TYPE )
-    # do nothing
-else  ( DEFINED SCAI_LIBRARY_TYPE )
-    set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE_DEFAULT} )
-endif ( DEFINED SCAI_LIBRARY_TYPE )
-checkValue ( ${SCAI_LIBRARY_TYPE} "${SCAI_LIBRARY_TYPE_CHOICES}" )
-set ( SCAI_LIBRARY_TYPE ${SCAI_LIBRARY_TYPE} CACHE STRING "Choose the type of linking: ${SCAI_LIBRARY_TYPE_CHOICES}" )

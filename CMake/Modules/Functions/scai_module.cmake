@@ -76,12 +76,10 @@ macro ( scai_module )
     foreach ( module ${INTERNAL_DEPS} )
 
         if ( ${module} STREQUAL "logging" )
-            include ( Settings/logging )
             add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
         endif ()
 
         if ( ${module} STREQUAL "tracing" )
-            include ( Settings/tracing )
             add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
         endif ()
 

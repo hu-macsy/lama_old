@@ -80,6 +80,60 @@ if ( NOT CXX_SUPPORTS_C11 )
     include_directories( ${BOOST_INCLUDE_DIR} )
 endif ()
 
+## Define all variables (in CACHE) that are used for individual choices 
+
+include ( Functions/scai_cache_variable )
+
+scai_cache_variable ( NAME      CMAKE_BUILD_TYPE
+                      CHOICES   "Debug" "Release" "RelWithDebInfo" "MinSizeRel"
+                      DEFAULT   "Debug"
+                      DOCSTRING "Set build type" )
+
+scai_cache_variable ( NAME      USE_CODE_COVERAGE
+                      BOOL
+                      DEFAULT   False
+                      DOCSTRING "Enable / Disable use of Code Coverage" )
+
+scai_cache_variable ( NAME      BUILD_TEST
+                      BOOL
+                      DEFAULT   True
+                      DOCSTRING "Enable / Disable build of test" )
+
+scai_cache_variable ( NAME      BUILD_EXAMPLES
+                      BOOL
+                      DEFAULT   True
+                      DOCSTRING "Enable / Disable build of examples" )
+
+scai_cache_variable ( NAME      BUILD_DOC
+                      BOOL
+                      DEFAULT   True
+                      DOCSTRING "Enable / Disable build of user doc" )
+
+scai_cache_variable ( NAME      SCAI_LIBRARY_TYPE
+                      CHOICES   STATIC SHARED
+                      DEFAULT   SHARED
+                      DOCSTRING "Choose the type of linking" )
+
+scai_cache_variable ( NAME      SCAI_DOC_TYPE 
+                      CHOICES   html json xml latex
+                      DEFAULT   html
+                      DOCSTRING "Choose type of user documentation" )
+
+scai_cache_variable ( NAME      SCAI_ASSERT_TYPE 
+                      CHOICES   DEBUG ERROR OFF
+                      DEFAULT   DEBUG
+                      DOCSTRING "Choose type of user documentation" )
+
+scai_cache_variable ( NAME      SCAI_LOGGING_LEVEL
+                      CHOICES   TRACE DEBUG INFO WARN ERROR OFF
+                      DEFAULT   DEBUG
+                      DOCSTRING "Choose minimal level of logging @ compile time" )
+
+scai_cache_variable ( NAME      SCAI_TRACING
+                      BOOL 
+                      DEFAULT   On
+                      DOCSTRING "Enable / Disable tracing of regions for performance analysis" )
+
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
 
 if ( BUILD_TEST )
