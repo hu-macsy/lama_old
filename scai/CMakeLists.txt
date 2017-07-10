@@ -50,9 +50,9 @@ set ( SCAI_USED_MODULES ${SCAI_ALL_MODULES} CACHE STRING "Used SCAI module proje
 
 ### Define some general variables used for identifaction 
 
-set ( SCAI_VERSION_NAME "Barrancas Blancas" )
+set ( SCAI_VERSION_NAME   "Barrancas Blancas" )
 set ( SCAI_COPYRIGHT_YEAR 2017 )
-set ( SCAI_VERSION 2.2.0 )
+set ( SCAI_VERSION        2.2.0 )
 set ( SCAI_LIBRARY_PREFIX "scai" )             # more unique names for all SCAI module libraries
 
 ### Set Module Path
@@ -66,7 +66,6 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 
 ### General stuff for all projects
 
-include ( SetBuildFlags )
 include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
@@ -79,6 +78,72 @@ if ( NOT CXX_SUPPORTS_C11 )
     message( STATUS "No C11 support, use Boost include dir ${BOOST_INCLUDE_DIR}" )
     include_directories( ${BOOST_INCLUDE_DIR} )
 endif ()
+
+## Define all variables (in CACHE) that are used for individual choices 
+
+include ( Functions/scai_build_variable )
+
+scai_build_variable ( NAME      CMAKE_BUILD_TYPE
+                      CHOICES   "Debug" "Release" "RelWithDebInfo" "MinSizeRel" ""
+                      DEFAULT   "Debug"
+                      DOCSTRING "Set build type" )
+
+scai_build_variable ( NAME      USE_CODE_COVERAGE
+                      BOOL
+                      DEFAULT   False
+                      DOCSTRING "use of code coverage" )
+
+scai_build_variable ( NAME      BUILD_TEST
+                      BOOL
+                      DEFAULT   True
+                      DOCSTRING "build of test" )
+
+scai_build_variable ( NAME      BUILD_EXAMPLES
+                      BOOL
+                      DEFAULT   True
+                      DOCSTRING "build of examples" )
+
+scai_build_variable ( NAME      BUILD_DOC
+                      BOOL
+                      DEFAULT   True
+                      DOCSTRING "build of user doc" )
+
+scai_build_variable ( NAME      SCAI_LIBRARY_TYPE
+                      CHOICES   STATIC SHARED
+                      DEFAULT   SHARED
+                      DOCSTRING "Choose the type of linking" )
+
+scai_build_variable ( NAME      SCAI_DOC_TYPE 
+                      CHOICES   "html" "json" "xml" "latex"
+                      DEFAULT   html
+                      DOCSTRING "Choose type of user documentation" )
+
+if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+    set ( SCAI_ASSERT_DEFAULT "INFO" )
+else ()
+    set ( SCAI_ASSERT_DEFAULT "DEBUG" )
+endif ()
+
+scai_build_variable ( NAME      SCAI_ASSERT_LEVEL
+                      CHOICES   "DEBUG" "ERROR" "OFF"
+                      DEFAULT   ${SCAI_ASSERT_DEFAULT}
+                      DOCSTRING "Choose minimal level of assert @ compile time" )
+   
+if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+    set ( SCAI_LOGGING_DEFAULT "INFO" )
+else ()
+    set ( SCAI_LOGGING_DEFAULT "DEBUG" )
+endif ()
+
+scai_build_variable ( NAME      SCAI_LOGGING_LEVEL
+                      CHOICES   "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF"
+                      DEFAULT   ${SCAI_LOGGING_DEFAULT}
+                      DOCSTRING "Choose minimal level of logging @ compile time" )
+
+scai_build_variable ( NAME      SCAI_TRACING
+                      BOOL 
+                      DEFAULT   On
+                      DOCSTRING "tracing of regions for performance analysis" )
 
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
 

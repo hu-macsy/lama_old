@@ -96,6 +96,16 @@ if ( SCAI_BLAS_NAME MATCHES "Internal" )
                             FOUND     ${BLAS_FOUND} 
                             VERSION   "Internal" )
 
+elseif ( MKL_FOUND )
+
+    scai_summary_external ( NAME      MKL
+                            FOUND     ${MKL_FOUND} 
+                            VERSION   ${MKL_VERSION}
+                            INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+
+    scai_summary_newline ()
+
 else ()
 
     scai_summary_external ( NAME      BLAS

@@ -36,7 +36,6 @@
 ### OPENMP_FOUND           - if OpenMP is found
 ### USE_OPENMP             - if OpenMP is enabled
 ### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
-### SCAI_OMP_SCHEDULE_FLAG - needed OpenMP scheduling flag
 ### OPENMP_VERSION         - version id
 
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
@@ -66,24 +65,10 @@ if    ( OPENMP_FOUND )
     endif ()
 endif ( OPENMP_FOUND )
 
-include ( Functions/setAndCheckCache )
-setAndCheckCache ( OPENMP ) # sets USE_OPENMP
-set ( USE_OPENMP ${USE_OPENMP} CACHE BOOL "Enable / Disable use of OpenMP" )
-
-if    ( OPENMP_FOUND AND USE_OPENMP )
-
-    if    ( NOT SCAI_OMP_SCHEDULE )
-        set ( SCAI_OMP_SCHEDULE "static" )
-    endif ( NOT SCAI_OMP_SCHEDULE )
-
-    #### Compile/Link flag for OpenMP will be set for all source files and all targets
-
-    set ( SCAI_OMP_SCHEDULE_FLAG "SCAI_OMP_SCHEDULE=${SCAI_OMP_SCHEDULE}" )
-    
-    # Note: files using omp scheduling should be compiled with the corresponding flag
-    # add_definitions ( -D${SCAI_OMP_SCHEDULE_FLAG} )
-
-endif ( OPENMP_FOUND AND USE_OPENMP )
+scai_build_variable ( NAME      USE_OPENMP   
+                      BOOL 
+                      DEFAULT   ${OPENMP_FOUND}
+                      DOCSTRING "use of OpenMP (shared memory parallelization)" )
 
 if    ( USE_OPENMP AND NOT OPENMP_FOUND )
     message( FATAL_ERROR "Build of LAMA with OpenMP support enabled, but configuration is incomplete!")

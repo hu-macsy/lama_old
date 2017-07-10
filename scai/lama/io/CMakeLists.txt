@@ -46,7 +46,6 @@ set ( IO_CLASSES
         PartitionIO
         ImageIO
         BitmapIO
-        PngIO
 ) 
 
 if ( ZLIB_FOUND AND USE_ZLIB )

@@ -49,7 +49,6 @@ set ( CONFIGURE_DIR "${CMAKE_BINARY_DIR}/include/scai/${MODULE_NAME}" )
 ## Define numeric types for which classes will be instantiated   ##
 ###################################################################
 
-include ( Settings/switchChoices )
 include ( Functions/checkValue )
 include ( Functions/listToString )
 include ( Functions/parseBoolean )
@@ -87,9 +86,6 @@ foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
     endif ()
 endforeach ()
 
-parseBoolean( USE_COMPLEX )
-checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
-
 # make strings out of list
 
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
@@ -103,22 +99,10 @@ listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
 
 # Possible and default choices for IndexType ( only one can be selected )
 
-set ( INDEX_TYPE_OPTIONS  "int" "long" "unsigned int" "unsigned long" )
-set ( INDEX_TYPE_DEFAULT  "int" )
-
-## define SCAI_INDEX_TYPE, used to configure file SCAITypes.hpp
-## uses global variable INDEX_TYPE_OPTIONS, set in switchChoices.cmake
-
-if ( DEFINED INDEX_TYPE )
-    set ( INDEX_TYPE_VALUE "${INDEX_TYPE}" )
-else ( DEFINED INDEX_TYPE )
-    set ( INDEX_TYPE_VALUE "${INDEX_TYPE_DEFAULT}" )
-endif ( DEFINED INDEX_TYPE )
-
-listToString ( ", " "${INDEX_TYPE_OPTIONS}" INDEX_TYPE_OPTIONS1 )
-
-set ( SCAI_INDEX_TYPE "${INDEX_TYPE_VALUE}" CACHE STRING "IndexType, choose from ${INDEX_TYPE_OPTIONS1}" )
-checkValue( "${SCAI_INDEX_TYPE}" "${INDEX_TYPE_OPTIONS}" )
+scai_build_variable ( NAME      SCAI_INDEX_TYPE
+                      CHOICES   "int" "long" "unsigned int" "unsigned long" 
+                      DEFAULT   "int"
+                      DOCSTRING "IndexType" )
 
 # add IndexType for the array types, be careful about empty string
 concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )

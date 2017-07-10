@@ -40,7 +40,6 @@
 #include <scai/lama/io/BitmapIO.hpp>
 #include <scai/lama/io/PngIO.hpp>
 
-#include<png.h>
 #include<fstream>
 
 namespace scai
