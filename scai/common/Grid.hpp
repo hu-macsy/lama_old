@@ -55,7 +55,7 @@ namespace common
  *  Might be increased as required. 
  */
 
-#define SCAI_GRID_MAX_DIMENSION 4
+#define SCAI_GRID_MAX_DIMENSION ( (IndexType) 4 )
 
 /** Data structure for an n-dimensional grid.
  *

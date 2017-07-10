@@ -85,7 +85,7 @@ required libraries.
 
 Optionally you can add a script to get your code be tested by a CI (Continuous Integration) system.
 
-.. code-block:: c+++
+.. code-block:: c++
 
     scai_test_scripts( SCRIPTS       xmltest.sh
                        CODE_COVERAGE ${USE_CODE_COVERAGE} )
