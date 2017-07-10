@@ -34,7 +34,7 @@
 
 get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-foreach ( executable gridIO denseIO gridConversion )
+foreach ( executable gridSection )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
