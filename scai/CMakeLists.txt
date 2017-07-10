@@ -66,7 +66,6 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 
 ### General stuff for all projects
 
-include ( SetBuildFlags )
 include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
@@ -92,22 +91,22 @@ scai_build_variable ( NAME      CMAKE_BUILD_TYPE
 scai_build_variable ( NAME      USE_CODE_COVERAGE
                       BOOL
                       DEFAULT   False
-                      DOCSTRING "Enable / Disable use of Code Coverage" )
+                      DOCSTRING "use of code coverage" )
 
 scai_build_variable ( NAME      BUILD_TEST
                       BOOL
                       DEFAULT   True
-                      DOCSTRING "Enable / Disable build of test" )
+                      DOCSTRING "build of test" )
 
 scai_build_variable ( NAME      BUILD_EXAMPLES
                       BOOL
                       DEFAULT   True
-                      DOCSTRING "Enable / Disable build of examples" )
+                      DOCSTRING "build of examples" )
 
 scai_build_variable ( NAME      BUILD_DOC
                       BOOL
                       DEFAULT   True
-                      DOCSTRING "Enable / Disable build of user doc" )
+                      DOCSTRING "build of user doc" )
 
 scai_build_variable ( NAME      SCAI_LIBRARY_TYPE
                       CHOICES   STATIC SHARED
@@ -144,7 +143,7 @@ scai_build_variable ( NAME      SCAI_LOGGING_LEVEL
 scai_build_variable ( NAME      SCAI_TRACING
                       BOOL 
                       DEFAULT   On
-                      DOCSTRING "Enable / Disable tracing of regions for performance analysis" )
+                      DOCSTRING "tracing of regions for performance analysis" )
 
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
 
@@ -211,13 +210,4 @@ include ( CustomCommands/DistClean )
 
 ## summary of what is found
 
-## ToDo: Summary uses info from module projects no more available here, so redo it
-
-# set ( EXTERNAL_DEPS CUDA MIC dl Thread Java SCAI_BLAS MPI GPI GraphPartitioning ZLIB PNG )
-
-# foreach ( package ${EXTERNAL_DEPS} )
-#     include ( Package/${package} )
-# endforeach ()
-
 include ( Summaries/scai )
-

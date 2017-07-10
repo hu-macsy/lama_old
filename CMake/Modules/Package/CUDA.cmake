@@ -34,7 +34,6 @@
 
 ### CUDA_FOUND            - if CUDA is found
 ### USE_CUDA              - if CUDA is enabled
-### CUDA_ENABLED          - if CUDA_FOUND and USE_CUDA
 ### SCAI_CUDA_INCLUDE_DIR - CUDA include directory
 ### SCAI_CUDA_LIBRARIES   - all needed CUDA libraries
 
@@ -58,9 +57,11 @@ include ( Compiler/cuda/CheckHostCompilerCompatibility )
 include ( Compiler/cuda/ComputeCapabilityCheck )
 
 # ALLOW to switch off CUDA explicitly
-include ( Functions/setAndCheckCache )
-setAndCheckCache ( CUDA )
-set ( USE_CUDA ${USE_CUDA} CACHE BOOL "Enable / Disable use of CUDA" )
+
+scai_build_variable ( NAME      USE_CUDA
+                      BOOL 
+                      DEFAULT   ${CUDA_FOUND}
+                      DOCSTRING "use of CUDA (for NVIDIA GPUs)" )
 
 # define own FIND_CUDA_HELPER_LIBS macro as it is use in cmakes FindCUDA module
 macro( SCAI_FIND_CUDA_HELPER_LIBS _name) # rename so it is not confused
@@ -68,10 +69,7 @@ macro( SCAI_FIND_CUDA_HELPER_LIBS _name) # rename so it is not confused
     mark_as_advanced(CUDA_${_name}_LIBRARY)
 endmacro()
 
-
-set ( CUDA_ENABLED FALSE )
 if ( CUDA_FOUND AND USE_CUDA )
-    set ( CUDA_ENABLED TRUE )
 
     if    ( ${CUDA_VERSION_MAJOR} LESS 5 )
         message ( FATAL_ERROR "LAMA supports CUDA with SDK greater 5.0, your installation is ${CUDA_VERSION}. Use a newer CUDA installation or disable CUDA." )

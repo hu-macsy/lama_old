@@ -112,13 +112,19 @@ include ( CustomCommands/SphinxDoc )
 
 ## Add summary of this module
 
-if ( MPI_ENABLED OR GPI_ENABLED )
+if ( MPI_FOUND AND USE_MPI )
 
     scai_summary_enabled ( NAME    Distributed 
                            ENABLED True )
-else()
+
+elseif ( GPI_FOUND AND USE_GPI )
 
     scai_summary_enabled ( NAME    Distributed 
+                           ENABLED True )
+
+else ()
+
+    scai_summary_enabled ( NAME    Distributed
                            ENABLED False )
 
 endif ()

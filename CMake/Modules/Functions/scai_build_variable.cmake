@@ -32,7 +32,8 @@
  # @date 03.07.2017
 ###
 
-## include ( Functions/listToString )
+include ( Functions/listToString )
+include ( CMakeParseArguments )
 
 ## Macro to define SCAI variables ( always in cache )
 
@@ -68,7 +69,7 @@ macro ( scai_build_variable )
 
        #  FORCE it in cache so variables can be redefined via cmake --Dscai_var=value
 
-        set( ${scai_build_variable_NAME} ${_value} CACHE BOOL ${scai_build_variable_DOCSTRING} FORCE )
+        set( ${scai_build_variable_NAME} ${_value} CACHE BOOL "Enable / Disable ${scai_build_variable_DOCSTRING}" FORCE )
 
     else ()
 

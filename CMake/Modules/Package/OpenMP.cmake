@@ -65,9 +65,10 @@ if    ( OPENMP_FOUND )
     endif ()
 endif ( OPENMP_FOUND )
 
-include ( Functions/setAndCheckCache )
-setAndCheckCache ( OPENMP ) # sets USE_OPENMP
-set ( USE_OPENMP ${USE_OPENMP} CACHE BOOL "Enable / Disable use of OpenMP" )
+scai_build_variable ( NAME      USE_OPENMP   
+                      BOOL 
+                      DEFAULT   ${OPENMP_FOUND}
+                      DOCSTRING "use of OpenMP (shared memory parallelization)" )
 
 if    ( USE_OPENMP AND NOT OPENMP_FOUND )
     message( FATAL_ERROR "Build of LAMA with OpenMP support enabled, but configuration is incomplete!")
