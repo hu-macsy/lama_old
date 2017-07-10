@@ -46,6 +46,11 @@
 namespace scai
 {
 
+namespace common
+{
+    class Grid;
+}
+
 namespace lama
 {
 
@@ -61,7 +66,7 @@ class _MatrixStorage;
  *        make the correct output. But pure virtual methods can not
  *        have a template argument.
  *
- *        The class CRTPFileIO is a helper class that provides this
+ *        The struct IOWrapper is a helper struct that provides this
  *        funtionality.
  */
 
@@ -120,6 +125,17 @@ public:
      *  - mDataType output format used for non-zero values
      */
     virtual void writeArray( const hmemo::_HArray& array, const std::string& fileName ) = 0;
+
+    /** Write multi-dimensional array of arbitrary type into a file with the shape
+     *
+     *  @param[in] array is the (local) array data that is written
+     *  @param[in] grid is the shape of the array
+     *  @param[in] fileName is the name of the output file
+     *
+     *  - mBinary if true data is written binary
+     *  - mDataType output format used for non-zero values
+     */
+    virtual void writeGridArray( const hmemo::_HArray& array, const common::Grid& grid, const std::string& fileName ) = 0;
 
     /** Write 'sparse' array of arbitrary type into a file.
      *
@@ -212,6 +228,11 @@ public:
         const IndexType offset = 0,
         const IndexType n = nIndex ) = 0;
 
+    virtual void readGridArray(
+        hmemo::_HArray& array,
+        common::Grid& grid,
+        const std::string& fileName ) = 0;
+
     /** Read in a 'sparse' array from a file in the corresponding format.
      *
      *  @param[out] size is the size of the array
@@ -238,7 +259,7 @@ public:
      *  @param[in] fileName file to delete
      *  @returns   0 on success
      */
-    virtual int deleteFile( const std::string& fileName ) = 0;
+    virtual int deleteFile( const std::string& fileName );
 
     /** Setter for representation type used for indexes in file. */
 
@@ -331,6 +352,14 @@ public:
         IndexType& size,
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& array,
+        const std::string& fileName,
+        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+
+    /** Stati method to read a multi-dimensional array from a file. */
+
+    static void read(
+        hmemo::_HArray& array,
+        common::Grid& grid,
         const std::string& fileName,
         const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
 

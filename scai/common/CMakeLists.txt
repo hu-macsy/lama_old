@@ -178,6 +178,7 @@ set ( COMMON_CLASSES
         Printable
         ScalarType
         ContextType
+        Grid
         Settings
         Walltime
         LibModule
@@ -192,10 +193,10 @@ set ( COMMON_HEADERS
         Constants
         Factory
         Factory1
-        Grid
         Math
         OpenMP
         NonCopyable
+        Stencil
         UnaryOp
         Utils
 )

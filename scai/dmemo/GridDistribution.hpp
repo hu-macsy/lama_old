@@ -189,6 +189,13 @@ public:
 
     static inline const char* getId();
 
+    /** Return pointer to array with lower bound pos of the local grid in global grid */
+
+    const IndexType* localLB() const 
+    {
+        return mLB;
+    }
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

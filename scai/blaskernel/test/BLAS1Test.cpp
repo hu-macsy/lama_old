@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         {
             ReadAccess<ValueType> rAy( Ay );
 
-            for ( int i = 0; i < leny; ++i )
+            for ( IndexType i = 0; i < leny; ++i )
             {
                 BOOST_CHECK_EQUAL( y[i], rAy[i] );
             }
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         {
             ReadAccess<ValueType> rAy( Ay );
 
-            for ( int i = 0; i < leny; ++i )
+            for ( IndexType i = 0; i < leny; ++i )
             {
                 BOOST_CHECK_EQUAL( y[i], rAy[i] );
             }
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         {
             ReadAccess<ValueType> rAy( Ay );
 
-            for ( int i = 0; i < leny; ++i )
+            for ( IndexType i = 0; i < leny; ++i )
             {
                 BOOST_CHECK_EQUAL( yResult[i], rAy[i] );
             }

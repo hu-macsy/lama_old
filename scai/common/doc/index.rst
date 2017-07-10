@@ -35,6 +35,7 @@ Class                        Description
 :ref:`Thread`                Abstraction of a portable thread class
 :ref:`Walltime`              Simple and efficient walltime measuring
 :ref:`Grid`                  Definition of a rectangular grid
+:ref:`Stencil`               Definition of a stencil
 :ref:`Printable`             Base class to support stream output
 :ref:`NonCopyable`           Disable default copy constructors
 :ref:`LibModule`             Load/Unload of Library Modules (dynamic libraries)
@@ -47,6 +48,7 @@ Class                        Description
    Thread
    Walltime
    Grid
+   Stencil
    Printable
    NonCopyable
    LibModule

@@ -189,6 +189,35 @@ SparseMatrix<ValueType>::SparseMatrix(
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+SparseMatrix<ValueType>::SparseMatrix() : Matrix( 0, 0 )
+{
+}
+
+template<typename ValueType>
+void SparseMatrix<ValueType>::set(
+    common::shared_ptr<MatrixStorage<ValueType> > localData,
+    common::shared_ptr<MatrixStorage<ValueType> > haloData,
+    const Halo& halo,
+    DistributionPtr rowDist,
+    DistributionPtr colDist ) 
+{
+    Matrix::setDistributedMatrix( rowDist, colDist );
+
+    SCAI_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
+    // TODO: asserts for correct sizes of all relevant sizes
+    SCAI_ASSERT_EQUAL_ERROR( localData->getNumRows(), rowDist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( haloData->getNumRows(), rowDist->getLocalSize() )
+    SCAI_ASSERT_EQUAL_ERROR( haloData->getNumColumns(), halo.getHaloSize() )
+
+    mLocalData = localData;  // flat copy
+    mHaloData = haloData;    // flat copy
+    mHalo = halo;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 SparseMatrix<ValueType>& SparseMatrix<ValueType>::operator=( const SparseMatrix& matrix )
 {
     SCAI_LOG_INFO( logger, " = SparseMatrix : " << matrix )
@@ -591,8 +620,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
     SCAI_ASSERT_EQ_ERROR( rowDistributionPtr->getGlobalSize(), getNumRows(),
                           "size of new row distribution mismatches #rows" );
 
-    SCAI_ASSERT_ERROR( colDistributionPtr->getGlobalSize() >= getNumColumns(),
-                       "size of new col distribution must be >= #colunns" );
+    SCAI_ASSERT_GE_ERROR( colDistributionPtr->getGlobalSize(), getNumColumns(),
+                       "Size of new col distribution = " << *colDistributionPtr << " must be >= #colunns of " << *this );
 
     // Save the current distribution of this matrix; use shared pointers to avoid freeing
 
@@ -2005,9 +2034,21 @@ const Halo& SparseMatrix<ValueType>::getHalo() const
 template<typename ValueType>
 void SparseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << getTypeName() << "( size = " << getNumRows() << " x " << getNumColumns() << ", local = " << *mLocalData
-           << ", halo = " << *mHaloData << ", rowdist = " << getRowDistribution() << ", coldist = "
-           << getColDistribution() << ")";
+    stream << getTypeName() << "( size = " << getNumRows() << " x " << getNumColumns() 
+           << ", local = " << *mLocalData
+           << ", halo = " << *mHaloData;
+
+    // if column and row distribution are equal, write it only once
+
+    if ( getRowDistribution() == getColDistribution() )
+    {
+        stream << ", dist = " << getRowDistribution() << ")";
+    }
+    else
+    {
+        stream << ", rowdist = " << getRowDistribution() 
+               << ", coldist = " << getColDistribution() << ")";
+    }
 }
 
 /* ------------------------------------------------------------------------- */

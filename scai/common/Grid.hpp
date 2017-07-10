@@ -5,7 +5,7 @@
  * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
- *
+ 
  * This file is part of the SCAI framework LAMA.
  *
  * LAMA is free software: you can redistribute it and/or modify it under the
@@ -42,6 +42,7 @@
 
 // std
 #include <stdint.h>
+#include <iostream>
 
 namespace scai
 {
@@ -54,7 +55,7 @@ namespace common
  *  Might be increased as required. 
  */
 
-#define SCAI_GRID_MAX_DIMENSION 7
+#define SCAI_GRID_MAX_DIMENSION 4
 
 /** Data structure for an n-dimensional grid.
  *
@@ -66,66 +67,84 @@ class COMMON_DLL_IMPORTEXPORT Grid
 {
 public:
 
-    /** Constructor of a one-dimensional grid. */
+    /** BorderType describes for each side of the grid which value is taken
+     *  if the corresponding neighbored pos is not available. 
+     */
+    typedef enum
+    {
+        BORDER_ABSORBING,    //!   factor 0 if neighbored pos is not available
+        BORDER_PERIODIC,     //!   take it from other side
+        BORDER_REFLECTING    //!   take the side as reflecting
+    } BorderType;
 
-    Grid( const IndexType n1 );
-
-    /** Constructor of a two-dimensional grid. */
-
-    Grid( const IndexType n1, const IndexType n2 );
-
-    /** Constructor of a three-dimensional grid. */
-
-    Grid( const IndexType n1, const IndexType n2, const IndexType n3 );
-
-    /** Constructor of a four-dimensional grid. */
-
-    Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
-
-    /** Constructor of a n-dimensioal grid.
+    /** Default constructor provides an empty grid with zero dimensions.
      *
-     *  @param[in] ndims is the number of dimensions
+     */
+    Grid();
+
+    /** Constructor of a n-dimensional grid.
+     *
+     *  @param[in] nDims is the number of dimensions
+     *
+     *  All sizes are set to 1.
+     */
+    Grid( const IndexType nDims );
+
+    /** Constructor of a n-dimensional grid.
+     *
+     *  @param[in] nDims is the number of dimensions
      *  @param[in] sizes contains the dimensions of the grid
      */
-    Grid( const IndexType ndims, const IndexType sizes[] );
+    Grid( const IndexType nDims, const IndexType sizes[] );
 
     /** Set explicitly the size in a dim */
 
-    void setSize( IndexType dim, IndexType size );
+    inline void setSize( IndexType dim, IndexType size );
 
     /** Return number of dimensions for the grid. */
 
-    IndexType ndims() const;
+    inline IndexType nDims() const;
 
     /** Return the total number of grid points. */
 
-    IndexType size() const;
+    inline IndexType size() const;
 
     /** Size of the grid in a certain dimension */
 
-    IndexType size( const IndexType dim ) const;
+    inline IndexType size( const IndexType dim ) const;
+
+    /** Size of the grid in all dimensions as pointer to array */
+
+    inline const IndexType* sizes() const;
+
+    /** Borders of the grid in all dimensions */
+  
+    inline const BorderType* borders() const;
+
+    /** Return an array with sizes of all grid dimensions */
+
+    inline void getSizes( IndexType sizes[] ) const;
+
+    /** Return an array with distances between grid elements for linear positions.
+     *
+     *  linearPos( gridPos[] ) = gridPos[0] * distances[0] + gridPos[1] * distances[1] + ... 
+     */
+
+    inline void getDistances( IndexType distances[] ) const;
 
     /** Predicate to check for a correct position in the grid, all position indexes must be valid */
 
-    bool validPos( const IndexType gridPos[] ) const;
+    inline bool validPos( const IndexType gridPos[] ) const;
 
     /** Linearize grid position */
 
-    IndexType linearPos( const IndexType gridPos[] ) const;
+    inline IndexType linearPos( const IndexType gridPos[] ) const;
 
-    /** More convenient call of linearPos on one-dimensional grid */
-
-    IndexType linearPos( const IndexType pos1 ) const;
-
-    /** More convenient call of linearPos on two-dimensional grids */
-
-    IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
-
-    /** More convenient call of linearPos for tree-dimensional grids */
-
-    IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const;
-
-    /** Get grid position from a linearized index. */
+    /** Get grid position from a linearized index.
+     *
+     *  Due to divide/modulo operation this routine is rather expensive.
+     *  Grids should be traversed by multidimensional indexes if possible.
+     */
 
     void gridPos( IndexType pos[], const IndexType linearPos ) const;
 
@@ -135,15 +154,120 @@ public:
 
     /** Compares two grids for inequality. */
 
-    bool operator!=( const Grid& other ) const;
+    inline bool operator!=( const Grid& other ) const;
 
-private:
+    /** This method allows to set a border type for one dimension at both sides  */
 
-    Grid();
+    inline void setBorderType( const IndexType dim, const BorderType type );
+
+    /** This method allows to set individual border types for the grid. */
+
+    inline void setBorderType( const IndexType dim, const BorderType left, const BorderType right );
+
+    /** This method determines a neighbored position of a point in the grid.
+     *
+     *  @param[in,out] pos contains the position as input and will contain the new position
+     *  @param[in]     offsets specifies the offsets in each dim, can be positive or negative
+     *  @param[in]     sizes   sizes for each dim needed for checking boundaries
+     *  @param[in]     borders specify the boundary types of the grid, size is 2 times nDims
+     *  @param8in]     nDims   number of dimensions for the position
+     */
+    static bool getOffsetPos( 
+        IndexType pos[], 
+        const int offsets[],
+        const IndexType sizes[], 
+        const BorderType borders[], 
+        const IndexType nDims );
+
+    /** This method determines a neighbored position of a point in the grid.
+     *
+     *  @param[in,out] pos contains the position as input and will contain the new position
+     *  @param[in]     offsets specifies the offsets in each dim, can be positive or negative
+     *
+     *  At the boundaries of the grid the grid border types play an important role how the
+     *  corresponding dimension is determined.
+     */
+    bool getOffsetPos( IndexType pos[], const int offsets[] ) const;
+
+protected:
+
+    inline void init( const IndexType nDims );
 
     IndexType mNDims;
 
     IndexType mSize[ SCAI_GRID_MAX_DIMENSION];
+
+    BorderType mBorder[SCAI_GRID_MAX_DIMENSION][2];
+};
+
+/** 1-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid1D : public Grid
+{
+public:
+
+    /** Constructor of a three-dimensional grid */
+
+    Grid1D( const IndexType n1 );
+
+    /** More convenient call of linearPos for one-dimensional grid.
+     *  This routine is not really necessary as it is just the identity.
+     */
+
+    inline IndexType linearPos( const IndexType pos ) const;
+
+    using Grid::linearPos;
+};
+
+/** 2-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid2D : public Grid
+{
+public:
+
+    /** Constructor of a three-dimensional grid */
+
+    Grid2D( const IndexType n1, const IndexType n2 );
+
+    /** More convenient call of linearPos for two-dimensional grids */
+
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2 ) const;
+
+    using Grid::linearPos;
+};
+
+/** 3-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid3D : public Grid
+{
+public:
+
+    /** Constructor of a three-dimensional grid */
+
+    Grid3D( const IndexType n1, const IndexType n2, const IndexType n3 );
+
+    /** More convenient call of linearPos for tree-dimensional grids */
+
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const;
+
+    using Grid::linearPos;
+};
+
+/** 4-dimensional Grid */
+
+class COMMON_DLL_IMPORTEXPORT Grid4D : public Grid
+{
+public:
+
+    /** Constructor of a four-dimensional grid */
+
+    Grid4D( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 );
+
+    /** More convenient call of linearPos for tree-dimensional grids */
+
+    inline IndexType linearPos( const IndexType pos1, const IndexType pos2, const IndexType pos3, const IndexType pos4 ) const;
+
+    using Grid::linearPos;
 };
 
 /*
@@ -156,56 +280,10 @@ private:
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Grid& grid );
 
 /* ------------------------------------------------------------------------------------ */
-/*   Implementations of inline constructors                                             */
-/* ------------------------------------------------------------------------------------ */
-
-Grid::Grid( const IndexType n1 )
-{
-    mNDims = 1;
-    mSize[0] = n1;
-}
-
-Grid::Grid( const IndexType n1, const IndexType n2 )
-{
-    mNDims = 2;
-    mSize[0] = n1;
-    mSize[1] = n2;
-}
-
-Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3 )
-{
-    mNDims = 3;
-
-    mSize[0] = n1;
-    mSize[1] = n2;
-    mSize[2] = n3;
-}
-
-Grid::Grid( const IndexType n1, const IndexType n2, const IndexType n3, const IndexType n4 )
-{
-    mNDims = 4;
-
-    mSize[0] = n1;
-    mSize[1] = n2;
-    mSize[2] = n3;
-    mSize[3] = n4;
-}
-
-Grid::Grid( const IndexType nDims, const IndexType size[] )
-{
-    mNDims = nDims;
-
-    for ( IndexType i = 0; i < nDims; ++i )
-    {
-        mSize[i] = size[i];
-    }
-}
-
-/* ------------------------------------------------------------------------------------ */
 /*   Implementations of inline methods                                                  */
 /* ------------------------------------------------------------------------------------ */
 
-IndexType Grid::ndims() const
+IndexType Grid::nDims() const
 {
     return mNDims;
 }
@@ -213,6 +291,26 @@ IndexType Grid::ndims() const
 void Grid::setSize( IndexType dim, IndexType size )
 {
     mSize[dim] = size;
+}
+
+
+void Grid::getSizes( IndexType sizes[] ) const
+{
+    for ( IndexType iDim = 0; iDim < mNDims; ++iDim )
+    {
+        sizes[iDim] = mSize[iDim];
+    }
+}
+
+void Grid::getDistances( IndexType distances[] ) const
+{
+    IndexType distance = 1;
+
+    for ( IndexType iDim = mNDims; iDim-- > 0; )
+    {
+        distances[iDim] = distance;
+        distance *= mSize[iDim];
+    }
 }
 
 bool Grid::validPos( const IndexType gridPos[] ) const
@@ -234,145 +332,118 @@ bool Grid::validPos( const IndexType gridPos[] ) const
 
 /* ------------------------------------------------------------------------------------ */
 
+void Grid::setBorderType( const IndexType dim, const BorderType type )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( dim, mNDims, "illegal dim used" )
+
+    mBorder[dim][0] = type;
+    mBorder[dim][1] = type;
+}
+
+void Grid::setBorderType( const IndexType dim, const BorderType left, const BorderType right )
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( dim, mNDims, "illegal dim used" )
+
+    mBorder[dim][0] = left;
+    mBorder[dim][1] = right;
+}
+
+/* ------------------------------------------------------------------------------------ */
+
 IndexType Grid::linearPos( const IndexType gridPos[] ) const
 {
+    SCAI_ASSERT_VALID_INDEX_DEBUG( gridPos[0], mSize[0], "grid index out of range" )
+
     IndexType pos = gridPos[0];
 
     for ( IndexType i = 1; i < mNDims; ++i )
     {  
         pos = pos * mSize[i] + gridPos[i];
+        SCAI_ASSERT_VALID_INDEX_DEBUG( gridPos[i], mSize[i], "grid index out of range" )
     }
 
     return pos;
 }
 
-IndexType Grid::linearPos( const IndexType pos0 ) const
-
+IndexType Grid1D::linearPos( const IndexType pos0 ) const
 {
-    SCAI_ASSERT_EQ_DEBUG( 1, mNDims, "linearPos with 1 value, but grid has " << mNDims << " dimensions" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
 
     return pos0;
 }
 
-IndexType Grid::linearPos( const IndexType pos0, const IndexType pos1 ) const
-
+IndexType Grid2D::linearPos( const IndexType pos0, const IndexType pos1 ) const
 {
-    SCAI_ASSERT_EQ_DEBUG( 2, mNDims, "linearPos with 2 values, but grid has " << mNDims << " dimensions" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
 
     return pos0 * mSize[1] + pos1;
 }
 
-IndexType Grid::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2 ) const
+IndexType Grid3D::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2 ) const
 {
-    SCAI_ASSERT_EQ_DEBUG( 3, mNDims, "linearPos with 3 values, but grid has " << mNDims << " dimensions" )
+    // 3-dimensional grid has always 3 dimensions, no assert required
+  
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos2, mSize[2], "grid index out of range" )
 
     return ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2;
 }
 
+IndexType Grid4D::linearPos( const IndexType pos0, const IndexType pos1, const IndexType pos2, const IndexType pos3 ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos0, mSize[0], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos1, mSize[1], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos2, mSize[2], "grid index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( pos3, mSize[3], "grid index out of range" )
+
+    // 4-dimensional grid has always 4 dimensions, no assert required
+
+    return ( ( pos0 * mSize[1] + pos1 ) * mSize[2] + pos2 ) * mSize[3] + pos3;
+}
+
 /* ------------------------------------------------------------------------------------ */
-
-/*  Help routine to get the position in the last dimension */
-
-static void inline getDimPos( IndexType& dimpos, IndexType& pos, const IndexType dimSize )
-{
-    IndexType k = pos / dimSize;
-    dimpos      = pos - k * dimSize;  // modulo part
-    pos         = k;
-}
-
-void Grid::gridPos( IndexType pos[], const IndexType gridPos ) const
-{
-    if ( mNDims == 1 )
-    {
-        pos[0] = gridPos;
-    }
-    else
-    {
-        IndexType p = gridPos;
-
-        for ( IndexType i = mNDims - 1; i > 0; --i )
-        {
-            getDimPos( pos[i], p, mSize[i] );
-
-            // p is now linear index in Grid with one dim less
-        }
-    
-        pos[0] = p;
-    }
-}
-
-bool Grid::operator==( const Grid& other ) const
-{
-    if ( mNDims != other.mNDims )
-    {
-        return false;
-    }
-
-    for ( IndexType i = 0; i < SCAI_GRID_MAX_DIMENSION; ++i )
-    {
-        if ( i >= mNDims ) 
-        {
-            break;
-        }
-
-        if ( mSize[i] != other.mSize[i] ) 
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 bool Grid::operator!=( const Grid& other ) const
 {
     return ! operator==( other );
 }
 
+const IndexType* Grid::sizes() const
+{
+    return mSize;
+}
+
+const Grid::BorderType* Grid::borders() const
+{
+    return mBorder[0];
+}
+
 IndexType Grid::size( IndexType dim ) const
 {
-    if ( dim < mNDims )
-    {
-        return mSize[dim];
-    }
-    else
-    {
-        // just helpful for handling two-dimensional grids in three-dimensional context
-        return 1;
-    }
+    SCAI_ASSERT_VALID_INDEX_DEBUG( dim, SCAI_GRID_MAX_DIMENSION, "illegal dim" )
+ 
+    // ndims <= dim < SCAI_GRID_MAX_DIMENSION is allowed, returns 1
+
+    return mSize[dim];
 }
 
 IndexType Grid::size() const
 {
-    if ( mNDims == 1 )
+    if ( mNDims == 0 )
     {
-        return mSize[0];
-    }
-    else
-    {
-        IndexType s = mSize[0];
-
-        for ( IndexType i = 1; i < mNDims; ++i )
-        {
-            s *= mSize[i];
-        }
-
-        return s;
-    }
-}
-
-std::ostream& operator<<( std::ostream& stream, const Grid& grid )
-{
-    stream << "Grid-" << grid.ndims() << "( " << grid.size(0) ;
-
-    for ( IndexType i = 1; i < grid.ndims(); ++i )
-    {
-        stream << " x " << grid.size(i);
+        return 0;
     }
 
-    stream << " )";
+    IndexType s = mSize[0];
 
-    return stream;
+    for ( IndexType i = 1; i < mNDims; ++i )
+    {
+        s *= mSize[i];
+    }
+
+    return s;
 }
 
 } /* end namespace common */

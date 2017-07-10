@@ -269,6 +269,10 @@ const char* format2Str( const Format::MatrixStorageFormat storageFormat )
             return "DENSE";
             break;
 
+        case Format::STENCIL:
+            return "STENCIL";
+            break;
+
         case Format::ASSEMBLY:
             return "ASSEMBLY";
             break;
@@ -1514,10 +1518,8 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
 
         common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        // For reading we expect here that the file data type matches the storage type
-        // so SCAI_IO_TYPE_DATA should be ignored for reading
-
-        fileIO->setDataType( common::scalar::INTERNAL );
+        // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
+        // fileIO->setDataType( common::scalar::INTERNAL );
 
         SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
 

@@ -117,6 +117,7 @@ scai_project (
         DIAKernelTrait
         ELLKernelTrait
         JDSKernelTrait
+        StencilKernelTrait
         
 )
 

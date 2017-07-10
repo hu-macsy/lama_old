@@ -40,6 +40,8 @@ endif ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
 add_subdirectory ( pardiso )
 add_subdirectory ( solver )
 add_subdirectory ( spy )
+add_subdirectory ( eigenvalue )
+add_subdirectory ( leastsquare )
 
 file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 

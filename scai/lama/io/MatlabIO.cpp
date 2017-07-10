@@ -32,7 +32,7 @@
  * @date 10.06.2016
  */
 
-#include "MatlabIO.hpp"
+#include <scai/lama/io/MatlabIO.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -42,6 +42,11 @@
 #include <scai/lama/storage/DenseStorage.hpp>
 #include <scai/lama/storage/COOStorage.hpp>
 #include <scai/lama/io/MATIOStream.hpp>
+#include <scai/lama/io/ImageIO.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
+
+#include <scai/utilskernel/openmp/OpenMPSection.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
@@ -61,6 +66,10 @@ using namespace utilskernel;
 
 namespace lama
 {
+
+/* --------------------------------------------------------------------------------- */
+
+SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
 
 /* --------------------------------------------------------------------------------- */
 /*    Implementation of Factory methods                                              */
@@ -98,10 +107,6 @@ void MatlabIO::writeAt( ostream& stream ) const
     writeMode( stream );
     stream << ", only formatted )";
 }
-
-/* --------------------------------------------------------------------------------- */
-
-SCAI_LOG_DEF_LOGGER( MatlabIO::logger, "FileIO.MatlabIO" )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -203,13 +208,14 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
 
     inFile.readDataElement( dataElement );
 
+    IndexType nDims;
     IndexType dims[2];
     IndexType nnz;
     bool      isComplex;
 
     MATIOStream::MATClass matClass;
 
-    MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElement.get() );
+    MATIOStream::getMatrixInfo( matClass, dims, 2, nDims, nnz, isComplex, dataElement.get() );
 
     n = dims[0] * dims[1];
 
@@ -254,6 +260,50 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
+static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<ValueType>& in, const common::Grid& grid, bool isRow2Col )
+{
+    IndexType nDims = grid.nDims();
+
+    // arrays for distances between elements, one for row-major ordering, one for col-major
+
+    IndexType rowMajorDist[ SCAI_GRID_MAX_DIMENSION ];  // used in LAMA
+    IndexType colMajorDist[ SCAI_GRID_MAX_DIMENSION ];  // required for MATLAB
+
+    grid.getDistances( rowMajorDist );  
+
+    // column major ordering of grid( n1, n2, n3, n4 ) is dist (1, n1, n1*n2, n1*n2*n3 )
+
+    colMajorDist[ 0 ] = 1;
+
+    for ( IndexType i = 1; i < nDims; ++i )
+    {
+        colMajorDist[i] = colMajorDist[ i - 1 ] * grid.size( i - 1 );
+    }
+
+    hmemo::ReadAccess<ValueType> rIn( in );
+    hmemo::WriteOnlyAccess<ValueType> wOut( out, grid.size() );
+
+    if ( isRow2Col )
+    {
+        // convert row-major ordering to column-major ordering
+
+        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), colMajorDist, 
+                                            rIn.get(), rowMajorDist, 
+                                            common::binary::COPY, false );
+    }
+    else
+    {
+        // convert column-major ordering to row-major ordering
+
+        utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), rowMajorDist, 
+                                            rIn.get(), colMajorDist, 
+                                            common::binary::COPY, false );
+    }
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatlabIO::readArrayImpl(
     hmemo::HArray<ValueType>& array,
     const string& arrayFileName,
@@ -277,11 +327,12 @@ void MatlabIO::readArrayImpl(
 
     IndexType dims[2];
     IndexType nnz;
+    IndexType nDims;
     bool      isComplex;
 
     MATIOStream::MATClass matClass;
 
-    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, elementPtr );
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, 2, nDims, nnz, isComplex, elementPtr );
 
     SCAI_ASSERT_LE_ERROR( offset, nBytes, "data element insufficient to read matrix info" )
 
@@ -361,15 +412,15 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 /* --------------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, IndexType dims[] )
+void MatlabIO::writeDenseGrid( MATIOStream& outFile, const hmemo::HArray<ValueType>& array, const common::Grid& grid )
 {
-    SCAI_ASSERT_EQ_ERROR( array.size(), dims[0] * dims[1], "array size / dims mismatch" )
+    SCAI_ASSERT_EQ_ERROR( array.size(), grid.size(), "array size / dims mismatch" )
 
     common::scalar::ScalarType stype = array.getValueType();
 
     if ( mScalarTypeData == common::scalar::PATTERN )
     {
-        COMMON_THROWEXCEPTION( "Cannot write dense data as pattern" )
+        COMMON_THROWEXCEPTION( "Cannot write data as pattern" )
     }
 
     if ( mScalarTypeData != common::scalar::INTERNAL )
@@ -384,19 +435,20 @@ void MatlabIO::writeDenseArray( MATIOStream& outFile, const hmemo::HArray<ValueT
 
     bool dryRun = true;   // make a dryRun at first to determine the size of written bytes
 
-    uint32_t wBytes = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
+    uint32_t wBytes = outFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
+
     wBytes += writeArrayData( outFile, array, dryRun );
 
     nBytes = wBytes - 8;  // subtract for the first header
 
-    SCAI_LOG_INFO( logger, "writeDenseArray, dryrun gives written bytes = " << wBytes << ", now write" )
+    SCAI_LOG_INFO( logger, "writeDenseGrid, dryrun gives written bytes = " << wBytes << ", now write" )
 
     dryRun = false;  // now write it with the correct value of nBytes
 
-    wBytes  = outFile.writeDenseHeader( dims[0], dims[1], nBytes, stype, dryRun );
+    wBytes  = outFile.writeShapeHeader( grid.sizes(), grid.nDims(), nBytes, stype, dryRun );
     wBytes += writeArrayData( outFile, array, dryRun );
 
-    SCAI_LOG_INFO( logger, "written dense array " << array << " as " << dims[0] << " x " << dims[1]
+    SCAI_LOG_INFO( logger, "written shaped array " << array << " with shape " << grid
                    << ", wBytes = " << wBytes )
 }
 
@@ -413,9 +465,44 @@ void MatlabIO::writeArrayImpl(
 
     outFile.writeMATFileHeader();
 
-    IndexType dims[2] = { array.size(), 1 };
+    // Matlab expects even for a vector a two-dimensional grid.
 
-    writeDenseArray( outFile, array, dims );
+    const common::Grid2D grid( array.size(), 1 );
+
+    writeDenseGrid( outFile, array, grid );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeGridImpl( ( MatlabIO& ) *this, data, grid, outputFileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::writeGridImpl(
+    const hmemo::HArray<ValueType>& data,
+    const common::Grid& grid,
+    const string& outputFileName )
+{
+    SCAI_ASSERT( mFileMode != FORMATTED, "Formatted output not supported for " << *this )
+
+    SCAI_LOG_INFO( logger, "writeGridImpl<" << common::TypeTraits<ValueType>::id() 
+                            << ">, shape = " << grid << ", data = " << data )
+
+    MATIOStream outFile( outputFileName, ios::out );
+
+    outFile.writeMATFileHeader();
+
+    HArray<ValueType> tmpData( grid.size() );
+ 
+    bool isRow2Col = true;
+
+    changeMajor( tmpData, data, grid, isRow2Col );
+
+    writeDenseGrid( outFile, tmpData, grid );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -461,9 +548,9 @@ void MatlabIO::writeStorageImpl(
 
         HArray<ValueType>& array = denseStorage.getData();
 
-        IndexType dims[2] = { numRows, numCols };
+        common::Grid2D grid( numRows, numCols );
 
-        writeDenseArray( outFile, array, dims );
+        writeDenseGrid( outFile, array, grid );
     }
     else
     {
@@ -517,11 +604,12 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
     inFile.readDataElement( dataElement );
 
     IndexType dims[2];
+    IndexType nDims;
     bool      isComplex;
 
     MATIOStream::MATClass matClass;
 
-    MATIOStream::getMatrixInfo( matClass, dims, numValues, isComplex, dataElement.get() );
+    MATIOStream::getMatrixInfo( matClass, dims, 2, nDims, numValues, isComplex, dataElement.get() );
 
     numRows    = dims[0];
     numColumns = dims[1];
@@ -645,6 +733,8 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
         IndexType dims[2];
 
         IndexType nnz;
+        IndexType nDims;
+        IndexType maxDims = 2;
         bool      isComplex;
         MATIOStream::MATClass matClass;
 
@@ -655,7 +745,7 @@ uint32_t MatlabIO::getStructStorage( MatrixStorage<ValueType>& storage, const ch
 
         nBytesField = wBytes; // reset it
 
-        offset1 += MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr + offset + offset1, false );
+        offset1 += MATIOStream::getMatrixInfo( matClass, dims, maxDims, nDims, nnz, isComplex, dataElementPtr + offset + offset1, false );
 
         SCAI_LOG_INFO( logger, "read info of cell " << dims[0] << " x " << dims[1]
                        << ", nnz = " << nnz << ", isComplex = " << isComplex << ", class = " << matClass )
@@ -684,10 +774,12 @@ void MatlabIO::getStorage( MatrixStorage<ValueType>& storage, const char* dataEl
 {
     IndexType dims[2];
     IndexType nnz;
+    IndexType nDims;
+    const IndexType maxDims = 2;
     bool      isComplex;
     MATIOStream::MATClass matClass;
 
-    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, nnz, isComplex, dataElementPtr );
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, maxDims, nDims, nnz, isComplex, dataElementPtr );
 
     if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
     {
@@ -770,8 +862,202 @@ void MatlabIO::readStorageImpl(
     }
 }
 
+/* ------------------------------------------------------------------------------------ */
+/*   Read grid vector data from file                                              */
+/* ------------------------------------------------------------------------------------ */
+
+void MatlabIO::readGridArray( _HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    // use the IO wrapper to call a typed version of readGrid
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readGridImpl( ( MatlabIO& ) *this, data, grid, inputFileName );
+}
+
 /* --------------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const std::string& gridFileName )
+{
+    MATIOStream inFile( gridFileName, ios::in );
+
+    int version = 0;
+    IOStream::Endian endian = IOStream::MACHINE_ENDIAN;
+
+    inFile.readMATFileHeader( version, endian );
+
+    common::scoped_array<char> dataElement;
+
+    uint32_t nBytes = inFile.readDataElement( dataElement );
+
+    const char* elementPtr = dataElement.get();
+
+    IndexType nDims;
+    IndexType dims[SCAI_GRID_MAX_DIMENSION];
+    IndexType nnz;
+    bool      isComplex;
+
+    MATIOStream::MATClass matClass;
+
+    uint32_t offset = MATIOStream::getMatrixInfo( matClass, dims, SCAI_GRID_MAX_DIMENSION, nDims, nnz, isComplex, dataElement.get() );
+
+    if ( matClass == MATIOStream::MAT_SPARSE_CLASS )
+    {
+        COMMON_THROWEXCEPTION( "File " << gridFileName << " contains sparse matrix, but not grid array" )
+    }
+
+    if ( MATIOStream::class2ScalarType( matClass ) == common::scalar::UNKNOWN )
+    {
+        COMMON_THROWEXCEPTION( "File " << gridFileName << " contains unsupported matrix class = " << matClass )
+    }
+
+    grid = common::Grid( nDims, dims );
+
+    SCAI_ASSERT_LE_ERROR( offset, nBytes, "data element insufficient to read matrix info" )
+
+    // now read the data
+
+    offset += getArrayData( data, elementPtr + offset, nBytes - offset );
+
+    SCAI_ASSERT_EQ_ERROR( data.size(), grid.size(), "serious mismatch" )
+
+    if ( isComplex )
+    {
+        utilskernel::LArray<ValueType> imagValues;
+
+        offset += getArrayData( imagValues, elementPtr + offset, nBytes - offset );
+
+        buildComplex( data, imagValues );
+    }
+
+    HArray<ValueType> tmpData( grid.size() );
+    changeMajor( tmpData, data, grid, false );
+    data.swap( tmpData );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+{
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( MatlabIO& ) *this, storage, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( MatlabIO& ) *this, storage, fileName, offsetRow, nRows );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( MatlabIO& ) *this, array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( MatlabIO& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( MatlabIO& ) *this, array, fileName, offset, n );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void MatlabIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<MatlabIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( MatlabIO& ) *this, size, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string MatlabIO::getMatrixFileSuffix() const
+{
+    return MatlabIO::createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+std::string MatlabIO::getVectorFileSuffix() const
+{
+    return MatlabIO::createValue();
+}
+
+/* --------------------------------------------------------------------------------- */
+
+#define SCAI_MATLAB_METHOD_INSTANTIATIONS( _type )           \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::writeArrayImpl(                           \
+        const hmemo::HArray<_type>& array,                   \
+        const string& fileName );                            \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::readArrayImpl(                            \
+        hmemo::HArray<_type>& array,                         \
+        const string& arrayFileName,                         \
+        const IndexType ,                                    \
+        const IndexType );                                   \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::writeSparseImpl(                          \
+        const IndexType size,                                \
+        const HArray<IndexType>& index,                      \
+        const HArray<_type>& values,                         \
+        const std::string& fileName );                       \
+                                                             \
+    template COMMON_DLL_IMPORTEXPORT                         \
+    void MatlabIO::readSparseImpl(                           \
+        IndexType& size,                                     \
+        HArray<IndexType>& indexes,                          \
+        HArray<_type>& values,                               \
+        const std::string& fileName );         
+
+SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_ARRAY_TYPES_HOST )
+
+#undef SCAI_MATLAB_METHOD_INSTANTIATIONS
+
+#define SCAI_MATLAB_METHOD_INSTANTIATIONS( _type )      \
+                                                        \
+    template COMMON_DLL_IMPORTEXPORT                    \
+    void MatlabIO::writeStorageImpl(                    \
+        const MatrixStorage<_type>& storage,            \
+        const string& fileName );                       \
+                                                        \
+    template COMMON_DLL_IMPORTEXPORT                    \
+    void MatlabIO::readStorageImpl(                     \
+        MatrixStorage<_type>& storage,                  \
+        const string& matrixFileName,                   \
+        const IndexType firstRow,                       \
+        const IndexType nRows );                     
+
+SCAI_COMMON_LOOP( SCAI_MATLAB_METHOD_INSTANTIATIONS, SCAI_NUMERIC_TYPES_HOST )
+
+#undef SCAI_MATLAB_METHOD_INSTANTIATIONS
 
 }  // lama
 
 }  // scai
+
+

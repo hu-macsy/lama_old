@@ -45,6 +45,8 @@ scai_project(
         OpenMPELLUtils
         OpenMPJDSUtils
         
+        OpenMPStencilKernel
+
     HEADERS        # .hpp
 
 

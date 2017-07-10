@@ -40,7 +40,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
-#include <scai/dmemo/CyclicDistribution.hpp>
+#include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
@@ -305,12 +305,16 @@ int main( int argc, const char* argv[] )
                 LamaTiming timer( comm, "Metis" );
                 // dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), inMatrix, weight ) );
             }
-            else if ( *oldDist == dmemo::CyclicDistribution( numRows, numRows, oldDist->getCommunicatorPtr() ) )
+            else if ( *oldDist == dmemo::SingleDistribution( numRows, oldDist->getCommunicatorPtr(), 0 ) )
             {
+                // one single processor only has read the matrix, redistribute among all available processors
+
                 dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
             }
             else
             {
+                // was a distributed read, so take this as distribution
+
                 dist = inMatrix.getRowDistributionPtr();
             }
 
@@ -360,9 +364,12 @@ int main( int argc, const char* argv[] )
 
         loggerName << solverName << ", " << lamaconf.getCommunicator() << ": ";
 
+        bool suppressWriting = comm.getRank() > 0;   // only host processor logs
+
         LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                              lamaconf.getLogLevel(),
-                                             LoggerWriteBehaviour::toConsoleOnly ) );
+                                             LoggerWriteBehaviour::toConsoleOnly,
+                                             suppressWriting ) );
 
         mySolver->setLogger( logger );
 

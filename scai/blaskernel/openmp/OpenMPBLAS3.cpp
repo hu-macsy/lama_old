@@ -43,6 +43,7 @@
 
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
+#include <scai/tracing.hpp>
 
 namespace scai
 {
@@ -72,6 +73,8 @@ void OpenMPBLAS3::gemm(
     ValueType* C,
     const IndexType ldc )
 {
+    SCAI_REGION( "OpenMP.BLAS3.gemm" )
+
     TaskSyncToken* syncToken = TaskSyncToken::getCurrentSyncToken();
 
     if ( syncToken )

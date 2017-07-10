@@ -42,7 +42,7 @@ set ( USE_ZLIB ${USE_ZLIB} CACHE BOOL "Enable / Disable use of ZLIB (data compre
 # set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
 if ( ZLIB_FOUND )
-	set ( SCAI_ZLIB_LIBRARIES ${ZLIB_LIBRARY} CACHE PATH "ZLIB library" )
+    set ( SCAI_ZLIB_LIBRARIES ${ZLIB_LIBRARY} CACHE PATH "ZLIB library" )
     set ( SCAI_ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIR} CACHE PATH "ZLIB include directory" )
 
     ## get ZLIB version

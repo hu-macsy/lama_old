@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( nonZeroValuesTest, ValueType, scai_numeric_test_t
 
     // all values are less than 10
 
-    BOOST_CHECK_EQUAL( count, 0 );
+    BOOST_CHECK_EQUAL( count, IndexType( 0 ) );
 }
 
 /* ------------------------------------------------------------------------------------- */

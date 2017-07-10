@@ -111,13 +111,20 @@ scai_project (
         _SparseVector
 
         DenseVector
+        GridVector
+        GridSection
         SparseVector
 
         Vector
 
+        GridVector
+        GridSection
+
     HEADERS                  # .hpp only
 
         Scalar
+        GridReadAccess
+        GridWriteAccess
     )
 
 ### add subdirectories
@@ -165,6 +172,10 @@ endif ( GPI2_FOUND AND IBVERBS_FOUND AND USE_GPI2 )
 if ( USE_ZLIB AND ZLIB_FOUND ) 
     target_link_libraries ( ${PROJECT_NAME} ${ZLIB_LIBRARY} )
 endif ( USE_ZLIB AND ZLIB_FOUND ) 
+
+if ( USE_PNGLIB AND PNGLIB_FOUND ) 
+    target_link_libraries ( ${PROJECT_NAME} ${PNGLIB_LIBRARY} )
+endif ( USE_PNGLIB AND PNGLIB_FOUND ) 
 
 ### install ###
 

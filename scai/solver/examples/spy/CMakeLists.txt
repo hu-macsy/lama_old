@@ -34,30 +34,12 @@
 
 set ( HEADER Bitmap.hpp )
 
-## Example needs the PNG library
-
-find_path( PNG_INCLUDE_DIR png.h
-           /opt/local/include
-           /usr/local/include
-           /usr/include )
-
-find_library( PNG_LIBRARY 
-              NAMES png
-)
-
-if ( PNG_LIBRARY AND PNG_INCLUDE_DIR )
-    include_directories( ${PNG_INCLUDE_DIR} )
-    foreach ( executable amg_spy spy )
-        add_executable( ${executable}.exe ${executable}.cpp )
-        target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${PNG_LIBRARY} )
-        set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-        set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-    endforeach ( executable )
-endif ()
-
-mark_as_advanced( PNG_LIBRARY PNG_INCLUDE_DIR )
-
-set ( ADDITIONAL_EXAMPLE_LINK_LIBRARIES png )
+foreach ( executable spy amg_spy )
+    add_executable( ${executable}.exe ${executable}.cpp )
+    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
+    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+endforeach ( executable )
 
 # configure make.inc for examples
 include ( Functions/prepareExamplesMakeInc )

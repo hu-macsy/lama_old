@@ -1642,7 +1642,7 @@ void ell_compressValues_kernel(
         }
 
         IndexType totalGaps = 0;
-        IndexType lastNewPos = -1;
+        IndexType lastNewPos = static_cast<IndexType>( -1 );
 
         for ( IndexType j = 0; j < IA[i]; j++ )
         {

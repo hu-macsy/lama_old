@@ -40,6 +40,9 @@
 using namespace scai;
 using namespace dmemo;
 using common::Grid;
+using common::Grid1D;
+using common::Grid2D;
+using common::Grid3D;
 
 /* --------------------------------------------------------------------- */
 
@@ -53,7 +56,7 @@ struct GridDistributionTestConfig
         rank = comm->getRank();
         size = comm->getSize();
         blockSize = 17;
-        dist = DistributionPtr( new GridDistribution( Grid( blockSize * size ), comm, Grid( size ) ) );
+        dist = DistributionPtr( new GridDistribution( Grid1D( blockSize * size ), comm, Grid1D( size ) ) );
     }
 
     ~GridDistributionTestConfig()
@@ -113,13 +116,13 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     const IndexType globalSize = 17;
 
-    Grid globalGrid( globalSize, globalSize );
+    Grid2D globalGrid( globalSize, globalSize );
 
     // constructor must fail for empty communicator
 
     BOOST_CHECK_THROW(
     {
-        GridDistribution bdist( globalGrid, comm, Grid( 1 ) );
+        GridDistribution bdist( globalGrid, comm, Grid1D( 1 ) );
     },
     common::Exception );
 
@@ -135,9 +138,9 @@ BOOST_AUTO_TEST_CASE( constructorTest )
 
     // local grid must be subgrid
 
-    BOOST_CHECK_EQUAL( globalGrid.ndims(), localGrid.ndims() );
+    BOOST_CHECK_EQUAL( globalGrid.nDims(), localGrid.nDims() );
 
-    for ( IndexType idim = 0; idim < globalGrid.ndims(); ++ idim )
+    for ( IndexType idim = 0; idim < globalGrid.nDims(); ++ idim )
     {
         BOOST_CHECK( localGrid.size( idim ) <= globalGrid.size( idim ) );
     }
@@ -165,8 +168,8 @@ BOOST_AUTO_TEST_CASE( constructor1Test )
     const IndexType N1 = 1;
     const IndexType N2 = 2;
 
-    Grid globalGrid( N1, N2 );
-    Grid procGrid( 1, 1 );
+    Grid2D globalGrid( N1, N2 );
+    Grid2D procGrid( 1, 1 );
 
     GridDistribution myGridDistribution( globalGrid, comm, procGrid );
 
@@ -179,7 +182,7 @@ BOOST_AUTO_TEST_CASE( constructor1Test )
     else
     {
         const IndexType zero = 0;
-        BOOST_CHECK_EQUAL( localGrid, Grid( zero, zero ) );
+        BOOST_CHECK_EQUAL( localGrid, Grid2D( zero, zero ) );
     }
 }
 
@@ -191,14 +194,14 @@ BOOST_AUTO_TEST_CASE( constructor2Test )
 
     const IndexType globalSize = 17;
 
-    Grid globalGrid( globalSize, globalSize, globalSize );
-    Grid procGrid( comm->getSize(), 1, 1 );
+    Grid3D globalGrid( globalSize, globalSize, globalSize );
+    Grid3D procGrid( comm->getSize(), 1, 1 );
 
     GridDistribution myGridDistribution( globalGrid, comm, procGrid );
 
     const Grid& localGrid = myGridDistribution.getLocalGrid();
 
-    BOOST_CHECK_EQUAL( globalGrid.ndims(), localGrid.ndims() );
+    BOOST_CHECK_EQUAL( globalGrid.nDims(), localGrid.nDims() );
 
     if ( comm->getSize() == 1 )
     {
@@ -211,7 +214,7 @@ BOOST_AUTO_TEST_CASE( constructor2Test )
         BOOST_CHECK( localGrid.size( 0 ) < globalGrid.size( 0 ) );
     }
 
-    for ( IndexType idim = 1; idim < globalGrid.ndims(); ++ idim )
+    for ( IndexType idim = 1; idim < globalGrid.nDims(); ++ idim )
     {
         // all other dimensions are not distributed at all
 
@@ -226,7 +229,7 @@ BOOST_AUTO_TEST_CASE( blockSizeTest )
     // Test smaller sizes
     for ( IndexType n = 1; n <= static_cast<IndexType>( size ); n++ )
     {
-        GridDistribution small( Grid( n ), comm, Grid( comm->getSize() ) );
+        GridDistribution small( Grid1D( n ), comm, Grid1D( comm->getSize() ) );
 
         // only the first n partitions have one element
 
@@ -312,8 +315,8 @@ BOOST_AUTO_TEST_CASE( ownedIndexesTest )
 
 BOOST_AUTO_TEST_CASE( isEqualTest )
 {
-    Grid globalGrid( 10, 10 );
-    Grid procGrid( 1, comm->getSize() );
+    Grid2D globalGrid( 10, 10 );
+    Grid2D procGrid( 1, comm->getSize() );
 
     DistributionPtr griddist1( new GridDistribution( globalGrid, comm, procGrid ) );
     DistributionPtr griddist2( griddist1 );

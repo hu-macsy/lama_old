@@ -255,8 +255,12 @@ static inline void getStencil(
                     continue;
                 }
 
-                IndexType npos[] = { pos[0] + dx, pos[1] + dy, pos[2] + dz };
-                positions.push_back( grid.linearPos( npos ) );
+                // reinterpretation as 3D grid is safe as all 3 dimensions are set
+
+                const common::Grid3D& grid3D = reinterpret_cast<const common::Grid3D&>( grid );
+
+                positions.push_back( grid3D.linearPos( pos[0] + dx, pos[1] + dy, pos[2] + dz ) );
+
                 values.push_back( -1 );
             }
         }

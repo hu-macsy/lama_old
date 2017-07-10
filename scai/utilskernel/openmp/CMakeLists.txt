@@ -40,6 +40,7 @@ scai_project (
     CLASSES 
         
         OpenMPUtils
+        OpenMPSection
         
     ADD_PARENT_SCOPE
     

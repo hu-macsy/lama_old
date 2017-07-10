@@ -44,6 +44,7 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/test/TestMacros.hpp>
+#include <scai/common/exception/UnsupportedException.hpp>
 
 using namespace scai;
 using namespace common;
@@ -250,7 +251,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         SCAI_LOG_INFO( logger, "FileIOFormatted: write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
-        csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::FORMATTED );
+        try
+        {
+            csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::FORMATTED );
+        } 
+        catch( common::UnsupportedException& )
+        {
+            // if storage is unssupported just skip this test here
+
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -352,7 +362,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         SCAI_LOG_INFO( logger, "FileIO(binary): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
-        csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::BINARY );
+        try
+        {
+            csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::BINARY );
+        } 
+        catch( common::UnsupportedException& )
+        {
+            // if storage is unssupported just skip this test here
+
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -421,7 +440,14 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
 
         SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
-        csrStorage.writeToFile( fileName );
+        try
+        {
+            csrStorage.writeToFile( fileName );
+        } 
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -498,7 +524,14 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
 
         SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
-        csrStorage.writeToFile( fileName );
+        try
+        {
+            csrStorage.writeToFile( fileName );
+        } 
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -571,7 +604,15 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
             std::string fileName = "outEmptyStorage" + typeName + fileSuffix;
 
             m.clear();
-            m.writeToFile( fileName );
+
+            try
+            {
+                m.writeToFile( fileName );
+            } 
+            catch( common::UnsupportedException& )
+            {
+                continue;
+            }
 
             BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -636,7 +677,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         SCAI_LOG_DEBUG( logger, "FileIO(formatted): write this array: " << array << " via " << *fileIO << " to " << fileName )
 
-        fileIO->writeArray( array, fileName );
+        try
+        {
+            fileIO->writeArray( array, fileName );
+        }
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -751,7 +799,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         SCAI_LOG_INFO( logger, "FileIO(binary): write this array: " << array << " via " << *fileIO << " to " << fileName )
 
-        fileIO->writeArray( array, fileName );
+        try
+        {
+            fileIO->writeArray( array, fileName );
+        }
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -805,7 +860,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         SCAI_LOG_INFO( logger, "FileIO: write this empty array: " << array << " via " << *fileIO << " to " << fileName )
 
-        fileIO->writeArray( array, fileName );
+        try
+        {
+            fileIO->writeArray( array, fileName );
+        }
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -874,7 +936,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         SCAI_LOG_INFO( logger, "FileIO(sparse): write this sparse array: " << array << " via " << *fileIO << " to " << fileName )
 
-        fileIO->writeSparse( N, sparseIndexes, sparseArray, fileName );
+        try
+        {
+            fileIO->writeSparse( N, sparseIndexes, sparseArray, fileName );
+        }
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         BOOST_CHECK( FileIO::fileExists( fileName ) );
 
@@ -905,7 +974,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
             // indexes must be equal
 
-            BOOST_CHECK_EQUAL( 0, sparseIndexes.maxDiffNorm( inPos ) );
+            BOOST_CHECK_EQUAL( IndexType( 0 ), sparseIndexes.maxDiffNorm( inPos ) );
 
             for ( IndexType i = 0; i < inValues.size(); ++i )
             {
@@ -964,7 +1033,14 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
         SCAI_LOG_INFO( logger, *fileIO << ": write matrix pattern -> " << fileName
                        << ", matrix = " << csrStorage );
 
-        fileIO->writeStorage( csrStorage, fileName );
+        try
+        {
+            fileIO->writeStorage( csrStorage, fileName );
+        }
+        catch( common::UnsupportedException& )
+        {
+            continue;
+        }
 
         CSRStorage<ValueType> readStorage;
 

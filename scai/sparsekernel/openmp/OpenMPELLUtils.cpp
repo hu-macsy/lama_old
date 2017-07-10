@@ -681,8 +681,8 @@ void OpenMPELLUtils::matrixAddSizes(
 
     SCAI_LOG_INFO( logger, "matrixAddSizes A + B, #rows = " << m )
 
-    static const IndexType NINIT = n + 1; // marks unused colums
-    static const IndexType END   = n + 2; // marks end of list
+    const IndexType NINIT = n + 1; // marks unused colums
+    const IndexType END   = n + 2; // marks end of list
 
     // determine the number of entries in output matrix
 

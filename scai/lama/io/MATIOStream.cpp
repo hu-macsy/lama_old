@@ -32,7 +32,7 @@
  * @date 23.11.2016
  */
 
-#include "scai/lama/io/MATIOStream.hpp"
+#include <scai/lama/io/MATIOStream.hpp>
 
 #include <zlib.h>
 
@@ -449,9 +449,9 @@ uint32_t MATIOStream::writeSparseHeader(
 
 /* --------------------------------------------------------------------------------- */
 
-uint32_t MATIOStream::writeDenseHeader(
-    const IndexType m,
-    const IndexType n,
+uint32_t MATIOStream::writeShapeHeader(
+    const IndexType shape[],
+    const IndexType nDims,
     const uint32_t nBytes,
     common::scalar::ScalarType stype,
     bool dryRun )
@@ -459,7 +459,7 @@ uint32_t MATIOStream::writeDenseHeader(
     MATClass matClass = MATIOStream::scalarType2Class( stype );
     bool    isComplex = common::isComplex( stype );
 
-    SCAI_LOG_INFO( logger, "writeDenseHeader, nBytes = " << nBytes << ", complex = " << isComplex )
+    SCAI_LOG_INFO( logger, "writeShapeHeader, nBytes = " << nBytes << ", complex = " << isComplex )
 
     uint32_t dataType = MAT_MATRIX;
     uint32_t wBytes   = writeDataElementHeader( dataType, nBytes, dryRun );
@@ -477,9 +477,16 @@ uint32_t MATIOStream::writeDenseHeader(
 
     wBytes += writeData( header, 2, dryRun );
 
-    int dims[2] = { static_cast<int>( m ), static_cast<int>( n ) };
+    SCAI_ASSERT_LE_ERROR( nDims, 8, "array shape with too many dimensions" )
 
-    wBytes += writeData( dims, 2, dryRun );
+    int iShape[8];   // shape needs to be converted to int
+
+    for ( IndexType idim = 0; idim < nDims; ++idim )
+    {
+        iShape[idim] = static_cast<int>( shape[idim] );
+    }
+
+    wBytes += writeData( iShape, nDims, dryRun );
     wBytes += writeString( "LAMA", dryRun );
 
     return wBytes;
@@ -487,7 +494,7 @@ uint32_t MATIOStream::writeDenseHeader(
 
 /* --------------------------------------------------------------------------------- */
 
-uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], IndexType& nnz, bool& isComplex, const char* data, bool isCell )
+uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[], const IndexType maxDims, IndexType& nDims, IndexType& nnz, bool& isComplex, const char* data, bool isCell )
 {
     uint32_t dataType;
     uint32_t nBytes;
@@ -498,15 +505,21 @@ uint32_t MATIOStream::getMatrixInfo( MATClass& matClass, IndexType dims[2], Inde
     SCAI_ASSERT_EQ_ERROR( dataType, MATIOStream::MAT_MATRIX, "can only read array as MATRIX - MATLAB array" )
 
     uint32_t header[2];
-    int32_t  mdims[2];
+    int32_t  mdims[8];
 
     uint8_t* headerFlags = reinterpret_cast<uint8_t*>( header );
 
     elementPtr += getData( header, 2, elementPtr );
-    elementPtr += getData( mdims, 2, elementPtr );
 
-    dims[0] = static_cast<IndexType>( mdims[0] );
-    dims[1] = static_cast<IndexType>( mdims[1] );
+    SCAI_LOG_DEBUG( logger, "Read header, header[0] = " << header[0] << ", header[1] = " << header[1] )
+    SCAI_LOG_DEBUG( logger, "header flags = " << ( int ) headerFlags[0] << ", " << ( int ) headerFlags[1] << ", " << ( int ) headerFlags[2] << ", " << ( int ) headerFlags[3] )
+
+    elementPtr += getDataN( mdims, nDims, maxDims, elementPtr );
+ 
+    for ( IndexType i = 0; i < nDims; ++i )
+    {
+        dims[i] = static_cast<IndexType>( mdims[i] );
+    }
 
     matClass  = MATClass( headerFlags[0] );
     isComplex = headerFlags[1] & ( 1 << 3 );

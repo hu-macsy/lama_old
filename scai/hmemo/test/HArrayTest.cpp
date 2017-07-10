@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE( newArrayTest )
   
     common::unique_ptr<_HArray> tmpA( A.newArray() );
 
-    BOOST_CHECK_EQUAL( 0, tmpA->size() );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), tmpA->size() );
     BOOST_CHECK_EQUAL( tmpA->getValueType(), A.getValueType() );
 }
 

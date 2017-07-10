@@ -650,7 +650,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
 
         // ia3 must be equal to ia1, ia2
 
-        BOOST_REQUIRE_EQUAL( 0, ia3.maxDiffNorm( ia1 ) );
+        BOOST_REQUIRE_EQUAL( IndexType( 0 ), ia3.maxDiffNorm( ia1 ) );
 
         // array3 must be array1 op array2 for all elements
 
@@ -658,10 +658,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
         ReadAccess<ValueType> rValues2( array2, host );  // read result array
         ReadAccess<ValueType> rValues3( array3, host );  // read result array
 
+        typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
         for ( IndexType i = 0; i < nnz; ++i )
         {
             ValueType expectedValue = applyBinary( rValues1[i], op, rValues2[i] );
-            BOOST_REQUIRE_EQUAL( expectedValue, rValues3[i] );
+
+            AbsType diff = common::Math::abs( expectedValue - rValues3[i] );
+
+            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
         }
     }
 }
@@ -834,6 +839,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scan1Test, ValueType, array_types )
     array.reserve( loc, n + 1 );
     array.init( vals, n );
     LArray<ValueType> correct( n + 1, scans.get(), loc );
+    SCAI_LOG_DEBUG( logger, "scan1( " << array << " )" )
     ValueType total = HArrayUtils::scan1( array );
     ValueType lastVal = array[n];
     BOOST_CHECK_EQUAL( array.size(), n + 1 );
@@ -937,7 +943,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 
     // nonZeroIndexes should have size around n 
 
-    BOOST_CHECK( common::Math::abs( nonZeroIndexes.size() - n ) < ( n / 5 ) );
+    SCAI_LOG_DEBUG( logger, "nonZeroIndexes.size() = " << nonZeroIndexes.size() << ", should be close to " << n )
+
+    // not possible: BOOST_CHECK_CLOSE( n, nonZeroIndexes.size(), 20  );
+    // not possible for unsigned int abs( n - nonZeroIndexes.size() )
+
+    BOOST_CHECK( common::applyBinary( n, common::binary::ABS_DIFF, nonZeroIndexes.size() ) < ( n / 5 ) );
 
     if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
     {
@@ -1615,18 +1626,18 @@ BOOST_AUTO_TEST_CASE( findPosTest )
     BOOST_CHECK_EQUAL( pos, nIndex );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
-    BOOST_CHECK_EQUAL( pos, 0 );
+    BOOST_CHECK_EQUAL( pos, IndexType( 0 ) );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 11 );
-    BOOST_CHECK_EQUAL( pos, 3 );
+    BOOST_CHECK_EQUAL( pos, IndexType( 3 ) );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 19 );
-    BOOST_CHECK_EQUAL( pos, 5 );
+    BOOST_CHECK_EQUAL( pos, IndexType( 5 ) );
 
     indexArray.resize( 1 );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 0 );
-    BOOST_CHECK_EQUAL( pos, 0 );
+    BOOST_CHECK_EQUAL( pos, IndexType( 0 ) );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 19 );
     BOOST_CHECK_EQUAL( pos, nIndex );

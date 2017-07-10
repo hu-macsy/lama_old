@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( localSizeTest )
         }
         else
         {
-            BOOST_CHECK_EQUAL( small.getLocalSize(), 0 );
+            BOOST_CHECK_EQUAL( small.getLocalSize(), IndexType( 0 ) );
         }
     }
 }

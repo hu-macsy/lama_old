@@ -88,6 +88,7 @@ struct Format
         DIA,      //!< Diagonal
         JDS,      //!< Jagged Diagonal Storage
         COO,      //!< Coordinate list
+        STENCIL,  //!< stencil pattern
         ASSEMBLY, //!<  Matrix storage used for assembling of values
         UNDEFINED //!<  Default value
     } MatrixStorageFormat;
@@ -899,7 +900,6 @@ public:
      */
     virtual void copyBlockTo( _MatrixStorage& other, const IndexType first, const IndexType n ) const;
 
-    /** Override default assignment operator. */
     /** Transpose of matrix storage. A default implementation is provided using CSR data.
      *  Derived clauses might override this method with more efficient solutions.
      *

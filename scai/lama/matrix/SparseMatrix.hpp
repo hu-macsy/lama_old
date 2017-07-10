@@ -119,6 +119,15 @@ public:
         return mLocalData->getFormat();
     }
 
+    /** This method sets all relevant data of a sparse matrix and checks consistency */
+
+    void set(
+        common::shared_ptr<MatrixStorage<ValueType> > localData,
+        common::shared_ptr<MatrixStorage<ValueType> > haloData,
+        const dmemo::Halo& halo,
+        dmemo::DistributionPtr rowDist,
+        dmemo::DistributionPtr colDist );
+
     /**
      * @brief Constructor of a replicated sparse matrix with global storage.
      *
@@ -679,12 +688,14 @@ public:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-private:
+protected:
 
     /**
      * @brief Default constructor is disabled.
      */
     SparseMatrix();
+
+private:
 
     /** This method sets a row-distributed matrix corresponding to the distribution of this matrix.
      *  ( no column distribution, no halo ).

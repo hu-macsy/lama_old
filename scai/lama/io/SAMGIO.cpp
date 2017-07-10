@@ -32,14 +32,17 @@
  * @date 20.06.2016
  */
 
-#include "SAMGIO.hpp"
+#include <scai/lama/io/SAMGIO.hpp>
+
+#include <scai/lama/io/IOStream.hpp>
+#include <scai/lama/io/IOWrapper.hpp>
 
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/sparsekernel/CSRKernelTrait.hpp>
-#include <scai/lama/io/IOStream.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
+#include <scai/common/Grid.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/ScalarType.hpp>
@@ -283,6 +286,15 @@ void SAMGIO::readArrayInfo( IndexType& size, const std::string& fileName )
     bool binary;              // dummy variable needed for readVectorHeader
 
     readVectorHeader( size, dataTypeSize, binary, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void SAMGIO::readArray( hmemo::_HArray& array, const std::string& fileName, const IndexType offset, const IndexType n )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::readArrayImpl( ( SAMGIO& ) *this, array, fileName, offset, n );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -688,6 +700,25 @@ void SAMGIO::readStorageImpl(
 
 /* --------------------------------------------------------------------------------- */
 
+void SAMGIO::writeGridArray( const hmemo::_HArray& data, const common::Grid& grid, const std::string& outputFileName )
+{
+    if ( grid.nDims() > 1 )
+    {
+        SCAI_LOG_WARN( logger, "Grid shape information is lost for array when writing to file" )
+    }
+
+    writeArray( data, outputFileName );
+}
+
+void SAMGIO::readGridArray( hmemo::_HArray& data, common::Grid& grid, const std::string& inputFileName )
+{
+    readArray( data, inputFileName );
+    grid = common::Grid1D( data.size() );
+    SCAI_LOG_WARN( logger, "SAMG does not support multidimensional array, take default shape " << grid )
+}
+
+/* --------------------------------------------------------------------------------- */
+
 SAMGIO::Guard SAMGIO::mGuard;
 
 SAMGIO::Guard::Guard()
@@ -729,6 +760,53 @@ int SAMGIO::deleteFile( const std::string& fileName )
     rc = std::remove( dataFileName.c_str() );
 
     return rc;
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void SAMGIO::writeStorage( const _MatrixStorage& storage, const std::string& fileName )
+{
+    IOWrapper<SAMGIO, SCAI_NUMERIC_TYPES_HOST_LIST>::writeStorageImpl( ( SAMGIO& ) *this, storage, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void SAMGIO::readStorage(
+    _MatrixStorage& storage,
+    const std::string& fileName,
+    const IndexType offsetRow,
+    const IndexType nRows )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<SAMGIO, SCAI_NUMERIC_TYPES_HOST_LIST>::readStorageImpl( ( SAMGIO& ) *this, storage, fileName, offsetRow, nRows );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void SAMGIO::writeArray( const hmemo::_HArray& array, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeArrayImpl( ( SAMGIO& ) *this, array, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void SAMGIO::writeSparse( const IndexType n, const hmemo::HArray<IndexType>& indexes, const hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::writeSparseImpl( ( SAMGIO& ) *this, n, indexes, values, fileName );
+}
+
+/* --------------------------------------------------------------------------------- */
+
+void SAMGIO::readSparse( IndexType& size, hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const std::string& fileName )
+{
+    // use IOWrapper to called the typed version of this routine
+
+    IOWrapper<SAMGIO, SCAI_ARRAY_TYPES_HOST_LIST>::readSparseImpl( ( SAMGIO& ) *this, size, indexes, values, fileName );
 }
 
 /* --------------------------------------------------------------------------------- */

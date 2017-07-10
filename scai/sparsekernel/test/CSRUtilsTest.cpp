@@ -949,13 +949,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeNonSquareTest, ValueType, scai_numeric_t
     // test cscIA = expJA, cscJA = expIA, cscValues = expValues
 
     BOOST_REQUIRE_EQUAL( expJA.size(), cscIA.size() );
-    BOOST_CHECK_EQUAL( 0, expJA.maxDiffNorm( cscIA ) );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), expJA.maxDiffNorm( cscIA ) );
 
     BOOST_REQUIRE_EQUAL( expIA.size(), cscJA.size() );
-    BOOST_CHECK_EQUAL( 0, expIA.maxDiffNorm( cscJA ) );
+    BOOST_CHECK_EQUAL( IndexType( 0 ), expIA.maxDiffNorm( cscJA ) );
 
     BOOST_REQUIRE_EQUAL( expValues.size(), cscValues.size() );
-    BOOST_CHECK_EQUAL( 0, expValues.maxDiffNorm( cscValues ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), expValues.maxDiffNorm( cscValues ) );
 }
 
 /* ------------------------------------------------------------------------------------- */
