@@ -32,10 +32,10 @@
  # @date 09.06.2015
 ###
 
-if    ( CUDA_FOUND AND USE_CUDA )
+if ( CUDA_FOUND AND USE_CUDA )
     set ( CUDACLASSES CUDAError CUDASettings CUDACtx CUDAAccess )
     set ( CUDAHEADERS CUDATexVector CUDAUtils )
-endif ( CUDA_FOUND AND USE_CUDA )
+endif ()
 
 # add source and header files to the current project
 

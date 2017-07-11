@@ -145,6 +145,10 @@ scai_build_variable ( NAME      SCAI_TRACING
                       DEFAULT   On
                       DOCSTRING "tracing of regions for performance analysis" )
 
+## scai_summary collects information about found external packages
+
+include ( scai_macro/scai_summary )
+
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
 
 if ( BUILD_TEST )
@@ -176,7 +180,6 @@ include ( scai_macro/scai_module )
 include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
-include ( scai_macro/scai_summary )
 
 include ( Functions/relative_install )
 
