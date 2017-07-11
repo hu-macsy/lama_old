@@ -338,7 +338,7 @@ bool OpenMPJDSUtils::checkDiagonalProperty(
             return diagonalProperty;
         }
 
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp parallel for 
 
         for ( IndexType ii = 0; ii < numRows; ++ii )
         {
@@ -399,7 +399,7 @@ IndexType OpenMPJDSUtils::ilg2dlg(
     //             |------------->             2   2
     // dlg:                           6  5  5  2   2
     IndexType numTotal = 0;
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) reduction( +:numTotal )
+    #pragma omp parallel for reduction( +:numTotal )
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -443,7 +443,7 @@ void OpenMPJDSUtils::getCSRValues(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.getCSR" )
-        #pragma omp for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -483,7 +483,7 @@ void OpenMPJDSUtils::setCSRValues(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.setCSR" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < numRows; ii++ )
         {
@@ -569,7 +569,7 @@ void OpenMPJDSUtils::normalGEMV(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.normalGEMV" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < nonEmptyRows; ii++ )
         {
@@ -712,7 +712,7 @@ void OpenMPJDSUtils::jacobi(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.jacobi" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < numRows; ii++ )
         {
@@ -784,7 +784,7 @@ void OpenMPJDSUtils::jacobiHalo(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.JDS.jacobiHalo" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {

@@ -32,7 +32,7 @@
  # @date 19.05.2017
 ###
 
-foreach ( executable gridIO denseIO gridConversion )
+foreach ( executable gridIO denseIO gridConversion gridSection )
     add_executable( ${executable}.exe ${executable}.cpp )
     target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )

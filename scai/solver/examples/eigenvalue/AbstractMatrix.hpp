@@ -63,132 +63,133 @@ public:
     {
     }
 
-	virtual bool isConsistent() const
+    virtual bool isConsistent() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-	virtual const char* getTypeName() const
+    virtual const char* getTypeName() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-	virtual void clear()
+    virtual void clear()
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-	virtual void purge()
+    virtual void purge()
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-	virtual void allocate(IndexType, IndexType)
+    virtual void allocate(IndexType, IndexType)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-	virtual void allocate(dmemo::DistributionPtr, dmemo::DistributionPtr)
+    virtual void allocate(dmemo::DistributionPtr, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setIdentity(dmemo::DistributionPtr)
+    virtual void setIdentity(dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setDenseData(dmemo::DistributionPtr, dmemo::DistributionPtr, const hmemo::_HArray&, Scalar)
+    virtual void setDenseData(dmemo::DistributionPtr, dmemo::DistributionPtr, const hmemo::_HArray&, Scalar)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setCSRData(dmemo::DistributionPtr, dmemo::DistributionPtr, IndexType, const hmemo::HArray<int>&, const hmemo::HArray<int>&, const hmemo::_HArray&)
+    virtual void setCSRData(dmemo::DistributionPtr, dmemo::DistributionPtr, 
+                            IndexType, const hmemo::HArray<IndexType>&, const hmemo::HArray<IndexType>&, const hmemo::_HArray&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setDIAData(dmemo::DistributionPtr, dmemo::DistributionPtr, IndexType, const hmemo::HArray<int>&, const hmemo::_HArray&)
+    virtual void setDIAData(dmemo::DistributionPtr, dmemo::DistributionPtr, IndexType, const hmemo::HArray<IndexType>&, const hmemo::_HArray&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void assign(const Matrix&)
+    virtual void assign(const Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void assignTranspose(const Matrix&)
+    virtual void assignTranspose(const Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void assign(const _MatrixStorage&)
+    virtual void assign(const _MatrixStorage&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void assign(const _MatrixStorage&, dmemo::DistributionPtr, dmemo::DistributionPtr)
+    virtual void assign(const _MatrixStorage&, dmemo::DistributionPtr, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void buildLocalStorage(_MatrixStorage&) const
+    virtual void buildLocalStorage(_MatrixStorage&) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual const _MatrixStorage& getLocalStorage() const
+    virtual const _MatrixStorage& getLocalStorage() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void redistribute(dmemo::DistributionPtr, dmemo::DistributionPtr)
+    virtual void redistribute(dmemo::DistributionPtr, dmemo::DistributionPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void getRow(Vector&, IndexType) const
+    virtual void getRow(Vector&, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void getRowLocal(Vector&, IndexType) const
+    virtual void getRowLocal(Vector&, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void getColumn(Vector&, IndexType) const
+    virtual void getColumn(Vector&, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setRow(const Vector&, IndexType, common::binary::BinaryOp)
+    virtual void setRow(const Vector&, IndexType, common::binary::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setColumn(const Vector&, IndexType, common::binary::BinaryOp)
+    virtual void setColumn(const Vector&, IndexType, common::binary::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void getDiagonal(Vector&) const
+    virtual void getDiagonal(Vector&) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setDiagonal(const Vector&)
+    virtual void setDiagonal(const Vector&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setDiagonal(Scalar)
+    virtual void setDiagonal(Scalar)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void scale(const Vector&)
+    virtual void scale(const Vector&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void scale(Scalar)
+    virtual void scale(Scalar)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void conj()
+    virtual void conj()
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual Scalar getValue(IndexType, IndexType) const
+    virtual Scalar getValue(IndexType, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setValue(IndexType, IndexType, Scalar, common::binary::BinaryOp)
+    virtual void setValue(IndexType, IndexType, Scalar, common::binary::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual IndexType getNumValues() const
+    virtual IndexType getNumValues() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -198,99 +199,99 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-	virtual void vectorTimesMatrix( Vector&, Scalar, const Vector&, Scalar, const Vector& ) const
+    virtual void vectorTimesMatrix( Vector&, Scalar, const Vector&, Scalar, const Vector& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void matrixTimesScalar(const Matrix&, Scalar)
+    virtual void matrixTimesScalar(const Matrix&, Scalar)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void matrixPlusMatrix(Scalar, const Matrix&, Scalar, const Matrix&)
+    virtual void matrixPlusMatrix(Scalar, const Matrix&, Scalar, const Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void matrixTimesMatrix(Matrix&, Scalar, const Matrix&, Scalar, const Matrix&) const
+    virtual void matrixTimesMatrix(Matrix&, Scalar, const Matrix&, Scalar, const Matrix&) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual IndexType getLocalNumValues() const
+    virtual IndexType getLocalNumValues() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual IndexType getLocalNumRows() const
+    virtual IndexType getLocalNumRows() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual IndexType getLocalNumColumns() const
+    virtual IndexType getLocalNumColumns() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void setContextPtr(hmemo::ContextPtr)
+    virtual void setContextPtr(hmemo::ContextPtr)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual hmemo::ContextPtr getContextPtr() const
+    virtual hmemo::ContextPtr getContextPtr() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual MatrixKind getMatrixKind() const
+    virtual MatrixKind getMatrixKind() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void prefetch() const
+    virtual void prefetch() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void wait() const
+    virtual void wait() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual void invert(const Matrix&)
+    virtual void invert(const Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual Scalar l1Norm() const
+    virtual Scalar l1Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual Scalar l2Norm() const
+    virtual Scalar l2Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual Scalar maxNorm() const
+    virtual Scalar maxNorm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual Matrix* newMatrix() const
+    virtual Matrix* newMatrix() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-	virtual Matrix* copy() const
+    virtual Matrix* copy() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
- 	virtual common::scalar::ScalarType getValueType() const
+     virtual common::scalar::ScalarType getValueType() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
- 	virtual Format::MatrixStorageFormat getFormat() const
+     virtual Format::MatrixStorageFormat getFormat() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
- 	virtual size_t getValueTypeSize() const
+     virtual size_t getValueTypeSize() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
- 	virtual bool hasDiagonalProperty() const
+     virtual bool hasDiagonalProperty() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
- 	virtual void resetDiagonalProperty()
+     virtual void resetDiagonalProperty()
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
- 	virtual size_t getMemoryUsage() const
+     virtual size_t getMemoryUsage() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

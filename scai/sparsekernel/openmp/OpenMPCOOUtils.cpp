@@ -151,7 +151,7 @@ bool OpenMPCOOUtils::hasDiagonalProperty(
     bool diagonalProperty = true;
     // The diagonal property is given if the first n entries
     // are the diagonal elements
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -180,7 +180,7 @@ void OpenMPCOOUtils::offsets2ia(
 {
     SCAI_LOG_INFO( logger,
                    "build cooIA( " << numValues << " ) from csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -218,7 +218,7 @@ void OpenMPCOOUtils::scaleRows(
     const IndexType numValues )
 {
     SCAI_LOG_INFO( logger, "scaleRows in COO format" )
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numValues; ++i )
     {
@@ -240,7 +240,8 @@ void OpenMPCOOUtils::setCSRData(
 {
     SCAI_LOG_INFO( logger,
                    "build cooValues( << " << numValues << " from csrValues + csrIA( " << ( numRows + 1 ) << " ), #diagonals = " << numDiagonals )
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -322,7 +323,7 @@ void OpenMPCOOUtils::normalGEMV(
     #pragma omp parallel
     {
         SCAI_REGION( "OpenMP.COO.normalGEMV" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for
 
         for ( IndexType k = 0; k < numValues; ++k )
         {
@@ -392,7 +393,7 @@ void OpenMPCOOUtils::normalGEVM(
     {
         SCAI_REGION( "OpenMP.COO.normalGEVM" )
 
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType k = 0; k < numValues; ++k )
         {

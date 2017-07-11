@@ -177,7 +177,7 @@ static const ValueType* getDiagonalPtr( const common::Stencil<ValueType>& stenci
 {
     const IndexType nDims = stencil.nDims();
 
-    const IndexType* stencilPositions = stencil.positions();
+    const int* stencilPositions = stencil.positions();
     const ValueType* stencilValues    = stencil.values();
 
     for ( IndexType k = 0; k < stencil.nPoints(); ++k )

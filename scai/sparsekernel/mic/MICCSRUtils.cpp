@@ -108,7 +108,7 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
         #pragma omp parallel
         {
             IndexType myCounter = 0;
-            #pragma omp for schedule(static)
+            #pragma omp for schedule( static )
 
             for ( IndexType i = 0; i < numValues; i++ )
             {
@@ -129,7 +129,7 @@ IndexType MICCSRUtils::scanParallel( PartitionId numThreads, IndexType array[], 
         #pragma omp parallel
         {
             IndexType myRunningSum = threadCounter[omp_get_thread_num()];
-            #pragma omp for schedule(static)
+            #pragma omp for schedule( static )
 
             for ( IndexType i = 0; i < numValues; i++ )
             {
@@ -244,7 +244,7 @@ void MICCSRUtils::offsets2sizesGather(
     const IndexType rowIndexes[],
     const IndexType numRows )
 {
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -538,7 +538,7 @@ void MICCSRUtils::normalGEMV(
         const ValueType* csrValues = ( ValueType* ) csrValuesPtr;
         #pragma omp parallel
         {
-            #pragma omp for schedule(SCAI_OMP_SCHEDULE)
+            #pragma omp for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {
@@ -604,7 +604,7 @@ void MICCSRUtils::sparseGEMV(
         #pragma omp parallel
         {
             // Note: region will be entered by each thread
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
             for ( IndexType ii = 0; ii < numNonZeroRows; ++ii )
             {
                 ValueType temp = static_cast<ValueType>( 0.0 );
@@ -666,7 +666,7 @@ void MICCSRUtils::gemm(
         const IndexType* csrIA = static_cast<const IndexType*>( csrIAPtr );
         const IndexType* csrJA = static_cast<const IndexType*>( csrJAPtr );
         const ValueType* csrValues = static_cast<const ValueType*>( csrValuesPtr );
-        #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+        #pragma omp parallel for 
 
         for ( IndexType i = 0; i < m; ++i )
         {
@@ -730,7 +730,7 @@ void MICCSRUtils::jacobi(
         const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - ( *omegaPtr );
         #pragma omp parallel
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < numRows; i++ )
             {
@@ -801,7 +801,7 @@ void MICCSRUtils::jacobiHalo(
         const IndexType* haloJA = ( IndexType* ) haloJAPtr;
         const ValueType* haloValues = ( ValueType* ) haloValuesPtr;
         const IndexType* haloRowIndexes = ( IndexType* ) haloRowIndexesPtr;
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for 
 
         for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
         {
@@ -872,7 +872,7 @@ void MICCSRUtils::jacobiHaloWithDiag(
         const ValueType oneMinusOmega = static_cast<ValueType>( 1.0 ) - ( *omegaPtr );
         #pragma omp parallel
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType ii = 0; ii < numNonEmptyRows; ++ii )
             {
@@ -1685,7 +1685,7 @@ ValueType MICCSRUtils::absMaxDiffVal(
         #pragma omp parallel
         {
             ValueType threadVal = 0;
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {

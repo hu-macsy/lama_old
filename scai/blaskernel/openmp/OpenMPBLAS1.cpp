@@ -95,7 +95,7 @@ void OpenMPBLAS1::scal(
 
     if ( incX == 1 )
     {
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -105,7 +105,7 @@ void OpenMPBLAS1::scal(
     else
     {
         //incX != 1
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for 
         for ( IndexType i = 0; i < n; i++ )
         {
             x[i * incX] = x[i * incX] * alpha;
@@ -143,7 +143,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
 
         if ( incX == 1 )
         {
-            #pragma omp for  schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -152,7 +152,7 @@ ValueType OpenMPBLAS1::nrm2( const IndexType n, const ValueType* x, const IndexT
         }
         else
         {
-            #pragma omp for  schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -201,7 +201,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
 
         if ( incX == 1 )
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -210,7 +210,7 @@ ValueType OpenMPBLAS1::asum( const IndexType n, const ValueType* x, const IndexT
         }
         else
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -256,7 +256,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
 
         if ( incX == 1 )
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -268,7 +268,7 @@ IndexType OpenMPBLAS1::iamax( const IndexType n, const ValueType* x, const Index
         }
         else
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -324,21 +324,21 @@ void OpenMPBLAS1::swap(
     {
         #pragma omp parallel
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
                 temp[i] = x[i];
             }
 
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
                 x[i] = y[i];
             }
 
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -351,21 +351,21 @@ void OpenMPBLAS1::swap(
         //incX != 1 || incY != 1
         #pragma omp parallel
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
                 temp[i] = x[i * incX];
             }
 
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
                 x[i * incX] = y[i * incY];
             }
 
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -398,7 +398,7 @@ void OpenMPBLAS1::copy(
 
     if ( incX == 1 && incY == 1 )
     {
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for 
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -408,7 +408,7 @@ void OpenMPBLAS1::copy(
     else
     {
         //incX != 1 || incY != 1
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for 
         for ( IndexType i = 0; i < n; i++ )
         {
             y[i * incY] = x[i * incX];
@@ -448,7 +448,7 @@ void OpenMPBLAS1::axpy(
 
     if ( incX == 1 && incY == 1 )
     {
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for 
 
         for ( IndexType i = 0; i < n; i++ )
         {
@@ -458,7 +458,7 @@ void OpenMPBLAS1::axpy(
     else
     {
         //incX != 1 || incY != 1
-        #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp parallel for 
         for ( IndexType i = 0; i < n; i++ )
         {
             y[i * incY] = alpha * x[i * incX] + y[i * incY];
@@ -500,7 +500,7 @@ ValueType OpenMPBLAS1::dot(
 
         if ( incX == 1 && incY == 1 )
         {
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
 
             for ( IndexType i = 0; i < n; i++ )
             {
@@ -510,7 +510,7 @@ ValueType OpenMPBLAS1::dot(
         else
         {
             // incX != 1 || incY != 1
-            #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp for 
             for ( IndexType i = 0; i < n; i++ )
             {
                 tResult += common::Math::conj( x[i * incX] ) * y[i * incY] ;
@@ -555,7 +555,7 @@ void OpenMPBLAS1::sum(
         SCAI_LOG_WARN( logger, "asynchronous execution not supported here" )
     }
 
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < n; i++ )
     {
