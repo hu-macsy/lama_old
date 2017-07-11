@@ -81,7 +81,7 @@ endif ()
 
 ## Define all variables (in CACHE) that are used for individual choices 
 
-include ( Functions/scai_build_variable )
+include ( scai_macro/scai_build_variable )
 
 scai_build_variable ( NAME      CMAKE_BUILD_TYPE
                       CHOICES   "Debug" "Release" "RelWithDebInfo" "MinSizeRel" ""
