@@ -64,7 +64,6 @@ heading ( "Supported Accelertors" )
 heading3 ( "OpenMP" "USE_OPENMP" )
     found_message ( "OpenMP" "OPENMP_VERSION" "OPTIONAL" "Version ${OPENMP_VERSION}" )
     found_message ( "compile flag" "OpenMP_CXX_FLAGS" "OPTIONAL" "${OpenMP_CXX_FLAGS}" )
-    found_message ( "schedule type" "SCAI_OMP_SCHEDULE" "OPTIONAL" "set to \"${SCAI_OMP_SCHEDULE}\"" )
 
 # LAMA CUDA
 heading3 ( "CUDA" "CUDA_ENABLED" )

@@ -38,6 +38,10 @@
 ### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
 ### OPENMP_VERSION         - version id
 
+if ( SCAI_OPENMP_CHECK_DONE )
+    return ()
+endif ()
+
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
 
 set ( OPENMP_MINIMUM_VERSION 3.0 ) # because of use of collapse
@@ -77,3 +81,13 @@ endif ( USE_OPENMP AND NOT OPENMP_FOUND )
 set ( ADDITIONAL_CXX_FLAGS_NO_OPENMP "-Wno-unknown-pragmas" CACHE STRING "ignore OpenMP pragmas (only if disabled)" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_NO_OPENMP )
+
+scai_summary_enabled  ( NAME      OpenMP 
+                        ENABLED   ${USE_OPENMP} )
+
+scai_summary_external ( NAME      OpenMP
+                        FOUND     ${OPENMP_FOUND} 
+                        VERSION   ${OPENMP_VERSION} 
+                        CXX_FLAGS ${OpenMP_CXX_FLAGS} )
+
+set ( SCAI_OPENMP_CHECK_DONE True )

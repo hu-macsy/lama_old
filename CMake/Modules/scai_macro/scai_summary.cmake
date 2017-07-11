@@ -39,20 +39,30 @@ include ( Functions/scaiMessages )
 macro ( scai_summary )
 
     set( SCAI_SUMMARY "${SCAI_SUMMARY}\n-- ${ARGN}" )
-    set( SCAI_SUMMARY ${SCAI_SUMMARY} PARENT_SCOPE )
+
+    get_directory_property ( hasParent PARENT_DIRECTORY )
+
+    if ( hasParent )
+        set ( SCAI_SUMMARY ${SCAI_SUMMARY} PARENT_SCOPE )
+    endif ()
 
 endmacro ()
 
 #  scai_summary_external ( NAME      MPI 
-#                              FOUND     ${MPI_FOUND} 
-#                              VERSION   ${MPI_VERSION} 
-#                              INCLUDE   ${SCAI_MPI_INCLUDE_DIR} 
-#                              LIBRARIES ${SCAI_MPI_LIBRARIES} )
+#                          FOUND     ${MPI_FOUND} 
+#                          VERSION   ${MPI_VERSION} 
+#                          INCLUDE   ${SCAI_MPI_INCLUDE_DIR} 
+#                          LIBRARIES ${SCAI_MPI_LIBRARIES} )
+#
+#  scai_summary_external ( NAME      OpenMP
+#                          FOUND     ${OPENMP_FOUND} 
+#                          VERSION   ${OPENMP_VERSION} 
+#                          CXX_FLAGS ${OpenMPCXXFlags} )
 
 macro ( scai_summary_external )
 
     set ( options )
-    set ( oneValueArgs NAME FOUND VERSION )
+    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS )
     set ( multiValueArgs INCLUDE LIBRARIES )
 
     cmake_parse_arguments ( scai_summary_external "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -74,6 +84,11 @@ macro ( scai_summary_external )
     scai_summary ( "       ${scai_summary_external_NAME} ${FoundString}" )
 
     if ( ${scai_summary_external_FOUND} )
+
+        if ( "${scai_summary_external_CXX_FLAGS}" STREQUAL "" )
+        else ()
+            scai_summary ( "         CXX FLAGS   : ${scai_summary_external_CXX_FLAGS}" )
+        endif ()
 
         listToString ( ", " "${scai_summary_external_INCLUDE}" INCLUDE_LIST )
 
