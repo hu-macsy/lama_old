@@ -46,6 +46,7 @@ scai_example_directory ( INSTALL_EXAMPLE_DIR )
 scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
+
 install ( FILES       ${EXAMPLE_FILES}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )
 

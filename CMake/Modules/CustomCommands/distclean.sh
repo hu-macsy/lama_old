@@ -27,24 +27,24 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief ToDo: Missing description in ./CustomCommands/distclean.sh
+ # @brief Script for removing recursively all files generated during a cmake build
  # @author Lauretta Schubert
  # @date 14.10.2015
 ###
 
 recursive_remove()
 {
-	#echo $PWD
-	rm -f *.so *.cmake install_manifest.txt
-	rm -rf tmp src CMakeFiles
-	
+    #echo $PWD
+    rm -f *.so *.cmake install_manifest.txt 
+    rm -rf tmp src CMakeFiles
+
     for dir in `ls`
     do
         if [ -d $dir ]
         then
-	    	cd $dir
-	    	recursive_remove
-	    	cd ..
+            cd $dir
+            recursive_remove
+            cd ..
         fi
     done
 }

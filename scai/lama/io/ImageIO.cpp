@@ -181,7 +181,7 @@ void ImageIO::writeSC(
     const ValueType maxVal,
     const std::string& outputFileName )
 {
-    SCAI_LOG_ERROR( logger, "write scaled array data = " << arrayData << " to file " << outputFileName )
+    SCAI_LOG_INFO( logger, "write scaled array data = " << arrayData << " to file " << outputFileName )
 
     SCAI_ASSERT_EQ_ERROR( 2, arrayData.nDims(), "writeSC only for two-dimensional arrays" )
 
@@ -195,7 +195,7 @@ void ImageIO::writeSC(
 
     const IndexType nColorsInTable = sizeof( colorMap ) / sizeof( double ) / 3;
 
-    SCAI_LOG_ERROR( logger, "Colormap has " << nColorsInTable << " entries, scale range = " << minVal << " - " << maxVal )
+    SCAI_LOG_INFO( logger, "Colormap has " << nColorsInTable << " entries, scale range = " << minVal << " - " << maxVal )
 
     {
         GridReadAccess<ValueType> rArray( arrayData );
@@ -247,7 +247,7 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
     ValueType minVal = min.getValue<ValueType>();
     ValueType maxVal = max.getValue<ValueType>();
 
-    SCAI_LOG_ERROR( logger, "arrayData = " << arrayData << " has min = " << minVal << ", max = " << maxVal )
+    SCAI_LOG_INFO( logger, "arrayData = " << arrayData << " has min = " << minVal << ", max = " << maxVal )
 
     if ( minVal == maxVal )
     {
