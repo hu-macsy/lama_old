@@ -1001,7 +1001,7 @@ void ELLStorage<ValueType>::compress( const ValueType eps /* = 0.0 */ )
     static LAMAKernel<UtilKernelTrait::reduce<IndexType> > reduce;
     compressIA.getSupportedContext( loc, reduce );
 
-    IndexType newNumValuesPerRow = -1;
+    IndexType newNumValuesPerRow = nIndex;
 
     LArray<IndexType> newIAArray;
     {

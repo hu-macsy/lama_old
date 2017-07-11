@@ -313,7 +313,7 @@ private:
         if ( z > NZ || x > NX || y > NY || z < 1 || x < 1 || y < 1 )
         {
             COMMON_THROWEXCEPTION ( "Could not map from coordinate to indize!" )
-            return -100;
+            return nIndex;
         }
         else
         {

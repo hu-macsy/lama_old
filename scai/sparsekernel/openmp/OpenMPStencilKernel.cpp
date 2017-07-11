@@ -46,62 +46,6 @@ SCAI_LOG_DEF_LOGGER( OpenMPStencilKernel::logger, "OpenMP.StencilKernel" )
 
 /* --------------------------------------------------------------------------- */
 
-/** This routine checks whether a point pos is an inner point 
- *
- *  @param[in] pos is the position, in range 0 .. size-1
- *  @param[in] offset specifies the relative offset to pos, might be positive or negative
- *  @param[in] size is the size of the range, only needed for offset > 0
- */
-static inline bool isInner( const IndexType pos, const int offset, const IndexType size )
-{
-    if ( offset == 0 )
-    {
-        return true;
-    }
-    if ( offset < 0 )
-    {
-        return pos >= static_cast<IndexType>( -offset );
-    }
-
-    return pos + static_cast<IndexType>( offset ) < size;
-}
-
-/** Inline predicate to check if a stencil point is still in the grid */
-
-static inline bool isInner2( const IndexType pos0, const IndexType pos1, 
-                             const int offset[2], const IndexType size[2] )
-{
-    if ( !isInner( pos0, offset[0], size[0] ) ) return false;
-    if ( !isInner( pos1, offset[1], size[1] ) ) return false;
-    return true;
-}
-
-/** Inline predicate to check if a stencil point is still in the grid */
-
-static inline bool isInner3( const IndexType pos0, const IndexType pos1, const IndexType pos2, 
-                             const int offset[3], const IndexType size[3] )
-{
-    if ( !isInner( pos0, offset[0], size[0] ) ) return false;
-    if ( !isInner( pos1, offset[1], size[1] ) ) return false;
-    if ( !isInner( pos2, offset[2], size[2] ) ) return false;
-    return true;
-}
-
-/** Inline predicate to check if a 4-dimensional stencil point is still in the grid */
-
-static inline bool isInner4( const IndexType pos0, const IndexType pos1, 
-                             const IndexType pos2, const IndexType pos3, 
-                             const int offset[4], const IndexType size[4] )
-{
-    if ( !isInner( pos0, offset[0], size[0] ) ) return false;
-    if ( !isInner( pos1, offset[1], size[1] ) ) return false;
-    if ( !isInner( pos2, offset[2], size[2] ) ) return false;
-    if ( !isInner( pos3, offset[3], size[3] ) ) return false;
-    return true;
-}
-
-/* --------------------------------------------------------------------------- */
-
 void OpenMPStencilKernel::stencilLocalSizes1(
     IndexType sizes[],
     const IndexType gridSizes[],
@@ -1440,7 +1384,9 @@ void OpenMPStencilKernel::stencilGEMV2Border(
     SCAI_LOG_INFO( logger,  "stencilGEMV2Border on " << i0 << " - " << i1 
                              << " x " << j0 << " - " << j1 )
 
-    bool outer_parallel = ( i1 - i0 ) > 7;
+    #ifdef _OPENMP
+    bool outer_parallel = ( i1 - i0 ) > 7;    // only needed if OpenMP enabled
+    #endif 
 
     #pragma omp parallel for if ( outer_parallel )
     for ( IndexType i = i0; i < i1; i++ )
@@ -1504,7 +1450,9 @@ void OpenMPStencilKernel::stencilGEMV3Border(
                              << " x " << j0 << " - " << j1 
                              << " x " << k0 << " - " << k1  )
 
-    bool outer_parallel = ( i1 - i0 ) > 7 ;
+    #ifdef _OPENMP
+    bool outer_parallel = ( i1 - i0 ) > 7;    // only needed if OpenMP enabled
+    #endif 
 
     #pragma omp parallel for if ( outer_parallel )
     for ( IndexType i = i0; i < i1; i++ )
@@ -1577,7 +1525,9 @@ void OpenMPStencilKernel::stencilGEMV4Border(
 
     // take decision which of the two nested loops to take for OpenMP parallelization
 
-    bool outer_parallel = ( i1 - i0 ) > 7 ;
+    #ifdef _OPENMP
+    bool outer_parallel = ( i1 - i0 ) > 7;    // only needed if OpenMP enabled
+    #endif 
 
     #pragma omp parallel for if ( outer_parallel )
     for ( IndexType i = i0; i < i1; i++ )
