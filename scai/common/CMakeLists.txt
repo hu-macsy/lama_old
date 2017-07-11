@@ -254,9 +254,9 @@ scai_project(
     HEADERS ${COMMON_HEADERS}
 )
 
-## add subdirectories, add mic even if MIC disabled for include file
+## add subdirectories, add cuda and mic even if CUDA or MIC disabled for include file
 
-scai_subdirectories( CUDA EXAMPLES exception macros mepr mic TEST )
+scai_subdirectories( cuda EXAMPLES exception macros mepr mic TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
