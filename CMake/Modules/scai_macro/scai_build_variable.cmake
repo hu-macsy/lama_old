@@ -82,7 +82,7 @@ macro ( scai_build_variable )
         list ( FIND scai_build_variable_CHOICES "${_value}" _index )
 
         if ( ${_index} EQUAL -1 )
-            message ( FATAL_ERROR "Value ${_value} is not choice out of ${scai_build_variable_CHOICES}" )
+            message ( FATAL_ERROR "${scai_build_variable_NAME}: value ${_value} illegal, choices are ${_str_choices}" )
         endif ()
 
        #  FORCE it in cache so variables can be redefined via cmake --Dscai_var=value

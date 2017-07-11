@@ -119,13 +119,13 @@ scai_build_variable ( NAME      SCAI_DOC_TYPE
                       DOCSTRING "Choose type of user documentation" )
 
 if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-    set ( SCAI_ASSERT_DEFAULT "INFO" )
+    set ( SCAI_ASSERT_DEFAULT ERROR )
 else ()
-    set ( SCAI_ASSERT_DEFAULT "DEBUG" )
+    set ( SCAI_ASSERT_DEFAULT DEBUG )
 endif ()
 
 scai_build_variable ( NAME      SCAI_ASSERT_LEVEL
-                      CHOICES   "DEBUG" "ERROR" "OFF"
+                      CHOICES   DEBUG ERROR OFF
                       DEFAULT   ${SCAI_ASSERT_DEFAULT}
                       DOCSTRING "Choose minimal level of assert @ compile time" )
    
