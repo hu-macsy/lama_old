@@ -593,7 +593,7 @@ void Distribution::replicateRagged(
         {
             ReadAccess<IndexType> rIndexesReceive( indexesReceive, commContext );
             ReadAccess<ValueType> rValuesReceive( valuesReceive, commContext );
-            IndexType size = -1;
+            IndexType size = nIndex;
             size = fillGlobal( allValues, allOffsets, rIndexesReceive.get(), newSize1, rValuesReceive.get() );
             SCAI_LOG_DEBUG( logger,
                             comm << ": filled received data: " << newSize1 << " buckets with " << size << " values" )

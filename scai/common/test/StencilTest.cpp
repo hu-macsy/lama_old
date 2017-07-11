@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_SUITE( StencilTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_types )
 {
     for ( IndexType ndim = 1; ndim < 5; ndim++ )
     {
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest2, ValueType, scai_array_test_types 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest3, ValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( setMatrixTest3, ValueType, scai_numeric_test_types )
 {   
     const int stencilData[27] = { -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                   -1, -1, -1, -1, 26, -1, -1, -1, -1,

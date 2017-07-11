@@ -1616,7 +1616,7 @@ BOOST_AUTO_TEST_CASE( findPosTest )
     const IndexType n = sizeof( index_values ) / sizeof( IndexType );
     HArray<IndexType> indexArray( n, index_values, loc );
 
-    IndexType pos = HArrayUtils::findPosInSortedIndexes( indexArray, -5 );
+    IndexType pos = HArrayUtils::findPosInSortedIndexes( indexArray, IndexType( 5 ) );
     BOOST_CHECK_EQUAL( pos, nIndex );
 
     pos = HArrayUtils::findPosInSortedIndexes( indexArray, 12 );

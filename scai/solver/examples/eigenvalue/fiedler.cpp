@@ -93,7 +93,7 @@ void makeLaplacian( CSRSparseMatrix<double>& L )
 
         for ( IndexType i = 0; i < localStorage.getNumRows() ; ++i )
         {
-            const double sum = rIA[i+1] - rIA[i] - 1;
+            const double sum = static_cast<double>( rIA[i+1] - rIA[i] - 1 );
  
             for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
             {
