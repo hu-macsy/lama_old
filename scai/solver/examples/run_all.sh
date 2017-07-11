@@ -47,7 +47,7 @@ function RUN ( ) {
     
     echo ""
     echo "Executing: ${@:2}"
-    $MYDIR/${@:2}
+    $MYDIR/"${@:2}"
 }
 
 echo ""
@@ -104,7 +104,7 @@ RUN 1 solver/lamaSolver.exe example.frm
 RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=Jacobi --SCAI_MAX_ITER=10
 RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=GMRES --SCAI_MAX_ITER=3
 RUN 0 solver/lamaSolver.exe example.frm --SCAI_SOLVER=CG --SCAI_REL_TOL=0.0001
-RUN 1 solver/stencilSolver.exe "3 27 100 100 100" 
+RUN 1 solver/stencilSolver.exe '3 27 50 50 50'
 RUN 1 solver/lamaInfo.exe 
 
 # check if there are unkown examples
