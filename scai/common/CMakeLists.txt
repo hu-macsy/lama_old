@@ -282,12 +282,3 @@ install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 include ( CustomCommands/SphinxDoc )
 
-scai_summary_enabled ( NAME Thread ENABLED True )
-
-scai_summary_external ( NAME      pThreads
-                        FOUND     True
-                        VERSION   ${SCAI_THREAD_VERSION}
-                        INCLUDE   ${SCAI_THREAD_INCLUDE} 
-                        LIBRARIES ${SCAI_THREAD_LIBRARIES} )
-
-scai_summary ( " " )

@@ -62,7 +62,7 @@ endmacro ()
 macro ( scai_summary_external )
 
     set ( options )
-    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS )
+    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS COMPILER )
     set ( multiValueArgs INCLUDE LIBRARIES )
 
     cmake_parse_arguments ( scai_summary_external "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -71,7 +71,8 @@ macro ( scai_summary_external )
 
          set ( FoundString "${TextGreen}FOUND${TextColorReset}" )
 
-         if ( ${scai_summary_external_VERSION} )
+         # if ( ${scai_summary_external_VERSION} )
+         if ( DEFINED scai_summary_external_VERSION )
             set ( FoundString "${FoundString} Version ${scai_summary_external_VERSION}" )
          endif ()
 
@@ -85,9 +86,12 @@ macro ( scai_summary_external )
 
     if ( ${scai_summary_external_FOUND} )
 
-        if ( "${scai_summary_external_CXX_FLAGS}" STREQUAL "" )
-        else ()
+        if ( DEFINED scai_summary_external_CXX_FLAGS )
             scai_summary ( "         CXX FLAGS   : ${scai_summary_external_CXX_FLAGS}" )
+        endif ()
+
+        if ( DEFINED scai_summary_external_COMPILER )
+            scai_summary ( "         compiler    : ${scai_summary_external_COMPILER}" )
         endif ()
 
         listToString ( ", " "${scai_summary_external_INCLUDE}" INCLUDE_LIST )

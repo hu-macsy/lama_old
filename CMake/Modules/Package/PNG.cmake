@@ -32,6 +32,10 @@
  # @date 14.05.2017
 ###
 
+if ( SCAI_PNG_CHECK_DONE )
+    return ()
+endif ()
+
 #  CMake provides already a module to find the PNG reference library, use it
 
 find_package( PNG ${SCAI_FIND_PACKAGE_FLAGS} )
@@ -52,6 +56,9 @@ scai_build_variable ( NAME      USE_PNG
 # set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
 if ( PNG_FOUND )
+
+    #  set SCAI_PNG_xxx variable, in CACHE so they might be used by any module
+
     set ( SCAI_PNG_LIBRARIES ${PNG_LIBRARIES} CACHE PATH "PNG library" )
     set ( SCAI_PNG_INCLUDE_DIR ${PNG_INCLUDE_DIRS} CACHE PATH "PNG include directory" )
 
@@ -75,3 +82,13 @@ endif ()
 
 mark_as_advanced ( SCAI_PNG_LIBRARIES )
 mark_as_advanced ( SCAI_PNG_INCLUDE_DIR )
+
+scai_summary_enabled ( NAME "PNG (image library)" ENABLED ${USE_PNG} )
+
+scai_summary_external ( NAME      PNG
+                        FOUND     ${PNG_FOUND} 
+                        VERSION   ${PNG_VERSION} 
+                        INCLUDE   ${PNG_INCLUDE_DIR} 
+                        LIBRARIES ${PNG_LIBRARIES}    )
+
+set ( SCAI_PNG_CHECK_DONE True )

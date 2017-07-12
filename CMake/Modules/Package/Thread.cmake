@@ -63,3 +63,12 @@ endif (  )
 ###  Note: FindThreads in CMake is available as Module, but is buggy, needs update of CheckIncludeFiles.cmake
 #find_library ( PTHREADS_LIBRARY NAMES pthread pthreads )
 #set ( SCAI_THREAD_LIBRARY ${PTHREADS_LIBRARY} )
+
+scai_summary_enabled ( NAME Thread ENABLED True )
+
+scai_summary_external ( NAME      pThreads
+                        FOUND     True
+                        VERSION   ${SCAI_THREAD_VERSION}
+                        INCLUDE   ${SCAI_THREAD_INCLUDE} 
+                        LIBRARIES ${SCAI_THREAD_LIBRARIES} )
+

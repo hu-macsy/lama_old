@@ -45,12 +45,18 @@ foreach ( executable ${EXECUTABLES} )
     set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
 endforeach ( executable )
 
+# other files to copy in binary + install directory
+
+set ( OTHER_FILES gr_30_30.mtx log_config )
+
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
 # generate build file in example directory
 scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install examples sources
-install ( FILES       ${EXAMPLE_FILES}
+file ( COPY ${OTHER_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+## install examples sources + data file
+install ( FILES       ${EXAMPLE_FILES} ${OTHER_FILES}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )

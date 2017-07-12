@@ -32,19 +32,46 @@
  # @date 25.04.2013
 ###
 
-if    ( NOT APPLE )
-    if    ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
-        # Enable Java Compilation
-        # this will set at least CMAKE_Java_COMPILER CMAKE_Java_ARCHIVE 
-        find_package( Java COMPONENTS Development )
+##  Apple not supported here
 
-        setAndCheckCache ( JAVA )
-        set ( USE_JAVA ${USE_JAVA} CACHE BOOL "Enable / Disable use of JAVA" )
+if ( APPLE )
+    return ()
+endif ()
 
-        # LAMA irrelevant entries will be removed from cmake GUI completely
-        set ( Java_JAR_EXECUTABLE "${Java_JAR_EXECUTABLE}" CACHE INTERNAL "" )
-        set ( Java_JAVADOC_EXECUTABLE "${Java_JAVADOC_EXECUTABLE}" CACHE INTERNAL "" )
-        set ( Java_JAVAH_EXECUTABLE "${Java_JAVAH_EXECUTABLE}" CACHE INTERNAL "" )
-        set ( Java_JAVA_EXECUTABLE "${Java_JAVA_EXECUTABLE}" CACHE INTERNAL "" )
-    endif ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
-endif ( NOT APPLE )
+if ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
+
+    # Enable Java Compilation
+    #  Java_JAVA_EXECUTABLE    = the full path to the Java runtime
+    #  Java_JAVAC_EXECUTABLE   = the full path to the Java compiler
+    #  Java_VERSION_STRING     = Version of the package found (java version), eg. 1.6.0_12
+    #  Java_FOUND              - TRUE if all components are found, not helpful here
+
+    find_package( Java COMPONENTS Development )
+
+    if ( Java_JAVAC_EXECUTABLE )
+        set ( JAVA_FOUND True )
+    else ()
+        set ( JAVA_FOUND False )
+    endif ()
+
+    scai_build_variable ( NAME      USE_JAVA
+                          BOOL 
+                          DEFAULT   ${JAVA_FOUND}
+                          DOCSTRING "use java for compiling tracing GUI" )
+
+    # LAMA irrelevant entries will be removed from cmake GUI completely
+
+    set ( Java_JAR_EXECUTABLE "${Java_JAR_EXECUTABLE}" CACHE INTERNAL "" )
+    set ( Java_JAVADOC_EXECUTABLE "${Java_JAVADOC_EXECUTABLE}" CACHE INTERNAL "" )
+    set ( Java_JAVAH_EXECUTABLE "${Java_JAVAH_EXECUTABLE}" CACHE INTERNAL "" )
+    set ( Java_JAVA_EXECUTABLE "${Java_JAVA_EXECUTABLE}" CACHE INTERNAL "" )
+
+    scai_summary_enabled  ( NAME      JAVA
+                            ENABLED   ${USE_JAVA} )
+
+    scai_summary_external ( NAME      java
+                            FOUND     ${JAVA_FOUND} 
+                            VERSION   ${Java_VERSION_STRING}
+                            COMPILER  ${Java_JAVAC_EXECUTABLE} )
+
+endif ()

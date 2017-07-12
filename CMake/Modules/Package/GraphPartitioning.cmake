@@ -86,3 +86,13 @@ if    ( METIS_FOUND )
 	endif ( USE_GRAPHPARTITIONING )
 
 endif ( METIS_FOUND )
+
+scai_summary_external ( NAME      Metis
+                        FOUND     ${METIS_FOUND} 
+                        VERSION   ${METIS_VERSION} 
+                        INCLUDE   ${METIS_INCLUDE_DIR} )
+
+scai_summary_external ( NAME      ParMetis
+                        FOUND     ${PARMETIS_FOUND} 
+                        VERSION   ${PARMETIS_VERSION} 
+                        INCLUDE   ${PARMETIS_INCLUDE_DIR} )

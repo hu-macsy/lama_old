@@ -106,3 +106,8 @@ if    ( USE_MPI AND NOT MPI_FOUND )
     message( FATAL_ERROR "MPI shoud be used but not found" )
 endif ( USE_MPI AND NOT MPI_FOUND )
  
+scai_summary_external ( NAME      MPI 
+                        FOUND     ${MPI_FOUND} 
+                        VERSION   ${MPI_VERSION} 
+                        INCLUDE   ${SCAI_MPI_INCLUDE_DIR} 
+                        LIBRARIES ${SCAI_MPI_LIBRARIES} )

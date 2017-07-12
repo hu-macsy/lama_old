@@ -56,7 +56,7 @@ endif ()
 
 ## IO for PNG format only possible if libpng is available 
 
-if ( PNGLIB_FOUND AND USE_PNG )
+if ( PNG_FOUND AND USE_PNG )
     set ( IO_CLASSES ${IO_CLASSES} PngIO )
 endif ()
 

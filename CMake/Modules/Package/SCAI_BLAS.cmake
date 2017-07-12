@@ -37,6 +37,10 @@
 #   SCAI_SCAI_BLAS_INCLUDE_DIR - SCAI_BLAS include directory 
 #   SCAI_SCAI_BLAS_LIBRARIES   - The libraries needed to use SCAI_BLAS
 
+if ( SCAI_BLAS_CHECK_DONE )
+    return ()
+endif ()
+
 include ( Functions/checkValue )
 
 enable_language ( C )
@@ -135,4 +139,25 @@ include ( FindPackageHandleStandardArgs )
 
 mark_as_advanced ( SCAI_SCAI_BLAS_LIBRARIES )
 
-set ( LAST_SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE INTERNAL "" )
+scai_summary_external ( NAME      SCAI_BLAS
+                        FOUND     ${SCAI_BLAS_FOUND} 
+                        VERSION   ${SCAI_BLAS_LIBRARY} )
+
+scai_summary_external ( NAME      MKL
+                        FOUND     ${MKL_FOUND} 
+                        VERSION   ${MKL_VERSION}
+                        INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                        LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+
+scai_summary_external ( NAME      BLAS
+                        FOUND     ${BLAS_FOUND} 
+                        VERSION   ${BLAS_VERSION}
+                        LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+
+scai_summary_external ( NAME      Lapack
+                        FOUND     ${LAPACK_FOUND} 
+                        VERSION   ${LAPACK_VERSION}
+                        LIBRARIES ${SCAI_SCAI_LAPACK_LIBRARIES} )
+
+set ( SCAI_BLAS_CHECK_DONE True PARENT_SCOPE )
+

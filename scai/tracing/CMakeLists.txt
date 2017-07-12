@@ -38,7 +38,7 @@ scai_module(
 
     MODULE_NAME   tracing
     INTERNAL_DEPS common logging
-    EXTERNAL_DEPS 
+    EXTERNAL_DEPS Java
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -83,10 +83,3 @@ install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 include ( CustomCommands/SphinxDoc )
 
-scai_summary_enabled ( NAME Java ENABLED ${USE_JAVA} )
-
-scai_summary_external ( NAME      Java
-                        FOUND     ${JAVA_FOUND}
-                        LIBRARIES ${Java_JAVAC_EXECUTABLE} )
-
-scai_summary_newline ()

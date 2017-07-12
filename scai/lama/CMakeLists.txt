@@ -97,22 +97,3 @@ install ( FILES "${CMAKE_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/
 
 include ( CustomCommands/SphinxDoc )
 
-scai_summary_enabled ( NAME "ZLIB (data compression)" ENABLED ${USE_ZLIB} )
-
-scai_summary_external ( NAME      zlib
-                        FOUND     ${ZLIB_FOUND} 
-                        VERSION   ${ZLIB_VERSION} 
-                        INCLUDE   ${ZLIB_INCLUDE_DIR} 
-                        LIBRARIES ${ZLIB_LIBRARY}  )
-
-scai_summary_newline ()
-
-scai_summary_enabled ( NAME "PNG (image library)" ENABLED ${USE_PNG} )
-
-scai_summary_external ( NAME      png
-                        FOUND     ${PNG_FOUND} 
-                        VERSION   ${PNG_VERSION} 
-                        INCLUDE   ${PNG_INCLUDE_DIR} 
-                        LIBRARIES ${PNG_LIBRARIES}    )
-
-scai_summary_newline ()

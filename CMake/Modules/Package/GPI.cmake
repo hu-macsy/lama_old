@@ -122,3 +122,9 @@ if    ( USE_GPI AND GPI_FOUND )
     set ( GPI_ENABLED TRUE )
 
 endif ( USE_GPI AND GPI_FOUND )
+
+scai_summary_external ( NAME      GPI 
+                        FOUND     ${GPI_FOUND} 
+                        VERSION   ${GPI2_VERSION} 
+                        INCLUDE   ${GPI2_INCLUDE_DIR} 
+                        LIBRARIES ${SCAI_GPI_LIBRARIES} )
