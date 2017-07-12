@@ -173,9 +173,9 @@ if ( USE_ZLIB AND ZLIB_FOUND )
     target_link_libraries ( ${PROJECT_NAME} ${ZLIB_LIBRARY} )
 endif ( USE_ZLIB AND ZLIB_FOUND ) 
 
-if ( USE_PNGLIB AND PNGLIB_FOUND ) 
-    target_link_libraries ( ${PROJECT_NAME} ${PNGLIB_LIBRARY} )
-endif ( USE_PNGLIB AND PNGLIB_FOUND ) 
+if ( USE_PNG AND PNG_FOUND ) 
+    target_link_libraries ( ${PROJECT_NAME} ${PNG_LIBRARIES} )
+endif ( USE_PNG AND PNG_FOUND ) 
 
 ### install ###
 
