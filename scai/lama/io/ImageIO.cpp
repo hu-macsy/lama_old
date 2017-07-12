@@ -185,6 +185,8 @@ void ImageIO::writeSC(
 
     SCAI_ASSERT_EQ_ERROR( 2, arrayData.nDims(), "writeSC only for two-dimensional arrays" )
 
+    SCAI_ASSERT_LT_ERROR( minVal, maxVal, "writeSC: no valid range" )
+
     const common::Grid2D& arrayGrid = reinterpret_cast<const common::Grid2D&>( arrayData.globalGrid() );
 
     common::Grid3D imageGrid( arrayGrid.size(0), arrayGrid.size(1), 3 );

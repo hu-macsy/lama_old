@@ -49,12 +49,21 @@ typedef RealType ValueType;
 
 int main( int argc, char** argv )
 {
+    char image_suffix[] = ".bmp";    // take this as default output format
+
+    // png uses compression but it might happen that it is not supported
+
+    if ( FileIO::canCreate( ".png" ) )
+    {
+        strcpy( image_suffix, ".png" );
+    }
+
     CSRSparseMatrix<ValueType> matrix;
 
     if ( argc < 2 )
     {
         std::cerr << "Missing filename for input matrix" << std::endl;
-        std::cerr << "spy matrix_filename [ width [ height [ scale ] ] ]" << std::endl;
+        std::cerr << "amg_spy matrix_filename [ width [ height [ scale ] ] ]" << std::endl;
         exit( 1 );
     }
 
@@ -123,7 +132,7 @@ int main( int argc, char** argv )
             n = local.getNumColumns();
         }
 
-        std::cout << "Write png of size " << m << " x " << n << std::endl;
+        std::cout << "Write image of size " << m << " x " << n << std::endl;
         Bitmap pic( m, n );
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
@@ -141,9 +150,9 @@ int main( int argc, char** argv )
         }
 
         out_filename << ".galerkin_" << level << "." << local.getNumRows() << "x" << local.getNumColumns()
-                     << "_" << values.size() << ".png";
+                     << "_" << values.size() << image_suffix;
         pic.write( out_filename.str().c_str() );
-        std::cout << "png files has been written as " << out_filename.str() << std::endl;
+        std::cout << "image file has been written as " << out_filename.str() << std::endl;
     }
 
     for ( int level = 0; level < ( int )amgSolver->getNumLevels() - 1; ++level )
@@ -165,7 +174,7 @@ int main( int argc, char** argv )
             n = local.getNumColumns();
         }
 
-        std::cout << "Write png of size " << m << " x " << n << std::endl;
+        std::cout << "Write image of size " << m << " x " << n << std::endl;
         Bitmap pic( m, n );
         ReadAccess<IndexType> csrIA( ia );
         ReadAccess<IndexType> csrJA( ja );
@@ -183,8 +192,8 @@ int main( int argc, char** argv )
         }
 
         out_filename << ".interpolation_" << level << "." << local.getNumRows() << "x" << local.getNumColumns()
-                     << "_" << values.size() << ".png";
+                     << "_" << values.size() << image_suffix;
         pic.write( out_filename.str().c_str() );
-        std::cout << "png files has been written as " << out_filename.str() << std::endl;
+        std::cout << "image file has been written as " << out_filename.str() << std::endl;
     }
 }

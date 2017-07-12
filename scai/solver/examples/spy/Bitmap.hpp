@@ -57,12 +57,12 @@ public:
 
     Bitmap( const IndexType width, const IndexType height ) :
 
-        mPixelData( lama::GridVector<float>( common::Grid2D( width, height ), -10.0 ) )
+        mPixelData( lama::GridVector<float>( common::Grid2D( width, height ), static_cast<float>( 0 ) ) )
     {
-        // set min and max with the neutral elements
+        // set min and max with the zero element
 
-        mMinVal = common::TypeTraits<float>::getMax();
-        mMaxVal = common::TypeTraits<float>::getMin();
+        mMinVal = static_cast<float>( 0 );
+        mMaxVal = mMinVal;
     }
 
     ~Bitmap()
@@ -92,7 +92,7 @@ public:
             }
         }
 
-        // diagonals drawn at the end
+        // diagonals drawn at the end, useful if many matrix entries map to one pixel
 
         for ( IndexType i = 0; i < nRows; ++i )
         {

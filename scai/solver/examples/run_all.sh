@@ -27,8 +27,8 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief ToDo: Missing description in ./solver/examples/run_all.sh
- # @author Jan Ecker
+ # @brief Script to run all examples of the SCAI module 'solver'
+ # @author Jan Ecker, Thomas Brandes
  # @date 10.02.2016
 ###
 
@@ -121,8 +121,8 @@ cd ..
 i=0
 
 # run examples spy/*
-RUN 1 spy/amg_spy.exe $MYDIR/lecture/gr_30_30.mtx
-RUN 1 spy/spy.exe $MYDIR/lecture/gr_30_30.mtx
+RUN 1 spy/amg_spy.exe $MYDIR/lecture/gr_30_30.mtx 
+RUN 1 spy/spy.exe $MYDIR/lecture/gr_30_30.mtx out_spy.bmp
 
 # check if there are unkown examples
 count=`ls -l -la $MYDIR/spy/*.exe | wc -l`
