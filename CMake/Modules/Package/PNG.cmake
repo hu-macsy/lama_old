@@ -51,7 +51,7 @@ find_package( PNG ${SCAI_FIND_PACKAGE_FLAGS} )
 scai_build_variable ( NAME      USE_PNG
                       BOOL 
                       DEFAULT   ${PNG_FOUND}
-                      DOCSTRING "use of PNG libray (read/write PNG images)" )
+                      DOCSTRING "use of PNG library (read/write PNG images)" )
 
 # set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
@@ -83,9 +83,8 @@ endif ()
 mark_as_advanced ( SCAI_PNG_LIBRARIES )
 mark_as_advanced ( SCAI_PNG_INCLUDE_DIR )
 
-scai_summary_enabled ( NAME "PNG (image library)" ENABLED ${USE_PNG} )
-
-scai_summary_external ( NAME      PNG
+scai_summary_external ( NAME      "PNG (image library)"
+                        ENABLED   ${USE_PNG}
                         FOUND     ${PNG_FOUND} 
                         VERSION   ${PNG_VERSION} 
                         INCLUDE   ${PNG_INCLUDE_DIR} 

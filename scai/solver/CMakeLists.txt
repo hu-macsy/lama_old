@@ -32,7 +32,14 @@
  # @date 04.07.2017
 ###
 
-## Define name of the SCAI module project
+## Include required scai macros
+
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+
+## Define the new module with its dependencies
 
 scai_module (
 

@@ -95,3 +95,11 @@ if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
     message ( WARNING "Boost Test Framework is missing, so BUILD_TEST is disabled!" )
     set ( BUILD_TEST FALSE )
 endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
+
+scai_summary_external ( NAME      "Boost Unit Test"
+                        ENABLED   ${BUILD_TEST}
+                        FOUND     ${Boost_FOUND}
+                        VERSION   "${BOOST_VERSION}"
+                        INCLUDE   "${Boost_INCLUDE_DIR}"
+                        LIBRARIES "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}"
+                      )

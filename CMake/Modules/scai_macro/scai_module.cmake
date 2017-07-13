@@ -76,6 +76,8 @@ macro ( scai_module )
 
     set ( MODULE_NAME    "${scai_module_MODULE_NAME}" )
     set ( MODULE_LIBRARY "${SCAI_LIBRARY_PREFIX}_${MODULE_NAME}" )
+
+    message ( STATUS "Configuring module ${MODULE_NAME} -> builds lib ${MODULE_LIBRARY}" )
   
     set ( INTERNAL_DEPS ${scai_module_INTERNAL_DEPS} )
     set ( EXTERNAL_DEPS ${scai_module_EXTERNAL_DEPS} )
@@ -100,7 +102,9 @@ macro ( scai_module )
 
             endif ()
 
-            message ( FATAL_ERROR "scai_module ${MODULE_NAME}: ${module} of INTERNAL_DEPS not defined, ${EXPLAIN}" )
+            # message ( FATAL_ERROR "scai_module ${MODULE_NAME}: ${module} of INTERNAL_DEPS not defined, ${EXPLAIN}" )
+ 
+            add_subdirectory ( ../${module} ${CMAKE_BINARY_DIR}/${module} )
 
         endif ( )
     endforeach ()

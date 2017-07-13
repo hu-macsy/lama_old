@@ -66,10 +66,8 @@ if ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
     set ( Java_JAVAH_EXECUTABLE "${Java_JAVAH_EXECUTABLE}" CACHE INTERNAL "" )
     set ( Java_JAVA_EXECUTABLE "${Java_JAVA_EXECUTABLE}" CACHE INTERNAL "" )
 
-    scai_summary_enabled  ( NAME      JAVA
-                            ENABLED   ${USE_JAVA} )
-
-    scai_summary_external ( NAME      java
+    scai_summary_external ( NAME      Java
+                            ENABLED   ${USE_JAVA}
                             FOUND     ${JAVA_FOUND} 
                             VERSION   ${Java_VERSION_STRING}
                             COMPILER  ${Java_JAVAC_EXECUTABLE} )

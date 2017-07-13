@@ -32,6 +32,13 @@
  # @date 04.07.2017
 ###
 
+## Include required scai macros
+
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+
 ## Note: common requires also configuration of some include files that
 ##       might be used in all other modules
 

@@ -108,6 +108,7 @@ endif ( USE_MPI AND NOT MPI_FOUND )
  
 scai_summary_external ( NAME      MPI 
                         FOUND     ${MPI_FOUND} 
+                        ENABLED   ${USE_MPI}
                         VERSION   ${MPI_VERSION} 
                         INCLUDE   ${SCAI_MPI_INCLUDE_DIR} 
                         LIBRARIES ${SCAI_MPI_LIBRARIES} )

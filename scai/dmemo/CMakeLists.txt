@@ -32,22 +32,29 @@
  # @date 04.07.2017
 ###
 
+## Include required scai macros
+
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+
 ## Define name of the SCAI module project
 
 scai_module(
 
     MODULE_NAME   dmemo
     INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel 
-    EXTERNAL_DEPS OpenMP MPI GPI GraphPartitioning 
+    EXTERNAL_DEPS OpenMP MPI GASPI Metis 
 )
 
-## MetisDistribution only added as source if graph partitioning is available
+## MetisDistribution only added as source if enabled and IndexType is int
 
-if    ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
-    if    ( SCAI_INDEX_TYPE STREQUAL "int" )
+if ( METIS_FOUND AND USE_METIS )
+    if ( SCAI_INDEX_TYPE STREQUAL "int" )
         set ( METISDISTRIBUTION MetisDistribution )
-    endif ( SCAI_INDEX_TYPE STREQUAL "int" )
-endif ( ( METIS_FOUND OR PARMETIS_FOUND ) AND USE_GRAPHPARTITIONING )
+    endif ()
+endif ()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -78,16 +85,16 @@ scai_project (
 
 ### add subdirectories
 
-if ( GPI_FOUND AND USE_GPI )
+if ( GASPI_FOUND AND USE_GASPI )
     include( Package/Boost )
     message( STATUS "add BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
     include_directories ( ${BOOST_INCLUDE_DIR} )
     add_subdirectory( gpi )
-endif ( GPI_FOUND AND USE_GPI )
+endif ()
 
 if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )
-endif ( MPI_FOUND AND USE_MPI )
+endif ()
 
 scai_subdirectories( EXAMPLES TEST )
 

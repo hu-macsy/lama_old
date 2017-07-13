@@ -1,5 +1,5 @@
 ###
- # @file Package/GPI.cmake
+ # @file Package/GASPI.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,20 +27,23 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief findPackage and configuration of GPI
+ # @brief findPackage and configuration of GASPI
  # @author Thomas Brandes
  # @date 15.02.2016
 ###
 
-### USE_GPI              - if GPI is enabled
-### GPI_FOUND            - if GPI2 and required libraries (e.g. IBVERBS) are found
-### GPI_ENABLED          - if GPI_FOUND AND USE_GPI
-### SCAI_GPI_INCLUDE_DIR - GPI include directories (GPI2_INCLUDE_DIR)
-### SCAI_GPI_LIBRARIES   - all needed GPI libraries (GPI2_LIBRARIES and GPI2_EXTRA_LIBRARIES)
-### GPI2_VERSION
-### GPI2_INCLUDE_DIR
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
+### USE_GASPI              - if GASPI is enabled
+### GASPI_FOUND            - if GASPI required libraries (e.g. IBVERBS) are found
+### SCAI_GASPI_INCLUDE_DIR - GPI include directories (GPI2_INCLUDE_DIR)
+### SCAI_GASPI_LIBRARIES   - all needed GPI libraries (GPI2_LIBRARIES and GPI2_EXTRA_LIBRARIES)
 
 # set( SCAI_CMAKE_VERBOSE True )
+
+scai_pragma_once ()
 
 find_package ( GPI2 ${SCAI_FIND_PACKAGE_FLAGS} )
 
@@ -67,7 +70,7 @@ endif ( IBVERBS_FOUND )
 # ToDo: more convenient analysis which version of GPI-2 (Infiniband/Ethernet, with/without GPU) 
 #       has been installed at GPI2_ROOT
 
-set ( GPI_FOUND FALSE )
+set ( GASPI_FOUND FALSE )
 
 if    ( GPI2_FOUND )
     ## get GPI2 version
@@ -80,7 +83,7 @@ if    ( GPI2_FOUND )
         COMPILE_OUTPUT_VARIABLE GPI2_COMPILE_OUTPUT_VAR
         RUN_OUTPUT_VARIABLE GPI2_RUN_OUTPUT_VAR )
 
-    if    ( SCAI_CMAKE_VERBOSE )
+    if ( SCAI_CMAKE_VERBOSE )
         message( STATUS "GPI2_COMPILE_RESULUT_VAR=${GPI2_COMPILE_RESULT_VAR}" )
         message( STATUS "GPI2_RUN_RESULT_VAR=${GPI2_RUN_RESULT_VAR}" )
         message( STATUS "GPI2_RUN_OUTPUT_VAR=${GPI2_RUN_OUTPUT_VAR}" )
@@ -89,42 +92,32 @@ if    ( GPI2_FOUND )
     if ( GPI2_COMPILE_RESULT_VAR )
         # If we could compile correctly we have found GPI 
         # This solution works also if GPI2 has been compiled for Etherent without IBVERBS
-        set ( GPI_FOUND TRUE )
+        set ( GASPI_FOUND TRUE )
     endif ( GPI2_COMPILE_RESULT_VAR )
 
     set ( GPI2_VERSION ${GPI2_RUN_OUTPUT_VAR} )
 
 endif ( GPI2_FOUND )
 
-### ALLOW to switch off GPI2 explicitly ###
-# do what setAndCheckCache does but with 2 packages
-# Check if cache variable is already set
+### ALLOW to disable GASPI explicitly ###
 
-if    ( DEFINED USE_GPI )
-    # do nothing
-    # if cache variable is NOT set
-    set( USE_GPI ${USE_GPI} )
-else ( DEFINED USE_GPI )
-    # Check if package was found
-    set ( USE_PACKAGE ${GPI_FOUND} )
-    set ( USE_GPI ${USE_PACKAGE} )
-endif ( DEFINED USE_GPI )
+scai_build_variable ( NAME      USE_GASPI
+                      BOOL 
+                      DEFAULT   ${GASPI_FOUND}
+                      DOCSTRING "use of GASPI (Global Address Space Programming Interface)" )
 
-set ( USE_GPI ${USE_GPI} CACHE BOOL "Enable / Disable use of GPI" )
+if ( USE_GASPI AND GASPI_FOUND )
 
-set ( GPI_ENABLED FALSE )
+    # conclude GPI2 and IBVERBS to SCAI_GASPI
+    set ( SCAI_GASPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} )
+    set ( SCAI_GASPI_LIBRARIES ${GPI2_LIBRARIES} ${GPI2_EXTRA_LIBRARIES} )
 
-if    ( USE_GPI AND GPI_FOUND )
-    # conclude GPI2 and IBVERBS to SCAI_GPI
-    set ( SCAI_GPI_INCLUDE_DIR ${GPI2_INCLUDE_DIR} )
-    set ( SCAI_GPI_LIBRARIES ${GPI2_LIBRARIES} ${GPI2_EXTRA_LIBRARIES} )
+endif ()
 
-    set ( GPI_ENABLED TRUE )
+scai_summary_external ( NAME      GASPI 
+                        ENABLED   ${USE_GASPI}
+                        FOUND     ${GASPI_FOUND} 
+                        VERSION   "GPI2 ${GPI2_VERSION}"
+                        INCLUDE   ${SCAI_GASPI_INCLUDE_DIR} 
+                        LIBRARIES ${SCAI_GASPI_LIBRARIES} )
 
-endif ( USE_GPI AND GPI_FOUND )
-
-scai_summary_external ( NAME      GPI 
-                        FOUND     ${GPI_FOUND} 
-                        VERSION   ${GPI2_VERSION} 
-                        INCLUDE   ${GPI2_INCLUDE_DIR} 
-                        LIBRARIES ${SCAI_GPI_LIBRARIES} )

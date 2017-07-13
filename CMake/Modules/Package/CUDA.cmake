@@ -32,6 +32,10 @@
  # @date 03.08.2015
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
 ### CUDA_FOUND            - if CUDA is found
 ### USE_CUDA              - if CUDA is enabled
 ### SCAI_CUDA_INCLUDE_DIR - CUDA include directory
@@ -40,9 +44,7 @@
 ### As several SCAI modules might depend on CUDA we try to prevent
 ### callling this configuration file several times
 
-if ( SCAI_CUDA_CHECK_DONE )
-    return ()
-endif ()
+scai_pragma_once ()
 
 set ( CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER} CACHE FILEPATH "Host side compiler used by NVCC" )
 
@@ -140,4 +142,12 @@ if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
 endif ( USE_CUDA AND NOT CUDA_FOUND )
 
-set ( SCAI_CUDA_CHECK_DONE True )
+scai_summary_external ( NAME      CUDA
+                        ENABLED   ${USE_CUDA}
+                        FOUND     ${CUDA_FOUND} 
+                        VERSION   ${CUDA_VERSION} 
+                        INCLUDE   ${SCAI_CUDA_INCLUDE_DIR} 
+                        LIBRARIES ${SCAI_CUDA_LIBRARIES} 
+                        CXX_FLAGS "optimize for compute capability ${CUDA_COMPUTE_CAPABILITY}"
+                        COMPILER  "${CUDA_NVCC_EXECUTABLE}"
+                      )

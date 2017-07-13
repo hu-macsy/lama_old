@@ -1,5 +1,5 @@
 ###
- # @file Package/Doxygen.cmake
+ # @file scai_pragma_once.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,24 +27,43 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief findPackage and configuration of doxygen
- # @author Jan Ecker
- # @date 25.04.2013
+ # @brief Macro to build unit test for SCAI modules
+ # @author Thomas Brandes
+ # @date 13.07.2017
 ###
 
-### DOXYGEN_FOUND
-### DOXYGEN_DOT_EXECUTABLE
-### DOXYGEN_EXECUTABLE
+## This macro provides a similiar functionality as the C preprocessor directive.
+##
+## Mostly it does not matter whether a cmake configuration file is called twice 
+## but there might be some inconveniences:
+##
+##   - if the configuration appends variables, e.g. summaries
+##   - if the configuration prints warnings 
 
-find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
+macro ( scai_pragma_once )
 
-scai_build_variable ( NAME      USE_DOXYGEN
-                      BOOL 
-                      DEFAULT   ${DOXYGEN_FOUND}
-                      DOCSTRING "use of doxygen (for system documentation)" )
+    ## Identify the file where this macro has been called
 
-scai_summary_external ( NAME     Doyxgen
-                        FOUND    ${DOXYGEN_FOUND}
-                        ENABLED  ${USE_DOXYGEN} 
-                        VERSION  ${DOXYGEN_VERSION} 
-                        COMPILER ${DOXYGEN_EXECUTABLE} )
+    get_filename_component ( name ${CMAKE_CURRENT_LIST_FILE} NAME_WE )
+
+    if ( SCAI_CHECK_DONE_${name} )
+
+        ## return works for the calling file, not for the macro only
+
+        return ()
+
+    else ()
+
+        ## set a variable with a unique name, pass it to the parent scope if available
+
+        set ( SCAI_CHECK_DONE_${name} True )
+
+        get_directory_property ( hasParent PARENT_DIRECTORY )
+
+        if ( hasParent )
+            set ( SCAI_CHECK_DONE_${name} True PARENT_SCOPE )
+        endif ()
+
+    endif ()
+
+endmacro ()

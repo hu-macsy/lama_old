@@ -32,16 +32,16 @@
  # @date 25.04.2013
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
+scai_pragma_once ()
+
 #   SCAI_BLAS_FOUND            - System has SCAI_BLAS
 #   SCAI_BLAS_NAME             - name of choosen BLAS library
 #   SCAI_SCAI_BLAS_INCLUDE_DIR - SCAI_BLAS include directory 
 #   SCAI_SCAI_BLAS_LIBRARIES   - The libraries needed to use SCAI_BLAS
-
-if ( SCAI_BLAS_CHECK_DONE )
-    return ()
-endif ()
-
-include ( Functions/checkValue )
 
 enable_language ( C )
 
@@ -139,25 +139,29 @@ include ( FindPackageHandleStandardArgs )
 
 mark_as_advanced ( SCAI_SCAI_BLAS_LIBRARIES )
 
-scai_summary_external ( NAME      SCAI_BLAS
-                        FOUND     ${SCAI_BLAS_FOUND} 
-                        VERSION   ${SCAI_BLAS_LIBRARY} )
+if ( "${SCAI_BLAS_NAME}" STREQUAL "MKL" )
 
-scai_summary_external ( NAME      MKL
-                        FOUND     ${MKL_FOUND} 
-                        VERSION   ${MKL_VERSION}
-                        INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
-                        LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+    scai_summary_external ( NAME      "SCAI BLAS"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "MKL ${MKL_VERSION}"
+                            INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
 
-scai_summary_external ( NAME      BLAS
-                        FOUND     ${BLAS_FOUND} 
-                        VERSION   ${BLAS_VERSION}
-                        LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+elseif ( "${SCAI_BLAS_NAME}" STREQUAL "BLAS" )
 
-scai_summary_external ( NAME      Lapack
-                        FOUND     ${LAPACK_FOUND} 
-                        VERSION   ${LAPACK_VERSION}
-                        LIBRARIES ${SCAI_SCAI_LAPACK_LIBRARIES} )
+    scai_summary_external ( NAME      "SCAI BLAS"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "BLAS ${BLAS_VERSION} Lapack ${LAPACK_VERSION}"
+                            INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+else ()
 
-set ( SCAI_BLAS_CHECK_DONE True PARENT_SCOPE )
+    scai_summary_external ( NAME      "SCAI BLAS"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "Internal BLAS"
+                          )
+endif ()
 

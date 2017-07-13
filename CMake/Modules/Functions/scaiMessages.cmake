@@ -232,11 +232,10 @@ function    ( indent_message LEVEL MSG )
     message ( STATUS "${TYPE_INTENT}${MSG}" )
 endfunction ( indent_message LEVEL MSG )
 
-function    ( heading TEXT )
-    emptyline()
-    formatText ( H1 "TextUnderline" "${TEXT}" )
+function ( heading TEXT )
+    formatText1 ( H1 ${TEXT} "TextUnderline" )
     indent_message ( "1" "${H1}" )
-endfunction ( heading TEXT )
+endfunction ()
 
 function    ( heading2 TEXT VAR )
     emptyline()
@@ -258,23 +257,38 @@ function    ( heading2 TEXT VAR )
     #emptyline()
 endfunction ( heading2 TEXT )
 
-function    ( heading3 TEXT VAR )
-    emptyline()
-    if    ( VAR STREQUAL "" )
-        set ( H2 "" )
-    else ( VAR STREQUAL "" )
-        if    ( ${VAR} )
-            set ( FLAG_TEXT "ENABLED" )
-            set ( FLAG_FORMAT "TextGreen" )
-        else  ( ${VAR} )
-            set ( FLAG_TEXT "DISABLED" )
-            set ( FLAG_FORMAT "TextAmber" )
-        endif ( ${VAR} )
-        formatText ( H3 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
-    endif ( VAR STREQUAL "" )
-        
+function ( formatText1 RESULT_NAME Text Color  )
+
+    set ( coloron FALSE )
+
+    set ( str "" )
+
+    if ( CMAKE_COLOR_MAKEFILE )
+        set ( str "${str}${${Color}}" )
+        set ( coloron TRUE )
+    endif ()
+
+    set ( str "${str}${Text}" )
+    if ( coloron )
+        set ( str "${str}${TextColorReset}" )
+        set ( coloron FALSE )
+    endif ( coloron )
+
+    set ( ${RESULT_NAME} ${str} PARENT_SCOPE )
+
+endfunction ()
+
+function ( heading3 TEXT VALUE )
+
+    if ( ${VALUE}  )
+        formatText1 ( H3 ENABLED TextGreen )
+    else ()
+        formatText1 ( H3 DISABLED TextAmber )
+    endif ()
+
     indent_message ( "3" "${TEXT} ${H3}" )
-endfunction ( heading3 TEXT )
+
+endfunction ()
 
 function    ( found_message TEXT VAR OPTIONAL ADDITIONAL_TEXT )
 

@@ -46,7 +46,11 @@ set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo
 ### Default: use all modules; but it can be changed via cmake gui
 ### dependencies are not resolved here but will be verified during configuration
 
-set ( SCAI_USED_MODULES ${SCAI_ALL_MODULES} CACHE STRING "Used SCAI module projects" )
+if ( DEFINED SCAI_MODULES )
+    set ( SCAI_USED_MODULES ${SCAI_MODULES} CACHE STRING "Used SCAI module projects" )
+else ()
+    set ( SCAI_USED_MODULES ${SCAI_ALL_MODULES} CACHE STRING "Used SCAI module projects" )
+endif ()
 
 ### Define some general variables used for identifaction 
 
@@ -69,14 +73,40 @@ endif ( NOT SCAI_CMAKE_VERBOSE )
 include ( VersionCheck/Compiler )
 include ( Compiler/SetCPPFlags )
 
+include ( scai_macro/scai_summary )
+
+scai_summary_external ( NAME      CXX
+                        ENABLED   True
+                        FOUND     True
+                        VERSION   "${CMAKE_CXX_COMPILER_ID} Version ${CXX_COMPILER_VERSION}"
+                        COMPILER  "${CMAKE_CXX_COMPILER}"
+                        CXX_FLAGS "${CMAKE_CXX_COMPILER_FLAGS}"
+                      )
+
 ## C++11 or Boost
 
 include ( Compiler/CheckC++11 )
 
-if ( NOT CXX_SUPPORTS_C11 )
+if ( CXX_SUPPORTS_C11 )
+
+    scai_summary_external ( NAME      "C++11 support"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "via C++ compiler"
+                          )
+else ()
+
     include( Package/Boost )
-    message( STATUS "No C11 support, use Boost include dir ${BOOST_INCLUDE_DIR}" )
+
+    scai_summary_external ( NAME      "C++11 Support"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "via Boost ${BOOST_VERSION}"
+                            INCLUDE   "${BOOST_INCLUDE_DIR}"
+                          )
+
     include_directories( ${BOOST_INCLUDE_DIR} )
+
 endif ()
 
 ## Define all variables (in CACHE) that are used for individual choices 
@@ -145,10 +175,6 @@ scai_build_variable ( NAME      SCAI_TRACING
                       DEFAULT   On
                       DOCSTRING "tracing of regions for performance analysis" )
 
-## scai_summary collects information about found external packages
-
-include ( scai_macro/scai_summary )
-
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
 
 if ( BUILD_TEST )
@@ -176,18 +202,11 @@ include ( ConcludeFlags )
 
 ## Include all  functions that might be called in any module project
 
-include ( scai_macro/scai_module )
-include ( scai_macro/scai_project )
-include ( scai_macro/scai_subdirectories )
-include ( scai_macro/scai_library )
-
 include ( Functions/relative_install )
 
 ### Traverse all module projects for configuration
 
 foreach ( module ${SCAI_USED_MODULES} )
-
-    message( STATUS "Configuring SCAI module ${module}" )
 
     # Note: names of subdirectories are same as module names
 

@@ -32,7 +32,9 @@
  # @date 04.07.2017
 ###
 
+include ( CMakeParseArguments )
 include ( Functions/scaiMessages )
+include ( Functions/listToString )
 
 ## Macro adds a summary string (one line) to global variable SCAI_SUMMARY
 
@@ -45,6 +47,34 @@ macro ( scai_summary )
     if ( hasParent )
         set ( SCAI_SUMMARY ${SCAI_SUMMARY} PARENT_SCOPE )
     endif ()
+
+endmacro ()
+
+macro ( scai_summary_enabled )
+
+    set ( options )
+    set ( oneValueArgs NAME ENABLED )
+    set ( multiValueArgs )
+
+    cmake_parse_arguments ( scai_summary_enabled "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if ( ${scai_summary_enabled_ENABLED} )
+
+        set ( EnabledString "${TextGreen}ENABLED${TextColorReset}" )
+
+    else ()
+
+        set ( EnabledString "${TextAmber}DISABLED${TextColorReset}" )
+
+    endif ()
+
+    scai_summary ( "     ${scai_summary_enabled_NAME} ${EnabledString}" )
+
+endmacro ()
+
+macro ( scai_summary_newline )
+
+    scai_summary ( " " )
 
 endmacro ()
 
@@ -62,10 +92,16 @@ endmacro ()
 macro ( scai_summary_external )
 
     set ( options )
-    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS COMPILER )
+    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS COMPILER ENABLED )
     set ( multiValueArgs INCLUDE LIBRARIES )
 
     cmake_parse_arguments ( scai_summary_external "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if ( DEFINED scai_summary_external_ENABLED )
+
+        scai_summary_enabled( NAME ${scai_summary_external_NAME} ENABLED ${scai_summary_external_ENABLED} )
+
+    endif ()
 
     if ( ${scai_summary_external_FOUND} )
 
@@ -111,34 +147,10 @@ macro ( scai_summary_external )
 
     endif ()
 
-endmacro ()
-
-
-macro ( scai_summary_enabled )
-
-    set ( options )
-    set ( oneValueArgs NAME ENABLED )
-    set ( multiValueArgs )
-
-    cmake_parse_arguments ( scai_summary_enabled "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-    if ( ${scai_summary_enabled_ENABLED} )
-
-        set ( EnabledString "${TextGreen}ENABLED${TextColorReset}" )
-
-    else ()
-
-        set ( EnabledString "${TextAmber}DISABLED${TextColorReset}" )
-
-    endif ()
-
-    scai_summary ( "     ${scai_summary_enabled_NAME} ${EnabledString}" )
-
-endmacro ()
-
-macro ( scai_summary_newline )
+    ## make a final new line
 
     scai_summary ( " " )
 
 endmacro ()
+
 

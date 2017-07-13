@@ -27,15 +27,32 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief find package Sphinx and set BUILD_DOC flag
+ # @brief Package Sphinx (might be enabled or disabled)
  # @author Jan Ecker
  # @date 11.11.2015
 ###
 
 ### SPHINX_FOUND
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
+scai_pragma_once ()
+
 # included with Package/doc and for every project with external packages in scaiFunctions
 
 find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 
 mark_as_advanced( Sphinx_DIR )
+
+scai_build_variable ( NAME      USE_SPHINX
+                      BOOL 
+                      DEFAULT   ${SPHINX_FOUND}
+                      DOCSTRING "use of Sphinx (for user documentation)" )
+
+scai_summary_external ( NAME     Sphinx
+                        ENABLED  ${USE_SPHINX}
+                        FOUND    ${SPHINX_FOUND}
+                        VERSION  ${Sphinx_VERSION_STRING} 
+                        COMPILER ${Sphinx-build_EXECUTABLE} )

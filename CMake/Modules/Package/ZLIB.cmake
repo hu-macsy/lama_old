@@ -67,11 +67,10 @@ endif ()
 mark_as_advanced ( SCAI_ZLIB_LIBRARIES )
 mark_as_advanced ( SCAI_ZLIB_INCLUDE_DIR )
 
-scai_summary_enabled ( NAME "ZLIB (data compression)" ENABLED ${USE_ZLIB} )
-
-scai_summary_external ( NAME      zlib
+scai_summary_external ( NAME      ZLIB (data compression)
+                        ENABLED   ${USE_ZLIB}
                         FOUND     ${ZLIB_FOUND} 
-                        VERSION   ${ZLIB_VERSION} 
+                        VERSION   "zlib ${ZLIB_VERSION}"
                         INCLUDE   ${ZLIB_INCLUDE_DIR} 
                         LIBRARIES ${ZLIB_LIBRARY}  )
 

@@ -32,15 +32,17 @@
  # @date 25.04.2013
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
 ### This module returns the following variables regarding OpenMP:
 ### OPENMP_FOUND           - if OpenMP is found
 ### USE_OPENMP             - if OpenMP is enabled
 ### OpenMP_CXX_FLAGS       - flags to be used for compiling/linking C++ code with OpenMP pragmas
 ### OPENMP_VERSION         - version id
 
-if ( SCAI_OPENMP_CHECK_DONE )
-    return ()
-endif ()
+scai_pragma_once( OpenMP )
 
 find_package ( OpenMP ${SCAI_FIND_PACKAGE_FLAGS} ) # sets OPENMP_FOUND, OpenMP_CXX_FLAGS
 
@@ -89,5 +91,3 @@ scai_summary_external ( NAME      OpenMP
                         FOUND     ${OPENMP_FOUND} 
                         VERSION   ${OPENMP_VERSION} 
                         CXX_FLAGS ${OpenMP_CXX_FLAGS} )
-
-set ( SCAI_OPENMP_CHECK_DONE True )
