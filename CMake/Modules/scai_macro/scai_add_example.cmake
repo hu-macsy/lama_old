@@ -44,27 +44,51 @@
 macro ( scai_add_example )
 
     set ( options CUDA )
-    set ( oneValueArgs EXECUTABLE )
+    set ( oneValueArgs EXECUTABLE LIBRARY )
     set ( multiValueArgs FILES )
 
     cmake_parse_arguments ( scai_add_example "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-    if ( "${scai_add_example_EXECUTABLE}" STREQUAL "" )
-        message ( FATAL_ERROR "scai_add_example: EXECUTABLE argument not specified" )
-    endif ()
+    string ( LENGTH "${scai_add_example_EXECUTABLE}" LEN_EXECUTABLE )
+    string ( LENGTH "${scai_add_example_LIBRARY}" LEN_LIBRARY )
 
-    if ( ${scai_add_example_CUDA} )
-        cuda_add_executable ( ${scai_add_example_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_add_example_FILES} )
+    message ( STATUS "add example, LIBRARY ${LEN_LIBRARY} EXECUTABLE ${LEN_EXECUTABLE}" )
+
+    if ( LEN_EXECUTABLE GREATER 0 )
+
+        if ( LEN_LIBRARY GREATER 0 )
+            message( FATAL_ERROR "LIBRARY and EXECTUABLE cannot be used together" )
+        endif ()
+    
+        if ( ${scai_add_example_CUDA} )
+            cuda_add_executable ( ${scai_add_example_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_add_example_FILES} )
+        else ()
+            add_executable ( ${scai_add_example_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_add_example_FILES} )
+        endif ()
+
+        set ( EXAMPLE_EXECUTABLES ${EXAMPLE_EXECUTABLES} ${scai_add_example_EXECUTABLE} )
+
+        target_link_libraries ( ${scai_add_example_EXECUTABLE} ${MODULE_LIBRARY} )
+
+        add_dependencies( examples ${scai_add_example_EXECUTABLE} )
+
     else ()
-        add_executable ( ${scai_add_example_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_add_example_FILES} )
-    endif ()
 
-    target_link_libraries ( ${scai_add_example_EXECUTABLE} ${MODULE_LIBRARY} )
+        if ( LEN_LIBRARY EQUAL 0 )
+            message( FATAL_ERROR "neither LIBRARY nor EXECUTABLE specified" )
+        endif ()
+
+        add_library ( ${scai_add_example_LIBRARY} SHARED EXCLUDE_FROM_ALL ${scai_add_example_FILES} )
+
+        set ( EXAMPLE_MODULES ${EXAMPLE_MODULES} "${scai_add_example_LIBRARY}.so" )
+
+        target_link_libraries ( ${scai_add_example_LIBRARY} ${MODULE_LIBRARY} )
+
+        add_dependencies( examples ${scai_add_example_LIBRARY} )
+
+    endif ()
 
     set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${FILES} )
-    set ( EXAMPLE_EXECUTABLES ${EXAMPLE_EXECUTABLES} ${scai_add_example_EXECUTABLE} )
-
-    add_dependencies( examples ${scai_add_example_EXECUTABLE} )
 
 endmacro ()
 

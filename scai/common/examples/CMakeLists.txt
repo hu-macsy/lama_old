@@ -40,23 +40,17 @@ include ( scai_function/scai_example_directory )
 # ThreadTest example
 
 include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
+
+if ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
     include_directories ( ${BOOST_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
+endif ()
 
 # example of a library module ( will be used by executable UseModule )
 # must be build SHARED regardless the SCAI_LIBRARY_TYPE is SHARED or STATIC
-add_library( Module SHARED Module.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} Module.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} DynRoutine.hpp )
-target_link_libraries( Module ${MODULE_LIBRARY} )
 
-# example of a library module ( no use of other LAMA stuff )
-add_library( DummyModule SHARED DummyModule.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} DummyModule.cpp )
-
-set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
+scai_add_example ( LIBRARY Module FILES Module.cpp DynRoutine.hpp )
+scai_add_example ( LIBRARY DummyModule FILES DummyModule.cpp )
 
 set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} 
           Barrier 

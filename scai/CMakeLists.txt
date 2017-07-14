@@ -128,11 +128,6 @@ scai_build_variable ( NAME      BUILD_TEST
                       DEFAULT   True
                       DOCSTRING "build of test" )
 
-scai_build_variable ( NAME      BUILD_EXAMPLES
-                      BOOL
-                      DEFAULT   True
-                      DOCSTRING "build of examples" )
-
 scai_build_variable ( NAME      BUILD_DOC
                       BOOL
                       DEFAULT   True
@@ -189,11 +184,6 @@ if ( BUILD_TEST )
     include( Package/BoostTest )
     include( scai_macro/scai_test_scripts )  # macro used in test directories
     include( scai_macro/scai_unit_test    )  # macro used in test directories
-endif ()
-
-if ( BUILD_EXAMPLES )
-    include( scai_macro/scai_run_script        )  # macro used in example directories
-    include( scai_macro/scai_example_makefile  )  # macro used in example directories
 endif ()
 
 ### Sphinx is used for user documentation and a module project 

@@ -37,7 +37,6 @@
 ##
 ##   TEST      - add test only if TEST enabled and BOOST_TEST available
 ##   CUDA      - add cuda only if CUDA enabled
-##   EXAMPLES  - add examples only if BUILD_EXAMPLES has been set
 ##   MIC       - add mic only if USE_MIC
 
 macro ( scai_subdirectories )
@@ -53,9 +52,7 @@ macro ( scai_subdirectories )
     # message ( STATUS "subdirs = ${scai_subdirectories_UNPARSED_ARGUMENTS}" )
 
     if ( ${scai_subdirectories_EXAMPLES} )
-        if ( BUILD_EXAMPLES )
-            add_subdirectory ( examples )
-        endif ()
+        add_subdirectory ( examples )
     endif ()
 
     if ( ${scai_subdirectories_TEST} )

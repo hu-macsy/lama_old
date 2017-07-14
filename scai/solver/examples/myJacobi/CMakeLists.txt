@@ -34,21 +34,11 @@
 
 set ( HEADER MyJacobiModule.hpp )
 
-set ( MODULE_FILE MyJacobiModule.cpp )
-set ( EXECUTABLE_FILE myJacobi.cpp )
-set ( EXECUTABLE myJacobi.exe )
+scai_add_example ( LIBRARY MyJacobiModule FILES MyJacobiModule.cpp )
 
-# build MyJacobiModule
-add_library( MyJacobiModule SHARED ${MODULE_FILE} )
-target_link_libraries( MyJacobiModule ${MODULE_LIBRARY} )
+scai_add_example ( EXECUTABLE myJacobi.exe FILES myJacobi.cpp )
 
-#build main for MyJacobiModule
-add_executable( ${EXECUTABLE} ${EXECUTABLE_FILE} )
-target_link_libraries( ${EXECUTABLE} MyJacobiModule )
-
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${EXECUTABLE_FILE} ${MODULE_FILE} )
-set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )
-set ( EXAMPLE_LIBS "MyJacobiModule" ) # for make.inc
+target_link_libraries( myJacobi.exe MyJacobiModule )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
@@ -56,6 +46,7 @@ scai_example_directory ( INSTALL_EXAMPLE_DIR )
 # generate build file in example directory
 scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install examples sources
+## install examples sources, EXAMPLE_FILES set by scai_add_example commands 
+
 install ( FILES       ${EXAMPLE_FILES} ${HEADER}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )

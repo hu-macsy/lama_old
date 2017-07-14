@@ -52,6 +52,8 @@ if    ( OPENGL_FOUND AND GLUT_FOUND )
         scai_add_example ( EXECUTABLE ${executable}.exe
                            FILES      ${executable}.cpp )
 
+        target_link_libraries( ${executable}.exe ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
+
     endforeach ( executable )
 
     # use the recommended installation directory for this example directory
