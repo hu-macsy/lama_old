@@ -183,6 +183,8 @@ enable_testing ()
 
 add_custom_target ( check COMMAND ${CMAKE_CTEST_COMMAND} )
 
+add_custom_target ( examples )
+
 if ( BUILD_TEST )
     include( Package/BoostTest )
     include( scai_macro/scai_test_scripts )  # macro used in test directories

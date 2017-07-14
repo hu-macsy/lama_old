@@ -32,20 +32,21 @@
  # @date 28.01.2016
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
 
-if    ( OPENMP_FOUND AND USE_OPENMP )
+if ( OPENMP_FOUND AND USE_OPENMP )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-endif ( OPENMP_FOUND AND USE_OPENMP )
+endif ()
  
 # example of a library module ( will be used by executable UseModule )
 
-foreach ( executable CG_BLAS )
-    add_executable ( ${executable}.exe ${executable}.cpp )
-    target_link_libraries ( ${executable}.exe ${MODULE_LIBRARY} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+scai_add_example ( EXECUTABLE CG_BLAS.exe 
+                   FILES      CG_BLAS.cpp  )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
@@ -60,4 +61,3 @@ scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 install ( FILES       ${EXAMPLE_FILES}
           DESTINATION ${INSTALL_EXAMPLE_DIR} )
-

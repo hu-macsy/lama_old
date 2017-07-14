@@ -32,6 +32,11 @@
  # @date 28.01.2016
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SCAI_LANG_FLAGS}" )
 
 if    ( OPENMP_FOUND AND USE_OPENMP )
@@ -39,10 +44,10 @@ if    ( OPENMP_FOUND AND USE_OPENMP )
 endif ( OPENMP_FOUND AND USE_OPENMP )
  
 foreach ( executable matmulell )
-    add_executable ( ${executable}.exe ${executable}.cpp )
-    target_link_libraries ( ${executable}.exe ${MODULE_LIBRARY} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
 endforeach ( executable )
 
 # use the recommended installation directory for this example directory

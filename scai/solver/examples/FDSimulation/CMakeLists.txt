@@ -32,16 +32,8 @@
  # @date 24.05.2016
 ###
 
-set ( EXECUTABLE_FILE FDSimulation.cpp )
-set ( EXECUTABLE FDSimulation.exe )
-
-#build main for FDSimulation
-
-add_executable( ${EXECUTABLE} ${EXECUTABLE_FILE} )
-target_link_libraries( ${EXECUTABLE} ${MODULE_LIBRARY})
-
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${EXECUTABLE_FILE} ${MODULE_FILE} )
-set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${EXECUTABLE}" )
+scai_add_example( EXECUTABLE FDSimulation.exe
+                  FILES      FDSimulation.cpp )
 
 # seismogram.gnuplot: copy only to build directory
 configure_file( seismogram.gnuplot seismogram.gnuplot COPYONLY )

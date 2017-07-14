@@ -32,26 +32,25 @@
  # @date 16.06.2015
 ###
 
-#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
 
-set ( EXAMPLE_FILES "" )
-set ( EXAMPLE_EXECUTABLES "" )
-set ( EXAMPLE_MODULES "" ) # for make.inc
+# init call necessary so that Makefile generation does not include anything from outside
 
-string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+scai_init_examples()
 
 foreach ( executable DemoCUDACtx CUBLASExample1 CUBLASExample2 DemoCUSparse BenchCUDA )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe FILES ${executable}.cpp )
+
 endforeach ( executable )
 
 foreach ( executable CUDAExample )
-    cuda_add_executable( ${executable}.exe ${executable}.cu )
-    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cu )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( CUDA EXECUTABLE ${executable}.exe FILES ${executable}.cu )
+
 endforeach ( executable )
 
 # use the recommended installation directory for this example directory

@@ -43,7 +43,7 @@
 
 macro ( scai_unit_test )
 
-    set ( options )
+    set ( options CUDA )
     set ( oneValueArgs EXECUTABLE )
     set ( multiValueArgs FILES )
 
@@ -57,7 +57,11 @@ macro ( scai_unit_test )
 
     # define test executable, will not be a default built target, but wiht make check
 
-    add_executable ( ${scai_unit_test_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_unit_test_FILES} )
+    if ( ${scai_unit_test_CUDA} )
+        cuda_add_executable ( ${scai_unit_test_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_unit_test_FILES} )
+    else ()
+        add_executable ( ${scai_unit_test_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_unit_test_FILES} )
+    endif ()
 
     add_dependencies( check ${scai_unit_test_EXECUTABLE} )
 

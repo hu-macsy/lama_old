@@ -1,8 +1,8 @@
 ###
- # @file CMakeLists.txt
+ # @file scai_example_directory.cmake
  #
  # @license
- # Copyright (c) 2009-2017
+ # Copyright (c) 2009-2016
  # Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  # for Fraunhofer-Gesellschaft
  #
@@ -27,33 +27,22 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama pardiso example
+ # @brief Funciton to get the example installation directory
  # @author Thomas Brandes
- # @date 02.12.2015
+ # @date 03.07.2017
 ###
 
-include ( Package/SCAI_BLAS )
+## Function to get the prefered installation directory for examples
 
-if ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )
+function ( scai_example_directory output_var )
 
-    include_directories ( ${SCAI_SCAI_BLAS_INCLUDE_DIR} )
+   get_filename_component ( SUBDIR ${CMAKE_CURRENT_SOURCE_DIR} NAME )
 
-    foreach ( executable directSolver )
+   if ( "${SUBDIR}" STREQUAL "examples" )
+       set( ${output_var} "share/examples/${SCAI_LIBRARY_PREFIX}-${MODULE_NAME}-${SCAI_VERSION}" PARENT_SCOPE )
+   else ()
+       set( ${output_var} "share/examples/${SCAI_LIBRARY_PREFIX}-${MODULE_NAME}-${SCAI_VERSION}/${SUBDIR}" PARENT_SCOPE )
+   endif ()
 
-        scai_add_example( EXECUTABLE ${executable}.exe
-                          FILES      ${executable}.cpp )
+endfunction ()
 
-    endforeach ( executable )
-
-    # use the recommended installation directory for this example directory
-    scai_example_directory ( INSTALL_EXAMPLE_DIR )
-
-    # generate build file in example directory
-    scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
-
-    ## install examples sources
-
-    install ( FILES       ${EXAMPLE_FILES}
-              DESTINATION ${INSTALL_EXAMPLE_DIR} )
-
-endif ( SCAI_BLAS_NAME MATCHES "MKL" AND SCAI_INDEX_TYPE STREQUAL "int" )

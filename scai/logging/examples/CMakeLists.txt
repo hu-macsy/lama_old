@@ -32,30 +32,35 @@
  # @date 16.06.2015
 ###
 
-# Try to find OpenMP compile and link flags for the OpenMP example
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
 
 # LogLevels example, here we compile also LOG_TRACE macros
+
 set ( SCAI_LOGGING_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for make.inc
 
-add_executable( LogLevels.exe LogLevels.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogLevels.cpp )
-set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogLevels.exe" )
-target_link_libraries( LogLevels.exe ${MODULE_LIBRARY} )
+scai_add_example ( EXECUTABLE LogLevels.exe
+                   FILES      LogLevels.cpp )
+
 set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL} )
 
+# Try to find OpenMP compile and link flags for the OpenMP example
 # OpenMPTest example
 
 include ( Package/OpenMP )
 
-if    ( OPENMP_FOUND )
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    # Adding this example only possible if OpenMP is available
-    add_executable( LogOpenMP.exe LogOpenMP.cpp )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogOpenMP.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogOpenMP.exe" )
-    target_link_libraries( LogOpenMP.exe ${MODULE_LIBRARY} )
+if ( OPENMP_FOUND )
+
+    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+
+    scai_add_example ( EXECUTABLE LogOpenMP.exe FILES LogOpenMP.cpp )
+
 else  ( OPENMP_FOUND )
+
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
+
 endif ( OPENMP_FOUND )
 
 # use the recommended installation directory for this example directory

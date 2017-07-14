@@ -46,8 +46,7 @@ scai_project (
         CUDAKernel
 )
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
-
-cuda_add_executable ( commonCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
-
-target_link_libraries ( commonCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_common )
+scai_unit_test ( EXECUTABLE commonCUDATest 
+                 CUDA
+                 FILES      ${CXX_SOURCES} ${CUDA_SOURCES}
+               )

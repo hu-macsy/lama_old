@@ -32,18 +32,12 @@
  # @date 08.03.2016
 ###
 
-#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
-
-set ( EXAMPLE_FILES "" )
-set ( EXAMPLE_EXECUTABLES "" )
-
-string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+scai_init_examples()
 
 foreach ( executable BenchStream DemoTasking DemoStream DemoAsync )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe FILES ${executable}.cpp )
+
 endforeach ( executable )
 
 # use the recommended installation directory for this example directory

@@ -32,15 +32,21 @@
  # @date 16.06.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 # Explicitly enable tracing at compile time here
 set ( SCAI_TRACING_FLAG SCAI_TRACE_ON ) # also needed in prepareExamplesMakeInc for make.inc
 
 foreach ( executable TraceTest TraceCalls TraceThreads )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
     set_target_properties( ${executable}.exe PROPERTIES COMPILE_FLAGS -D${SCAI_TRACING_FLAG} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
 endforeach ( executable )
 
 # use the recommended installation directory for this example directory

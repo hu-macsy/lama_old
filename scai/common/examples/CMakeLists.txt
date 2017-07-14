@@ -32,6 +32,11 @@
  # @date 16.06.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 # ThreadTest example
 
 include ( Compiler/CheckC++11 )
@@ -73,20 +78,20 @@ set ( EXECUTABLE_FILES ${EXECUTABLE_FILES}
           UseModule
     )
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} DemoComplex )
-endif ( ${USE_COMPLEX} )
+endif ()
 
 foreach ( executable ${EXECUTABLE_FILES} )
-    add_executable ( ${executable}.exe ${executable}.cpp )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    target_link_libraries ( ${executable}.exe ${MODULE_LIBRARY} )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
+endforeach ()
 
 if ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+endif ()
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )

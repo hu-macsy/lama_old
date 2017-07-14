@@ -32,6 +32,10 @@
  # @date 03.07.2016
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+
 enable_language ( C )
 
 find_package( OpenGL )
@@ -44,10 +48,10 @@ if    ( OPENGL_FOUND AND GLUT_FOUND )
     set ( EXECUTABLES nbody test )
 
     foreach ( executable ${EXECUTABLES} )
-        add_executable( ${executable}.exe ${executable}.cpp )
-        target_link_libraries( ${executable}.exe ${MODULE_LIBRARY} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
-        set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-        set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+        scai_add_example ( EXECUTABLE ${executable}.exe
+                           FILES      ${executable}.cpp )
+
     endforeach ( executable )
 
     # use the recommended installation directory for this example directory

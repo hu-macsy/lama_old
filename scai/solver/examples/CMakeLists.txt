@@ -32,6 +32,11 @@
  # @date 25.01.2016
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 add_subdirectory ( FDSimulation )
 add_subdirectory ( lecture )
 if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )

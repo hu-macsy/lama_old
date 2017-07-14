@@ -32,13 +32,12 @@
  # @date 03.07.2016
 ###
 
-set ( EXAMPLE_FILES writeParallel.cpp readParallel.cpp utility.hpp )
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
 
-add_executable( writeParallel.exe writeParallel.cpp )
-add_executable( readParallel.exe readParallel.cpp )
-
-target_link_libraries( writeParallel.exe ${MODULE_LIBRARY} )
-target_link_libraries( readParallel.exe ${MODULE_LIBRARY} )
+scai_add_example ( EXECUTABLE writeParallel.exe FILES writeParallel.cpp )
+scai_add_example ( EXECUTABLE readParallel.exe FILES readParallel.cpp )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
@@ -49,4 +48,4 @@ scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 ## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
