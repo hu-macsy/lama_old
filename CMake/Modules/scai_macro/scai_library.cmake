@@ -70,7 +70,12 @@ macro ( scai_library )
 
     string ( REGEX REPLACE "([a-z]+)" "${scai_library_PREFIX}_\\1" INTERNAL_LIBS "${INTERNAL_DEPS}")
 
-    target_link_libraries ( ${MODULE_LIBRARY} ${INTERNAL_LIBS} )
+    list ( REVERSE INTERNAL_LIBS )
+
+    ## LAMA relies on registrations of kernels or registration in a factory during static initialization
+    ## so some compilers require  -Wl,--no-as-needed <internal libs> -Wl,--as-needed 
+
+    target_link_libraries ( ${MODULE_LIBRARY} ${SCAI_START_LINK_LIBRARIES} ${INTERNAL_LIBS} ${SCAI_END_LINK_LIBRARIES} )
 
     ## link external libraries via external libraries, SCAI external package wrappers respect naming conventions
 

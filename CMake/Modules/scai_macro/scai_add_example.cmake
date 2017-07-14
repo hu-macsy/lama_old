@@ -52,7 +52,7 @@ macro ( scai_add_example )
     string ( LENGTH "${scai_add_example_EXECUTABLE}" LEN_EXECUTABLE )
     string ( LENGTH "${scai_add_example_LIBRARY}" LEN_LIBRARY )
 
-    message ( STATUS "add example, LIBRARY ${LEN_LIBRARY} EXECUTABLE ${LEN_EXECUTABLE}" )
+    # message ( STATUS "add example, LIBRARY ${LEN_LIBRARY} EXECUTABLE ${LEN_EXECUTABLE}" )
 
     if ( LEN_EXECUTABLE GREATER 0 )
 
