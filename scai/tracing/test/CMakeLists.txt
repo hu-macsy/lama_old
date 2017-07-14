@@ -54,7 +54,5 @@ scai_test_scripts ( FILES           Makefile README simpleTracing.cpp )
 scai_test_scripts ( CODE_COVERAGE   ${USE_CODE_COVERAGE} )
 
 # add test
-
-enable_testing()
-
-add_test ( tracing_test test.sh )
+# enable_testing()
+# add_test ( tracing_test test.sh )

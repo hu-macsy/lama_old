@@ -117,7 +117,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
 
     # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
     add_custom_target (
-        doc_${MODULE_NAME} ALL
+        doc_${MODULE_NAME}
         DEPENDS ${OUTPUT_DEPENDENCIES}
     )
 
