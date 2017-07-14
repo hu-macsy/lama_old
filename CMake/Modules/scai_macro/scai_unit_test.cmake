@@ -55,7 +55,11 @@ macro ( scai_unit_test )
 
     include_directories ( ${BOOST_INCLUDE_DIR} )
 
-    add_executable ( ${scai_unit_test_EXECUTABLE}  ${scai_unit_test_FILES} )
+    # define test executable, will not be a default built target, but wiht make check
+
+    add_executable ( ${scai_unit_test_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_unit_test_FILES} )
+
+    add_dependencies( check ${scai_unit_test_EXECUTABLE} )
 
     if ( WIN32 )
         link_directories ( ${Boost_LIBRARY_DIRS} )
@@ -64,5 +68,8 @@ macro ( scai_unit_test )
         target_link_libraries ( ${scai_unit_test_EXECUTABLE} ${MODULE_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
     endif ()
 
+    # run the unit test when 'make test' is called
+
+    add_test( ${scai_unit_test_EXECUTABLE} ${scai_unit_test_EXECUTABLE} )
 
 endmacro ()

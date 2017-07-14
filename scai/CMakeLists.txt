@@ -41,7 +41,7 @@ project ( LAMA_ALL CXX )
 
 set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo 
                        blaskernel utilskernel sparsekernel dmemo lama solver  )
-
+ 
 ### Define modules that should be used ( inclusive all dependent ones )
 ### Default: use all modules; but it can be changed via cmake gui
 ### dependencies are not resolved here but will be verified during configuration
@@ -177,6 +177,12 @@ scai_build_variable ( NAME      SCAI_TRACING
 
 ## BUILD_TEST is enabled -> search BoostTest, load macro files
 
+enable_testing ()
+
+## make check : builds all tests and runs them
+
+add_custom_target ( check COMMAND ${CMAKE_CTEST_COMMAND} )
+
 if ( BUILD_TEST )
     include( Package/BoostTest )
     include( scai_macro/scai_test_scripts )  # macro used in test directories
@@ -222,6 +228,10 @@ include ( CustomCommands/SphinxDoc )
 ## add custom target doxygendoc
 
 include ( CustomCommands/DoxygenDoc )
+
+##  add custom target doc to build both
+
+add_custom_target ( doc DEPENDS doxygendoc doc_lama_all )
 
 ## add custom target distClean
 

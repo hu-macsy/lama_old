@@ -44,7 +44,7 @@ scai_test_scripts( SCRIPTS       test.sh
 
 # add test ( cmake commands )
 
-enable_testing()
+# enable_testing()
 
-add_test ( logging_test test.sh )
+# add_test ( logging_test test.sh )
 
