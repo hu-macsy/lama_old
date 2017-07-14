@@ -34,17 +34,30 @@
 
 ## Note: logging has no Boost unit test, but own test script
 
-## make.inc used by Makefile, will be configured
+# Build simpleLogging, one version for each possible logging level ( used by test.sh )
 
-scai_test_scripts( FILES make.inc CONFIGURE )
+foreach ( level OFF FATAL ERROR WARN INFO DEBUG TRACE )
+    add_executable ( simpleLogging${level} simpleLogging.cpp )
+    target_compile_definitions ( simpleLogging${level} PRIVATE -DSCAI_LOG_LEVEL_${level} )
+    target_link_libraries ( simpleLogging${level} ${MODULE_LIBRARY} )
+endforeach ()
+
+# Build complexLogging ( used by test.sh )
+
+add_executable ( complexLogging complexLogging.cpp )
+target_compile_definitions ( complexLogging PRIVATE -DSCAI_LOG_LEVEL_TRACE )
+target_link_libraries ( complexLogging ${MODULE_LIBRARY} )
+
+
+# scai_test_scripts( FILES make.inc CONFIGURE )
 
 scai_test_scripts( SCRIPTS       test.sh
-                   FILES         Makefile README complexLogging.cpp simpleLogging.cpp
+                   FILES         README 
                    CODE_COVERAGE ${USE_CODE_COVERAGE} )
 
 # add test ( cmake commands )
 
 # enable_testing()
 
-# add_test ( logging_test test.sh )
+add_test ( logging_test test.sh )
 
