@@ -43,8 +43,8 @@ scai_build_variable ( NAME      USE_DOXYGEN
                       DEFAULT   ${DOXYGEN_FOUND}
                       DOCSTRING "use of doxygen (for system documentation)" )
 
-scai_summary_external ( NAME     Doyxgen
-                        FOUND    ${DOXYGEN_FOUND}
-                        ENABLED  ${USE_DOXYGEN} 
-                        VERSION  ${DOXYGEN_VERSION} 
-                        COMPILER ${DOXYGEN_EXECUTABLE} )
+scai_summary_external ( NAME       Doyxgen
+                        FOUND      ${DOXYGEN_FOUND}
+                        ENABLED    ${USE_DOXYGEN} 
+                        VERSION    ${DOXYGEN_VERSION} 
+                        EXECUTABLE ${DOXYGEN_EXECUTABLE} )

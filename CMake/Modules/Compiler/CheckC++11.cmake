@@ -65,7 +65,7 @@ if ( NOT WIN32 )
     if    ( CXX_SUPPORTS_C11 )
         # check for needed C++11 features
         # only use C++11 if all needed features are found
-        include ( Functions/checkFeature )
+        include ( scai_function/checkFeature )
 
         # set c++11 flag as CMAKE_CXX_FLAGS and restore old value afterwards
         # setting flag int try_compile/try_run does not work

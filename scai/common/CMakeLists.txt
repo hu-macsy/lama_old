@@ -38,9 +38,9 @@ include ( scai_macro/scai_module )
 include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
+include ( scai_function/relative_install )
 
-## Note: common requires also configuration of some include files that
-##       might be used in all other modules
+## Define new SCAI module project with its internal/external dependencies
 
 scai_module(
 
@@ -56,9 +56,8 @@ set ( CONFIGURE_DIR "${CMAKE_BINARY_DIR}/include/scai/${MODULE_NAME}" )
 ## Define numeric types for which classes will be instantiated   ##
 ###################################################################
 
-include ( Functions/checkValue )
-include ( Functions/listToString )
-include ( Functions/parseBoolean )
+include ( scai_function/checkValue )
+include ( scai_function/listToString )
 
 # Possible choices for numeric types ( more than one can be selected )
 

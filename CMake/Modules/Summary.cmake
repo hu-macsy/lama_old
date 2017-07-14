@@ -32,7 +32,8 @@
  # @date 25.04.2013
 ###
 
-include ( Functions/scaiMessages )
+include ( scai_function/scaiMessages )
+include ( scai_function/listToString )
 
 emptyline()
 message ( STATUS "==============================" )
@@ -51,35 +52,34 @@ foreach ( item ${SCAI_SUMMARY} )
 endforeach ()
 
 heading ( "Build options:" "" )
-
-heading3 ( "Examples     " "BUILD_EXAMPLES" )
-heading3 ( "Test         " "BOOST_TEST_ENABLED" )
-heading3 ( "Documentation" "DOC_ENABLED" )
+emptyline()
+heading3 ( "Examples     " ${BUILD_EXAMPLES} )
+heading3 ( "Test         " ${BUILD_TEST} )
+heading3 ( "Documentation" ${BUILD_DOC} )
 
 emptyline()
 heading ( "Configuration Details:" )
 emptyline()
-
-set ( PROJECT_TEXT "SCAI ${MODULE_NAME} Version ${SCAI_VERSION}" )
 
 set ( SCAI_UNUSED_MODULES ${SCAI_ALL_MODULES} )
 foreach ( module ${SCAI_DEFINED_MODULES} )
    list ( REMOVE_ITEM SCAI_UNUSED_MODULES ${module} )
 endforeach()
 
-include ( Functions/listToString )
 
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" INST_LIST )
 
 listToString ( ", " "${SCAI_USED_MODULES}" _List )
-formatText1( SET_LIST "${_List}" TextBlue )
+formatText( SET_LIST "${_List}" TextBlue )
 listToString ( ", " "${SCAI_DEFINED_MODULES}" _List )
-formatText1( USED_LIST "${_List}" TextGreen )
+formatText( USED_LIST "${_List}" TextGreen )
 listToString ( ", " "${SCAI_UNUSED_MODULES}" _List )
-formatText1( UNUSED_LIST "${_List}" TextRed )
+formatText( UNUSED_LIST "${_List}" TextRed )
 
-indent_message ( "1" "${PROJECT_TEXT}" )
+indent_message ( "1" "SCAI ${MODULE_NAME} Version ${SCAI_VERSION}" )
+
 emptyline()
+
 indent_message ( "1" "Set SCAI modules    : ${SET_LIST}" )
 indent_message ( "1" "Used SCAI modules   : ${USED_LIST}" )
 indent_message ( "1" "Unused SCAI modules : ${UNUSED_LIST}" )

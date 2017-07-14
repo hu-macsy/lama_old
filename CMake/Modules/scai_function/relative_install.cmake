@@ -1,5 +1,5 @@
 ###
- # @file relativeInstall.cmake
+ # @file relative_install.cmake
  #
  # @license
  # Copyright (c) 2009-2016
@@ -27,7 +27,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Own install command that uses relative path names
+ # @brief Own cmake install function that keepss relative path names
  # @author Thomas Brandes
  # @date 01.10.2015
 ###

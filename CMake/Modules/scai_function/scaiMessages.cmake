@@ -186,40 +186,6 @@ else  ( NOT WIN32 )
 
 endif ( NOT WIN32 )
 
-## Help function that prints colored text messages
-## inspired by soci colormsg function
-
-function    ( formatText )
-    # first arg is name of "return variable"
-    list ( GET ARGV 0 RESULT_NAME )
-    list ( REMOVE_AT ARGV 0 )
-
-    set ( coloron FALSE )
-    set ( str "" )
-    foreach    ( arg ${ARGV} )
-
-        if    ( DEFINED ${arg} )
-            if    ( CMAKE_COLOR_MAKEFILE )
-                set ( str "${str}${${arg}}" )
-                set ( coloron TRUE )
-            endif ( CMAKE_COLOR_MAKEFILE )
-        else  ( DEFINED ${arg} )
-            set ( str "${str}${arg}" )
-            if    ( coloron )
-                set ( str "${str}${TextColorReset}" )
-                set ( coloron FALSE )
-            endif ( coloron )
-            set ( str "${str} " )
-        endif ( DEFINED ${arg} )
-
-    endforeach ( arg ${ARGV} )
-
-    if    ( CMAKE_COLOR_MAKEFILE )
-        set ( str "${str}${TextReset}${BGReset}" )
-    endif ( CMAKE_COLOR_MAKEFILE )  
-    set ( ${RESULT_NAME} ${str} PARENT_SCOPE )
-endfunction ( formatText )
-
 function    ( emptyline )
     message ( STATUS "" )
 endfunction ( emptyline )
@@ -232,32 +198,7 @@ function    ( indent_message LEVEL MSG )
     message ( STATUS "${TYPE_INTENT}${MSG}" )
 endfunction ( indent_message LEVEL MSG )
 
-function ( heading TEXT )
-    formatText1 ( H1 ${TEXT} "TextUnderline" )
-    indent_message ( "1" "${H1}" )
-endfunction ()
-
-function    ( heading2 TEXT VAR )
-    emptyline()
-
-    if    ( VAR STREQUAL "" )
-        set ( H2 "" )
-    else ( VAR STREQUAL "" )
-        if    ( ${VAR} )
-            set ( FLAG_TEXT "COMPLETE" )
-            set ( FLAG_FORMAT "TextGreen" )
-        else  ( ${VAR} )
-            set ( FLAG_TEXT "INCOMPLETE" )
-            set ( FLAG_FORMAT "TextRed" )
-        endif ( ${VAR} )
-        formatText ( H2 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
-    endif ( VAR STREQUAL "" )
-        
-    indent_message ( "2" "${TEXT} ${H2}" )
-    #emptyline()
-endfunction ( heading2 TEXT )
-
-function ( formatText1 RESULT_NAME Text Color  )
+function ( formatText RESULT_NAME Text Color  )
 
     set ( coloron FALSE )
 
@@ -278,40 +219,20 @@ function ( formatText1 RESULT_NAME Text Color  )
 
 endfunction ()
 
+function ( heading TEXT )
+    formatText ( H1 ${TEXT} "TextUnderline" )
+    indent_message ( "1" "${H1}" )
+endfunction ()
+
 function ( heading3 TEXT VALUE )
 
     if ( ${VALUE}  )
-        formatText1 ( H3 ENABLED TextGreen )
+        formatText ( H3 ENABLED TextGreen )
     else ()
-        formatText1 ( H3 DISABLED TextAmber )
+        formatText ( H3 DISABLED TextAmber )
     endif ()
 
     indent_message ( "3" "${TEXT} ${H3}" )
 
 endfunction ()
 
-function    ( found_message TEXT VAR OPTIONAL ADDITIONAL_TEXT )
-
-    set ( SCAI_SUMMARY_PACKAGE_NAME_LENGTH 18 )
-    scai_generate_blanks ( SCAI_PACKAGE_NAME_BLANKS ${TEXT} ${SCAI_SUMMARY_PACKAGE_NAME_LENGTH} )
-
-    if    ( ${VAR} )
-        set ( FLAG_TEXT "FOUND" )
-        set ( FLAG_FORMAT "TextGreen" )
-    else  ( ${VAR} )
-        set ( FLAG_TEXT "NOT FOUND" )
-        set ( ADDITIONAL_TEXT "" )
-        if     ( ${OPTIONAL} MATCHES "OPTIONAL" )
-            set ( FLAG_FORMAT "TextAmber" )
-        elseif ( ${OPTIONAL} MATCHES "REQUIRED" )
-            set ( FLAG_FORMAT "TextRed" )
-        else   ( )
-            message ( WARNING "No valid third parameter given to scai_summary_message." )
-            set ( FLAG_FORMAT "TextRed" )   
-        endif  ( )
-    endif ( ${VAR} )
-    formatText ( H4 "${FLAG_FORMAT}" "${FLAG_TEXT}" )
-        
-    indent_message ( "4" "${TEXT}${SCAI_PACKAGE_NAME_BLANKS}${H4} ${ADDITIONAL_TEXT}" )
-
-endfunction ( found_message TEXT )

@@ -45,7 +45,7 @@
 ## 
 ##  so that all filenames will be relative to this directory
 
-include ( Functions/getRelativePath )
+include ( scai_function/getRelativePath )
 
 ## Need to be macros not functions, because modifications of the parent scope
 

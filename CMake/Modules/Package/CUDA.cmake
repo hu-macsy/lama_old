@@ -142,12 +142,12 @@ if    ( USE_CUDA AND NOT CUDA_FOUND )
     message( FATAL_ERROR "Build of LAMA Cuda enabled, but configuration is incomplete!")
 endif ( USE_CUDA AND NOT CUDA_FOUND )
 
-scai_summary_external ( NAME      CUDA
-                        ENABLED   ${USE_CUDA}
-                        FOUND     ${CUDA_FOUND} 
-                        VERSION   ${CUDA_VERSION} 
-                        INCLUDE   ${SCAI_CUDA_INCLUDE_DIR} 
-                        LIBRARIES ${SCAI_CUDA_LIBRARIES} 
-                        CXX_FLAGS "optimize for compute capability ${CUDA_COMPUTE_CAPABILITY}"
-                        COMPILER  "${CUDA_NVCC_EXECUTABLE}"
+scai_summary_external ( NAME       CUDA
+                        ENABLED    ${USE_CUDA}
+                        FOUND      ${CUDA_FOUND} 
+                        VERSION    ${CUDA_VERSION} 
+                        INCLUDE    ${SCAI_CUDA_INCLUDE_DIR} 
+                        LIBRARIES  ${SCAI_CUDA_LIBRARIES} 
+                        CXX_FLAGS  "optimize for compute capability ${CUDA_COMPUTE_CAPABILITY}"
+                        EXECUTABLE "${CUDA_NVCC_EXECUTABLE}"
                       )

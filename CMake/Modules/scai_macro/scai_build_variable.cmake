@@ -32,7 +32,7 @@
  # @date 03.07.2017
 ###
 
-include ( Functions/listToString )
+include ( scai_function/listToString )
 include ( CMakeParseArguments )
 
 ## Macro to define SCAI variables ( always in cache )

@@ -38,9 +38,10 @@ include ( scai_macro/scai_module )
 include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
-
-## Define the new module with its dependencies
-
+include ( scai_function/relative_install )
+ 
+## Define new SCAI module project with its internal/external dependencies
+ 
 scai_module (
 
     MODULE_NAME   solver 

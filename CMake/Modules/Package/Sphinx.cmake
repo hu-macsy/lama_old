@@ -38,9 +38,9 @@ include ( scai_macro/scai_pragma_once )
 include ( scai_macro/scai_build_variable )
 include ( scai_macro/scai_summary )
 
-scai_pragma_once ()
+## run this configuration only once to avoid multiple summaries, messages
 
-# included with Package/doc and for every project with external packages in scaiFunctions
+scai_pragma_once ()
 
 find_package ( Sphinx ${SCAI_FIND_PACKAGE_FLAGS} )
 

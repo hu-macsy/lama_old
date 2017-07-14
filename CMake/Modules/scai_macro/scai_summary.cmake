@@ -33,8 +33,8 @@
 ###
 
 include ( CMakeParseArguments )
-include ( Functions/scaiMessages )
-include ( Functions/listToString )
+include ( scai_function/scaiMessages )
+include ( scai_function/listToString )
 
 ## Macro adds a summary string (one line) to global variable SCAI_SUMMARY
 
@@ -92,7 +92,7 @@ endmacro ()
 macro ( scai_summary_external )
 
     set ( options )
-    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS COMPILER ENABLED )
+    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS EXECUTABLE ENABLED )
     set ( multiValueArgs INCLUDE LIBRARIES )
 
     cmake_parse_arguments ( scai_summary_external "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -109,7 +109,7 @@ macro ( scai_summary_external )
 
          # if ( ${scai_summary_external_VERSION} )
          if ( DEFINED scai_summary_external_VERSION )
-            set ( FoundString "${FoundString} Version ${scai_summary_external_VERSION}" )
+            set ( FoundString "${FoundString}      : Version ${scai_summary_external_VERSION}" )
          endif ()
 
     else ()
@@ -118,16 +118,16 @@ macro ( scai_summary_external )
 
     endif ()
 
-    scai_summary ( "       ${scai_summary_external_NAME} ${FoundString}" )
+    scai_summary ( "         ${FoundString}" )
 
     if ( ${scai_summary_external_FOUND} )
 
         if ( DEFINED scai_summary_external_CXX_FLAGS )
-            scai_summary ( "         CXX FLAGS   : ${scai_summary_external_CXX_FLAGS}" )
+            scai_summary ( "         CXX Flags  : ${scai_summary_external_CXX_FLAGS}" )
         endif ()
 
-        if ( DEFINED scai_summary_external_COMPILER )
-            scai_summary ( "         compiler    : ${scai_summary_external_COMPILER}" )
+        if ( DEFINED scai_summary_external_EXECUTABLE )
+            scai_summary ( "         Executable : ${scai_summary_external_EXECUTABLE}" )
         endif ()
 
         listToString ( ", " "${scai_summary_external_INCLUDE}" INCLUDE_LIST )
@@ -135,14 +135,14 @@ macro ( scai_summary_external )
         list ( LENGTH scai_summary_external_INCLUDE N_INCLUDE )
 
         if ( N_INCLUDE GREATER 0 )
-            scai_summary ( "         include(${N_INCLUDE}) : ${INCLUDE_LIST}" )
+            scai_summary ( "         Include(${N_INCLUDE}) : ${INCLUDE_LIST}" )
         endif ()
 
         list ( LENGTH scai_summary_external_LIBRARIES N_LIBS )
 
         if ( N_LIBS GREATER 0 )
             listToString ( ", " "${scai_summary_external_LIBRARIES}" LIB_LIST )
-            scai_summary ( "         libs(${N_LIBS})    : ${LIB_LIST}" )
+            scai_summary ( "         Libs(${N_LIBS})    : ${LIB_LIST}" )
         endif ()
 
     endif ()

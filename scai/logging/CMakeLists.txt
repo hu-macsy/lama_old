@@ -38,8 +38,9 @@ include ( scai_macro/scai_module )
 include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
+include ( scai_function/relative_install )
 
-## Define name of the SCAI module project
+## Define new SCAI module project with its internal/external dependencies
 
 scai_module (
 

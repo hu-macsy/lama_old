@@ -1,5 +1,5 @@
 ###
- # @file Functions/checkValue.cmake
+ # @file scai_function/checkValue.cmake
  #
  # @license
  # Copyright (c) 2009-2016

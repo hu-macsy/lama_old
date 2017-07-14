@@ -65,7 +65,7 @@ set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/Modules" )
 
 ### set cmake quiet for untyped messages
 if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
+    include ( scai_function/setCMakeQuiet )
 endif ( NOT SCAI_CMAKE_VERBOSE )
 
 ### General stuff for all projects
@@ -75,12 +75,12 @@ include ( Compiler/SetCPPFlags )
 
 include ( scai_macro/scai_summary )
 
-scai_summary_external ( NAME      CXX
-                        ENABLED   True
-                        FOUND     True
-                        VERSION   "${CMAKE_CXX_COMPILER_ID} Version ${CXX_COMPILER_VERSION}"
-                        COMPILER  "${CMAKE_CXX_COMPILER}"
-                        CXX_FLAGS "${CMAKE_CXX_COMPILER_FLAGS}"
+scai_summary_external ( NAME       CXX
+                        ENABLED    True
+                        FOUND      True
+                        VERSION    "${CMAKE_CXX_COMPILER_ID} ${CXX_COMPILER_VERSION}"
+                        EXECUTABLE "${CMAKE_CXX_COMPILER}"
+                        CXX_FLAGS  "${CMAKE_CXX_COMPILER_FLAGS}"
                       )
 
 ## C++11 or Boost
@@ -199,10 +199,6 @@ include ( Package/OpenMP )
 include ( Package/CUDA )
 
 include ( ConcludeFlags )
-
-## Include all  functions that might be called in any module project
-
-include ( Functions/relative_install )
 
 ### Traverse all module projects for configuration
 
