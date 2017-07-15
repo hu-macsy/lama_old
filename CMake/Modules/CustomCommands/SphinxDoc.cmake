@@ -39,15 +39,17 @@
 ## 
 ##   SCAI_DOC_TYPE  ( e.g. html or latex )
 
+set ( SPHINX_BINARY_DIR "${CMAKE_BINARY_DIR}/doc/user" )
+
 macro ( setIntersphinxMapping MODULES )
 
     ## set intersphinx mapping string
 
     foreach ( module ${MODULES} )
         if    ( MAPPING ) ##append
-            set ( MAPPING "${MAPPING},\n 'scai${module}': ('${CMAKE_BINARY_DIR}/${module}/doc/html', None)" )
+            set ( MAPPING "${MAPPING},\n 'scai${module}': ('${SPHINX_BINARY_DIR}/${module}/html', None)" )
         else  ( MAPPING ) ##start
-            set ( MAPPING "'scai${module}': ('${CMAKE_BINARY_DIR}/${module}/doc/html', None)" )
+            set ( MAPPING "'scai${module}': ('${SPHINX_BINARY_DIR}/${module}/html', None)" )
         endif ( MAPPING )
     endforeach ()
 
@@ -62,14 +64,15 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     # message ( STATUS "make target for sphinx doc of ${MODULE_NAME}: depends on ${INTERNAL_DEPS}" )
 
     set ( SPHINX_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/doc" )
-    set ( SPHINX_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc/${SCAI_DOC_TYPE}" )
+
+    set ( SPHINX_CURRENT_BINARY_DIR "${SPHINX_BINARY_DIR}/${MODULE_NAME}/${SCAI_DOC_TYPE}" )
 
     # Sphinx configuration file conf.py will be generated with correct LAMA version, copyright, etc.
     # must be in same directory as Sphinx source files
 
     setIntersphinxMapping ( "${INTERNAL_DEPS}" )
 
-    configure_file ( "${CMAKE_SOURCE_DIR}/conf.py.in" "${CMAKE_CURRENT_BINARY_DIR}/doc/conf.py" )
+    configure_file ( "${CMAKE_SOURCE_DIR}/conf.py.in" "${SPHINX_BINARY_DIR}/${MODULE_NAME}/conf.py" )
     
     if ( SCAI_DOC_TYPE STREQUAL json )
         set ( DOC_EXTENSION "fjson" )
@@ -83,18 +86,18 @@ if ( SPHINX_FOUND AND BUILD_DOC )
         message( ERROR "illegal SCAI_DOC_TYPE=${SCAI_DOC_TYPE}" )
     endif ( )
 
-    set ( OUTPUT_NAME ${SPHINX_BINARY_DIR}/index.${DOC_EXTENSION} )
+    set ( OUTPUT_NAME ${SPHINX_CURRENT_BINARY_DIR}/index.${DOC_EXTENSION} )
 
     # Add custom command for building the userdoc
     add_custom_command (
         OUTPUT ${OUTPUT_NAME}
         COMMAND ${Sphinx-build_EXECUTABLE}
                     -b ${SCAI_DOC_TYPE}
-                    -c ${CMAKE_CURRENT_BINARY_DIR}/doc
-                    -d ${SPHINX_BINARY_DIR}/_doctree
+                    -c ${SPHINX_BINARY_DIR}/${MODULE_NAME}
+                    -d ${SPHINX_CURRENT_BINARY_DIR}/_doctree
                     ${SPHINX_SOURCE_DIR}
-                    ${SPHINX_BINARY_DIR}
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/doc/conf.py
+                    ${SPHINX_CURRENT_BINARY_DIR}
+        DEPENDS ${SPHINX_BINARY_DIR}/${MODULE_NAME}/conf.py
         WORKING_DIRECTORY ${SPHINX_SOURCE_DIR}
     )
 
@@ -111,11 +114,13 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     endif ()
     
     set ( OUTPUT_DEPENDENCIES ${OUTPUT_NAME} )
-    if    ( SCAI_DOC_TYPE STREQUAL latex )
-        set ( OUTPUT_DEPENDENCIES ${OUTPUT_NAME} ${PDF_OUTPUT_NAME} )
-    endif ( SCAI_DOC_TYPE STREQUAL latex )
 
-    # Add a custom target which executes the custom command (using ALL flag to add it to the default target as well!)
+    if ( SCAI_DOC_TYPE STREQUAL latex )
+        set ( OUTPUT_DEPENDENCIES ${OUTPUT_NAME} ${PDF_OUTPUT_NAME} )
+    endif ()
+
+    # Add a custom target which executes the custom command 
+
     add_custom_target (
         doc_${MODULE_NAME}
         DEPENDS ${OUTPUT_DEPENDENCIES}
@@ -128,17 +133,7 @@ if ( SPHINX_FOUND AND BUILD_DOC )
         add_dependencies ( doc_${MODULE_NAME} doc_${dep_module} )
     endforeach ()
     
-    # Add documentation to the install target
-    if    ( SCAI_DOC_TYPE STREQUAL latex )
-        install(
-            FILES ${PDF_OUTPUT_NAME}
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/user//${SCAI_DOC_TYPE}/scai-${SCAI_LAMA_ALL_VERSION}
-        )
-    else  ( SCAI_DOC_TYPE STREQUAL latex )
-        install(
-            DIRECTORY ${SPHINX_BINARY_DIR}
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/user/${MODULE_NAME}
-        )
-    endif ( SCAI_DOC_TYPE STREQUAL latex )
+    # ToDo: LAMA_ALL -> all dependencies, not only as specified in USED_MODULES
+    # ToDo: Build user doc in one step
 
 endif ( SPHINX_FOUND AND BUILD_DOC )

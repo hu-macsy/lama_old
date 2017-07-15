@@ -217,6 +217,16 @@ set ( INTERNAL_DEPS ${SCAI_USED_MODULES} )
 
 include ( CustomCommands/SphinxDoc )
 
+set ( DOC_BINARY_DIR ${CMAKE_BINARY_DIR}/doc/user )
+set ( DOC_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/user )
+
+string ( REGEX REPLACE "/" "\\\\/" DOC_BINARY_DIR1  ${DOC_BINARY_DIR} )
+string ( REGEX REPLACE "/" "\\\\/" DOC_INSTALL_DIR1 ${DOC_INSTALL_DIR} )
+
+configure_file( doc/rename.sh.in doc/user/rename.sh @ONLY )
+
+install( DIRECTORY ${DOC_BINARY_DIR} DESTINATION share/doc )
+
 ## add custom target doxygendoc
 
 include ( CustomCommands/DoxygenDoc )
