@@ -63,7 +63,7 @@ macro ( scai_unit_test )
         add_executable ( ${scai_unit_test_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_unit_test_FILES} )
     endif ()
 
-    add_dependencies( check ${scai_unit_test_EXECUTABLE} )
+    add_dependencies( tests ${scai_unit_test_EXECUTABLE} )
 
     if ( WIN32 )
         link_directories ( ${Boost_LIBRARY_DIRS} )

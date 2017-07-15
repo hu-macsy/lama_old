@@ -65,6 +65,8 @@ scai_test_scripts ( SCRIPTS         test.sh
 
 scai_test_scripts ( FILES           README )
 
-scai_test_scripts ( CODE_COVERAGE   ${USE_CODE_COVERAGE} )
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
 
 add_test ( tracing_test test.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )

@@ -90,7 +90,7 @@ macro ( scai_example_makefile )
     endif ()
 
     if ( SCAI_TRACING )
-        set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACING_${SCAI_TRACING}" )
+        set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACE_${SCAI_TRACING}" )
     endif ()
 
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )

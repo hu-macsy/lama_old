@@ -48,7 +48,11 @@ scai_unit_test ( EXECUTABLE sparsekernelTest FILES ${CXX_SOURCES} )
 
 target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 
-###  copy xmltest.sh and configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+###  copy xmltest.sh script
 
-scai_test_scripts( SCRIPTS       xmltest.sh
-                   CODE_COVERAGE ${USE_CODE_COVERAGE} )
+scai_test_scripts( SCRIPTS       xmltest.sh )
+
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
+

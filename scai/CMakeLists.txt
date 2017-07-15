@@ -176,8 +176,8 @@ enable_testing ()
 
 ## make check : builds all tests and runs them
 
-add_custom_target ( check COMMAND ${CMAKE_CTEST_COMMAND} )
-
+add_custom_target ( tests )
+add_custom_target ( check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS tests )
 add_custom_target ( examples )
 
 if ( BUILD_TEST )

@@ -52,8 +52,11 @@ target_link_libraries ( complexLogging ${MODULE_LIBRARY} )
 # scai_test_scripts( FILES make.inc CONFIGURE )
 
 scai_test_scripts( SCRIPTS       test.sh
-                   FILES         README 
-                   CODE_COVERAGE ${USE_CODE_COVERAGE} )
+                   FILES         README    )
+
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
 
 # add test ( cmake commands )
 

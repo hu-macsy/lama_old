@@ -34,7 +34,6 @@
 
 ##   scai_test_scripts( SCRITPS       <script_file1> ...
 ##                      FILES         <file1> <file2> ...
-##                      CODE_COVERGE  <bool_value>
 ##                      [CONFIGURE]                
 ##
 ##   - scripts and files are copied from current source directory to current build directory
@@ -47,7 +46,6 @@ set ( EXECUTABLE_FILE_PERMISSIONS WORLD_READ WORLD_EXECUTE OWNER_READ GROUP_READ
 macro ( scai_test_scripts )
 
     set ( options CONFIGURE )
-    set ( oneValueArgs CODE_COVERAGE )
     set ( multiValueArgs FILES SCRIPTS )
 
     cmake_parse_arguments ( scai_test_scripts "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -96,7 +94,17 @@ macro ( scai_test_scripts )
 
     endforeach() 
 
-    if ( ${scai_test_scripts_CODE_COVERAGE} )
+endmacro ()
+
+##
+##  scai_test_code_coverage( ${USE_CODE_COVERAGE} )
+##
+##   - generates/copies necessary scripts for code coverage
+##
+
+macro ( scai_test_code_coverage FLAG )
+
+    if ( ${FLAG} )
 
         configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
 
@@ -104,7 +112,7 @@ macro ( scai_test_scripts )
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
                FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} )
 
-        file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
+        file ( COPY ${CMAKE_SOURCE_DIR}/scai_code_coverage_functions.sh 
                DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
                FILE_PERMISSIONS ${EXECUTABLE_FILE_PERMISSIONS} )
 
