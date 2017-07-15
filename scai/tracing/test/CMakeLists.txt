@@ -32,6 +32,21 @@
  # @date 10.06.2015
 ###
 
+
+# Build simpleTracingXXX, one version with Tracing enabled, one without
+
+add_executable ( simpleTracingON simpleTracing.cpp )
+target_compile_definitions ( simpleTracingON PRIVATE -DSCAI_TRACE_ON )
+target_link_libraries ( simpleTracingON ${MODULE_LIBRARY} )
+
+add_executable ( simpleTracingON0 simpleTracing.cpp )
+target_compile_definitions ( simpleTracingON0 PRIVATE -DSCAI_TRACE_ON -DUNNAMED_THREADS )
+target_link_libraries ( simpleTracingON0 ${MODULE_LIBRARY} )
+
+add_executable ( simpleTracingOFF simpleTracing.cpp )
+target_compile_definitions ( simpleTracingOFF PRIVATE -DSCAI_TRACE_OFF )
+target_link_libraries ( simpleTracingOFF ${MODULE_LIBRARY} )
+
 # The shell script test.sh uses NUM_THREADS_TEST to verify tracing for threads
 
 if ( USE_OPENMP )
@@ -42,17 +57,14 @@ endif ()
 
 ## make.inc and test.sh need configuration
 
-scai_test_scripts ( FILES           make.inc
-                    SCRIPTS         test.sh
+scai_test_scripts ( SCRIPTS         test.sh
                     CONFIGURE 
 )
 
 ## other files are just copied
 
-scai_test_scripts ( FILES           Makefile README simpleTracing.cpp )
+scai_test_scripts ( FILES           README )
 
 scai_test_scripts ( CODE_COVERAGE   ${USE_CODE_COVERAGE} )
 
-# add test
-# enable_testing()
-# add_test ( tracing_test test.sh )
+add_test ( tracing_test test.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )

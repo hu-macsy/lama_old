@@ -1,9 +1,4 @@
-
-if ((BASH_VERSINFO[0] < 4))
-then
-        echo "For testing tracing you need bash version 4 or newer"
-        exit
-fi
+#!/bin/bash
 
 ###
  # @file tracing/test/test.sh
@@ -39,6 +34,12 @@ fi
  # @date 03.09.2015
 ###
 
+if ((BASH_VERSINFO[0] < 4))
+then
+        echo "For testing tracing you need bash version 4 or newer"
+        exit
+fi
+
 # =====================================================================================================================
 # Basic variables and functions definitions
 #
@@ -59,12 +60,12 @@ export OMP_NUM_THREADS=$numThreads
 
 # =====================================================================================================================
 # Function that prepares a new test case. It removes all existing .ct and .time files in the folder, sets the
-# SCAI_TRACE environmental variable properly and executes the simpleTracing.exe program
-# usage:    prepareTestCase $SCAI_TRACE_OPTIONS
-# examples: prepareTestCase ct:time
+# SCAI_TRACE environmental variable properly and executes the simpleTracingXXX program
+# usage:    prepareTestCase executable $SCAI_TRACE_OPTIONS
+# examples: prepareTestCase executable ct:time
 function prepareTestCase {
-    if [ $# -ne 1 ]; then
-        echo "Invalid number of parameters!"
+    if [ $# -ne 2 ]; then
+        echo "Invalid number of parameters: prepareTestCase <executable> <trace_options> !"
         exit 1
     fi
 
@@ -72,14 +73,14 @@ function prepareTestCase {
     rm -rf *.ct* *.time*
     
     # export SCAI_TRACE setting
-    if [ -z "$1" ]; then
+    if [ -z "$2" ]; then
         unset SCAI_TRACE
     else
-        export SCAI_TRACE=$1
+        export SCAI_TRACE=$2
     fi
    
-    # execute simpleTracing.exe and check for errors
-    ./simpleTracing.exe &> /dev/null
+    # execute simpleTracingXXX and check for errors
+    $1 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "Error while runtime execution!"
         errors=$(($errors + 1))
@@ -88,10 +89,10 @@ function prepareTestCase {
         ret=0
     fi
     
-    if [ -z "$1" ]; then
+    if [ -z "$2" ]; then
         echo "+ Running tests with unset SCAI_TRACE"
     else
-        echo "+ Running tests with SCAI_TRACE=$1"
+        echo "+ Running tests with SCAI_TRACE=$2"
     fi
     
 }
@@ -141,7 +142,7 @@ function checkTimeFilesExist {
 # =====================================================================================================================
 # Function that checks the contents of the given .time file.
 # usage:    checkTimeFileContents $FILE $NTHREADS
-# example:  checkTimeFileContents simpleTracing.exe.time 4
+# example:  checkTimeFileContents simpleTracingON.time 4
 function checkTimeFileContents {
     # all the regions with the correct number of calls should appear in the .time file
 
@@ -210,7 +211,7 @@ function checkTimeFileContents {
 # Function that checks the contents of the given .ct file. It looks for all files that have the syntax $FILE.*
 # if $NTHREADS is bigger 1
 # usage:    checkCTFileContents $FILE $NTHREADS
-# example:  checkCTFileContents simpleTracing.exe.ct 4
+# example:  checkCTFileContents simpleTracingON.ct 4
 
 function checkCTFileContents {
     # the structure of the .ct files is quite complicated and can't be fully tested here. We therefore only do
@@ -341,182 +342,175 @@ function checkCTFileContents {
 # used to control the tracing behavior. 
 # =====================================================================================================================
 
-echo "Running runtime configuration tests:"
-make clean > /dev/null
-make simple DEFINES="-DSCAI_TRACE_ON" > /dev/null
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not build executable! Tests are skipped!"
-    errors=$(($errors + 1))
-else
+echo "Running runtime configuration tests (simpleTracingON) :"
+
+# =================================================================================================================
+# Test 1
+# check execution with unset SCAI_TRACE
     
-    # =================================================================================================================
-    # Test 1
-    # check execution with unset SCAI_TRACE
-        
-    prepareTestCase ""
+prepareTestCase ./simpleTracingON ""
+if [ $ret -eq 0 ]; then
+    # If tracing is disabled, NO tracing files should be created, so we check if *.ct or *.time files exist
+    checkCTFilesExist 0
+    checkTimeFilesExist 0
+fi
+    
+# =================================================================================================================
+# Test 2
+# check execution with SCAI_TRAC=time
+
+prepareTestCase ./simpleTracingON time
+if [ $ret -eq 0 ]; then
+
+    checkCTFilesExist 0
+    
+    checkTimeFilesExist 1
     if [ $ret -eq 0 ]; then
-        # If tracing is disabled, NO tracing files should be created, so we check if *.ct or *.time files exist
-        checkCTFilesExist 0
-        checkTimeFilesExist 0
+        checkTimeFileContents simpleTracingON.time 1
+    fi
+fi
+    
+# =================================================================================================================
+# Test 3
+# check execution with SCAI_TRACE=ct
+
+prepareTestCase simpleTracingON ct
+
+if [ $ret -eq 0 ]; then
+    # there should be .time files
+    checkTimeFilesExist 0
+    
+    checkCTFilesExist 1
+    if [ $ret -eq 0 ]; then
+        checkCTFileContents simpleTracingON.ct 1
+    fi
+fi
+        
+# =================================================================================================================
+# Test 4
+# check execution with SCAI_TRACE=time:PREFIX=customPrefix
+
+prepareTestCase simpleTracingON time:PREFIX=customPrefix
+    
+if [ $ret -eq 0 ]; then
+
+    checkCTFilesExist 0
+    
+    # we have to check if there is exactly one .time file (no additional .time files created)
+    checkTimeFilesExist 1
+        
+        
+    # Check whether the a correct .time file was generated
+    count=`ls -l -la customPrefix.time 2> /dev/null | wc -l`
+    if [ $count -ne 1 ]; then
+        echo "Test failed. No .time file has been generated or a wrong name was used."
+        errors=$(($errors + 1))
+    else
+        checkTimeFileContents customPrefix.time 1
+    fi
+fi
+    
+# =================================================================================================================
+# Test 5
+# check execution with SCAI_TRACE=ct:time
+
+prepareTestCase simpleTracingON ct:time
+
+if [ $ret -eq 0 ]; then
+    checkCTFilesExist 1
+    
+    if [ $ret -eq 0 ]; then
+        checkCTFileContents simpleTracingON.ct 1
     fi
     
-    # =================================================================================================================
-    # Test 2
-    # check execution with SCAI_TRAC=time
-
-    prepareTestCase time
+    checkTimeFilesExist 1
+    
     if [ $ret -eq 0 ]; then
+        checkTimeFileContents simpleTracingON.time 1
+    fi
+fi
+    
+    
+# =================================================================================================================    
+# Test 6
+# check execution with SCAI_TRACE=time:thread
+    
+prepareTestCase simpleTracingON time:thread
+    
+if [ $ret -eq 0 ]; then
 
-        checkCTFilesExist 0
-        
-        checkTimeFilesExist 1
-        if [ $ret -eq 0 ]; then
-            checkTimeFileContents simpleTracing.exe.time 1
-        fi
+    # there should be no .ct files 
+
+    checkCTFilesExist 0
+    
+    checkTimeFilesExist 1
+    if [ $ret -eq 0 ]; then
+        checkTimeFileContents simpleTracingON.time $numThreads
+    fi
+fi
+    
+# =================================================================================================================
+# Test 7
+# check execution with SCAI_TRACE=ct:thread
+    
+prepareTestCase simpleTracingON ct:thread
+    
+if [ $ret -eq 0 ]; then
+    # there should be no .time files
+    checkTimeFilesExist 0
+    
+    checkCTFilesExist $numThreads
+    if [ $ret -eq 0 ]; then
+        checkCTFileContents simpleTracingON.ct $numThreads
+    fi
+fi
+
+# =================================================================================================================
+# Test 8
+# check execution width SCAI_TRACE=time:ct:thread
+
+prepareTestCase simpleTracingON time:ct:thread
+    
+if [ $ret -eq 0 ]; then
+    checkCTFilesExist $numThreads
+    if [ $ret -eq 0 ]; then
+        checkCTFileContents simpleTracingON.ct $numThreads
     fi
     
-    # =================================================================================================================
-    # Test 3
-    # check execution with SCAI_TRACE=ct
-    
-    prepareTestCase ct
-
+    checkTimeFilesExist 1
     if [ $ret -eq 0 ]; then
-        # there should be .time files
-        checkTimeFilesExist 0
-        
-        checkCTFilesExist 1
-        if [ $ret -eq 0 ]; then
-            checkCTFileContents simpleTracing.exe.ct 1
-        fi
+        checkTimeFileContents simpleTracingON.time $numThreads
     fi
-        
-    # =================================================================================================================
-    # Test 4
-    # check execution with SCAI_TRACE=time:PREFIX=customPrefix
+fi
     
-    prepareTestCase time:PREFIX=customPrefix
-    
-    if [ $ret -eq 0 ]; then
+# =================================================================================================================
+# Test 9
+# check execution with SCAI_TRACE=PREFIX=customPrefix:time:ct:thread
 
-        checkCTFilesExist 0
-    
-        # we have to check if there is exactly one .time file (no additional .time files created)
-        checkTimeFilesExist 1
-        
-        
-        # Check whether the a correct .time file was generated
-        count=`ls -l -la customPrefix.time 2> /dev/null | wc -l`
-        if [ $count -ne 1 ]; then
-            echo "Test failed. No .time file has been generated or a wrong name was used."
-            errors=$(($errors + 1))
-        else
-            checkTimeFileContents customPrefix.time 1
-        fi
-    fi
-    
-    # =================================================================================================================
-    # Test 5
-    # check execution with SCAI_TRACE=ct:time
-    
-    prepareTestCase ct:time
-    
-    if [ $ret -eq 0 ]; then
-        checkCTFilesExist 1
-        
-        if [ $ret -eq 0 ]; then
-            checkCTFileContents simpleTracing.exe.ct 1
-        fi
-        
-        checkTimeFilesExist 1
-        
-        if [ $ret -eq 0 ]; then
-            checkTimeFileContents simpleTracing.exe.time 1
-        fi
-    fi
-    
-    
-    # =================================================================================================================    
-    # Test 6
-    # check execution with SCAI_TRACE=time:thread
-    
-    prepareTestCase time:thread
-    
-    if [ $ret -eq 0 ]; then
+prepareTestCase simpleTracingON PREFIX=customPrefix:time:ct:thread
 
-        # there should be no .ct files 
+if [ $ret -eq 0 ]; then
+    checkCTFilesExist $numThreads
 
-        checkCTFilesExist 0
-        
-        checkTimeFilesExist 1
-        if [ $ret -eq 0 ]; then
-            checkTimeFileContents simpleTracing.exe.time $numThreads
-        fi
-    fi
-    
-    # =================================================================================================================
-    # Test 7
-    # check execution with SCAI_TRACE=ct:thread
-    
-    prepareTestCase ct:thread
-    
-    if [ $ret -eq 0 ]; then
-        # there should be no .time files
-        checkTimeFilesExist 0
-        
-        checkCTFilesExist $numThreads
-        if [ $ret -eq 0 ]; then
-            checkCTFileContents simpleTracing.exe.ct $numThreads
-        fi
+    # Check wheter the correct naming was used        
+    count=`ls -l -la customPrefix.ct.* 2> /dev/null | wc -l`
+    if [ $count -ne $numThreads ]; then
+        echo "Test failed. Wrong number of .ct file has been generated or a wrong names were used."
+        errors=$(($errors + 1))
+    else
+        checkCTFileContents customPrefix.ct $numThreads
     fi
 
-    # =================================================================================================================
-    # Test 8
-    # check execution width SCAI_TRACE=time:ct:thread
-    
-    prepareTestCase time:ct:thread
-    
-    if [ $ret -eq 0 ]; then
-        checkCTFilesExist $numThreads
-        if [ $ret -eq 0 ]; then
-            checkCTFileContents simpleTracing.exe.ct $numThreads
-        fi
-        
-        checkTimeFilesExist 1
-        if [ $ret -eq 0 ]; then
-            checkTimeFileContents simpleTracing.exe.time $numThreads
-        fi
-    fi
-    
-    # =================================================================================================================
-    # Test 9
-    # check execution with SCAI_TRACE=PREFIX=customPrefix:time:ct:thread
-    
-    prepareTestCase PREFIX=customPrefix:time:ct:thread
-    
-    if [ $ret -eq 0 ]; then
-        checkCTFilesExist $numThreads
-    
-        # Check wheter the correct naming was used        
-        count=`ls -l -la customPrefix.ct.* 2> /dev/null | wc -l`
-        if [ $count -ne $numThreads ]; then
-            echo "Test failed. Wrong number of .ct file has been generated or a wrong names were used."
-            errors=$(($errors + 1))
-        else
-            checkCTFileContents customPrefix.ct $numThreads
-        fi
 
-
-        checkTimeFilesExist 1
-        
-        # Check whether the a correct .time file was generated
-        count=`ls -l -la customPrefix.time 2> /dev/null | wc -l`
-        if [ $count -ne 1 ]; then
-            echo "Test failed. No .time file has been generated or a wrong name was used."
-            errors=$(($errors + 1))
-        else
-            checkTimeFileContents customPrefix.time $numThreads
-        fi
+    checkTimeFilesExist 1
+    
+    # Check whether the a correct .time file was generated
+    count=`ls -l -la customPrefix.time 2> /dev/null | wc -l`
+    if [ $count -ne 1 ]; then
+        echo "Test failed. No .time file has been generated or a wrong name was used."
+        errors=$(($errors + 1))
+    else
+        checkTimeFileContents customPrefix.time $numThreads
     fi
 fi
 
@@ -525,49 +519,34 @@ fi
 #
 # =====================================================================================================================
 
-# Check if no tracing files are generated if executable is build without trace support but environmental variable
-# is set
+# Check that no tracing files are generated if executable is built without trace support but SCAI_TRACE is set   
+
 echo ""
 echo "Running compile time tests:"
-make clean > /dev/null
-make simple DEFINES="-DSCAI_TRACE_OFF" &> /dev/null
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not build executable! Tests are skipped!"
-    errors=$(($errors + 1))
-else
-    prepareTestCase ct:time
-    
-    # There should be no .ct or .time files
-    checkCTFilesExist 0
-    checkTimeFilesExist 0
-fi
 
-## Check if the tracing works with unnamed threads
-make clean > /dev/null
-make simple DEFINES="-DSCAI_TRACE_ON -DUNNAMED_THREADS" &> /dev/null
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not build executable! Tests are skipped!"
-    errors=$(($errors + 1))
-else
-    prepareTestCase ct:time:thread
+prepareTestCase simpleTracingOFF ct:time
     
-    checkCTFilesExist $numThreads
-    if [ $ret -eq 0 ]; then
-        checkCTFileContents simpleTracing.exe.ct $numThreads
-    fi
-    
-    checkTimeFilesExist 1
-    if [ $ret -eq 0 ]; then
-        checkTimeFileContents simpleTracing.exe.time $numThreads
-   fi
-fi
+# There should be no .ct or .time files
+checkCTFilesExist 0
+checkTimeFilesExist 0
 
+prepareTestCase simpleTracingON0 ct:time:thread
+    
+checkCTFilesExist $numThreads
+if [ $ret -eq 0 ]; then
+    checkCTFileContents simpleTracingON0.ct $numThreads
+fi
+    
+checkTimeFilesExist 1
+if [ $ret -eq 0 ]; then
+    checkTimeFileContents simpleTracingON0.time $numThreads
+fi
 
 
 # =====================================================================================================================
 # Check for errors and return with proper exist code
-#
 # =====================================================================================================================
+
 echo ""
 if [ $errors -eq 0 ]; then
     echo "Tests run sucessfully!"

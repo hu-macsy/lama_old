@@ -59,5 +59,5 @@ scai_test_scripts( SCRIPTS       test.sh
 
 # enable_testing()
 
-add_test ( logging_test test.sh )
+add_test ( logging_test test.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 

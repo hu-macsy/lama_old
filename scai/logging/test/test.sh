@@ -1,8 +1,4 @@
-if ((BASH_VERSINFO[0] < 4))
-then
-	echo "For testing logging you need bash version 4 or newer"
-	exit
-fi
+#!/bin/bash
 
 ###
  # @file scai/logging/test/test.sh
@@ -37,6 +33,12 @@ fi
  # @author Jan Ecker
  # @date 03.09.2015
 ###
+
+if ((BASH_VERSINFO[0] < 4))
+then
+	echo "For testing logging you need bash version 4 or newer"
+	exit
+fi
 
 genericPatternSimple=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}" Test @ thread_"[0-9]{1,2}" \( main -> simpleLogging.cpp::"[0-9]{1,2}" \)"
 genericPatternComplex1=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}
