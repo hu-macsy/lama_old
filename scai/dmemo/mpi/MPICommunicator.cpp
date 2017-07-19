@@ -348,8 +348,10 @@ MPICommunicator::~MPICommunicator()
     {
         if ( !mExternInitialization )
         {
+#ifdef SCAI_COMPLEX_SUPPORTED
             SCAI_MPICALL( logger, MPI_Type_free( &mComplexLongDoubleType ), "free MPI_Datatype for ComplexLongDouble" )
             mComplexLongDoubleType = 0;
+#endif
 
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
             SCAI_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )

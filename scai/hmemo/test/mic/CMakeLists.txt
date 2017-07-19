@@ -40,8 +40,6 @@ scai_project (
         MICContextTest
 )
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
 
-add_executable ( hmemoMICTest ${CXX_SOURCES} )
-
-target_link_libraries ( hmemoMICTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} scai_hmemo )
+scai_unit_test ( EXECUTABLE hmemoMICTest 
+                 FILES      ${CXX_SOURCES} )

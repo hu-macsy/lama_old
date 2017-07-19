@@ -50,6 +50,8 @@
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <algorithm>
+
 //#include <parallel/sort.h>
 
 namespace scai
