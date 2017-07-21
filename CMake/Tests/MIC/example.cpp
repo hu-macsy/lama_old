@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./MIC/example.cpp
+ * @brief Simple example program that might be used to test compilation for MIC device
  * @author Thomas Brandes
  * @date 12.06.2014
  */

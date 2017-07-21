@@ -135,6 +135,10 @@ private:
 
     virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
 
+    /** Implementation of Communicator::scanImpl */
+
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const;
+
     /** Implementation for pure method Communicator::bcastImpl */
 
     void bcastImpl( void* val, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const;

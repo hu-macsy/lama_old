@@ -313,7 +313,7 @@ void MICCOOUtils::normalGEMV(
     }
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
-    MICUtils::binaryOpScalar1( result, beta, y, numRows, common::binary::MULT );
+    MICUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
     void* resultPtr = result;
     const void* cooIAPtr = cooIA;
     const void* cooJAPtr = cooJA;

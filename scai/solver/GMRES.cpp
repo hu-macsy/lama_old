@@ -324,7 +324,8 @@ void GMRES::iterate()
         double tmp1 = runtime.mH[hIdxStart + k];
         double tmp2 = runtime.mH[hIdxStart + k + 1];
         //for complex valuetype:
-        runtime.mH[hIdxStart + k] = lama::conj( runtime.mCC[k] ).getValue<ScalarRepType>() * tmp1 + lama::conj( runtime.mSS[k] ).getValue<ScalarRepType>() * tmp2;
+        ScalarRepType tmpV = lama::conj( runtime.mCC[k] ).getValue<ScalarRepType>() * tmp1 + lama::conj( runtime.mSS[k] ).getValue<ScalarRepType>() * tmp2;
+        runtime.mH[hIdxStart + k] = static_cast<double>( tmpV );
         runtime.mH[hIdxStart + k + 1] = runtime.mCC[k] * tmp2 - runtime.mSS[k] * tmp1;
     }
 

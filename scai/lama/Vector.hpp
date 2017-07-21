@@ -713,6 +713,7 @@ public:
      * 
      *  @param[in] other is the input vector for setting, must have same distribution
      *  @param[in] op specifies the binary operation for the update
+     *  @param[in] swapArgs if true the arguments of the binary operator are swapped
      * 
      *  The call v1.setVector( v2, op ) is equivalent to the following code:
      *
