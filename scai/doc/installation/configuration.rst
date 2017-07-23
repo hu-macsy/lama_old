@@ -79,7 +79,7 @@ CMake variable                 Signification
 ``USE_CODE_COVERAGE``          ON or OFF, explicitly enable/disable use of Code Coverage
 ``USE_CUDA``                   ON or OFF, explicitly enable/disable use of CUDA
 ``USE_GPI``                    ON or OFF, explicitly enable/disable use of GPI
-``USE_GRAPHPARTITIONING``      ON or OFF, explicitly enable/disable use of graph partitioning with Metis
+``USE_METIS``                  ON or OFF, explicitly enable/disable use redistributions with Metis
 ``USE_JAVA``                   ON or OFF, explicitly enable/disable use of Java for tracing Gui
 ``USE_MIC``                    ON or OFF, explicitly enable/disable use of MIC
 ``USE_MPI``                    ON or OFF, explicitly enable/disable use of MPI
@@ -144,77 +144,93 @@ Check
 If no fatal cmake errors occured during the configuration in the end we print a full summary of the configuration. It should look slightly the same as this and give you an overview of all used libraries and all set options:
 
 .. code-block:: bash
-
+   -- 
    -- ==============================
    -- Summary of SCAI Configuration:
    -- ==============================
    -- 
-   --  Compiler: 
+   --  External Software/Packages:
    -- 
-   --    Configuration COMPLETE 
-   --        C++ Compiler       FOUND  GNU Version 4.4.7
-   --        with C++11 support NOT FOUND  
+   --      CXX ENABLED
+   --          FOUND      : Version GNU 4.8.5
+   --          Executable : /usr/bin/g++-4.8
+   --  
+   --      C++11 support ENABLED
+   --          FOUND      : Version via C++ compiler
+   --  
+   --      Boost Unit Test ENABLED
+   --          FOUND      : Version 1.58.0
+   --          Include(1) : /usr/include
+   --          Libs(1)    : /usr/lib/x86_64-linux-gnu/libboost_unit_test_framework.so
+   --  
+   --      Sphinx ENABLED
+   --          FOUND      : Version 1.3.6
+   --  
+   --      OpenMP ENABLED
+   --          FOUND      : Version 3.1
+   --          CXX Flags  : -fopenmp
+   --  
+   --      CUDA ENABLED
+   --          FOUND      : Version 8.0
+   --          CXX Flags  : optimize for compute capability 52
+   --          Executable : /usr/local/cuda/bin/nvcc
+   --          Include(1) : /usr/local/cuda/include
+   --          Libs(5)    : /usr/lib/x86_64-linux-gnu/libcuda.so, ...
+   --  
+   --      MIC DISABLED
+   --          NOT FOUND
+   --  
+   --      Thread ENABLED
+   --          FOUND      : Version 2.23
+   --          Libs(1)    : -pthread
+   --  
+   --      Java ENABLED
+   --          FOUND      : Version 1.8.0_91
+   --          Executable : /usr/bin/javac
+   --  
+   --      SCAI BLAS ENABLED
+   --          FOUND      : Version BLAS 3 Lapack 
+   --          Libs(2)    : /usr/lib/libblas.so, /usr/lib/liblapack.so
+   --  
+   --      MPI ENABLED
+   --          FOUND      : Version 1.10.2
+   --          Include(4) : .., /usr/lib/openmpi/include, /usr/lib/openmpi/include/openmpi
+   --          Libs(2)    : /usr/lib/openmpi/lib/libmpi_cxx.so, /usr/lib/openmpi/lib/libmpi.so
+   --  
+   --      GASPI DISABLED
+   --          NOT FOUND
+   --  
+   --      Metis DISABLED
+   --          NOT FOUND
+   --  
+   --      ZLIB ENABLED
+   --          FOUND      : Version zlib 1.2.8
+   --          Include(1) : /usr/include
+   --          Libs(1)    : /usr/lib/x86_64-linux-gnu/libz.so
+   --  
+   --      PNG (image library) ENABLED
+   --          FOUND      : Version 1.2.54
+   --          Include(2) : /usr/include, /usr/include
+   --          Libs(2)    : /usr/lib/x86_64-linux-gnu/libpng.so, /usr/lib/x86_64-linux-gnu/libz.so
+   --  
+   --      Doyxgen ENABLED
+   --          FOUND      : Version 1.8.11
+   --          Executable : /usr/bin/doxygen
+   --  
+   --  SCAI lama_all Version 2.2.0
    -- 
-   -- Either compiler supporting C++11 or Boost needed.
-   --        Boost              FOUND  Version 1.41.0 at /usr/include
+   --  Set SCAI modules    : lama
+   --  Used SCAI modules   : common, logging, tracing, .., dmemo, lama
+   --  Unused SCAI modules : solver
    -- 
-   --  Required core: 
-   -- 
-   --    External Libraries COMPLETE 
-   --        pThreads           FOUND  Version 2.12
-   --        Boost              FOUND  Version 1.41.0 at /usr/include
-   --        BLAS               FOUND  MKL Version 11.0.0 with:
-   --                                  /opt/intel/mkl/lib/intel64/libmkl_intel_lp64.so
-   --                                  /opt/intel/mkl/lib/intel64/libmkl_gnu_thread.so
-   --                                  /opt/intel/mkl/lib/intel64/libmkl_core.so
-   -- 
-   --  Optional External Libraries: 
-   -- 
-   --      OpenMP ENABLED 
-   --        OpenMP             FOUND  Version 3.0
-   --        compile flag       FOUND  -fopenmp
-   --        schedule type      FOUND  set to "static"
-   -- 
-   --      CUDA ENABLED 
-   --        CUDA               FOUND  Version 6.5 at /usr/local/cuda/include
-   --        Compute Capability FOUND  30
-   -- 
-   --      MIC DISABLED 
-   -- 
-   --      Distributed ENABLED 
-   --        MPI                FOUND  Version 1.4.3 at /home/lama/openmpi-1.4.3/include
-   --        GPI                NOT FOUND  
-   -- 
-   --      Graph Partitioning DISABLED 
-   --        Metis              NOT FOUND  
-   --        ParMetis           NOT FOUND  
-   -- 
-   --  Optional components: 
-   -- 
-   --      Java: ENABLED 
-   --        Java Exexutable    FOUND  with /usr/bin/javac
-   -- 
-   --  Build options: 
-   -- 
-   --      Examples ENABLED 
-   -- 
-   --      Test ENABLED 
-   --        Boost Unit Test    FOUND  Version 1.41.0 at /usr/include
-   -- 
-   --      Documentation ENABLED 
-   --        Sphinx             NOT FOUND
-   --        Doxygen            FOUND  Version 1.6.1 with /usr/bin/doxygen
-   -- 
-   --  Configuration Details: 
-   -- 
-   --  SCAI ALL Version 2.0.0 Barrancas Blancas
-   -- 
-   --  Build Type          : Release
+   --  Build Type          : Debug
    --  Library Type        : SHARED
-   --  Instantiation Types : float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble
+   --  Numeric Types       : float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble
+   --  IndexType           : int
    --  ASSERT Level        : DEBUG ( -DSCAI_ASSERT_LEVEL_DEBUG )
-   --  LOG Level           : DEBUG ( -DSCAI_LOG_LEVEL_DEBUG )
-   --  TRACING             : ON ( -DSCAI_TRACE_ON )
+   --  LOG Level           : DEBUG ( -DSCAI_LOGGING_LEVEL_DEBUG )
+   --  TRACING             : ON ( -DSCAI_TRACING_ON )
+   --  CODE COVERAGE       : OFF
    -- 
    -- Configuring done
    -- Generating done

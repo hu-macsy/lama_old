@@ -84,7 +84,7 @@ macro ( scai_test )
         endif ()
     endif ()
 
-    if ( ${scai_RUN} )
+    if ( ${scai_test_RUN} )
 
         # run the unit test when 'make test' is called
 
