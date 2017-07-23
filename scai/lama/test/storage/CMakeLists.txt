@@ -28,8 +28,8 @@
  # @endlicense
  #
  # @brief Build configuration for test of LAMA storage classes
- # @author Jan Ecker
- # @date 03.04.2013
+ # @author Thomas Brandes
+ # @date 03.07.2017
 ###
 
 scai_project ( 
@@ -63,13 +63,11 @@ scai_project (
         lamaStorageTest
     )
 
-### checks ####
-if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-   message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
-endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-
 ### add definitions ###
+
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-scai_unit_test ( EXECUTABLE lamaStorageTest 
-                 FILES      ${CXX_SOURCES} )
+scai_test ( EXECUTABLE lamaStorageTest 
+            FILES      ${CXX_SOURCES} 
+            RUN 
+            UNIT_TEST )

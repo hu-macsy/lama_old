@@ -35,17 +35,14 @@
 
 # Build simpleTracingXXX, one version with Tracing enabled, one without
 
-add_executable ( simpleTracingON simpleTracing.cpp )
+scai_test ( EXECUTABLE simpleTracingON FILES simpleTracing.cpp )
 target_compile_definitions ( simpleTracingON PRIVATE -DSCAI_TRACE_ON )
-target_link_libraries ( simpleTracingON ${MODULE_LIBRARY} )
 
-add_executable ( simpleTracingON0 simpleTracing.cpp )
+scai_test ( EXECUTABLE simpleTracingON0 FILES simpleTracing.cpp )
 target_compile_definitions ( simpleTracingON0 PRIVATE -DSCAI_TRACE_ON -DUNNAMED_THREADS )
-target_link_libraries ( simpleTracingON0 ${MODULE_LIBRARY} )
 
-add_executable ( simpleTracingOFF simpleTracing.cpp )
+scai_test ( EXECUTABLE simpleTracingOFF FILES simpleTracing.cpp )
 target_compile_definitions ( simpleTracingOFF PRIVATE -DSCAI_TRACE_OFF )
-target_link_libraries ( simpleTracingOFF ${MODULE_LIBRARY} )
 
 # The shell script test.sh uses NUM_THREADS_TEST to verify tracing for threads
 

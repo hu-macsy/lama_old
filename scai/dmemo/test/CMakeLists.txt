@@ -76,8 +76,10 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
-scai_unit_test ( EXECUTABLE dmemoTest 
-                 FILES      ${CXX_SOURCES} 
+scai_test ( EXECUTABLE dmemoTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN
 )   
 
 ### Copy the README in build directory ### 

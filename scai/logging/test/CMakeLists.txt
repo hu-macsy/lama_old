@@ -37,19 +37,14 @@
 # Build simpleLogging, one version for each possible logging level ( used by test.sh )
 
 foreach ( level OFF FATAL ERROR WARN INFO DEBUG TRACE )
-    add_executable ( simpleLogging${level} simpleLogging.cpp )
+    scai_test ( EXECUTABLE simpleLogging${level} FILES simpleLogging.cpp )
     target_compile_definitions ( simpleLogging${level} PRIVATE -DSCAI_LOG_LEVEL_${level} )
-    target_link_libraries ( simpleLogging${level} ${MODULE_LIBRARY} )
 endforeach ()
 
 # Build complexLogging ( used by test.sh )
 
-add_executable ( complexLogging complexLogging.cpp )
+scai_test ( EXECUTABLE complexLogging FILES complexLogging.cpp )
 target_compile_definitions ( complexLogging PRIVATE -DSCAI_LOG_LEVEL_TRACE )
-target_link_libraries ( complexLogging ${MODULE_LIBRARY} )
-
-
-# scai_test_scripts( FILES make.inc CONFIGURE )
 
 scai_test_scripts( SCRIPTS       test.sh
                    FILES         README    )
@@ -57,10 +52,6 @@ scai_test_scripts( SCRIPTS       test.sh
 ###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
 scai_test_code_coverage( ${USE_CODE_COVERAGE} )
-
-# add test ( cmake commands )
-
-# enable_testing()
 
 add_test ( logging_test test.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 

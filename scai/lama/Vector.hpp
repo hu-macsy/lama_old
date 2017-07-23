@@ -762,6 +762,16 @@ public:
     virtual void applyUnary( common::unary::UnaryOp op ) = 0;
 
     /**
+     *  @brief Boolean reduction returns true if all elements fullfill the compare operation with a scalar.
+     */
+    virtual bool all( common::binary::CompareOp op, const Scalar value ) const = 0;
+
+    /**
+     *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
+     */
+    virtual bool all( common::binary::CompareOp op, const Vector& other ) const = 0;
+
+    /**
      * @brief Starts a prefetch to make this valid at the passed context.
      *
      * @param[in] context specifies the location to make this vector valid at

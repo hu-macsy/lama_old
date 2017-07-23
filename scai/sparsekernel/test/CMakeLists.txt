@@ -44,7 +44,7 @@ set ( CXX_SOURCES
       StencilKernelTest
 ) 
 
-scai_unit_test ( EXECUTABLE sparsekernelTest FILES ${CXX_SOURCES} )
+scai_test ( EXECUTABLE sparsekernelTest FILES ${CXX_SOURCES} UNIT_TEST RUN )
 
 target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 

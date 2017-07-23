@@ -183,7 +183,7 @@ add_custom_target ( examples )
 if ( BUILD_TEST )
     include( Package/BoostTest )
     include( scai_macro/scai_test_scripts )  # macro used in test directories
-    include( scai_macro/scai_unit_test    )  # macro used in test directories
+    include( scai_macro/scai_test         )  # macro used in test directories
 endif ()
 
 ### Sphinx is used for user documentation and a module project 

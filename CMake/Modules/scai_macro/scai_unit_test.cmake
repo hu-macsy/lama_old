@@ -77,3 +77,27 @@ macro ( scai_unit_test )
     add_test( ${scai_unit_test_EXECUTABLE} ${scai_unit_test_EXECUTABLE} )
 
 endmacro ()
+
+macro ( scai_add_test )
+
+    set ( oneValueArgs EXECUTABLE )
+    set ( multiValueArgs FILES )
+
+    cmake_parse_arguments ( scai_add_test "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    if ( "${scai_add_test_EXECUTABLE}" STREQUAL "" )
+        message ( FATAL_ERROR "scai_add_test: EXECUTABLE argument not specified" )
+    endif ()
+
+    # define test executable, will not be a default built target, but wiht make check
+
+    add_executable ( ${scai_add_test_EXECUTABLE} EXCLUDE_FROM_ALL ${scai_add_test_FILES} )
+
+    add_dependencies( tests ${scai_add_test_EXECUTABLE} )
+
+    target_link_libraries ( ${scai_add_test_EXECUTABLE} ${MODULE_LIBRARY} )
+
+    # test will run by separate script
+
+endmacro ()
+

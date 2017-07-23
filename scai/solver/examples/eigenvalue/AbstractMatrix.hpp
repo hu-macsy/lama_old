@@ -169,6 +169,14 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
+
+    virtual void reduce( Vector& , const IndexType,
+                         const common::binary::BinaryOp,
+                         const common::unary::UnaryOp ) const
+    {
+        COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
+    }
+
     virtual void scale(const Vector&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )

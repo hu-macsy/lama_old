@@ -45,6 +45,8 @@ scai_project (
         CUDAKernel
 )
 
-scai_unit_test( EXECUTABLE taskingCUDATest 
-                CUDA 
-                FILES ${CUDA_SOURCES} ${CXX_SOURCES} )
+scai_test( EXECUTABLE taskingCUDATest 
+           CUDA 
+           FILES ${CUDA_SOURCES} ${CXX_SOURCES} 
+           UNIT_TEST
+           RUN )

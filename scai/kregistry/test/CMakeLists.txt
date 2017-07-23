@@ -33,17 +33,20 @@
 ###
 
 set ( CXX_SOURCES
-      ContextTest  
-      KernelInterfaceTest
-      ReplaceTest  
-      SimpleTest  
-      TraitTest  
+
+          ContextTest  
+          KernelInterfaceTest
+          ReplaceTest  
+          SimpleTest  
+          TraitTest  
 )
 
 ## Build test executable, include and link libraries will be set correctly
 
-scai_unit_test ( EXECUTABLE kregistryTest 
-                 FILES      ${CXX_SOURCES} )
+scai_test ( EXECUTABLE kregistryTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN                       )
 
 ###  copy xmltest.sh script
 

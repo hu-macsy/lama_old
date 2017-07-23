@@ -75,7 +75,7 @@ scai_project (
    
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_SOURCE_DIR}/../res/testfiles" )
    
-scai_unit_test ( EXECUTABLE solverTest FILES ${CXX_SOURCES} )
+scai_test ( EXECUTABLE solverTest FILES ${CXX_SOURCES} UNIT_TEST RUN )
 
 ###  copy xmltest.sh script
 

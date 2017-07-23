@@ -521,6 +521,37 @@ ValueType OpenMPUtils::reduce2(
     return val;
 }
 
+/* --------------------------------------------------------------------------- */
+
+template <typename ValueType>
+bool OpenMPUtils::allCompare(
+    const ValueType array1[],
+    const ValueType array2[],
+    const IndexType n,
+    const common::binary::CompareOp op )
+{
+    bool val = true;
+
+    {
+        bool threadVal = true;
+
+        #pragma omp for 
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            bool elem = applyBinary( array1[i], op, array2[i] );
+            threadVal = threadVal && elem;
+        }
+
+        #pragma omp critical
+        {
+            val = val && threadVal;
+        }
+    }
+
+    return val;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void OpenMPUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n )
@@ -2025,6 +2056,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     // we keep the registrations for IndexType as we do not need conversions
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::allCompare<ValueType> >( allCompare, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );

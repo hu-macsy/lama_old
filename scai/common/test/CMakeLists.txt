@@ -61,17 +61,19 @@ set ( CXX_SOURCES
           WalltimeTest  
 )
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     set ( CXX_SOURCES ${CXX_SOURCES} ComplexTest TypeConversionTest )
-endif ( ${USE_COMPLEX} )
+endif ()
 
-scai_unit_test ( EXECUTABLE commonTest 
-                 FILES      ${CXX_SOURCES} 
+scai_test ( EXECUTABLE commonTest 
+            FILES      ${CXX_SOURCES} 
+            RUN
+            UNIT_TEST
 )   
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+# build also CUDA tests ( if possible/enabled )
+
+scai_subdirectories( CUDA )
 
 ###  copy xmltest.sh script
 

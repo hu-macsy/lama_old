@@ -33,13 +33,17 @@
 ###
 
 set ( CXX_SOURCES
-      taskingTest
-      ThreadPoolTest  
-      TaskSyncTokenTest  
+
+          taskingTest
+
+          ThreadPoolTest  
+          TaskSyncTokenTest  
 ) 
 
-scai_unit_test( EXECUTABLE taskingTest 
-                FILES      ${CXX_SOURCES} )
+scai_test( EXECUTABLE taskingTest 
+           FILES      ${CXX_SOURCES} 
+           UNIT_TEST
+           RUN )
 
 scai_subdirectories( CUDA )
 

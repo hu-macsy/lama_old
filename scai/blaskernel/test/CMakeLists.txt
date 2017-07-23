@@ -40,8 +40,10 @@ set ( CXX_SOURCES
       LAPACKTest
 ) 
 
-scai_unit_test ( EXECUTABLE blaskernelTest 
-                 FILES      ${CXX_SOURCES} 
+scai_test ( EXECUTABLE blaskernelTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN
 )   
 
 ###  copy xmltest.sh script

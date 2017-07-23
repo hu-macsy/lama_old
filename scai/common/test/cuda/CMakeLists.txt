@@ -46,7 +46,9 @@ scai_project (
         CUDAKernel
 )
 
-scai_unit_test ( EXECUTABLE commonCUDATest 
-                 CUDA
-                 FILES      ${CXX_SOURCES} ${CUDA_SOURCES}
-               )
+scai_test ( EXECUTABLE commonCUDATest 
+            CUDA
+            FILES      ${CXX_SOURCES} ${CUDA_SOURCES}
+            UNIT_TEST
+            RUN 
+          )

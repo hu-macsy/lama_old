@@ -540,6 +540,27 @@ public:
      */
     virtual void setDiagonal( const Scalar scalar ) = 0;
 
+    /** @brief This method reduces the rows ( dim = 0 ) to a column vector or the columns ( dim = 1 ) 
+     *         to a row vector.
+     *
+     *  @param[out] v is the result vector, has rowDistribution for dim = 1 or colDistribution for dim = 0 
+     *  @param[in]  dim must be either 0 or 1
+     *  @param[in]  reduceOp specifies operation used for reduction, e.g. ADD, MIN, MAX
+     *  @param[in]  elemOp specfies operatin applied to the elements before reduction
+     *
+     *  \code
+     *     const Matrix& m; Vector& v;
+     *     m.reduce( v, dim = 0, common::binary::ADD, common::binary::SQR );  // builds row sums 
+     *     m.reduce( v, dim = 1, common::binary::ADD, common::binary::SQR );  // builds diagonal of m' m 
+     *  \endcode
+     */
+
+    virtual void reduce( 
+        Vector& v, 
+        const IndexType dim, 
+        const common::binary::BinaryOp reduceOp, 
+        const common::unary::UnaryOp elemOp ) const = 0;
+
     /** @brief This method scales all values with a vector.
      *
      * @param[in] scaling   is the source array

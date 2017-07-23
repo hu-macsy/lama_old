@@ -28,8 +28,8 @@
  # @endlicense
  #
  # @brief CMake configuration file for scai_utilskernel tests
- # @author Eric Schricker
- # @date 18.02.2016
+ # @author Thomas Brandes
+ # @date 18.07.2017
 ###
 
 scai_project ( 
@@ -49,8 +49,10 @@ scai_project (
         LArrayTest
 )
 
-scai_unit_test ( EXECUTABLE utilskernelTest 
-                 FILES      ${CXX_SOURCES} 
+scai_test ( EXECUTABLE utilskernelTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN 
 ) 
 
 ###  copy xmltest.sh script

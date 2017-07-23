@@ -4,15 +4,17 @@ Extension
 This tutorial describes how to add new project module in LAMA.
 
 Let us assume that you want to add a new project module with the name ``mymodule`` 
-(module names should only have lowercase letters). 
+(according to the LAMA coding conventions module names should only have lowercase letters). 
 
 These are the necessary steps:
 
  * Create the directory ``scai/mymodule``
  * Add a configuration file ``CMakeLists.txt`` and of course the source files
    in this new directory
- * Optionally you can add sub-directories for examples (examples using the functionality of the
-   new module, will be installed), test (Boost unit tests), and doc (Sphinx user documentation)
+ * Optionally you can add the sub-directory examples (examples using the functionality of the
+   new module, will be installed)
+ * Optionally you can add the sub-directory test (Boost unit tests) 
+ * Optionally you can add the sub-directory doc (Sphinx user documentation) 
  * Add the module name in the main configuration file ``scai/CMakeLists.txt``
    in the list variable ``SCAI_ALL_MODULES``. It should be in the list
    after all modules that are used (internal dependencies).
@@ -70,9 +72,11 @@ Main file and test file for each class.
 .. code-block:: c++
 
    set ( CXX_SOURCES
-         mymoduleTest
-         MyClass1Test  
-         MyClass2Test  
+
+            mymoduleTest
+
+            MyClass1Test  
+            MyClass2Test  
    )
 
 The following macro defines the unit test. It links it with all
@@ -80,8 +84,10 @@ required libraries.
 
 .. code-block:: c++
 
-    scai_unit_test( EXECUTABLE mymoduleTest 
-                    FILES      ${CXX_SOURCES} )
+    scai_test( EXECUTABLE mymoduleTest 
+               FILES      ${CXX_SOURCES}
+               UNIT_TEST
+               RUN )
 
 Optionally you can add a script to get your code be tested by a CI (Continuous Integration) system.
 

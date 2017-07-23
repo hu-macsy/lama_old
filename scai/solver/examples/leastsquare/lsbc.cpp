@@ -44,6 +44,9 @@
 #include <scai/common/Math.hpp>
 #include <scai/lama/matrix/StencilMatrix.hpp>
 #include <scai/solver/CG.hpp>
+#include <scai/solver/MINRES.hpp>
+#include <scai/solver/GMRES.hpp>
+#include <scai/solver/Jacobi.hpp>
 
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
@@ -63,23 +66,25 @@ bool isInterior( const DenseVector<double>& x,
                  const DenseVector<double>& lb,
                  const DenseVector<double>& ub )
 {
-    SCAI_ASSERT_EQ_ERROR( x.getDistribution(), lb.getDistribution(), "distributon mismatch" )
-    SCAI_ASSERT_EQ_ERROR( x.getDistribution(), ub.getDistribution(), "distributon mismatch" )
+    // SCAI_ASSERT_EQ_ERROR( x.getDistribution(), lb.getDistribution(), "distributon mismatch" )
+    // SCAI_ASSERT_EQ_ERROR( x.getDistribution(), ub.getDistribution(), "distributon mismatch" )
 
-    bool okay = true;
+    // bool okay = true;
 
-    hmemo::ReadAccess<double> rX( x.getLocalValues() );
-    hmemo::ReadAccess<double> rLB( lb.getLocalValues() );
-    hmemo::ReadAccess<double> rUB( ub.getLocalValues() );
+    // hmemo::ReadAccess<double> rX( x.getLocalValues() );
+    // hmemo::ReadAccess<double> rLB( lb.getLocalValues() );
+    // hmemo::ReadAccess<double> rUB( ub.getLocalValues() );
 
-    for ( IndexType i = 0; i < rX.size(); ++i )
-    {
-         okay = okay && ( rLB[i] < rX[i] ) && ( rX[i] < rUB[i] );
-    }
+    // for ( IndexType i = 0; i < rX.size(); ++i )
+    // {
+         // okay = okay && ( rLB[i] < rX[i] ) && ( rX[i] < rUB[i] );
+    // }
 
-    okay = x.getDistribution().getCommunicator().all( okay );
+    // okay = x.getDistribution().getCommunicator().all( okay );
 
-    return okay;
+    // return okay;
+
+    return x.all( common::binary::LT, ub ) && x.all( common::binary::GT, lb );
 }
 
 void dualityGap( double& gap, double& dualObj, 
@@ -101,17 +106,7 @@ void dualityGap( double& gap, double& dualObj,
     DenseVector<double> kappa( 2 * res );
     DenseVector<double> tmp( kappa * A * Scalar( -1 ) );
     DenseVector<double> mu = tmp;
-    double zero = 0;
-    {
-        hmemo::WriteAccess<double> wMu( mu.getLocalValues() );
-        for ( IndexType i = 0; i < wMu.size(); ++i )
-        {
-            if ( zero > wMu[i] ) 
-            {
-                wMu[i] = zero;
-            }
-        }
-    }
+    mu.setScalar( Scalar( 0 ), common::binary::MAX );
 
     Scalar sDualObj = - kappa.dotProduct( kappa ) * 0.25  - kappa.dotProduct( b_s ) - mu.dotProduct( u_s );
     Scalar sGap = res.dotProduct( res ) - sDualObj;
@@ -185,13 +180,16 @@ double centralPathObjective(
     tmp.log(); 
     double s1 = tmp.sum().getValue<double>();
     tmp = ub - x;
+    tmp.log(); 
     double s2 = tmp.sum().getValue<double>();
-
-    std::cout << "x = " << x.l2Norm() << ", s1 = " << s1 << ", s2 = " << s2 << std::endl;
     double barrier = -s1 - s2;
     DenseVector<double> res( A * x - b );
     double dp = res.dotProduct( res ).getValue<double>();
     double value = tau * dp + barrier;
+
+    std::cout << "central path, t = " << tau << ", resnorm = " << common::Math::sqrt( dp ) 
+              << ", barrier = " << barrier << ", value = " << value << std::endl;
+
     return value;
 }
 
@@ -223,7 +221,9 @@ double stepSize( const CSRSparseMatrix<double>& A,
 
     double objValueAtX = centralPathObjective( A, b, x, tau, lb, ub );
 
-    std::cout << "objValue@X = " << objValueAtX << std::endl;
+    Scalar objDiff = alpha * g.dotProduct( dx );
+
+    std::cout << "objValue@X = " << objValueAtX << ", diff = " << objDiff << std::endl;
 
     double s = 1.0;
 
@@ -235,12 +235,18 @@ double stepSize( const CSRSparseMatrix<double>& A,
         {
             double objValueAtXNew = centralPathObjective(A, b, x_new, tau, lb, ub );
 
-            std::cout << "objValue@Xnew = " << objValueAtXNew << std::endl;
+            double objDiff = objValueAtXNew - objValueAtX;
+
+            std::cout << "objValue@Xnew = " << objValueAtXNew << ", diff = " << objDiff << std::endl;
 
             if ( objValueAtXNew < objValueAtX + alpha * s * g.dotProduct( dx) ) 
             {
                 return s;
             }
+        }
+        else
+        {
+            std::cout << "x_new not interior for s = " << s << std::endl;
         }
 
         s *= beta;   // make s smaller
@@ -274,9 +280,9 @@ void computeSearchDirection(
 
     // g = 2 * t * A' * (A * x - b) + d;
 
-    DenseVector<double> g( A * x - b );
-
-    g = Scalar( -2 ) * tau * g * A + d;
+    DenseVector<double> tmp( A * x - b );
+    DenseVector<double> g( 2 * tau * tmp * A + d );
+    g *= -1;
 
     // Hessian H = H(x, t)
     // D = 1 ./ ((x - l).^2) + 1 ./ ((u - x).^2);
@@ -306,6 +312,7 @@ void computeSearchDirection(
     double e = 0.01;
 
     double normG = g.l2Norm().getValue<double>();
+   
     double tol = common::Math::max( eps, common::Math::min( 0.1, e * gap / normG ) );
 
     std::cout << "Use relative tol = " << tol << " for CG" << std::endl;
@@ -320,16 +327,22 @@ void computeSearchDirection(
     LoggerPtr logger( new CommonLogger ( "", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly) );
 
     DenseVector<double> diagonal( 2 * tau * diagATA + D );
+    CSRSparseMatrix<double> diagonalMatrix;
+    diagonalMatrix.setIdentity( diagonal.getDistributionPtr() );
+    diagonalMatrix.setDiagonal( diagonal );
 
-    common::shared_ptr<DiagonalSolver> preconditioner( new DiagonalSolver( "JacobiPreconditioner" ) );
-    preconditioner->initialize( diagonal );
+    common::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
+    preconditioner->initialize( diagonalMatrix );
+
+    // common::shared_ptr<DiagonalSolver> preconditioner( new DiagonalSolver( "JacobiPreconditioner" ) );
+    // preconditioner->initialize( diagonal );
 
     // Do it with CG
 
     CG solver( "searchDirectionSolver" );
     solver.setLogger( logger );
     solver.setStoppingCriterion( criterion );
-    // solver.setPreconditioner( preconditioner );
+    solver.setPreconditioner( preconditioner );
     solver.initialize( H );
     solver.solve( dx, g );
 }
@@ -382,14 +395,23 @@ void lsqBox(
 
     // diagATA = sum(A .* A)';
 
-    DenseVector<double> diagATA( n );
-    SparseVector<double> col;
+    DenseVector<double> diagATA;
 
-    for( IndexType i = 0; i < n; ++i )
-    {
-        A.getColumn ( col, i );
-        diagATA[i] = col.dotProduct( col ).getValue<double>();
-    }
+    std::cout << "build diagATA" << std::endl;
+
+    A.reduce( diagATA, 1, common::binary::ADD, common::unary::SQRT );
+
+    std::cout << "diagATA = " << diagATA << std::endl;
+
+    SCAI_ASSERT_EQ_ERROR( diagATA.size(), n, "serious mismatch" )
+
+    // SparseVector<double> col;
+
+    // for( IndexType i = 0; i < n; ++i )
+    // {
+        // A.getColumn ( col, i );
+        // diagATA[i] = col.dotProduct( col ).getValue<double>();
+    // }
 
     std::cout << "norm ATA = " << diagATA.l2Norm() << std::endl;
 
@@ -399,7 +421,7 @@ void lsqBox(
     {
         dx = 0;  // start solution, actually there is no good one
 
-        std::cout << "tau = " << tau << ", gap = " << gap << std::endl;
+        std::cout << "Iter " << iter << ", tau = " << tau << ", gap = " << gap << std::endl;
 
         computeSearchDirection( dx, A, b, x, tau, lb, ub, gap, diagATA);
 

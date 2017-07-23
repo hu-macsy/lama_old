@@ -1224,6 +1224,52 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::reduce(
+    Vector& v, 
+    const IndexType dim,
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp ) const
+{
+    std::cout << "reduce dim = " << dim << std::endl;
+
+    SCAI_ASSERT_EQ_ERROR( v.getValueType(), getValueType(), "type mismatch" )
+    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), Vector::DENSE, "result vector in reduce must be DENSE" )
+
+    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
+
+    if ( dim == 0 )
+    {
+        denseV.allocate( getRowDistributionPtr() );
+
+        SCAI_LOG_ERROR( logger, "reduce dim = 0, denseV = " << denseV );
+
+        // initialize v with neutral element
+
+        mLocalData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+
+        SCAI_LOG_ERROR( logger, "reduced dim = 0, denseV = " << denseV );
+    }
+    else if ( dim == 1 )
+    {
+        denseV.allocate( getColDistributionPtr() );
+
+        SCAI_LOG_ERROR( logger, "denseV = " << denseV );
+
+        std::cout << "denseV = " << denseV << std::endl;
+
+        mLocalData->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+
+        std::cout << "reduced denseV = " << denseV << std::endl;
+    }
+    else 
+    {
+        COMMON_THROWEXCEPTION( "illegal reduce dim = " << dim )
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::scale( const Vector& scaling )
 {
     SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )

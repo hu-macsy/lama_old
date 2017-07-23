@@ -1539,6 +1539,36 @@ void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
     getLocalStorage().setDiagonal( diagonalValue.getValue<ValueType>() );
 }
 
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::reduce(
+    Vector& v, 
+    const IndexType dim, 
+    const common::binary::BinaryOp reduceOp, 
+    const common::unary::UnaryOp elemOp ) const
+{
+    // SCAI_ASSERT_EQ_ERROR( v.getValueType(), 
+
+    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
+
+    if ( dim == 0 )
+    {
+        denseV.allocate( getRowDistributionPtr() );
+
+        // initialize v with neutral element
+
+        mData[0]->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+
+    }
+    else if ( dim == 1 )
+    {
+        // communication needed
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const Vector& vector )
 {

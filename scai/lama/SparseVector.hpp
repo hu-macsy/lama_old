@@ -510,6 +510,14 @@ public:
 
     virtual Scalar maxDiffNorm( const Vector& other ) const;
 
+    /** Implementation of pure method Vector::all */
+
+    virtual bool all( common::binary::CompareOp op, const Scalar value ) const;
+
+    /** Implementation of pure method Vector::all */
+
+    virtual bool all( common::binary::CompareOp op, const Vector& other ) const;
+
     virtual void swap( Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;

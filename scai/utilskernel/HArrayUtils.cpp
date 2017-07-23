@@ -678,6 +678,40 @@ ValueType HArrayUtils::reduce2(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+bool HArrayUtils::all(
+    const HArray<ValueType>& array1,
+    const binary::CompareOp op,
+    const HArray<ValueType>& array2,
+    ContextPtr prefLoc )
+{
+    const IndexType n = array1.size();
+
+    static LAMAKernel<UtilKernelTrait::allCompare<ValueType> > allCompare;
+
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array1.getValidContext();
+    }
+
+    ReadAccess<ValueType> readArray1( array1, loc );
+    ReadAccess<ValueType> readArray2( array2, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    bool allVal = allCompare[loc]( readArray1.get(),
+                                   readArray2.get(),
+                                   n,
+                                   op );
+    return allVal;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType HArrayUtils::dotProduct(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,
@@ -2062,6 +2096,11 @@ void HArrayUtils::binaryOpSparse(
             const hmemo::HArray<ValueType>&,                                    \
             const binary::BinaryOp,                                             \
             const binary::BinaryOp,                                             \
+            hmemo::ContextPtr );                                                \
+    template bool HArrayUtils::all<ValueType>(                                  \
+            const hmemo::HArray<ValueType>&,                                    \
+            const binary::CompareOp,                                            \
+            const hmemo::HArray<ValueType>&,                                    \
             hmemo::ContextPtr );                                                \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>(                   \
             const hmemo::HArray<ValueType>&,                                    \

@@ -63,5 +63,6 @@ endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
 ### define unit test (executable) ###
-scai_unit_test ( EXECUTABLE lamaMatrixTest 
-                 FILES      ${CXX_SOURCES} )
+scai_test ( EXECUTABLE lamaMatrixTest 
+            FILES      ${CXX_SOURCES} 
+            RUN UNIT_TEST )

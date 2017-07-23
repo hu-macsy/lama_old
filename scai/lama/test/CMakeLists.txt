@@ -28,8 +28,8 @@
  # @endlicense
  #
  # @brief scai/lama/test/CMakeLists.txt
- # @author Jan Ecker
- # @date 03.04.2013
+ # @author Thomas Brandes
+ # @date 25.07.2017
 ###
 
 ### set this dir as lama source dir ###
@@ -44,6 +44,8 @@ scai_project (
        TestVectors
 
     SOURCES
+
+        lamaTest
 
         DenseVectorTest
         GridVectorTest
@@ -60,26 +62,19 @@ scai_project (
 
     )
 
-### checks ####
-if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-   message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
-endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-
-if ( SCAI_BLAS_NAME STREQUAL "MKL" )
-    include_directories ( ${MKL_INCLUDE_DIRS} )
-endif ( SCAI_BLAS_NAME STREQUAL "MKL" )
-
 ### add subdirectories ###
 
-add_subdirectory ( storage )
-add_subdirectory ( matrix )
+scai_subdirectories( storage matrix )
 
-### add definitions ###
+### Some tests require path to the testfile directory
+
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-scai_unit_test ( EXECUTABLE lamaTest 
-                 FILES      lamaTest.cpp ${CXX_SOURCES} )
-
+scai_test ( EXECUTABLE lamaTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN )
+            
 ### Copy the README and xmltest.sh file in build directory ### 
 
 file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )

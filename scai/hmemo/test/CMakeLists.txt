@@ -41,9 +41,10 @@ set ( CXX_SOURCES
       MemoryTest
 ) 
 
-scai_unit_test ( EXECUTABLE hmemoTest 
-                 FILES      ${CXX_SOURCES} )
-
+scai_test ( EXECUTABLE hmemoTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN )
 
 scai_subdirectories( CUDA MIC )
 

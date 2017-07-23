@@ -41,5 +41,7 @@ scai_project (
 )
 
 
-scai_unit_test ( EXECUTABLE hmemoMICTest 
-                 FILES      ${CXX_SOURCES} )
+scai_test ( EXECUTABLE hmemoMICTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN   )
