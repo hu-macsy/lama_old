@@ -72,7 +72,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories ( EXAMPLES TEST gui macros )
+scai_subdirectories ( EXAMPLES test gui macros )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

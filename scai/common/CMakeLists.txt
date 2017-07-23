@@ -212,7 +212,7 @@ endif ( ${USE_COMPLEX} )
 
 ## Boost used -> generate and add a boost check version file 
 
-if ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
+if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
 endif ()

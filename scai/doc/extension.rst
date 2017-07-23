@@ -67,7 +67,12 @@ files in the doc directory.
 Boost Unit Test
 ---------------
 
-Main file and test file for each class.
+For setting up a unit test of a new module, the recommended action is to
+use one main source file and a source file for each class. The main file
+is easily adapted from any main file of an existing module, the unit tests
+of a class should have one test for each method.
+
+The CMake configuration file for the test can be set up as follows:
 
 .. code-block:: c++
 
@@ -80,7 +85,9 @@ Main file and test file for each class.
    )
 
 The following macro defines the unit test. It links it with all
-required libraries.
+required libraries. The option ``UNIT_TEST`` links the Boost
+unit test framework, while the option ``RUN`` enables the
+test to be run by CTest.
 
 .. code-block:: c++
 
@@ -101,5 +108,4 @@ Examples
 --------
 
 Just what you like to show how to use new module classes.
-
 

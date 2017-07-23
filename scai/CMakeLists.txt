@@ -123,11 +123,6 @@ scai_build_variable ( NAME      USE_CODE_COVERAGE
                       DEFAULT   False
                       DOCSTRING "use of code coverage" )
 
-scai_build_variable ( NAME      BUILD_TEST
-                      BOOL
-                      DEFAULT   True
-                      DOCSTRING "build of test" )
-
 scai_build_variable ( NAME      BUILD_DOC
                       BOOL
                       DEFAULT   True
@@ -170,8 +165,6 @@ scai_build_variable ( NAME      SCAI_TRACING
                       DEFAULT   On
                       DOCSTRING "tracing of regions for performance analysis" )
 
-## BUILD_TEST is enabled -> search BoostTest, load macro files
-
 enable_testing ()
 
 ## make check : builds all tests and runs them
@@ -180,11 +173,11 @@ add_custom_target ( tests )
 add_custom_target ( check COMMAND ${CMAKE_CTEST_COMMAND} DEPENDS tests )
 add_custom_target ( examples )
 
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-    include( scai_macro/scai_test_scripts )  # macro used in test directories
-    include( scai_macro/scai_test         )  # macro used in test directories
-endif ()
+## include test macros, packages here so it must not be redone in each test directory
+
+include( Package/BoostTest )
+include( scai_macro/scai_test_scripts )  # macro used in test directories
+include( scai_macro/scai_test         )  # macro used in test directories
 
 ### Sphinx is used for user documentation and a module project 
 ### does not have to specify it as external dependency
@@ -207,6 +200,11 @@ foreach ( module ${SCAI_USED_MODULES} )
     add_subdirectory( ${module} )
 
 endforeach ()
+
+## Configure cmake module file SCAIConfig.cmake and install it
+
+configure_file ( SCAIConfig.cmake.in SCAIConfig.cmake @ONLY )
+install ( FILES ${CMAKE_BINARY_DIR}/SCAIConfig.cmake DESTINATION . )
 
 include ( Package/Doxygen )
 

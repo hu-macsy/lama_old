@@ -57,6 +57,52 @@ Then you need to define all scai libraries from the highest used scai_lib down t
 
    -lscai_solver -lscai_lama -lscai_dmemo -lscai_sparsekernel -lscai_utilskernel -lscai_blaskernel -lscai_kregistry -lscai_hmemo -lscai_tasking -lscai_tracing -lscai_logging -lscai_common
 
+CMake Configuration
+^^^^^^^^^^^^^^^^^^^
+
+You can set up a cmake configuration file ``CMakeLists.txt`` with the following content
+
+.. code-block:: none
+
+   project ( LamaExample )
+   cmake_minimum_required ( VERSION 2.8 )
+   find_package( SCAI REQUIRED )
+
+   add_definitions ( ${SCAI_DEFINITIONS} )
+   include_directories( ${SCAI_INCLUDE_DIRS} )
+   set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} )
+   add_executable ( simple simple.cpp )
+   target_link_libraries( labelrank ${SCAI_LIBRARIES} )
+
+The find_package command will search the package SCAI that defines the following variables:
+
+ * ``SCAI_DEFINITIONS`` contains flags used for logging, tracing and assertions. 
+ * ``SCAI_CXX_FLAGS``  contains flags like ``-std=c++11`` but also the OpenMP flag 
+ * ``SCAI_INCLUDE_DIRS`` contains the above include directory, but can also contain a link to the boost include directory
+ * ``SCAI_LIBRARIES``  contains the list of scai libraries
+
+.. code-block:: bash
+
+   cmake .
+
+This command will probably fail as it does not find the SCAIConfig.cmake file. 
+
+.. code-block:: bash
+
+   cmake -DSCAI_DIR=${SCAI_ROOT} 
+
+Another possibility is to copy the above file (in the source or build directory).
+
+
+.. code-block:: bash
+
+   cp ${SCAI_ROOT}/SCAIConfig.cmake .
+   cmake .
+
+.. code-block:: bash
+
+   make
+
 Execution
 ^^^^^^^^^
 

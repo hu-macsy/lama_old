@@ -51,11 +51,6 @@ foreach ( item ${SCAI_SUMMARY} )
     message ( STATUS ${item} )
 endforeach ()
 
-heading ( "Build options:" "" )
-emptyline()
-heading3 ( "Test         " ${BUILD_TEST} )
-heading3 ( "Documentation" ${BUILD_DOC} )
-
 emptyline()
 heading ( "Configuration Details:" )
 emptyline()

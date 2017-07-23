@@ -56,7 +56,7 @@ macro ( scai_subdirectories )
     endif ()
 
     if ( ${scai_subdirectories_TEST} )
-        if ( FOUND_BOOST_TEST AND BUILD_TEST )
+        if ( FOUND_BOOST_TEST AND USE_BOOST_TEST )
             add_subdirectory ( test )
         endif ()
     endif ()

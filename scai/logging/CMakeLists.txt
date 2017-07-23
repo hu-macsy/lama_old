@@ -66,9 +66,9 @@ scai_project (
         AbstractLoggerCreator
 )
 
-## add subdirectories
+## add subdirectories, test in any case
 
-scai_subdirectories ( EXAMPLES macros TEST )
+scai_subdirectories ( EXAMPLES macros test )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

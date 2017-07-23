@@ -64,9 +64,6 @@ CMake variable                 Signification
 =========================      ======================================================================================
 ``CMAKE_BUILD_TYPE``           Debug (build with debug flag) or Release (build with optimization flags)
 ``CMAKE_INSTALL_PREFIX``       Installation path of LAMA library
-``BUILD_DOC``                  ON or OFF, explicitly enable/disable building the user doc
-``BUILD_EXAMPLES``             ON or OFF, explicitly enable/disable building the examples
-``BUILD_TEST``                 ON or OFF, explicitly enable/disable building the tests
 ``SCAI_ASSERT_LEVEL``          ERROR (recommended) or DEBUG (adds much more assertions into the code)
 ``SCAI_BLAS_LIBRARY``          Select a BLAS library: auto, MKL, BLAS, INTERNALBLAS
 ``SCAI_CMAKE_VERBOSE``         Set to TRUE for more detailed informations about the configuration
@@ -143,7 +140,7 @@ Check
 
 If no fatal cmake errors occured during the configuration in the end we print a full summary of the configuration. It should look slightly the same as this and give you an overview of all used libraries and all set options:
 
-.. code-block:: bash
+.. code-block:: none
    -- 
    -- ==============================
    -- Summary of SCAI Configuration:

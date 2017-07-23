@@ -32,6 +32,12 @@
  # @date 25.04.2013
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
+scai_pragma_once ()
+
 ### BOOST_INCLUDE_DIR      - Boost include directory
 ### BOOST_unit_test_framework_FOUND      - if Boost component is found
 ### Boost_unit_test_framework_LIBRARY    - Boost component library
@@ -49,7 +55,7 @@
 
 set ( BOOST_TEST_MINIMUM_VERSION 1.41 )    ## functionality before is not sufficient
 
-if ( NOT DEFINED BOOST_TEST_ENABLED AND BUILD_TEST )
+if ( NOT DEFINED BOOST_TEST_ENABLED AND USE_BOOST_TEST )
 
     if    ( WIN32 )
         message ( STATUS "Setting special Boost options on Windows" )
@@ -89,16 +95,16 @@ if ( NOT DEFINED BOOST_TEST_ENABLED AND BUILD_TEST )
     # LAMA irrelevant entries will be removed from cmake GUI completely
     set ( Boost_DIR "${Boost_DIR}" CACHE INTERNAL "" )
 
-endif ( NOT DEFINED BOOST_TEST_ENABLED AND BUILD_TEST)
+endif ()
 
-if    ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
-    message ( WARNING "Boost Test Framework is missing, so BUILD_TEST is disabled!" )
-    set ( BUILD_TEST FALSE )
-endif ( NOT Boost_UNIT_TEST_FRAMEWORK_FOUND AND BUILD_TEST )
+scai_build_variable ( NAME      USE_BOOST_TEST
+                      BOOL 
+                      DEFAULT   ${FOUND_BOOST_TEST}
+                      DOCSTRING "Boost unit test framework for LAMA unit tests" )
 
 scai_summary_external ( NAME      "Boost Unit Test"
-                        ENABLED   ${BUILD_TEST}
-                        FOUND     ${Boost_FOUND}
+                        ENABLED   ${USE_BOOST_TEST}
+                        FOUND     ${FOUND_BOOST_TEST}
                         VERSION   "${BOOST_VERSION}"
                         INCLUDE   "${Boost_INCLUDE_DIR}"
                         LIBRARIES "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}"
