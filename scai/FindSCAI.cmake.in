@@ -1,0 +1,57 @@
+# FindSCAI
+# --------
+#
+# Find SCAI Lama distribution.
+#
+# Result variables
+# ^^^^^^^^^^^^^^^^
+#
+# This module will set the following variables in your project:
+#
+# ``SCAI_INCLUDE_DIRS``
+#   where to find lama.hpp, and all other include files
+# ``SCAI_LIBRARIES``
+#   the libraries to link against to use SCAI lama.
+# ``SCAI_DEFINITIONS``
+#   You should add_definitons(${SCAI_DEFINITIONS}) before compiling code
+# ``SCAI_CXX_FLAGS``
+#   You should set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} ) 
+# ``SCAI_FOUND``
+#   If false, do not try to use SCAI lama.
+# ``SCAI_VERSION_STRING``
+#   the version of the SCAI library found.
+
+
+set ( SCAI_DEFINITIONS "-DSCAI_ASSERT_LEVEL_DEBUG -DSCAI_LOG_LEVEL_DEBUG -DSCAI_TRACE_ON" )
+
+set ( SCAI_CXX_FLAGS "-std=c++11 -fopenmp" )
+
+set ( SCAI_ROOT /home/brandes/local/lama )
+
+set ( SCAI_INCLUDE_DIRS ${SCAI_ROOT}/include )
+ 
+set ( SCAI_MODULES common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel dmemo lama solver )
+
+set ( SCAI_LIBRARIES "" )
+
+foreach ( module ${SCAI_MODULES} )
+
+     message ( STATUS "Find ${module} library" )
+
+     find_library ( SCAI_LIBRARY_${module} 
+                    NAMES scai_${module}
+                    PATHS ${SCAI_ROOT}/lib )
+
+     message ( STATUS "Found lib ${SCAI_LIBRARY_${module}}" )
+
+     #  libraries are in reverse order to oder in SCAI_MODULES 
+
+     set ( SCAI_LIBRARIES ${SCAI_LIBRARY_${module}} ${SCAI_LIBRARIES} )
+
+endforeach ()
+
+message ( STATUS "SCAI_LIBRARIES    = ${SCAI_LIBRARIES}" )
+message ( STATUS "SCAI_DEFINITIONS  = ${SCAI_DEFINITIONS}" )
+message ( STATUS "SCAI_INCLUDE_DIRS = ${SCAI_INCLUDE_DIR}" )
+message ( STATUS "SCAI_CXX_FLAGS    = ${SCAI_CXX_FLAGS}" )
+
