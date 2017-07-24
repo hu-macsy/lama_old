@@ -56,5 +56,12 @@ if ( DOXYGEN_FOUND )
     install ( DIRECTORY   ${DOXYGEN_BINARY_DIR}/html 
               DESTINATION ${CMAKE_INSTALL_PREFIX}/share/doc/system )
 
-endif ( DOXYGEN_FOUND )
+else ()
+
+    add_custom_target (
+        doxygendoc
+        COMMAND echo "ATTENTION: doxygen not found, cannot build system documentation" 
+    )
+
+endif ()
 
