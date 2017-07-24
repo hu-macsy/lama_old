@@ -201,17 +201,20 @@ foreach ( module ${SCAI_USED_MODULES} )
 
 endforeach ()
 
-## Configure cmake module file SCAIConfig.cmake and install it
+## Configure cmake config file SCAIConfig.cmake and install it
+## Installation directory share/cmake/SCAI is one installation prefix
+## that will be used by CMake when find_package( SCAI .... ) is called
 
 configure_file ( SCAIConfig.cmake.in SCAIConfig.cmake @ONLY )
-install ( FILES ${CMAKE_BINARY_DIR}/SCAIConfig.cmake DESTINATION . )
+install ( FILES ${CMAKE_BINARY_DIR}/SCAIConfig.cmake DESTINATION share/cmake/SCAI )
 
 include ( Package/Doxygen )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+## depends on user doc of all defined modules ( = used modules + dependent ones)
 
 set ( MODULE_NAME "lama_all" )
-set ( INTERNAL_DEPS ${SCAI_USED_MODULES} )
+set ( INTERNAL_DEPS ${SCAI_DEFINED_MODULES} )
 
 include ( CustomCommands/SphinxDoc )
 

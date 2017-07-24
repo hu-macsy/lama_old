@@ -10,7 +10,7 @@ In contrary to previous versions of LAMA, installation is completely separated. 
 The installation will be placed in the directory that has been specified during the configuration by the variable **CMAKE_INSTALL_PREFIX**. 
 This installation directory will be refered later as **SCAI_ROOT**.
 
-- Header files, libraries and example programs will always be installed.
+- Header files, libraries, and example programs will always be installed.
 - Test programs are only used during the build phase and will never be installed.
 - Documentation is only installed if it has been built before.
 
@@ -37,6 +37,28 @@ The directory **${SCAI_ROOT}/lib** should contain the following libraries:
 - libscai_dmemo.so
 - libscai_lama.so
 - libscai_solver.so
+
+CMake Configuration File
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The directory **${SCAI_ROOT}/share/cmake/SCAI** should contain the following CMake configuratin file:
+
+- SCAIConfig.cmake
+
+This file is very useful if you use cmake for building applications that use the SCAI package.
+Therefore you should use the cmake command ``find_package`` in Config mode that will search 
+the configuration file with the prefix **share/cmake/SCAI**. 
+
+.. code-block:: none
+
+    find_package( SCAI [REQURIRED] [QUIET] [CONFIG] PATHS $ENV{SCAI_ROOT} )
+    # sets variables SCAI_INCLUDE_DIRS, SCAI_LIBRARIES, SCAI_DEFINITIONS, SCAI_CXX_FLAGS, SCAI_FOUND
+
+Instead of using the PATHS option you can also specify the SCAI installation directory via command line when calling cmake.
+
+.. code-block:: none
+
+    cmake -DSCAI_DIR=${SCAI_ROOT} 
 
 Examples
 ^^^^^^^^

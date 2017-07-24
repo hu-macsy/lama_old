@@ -27,36 +27,26 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
- # @author Jan Ecker
- # @date 02.12.2015
+ # @brief CMake configuration file for tutorial examples
+ # @author Thomas Brandes
+ # @date 25.07.2017
 ###
 
-include ( scai_macro/scai_add_example )
-include ( scai_macro/scai_example_makefile )
-include ( scai_macro/scai_run_script )
+project ( TutorialExamples )
+
+cmake_minimum_required ( VERSION 2.8 )
+
+find_package( SCAI REQUIRED PATHS $ENV{SCAI_ROOT} )
+
+add_definitions ( ${SCAI_DEFINITIONS} )
+
+include_directories( ${SCAI_INCLUDE_DIRS} )
+
+set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} )
 
 foreach ( executable blas1 matrix matrix1 scalar simple vector vector_exp )
 
-    scai_add_example( EXECUTABLE ${executable}.exe
-                      FILES      ${executable}.cpp )
+    add_executable ( ${executable} ${executable}.cpp )
+    target_link_libraries( ${executable} ${SCAI_LIBRARIES} )
 
-endforeach ( executable )
-
-# use the recommended installation directory for this example directory
-scai_example_directory ( INSTALL_EXAMPLE_DIR )
-
-# generate build file in example directory
-scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
-
-## install examples sources
-
-install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${INSTALL_EXAMPLE_DIR} )
-
-## install the 'stand-alone' CMakeLists.txt
-
-install ( FILES       CMakeLists_install.txt
-          RENAME      CMakeLists.txt
-          DESTINATION ${INSTALL_EXAMPLE_DIR} )
-
+endforeach ()

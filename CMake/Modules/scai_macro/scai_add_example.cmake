@@ -88,7 +88,7 @@ macro ( scai_add_example )
 
     endif ()
 
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${FILES} )
+    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${scai_add_example_FILES} )
 
 endmacro ()
 

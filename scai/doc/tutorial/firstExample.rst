@@ -89,15 +89,20 @@ This command will probably fail as it does not find the SCAIConfig.cmake file.
 
 .. code-block:: bash
 
-   cmake -DSCAI_DIR=${SCAI_ROOT} 
+  Could not find a package configuration file provided by "SCAI" with any of
+  the following names:
 
-Another possibility is to copy the above file (in the source or build directory).
-
+    SCAIConfig.cmake
+    scai-config.cmake
 
 .. code-block:: bash
 
-   cp ${SCAI_ROOT}/SCAIConfig.cmake .
-   cmake .
+   cmake -DSCAI_DIR=${SCAI_ROOT}
+
+   find_package( SCAI REQUIRED PATHS ENV_${SCAI_ROOT} )
+
+
+If the configuration was successful the executable simple is built just by running ``make``:
 
 .. code-block:: bash
 

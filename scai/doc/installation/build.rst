@@ -21,7 +21,7 @@ documentation, separate make commands must be issued.
 Tests
 ^^^^^
 
-Though building and running tests are optional features, it is recommended to
+Building and running tests are optional features. It is recommended to
 execute this step to verfiy a correct compilation of the LAMA libraries.
 
 All unit tests (and also some other test scripts) are built and run by this command:
@@ -31,8 +31,8 @@ All unit tests (and also some other test scripts) are built and run by this comm
    make [-j <number_of_processes>] check
 
 Each subproject comes with a test. Mostly it is one unit test executable, but there
-might be some exceptions. The test executables run via **CTest**, the testing tool
-distributed as a part of CMake.
+are some exceptions. The test executables run via **CTest**, the testing tool
+distributed as a part of CMake. The output of the above command should be as follows:
 
 .. code-block:: none
 
@@ -70,7 +70,8 @@ distributed as a part of CMake.
 
    Total Test time (real) =  34.31 sec
 
-If the tests have not been built before, using multiple build processes is highly recommended.
+If the tests are built the first time using multiple build processes is highly recommended.
+
 Building the test executables and running the test script can be done in two separate steps:
 
 .. code-block:: bash
@@ -122,7 +123,7 @@ If Sphinx is found the user documentation can be built as follows:
 Doxygen API Documentation
 """""""""""""""""""""""""
 
-If Doxygen is found the API documentation can be build as follwos:
+If Doxygen is found the API documentation can be built as follwos:
 
 .. code-block:: bash
 
