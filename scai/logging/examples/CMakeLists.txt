@@ -39,12 +39,12 @@ include ( scai_function/scai_example_directory )
 
 # LogLevels example, here we compile also LOG_TRACE macros
 
-set ( SCAI_LOGGING_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for make.inc
+set ( SCAI_LOG_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for make.inc
 
 scai_add_example ( EXECUTABLE LogLevels.exe
                    FILES      LogLevels.cpp )
 
-set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL} )
+set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
 
 # Try to find OpenMP compile and link flags for the OpenMP example
 # OpenMPTest example

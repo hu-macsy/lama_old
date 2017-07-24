@@ -71,8 +71,8 @@ CMake variable                 Signification
                                (default: float;double;long double;ComplexFloat;ComplexDouble;ComplexLongDouble (all))
 ``SCAI_INDEX_TYPE``            Set data type used as IndexType, valid for all libraries (default: int)
 ``SCAI_LIBRARY_TYPE``          SHARED (default) or STATIC
-``SCAI_LOGGING_LEVEL``         INFO recommended, alternatively DEBUG or even more detailed TRACE
-``SCAI_TRACING``               ON or OFF, enable/disable region tracing
+``SCAI_LOG_LEVEL``             INFO recommended, alternatively DEBUG or even more detailed TRACE
+``SCAI_TRACE``                 ON or OFF, enable/disable region tracing
 ``USE_CODE_COVERAGE``          ON or OFF, explicitly enable/disable use of Code Coverage
 ``USE_CUDA``                   ON or OFF, explicitly enable/disable use of CUDA
 ``USE_GPI``                    ON or OFF, explicitly enable/disable use of GPI
@@ -225,8 +225,8 @@ If no fatal cmake errors occured during the configuration in the end we print a 
    --  Numeric Types       : float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble
    --  IndexType           : int
    --  ASSERT Level        : DEBUG ( -DSCAI_ASSERT_LEVEL_DEBUG )
-   --  LOG Level           : DEBUG ( -DSCAI_LOGGING_LEVEL_DEBUG )
-   --  TRACING             : ON ( -DSCAI_TRACING_ON )
+   --  LOG Level           : DEBUG ( -DSCAI_LOG_LEVEL_DEBUG )
+   --  TRACING             : ON ( -DSCAI_TRACE_ON )
    --  CODE COVERAGE       : OFF
    -- 
    -- Configuring done
