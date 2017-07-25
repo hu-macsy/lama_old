@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt.tb
+ # @file scai/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for involved SCAI projects.
+ # @brief CMake main configuration file for SCAI LAMA with all modules.
  # @author Thomas Brandes
  # @date 03.07.2017
 ###
@@ -36,15 +36,16 @@ cmake_minimum_required ( VERSION 2.8.8 )
 
 project ( LAMA_ALL CXX )
 
-##  Define the list of all SCAI module projects
-##  NOTE: list can be extended
+##  Define the list of all SCAI LAMA modules (subprojects)
+##  (should match the list of all subdirectories)
+##
+##  NOTE: list must be extended if new modules are added
 
 set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo 
                        blaskernel utilskernel sparsekernel dmemo lama solver  )
  
-### Define modules that should be used ( inclusive all dependent ones )
-### Default: use all modules; but it can be changed via cmake gui
-### dependencies are not resolved here but will be verified during configuration
+### Define modules that should be used; default: use all modules
+### The used modules can be configured explicitly via command line or cmake GUI
 
 if ( DEFINED SCAI_MODULES )
     set ( SCAI_USED_MODULES ${SCAI_MODULES} CACHE STRING "Used SCAI module projects" )
@@ -59,7 +60,7 @@ set ( SCAI_COPYRIGHT_YEAR 2017 )
 set ( SCAI_VERSION        2.2.0 )
 set ( SCAI_LIBRARY_PREFIX "scai" )             # more unique names for all SCAI module libraries
 
-### Set Module Path
+### Extend CMake module path for SCAI/LAMA specific extensions
 
 set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/Modules" )
 

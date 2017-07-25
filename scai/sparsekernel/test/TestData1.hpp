@@ -392,6 +392,60 @@ static void getGEMVResult( HArray<ValueType>& res,
 
 /* ------------------------------------------------------------------------------------- */
 
+template<typename ValueType>
+static void getReduceResult( HArray<ValueType>& res,
+                             IndexType dim )
+{
+    using scai::hmemo::ReadAccess;
+    using scai::hmemo::WriteOnlyAccess;
+
+    IndexType numRows;
+    IndexType numColumns;
+
+    HArray<ValueType> denseValues;
+
+    getDenseTestData( numRows, numColumns, denseValues );
+
+    if ( dim == 0 )
+    {
+        WriteOnlyAccess<ValueType> wRes( res, numRows );
+        ReadAccess<ValueType> rDense( denseValues );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            ValueType v = 0;
+
+            for ( IndexType j = 0; j < numColumns; ++j )
+            {
+                ValueType elem = rDense[ i * numColumns + j ];
+                v += elem;
+            }
+
+            wRes[i] = v;
+        }
+    }
+    else if ( dim == 1 )
+    {
+        WriteOnlyAccess<ValueType> wRes( res, numColumns );
+        ReadAccess<ValueType> rDense( denseValues );
+
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            ValueType v = 0;
+
+            for ( IndexType i = 0; i < numRows; ++i )
+            {
+                ValueType elem = rDense[ i * numColumns + j ];
+                v += elem;
+            }
+
+            wRes[j] = v;
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 /** This method computes the result of a vector-matrix multiplication via dense data by hand */
 
 template<typename ValueType>

@@ -42,6 +42,8 @@
 #include <scai/hmemo/WriteAccess.hpp>
 
 #include <scai/common/Math.hpp>
+#include <scai/common/Settings.hpp>
+
 #include <scai/lama/matrix/StencilMatrix.hpp>
 #include <scai/solver/CG.hpp>
 #include <scai/solver/MINRES.hpp>
@@ -52,7 +54,7 @@
 #include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 
-#include "DiagonalSolver.hpp"
+#include <scai/tracing.hpp>
 
 #include <iostream>
 
@@ -66,24 +68,6 @@ bool isInterior( const DenseVector<double>& x,
                  const DenseVector<double>& lb,
                  const DenseVector<double>& ub )
 {
-    // SCAI_ASSERT_EQ_ERROR( x.getDistribution(), lb.getDistribution(), "distributon mismatch" )
-    // SCAI_ASSERT_EQ_ERROR( x.getDistribution(), ub.getDistribution(), "distributon mismatch" )
-
-    // bool okay = true;
-
-    // hmemo::ReadAccess<double> rX( x.getLocalValues() );
-    // hmemo::ReadAccess<double> rLB( lb.getLocalValues() );
-    // hmemo::ReadAccess<double> rUB( ub.getLocalValues() );
-
-    // for ( IndexType i = 0; i < rX.size(); ++i )
-    // {
-         // okay = okay && ( rLB[i] < rX[i] ) && ( rX[i] < rUB[i] );
-    // }
-
-    // okay = x.getDistribution().getCommunicator().all( okay );
-
-    // return okay;
-
     return x.all( common::binary::LT, ub ) && x.all( common::binary::GT, lb );
 }
 
@@ -334,9 +318,6 @@ void computeSearchDirection(
     common::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
     preconditioner->initialize( diagonalMatrix );
 
-    // common::shared_ptr<DiagonalSolver> preconditioner( new DiagonalSolver( "JacobiPreconditioner" ) );
-    // preconditioner->initialize( diagonal );
-
     // Do it with CG
 
     CG solver( "searchDirectionSolver" );
@@ -355,6 +336,8 @@ void lsqBox(
     const DenseVector<double>& ub,
     const double tolerance )
 {
+    SCAI_REGION ( "lsqBC" )
+
     const IndexType n = A.getNumColumns();
 
     SCAI_ASSERT_EQ_ERROR( n, lb.size(), "size mismatch" )
@@ -399,7 +382,7 @@ void lsqBox(
 
     std::cout << "build diagATA" << std::endl;
 
-    A.reduce( diagATA, 1, common::binary::ADD, common::unary::SQRT );
+    A.reduce( diagATA, 1, common::binary::ADD, common::unary::SQR );
 
     std::cout << "diagATA = " << diagATA << std::endl;
 
@@ -452,8 +435,12 @@ void lsqBox(
     }
 }
 
-int main( int, char** )
+int main( int argc, const char* argv[] )
 {
+    SCAI_REGION( "Main.driver" )
+    
+    common::Settings::parseArgs( argc, argv );
+
     CSRSparseMatrix<double> A( "A.mat" );
     DenseVector<double> b ( "b.mat" );
     DenseVector<double> lb ( "lb.mat" );
@@ -472,17 +459,33 @@ int main( int, char** )
         ub.writeToFile( "ub.mtx" );
     }
 
-    DenseVector<double> x;
+    // take context as specified by SCAI_CONTEXT
 
-    DenseVector<double> range( ub - lb );
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    std::cout << "range = " << range.min() << " - " << range.max() << std::endl;
+    A.setContextPtr( ctx );
+    b.setContextPtr( ctx );
+    ub.setContextPtr( ctx );
+    lb.setContextPtr( ctx );
 
-    double tolerance = 0.001;
+    DenseVector<double> x( ctx );
 
-    lsqBox( x, A, b, lb, ub, tolerance );
+    double tolerance = 0.01;
+
+    try 
+    {
+        lsqBox( x, A, b, lb, ub, tolerance );
+    }
+    catch ( common::Exception& ex )
+    {
+        std::cout << "Caught exception: " << ex.what() << std::endl;
+        std::cout << "Stop execution." << std::endl;
+        return 1;
+    }
 
     DenseVector<double> residual( A * x - b );
 
     std::cout << "res norm = " << residual.l2Norm() << std::endl;
+
+    x.writeToFile( "x.mtx" );
 }

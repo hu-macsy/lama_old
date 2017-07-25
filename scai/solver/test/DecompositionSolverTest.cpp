@@ -140,7 +140,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
 
     DecompositionSolver solver( "DecompositionSolver" );
     solver.initialize( matrix );
-    solver.setContextPtr( context );
     solver.solve( solution, rhs );
 
     {

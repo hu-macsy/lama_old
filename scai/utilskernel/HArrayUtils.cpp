@@ -697,6 +697,8 @@ bool HArrayUtils::all(
         loc = array1.getValidContext();
     }
 
+    allCompare.getSupportedContext( loc );
+
     ReadAccess<ValueType> readArray1( array1, loc );
     ReadAccess<ValueType> readArray2( array2, loc );
 

@@ -636,6 +636,52 @@ void OpenMPCSRUtils::convertCSR2CSC(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+static void sumColumns(
+    ValueType result[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const IndexType numRows,
+    const common::unary::UnaryOp elemOp )
+{
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+        {
+            IndexType j = csrJA[jj];
+            ValueType v = csrValues[jj];
+            v = applyUnary( elemOp, v );
+            atomicAdd( result[j], v );
+        }
+   }
+}
+
+template<typename ValueType>
+static void reduceColumns(
+    ValueType result[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const IndexType numRows,
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp )
+{
+    // no parallel execution possible due to output dependencies on result
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+        {
+            IndexType j = csrJA[jj];
+            ValueType v = csrValues[jj];
+            v = applyUnary( elemOp, v );
+            result[j] = applyBinary( result[j], reduceOp, v );
+        }
+    }
+}
+
+template<typename ValueType>
 void OpenMPCSRUtils::reduce(
     ValueType result[],
     const IndexType csrIA[],
@@ -646,8 +692,13 @@ void OpenMPCSRUtils::reduce(
     const common::binary::BinaryOp reduceOp,
     const common::unary::UnaryOp elemOp )
 {
+    SCAI_LOG_ERROR( logger, "reduce CSR[#rows = " << numRows << "], dim = 1, red = " << reduceOp << ", elem = " << elemOp )
+
     if ( dim == 0 )
     {
+        SCAI_LOG_ERROR( logger, "reduce CSR[#rows = " << numRows << "], dim = 0 " )
+
+        #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; ++i )
         {
             for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
@@ -660,16 +711,24 @@ void OpenMPCSRUtils::reduce(
     }
     else if ( dim == 1 )
     {
-        for ( IndexType i = 0; i < numRows; ++i )
+
+        // parallel execution only if atomic updates are possible
+
+        switch ( reduceOp )
         {
-            for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
-            {
-                IndexType j = csrJA[jj];
-                ValueType v = csrValues[jj];
-                v = applyUnary( elemOp, v );
-                result[j] = applyBinary( result[j], reduceOp, v );
-            }
+            case common::binary::ADD :
+
+                sumColumns( result, csrIA, csrJA, csrValues, numRows, elemOp );
+                break;
+
+            default:
+
+                reduceColumns( result, csrIA, csrJA, csrValues, numRows, reduceOp, elemOp );
         }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "illegal reduce dim = " << dim )
     }
 }
 

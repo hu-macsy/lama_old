@@ -105,10 +105,8 @@ BOOST_AUTO_TEST_CASE ( SetterTest )
     //SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
     //BOOST_CHECK_EQUAL( SimpleAMGSolver.getCoarseLevelSolver().getId(), cgSolver->getId() );
     SimpleAMGSolver.setSmoother( cgSolver );
-    SimpleAMGSolver.setSmootherContext( context );
     SimpleAMGSolver.initialize( coefficients ); // solver needs to be initialized to have a AMGSetup to pass coarselevelsolver to setup
     BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( 0 ).getId(), cgSolver->getId() );
-    BOOST_CHECK_EQUAL( SimpleAMGSolver.getSmoother( 0 ).getContextPtr()->getType(), context->getType() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------
