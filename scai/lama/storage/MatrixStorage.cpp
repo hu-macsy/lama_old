@@ -1039,8 +1039,8 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::reduce(
     hmemo::HArray<ValueType>& array, 
     const IndexType dim, 
-    const common::binary::BinaryOp,
-    const common::unary::UnaryOp )
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -1054,18 +1054,21 @@ void MatrixStorage<ValueType>::reduce(
 
     hmemo::WriteAccess<ValueType> a( array );
 
+    OpenMPCSRUtils::reduce( a.get(), ia.get(), ja.get(), values.get(), getNumRows(), dim, reduceOp, elemOp );
+
+    /*
     if ( dim == 0 )
     {
         SCAI_ASSERT_EQ_ERROR( array.size(), getNumRows(), "size mismatch" );
 
         for ( IndexType i = 0; i < getNumRows(); ++i )
         {
-            a[i] = 0;
+            // a[i] = 0;
 
             for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
             {
                 ValueType v = values[jj];
-                v = v * v;
+                v = applyUnaryOp( elemOp, v );
                 a[i] += v;
             }
         }
@@ -1074,10 +1077,10 @@ void MatrixStorage<ValueType>::reduce(
     {
         SCAI_ASSERT_EQ_ERROR( array.size(), getNumColumns(), "size mismatch" );
 
-        for ( IndexType j = 0; j < getNumColumns(); ++j )
-        {
-            a[j] = 0;
-        }
+        // for ( IndexType j = 0; j < getNumColumns(); ++j )
+        // {
+            // a[j] = 0;
+        // }
 
         for ( IndexType i = 0; i < getNumRows(); ++i )
         {
@@ -1085,11 +1088,12 @@ void MatrixStorage<ValueType>::reduce(
             {
                 IndexType j = ja[jj];
                 ValueType v = values[jj];
-                v = v * v;
+                v = applyUnaryOp( elemOp, v );
                 a[j] += v;
             }
         }
     }
+    */
 }
 
 /* ------------------------------------------------------------------------- */
