@@ -127,22 +127,6 @@ void InverseSolver::solveImpl()
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::setContextPtr( hmemo::ContextPtr context )
-{
-    Solver::setContextPtr( context );
-
-    if ( getRuntime().mInverse )
-    {
-        getRuntime().mInverse->setContextPtr( mContext );
-    }
-    else
-    {
-        SCAI_LOG_WARN( logger, "setContextPtr on uninitialized solver" )
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
 void InverseSolver::logStartSolve()
 {
     mLogger->startTimer( "SolutionTimer" );

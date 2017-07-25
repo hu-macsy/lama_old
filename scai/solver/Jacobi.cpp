@@ -238,11 +238,6 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
         const DenseVector<ValueType>& denseRhs = dynamic_cast<const DenseVector<ValueType>&>( *getRuntime().mRhs );
         hmemo::ContextPtr localContext = coefficients.getLocalStorage().getContextPtr();
 
-        if ( mContext )
-        {
-            localContext = mContext;
-        }
-
         const ValueType omega = mOmega.getValue<ValueType>();
 
         // from rhs and solution we need only the local parts as LAMA arrays

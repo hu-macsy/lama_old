@@ -85,12 +85,12 @@ macro ( scai_example_makefile )
         set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL}" )
     endif ()
     
-    if ( SCAI_LOGGING_LEVEL )
-        set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL}" )
+    if ( SCAI_LOG_LEVEL )
+        set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL}" )
     endif ()
 
-    if ( SCAI_TRACING )
-        set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACE_${SCAI_TRACING}" )
+    if ( SCAI_TRACE )
+        set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACE_${SCAI_TRACE}" )
     endif ()
 
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )

@@ -21,8 +21,8 @@
 
 
 set ( SCAI_DEFINITIONS  "-DSCAI_ASSERT_LEVEL_@SCAI_ASSERT_LEVEL@" 
-                        "-DSCAI_LOG_LEVEL_@SCAI_LOGGING_LEVEL@" 
-                        "-DSCAI_TRACE_@SCAI_TRACING@"  )
+                        "-DSCAI_LOG_LEVEL_@SCAI_LOG_LEVEL@" 
+                        "-DSCAI_TRACE_@SCAI_TRACE@"  )
 
 set ( SCAI_CXX_FLAGS "@CMAKE_CXX_FLAGS@" )
 

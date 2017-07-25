@@ -145,17 +145,17 @@ scai_build_variable ( NAME      SCAI_ASSERT_LEVEL
                       DOCSTRING "Choose minimal level of assert @ compile time" )
    
 if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-    set ( SCAI_LOGGING_DEFAULT "INFO" )
+    set ( SCAI_LOG_DEFAULT "INFO" )
 else ()
-    set ( SCAI_LOGGING_DEFAULT "DEBUG" )
+    set ( SCAI_LOG_DEFAULT "DEBUG" )
 endif ()
 
-scai_build_variable ( NAME      SCAI_LOGGING_LEVEL
+scai_build_variable ( NAME      SCAI_LOG_LEVEL
                       CHOICES   "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "OFF"
-                      DEFAULT   ${SCAI_LOGGING_DEFAULT}
+                      DEFAULT   ${SCAI_LOG_DEFAULT}
                       DOCSTRING "Choose minimal level of logging @ compile time" )
 
-scai_build_variable ( NAME      SCAI_TRACING
+scai_build_variable ( NAME      SCAI_TRACE
                       BOOL 
                       DEFAULT   On
                       DOCSTRING "tracing of regions for performance analysis" )

@@ -121,11 +121,11 @@ macro ( scai_module )
     foreach ( module ${INTERNAL_DEPS} )
 
         if ( ${module} STREQUAL "logging" )
-            add_definitions ( -DSCAI_LOGGING_LEVEL_${SCAI_LOGGING_LEVEL} )
+            add_definitions ( -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
         endif ()
 
         if ( ${module} STREQUAL "tracing" )
-            add_definitions ( -DSCAI_TRACING_${SCAI_TRACING} )
+            add_definitions ( -DSCAI_TRACE_${SCAI_TRACE} )
         endif ()
 
     endforeach ( module ${INTERNAL_DEPS} )
