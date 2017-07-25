@@ -36,7 +36,7 @@ if ( CUDA_FOUND )
 
     if ( SCAI_CMAKE_VERBOSE )
         message ( STATUS "Check compatibility of ${CUDA_NVCC_EXECUTABLE} with ${CUDA_HOST_COMPILER}" )
-    endif 
+    endif ()
 
     execute_process ( COMMAND ${CUDA_NVCC_EXECUTABLE} ${CMAKE_MODULE_PATH}/Compiler/cuda/CheckHostCompilerCompatibility.cu -ccbin=${CUDA_HOST_COMPILER}
                       RESULT_VARIABLE CUDA_CHECK_COMPILE_RESULT_VAR
