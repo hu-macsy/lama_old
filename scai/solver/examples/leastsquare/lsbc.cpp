@@ -30,7 +30,7 @@
  * @date 15.11.2016
  */
 
-#include <scai/solver/examples/eigenvalue/AbstractMatrix.hpp>
+#include <scai/lama/matrix/AbstractMatrix.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>

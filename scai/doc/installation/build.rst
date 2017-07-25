@@ -132,3 +132,15 @@ If Doxygen is found the API documentation can be built as follwos:
 
 In contrary to the user documentation, the API documentation is always built for
 all SCAI modules.
+
+Build All
+"""""""""
+
+If you want to build all libraries, tests, examples and documentation at once, 
+you can do it and you might benefit of the full potential of parallel build:
+
+.. code-block:: bash
+
+   make [-j <number_of_build_processes] check examples doc
+
+
