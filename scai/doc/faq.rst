@@ -25,11 +25,13 @@ You can contact us via lama[at]scai.fraunhofer.de and confirm our contributor ag
 
 **Where can I find documentation?**
 
-We provide two kind of documentation: a user documentation and a developer documentation. This user documentation will be build with the library installation with the property BUILD_DOC=ON (default). The System Documentation can be found |SysDoc| or you can build it on your own by calling make doxygendoc in your build directory.
+We provide two kind of documentation: a user documentation and a developer documentation. Both can be generated during the build 
+step. The user documentation requires a working Sphinx installation, the system documentation is built by doxygen.
+The System Documentation can also be found |SysDoc| online.
 
 .. |SysDoc| raw:: html
 
-	<a href="https://test.libama.org/doxygen/index.html" target="_blank"> here </a>
+	<a href="https://libama.org/doxygen/index.html" target="_blank"> here </a>
 
 Usage
 -----

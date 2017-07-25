@@ -135,13 +135,13 @@ Your cmake-call may look like this then:
 
 The mkl library from '/opt/intel/mkl' will be used (instead of the libraries in the system path). All other libraries will be taken from the system path. 
 
-Check
-"""""
+Summary
+"""""""
 
 If no fatal cmake errors occured during the configuration in the end we print a full summary of the configuration. It should look slightly the same as this and give you an overview of all used libraries and all set options:
 
 .. code-block:: none
-   -- 
+
    -- ==============================
    -- Summary of SCAI Configuration:
    -- ==============================
@@ -232,6 +232,10 @@ If no fatal cmake errors occured during the configuration in the end we print a 
    -- Configuring done
    -- Generating done
    -- Build files have been written to: [your_build_dir]
+
+External software packages that are not found might reduce the functionality. Building tests or
+documentation will be disabled during the build process if the corresponding functionality
+is not available. Other missing packages reduces the runtime functionilty of LAMA.
 
 Change
 """"""

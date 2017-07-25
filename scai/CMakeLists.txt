@@ -123,11 +123,6 @@ scai_build_variable ( NAME      USE_CODE_COVERAGE
                       DEFAULT   False
                       DOCSTRING "use of code coverage" )
 
-scai_build_variable ( NAME      BUILD_DOC
-                      BOOL
-                      DEFAULT   True
-                      DOCSTRING "build of user doc" )
-
 scai_build_variable ( NAME      SCAI_LIBRARY_TYPE
                       CHOICES   STATIC SHARED
                       DEFAULT   SHARED
