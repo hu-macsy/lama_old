@@ -73,7 +73,6 @@ Solver::Solver( const std::string& id, LoggerPtr logger )
 
 Solver::Solver( const Solver& other )
     : mId( other.mId ), mLogger( other.mLogger )
-// TODO mContext
 {
 }
 
@@ -203,12 +202,6 @@ void Solver::setLogger( LoggerPtr logger )
 void Solver::setLogLevel( LogLevel::LogLevel level )
 {
     mLogger->setLogLevel( level );
-}
-
-void Solver::setContextPtr( hmemo::ContextPtr context )
-{
-    SCAI_LOG_DEBUG( logger, "Set context to " << *context )
-    mContext = context;
 }
 
 void Solver::writeAt( std::ostream& stream ) const
