@@ -55,52 +55,52 @@ scai_pragma_once ()
 
 set ( BOOST_TEST_MINIMUM_VERSION 1.41 )    ## functionality before is not sufficient
 
-if ( NOT DEFINED BOOST_TEST_ENABLED AND USE_BOOST_TEST )
+if    ( WIN32 )
+    message ( STATUS "Setting special Boost options on Windows" )
+    #set ( Boost_USE_STATIC_LIBS ON )
+    set ( Boost_USE_MULTITHREADED ON )
+endif ( WIN32 )
 
-    if    ( WIN32 )
-        message ( STATUS "Setting special Boost options on Windows" )
-        #set ( Boost_USE_STATIC_LIBS ON )
-        set ( Boost_USE_MULTITHREADED ON )
-    endif ( WIN32 )
+# Finds packages with custom search options 
 
-    # Finds packages with custom search options 
+set ( Boost_COMPONENTS unit_test_framework )
 
-    set ( Boost_COMPONENTS unit_test_framework )
+# FindBoost Debug options comment
+if    ( SCAI_CMAKE_VERBOSE )
+    set ( Boost_DEBUG TRUE )
+    set ( Boost_DETAILED_FAILURE_MSG TRUE )
+endif ( SCAI_CMAKE_VERBOSE )
 
-    # FindBoost Debug options comment
-    if    ( SCAI_CMAKE_VERBOSE )
-        set ( Boost_DEBUG TRUE )
-        set ( Boost_DETAILED_FAILURE_MSG TRUE )
-    endif ( SCAI_CMAKE_VERBOSE )
+# Find Boost 
 
-    # Find Boost 
+find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} ${BOOST_TEST_MINIMUM_VERSION} COMPONENTS ${Boost_COMPONENTS} )
 
-    find_package ( Boost ${SCAI_FIND_PACKAGE_FLAGS} ${BOOST_TEST_MINIMUM_VERSION} COMPONENTS ${Boost_COMPONENTS} )
+set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
 
-    set ( BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}" )
+if ( Boost_INCLUDE_DIR )
+    set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
+endif ( Boost_INCLUDE_DIR )
 
-    if    ( Boost_INCLUDE_DIR )
-        set ( BOOST_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ) # for getting the module names straight
-    endif ( Boost_INCLUDE_DIR )
+set ( FOUND_BOOST_TEST FALSE )
 
-    if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-        set ( FOUND_BOOST_TEST TRUE )
-    endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND ) 
-
-    set ( BOOST_TEST_ENABLED FALSE )
-    if    ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-      set ( BOOST_TEST_ENABLED TRUE )
-    endif ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
-
-    # LAMA irrelevant entries will be removed from cmake GUI completely
-    set ( Boost_DIR "${Boost_DIR}" CACHE INTERNAL "" )
-
+if ( Boost_UNIT_TEST_FRAMEWORK_FOUND )
+    set ( FOUND_BOOST_TEST TRUE )
 endif ()
+
+# LAMA irrelevant entries will be removed from cmake GUI completely
+
+set ( Boost_DIR "${Boost_DIR}" CACHE INTERNAL "" )
 
 scai_build_variable ( NAME      USE_BOOST_TEST
                       BOOL 
                       DEFAULT   ${FOUND_BOOST_TEST}
                       DOCSTRING "Boost unit test framework for LAMA unit tests" )
+
+if ( USE_BOOST_TEST )
+    if ( NOT FOUND_BOOST_TEST )
+        message ( FATAL_ERROR "Forced USE_BOOST_TEST, but not found" )
+    endif ()
+endif ()
 
 scai_summary_external ( NAME      "Boost Unit Test"
                         ENABLED   ${USE_BOOST_TEST}

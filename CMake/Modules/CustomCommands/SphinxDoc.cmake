@@ -59,7 +59,7 @@ macro ( setIntersphinxMapping MODULES )
 
 endmacro ()
 
-if ( SPHINX_FOUND AND BUILD_DOC )
+if ( SPHINX_FOUND AND USE_SPHINX )
 
     # message ( STATUS "make target for sphinx doc of ${MODULE_NAME}: depends on ${INTERNAL_DEPS}" )
 
@@ -136,4 +136,12 @@ if ( SPHINX_FOUND AND BUILD_DOC )
     # ToDo: LAMA_ALL -> all dependencies, not only as specified in USED_MODULES
     # ToDo: Build user doc in one step
 
-endif ( SPHINX_FOUND AND BUILD_DOC )
+else ()
+
+    add_custom_target (
+        doc_${MODULE_NAME}
+        COMMAND echo "ATTENTION: sphinx not found, cannot build user documentation" 
+    )
+
+endif ()
+
