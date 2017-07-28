@@ -1548,6 +1548,8 @@ void DenseMatrix<ValueType>::reduce(
     const common::binary::BinaryOp reduceOp, 
     const common::unary::UnaryOp elemOp ) const
 {
+    SCAI_REGION( "Mat.Dense.reduce" )
+
     // SCAI_ASSERT_EQ_ERROR( v.getValueType(), 
 
     DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );

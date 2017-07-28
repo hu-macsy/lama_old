@@ -1230,6 +1230,8 @@ void SparseMatrix<ValueType>::reduce(
     const common::binary::BinaryOp reduceOp,
     const common::unary::UnaryOp elemOp ) const
 {
+    SCAI_REGION( "Mat.Sp.reduce" )
+
     SCAI_ASSERT_EQ_ERROR( v.getValueType(), getValueType(), "type mismatch" )
     SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), Vector::DENSE, "result vector in reduce must be DENSE" )
 

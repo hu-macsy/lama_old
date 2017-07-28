@@ -174,6 +174,7 @@ const Vector& Solver::getResidual() const
             //                 otherwise: many unnecessary data movements !!!
 
             runtime.mResidual.reset( runtime.mRhs->newVector() );
+            SCAI_LOG_INFO( logger, "Residual vector = " << *runtime.mResidual << ", mRhs = " << *runtime.mRhs )
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");

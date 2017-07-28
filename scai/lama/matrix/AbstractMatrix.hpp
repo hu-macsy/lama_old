@@ -32,6 +32,8 @@
  * @date 28.06.2017
  */
 
+#pragma once 
+
 #include <scai/lama.hpp>
 
 #include <scai/lama/matrix/Matrix.hpp>

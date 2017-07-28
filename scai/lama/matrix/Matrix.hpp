@@ -1001,6 +1001,23 @@ public:
         return v;
     }
 
+    virtual Vector* newVector( const IndexType dim ) const
+    {
+        Vector* v = _DenseVector::create( getValueType() );
+        v->setContextPtr( getContextPtr() );
+
+        if ( dim == 0 )
+        {
+            v->allocate( getRowDistributionPtr() );
+        }
+        else if ( dim == 1 )
+        {
+            v->allocate( getColDistributionPtr() );
+        }
+
+        return v;
+    }
+
     /**
      * @brief Constructor function which creates a copy of this matrix.
      *
