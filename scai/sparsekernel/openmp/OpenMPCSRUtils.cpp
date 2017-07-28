@@ -692,12 +692,12 @@ void OpenMPCSRUtils::reduce(
     const common::binary::BinaryOp reduceOp,
     const common::unary::UnaryOp elemOp )
 {
-    SCAI_LOG_ERROR( logger, "reduce CSR[#rows = " << numRows << "], dim = 1, red = " << reduceOp << ", elem = " << elemOp )
+    SCAI_REGION( "OpenMP.CSRUtils.reduce" )
+
+    SCAI_LOG_INFO( logger, "reduce CSR[#rows = " << numRows << "], dim = 1, red = " << reduceOp << ", elem = " << elemOp )
 
     if ( dim == 0 )
     {
-        SCAI_LOG_ERROR( logger, "reduce CSR[#rows = " << numRows << "], dim = 0 " )
-
         #pragma omp parallel for
         for ( IndexType i = 0; i < numRows; ++i )
         {
