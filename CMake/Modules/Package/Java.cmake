@@ -54,6 +54,13 @@ if ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
         set ( JAVA_FOUND False )
     endif ()
 
+    if ( Java_JAR_EXECUTABLE )
+        # that is okay, nothing to do
+    else ()
+        set ( JAVA_FOUND False )
+        message( STATUS "JAR exectuable not found" )
+    endif ()
+
     scai_build_variable ( NAME      USE_JAVA
                           BOOL 
                           DEFAULT   ${JAVA_FOUND}
@@ -61,7 +68,6 @@ if ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
 
     # LAMA irrelevant entries will be removed from cmake GUI completely
 
-    set ( Java_JAR_EXECUTABLE "${Java_JAR_EXECUTABLE}" CACHE INTERNAL "" )
     set ( Java_JAVADOC_EXECUTABLE "${Java_JAVADOC_EXECUTABLE}" CACHE INTERNAL "" )
     set ( Java_JAVAH_EXECUTABLE "${Java_JAVAH_EXECUTABLE}" CACHE INTERNAL "" )
     set ( Java_JAVA_EXECUTABLE "${Java_JAVA_EXECUTABLE}" CACHE INTERNAL "" )
@@ -70,6 +76,6 @@ if ( CMAKE_VERSION VERSION_GREATER 2.8.11 )
                             ENABLED     ${USE_JAVA}
                             FOUND       ${JAVA_FOUND} 
                             VERSION     ${Java_VERSION_STRING}
-                            EXECUTABLE  ${Java_JAVAC_EXECUTABLE} )
+                            EXECUTABLE  "${Java_JAVAC_EXECUTABLE}, ${Java_JAR_EXECUTABLE}" )
 
 endif ()
