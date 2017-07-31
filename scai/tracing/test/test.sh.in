@@ -374,7 +374,7 @@ fi
 # Test 3
 # check execution with SCAI_TRACE=ct
 
-prepareTestCase simpleTracingON ct
+prepareTestCase ./simpleTracingON ct
 
 if [ $ret -eq 0 ]; then
     # there should be .time files
@@ -390,7 +390,7 @@ fi
 # Test 4
 # check execution with SCAI_TRACE=time:PREFIX=customPrefix
 
-prepareTestCase simpleTracingON time:PREFIX=customPrefix
+prepareTestCase ./simpleTracingON time:PREFIX=customPrefix
     
 if [ $ret -eq 0 ]; then
 
@@ -414,7 +414,7 @@ fi
 # Test 5
 # check execution with SCAI_TRACE=ct:time
 
-prepareTestCase simpleTracingON ct:time
+prepareTestCase ./simpleTracingON ct:time
 
 if [ $ret -eq 0 ]; then
     checkCTFilesExist 1
@@ -435,7 +435,7 @@ fi
 # Test 6
 # check execution with SCAI_TRACE=time:thread
     
-prepareTestCase simpleTracingON time:thread
+prepareTestCase ./simpleTracingON time:thread
     
 if [ $ret -eq 0 ]; then
 
@@ -453,7 +453,7 @@ fi
 # Test 7
 # check execution with SCAI_TRACE=ct:thread
     
-prepareTestCase simpleTracingON ct:thread
+prepareTestCase ./simpleTracingON ct:thread
     
 if [ $ret -eq 0 ]; then
     # there should be no .time files
@@ -469,7 +469,7 @@ fi
 # Test 8
 # check execution width SCAI_TRACE=time:ct:thread
 
-prepareTestCase simpleTracingON time:ct:thread
+prepareTestCase ./simpleTracingON time:ct:thread
     
 if [ $ret -eq 0 ]; then
     checkCTFilesExist $numThreads
@@ -487,7 +487,7 @@ fi
 # Test 9
 # check execution with SCAI_TRACE=PREFIX=customPrefix:time:ct:thread
 
-prepareTestCase simpleTracingON PREFIX=customPrefix:time:ct:thread
+prepareTestCase ./simpleTracingON PREFIX=customPrefix:time:ct:thread
 
 if [ $ret -eq 0 ]; then
     checkCTFilesExist $numThreads
@@ -524,22 +524,22 @@ fi
 echo ""
 echo "Running compile time tests:"
 
-prepareTestCase simpleTracingOFF ct:time
+prepareTestCase ./simpleTracingOFF ct:time
     
 # There should be no .ct or .time files
 checkCTFilesExist 0
 checkTimeFilesExist 0
 
-prepareTestCase simpleTracingON0 ct:time:thread
+prepareTestCase ./simpleTracingON0 ct:time:thread
     
 checkCTFilesExist $numThreads
 if [ $ret -eq 0 ]; then
-    checkCTFileContents simpleTracingON0.ct $numThreads
+    checkCTFileContents ./simpleTracingON0.ct $numThreads
 fi
     
 checkTimeFilesExist 1
 if [ $ret -eq 0 ]; then
-    checkTimeFileContents simpleTracingON0.time $numThreads
+    checkTimeFileContents ./simpleTracingON0.time $numThreads
 fi
 
 
