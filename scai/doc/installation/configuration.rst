@@ -77,7 +77,7 @@ CMake variable                 Signification
 ``USE_CUDA``                   ON or OFF, explicitly enable/disable use of CUDA
 ``USE_GPI``                    ON or OFF, explicitly enable/disable use of GPI
 ``USE_METIS``                  ON or OFF, explicitly enable/disable use redistributions with Metis
-``USE_JAVA``                   ON or OFF, explicitly enable/disable use of Java for tracing Gui
+``USE_JAVA``                   ON or OFF, explicitly enable/disable use of Java for tracing GUI
 ``USE_MIC``                    ON or OFF, explicitly enable/disable use of MIC
 ``USE_MPI``                    ON or OFF, explicitly enable/disable use of MPI
 ``USE_OPENMP``                 ON or OFF, explicitly enable/disable use of OpenMP
@@ -120,17 +120,16 @@ MIC        -                                                                 -
 DOXYGEN    DOXYGEN_EXECUTABLE                                                path to doxygen binary dir
 MPI        MPI_ROOT                                                          path to MPI root dir
 GPI-2      GPI2_ROOT                                                         path to GPI root dir
+JAVA       JAVA_HOME                                                         path to JAVA installation directory, must be set as environment variable
 Metis      METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH            path to Metis root dir or paths to Metis include and library dir
 ParMetis   PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH   path to ParMetis root dir or paths to ParMetis include and library dir
 ========== ================================================================  ===========================================================================
-
-..   "experimental", ,
-..   "OpenCL", "OPENCL_ROOT or OPENCL_INCLUDE_DIR and OPENCL_LIBRARY_PATH", "path to OpenCL root dir or paths to OpenCL include and library dir"
 
 Your cmake-call may look like this then:
 
 .. code-block:: bash
 
+   export JAVA_HOME=/home/lama/development/jdk/jdk1.6.0_35
    cmake -DMKL_ROOT=/opt/intel/mkl -DCMAKE_INSTALL_PREFIX=<path/to/install/dir> -DCMAKE_BUILD_TYPE=Release ../src
 
 The mkl library from '/opt/intel/mkl' will be used (instead of the libraries in the system path). All other libraries will be taken from the system path. 

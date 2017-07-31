@@ -121,6 +121,13 @@ For optional features you may also install the following:
 
 .. _supported:
 
+- Java
+
+   The tracing module comes with a GUI written in Java that allows the visualization of
+   trace files that can be generated when running LAMA applications. For the compilation of
+   this GUI a Java compiler is needed and a **jar** tool to build the corresponding package.
+
+
 Configurations
 ^^^^^^^^^^^^^^
 
