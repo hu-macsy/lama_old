@@ -92,8 +92,8 @@ endmacro ()
 macro ( scai_summary_external )
 
     set ( options )
-    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS EXECUTABLE ENABLED )
-    set ( multiValueArgs INCLUDE LIBRARIES )
+    set ( oneValueArgs NAME FOUND VERSION CXX_FLAGS ENABLED )
+    set ( multiValueArgs INCLUDE LIBRARIES EXECUTABLE )
 
     cmake_parse_arguments ( scai_summary_external "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
@@ -126,15 +126,17 @@ macro ( scai_summary_external )
             scai_summary ( "         CXX Flags  : ${scai_summary_external_CXX_FLAGS}" )
         endif ()
 
-        if ( DEFINED scai_summary_external_EXECUTABLE )
-            scai_summary ( "         Executable : ${scai_summary_external_EXECUTABLE}" )
-        endif ()
+        list ( LENGTH scai_summary_external_EXECUTABLE N_EXECUTABLE )
 
-        listToString ( ", " "${scai_summary_external_INCLUDE}" INCLUDE_LIST )
+        if ( N_EXECUTABLE GREATER 0 )
+            listToString ( ", " "${scai_summary_external_EXECUTABLE}" EXECUTABLE_LIST )
+            scai_summary ( "         Executable : ${EXECUTABLE_LIST}" )
+        endif ()
 
         list ( LENGTH scai_summary_external_INCLUDE N_INCLUDE )
 
         if ( N_INCLUDE GREATER 0 )
+            listToString ( ", " "${scai_summary_external_INCLUDE}" INCLUDE_LIST )
             scai_summary ( "         Include(${N_INCLUDE}) : ${INCLUDE_LIST}" )
         endif ()
 

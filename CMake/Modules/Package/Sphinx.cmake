@@ -51,8 +51,8 @@ scai_build_variable ( NAME      USE_SPHINX
                       DEFAULT   ${SPHINX_FOUND}
                       DOCSTRING "use of Sphinx (for user documentation)" )
 
-scai_summary_external ( NAME     Sphinx
-                        ENABLED  ${USE_SPHINX}
-                        FOUND    ${SPHINX_FOUND}
-                        VERSION  ${Sphinx_VERSION_STRING} 
-                        COMPILER ${Sphinx-build_EXECUTABLE} )
+scai_summary_external ( NAME       Sphinx
+                        ENABLED    ${USE_SPHINX}
+                        FOUND      ${SPHINX_FOUND}
+                        VERSION    ${Sphinx_VERSION_STRING} 
+                        EXECUTABLE ${Sphinx-build_EXECUTABLE} ${Sphinx-apidoc_EXECUTABLE} )
