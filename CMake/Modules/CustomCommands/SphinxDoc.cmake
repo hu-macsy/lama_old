@@ -98,18 +98,18 @@ if ( SPHINX_FOUND AND USE_SPHINX )
                     ${SPHINX_SOURCE_DIR}
                     ${SPHINX_CURRENT_BINARY_DIR}
         DEPENDS ${SPHINX_BINARY_DIR}/${MODULE_NAME}/conf.py
-        WORKING_DIRECTORY ${SPHINX_SOURCE_DIR}
+        WORKING_DIRECTORY ${SPHINX_BINARY_DIR}
     )
 
     if ( SCAI_DOC_TYPE STREQUAL latex )
-        set ( PDF_OUTPUT_NAME ${SPHINX_BINARY_DIR}/SCAI${MODULE_NAME}.pdf )
+        set ( PDF_OUTPUT_NAME ${SPHINX_BINARY_DIR}/${MODULE_NAME}.pdf )
 
-        message( STATUS "do ${CMAKE_MAKE_PROGRAM} in ${CMAKE_CURRENT_BINARY_DIR}/doc/latex" )
+        message( STATUS "do ${CMAKE_MAKE_PROGRAM} in ${SPHINX_CURRENT_BINARY_DIR}" )
         add_custom_command (
             OUTPUT  ${PDF_OUTPUT_NAME}
             COMMAND ${CMAKE_MAKE_PROGRAM}
             DEPENDS ${OUTPUT_NAME}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex
+            WORKING_DIRECTORY ${SPHINX_CURRENT_BINARY_DIR}
         )
     endif ()
     

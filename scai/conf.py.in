@@ -41,6 +41,8 @@ html_theme = 'sphinxdoc'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'SCAI_${MODULE_NAME}_DOC'
 
+latex_documents = [ ( master_doc, '${MODULE_NAME}.tex', project, 'LAMA Team, Fraunhofer SCAI', 'manual' ), ]
+
 # -- Options for manual page output --------------------------------------------
 
 # One entry per manual page. List of tuples

@@ -32,7 +32,7 @@
  # @date 25.07.2017
 ###
 
-project ( LeastSquare )
+project ( LeastSquare CXX )
 
 cmake_minimum_required ( VERSION 2.8 )
 

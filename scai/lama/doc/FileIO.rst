@@ -93,9 +93,6 @@ with a single argument for the file name and provide methods for the IO.
     ....
     m.writeToFile( fileName )
 
-.. code-block:: c++
-
-
 The rules for implicit type conversions are exactly the same as for heterogeneous arrays.
 
 How the storage data is written into the file, is dependent on the chosen file type. Usually
