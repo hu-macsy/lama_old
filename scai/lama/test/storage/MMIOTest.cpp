@@ -168,7 +168,6 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
 
 /* ------------------------------------------------------------------------- */
 
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n   = 4;
@@ -240,6 +239,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_t
 
     BOOST_CHECK_EQUAL( rc, 0 );
     BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( RectangularTest )
+{
+    const IndexType m   = 3;
+    const IndexType n   = 5;
+
+    RealType vals[]  = { 1, 2, 3,
+                         4, 5, 6,
+                         7, 8, 9,
+                         10, 11, 12,
+                         13, 14, 15 };
+
+    DenseStorage<RealType> denseOut;
+    DenseStorage<RealType> denseIn;
+
+    denseOut.setRawDenseData( m, n, vals, 0.001 );
+
+    std::string fileName = "dense.mtx";
+
+    MatrixMarketIO io;
+    FileIO& fio = io;
+
+    fio.writeStorage( denseOut, fileName );
+    fio.readStorage( denseIn, fileName );
+
+    BOOST_CHECK_EQUAL( denseOut.getNumColumns(), denseIn.getNumColumns() );
+    BOOST_CHECK_EQUAL( denseIn.getNumRows(), denseIn.getNumRows() );
+
+    int rc = FileIO::removeFile( fileName );
+
+    BOOST_CHECK_EQUAL( rc, 0 );
+    BOOST_CHECK( ! FileIO::fileExists( fileName ) );
+
+    RealType diff = denseIn.maxDiffNorm( denseOut );
+    BOOST_CHECK( diff < 0.0001 );
 }
 
 /* ------------------------------------------------------------------------- */
