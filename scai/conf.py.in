@@ -15,7 +15,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'SCAI ${PROJECT_SURNAME}'
+project = u'SCAI ${MODULE_NAME}'
 copyright = u'2009-${SCAI_COPYRIGHT_YEAR} Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -23,9 +23,9 @@ copyright = u'2009-${SCAI_COPYRIGHT_YEAR} Fraunhofer Institute for Algorithms an
 # built documents.
 #
 # The short X.Y version.
-version = '${${UPPER_PROJECT_NAME}_VERSION}'
+version = '${SCAI_VERSION}'
 # The full version, including alpha/beta/rc tags.
-release = '${${UPPER_PROJECT_NAME}_VERSION} (${SCAI_VERSION_NAME})'
+release = '${SCAI_VERSION} (${SCAI_VERSION_NAME})'
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'tango'
@@ -39,13 +39,15 @@ highlight_language = 'c++'
 html_theme = 'sphinxdoc'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = '${UPPER_PROJECT_NAME}_DOC'
+htmlhelp_basename = 'SCAI_${MODULE_NAME}_DOC'
+
+latex_documents = [ ( master_doc, '${MODULE_NAME}.tex', project, 'LAMA Team, Fraunhofer SCAI', 'manual' ), ]
 
 # -- Options for manual page output --------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', '${UPPER_PROJECT_NAME}', u'SCAI ${PROJECT_SURNAME} Documentation',
+    ('index', 'scai_${MODULE_NAME}', u'SCAI ${MODULE_NAME} Documentation',
      [u'Fraunhofer Institute for Algorithms and Scientific Computing SCAI for Fraunhofer-Gesellschaft'], 1)
 ]

@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file common/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,66 +27,58 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMakeLists of common/test
- # @author Lauretta Schubert
- # @date 09.09.2015
+ # @brief CMake configuration file for tests of SCAI module common
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 set ( CXX_SOURCES
-	    atomicOpenMPTest
-	    bindFunctionTest
-      commonTest
-      BinaryOpTest
-      ConstantsTest
-      ContextTypeTest
-      ExceptionTest  
-      FactoryTest  
-      Factory1Test  
-      FactoryTest
-      GridTest
-      LibModuleTest
-      MathTest
-      ptrTest
-      PrintableTest
-      ThreadTest  
-      TypeListTest
-      TypeLoopTest
-      TypeTraitsTest  
-      UnaryOpTest
-      ConstantsTest
-      ScalarTypeTest  
-      SettingsTest  
-      StencilTest  
-      WalltimeTest  
+
+          atomicOpenMPTest
+          bindFunctionTest
+          commonTest
+          BinaryOpTest
+          ConstantsTest
+          ContextTypeTest
+          ExceptionTest  
+          FactoryTest  
+          Factory1Test  
+          FactoryTest
+          GridTest
+          LibModuleTest
+          MathTest
+          ptrTest
+          PrintableTest
+          ThreadTest  
+          TypeListTest
+          TypeLoopTest
+          TypeTraitsTest  
+          UnaryOpTest
+          ConstantsTest
+          ScalarTypeTest  
+          SettingsTest  
+          StencilTest  
+          WalltimeTest  
 )
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     set ( CXX_SOURCES ${CXX_SOURCES} ComplexTest TypeConversionTest )
-endif ( ${USE_COMPLEX} )
+endif ()
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
+scai_test ( EXECUTABLE commonTest 
+            FILES      ${CXX_SOURCES} 
+            RUN
+            UNIT_TEST
+)   
 
-add_executable ( commonTest ${CXX_SOURCES} )
+# build also CUDA tests ( if possible/enabled )
 
-target_link_libraries ( commonTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+scai_subdirectories( CUDA )
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+###  copy xmltest.sh script
 
-file ( GLOB LOCAL_HEADERS "*.hpp" )
+scai_test_scripts( SCRIPTS       xmltest.sh )
 
-install ( FILES ${LOCAL_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR}/test )
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-### Copy the xmltest.sh file in build directory ### 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )

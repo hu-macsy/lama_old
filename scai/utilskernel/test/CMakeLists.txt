@@ -28,8 +28,8 @@
  # @endlicense
  #
  # @brief CMake configuration file for scai_utilskernel tests
- # @author Eric Schricker
- # @date 18.02.2016
+ # @author Thomas Brandes
+ # @date 18.07.2017
 ###
 
 scai_project ( 
@@ -49,24 +49,17 @@ scai_project (
         LArrayTest
 )
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+scai_test ( EXECUTABLE utilskernelTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN 
+) 
 
-add_executable ( utilskernelTest ${CXX_SOURCES} )
+###  copy xmltest.sh script
 
-target_link_libraries ( utilskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+scai_test_scripts( SCRIPTS       xmltest.sh )
 
-### Copy the xmltest.sh file in build directory ### 
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
 
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" 
-                    "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" 
-                    @ONLY )
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )

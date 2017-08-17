@@ -132,11 +132,11 @@ static double colorMap[] =
  *  @param[in]  factor 0.0 stands for color1, 1.0 for color2
  *  @param[out] color array will contain the interpolated rgb values
  */
-static void interpolateColor( double color[3], const double color1[3], const double color2[3], const double correction )
+static void interpolateColor( double color[3], const double color1[3], const double color2[3], const double factor )
 {
-    color[0] = ( 1.0 - correction ) * color1[0] + correction * color2[0];
-    color[1] = ( 1.0 - correction ) * color1[1] + correction * color2[1];
-    color[2] = ( 1.0 - correction ) * color1[2] + correction * color2[2];
+    color[0] = ( 1.0 - factor ) * color1[0] + factor * color2[0];
+    color[1] = ( 1.0 - factor ) * color1[1] + factor * color2[1];
+    color[2] = ( 1.0 - factor ) * color1[2] + factor * color2[2];
 }
 
 /** Compute for a value in range [0:1] a corresponding color entry by a color map 

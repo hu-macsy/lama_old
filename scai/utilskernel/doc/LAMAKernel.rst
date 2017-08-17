@@ -59,7 +59,7 @@ Here is an OpenMP implementation of the kernel routine maxval:
       #pragma omp parallel
       {
           ValueType threadVal = 0;
-          #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+          #pragma omp for 
           for( IndexType i = 0; i < n; ++i )
           {
               ValueType elem = abs( array[i] );

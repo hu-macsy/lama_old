@@ -1,8 +1,4 @@
-if ((BASH_VERSINFO[0] < 4))
-then
-	echo "For testing logging you need bash version 4 or newer"
-	exit
-fi
+#!/bin/bash
 
 ###
  # @file scai/logging/test/test.sh
@@ -38,6 +34,12 @@ fi
  # @date 03.09.2015
 ###
 
+if ((BASH_VERSINFO[0] < 4))
+then
+	echo "For testing logging you need bash version 4 or newer"
+	exit
+fi
+
 genericPatternSimple=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}" Test @ thread_"[0-9]{1,2}" \( main -> simpleLogging.cpp::"[0-9]{1,2}" \)"
 genericPatternComplex1=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}
 genericPatternComplex2="@ thread_"[0-9]{1,2}" \( main -> complexLogging.cpp::"[0-9]{1,2}" \)"
@@ -50,46 +52,40 @@ errors=0
 # output is checked.
 # =====================================================================================================================
 echo "Running runtime configuration tests:"
-make clean > /dev/null
-make simple DEFINES="-DSCAI_LOG_LEVEL_TRACE" > /dev/null
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not build executable! Tests are skipped!"
-    errors=$(($errors + 1))
-else
-    for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
-        export SCAI_LOG=$level
-        output=$( ./simpleLogging.exe | tr -d '\n' ) 
 
-        pattern=^
-        case $level in
-        "TRACE")
-            pattern+=${genericPatternSimple}" TRACE trace message"
-            ;&
-        "DEBUG")
-            pattern+=${genericPatternSimple}" DEBUG debug message"
-            ;&
-        "INFO")
-            pattern+=${genericPatternSimple}" INFO info message"
-            ;&
-        "WARN")
-            pattern+=${genericPatternSimple}" WARN warn message"
-            ;&
-        "ERROR")
-            pattern+=${genericPatternSimple}" ERROR error message"
-            ;&
-        "FATAL")
-            pattern+=${genericPatternSimple}" FATAL fatal message"
-            ;&
-        esac
-        pattern+=$
+for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
+    export SCAI_LOG=$level
+    output=$( ./simpleLoggingTRACE | tr -d '\n' ) 
 
-        if ! [[ "$output" =~ $pattern ]]; then
-            echo "ERROR: Output of the log level $level is wrong."
-            errors=$(($errors + 1))
-        fi
-    done
-    echo "done"
-fi
+    pattern=^
+    case $level in
+    "TRACE")
+        pattern+=${genericPatternSimple}" TRACE trace message"
+        ;&
+    "DEBUG")
+        pattern+=${genericPatternSimple}" DEBUG debug message"
+        ;&
+    "INFO")
+        pattern+=${genericPatternSimple}" INFO info message"
+        ;&
+    "WARN")
+        pattern+=${genericPatternSimple}" WARN warn message"
+        ;&
+    "ERROR")
+        pattern+=${genericPatternSimple}" ERROR error message"
+        ;&
+    "FATAL")
+        pattern+=${genericPatternSimple}" FATAL fatal message"
+        ;&
+    esac
+    pattern+=$
+
+    if ! [[ "$output" =~ $pattern ]]; then
+        echo "ERROR: Output of the log level $level is wrong."
+        errors=$(($errors + 1))
+    fi
+done
+echo "done"
 
 # =====================================================================================================================
 # Compile-time configuration tests
@@ -102,13 +98,8 @@ echo "Running compile-time configuration tests:"
 export SCAI_LOG=TRACE
 
 for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
-    make clean > /dev/null
-    make simple DEFINES="-DSCAI_LOG_LEVEL_${level}" > /dev/null
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Could not build executable using log level $level"
-        errors=$(($errors + 1))
-    else
-        output=$( ./simpleLogging.exe | tr -d '\n' ) 
+
+        output=$( ./simpleLogging${level} | tr -d '\n' ) 
 
         pattern=^
         case $level in
@@ -137,9 +128,9 @@ for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
             echo "ERROR: Output of the log level $level is wrong."
             errors=$(($errors + 1))
         fi
-    fi
 done
 echo "done"
+
 # =====================================================================================================================
 # Hierarchical configuration tests
 #
@@ -148,12 +139,7 @@ echo "done"
 # =====================================================================================================================
 echo ""
 echo "Hierarchical configuration tests:"
-make clean > /dev/null
-make complex DEFINES="-DSCAI_LOG_LEVEL_TRACE" > /dev/null
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not build executable! Tests are skipped!"
-    errors=$(($errors + 1))
-else
+
     export SCAI_LOG=loggerConfig.cfg
 
     # Check change of root debug level by reducing default from INFO to DEBUG
@@ -170,7 +156,7 @@ else
     echo "Class2=WARN" >> loggerConfig.cfg
     echo "Class2.method2=TRACE" >> loggerConfig.cfg
 
-    output=$( ./complexLogging.exe | tr -d '\n' )
+    output=$( ./complexLogging | tr -d '\n' )
 
     pattern=^
     pattern+=$genericPatternComplex1" Class1 "$genericPatternComplex2" DEBUG message class1"
@@ -187,7 +173,6 @@ else
 
     rm loggerConfig.cfg
     echo "done"
-fi
 
 # =====================================================================================================================
 # Format string configuration tests
@@ -195,20 +180,16 @@ fi
 # The simple executable is build with log level FATAL only. The output format is changed using a config file and the
 # output is checked.
 # =====================================================================================================================
+
 echo ""
 echo "Format string configuration tests:"
-make clean > /dev/null
-make simple DEFINES="-DSCAI_LOG_LEVEL_FATAL" > /dev/null
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not build executable! Tests are skipped!"
-    errors=$(($errors + 1))
-else
+
     export SCAI_LOG=loggerConfig.cfg
 
     # check all available variables
     # check format string: #date
     echo 'format="#date"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^[0-9]{4}-[0-9]{2}-[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #date"
@@ -218,7 +199,7 @@ else
 
     # check format string: #time
     echo 'format="#time"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^[0-9]{2}:[0-9]{2}:[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #time"
@@ -228,7 +209,7 @@ else
 
     # check format string: #name
     echo 'format="#name"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"Test"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #name"
@@ -238,7 +219,7 @@ else
 
     # check format string: #func
     echo 'format="#func"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"main"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #func"
@@ -248,7 +229,7 @@ else
 
     # check format string: #file
     echo 'format="#file"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"simpleLogging.cpp"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #file"
@@ -258,7 +239,7 @@ else
 
     # check format string: #line
     echo 'format="#line"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^[0-9]{1,2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #line"
@@ -268,7 +249,7 @@ else
 
     # check format string: #level
     echo 'format="#level"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^FATAL$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #level"
@@ -278,7 +259,7 @@ else
 
     # check format string: #msg
     echo 'format="#msg"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #msg"
@@ -288,7 +269,7 @@ else
     
     # check format string: #stack
     echo 'format="#stack"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern="stack"
     # Only for GCC
     #pattern=^"    stack\[1\] : scai::logging::GenLogger::log\(char const\*, scai::logging::SourceLocation&, std::string const&\)"
@@ -302,7 +283,7 @@ else
     # check format string: #<environmental variable> with existing variable
     echo 'format="#ENV_TEST_VAR"' > loggerConfig.cfg
     export ENV_TEST_VAR=scai_test
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"scai_test"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #<environmental variable> with existing variable"
@@ -313,7 +294,7 @@ else
     # check format string: #<environmental variable> with not existing variable
     echo 'format="#ENV_TEST_VAR"' > loggerConfig.cfg
     unset ENV_TEST_VAR
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"\\$\{ENV_TEST_VAR\}"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #<environmental variable> with not existing variable"
@@ -323,7 +304,7 @@ else
     
     # check format string: #MsG (check that variable parsing is case insensitive)
     echo 'format="#msg"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #MsG (variables case sensitive?)"
@@ -334,7 +315,7 @@ else
     # check some combinations of variables
     # check combined format string: #msg #level #line
     echo 'format="#msg #level #line"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"fatal message FATAL "[0-9]{1,2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using combined format string #msg #level #line"
@@ -344,7 +325,7 @@ else
 
     # check combined format string: #file #msg #date
     echo 'format="#file #msg #date"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"simpleLogging.cpp fatal message "[0-9]{4}-[0-9]{2}-[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using combined format string #file #msg #date"
@@ -354,7 +335,7 @@ else
 
     # check format string with additional text in it
     echo 'format="error message: #msg"' > loggerConfig.cfg
-    output=$( ./simpleLogging.exe | tr -d '\n' )
+    output=$( ./simpleLoggingFATAL | tr -d '\n' )
     pattern=^"error message: fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using additional text in format string."
@@ -366,9 +347,7 @@ else
 
     rm loggerConfig.cfg
     echo "done"
-fi
 
-make clean > /dev/null
 
 # =====================================================================================================================
 echo ""

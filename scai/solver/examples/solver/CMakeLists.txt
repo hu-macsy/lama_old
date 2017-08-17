@@ -32,33 +32,29 @@
  # @date 02.12.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+
 set ( HEADER LamaConfig.hpp LamaTiming.hpp )
 
 foreach ( executable lamaSolver lamaInfo matrixStencilGenerator matrixRandomGenerator stencilSolver vectorGenerator )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
 endforeach ( executable )
 
 # GenMatrices.py: copy only to build and install directory
 configure_file( GenMatrices.py GenMatrices.py COPYONLY )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-## install examples
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/solver" )
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES} ${HEADER} GenMatrices.py MultiBench.py README.txt
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
 

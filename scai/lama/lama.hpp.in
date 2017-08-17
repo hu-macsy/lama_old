@@ -36,7 +36,7 @@
 
 extern "C" inline const char* lama_get_version()
 {
-    return "${SCAI_LAMA_VERSION}";
+    return "${SCAI_VERSION}";
 }
 
 #include <scai/lama/DenseVector.hpp>

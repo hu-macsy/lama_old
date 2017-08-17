@@ -32,43 +32,34 @@
  # @date 16.06.2015
 ###
 
-#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
 
-set ( EXAMPLE_FILES "" )
-set ( EXAMPLE_EXECUTABLES "" )
-set ( EXAMPLE_MODULES "" ) # for make.inc
+# init call necessary so that Makefile generation does not include anything from outside
 
-string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+scai_init_examples()
 
 foreach ( executable DemoCUDACtx CUBLASExample1 CUBLASExample2 DemoCUSparse BenchCUDA )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe FILES ${executable}.cpp )
+
 endforeach ( executable )
 
 foreach ( executable CUDAExample )
-    cuda_add_executable( ${executable}.exe ${executable}.cu )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cu )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( CUDA EXECUTABLE ${executable}.exe FILES ${executable}.cu )
+
 endforeach ( executable )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-## install examples sources, (install_)Makefile, make.inc
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/cuda" )
-
+## install examples sources
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
 

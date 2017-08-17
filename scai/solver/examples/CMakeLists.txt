@@ -32,6 +32,11 @@
  # @date 25.01.2016
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 add_subdirectory ( FDSimulation )
 add_subdirectory ( lecture )
 if ( ${SCAI_LIBRARY_TYPE} MATCHES SHARED )
@@ -43,8 +48,12 @@ add_subdirectory ( spy )
 add_subdirectory ( eigenvalue )
 add_subdirectory ( leastsquare )
 
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-## install examples
-install ( FILES Makefile DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS run_all.sh DESTINATION ${PROJECT_EXAMPLE_DIR} )
+# copy the script to run all examples
+scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
+
+## copy the Makefile from the source directory to installation
+
+install ( FILES Makefile DESTINATION ${INSTALL_EXAMPLE_DIR} )

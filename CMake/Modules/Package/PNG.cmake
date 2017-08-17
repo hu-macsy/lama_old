@@ -27,10 +27,14 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief find PNG reference library and its include path
+ # @brief SCAI wrapper for find_package( PNG )
  # @author Thomas Brandes
  # @date 14.05.2017
 ###
+
+if ( SCAI_PNG_CHECK_DONE )
+    return ()
+endif ()
 
 #  CMake provides already a module to find the PNG reference library, use it
 
@@ -38,22 +42,28 @@ find_package( PNG ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # returns PNG_FOUND, PNG_INCLUDE_DIRS (cache), PNG_LIBRARIES
 
-message( STATUS "PNG_FOUND=${PNG_FOUND}" )
-message( STATUS "PNG_INCLUDE_DIRS=${PNG_INCLUDE_DIRS}" )
-message( STATUS "PNG_LIBRARIES=${PNG_LIBRARIES}" )
+# message( STATUS "PNG_FOUND=${PNG_FOUND}" )
+# message( STATUS "PNG_INCLUDE_DIRS=${PNG_INCLUDE_DIRS}" )
+# message( STATUS "PNG_LIBRARIES=${PNG_LIBRARIES}" )
 
 # Now make some adaptions to fit these variables to the SCAI project rules
 
-setAndCheckCache ( PNG )
-set ( USE_PNG ${USE_PNG} CACHE BOOL "Enable / Disable use of PNG libray (read/write PNG images)" )
+scai_build_variable ( NAME      USE_PNG
+                      BOOL 
+                      DEFAULT   ${PNG_FOUND}
+                      DOCSTRING "use of PNG library (read/write PNG images)" )
 
 # set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
 if ( PNG_FOUND )
+
+    #  set SCAI_PNG_xxx variable, in CACHE so they might be used by any module
+
     set ( SCAI_PNG_LIBRARIES ${PNG_LIBRARIES} CACHE PATH "PNG library" )
     set ( SCAI_PNG_INCLUDE_DIR ${PNG_INCLUDE_DIRS} CACHE PATH "PNG include directory" )
 
     ## get PNG version
+
     try_run ( PNG_RUN_RESULT_VAR PNG_COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}/VersionCheck
         ${CMAKE_MODULE_PATH}/VersionCheck/pnglib.cpp
@@ -64,7 +74,20 @@ if ( PNG_FOUND )
 
     set ( PNG_VERSION ${PNG_RUN_OUTPUT_VAR} )
 
-endif  ( PNG_FOUND )
+elseif ( SCAI_USE_PNG )
 
-mark_as_advanced( SCAI_PNG_LIBRARIES )
-mark_as_advanced( SCAI_PNG_INCLUDE_DIR )
+    message ( ERROR "PNG not found" )
+
+endif ()
+
+mark_as_advanced ( SCAI_PNG_LIBRARIES )
+mark_as_advanced ( SCAI_PNG_INCLUDE_DIR )
+
+scai_summary_external ( NAME      "PNG (image library)"
+                        ENABLED   ${USE_PNG}
+                        FOUND     ${PNG_FOUND} 
+                        VERSION   ${PNG_VERSION} 
+                        INCLUDE   ${PNG_INCLUDE_DIR} 
+                        LIBRARIES ${PNG_LIBRARIES}    )
+
+set ( SCAI_PNG_CHECK_DONE True )

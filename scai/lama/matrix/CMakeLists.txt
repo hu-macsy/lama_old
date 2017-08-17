@@ -52,6 +52,7 @@ scai_project (
  
         all 
         CRTPMatrix 
+        AbstractMatrix
 
     ADD_PARENT_SCOPE
 )

@@ -48,76 +48,76 @@
 
 # use CMake module that provides CHECK_CXX_COMPILER_FLAG 
 
-if    ( NOT WIN32 )
+if ( NOT WIN32 )
 
-	set ( CXX11_COMPILE_FLAG "-std=c++11" )
+    set ( CXX11_COMPILE_FLAG "-std=c++11" )
 
-	if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
-		set ( CXX11_COMPILE_FLAG "${CXX11_COMPILE_FLAG} -stdlib=libc++" )
-	endif ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+    if ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
+        set ( CXX11_COMPILE_FLAG "${CXX11_COMPILE_FLAG} -stdlib=libc++" )
+    endif ( CMAKE_CXX_COMPILER_ID MATCHES Clang )
 
-	include ( CheckCXXCompilerFlag )
+    include ( CheckCXXCompilerFlag )
 
-	if ( NOT DEFINED CXX_SUPPORTS_C11 )
-	    CHECK_CXX_COMPILER_FLAG( ${CXX11_COMPILE_FLAG} CXX_SUPPORTS_C11 )
-	endif ( NOT DEFINED CXX_SUPPORTS_C11 )
+    if ( NOT DEFINED CXX_SUPPORTS_C11 )
+        CHECK_CXX_COMPILER_FLAG( ${CXX11_COMPILE_FLAG} CXX_SUPPORTS_C11 )
+    endif ( NOT DEFINED CXX_SUPPORTS_C11 )
 
-	if    ( CXX_SUPPORTS_C11 )
-		# check for needed C++11 features
-		# only use C++11 if all needed features are found
-		include ( Functions/checkFeature )
+    if    ( CXX_SUPPORTS_C11 )
+        # check for needed C++11 features
+        # only use C++11 if all needed features are found
+        include ( scai_function/checkFeature )
 
-		# set c++11 flag as CMAKE_CXX_FLAGS and restore old value afterwards
-		# setting flag int try_compile/try_run does not work
-		set ( CHECK_CXX11_OLD_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
-		set ( CMAKE_CXX_FLAGS "${CXX11_COMPILE_FLAG}" )
+        # set c++11 flag as CMAKE_CXX_FLAGS and restore old value afterwards
+        # setting flag int try_compile/try_run does not work
+        set ( CHECK_CXX11_OLD_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
+        set ( CMAKE_CXX_FLAGS "${CXX11_COMPILE_FLAG}" )
 
-		# other c++(11) features - not used (yet)
-		# add to list below if used in LAMA ( take care of ordering of the three lists (!) )
-		#set ( CXX11_FEATURE_LIST    "auto" "nullptr" "lambda" "static_assert" "rvalue_references" "decltype" "variadic_templates" "constexpr" "sizeof_member" "__func__" )
-		#set ( CXX11_FEATURE_NUMBER  "2546" "2431"    "2927"   "1720"          "2118"              "2343"     "2555"               "2235"      "2253"          "2340"     )
-		#set ( CXX11_LINK_LIBRARIES  ""     ""        ""       ""              ""                  ""         ""                   ""          ""              ""         )
+        # other c++(11) features - not used (yet)
+        # add to list below if used in LAMA ( take care of ordering of the three lists (!) )
+        #set ( CXX11_FEATURE_LIST    "auto" "nullptr" "lambda" "static_assert" "rvalue_references" "decltype" "variadic_templates" "constexpr" "sizeof_member" "__func__" )
+        #set ( CXX11_FEATURE_NUMBER  "2546" "2431"    "2927"   "1720"          "2118"              "2343"     "2555"               "2235"      "2253"          "2340"     )
+        #set ( CXX11_LINK_LIBRARIES  ""     ""        ""       ""              ""                  ""         ""                   ""          ""              ""         )
 
-		# needed c++11 features - replacing boost                                            # replacing pthread
-		set ( CXX11_FEATURE_LIST    "bind" "function" "shared_ptr" "unique_ptr" "weak_ptr" ) # "thread_local" )
-		set ( CXX11_FEATURE_NUMBER  ""     ""         ""           ""           ""         ) # ""             )
-		set ( CXX11_LINK_LIBRARIES  ""     ""         ""           ""           ""         ) # "pthread"      ) #todo:: pthreads only for gnu !?
+        # needed c++11 features - replacing boost                                            # replacing pthread
+        set ( CXX11_FEATURE_LIST    "bind" "function" "shared_ptr" "unique_ptr" "weak_ptr" ) # "thread_local" )
+        set ( CXX11_FEATURE_NUMBER  ""     ""         ""           ""           ""         ) # ""             )
+        set ( CXX11_LINK_LIBRARIES  ""     ""         ""           ""           ""         ) # "pthread"      ) #todo:: pthreads only for gnu !?
 
-		set ( COUNT 0 )
-		foreach    ( FEATURE ${CXX11_FEATURE_LIST} )
-			list ( GET CXX11_FEATURE_NUMBER ${COUNT} FEATURE_NUMBER )
-			list ( GET CXX11_LINK_LIBRARIES ${COUNT} LINK_LIB )
-			checkFeature ( ${FEATURE} "${FEATURE_NUMBER}" ${FEATURE}_BOOLVALUE "${CXX11_COMPILE_FLAG}" "${LINK_LIB}" )
-			message ( "${COUNT}: item ${FEATURE} number ${FEATURE_NUMBER}: ${${FEATURE}_BOOLVALUE}" )
+        set ( COUNT 0 )
+        foreach    ( FEATURE ${CXX11_FEATURE_LIST} )
+            list ( GET CXX11_FEATURE_NUMBER ${COUNT} FEATURE_NUMBER )
+            list ( GET CXX11_LINK_LIBRARIES ${COUNT} LINK_LIB )
+            checkFeature ( ${FEATURE} "${FEATURE_NUMBER}" ${FEATURE}_BOOLVALUE "${CXX11_COMPILE_FLAG}" "${LINK_LIB}" )
+            message ( "${COUNT}: item ${FEATURE} number ${FEATURE_NUMBER}: ${${FEATURE}_BOOLVALUE}" )
 
-			if    ( NOT ${FEATURE}_BOOLVALUE )
-				set ( CXX_SUPPORTS_C11 FALSE )
-			endif ( NOT ${FEATURE}_BOOLVALUE )
-			math ( EXPR COUNT "${COUNT}+1" )
-		endforeach ( FEATURE ${CXX11_FEATURE_LIST} )
+            if    ( NOT ${FEATURE}_BOOLVALUE )
+                set ( CXX_SUPPORTS_C11 FALSE )
+            endif ( NOT ${FEATURE}_BOOLVALUE )
+            math ( EXPR COUNT "${COUNT}+1" )
+        endforeach ( FEATURE ${CXX11_FEATURE_LIST} )
 
-		if    ( NOT CXX_SUPPORTS_C11 )
-			message ( STATUS "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off.\n Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
-		endif ( NOT CXX_SUPPORTS_C11 )
+        if    ( NOT CXX_SUPPORTS_C11 )
+            message ( STATUS "Compiler does not support all needed c++11 features. Turn CXX_SUPPORTS_C11 off.\n Unsupported features are: ${CXX11_UNSUPPORTED_FEATURE_LIST}" )
+        endif ( NOT CXX_SUPPORTS_C11 )
 
-		# restore CMAKE_CXX_FLAGS
-		set ( CMAKE_CXX_FLAGS ${CHECK_CXX11_OLD_CMAKE_CXX_FLAGS} )
+        # restore CMAKE_CXX_FLAGS
+        set ( CMAKE_CXX_FLAGS ${CHECK_CXX11_OLD_CMAKE_CXX_FLAGS} )
 
-	endif ( CXX_SUPPORTS_C11 )
+    endif ( CXX_SUPPORTS_C11 )
 
-else  ( NOT WIN32 )
-	
-	if    ( MSVC ) # if Visual Studio
-		#message ( STATUS "MSVC_VERSION ${MSVC_VERSION} " )
-		if    ( ${MSVC_VERSION} GREATER 1600 ) # 1600 = VS 10.0
-			set ( CXX_SUPPORTS_C11 TRUE )
-		else  ( ${MSVC_VERSION} GREATER 1600 )
-			set ( CXX_SUPPORTS_C11 FALSE )
-		endif ( ${MSVC_VERSION} GREATER 1600 )
-	else  ( MSVC )
-		message ( FATAL_ERROR "NO Visual Studio compiler, can not determine if C++11 support given." )
-	endif ( MSVC )
-	
+else ( NOT WIN32 )
+    
+    if    ( MSVC ) # if Visual Studio
+        #message ( STATUS "MSVC_VERSION ${MSVC_VERSION} " )
+        if    ( ${MSVC_VERSION} GREATER 1600 ) # 1600 = VS 10.0
+            set ( CXX_SUPPORTS_C11 TRUE )
+        else  ( ${MSVC_VERSION} GREATER 1600 )
+            set ( CXX_SUPPORTS_C11 FALSE )
+        endif ( ${MSVC_VERSION} GREATER 1600 )
+    else  ( MSVC )
+        message ( FATAL_ERROR "NO Visual Studio compiler, can not determine if C++11 support given." )
+    endif ( MSVC )
+    
 endif ( NOT WIN32 )
 
 set ( CXX_SUPPORTS_C11 ${CXX_SUPPORTS_C11} CACHE STRING "Compiler supports CXX-11." )
@@ -129,4 +129,5 @@ else  ( CXX_SUPPORTS_C11 AND NOT WIN32 )
 endif ( CXX_SUPPORTS_C11 AND NOT WIN32 )
 
 set ( ADDITIONAL_CXX_FLAGS_LANG "${SCAI_LANG_FLAGS}" CACHE STRING "Language flag for using C++11 (if compiler capable)" )
+
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_LANG )

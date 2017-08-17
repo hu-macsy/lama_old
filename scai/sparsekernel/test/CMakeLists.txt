@@ -44,24 +44,15 @@ set ( CXX_SOURCES
       StencilKernelTest
 ) 
 
-include_directories ( ${Boost_INCLUDE_DIR} )
+scai_test ( EXECUTABLE sparsekernelTest FILES ${CXX_SOURCES} UNIT_TEST RUN )
 
-add_executable ( sparsekernelTest ${CXX_SOURCES} )
+target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${MODULE_LIBRARY} )
 
-target_link_libraries ( sparsekernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+###  copy xmltest.sh script
 
-### Copy the xmltest.sh file in build directory ### 
+scai_test_scripts( SCRIPTS       xmltest.sh )
 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" 
-                    "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" 
-                    @ONLY )
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
+

@@ -1348,6 +1348,71 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
+{
+    ContextPtr testContext = ContextFix::testContext;
+    ContextPtr hostContext = Context::getHostPtr();
+
+    static LAMAKernel<CSRKernelTrait::reduce<ValueType> > reduce;
+
+    ContextPtr loc = testContext;
+
+    reduce.getSupportedContext( loc );
+
+    BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
+
+    HArray<IndexType> csrIA( testContext );
+    HArray<IndexType> csrJA( testContext );
+    HArray<ValueType> csrValues( testContext );
+
+    IndexType numRows;
+    IndexType numColumns;
+    IndexType numValues;
+
+    data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+
+    for ( IndexType dim = 0; dim < 2; ++dim )
+    {
+        HArray<ValueType> computedRes( loc );
+
+        {
+            SCAI_CONTEXT_ACCESS( loc );
+
+            IndexType resSize = dim == 0 ? numRows : numColumns;
+
+            computedRes.init( ValueType( 0 ), resSize );
+
+            ReadAccess<IndexType> rIA( csrIA, loc );
+            ReadAccess<IndexType> rJA( csrJA, loc );
+            ReadAccess<ValueType> rValues( csrValues, loc );
+    
+            WriteAccess<ValueType> wResult( computedRes, loc );
+
+            reduce[loc]( wResult.get(),
+                         rIA.get(), rJA.get(), rValues.get(), numRows, dim,
+                         common::binary::ADD, common::unary::COPY );
+        }
+
+        HArray<ValueType> expectedRes;
+
+        data1::getReduceResult( expectedRes, dim );  // assumes ADD, SQR
+    
+        BOOST_CHECK_EQUAL( computedRes.size(), expectedRes.size() );
+
+        {
+            ReadAccess<ValueType> rComputed( computedRes, hostContext );
+            ReadAccess<ValueType> rExpected( expectedRes, hostContext );
+    
+            for ( IndexType i = 0; i < computedRes.size(); ++i )
+            {
+                BOOST_CHECK_EQUAL( rExpected[i], rComputed[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr testContext = ContextFix::testContext;

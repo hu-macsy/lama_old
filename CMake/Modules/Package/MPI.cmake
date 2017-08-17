@@ -80,9 +80,11 @@ endif ( NOT ${MPIEXEC} )
 mark_as_advanced ( MPI_EXTRA_LIBRARY MPI_LIBRARY MPI_CXX_LIBRARIES MPIEXEC_POSTFLAGS MPIEXEC_PREFLAGS )
 
 ### ALLOW to switch off MPI explicitly ###
-include ( Functions/setAndCheckCache )
-setAndCheckCache ( MPI )
-set ( USE_MPI ${USE_MPI} CACHE BOOL "Enable / Disable use of MPI" )
+
+scai_build_variable ( NAME      USE_MPI
+                      BOOL 
+                      DEFAULT   ${MPI_FOUND}
+                      DOCSTRING "use of MPI" )
 
 if ( MPI_FOUND AND USE_MPI )
 
@@ -100,12 +102,13 @@ endif ( MPI_FOUND AND USE_MPI )
 
 include ( VersionCheck/MPI )
 
-set ( MPI_ENABLED FALSE )
-if    ( USE_MPI AND MPI_FOUND )
-    set ( MPI_ENABLED TRUE )
-endif ( USE_MPI AND MPI_FOUND )
-
 if    ( USE_MPI AND NOT MPI_FOUND )
-    message( FATAL_ERROR "Build of LAMA MPI enabled, but configuration is incomplete!")
+    message( FATAL_ERROR "MPI shoud be used but not found" )
 endif ( USE_MPI AND NOT MPI_FOUND )
  
+scai_summary_external ( NAME      MPI 
+                        FOUND     ${MPI_FOUND} 
+                        ENABLED   ${USE_MPI}
+                        VERSION   ${MPI_VERSION} 
+                        INCLUDE   ${SCAI_MPI_INCLUDE_DIR} 
+                        LIBRARIES ${SCAI_MPI_LIBRARIES} )
