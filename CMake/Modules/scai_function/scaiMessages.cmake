@@ -53,9 +53,19 @@ function    ( scai_generate_blanks OUTPUT STRING LENGTH )
     set ( ${OUTPUT} ${MESSAGE_BLANKS} PARENT_SCOPE )
 endfunction ( scai_generate_blanks )
 
+set ( COLORS_SUPPORTED True )
+
+if ( WIN32 )
+    set ( COLORS_SUPPORTED False )
+endif ()
+
+if ( NOT CMAKE_COLOR_MAKEFILE )
+    set ( COLORS_SUPPORTED False )
+endif()
+
 ## Set all escape sequences for bash formatting
 
-if    ( NOT WIN32 )
+if  ( COLORS_SUPPORTED )
 
     # full bash color and formating escape sequences:
     # http://misc.flogisoft.com/bash/tip_colors_and_formatting
@@ -122,7 +132,7 @@ if    ( NOT WIN32 )
     set ( TextAmber          "${Esc}[38;5;208m" )
     set ( BGAmber            "${Esc}[48;5;208m" )
 
-else  ( NOT WIN32 )
+else  ()
 
     set ( TextReset          "" )
 
@@ -184,7 +194,7 @@ else  ( NOT WIN32 )
     set ( TextAmber          "" )
     set ( BGAmber            "" )
 
-endif ( NOT WIN32 )
+endif ()
 
 function    ( emptyline )
     message ( STATUS "" )
