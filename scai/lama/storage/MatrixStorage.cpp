@@ -1036,6 +1036,69 @@ void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixStorage<ValueType>::reduce(
+    hmemo::HArray<ValueType>& array, 
+    const IndexType dim, 
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp )
+{
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    hmemo::ReadAccess<ValueType> values( csrValues );
+    hmemo::ReadAccess<IndexType> ia( csrIA );
+    hmemo::ReadAccess<IndexType> ja( csrJA );
+
+    hmemo::WriteAccess<ValueType> a( array );
+
+    OpenMPCSRUtils::reduce( a.get(), ia.get(), ja.get(), values.get(), getNumRows(), dim, reduceOp, elemOp );
+
+    /*
+    if ( dim == 0 )
+    {
+        SCAI_ASSERT_EQ_ERROR( array.size(), getNumRows(), "size mismatch" );
+
+        for ( IndexType i = 0; i < getNumRows(); ++i )
+        {
+            // a[i] = 0;
+
+            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
+            {
+                ValueType v = values[jj];
+                v = applyUnaryOp( elemOp, v );
+                a[i] += v;
+            }
+        }
+    }
+    else if ( dim == 1 )
+    {
+        SCAI_ASSERT_EQ_ERROR( array.size(), getNumColumns(), "size mismatch" );
+
+        // for ( IndexType j = 0; j < getNumColumns(); ++j )
+        // {
+            // a[j] = 0;
+        // }
+
+        for ( IndexType i = 0; i < getNumRows(); ++i )
+        {
+            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
+            {
+                IndexType j = ja[jj];
+                ValueType v = values[jj];
+                v = applyUnaryOp( elemOp, v );
+                a[j] += v;
+            }
+        }
+    }
+    */
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixStorage<ValueType>::matrixTimesVector(
     HArray<ValueType>& result,
     const ValueType alpha,
@@ -1409,7 +1472,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_ERROR( epsilon > 0, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_GT_ERROR( epsilon, 0, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )

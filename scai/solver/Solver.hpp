@@ -202,27 +202,6 @@ public:
     void setLogLevel( LogLevel::LogLevel level );
 
     /**
-     * @brief Sets the context where this solver should be executed.
-     *
-     * Sets the context where this solver should be executed. Caution: This overrides
-     * the context of the coefficients matrix A from A * u = f used to initialize this
-     * solver.
-     *
-     * @param[in] context   the context where this solver should be executed.
-     */
-    virtual void setContextPtr( hmemo::ContextPtr context );
-
-    /**
-     * @brief Returns the context where this solver would be executed.
-     *
-     * @returns the context where this solver would be executed.
-     */
-    hmemo::ContextPtr getContextPtr()
-    {
-        return mContext;
-    }
-
-    /**
      * @brief Copies the status independent solver informations to create a new instance of the same
      * type
      *
@@ -292,13 +271,6 @@ protected:
      * May be the NullLogger if no logger has been specified.
      */
     LoggerPtr mLogger;
-
-    /**
-     * @brief For forcing the context solver dependent
-     *
-     * If the context for a solver is set, the context of the input matrix will be ignored
-     */
-    hmemo::ContextPtr mContext;
 
     /**
      *  @brief own implementation of Printable::writeAt

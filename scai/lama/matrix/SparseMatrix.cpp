@@ -1224,6 +1224,88 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::reduce(
+    Vector& v, 
+    const IndexType dim,
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp ) const
+{
+    SCAI_REGION( "Mat.Sp.reduce" )
+
+    SCAI_ASSERT_EQ_ERROR( v.getValueType(), getValueType(), "type mismatch" )
+    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), Vector::DENSE, "result vector in reduce must be DENSE" )
+
+    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
+
+    if ( dim == 0 )
+    {
+        denseV.allocate( getRowDistributionPtr() );
+
+        // initialize v with neutral element
+
+        denseV = ValueType( 0 );
+
+        SCAI_LOG_ERROR( logger, "reduce dim = 0, denseV = " << denseV );
+
+        mLocalData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+        
+        if ( mHaloData->getNumRows() > 0 && mHaloData->getNumColumns() > 0 )
+        {
+            mHaloData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+        }
+
+        SCAI_LOG_ERROR( logger, "reduced dim = 0, denseV = " << denseV );
+
+        return;
+    }
+
+    if ( dim == 1 )
+    {
+        denseV.allocate( getColDistributionPtr() );
+
+        denseV = ValueType( 0 );  // neutral element of reduce op
+
+        mLocalData->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+
+        if ( getRowDistribution().getCommunicator().getSize() == 1 )
+        {
+            return;   // matrix is replicated, compute just my values
+        }
+
+        // rows are distributed
+
+        if ( getColDistribution().getCommunicator().getSize() == 1 )
+        {
+             SCAI_ASSERT_EQ_ERROR( reduceOp, common::binary::ADD, "only add supported" )
+             getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
+             return;
+        }
+        
+        HArray<ValueType> haloResult;
+
+        if ( !mHalo.isEmpty() )
+        {
+            const Communicator& comm = getColDistribution().getCommunicator();
+            HArray<ValueType> haloData;
+            haloData.init( ValueType( 0 ), mHaloData->getNumColumns() );
+            mHaloData->reduce( haloData, 1, reduceOp, elemOp );
+            comm.exchangeByPlan( haloResult, mHalo.getProvidesPlan(), haloData, mHalo.getRequiredPlan() );
+        }
+
+        if ( haloResult.size() > 0 )
+        {
+            HArrayUtils::scatterImpl( denseV.getLocalValues(), mHalo.getProvidesIndexes(), false, haloResult, reduceOp );
+        }
+
+        return;
+    }
+
+    COMMON_THROWEXCEPTION( "illegal reduce dim = " << dim )
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::scale( const Vector& scaling )
 {
     SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )

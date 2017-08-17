@@ -869,6 +869,22 @@ Scalar SparseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+bool SparseVector<ValueType>::all( const common::binary::CompareOp, const Scalar ) const
+{
+    COMMON_THROWEXCEPTION( "not supported yet" ) 
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool SparseVector<ValueType>::all( const common::binary::CompareOp, const Vector& ) const
+{
+    COMMON_THROWEXCEPTION( "not supported yet" ) 
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseVector<ValueType>::swap( Vector& other )
 {
     SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )

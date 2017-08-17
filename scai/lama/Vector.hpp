@@ -80,7 +80,8 @@ struct _Vector
     typedef enum
     {
         DENSE,      //!< vector format for a dense vector
-        SPARSE,     //!< vector format for a sparse vector, not supported yet
+        SPARSE,     //!< vector format for a sparse vector
+        JOINED,     //!< vector format for a joined vector
         UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
     } VectorKind;
 
@@ -713,6 +714,7 @@ public:
      * 
      *  @param[in] other is the input vector for setting, must have same distribution
      *  @param[in] op specifies the binary operation for the update
+     *  @param[in] swapArgs if true the arguments of the binary operator are swapped
      * 
      *  The call v1.setVector( v2, op ) is equivalent to the following code:
      *
@@ -759,6 +761,16 @@ public:
      *  @brief Apply a unary operation for each element of the vector.
      */
     virtual void applyUnary( common::unary::UnaryOp op ) = 0;
+
+    /**
+     *  @brief Boolean reduction returns true if all elements fullfill the compare operation with a scalar.
+     */
+    virtual bool all( common::binary::CompareOp op, const Scalar value ) const = 0;
+
+    /**
+     *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
+     */
+    virtual bool all( common::binary::CompareOp op, const Vector& other ) const = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.

@@ -82,6 +82,10 @@ const char* _Vector::kind2Str( const VectorKind vectorKind )
             return "SPARSE";
             break;
 
+        case JOINED:
+            return "JOINED";
+            break;
+
         case UNDEFINED:
             return "Undefined";
             break;

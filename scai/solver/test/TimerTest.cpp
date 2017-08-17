@@ -54,6 +54,8 @@ BOOST_AUTO_TEST_SUITE( TimerTest )
 
 SCAI_LOG_DEF_LOGGER( logger, "Test.TimerTest" )
 
+static int TIMER_ACCURACY = 10;
+
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
@@ -85,8 +87,8 @@ BOOST_AUTO_TEST_CASE( ResetTest )
     double time2 = timer.getTime( "Timer" );
     timer.stop( "Timer" );
     BOOST_CHECK( time2 < time1 );
-    BOOST_CHECK_CLOSE( time1, 0.1, 2 );
-    BOOST_CHECK_CLOSE( time2, 0.01, 2 );
+    BOOST_CHECK_CLOSE( time1, 0.1, TIMER_ACCURACY );
+    BOOST_CHECK_CLOSE( time2, 0.01, TIMER_ACCURACY );
 }
 
 /* --------------------------------------------------------------------- */
@@ -97,7 +99,7 @@ BOOST_AUTO_TEST_CASE( StartAndStopTimerTest )
     timer.start( "TestTimer" );
     common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
-    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
 }
 
 /* --------------------------------------------------------------------- */
@@ -109,19 +111,19 @@ BOOST_AUTO_TEST_CASE( ResumeTimerTest )
     timer.start( "TestTimer" );
     common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
-    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
     common::Walltime::sleep( 100 );
     timer.start( "TestTimer" );
     common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
-    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
     common::Walltime::sleep( 100 );
     timer.start( "TestTimer" );
     common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
-    BOOST_CHECK_CLOSE( 0.3, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.3, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
     timer.stop( "TestTimer2" );
-    BOOST_CHECK_CLOSE( 0.5, timer.getTime( "TestTimer2" ), 2 );
+    BOOST_CHECK_CLOSE( 0.5, timer.getTime( "TestTimer2" ), TIMER_ACCURACY );
 }
 
 /* --------------------------------------------------------------------- */
@@ -132,12 +134,12 @@ BOOST_AUTO_TEST_CASE( ResetTimerTest )
     timer.start( "TestTimer" );
     common::Walltime::sleep( 100 );  // 100 ms, 0.1 s
     timer.stop( "TestTimer" );
-    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
     timer.stopAndReset( "TestTimer" );
     timer.start( "TestTimer" );
     common::Walltime::sleep( 100 );
     timer.stop( "TestTimer" );
-    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
     timer.stopAndReset( "TestTimer" );
 }
 
@@ -149,10 +151,10 @@ BOOST_AUTO_TEST_CASE( GetTimeTest )
     timer.start( "TestTimer" );
     timer.start( "TestTimer2" );
     common::Walltime::sleep( 100 );
-    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), 2 );
+    BOOST_CHECK_CLOSE( 0.1, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
     common::Walltime::sleep( 100 );
-    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), 2 );
-    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer2" ), 2 );
+    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer" ), TIMER_ACCURACY );
+    BOOST_CHECK_CLOSE( 0.2, timer.getTime( "TestTimer2" ), TIMER_ACCURACY );
 }
 
 /* --------------------------------------------------------------------- */

@@ -99,7 +99,6 @@ BOOST_AUTO_TEST_CASE( currentContextTest )
 
 BOOST_AUTO_TEST_CASE( useContextTest )
 {
-    SCAI_LOG_DEF_LOGGER( logger, "Test" )
     ContextPtr userContext  = Context::getContextPtr( Context::UserContext, 1 );
     ContextPtr hostContext  = Context::getContextPtr( Context::Host );
     ContextPtr testContext  = Context::getContextPtr();
