@@ -53,7 +53,7 @@ scai_module(
 
 if ( METIS_FOUND AND USE_METIS )
     if ( SCAI_INDEX_TYPE STREQUAL "int" )
-        set ( METISDISTRIBUTION MetisDistribution )
+        set ( METISPARTITIONING MetisPartitioning )
     endif ()
 endif ()
 
@@ -80,7 +80,10 @@ scai_project (
         Redistributor
         SingleDistribution
 
-        ${METISDISTRIBUTION}
+        Partitioning
+        BlockPartitioning
+
+        ${METISPARTITIONING}
 
     )
 

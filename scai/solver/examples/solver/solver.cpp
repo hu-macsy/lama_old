@@ -39,6 +39,7 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/dmemo/GenBlockDistribution.hpp>
+#include <scai/dmemo/Partitioning.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/lama/norm/L2Norm.hpp>
 #include <scai/lama/norm/L1Norm.hpp>
@@ -172,17 +173,27 @@ int main( int argc, const char* argv[] )
     {
         LamaTiming timer( comm, "Redistribution" );
         // determine a new distribution so that each processor gets part of the matrix according to its weight
+
         float weight = lamaconf.getWeight();
+
+        CommunicatorPtr comm = lamaconf.getCommunicatorPtr();
         DistributionPtr dist;
 
         if ( lamaconf.useMetis() )
         {
             LamaTiming timer( comm, "Metis" );
-            // dist.reset( new MetisDistribution( lamaconf.getCommunicatorPtr(), inMatrix, weight ) );
+
+            PartitioningPtr partitioning( Partitioning::create( "METIS" ) );
+
+            SCAI_ASSERT_ERROR( partitioning.get(), "METIS partitioning not available" )
+
+            dist = partitioning->partitionIt( comm, inMatrix, weight );
         }
         else
         {
-            dist.reset( new GenBlockDistribution( numRows, weight, lamaconf.getCommunicatorPtr() ) );
+            // same as using Partitioning::create( "BLOCK" )
+
+            dist.reset( new GenBlockDistribution( numRows, weight, comm ) );
         }
 
         inMatrix.redistribute( dist, dist );

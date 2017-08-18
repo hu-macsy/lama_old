@@ -1,5 +1,5 @@
 /**
- * @file MetisDistribution.hpp
+ * @file MetisPartitioning.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,9 +27,9 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief MetisDistribution.hpp
- * @author Lauretta Schubert
- * @date 01.07.2013
+ * @brief MetisPartitioning.hpp
+ * @author Thomas Brandes
+ * @date 18.08.2017
  */
 
 #pragma once
@@ -38,8 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/dmemo/Distributed.hpp>
+#include <scai/dmemo/Partitioning.hpp>
 
 // std
 #include <vector>
@@ -53,52 +52,44 @@ namespace dmemo
 /** Metis creates a distribution with load balance in the pieces and less communication volume
  *  for a dedicated sparse matrix.
  *
- *  MetisDistribution is noncopyable as Distribution is noncopyable
+ *  MetisPartitioning is noncopyable as Partitioning is noncopyable
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT MetisDistribution:
+class COMMON_DLL_IMPORTEXPORT MetisPartitioning:
 
-    public GeneralDistribution,
-    private Distribution::Register<MetisDistribution>
+    public Partitioning,
+    private Partitioning::Register<MetisPartitioning>
 
 {
 public:
 
-    /** Construct a new general distribution for a number of elements on to the partitions of the passed communicator.
+    /** Constructor of an object that can partitition 'serial' graph data
      *
-     *  @param[in] comm  used for the partitions onto which elements are distributed.
-     *  @param[in] matrix is an object whose size and connectivity is used for the new distribution
-     *  @param[in] weights  weights for the computational load to the processors
      */
-    MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights );
+    MetisPartitioning();
 
-    /** Same as above but with individual weight of each processor. */
+    virtual ~MetisPartitioning();
 
-    MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, float weight );
+    /** Implementation of pure method Partitioning::partitionIt */
 
-    virtual ~MetisDistribution();
+    virtual DistributionPtr partitionIt( const CommunicatorPtr comm, const Distributed& matrix, float weight ) const;
+
+    /** Override Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Static method required for create to use in Distribution::Register */
+    /** Static method required for create to use in Partitioning::Register */
 
-    static Distribution* create( const DistributionArguments args );
+    static PartitioningPtr create();
 
-    /** Static method required for Distribution::Register */
+    /** Static method required for Partitioning::Register */
 
     static std::string createValue();
 
-    virtual const char* getKind() const
-    {
-        return theCreateValue;
-    }
-
 private:
 
-    MetisDistribution();
-
-    void computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights );
+    DistributionPtr computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights ) const;
 
     template<typename weightType>
     void callPartitioning(
@@ -118,12 +109,6 @@ private:
         IndexType size ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    std::vector<float> mWeights;  //!< The weights of all partitions, mWeights.size() == mComm.size()
-
-    /** Norm the weights that its sum is exactly 1. */
-
-    static void normWeights( std::vector<float>& weights );
 
     static const char theCreateValue[];
 };

@@ -1,5 +1,5 @@
 /**
- * @file MetisDistribution.cpp
+ * @file MetisPartitioning.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,16 +27,17 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief MetisDistribution.cpp
- * @author Lauretta Schubert
- * @date 01.07.2013
+ * @brief MetisPartitioning.cpp
+ * @author ThomasBrandes
+ * @date 17.08.2017
  */
 
 // hpp
-#include <scai/dmemo/MetisDistribution.hpp>
+#include <scai/dmemo/MetisPartitioning.hpp>
 
 // local library
 #include <scai/dmemo/NoDistribution.hpp>
+#include <scai/dmemo/GeneralDistribution.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -53,63 +54,29 @@ namespace scai
 namespace dmemo
 {
 
-SCAI_LOG_DEF_LOGGER( MetisDistribution::logger, "Distribution.MetisDistribution" )
+SCAI_LOG_DEF_LOGGER( MetisPartitioning::logger, "Partitioning.MetisPartitioning" )
 
 #define MASTER 0
 
-MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights )
-
-    : GeneralDistribution( matrix.getDistribution().getGlobalSize(), comm )
+MetisPartitioning::MetisPartitioning()
 {
-    computeIt( comm, matrix, weights );
 }
 
-MetisDistribution::MetisDistribution( const CommunicatorPtr comm, const Distributed& matrix, float weight )
-
-    : GeneralDistribution( matrix.getDistribution().getGlobalSize(), comm )
+void MetisPartitioning::writeAt( std::ostream& stream ) const
 {
-    SCAI_LOG_INFO( logger, "construct Metis distribution, weight at " << *comm << ": " << weight )
-    // collect weights from all processors
-    PartitionId numPartitions = comm->getSize();
-    std::vector<float> weights( numPartitions );
-    SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
-    comm->gather( &weights[0], 1, MASTER, &weight );
-    comm->bcast( &weights[0], numPartitions, MASTER );
-    // norm weights so that sum gives exactly 1.0
+    stream << "MetisPartitioning";
+}
+
+DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, const Distributed& matrix, float weight ) const
+{
+    std::vector<float> weights;
+    gatherWeights( weights, weight, *comm );
     normWeights( weights );
-    SCAI_LOG_INFO( logger, "#weights = " << weights.size() )
 
-    for ( size_t i = 0; i < weights.size(); ++i )
-    {
-        SCAI_LOG_INFO( logger, "weight[" << i << "] = " << weights[i] )
-    }
-
-    computeIt( comm, matrix, weights );
+    return computeIt( comm, matrix, weights );
 }
 
-void MetisDistribution::normWeights( std::vector<float>& weights )
-{
-    const size_t numPartitions = weights.size();
-    // now each partition norms it
-    float sum = 0;
-
-    for ( size_t i = 0; i < numPartitions; ++i )
-    {
-        sum += weights[i];
-    }
-
-    float sumNorm = 0.0f;
-
-    for ( size_t i = 0; i < numPartitions - 1; ++i )
-    {
-        weights[i] /= sum;
-        sumNorm += weights[i];
-    }
-
-    weights[numPartitions - 1] = 1.0f - sumNorm;
-}
-
-void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights )
+DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights ) const
 {
     // TODO check only for replicated matrix
     IndexType size = comm->getSize();
@@ -180,7 +147,7 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
         else
         {
             SCAI_LOG_WARN( logger,
-                           "MetisDistribution called with 1 processor/1 weight, which is the same as NoDistribution." )
+                           "MetisPartitioning called with 1 processor/1 weight, which is the same as NoPartitioning." )
 
             for ( IndexType i = 0; i < size; i++ )
             {
@@ -196,35 +163,36 @@ void MetisDistribution::computeIt( const CommunicatorPtr comm, const Distributed
         }
     }
 
+    hmemo::HArray<IndexType> myGlobalIndexes;
+
     // scatter local rows
+
     int numMyRows = 0;
+
     comm->scatter( &numMyRows, 1, MASTER, &numRowsPerOwner[0] );
 
     {
-        hmemo::WriteOnlyAccess<IndexType> wLocal2Global( mLocal2Global, numMyRows );
+        hmemo::WriteOnlyAccess<IndexType> wLocal2Global( myGlobalIndexes, numMyRows );
         comm->scatterV( wLocal2Global.get(), numMyRows, MASTER, &rows[0], &numRowsPerOwner[0] );
     }
 
     // verify that indexes are sorted otherwise global to local via binary search won't work
 
-    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( mLocal2Global, common::binary::LT ), 
+    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LT ), 
                        *comm << ": local row indexes unsorted." )
+
+    IndexType globalSize = matrix.getDistribution().getGlobalSize();
+
+    return DistributionPtr( new GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
 }
 
-MetisDistribution::~MetisDistribution()
+MetisPartitioning::~MetisPartitioning()
 {
-    SCAI_LOG_INFO( logger, "~MetisDistribution" )
-}
-
-void MetisDistribution::writeAt( std::ostream& stream ) const
-{
-    // write identification of this object
-    stream << "MetisDistribution( size = " << mLocal2Global.size() << " of " << mGlobalSize << ", comm = "
-           << *mCommunicator << " )";
+    SCAI_LOG_INFO( logger, "~MetisPartitioning" )
 }
 
 template<typename WeightType>
-void MetisDistribution::callPartitioning(
+void MetisPartitioning::callPartitioning(
     std::vector<IndexType>& partition,
     IndexType& minConstraint,
     IndexType& parts,
@@ -255,45 +223,8 @@ void MetisDistribution::callPartitioning(
     // NULL, &parts, &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
 }
 
-/*  Help routine needed for parallel graphs
-
-    void getVTX( IndexType* vtxdist, CommunicatorPtr com, const Distribted& matrix )
-    {
-        if ( vtxdist == NULL )
-        {
-            return;
-        }
-
-        const PartitionId MASTER = 0;
-
-        int numLocalRows = matrix->getDistribution().getLocalSize();
-
-        IndexType parts = comm->getSize();
-
-        // Is this valid ?
-        // SCAI_ASSERT_ERROR( getDistribution().getNumPartitions() == parts,
-        //              "mismatch number of partitions and communicator size" );
-
-        comm->gather( vtxdist, 1, MASTER, &numLocalRows );
-        comm->bcast( vtxdist, parts, MASTER );
-
-        // build running sum
-
-        IndexType runningSum = 0;
-
-        for ( IndexType i = 0; i < parts; ++i )
-        {
-            IndexType tmp = runningSum;
-            runningSum += vtxdist[i];
-            vtxdist[i] = tmp;
-        }
-        vtxdist[parts] = runningSum;
-    }
-
-*/
-
 template<typename WeightType>
-void MetisDistribution::checkAndMapWeights(
+void MetisPartitioning::checkAndMapWeights(
     std::vector<WeightType>& tpwgts,
     std::vector<IndexType>& mapping,
     IndexType& count,
@@ -312,28 +243,19 @@ void MetisDistribution::checkAndMapWeights(
 }
 
 /* ---------------------------------------------------------------------------------*
- *   static create methods ( required for registration in distribution factory )    *
+ *   static create methods ( required for registration in Partitioning factory )    *
  * ---------------------------------------------------------------------------------*/
 
-const char MetisDistribution::theCreateValue[] = "METIS";
+const char MetisPartitioning::theCreateValue[] = "METIS";
 
-std::string MetisDistribution::createValue()
+std::string MetisPartitioning::createValue()
 {
     return theCreateValue;
 }
 
-Distribution* MetisDistribution::create( const DistributionArguments arg )
+PartitioningPtr MetisPartitioning::create()
 {
-    if ( arg.matrix != NULL )
-    {
-        return new MetisDistribution( arg.communicator, *arg.matrix, arg.weight );
-    }
-    else
-    {
-        DistributionPtr dist( new NoDistribution( arg.globalSize ) );
-        Distributed dummy( dist );
-        return new MetisDistribution( arg.communicator, dummy, arg.weight );
-    }
+    return PartitioningPtr( new MetisPartitioning() );
 }
 
 } /* end namespace dmemo */
