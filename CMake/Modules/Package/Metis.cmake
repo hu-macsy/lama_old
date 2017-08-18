@@ -66,4 +66,4 @@ scai_summary_external ( NAME      Metis
                         FOUND     ${METIS_FOUND} 
                         VERSION   ${METIS_VERSION} 
                         INCLUDE   ${SCAI_METIS_INCLUDE_DIR} 
-                        LIBRARIES ${SCAI_METIS_LIBARIES} )
+                        LIBRARIES ${SCAI_METIS_LIBRARIES} )
