@@ -38,6 +38,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 
 namespace scai
 {
@@ -544,6 +545,37 @@ struct CSRKernelTrait
         static const char* getId()
         {
             return "CSR.absMaxDiffVal";
+        }
+    };
+
+    /** Define structure for reduce column/row distribution
+     *
+     *  @tparam ValueType specifies the value type used in data
+     */
+    template<typename ValueType>
+    struct reduce
+    {
+        /* result = reduce( csrMatrix , dim, reduceOp, elemOp )
+         *
+         *  @param result is the result vector, size is numRows for dim = 0, numCols for dim = 1
+         *  @param numRows is number of rows of matrix
+         *  @param csrIA, csrJA, csrValues are arrays of CSR storage
+         *  @param reduceOp is how elements of one row or one column are reduced
+         *  @param elemOp is operator applied to the elements
+         */
+        typedef void ( *FuncType ) (
+            ValueType result[],
+            const IndexType csrIA[],
+            const IndexType csrJA[],
+            const ValueType csrValues[],
+            const IndexType numRows,
+            const IndexType dim,
+            const common::binary::BinaryOp reduceOp,
+            const common::unary::UnaryOp elemOp );
+
+        static const char* getId()
+        {
+            return "CSR.reduce";
         }
     };
 

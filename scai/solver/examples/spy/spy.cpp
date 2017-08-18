@@ -69,7 +69,7 @@ int main( int argc, char** argv )
     
         if ( argc > 4 )
         {
-            std::istringstream input( argv[3] );
+            std::istringstream input( argv[4] );
             input >> height;
         }
 

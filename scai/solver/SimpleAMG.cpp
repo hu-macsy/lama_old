@@ -67,22 +67,20 @@ using lama::Vector;
 using lama::Scalar;
 
 SimpleAMG::SimpleAMG( const std::string& id )
-    : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-        Context::getHostPtr() )
+    : IterativeSolver( id ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 )
 {
     SCAI_LOG_INFO( logger, "SimpleAMG, id = " << id << " created, no logger" )
 }
 
 SimpleAMG::SimpleAMG( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 ), mSmootherContext(
-        Context::getHostPtr() )
+    : IterativeSolver( id, logger ), mMaxLevels( 25 ), mMinVarsCoarseLevel( 100 )
 {
     SCAI_LOG_INFO( SimpleAMG::logger, "SimpleAMG, id = " << id << " created, with logger" )
 }
 
 SimpleAMG::SimpleAMG( const SimpleAMG& other )
     : IterativeSolver( other ), mMaxLevels( other.mMaxLevels ), mMinVarsCoarseLevel(
-        other.mMinVarsCoarseLevel ), mSmootherContext( other.mSmootherContext )
+        other.mMinVarsCoarseLevel )
 {
 }
 
@@ -177,14 +175,6 @@ void SimpleAMG::initialize( const Matrix& coefficients )
     logSolverInfo();
     logSetupDetails();
 
-    if ( mSmootherContext )
-    {
-        for ( IndexType level = 0; level < ( IndexType ) amgSetup.getNumLevels() - 1; ++level )
-        {
-            amgSetup.getSmoother( level ).setContextPtr( mSmootherContext );
-        }
-    }
-
     IterativeSolver::initialize( coefficients );
     totalSmootherTime = 0.0;
     totalTransferTime = 0.0;
@@ -257,11 +247,6 @@ Solver& SimpleAMG::getSmoother( unsigned int level )
 Solver& SimpleAMG::getCoarseLevelSolver()
 {
     return getRuntime().mSetup->getCoarseLevelSolver();
-}
-
-void SimpleAMG::setSmootherContext( ContextPtr smootherContext )
-{
-    mSmootherContext = smootherContext;
 }
 
 void SimpleAMG::setHostOnlyLevel( IndexType hostOnlyLevel )

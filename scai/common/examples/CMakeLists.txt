@@ -32,26 +32,25 @@
  # @date 16.06.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 # ThreadTest example
 
 include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
+
+if ( NOT CXX_SUPPORTS_C11 )
     include( Package/Boost )
     include_directories ( ${BOOST_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
+endif ()
 
 # example of a library module ( will be used by executable UseModule )
 # must be build SHARED regardless the SCAI_LIBRARY_TYPE is SHARED or STATIC
-add_library( Module SHARED Module.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} Module.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} DynRoutine.hpp )
-target_link_libraries( Module ${PROJECT_NAME} )
 
-# example of a library module ( no use of other LAMA stuff )
-add_library( DummyModule SHARED DummyModule.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} DummyModule.cpp )
-
-set ( EXAMPLE_MODULES "Module.so DummyModule.so" ) # for make.inc
+scai_add_example ( LIBRARY Module FILES Module.cpp DynRoutine.hpp )
+scai_add_example ( LIBRARY DummyModule FILES DummyModule.cpp )
 
 set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} 
           Barrier 
@@ -73,38 +72,29 @@ set ( EXECUTABLE_FILES ${EXECUTABLE_FILES}
           UseModule
     )
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     set ( EXECUTABLE_FILES ${EXECUTABLE_FILES} DemoComplex )
-endif ( ${USE_COMPLEX} )
+endif ()
 
 foreach ( executable ${EXECUTABLE_FILES} )
-    add_executable ( ${executable}.exe ${executable}.cpp )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    target_link_libraries ( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-endforeach ( executable )
 
-if    ( CUDA_FOUND AND USE_CUDA )
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
+endforeach ()
+
+if ( CUDA_FOUND AND USE_CUDA )
     add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+endif ()
 
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install examples sources, (install_)Makefile, make.inc, run_all.sh
+# copy the script to run all examples
+scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 install ( FILES       ${EXAMPLE_FILES} 
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS    run_all.sh 
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

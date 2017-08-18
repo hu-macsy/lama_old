@@ -301,17 +301,11 @@ public:
 
     void conj();
 
-    /** Get a value of the matrix.
-     *
-     * @param[in] i is the row index, 0 <= i < mNumRows
-     * @param[in] j is the colum index, 0 <= j < mNumRows
-     *
-     * Out-of-range check is enabled for DEBUG version.
-     */
+    /** Implementation of pure method MatrixStorage::getValue */
 
     ValueType getValue( const IndexType, const IndexType ) const
     {
-        COMMON_THROWEXCEPTION( "getValue unsupported" )
+        COMMON_THROWEXCEPTION( "getValue not yet supported: is on ToDo" )
     }
 
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for Stencil storage */
@@ -319,7 +313,7 @@ public:
     void setValue( const IndexType, const IndexType, const ValueType,
                    const common::binary::BinaryOp = common::binary::COPY )
     {
-        COMMON_THROWEXCEPTION( "setValue unsupported" )
+        COMMON_THROWEXCEPTION( "setValue not possible for stencil storage" )
     }
 
     /** Initiate an asynchronous data transfer to a specified location. */

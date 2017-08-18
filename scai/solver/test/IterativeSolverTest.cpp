@@ -101,6 +101,11 @@ public:
 
         for ( size_t i = 0; i < values.size(); i++ )
         {
+            if ( values[i] == "Kaczmarz" )
+            {
+                continue;   
+            }
+
             SolverPtr solver( Solver::create( values[i], "" ) );
 
             IterativeSolver* iterativeSolver = dynamic_cast<IterativeSolver*>( solver.get() );

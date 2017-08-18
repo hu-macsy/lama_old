@@ -27,110 +27,102 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for common library
+ # @brief CMake configuration file for SCAI module common
  # @author Thomas Brandes
- # @date 09.06.2015
+ # @date 04.07.2017
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
+## Include required scai macros
 
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+include ( scai_function/relative_install )
 
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
+## Define new SCAI module project with its internal/external dependencies
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_common CXX )
+scai_module(
 
-### includes ###
+    MODULE_NAME   common
+    EXTERNAL_DEPS OpenMP CUDA MIC dl Thread 
+)
 
-## important Variables for project
-include ( VersionDefinition )
-include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
-include ( Dependencies/minimalSupportedVersions )
+## Common now configures some include files
 
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
+set ( CONFIGURE_DIR "${CMAKE_BINARY_DIR}/include/scai/${MODULE_NAME}" )
 
-### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-	include ( Functions/CheckValueAtCompleteBuild )
-	CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
+###################################################################
+## Define numeric types for which classes will be instantiated   ##
+###################################################################
 
-## C++11 or Boost
-include ( Compiler/CheckC++11 )
-if    ( NOT CXX_SUPPORTS_C11 )
-    include( Package/Boost )
-endif ( NOT CXX_SUPPORTS_C11 )
+include ( scai_function/checkValue )
+include ( scai_function/listToString )
 
-## Use Boost if BUILD_TEST is enabled
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
+# Possible choices for numeric types ( more than one can be selected )
 
-### include all search packages
-addInternalAndExternalPackages()
+set ( NONE_COMPLEX_VALUES "float" "double" "long double" )
+set ( COMPLEX_VALUES      "ComplexFloat" "ComplexDouble" "ComplexLongDouble" )
+set ( TYPE_LIST_VALUES    ${NONE_COMPLEX_VALUES} ${COMPLEX_VALUES} )
+set ( LONG_DOUBLE_VALUES  "long double" "ComplexLongDouble" )
 
-### finalize build flags
-include ( ConcludeFlags )
+## define SCAI_HOST_TYPES_LIST ( might be configured )
 
-### add definitions
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
+set ( SCAI_HOST_TYPES_LIST ${TYPE_LIST_VALUES} CACHE STRING "Instantiation Types" )
+checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
 
-if    ( WIN32 )
-    add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
-if    ( NOT CXX_SUPPORTS_C11 )
-    include_directories ( ${BOOST_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 )
-
-set ( CONFIGURE_DIR "${CONFIGURE_INCLUDE_DIR}/scai/${PROJECT_SURNAME}" )
-
-## begin for configuring SCAITypes.hpp
+## external host types = host types without 'long' types
 
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
-set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )      #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
-set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} )       #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
+
+## CUDA and MIC do not support 'long' types
+
+set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
+set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) 
+
+## USE_COMPLEX : set it true if at least one complex type is instantiated
+
+set ( USE_COMPLEX FALSE )
+
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
+    if ( ${BOOLVALUE} GREATER -1 )
+        set ( USE_COMPLEX TRUE )
+    endif ()
+endforeach ()
 
 # make strings out of list
-include ( Functions/listToString )
+
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
 listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
+
+###################################################################
+## Define index type that is used for addressing 32 or 64 bit    ##
+###################################################################
+
+# Possible and default choices for IndexType ( only one can be selected )
+
+scai_build_variable ( NAME      SCAI_INDEX_TYPE
+                      CHOICES   "int" "long" "unsigned int" "unsigned long" 
+                      DEFAULT   "int"
+                      DOCSTRING "IndexType" )
+
 # add IndexType for the array types, be careful about empty string
 concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
 concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
 concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
 concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
 
-# set "biggest" common type as ScalarRepType
-# last found element in TYPE_LIST_VALUES
+# SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
 set ( INDEX1 -1 )
 set ( INDEX2 -1 )
-foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
+
+foreach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+
     list ( FIND NONE_COMPLEX_VALUES ${ITEM} FOUND_INDEX1 )
     if    ( FOUND_INDEX1 GREATER INDEX1 )
         set ( INDEX1 ${FOUND_INDEX1})
@@ -143,9 +135,9 @@ foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
         endif ( FOUND_INDEX2 GREATER INDEX2 )
     endif ( ${USE_COMPLEX} )
 
-endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
+endforeach ()
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     if    ( INDEX1 GREATER INDEX2 )
         list ( LENGTH NONE_COMPLEX_VALUES INDEX )
         math ( EXPR INDEX "${INDEX}+${INDEX1}")
@@ -153,17 +145,30 @@ if    ( ${USE_COMPLEX} )
     else  ( INDEX1 GREATER INDEX2 )
         list ( GET COMPLEX_VALUES ${INDEX2} SCAI_SCALAR_REP_TYPE ) # take biggest complex value type
     endif ( INDEX1 GREATER INDEX2 )
-    set ( SCAI_USE_COMPLEX 1 )
-else  ( ${USE_COMPLEX} )
+else  ()
     list ( GET NONE_COMPLEX_VALUES ${INDEX1} SCAI_SCALAR_REP_TYPE ) # take biggest none complex value type
+endif ()
+
+# SCAI_USE_COMPLEX ( 0 or 1 ) is required 
+
+if ( ${USE_COMPLEX} )
+    set ( SCAI_USE_COMPLEX 1 )
+else ()
     set ( SCAI_USE_COMPLEX 0 )
-endif ( ${USE_COMPLEX} )
+endif ()
+
+###################################
+## configuring SCAITypes.hpp     ##
+################################### 
 
 # SCAI_USE_COMPLEX is used here for conditional compilation
 # SCAI_yyy_TYPES_LIST will be replaced with supported types
+
 configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/SCAITypes.hpp.in" "${CONFIGURE_DIR}/SCAITypes.hpp" )    
 
-## end for configuring SCAITypes.hpp
+##############################################
+## Define source file for module 'common'   ##
+##############################################
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -201,18 +206,20 @@ set ( COMMON_HEADERS
         Utils
 )
 
-if    ( ${USE_COMPLEX} )
+if ( ${USE_COMPLEX} )
     list ( APPEND COMMON_HEADERS Complex )
 endif ( ${USE_COMPLEX} )
 
+## Boost used -> generate and add a boost check version file 
+
+if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
+    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
+    install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
+endif ()
+
 ## configure c++11/boost dependent sources
 
-if    ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/boost_check.hpp.in" "${CONFIGURE_DIR}/boost_check.hpp" )
-    install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
-endif ( NOT CXX_SUPPORTS_C11 OR BUILD_TEST )
-
-if    ( NOT CXX_SUPPORTS_C11 )
+if ( NOT CXX_SUPPORTS_C11 )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
@@ -222,13 +229,13 @@ if    ( NOT CXX_SUPPORTS_C11 )
         configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     endif ( ${Boost_VERSION} GREATER "105700" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-else  ( NOT CXX_SUPPORTS_C11 )
+else ()
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-endif ( NOT CXX_SUPPORTS_C11 )
+endif ()
 
 ## configure c++11/pthread dependent headers, add specific sources
 
@@ -244,7 +251,7 @@ install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
                 ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
                 ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
                 ${CONFIGURE_DIR}/Thread.hpp 
-          DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+          DESTINATION "include/scai/${MODULE_NAME}" )
 
 scai_project( 
 
@@ -253,51 +260,31 @@ scai_project(
     HEADERS ${COMMON_HEADERS}
 )
 
-## add subdirectories
+## add subdirectories, add cuda and mic even if CUDA or MIC disabled for include file
 
-add_subdirectory ( cuda )
-add_subdirectory ( doc )
+scai_subdirectories( cuda EXAMPLES exception macros mepr mic TEST )
 
-if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
-add_subdirectory ( exception )
-add_subdirectory ( macros )
-add_subdirectory ( mepr )
-add_subdirectory ( mic )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
-
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
-
-## add link libraries
-addExternalLinkLibraries()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 ### install ###
 
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
-
 ## install headers
-relative_install ( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
-install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
+install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
-### add custum target distClean
-include ( CustomCommands/DistClean )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )
 
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-	include ( Summaries/${PROJECT_SURNAME} )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )

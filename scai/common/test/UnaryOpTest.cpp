@@ -64,6 +64,12 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
             count++;
         }
 
+        if ( type == unary::SQR )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "SQR" );
+            count++;
+        }
+
         if ( type == unary::MINUS )
         {
             BOOST_CHECK_EQUAL( s.str(), "MINUS" );

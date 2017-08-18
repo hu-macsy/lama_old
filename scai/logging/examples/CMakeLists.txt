@@ -32,50 +32,48 @@
  # @date 16.06.2015
 ###
 
-# Try to find OpenMP compile and link flags for the OpenMP example
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
 
 # LogLevels example, here we compile also LOG_TRACE macros
-set ( SCAI_LOGGING_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for make.inc
 
-add_executable( LogLevels.exe LogLevels.cpp )
-set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogLevels.cpp )
-set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogLevels.exe" )
-target_link_libraries( LogLevels.exe ${PROJECT_NAME} )
-set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOGGING_LEVEL} )
+set ( SCAI_LOG_LEVEL TRACE ) # also needed in prepareExamplesMakeInc for make.inc
 
+scai_add_example ( EXECUTABLE LogLevels.exe
+                   FILES      LogLevels.cpp )
+
+set_target_properties( LogLevels.exe PROPERTIES COMPILE_FLAGS -DSCAI_LOG_LEVEL_${SCAI_LOG_LEVEL} )
+
+# Try to find OpenMP compile and link flags for the OpenMP example
 # OpenMPTest example
 
 include ( Package/OpenMP )
 
-if    ( OPENMP_FOUND )
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    # Adding this example only possible if OpenMP is available
-    add_executable( LogOpenMP.exe LogOpenMP.cpp )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} LogOpenMP.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} LogOpenMP.exe" )
-    target_link_libraries( LogOpenMP.exe ${PROJECT_NAME} )
+if ( OPENMP_FOUND )
+
+    set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+
+    scai_add_example ( EXECUTABLE LogOpenMP.exe FILES LogOpenMP.cpp )
+
 else  ( OPENMP_FOUND )
+
     message ( STATUS "LogOpenMP example not built, no compiler option found" )
+
 endif ( OPENMP_FOUND )
 
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install examples sources, (install_)Makefile, make.inc, run_all.sh
+# copy the script to run all examples
+scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
+
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS    run_all.sh
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
 

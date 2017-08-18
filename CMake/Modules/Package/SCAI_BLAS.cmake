@@ -32,29 +32,30 @@
  # @date 25.04.2013
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
+scai_pragma_once ()
+
 #   SCAI_BLAS_FOUND            - System has SCAI_BLAS
 #   SCAI_BLAS_NAME             - name of choosen BLAS library
 #   SCAI_SCAI_BLAS_INCLUDE_DIR - SCAI_BLAS include directory 
 #   SCAI_SCAI_BLAS_LIBRARIES   - The libraries needed to use SCAI_BLAS
 
-include ( Functions/checkValue )
-
 enable_language ( C )
 
 if ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 
-if ( NOT DEFINED SCAI_BLAS_LIBRARY )
-    set ( SCAI_BLAS_LIBRARY "auto" )
-endif ( NOT DEFINED SCAI_BLAS_LIBRARY )
-set ( CACHE SCAI_BLAS_LIBRARY PROPERTY STRINGS ${SCAI_BLAS_LIBRARY_CHOICES} )
-checkValue( ${SCAI_BLAS_LIBRARY} "${SCAI_BLAS_LIBRARY_CHOICES}" )
-set ( SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE STRING "Choose the used BLAS Library: ${SCAI_BLAS_LIBRARY_CHOICES}" )
+    scai_build_variable( NAME      SCAI_BLAS_LIBRARY
+                         CHOICES   "auto" "MKL" "BLAS" "INTERNALBLAS" 
+                         DEFAULT   "auto"
+                         DOCSTRING "Choose the used BLAS library" )
 
 else ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 
-#message ( STATUS "Choosen BLAS_LIBRARY: ${SCAI_BLAS_LIBRARY}" )
+    #message ( STATUS "Choosen BLAS_LIBRARY: ${SCAI_BLAS_LIBRARY}" )
 
-#if ( DEFINED LAST_SCAI_BLAS_LIBRARY )
     if ( NOT LAST_SCAI_BLAS_LIBRARY STREQUAL SCAI_BLAS_LIBRARY )
         set ( SCAI_BLAS_FOUND FALSE )
         set ( SCAI_BLAS_NAME "" )
@@ -67,7 +68,7 @@ else ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
         set ( BLAS_FOUND FALSE )
         
     endif ( NOT LAST_SCAI_BLAS_LIBRARY STREQUAL SCAI_BLAS_LIBRARY )
-#endif ( DEFINED LAST_SCAI_BLAS_LIBRARY )
+
 endif ( NOT DEFINED LAST_SCAI_BLAS_LIBRARY )
 
 # try to find one of this blas libraries in this order: MKL, ACML, GOTOBLAS, FortranBLAS
@@ -138,4 +139,29 @@ include ( FindPackageHandleStandardArgs )
 
 mark_as_advanced ( SCAI_SCAI_BLAS_LIBRARIES )
 
-set ( LAST_SCAI_BLAS_LIBRARY ${SCAI_BLAS_LIBRARY} CACHE INTERNAL "" )
+if ( "${SCAI_BLAS_NAME}" STREQUAL "MKL" )
+
+    scai_summary_external ( NAME      "SCAI BLAS"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "MKL ${MKL_VERSION}"
+                            INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+
+elseif ( "${SCAI_BLAS_NAME}" STREQUAL "BLAS" )
+
+    scai_summary_external ( NAME      "SCAI BLAS"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "BLAS ${BLAS_VERSION} Lapack ${LAPACK_VERSION}"
+                            INCLUDE   ${SCAI_SCAI_BLAS_INCLUDE_DIR}
+                            LIBRARIES ${SCAI_SCAI_BLAS_LIBRARIES} )
+else ()
+
+    scai_summary_external ( NAME      "SCAI BLAS"
+                            ENABLED   True
+                            FOUND     True
+                            VERSION   "Internal BLAS"
+                          )
+endif ()
+

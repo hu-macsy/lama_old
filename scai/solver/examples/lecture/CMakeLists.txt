@@ -32,37 +32,35 @@
  # @date 02.12.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+
 set ( EXECUTABLES task0 task1a task1b task2 task2a task3 task4 )
 
 if    ( CUDA_FOUND AND USE_CUDA )
-	set ( EXECUTABLES ${EXECUTABLES} task5 )
+    set ( EXECUTABLES ${EXECUTABLES} task5 )
 endif ( CUDA_FOUND AND USE_CUDA )
 
 foreach ( executable ${EXECUTABLES} )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
 endforeach ( executable )
 
-# configure make.inc for examples
+# other files to copy in binary + install directory
 
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+set ( OTHER_FILES gr_30_30.mtx log_config )
 
-file ( COPY gr_30_30.mtx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-## install examples
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-set ( PROJECT_EXAMPLE_SUB_DIR "${PROJECT_EXAMPLE_DIR}/lecture" )
+file ( COPY ${OTHER_FILES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
-install ( FILES       ${EXAMPLE_FILES} gr_30_30.mtx log_config
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
-
+## install examples sources + data file
+install ( FILES       ${EXAMPLE_FILES} ${OTHER_FILES}
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

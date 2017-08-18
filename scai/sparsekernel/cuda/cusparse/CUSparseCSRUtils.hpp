@@ -87,6 +87,22 @@ public:
         const IndexType csrJA[],
         const ValueType csrValues[] );
 
+    /** Implementation for CSRKernelTrait::normalGEVM  */
+
+    template<typename ValueType>
+    static void normalGEVM(
+        ValueType result[],
+        const ValueType alpha,
+        const ValueType x[],
+        const ValueType beta,
+        const ValueType y[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        const IndexType nnz,
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[] );
+
     /** Implementation for CSRKernelTrait::matrixAddSizes  */
 
     static IndexType matrixAddSizes(

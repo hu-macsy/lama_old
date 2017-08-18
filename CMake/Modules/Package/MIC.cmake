@@ -32,5 +32,47 @@
  # @date 05.07.2013
 ###
 
+include ( scai_macro/scai_pragma_once )
+include ( scai_macro/scai_build_variable )
+include ( scai_macro/scai_summary )
+
+### Multiple modules might call this exernal package
+
+scai_pragma_once ()
+
 # detect whether a MIC device is available, then USE_MIC
-include ( Compiler/mic/testMICfound )
+#
+# Output variables:
+#
+#  USE_MIC   cached variable regarding use of MIC
+#  MIC_FOUND is true if MIC device has been found
+#
+
+if ( CMAKE_CXX_COMPILER_ID MATCHES Intel )
+
+	execute_process ( COMMAND micinfo
+					  RESULT_VARIABLE MIC_RUN_RESULT_VAR
+					  OUTPUT_VARIABLE MIC_RUN_OUTPUT_VAR)
+
+    # message ( STATUS "MIC_RUN = ${MIC_RUN_RESULT_VAR} out = ${MIC_RUN_OUTPUT_VAR}" )
+
+	# if micinfo return with SUCCESS MIC_RUN_RESULT_VAR is 0
+
+	if ( NOT MIC_RUN_RESULT_VAR )
+		set ( MIC_FOUND TRUE )
+	endif ()
+
+endif ()
+
+scai_build_variable ( NAME      USE_MIC
+                      BOOL 
+                      DEFAULT   ${MIC_FOUND}
+                      DOCSTRING "Enable / Disablue use of Intel Xeon PHI Coprocessor (MIC)" )
+
+if ( USE_MIC AND NOT MIC_FOUND )
+    message ( ERROR  "USE_MIC forced but not MIC Device found" )
+endif ()
+
+scai_summary_external ( NAME      MIC
+                        ENABLED   ${USE_MIC} 
+                        FOUND     ${MIC_FOUND}  )

@@ -161,13 +161,13 @@ BOOST_AUTO_TEST_CASE( setContextTest )
     {
         Matrix& matrix = *allMatrices[s];
 
-        BOOST_CHECK_THROW( 
+        BOOST_CHECK_THROW(
         {
             matrix.setContextPtr( nullContext );
         }, common::Exception );
 
         matrix.setContextPtr( context );
- 
+
         BOOST_CHECK_EQUAL( context.get(), matrix.getContextPtr().get() );
     }
 }
@@ -636,6 +636,77 @@ BOOST_AUTO_TEST_CASE( getRowTest )
                 // the final matrix should be zero
 
                 BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( reduceTest )
+{
+    const IndexType nRows = 10;
+    const IndexType nCols = 8;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    CSRSparseMatrix<double> csr( nRows, nCols );
+    MatrixCreator::fillRandom( csr, 0.1f );
+
+    common::binary::BinaryOp reduceOp = common::binary::ADD;
+    common::unary::UnaryOp   elemOp   = common::unary::SQR;
+
+    TestDistributions rowDistributions( nRows );
+    TestDistributions colDistributions( nCols );
+
+    for ( IndexType dim = 0; dim < 2; ++dim )
+    {
+        DenseVector<double> sRow;
+        csr.reduce( sRow, dim, reduceOp, elemOp );
+
+        for ( size_t i = 0; i < rowDistributions.size(); ++i )
+        {
+            DistributionPtr rowDist = rowDistributions[i];
+
+            for ( size_t j = 0; j < colDistributions.size(); ++j )
+            {
+                DistributionPtr colDist = colDistributions[j];
+
+                Matrices allMatrices( context );    // is created by factory
+
+                for ( size_t s = 0; s < allMatrices.size(); ++s )
+                {
+                    Matrix& matrix = *allMatrices[s];
+
+                    matrix = csr;
+
+                    matrix.redistribute( rowDist, colDist );
+
+                    VectorPtr row ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+
+                    // reduce on the parallel matrix
+
+                    matrix.reduce( *row, dim, reduceOp, elemOp );
+
+                    if ( dim == 0 )
+                    {
+                        BOOST_CHECK_EQUAL( row->size(), nRows );
+                    }
+                    else
+                    {
+                        BOOST_CHECK_EQUAL( row->size(), nCols );
+                    }
+
+                    row->redistribute( sRow.getDistributionPtr() );
+
+                    if ( ! ( row->maxDiffNorm( sRow ) < Scalar( 0.001 ) ) )
+                    {
+                        SCAI_LOG_ERROR( logger,  "i = " << i << ", j = " << j << ", s = " << s
+                                        << ", fail for this matrix: " << matrix << std::endl );
+                    }
+
+                    BOOST_CHECK( row->maxDiffNorm( sRow ) < Scalar( 0.001 ) );
+                }
             }
         }
     }

@@ -36,8 +36,10 @@ find_package( ZLIB ${SCAI_FIND_PACKAGE_FLAGS} )
 
 # returns ZLIB_FOUND, ZLIB_INCLUDE_DIR (cache), ZLIB_LIBRARY
 
-setAndCheckCache ( ZLIB )
-set ( USE_ZLIB ${USE_ZLIB} CACHE BOOL "Enable / Disable use of ZLIB (data compression)" )
+scai_build_variable ( NAME      USE_ZLIB
+                      BOOL 
+                      DEFAULT   ${ZLIB_FOUND}
+                      DOCSTRING "use of ZLIB libray (data compression)" )
 
 # set the corresponding SCAI variables to inherit automatic settings by external dependencies
 
@@ -56,7 +58,19 @@ if ( ZLIB_FOUND )
 
     set ( ZLIB_VERSION ${ZLIB_RUN_OUTPUT_VAR} )
 
-endif  ( ZLIB_FOUND )
+elseif( USE_ZLIB )
 
-mark_as_advanced( SCAI_ZLIB_LIBRARIES )
-mark_as_advanced( SCAI_ZLIB_INCLUDE_DIR )
+    message ( ERROR "ZLIB not found" )
+
+endif ()
+
+mark_as_advanced ( SCAI_ZLIB_LIBRARIES )
+mark_as_advanced ( SCAI_ZLIB_INCLUDE_DIR )
+
+scai_summary_external ( NAME      ZLIB (data compression)
+                        ENABLED   ${USE_ZLIB}
+                        FOUND     ${ZLIB_FOUND} 
+                        VERSION   "zlib ${ZLIB_VERSION}"
+                        INCLUDE   ${ZLIB_INCLUDE_DIR} 
+                        LIBRARIES ${ZLIB_LIBRARY}  )
+

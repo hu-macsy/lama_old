@@ -973,7 +973,7 @@ void CUDACSRUtils::normalGEVM(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
-    SCAI_REGION( "CUDA.CSRUtils.normalGEMV" )
+    SCAI_REGION( "CUDA.CSRUtils.normalGEVM" )
 
     SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ">"
                    << " result[ " << numColumns << "] = " << alpha
@@ -1113,6 +1113,8 @@ void CUDACSRUtils::sparseGEVM(
     const IndexType csrJA[],
     const ValueType csrValues[] )
 {
+    SCAI_REGION( "CUDA.CSRUtils.sparseGEMV" )
+
     SCAI_LOG_INFO( logger,
                    "sparseGEVM<" << TypeTraits<ValueType>::id() << ">" << ", #non-zero rows = " << numNonZeroRows )
 

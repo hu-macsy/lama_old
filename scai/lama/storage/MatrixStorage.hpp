@@ -41,6 +41,7 @@
 
 // internal scai libraries
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
@@ -740,6 +741,12 @@ public:
     virtual void scale( const ValueType value ) = 0;
     virtual void conj() = 0;
     virtual void setDiagonal( const ValueType value ) = 0;
+
+    virtual void reduce( 
+        hmemo::HArray<ValueType>& array, 
+        const IndexType dim, 
+        const common::binary::BinaryOp reduceOp, 
+        const common::unary::UnaryOp elemOp );
 
     /**
      * @brief fills matrix storage by csr sparse data.

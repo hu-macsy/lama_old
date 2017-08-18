@@ -40,7 +40,7 @@
 #
 #   The corresponding flags in the variables might be subject of change later by the user
 
-include ( Functions/checkValue )
+include ( scai_function/checkValue )
 
 #### CUDA specific compiler flags ####
 

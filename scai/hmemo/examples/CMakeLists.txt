@@ -32,38 +32,30 @@
  # @date 16.06.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 foreach ( executable Array BenchArray BenchContext Aliasing Threading Create RemoteAccess )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
 endforeach ( executable )
 
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
+scai_subdirectories( CUDA MIC )
 
-if ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
+# copy the script to run all examples
+scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install examples sources, (install_)Makefile, make.inc, run_all.sh
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS    run_all.sh
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

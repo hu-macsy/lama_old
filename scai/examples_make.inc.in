@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Definition of variables that will be include in each Makefile of examples
- # @author Lauretta Schubert
- # @date 02.03.2016
+ # @brief Definition of variables that will be included in each Makefile of examples
+ # @author Thomas Brandes
+ # @date 03.07.2017
 ###
 
 SCAI_ROOT              = ${CMAKE_INSTALL_PREFIX}

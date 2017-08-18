@@ -83,6 +83,15 @@ public:
         const ValueType zero,
         const common::binary::BinaryOp redOp );
 
+    /** OpenMP implementation for UtilKernelTrait::allCompare */
+
+    template<typename ValueType>
+    static bool allCompare(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const common::binary::CompareOp op );
+
     /** OpenMP implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>

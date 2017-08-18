@@ -150,7 +150,6 @@ protected:
     unsigned int mMinVarsCoarseLevel;
     SolverPtr mCoarseLevelSolver;
     SolverPtr mSmoother;
-    hmemo::ContextPtr mSmootherContext;
 
     /**
      *  @brief own implementation of Printable::writeAt

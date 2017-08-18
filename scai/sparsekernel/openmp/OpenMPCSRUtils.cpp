@@ -635,6 +635,105 @@ void OpenMPCSRUtils::convertCSR2CSC(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+static void sumColumns(
+    ValueType result[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const IndexType numRows,
+    const common::unary::UnaryOp elemOp )
+{
+    #pragma omp parallel for
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+        {
+            IndexType j = csrJA[jj];
+            ValueType v = csrValues[jj];
+            v = applyUnary( elemOp, v );
+            atomicAdd( result[j], v );
+        }
+   }
+}
+
+template<typename ValueType>
+static void reduceColumns(
+    ValueType result[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const IndexType numRows,
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp )
+{
+    // no parallel execution possible due to output dependencies on result
+
+    for ( IndexType i = 0; i < numRows; ++i )
+    {
+        for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+        {
+            IndexType j = csrJA[jj];
+            ValueType v = csrValues[jj];
+            v = applyUnary( elemOp, v );
+            result[j] = applyBinary( result[j], reduceOp, v );
+        }
+    }
+}
+
+template<typename ValueType>
+void OpenMPCSRUtils::reduce(
+    ValueType result[],
+    const IndexType csrIA[],
+    const IndexType csrJA[],
+    const ValueType csrValues[],
+    const IndexType numRows,
+    const IndexType dim,
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp )
+{
+    SCAI_REGION( "OpenMP.CSRUtils.reduce" )
+
+    SCAI_LOG_INFO( logger, "reduce CSR[#rows = " << numRows << "], dim = 1, red = " << reduceOp << ", elem = " << elemOp )
+
+    if ( dim == 0 )
+    {
+        #pragma omp parallel for
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+            {
+                ValueType v = csrValues[jj];
+                v = applyUnary( elemOp, v );
+                result[i] = applyBinary( result[i], reduceOp, v );
+            }
+        }
+    }
+    else if ( dim == 1 )
+    {
+
+        // parallel execution only if atomic updates are possible
+
+        switch ( reduceOp )
+        {
+            case common::binary::ADD :
+
+                sumColumns( result, csrIA, csrJA, csrValues, numRows, elemOp );
+                break;
+
+            default:
+
+                reduceColumns( result, csrIA, csrJA, csrValues, numRows, reduceOp, elemOp );
+        }
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "illegal reduce dim = " << dim )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 // Alternative routine is needed as bind can only deal with up to 9 arguments
 
 template<typename ValueType>
@@ -1757,6 +1856,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
                     << " --> " << common::getScalarType<ValueType>() << "]" )
     KernelRegistry::set<CSRKernelTrait::convertCSR2CSC<ValueType> >( convertCSR2CSC, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sortRowElements<ValueType> >( sortRowElements, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEMV<ValueType> >( normalGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::sparseGEMV<ValueType> >( sparseGEMV, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::normalGEVM<ValueType> >( normalGEVM, ctx, flag );

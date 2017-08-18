@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/solver/examples/eigenvalue/AbstractMatrix.hpp>
+#include <scai/lama/matrix/AbstractMatrix.hpp>
 
 namespace scai
 {

@@ -73,7 +73,6 @@ Solver::Solver( const std::string& id, LoggerPtr logger )
 
 Solver::Solver( const Solver& other )
     : mId( other.mId ), mLogger( other.mLogger )
-// TODO mContext
 {
 }
 
@@ -175,6 +174,7 @@ const Vector& Solver::getResidual() const
             //                 otherwise: many unnecessary data movements !!!
 
             runtime.mResidual.reset( runtime.mRhs->newVector() );
+            SCAI_LOG_INFO( logger, "Residual vector = " << *runtime.mResidual << ", mRhs = " << *runtime.mRhs )
         }
 
         //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
@@ -203,12 +203,6 @@ void Solver::setLogger( LoggerPtr logger )
 void Solver::setLogLevel( LogLevel::LogLevel level )
 {
     mLogger->setLogLevel( level );
-}
-
-void Solver::setContextPtr( hmemo::ContextPtr context )
-{
-    SCAI_LOG_DEBUG( logger, "Set context to " << *context )
-    mContext = context;
 }
 
 void Solver::writeAt( std::ostream& stream ) const

@@ -335,6 +335,13 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
+    static bool all(
+        const hmemo::HArray<ValueType>& array1,
+        const common::binary::CompareOp compareOp,
+        const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
     static ValueType asum(
         const hmemo::HArray<ValueType>& array,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );

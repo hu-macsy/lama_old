@@ -27,74 +27,27 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief scai/kregistry/CMakeLists.txt
+ # @brief CMake configuration file for SCAI module kregistry (kernel registry)
  # @author Thomas Brandes
- # @date 30.06.2015
+ # @date 04.07.2017
 ###
 
-### Set required CMake version
-cmake_minimum_required ( VERSION 2.8.8 )
+## Include required scai macros
 
-### Set Module Path
-set ( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../CMake/Modules" )
+include ( scai_macro/scai_module )
+include ( scai_macro/scai_project )
+include ( scai_macro/scai_subdirectories )
+include ( scai_macro/scai_library )
+include ( scai_function/relative_install )
 
-### set cmake quiet for untyped messages
-if    ( NOT SCAI_CMAKE_VERBOSE )
-    include ( Functions/setCMakeQuiet )
-endif ( NOT SCAI_CMAKE_VERBOSE )
+## Define new SCAI module project with its internal/external dependencies
 
-### Set PROJECT NAME / supported LANGUAGES
-project ( scai_kregistry CXX )
+scai_module(
 
-### includes ###
-
-## important Variables for project
-include ( VersionDefinition )
-include ( SetProjectVariables)
-include ( Dependencies/internal )
-include ( Dependencies/external )
-include ( Dependencies/minimalSupportedVersions )
-
-## needed functions
-include ( Functions/scaiFunctions )
-include ( Functions/scaiProject )
-include ( Functions/relativeInstall )
-
-### Include compile dependent things
-if    ( NOT SCAI_COMPLETE_BUILD )
-    include ( SetBuildFlags )
-    include ( VersionCheck/Compiler )
-    include ( Compiler/SetCPPFlags )
-else  ( NOT SCAI_COMPLETE_BUILD )
-    include ( Package/doc )
-    include ( Functions/CheckValueAtCompleteBuild )
-    CheckValueAtCompleteBuild ( ${PROJECT_SURNAME} )
-endif ( NOT SCAI_COMPLETE_BUILD )
-
-## Use Boost if BUILD_TEST is enabled
-if ( BUILD_TEST )
-    include( Package/BoostTest )
-endif ( BUILD_TEST )
-
-### include all search packages
-addInternalAndExternalPackages()
-
-## finalize build flags
-include ( ConcludeFlags )
-
-### add definitions
-add_definitions( ${ADDITIONAL_WARNING_FLAGS} )
-add_definitions ( -D${SCAI_LOGGING_FLAG} )
-add_definitions ( -DSCAI_ASSERT_LEVEL_${SCAI_ASSERT_LEVEL} )
-
-if    ( WIN32 )
-	add_definitions ( -DCOMMON_COMPILING_DLL )
-endif ( WIN32 )
-
-### Project System-Include ( also configured files )
-set( CONFIGURE_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include )
-include_directories ( ../.. ${CONFIGURE_INCLUDE_DIR} )
-addInternalAndExternalIncludes()
+    MODULE_NAME   kregistry
+    INTERNAL_DEPS common logging
+    EXTERNAL_DEPS 
+)
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -111,46 +64,29 @@ scai_project (
 )
 
 ## add subdirectories
-add_subdirectory ( doc )
 
-if    ( BUILD_EXAMPLES )
-add_subdirectory ( examples )
-endif ( BUILD_EXAMPLES )
+scai_subdirectories( EXAMPLES exception mepr TEST )
 
-add_subdirectory ( exception )
-add_subdirectory ( mepr )
+if ( CUDA_FOUND AND USE_CUDA )
+    cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )
+    set ( CXX_SOURCES ${CXX_SOURCES} ${CUDA_FILES} )
+endif()
 
-if ( FOUND_BOOST_TEST AND BUILD_TEST )
-    add_subdirectory ( test )
-endif ( FOUND_BOOST_TEST AND BUILD_TEST )
+## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
+## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
-### set link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
-### add library ###
-add_library ( ${PROJECT_NAME} ${SCAI_LIBRARY_TYPE} ${CXX_SOURCES} )
-set_target_properties ( ${PROJECT_NAME} PROPERTIES VERSION ${${UPPER_PROJECT_NAME}_VERSION} )
-
-## add link libraries
-addInternalAndExternalLinkLibraries()
+scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
+               TYPE    ${SCAI_LIBRARY_TYPE}
+               VERSION ${SCAI_VERSION}
+               ${CXX_SOURCES} )
 
 ### install ###
 
-## install lib
-install ( TARGETS ${PROJECT_NAME} DESTINATION lib )
-
 ## install headers
-relative_install( FILES ${CXX_HEADERS} DESTINATION ${${UPPER_PROJECT_NAME}_INCLUDE_DIR} )
+relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
 ## install library.hpp
-install ( FILES ../${PROJECT_SURNAME}.hpp DESTINATION include/scai )
+install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
-## add custum target distClean
-include ( CustomCommands/DistClean )
-
-### summary ###
-if    ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
-        include ( Summaries/${PROJECT_SURNAME} )
-endif ( DEFINED SCAI_CMAKE_VERBOSE OR NOT DEFINED SCAI_COMPLETE_BUILD )
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+include ( CustomCommands/SphinxDoc )

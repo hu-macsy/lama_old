@@ -45,7 +45,7 @@ using namespace std;
 using namespace scai;
 using namespace scai::tasking;
 
-static const int WORKLOAD = 200;
+static const int WORKLOAD = 2000;
 
 /* ----------------------------------------------------------------------- */
 
@@ -136,7 +136,7 @@ void doSelf( int N )
 int main()
 {
     // static int N = 100000;
-    static int N = 100000;
+    static int N = 5000;
     double time0 = common::Walltime::get();
     doSelf( N );
     time0 = common::Walltime::get() - time0;
@@ -147,7 +147,7 @@ int main()
     doTasking( N );
     time2 = common::Walltime::get() - time2;
     cout << "Execution of " << N << " work routines." << endl;
-    cout << "Time for self    = " << time0 << endl;
-    cout << "Time for threads = " << time1 << endl;
-    cout << "Time for tasks   = " << time2 << endl;
+    cout << "Time for self (all work by this thread)        = " << time0 << endl;
+    cout << "Time for threads (one thread for each work)    = " << time1 << endl;
+    cout << "Time for tasks (work scheduled by thread pool) = " << time2 << endl;
 }

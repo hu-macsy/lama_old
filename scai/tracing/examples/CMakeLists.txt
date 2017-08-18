@@ -32,34 +32,34 @@
  # @date 16.06.2015
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+include ( scai_function/scai_example_directory )
+
 # Explicitly enable tracing at compile time here
-set ( SCAI_TRACING_FLAG SCAI_TRACE_ON ) # also needed in prepareExamplesMakeInc for make.inc
 
 foreach ( executable TraceTest TraceCalls TraceThreads )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set_target_properties( ${executable}.exe PROPERTIES COMPILE_FLAGS -D${SCAI_TRACING_FLAG} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
+
+    # make sure that tracing is enabled
+
+    set_target_properties( ${executable}.exe PROPERTIES COMPILE_FLAGS -DSCAI_TRACE_ON )
+
 endforeach ( executable )
 
-# copy run_all.sh
-file( COPY run_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../examples_Makefile.in" install_Makefile COPYONLY )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-## install examples sources, (install_)Makefile, make.inc, run_all.sh
+# copy the script to run all examples
+scai_run_script ( COPY run_all.sh DESTINATION ${INSTALL_EXAMPLE_DIR} )
+
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( PROGRAMS    run_all.sh
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
