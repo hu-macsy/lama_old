@@ -42,7 +42,7 @@ namespace sparsekernel
 
 /** Class that contains the OpenMP implementations of the stencil kernels. */
 
-class OpenMPStencilKernel
+class COMMON_DLL_IMPORTEXPORT OpenMPStencilKernel
 {
 public:
 

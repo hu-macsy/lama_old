@@ -50,7 +50,7 @@ namespace lama
  *  local data instead of one single processor reads and writes all global data.
  */
 
-class PartitionIO
+class COMMON_DLL_IMPORTEXPORT PartitionIO
 {
 public:
 
