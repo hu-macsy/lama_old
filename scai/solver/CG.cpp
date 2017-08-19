@@ -232,4 +232,9 @@ void CG::writeAt( std::ostream& stream ) const
 
 } /* end namespace solver */
 
+// add the register guard might be needed for some compilers
+
+template solver::Solver::Register<solver::CG>::RegisterGuard
+         solver::Solver::Register<solver::CG>::registerGuard;
+
 } /* end namespace scai */
