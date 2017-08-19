@@ -70,6 +70,10 @@ macro ( scai_add_example )
 
         target_link_libraries ( ${scai_add_example_EXECUTABLE} ${MODULE_LIBRARY} )
 
+        # just make sure that all dynamic libraries are linked even if not needed
+
+        set_target_properties ( ${scai_add_example_EXECUTABLE} PROPERTIES LINK_FLAGS "${SCAI_START_LINK_LIBRARIES}"  )
+
         add_dependencies( examples ${scai_add_example_EXECUTABLE} )
 
     else ()

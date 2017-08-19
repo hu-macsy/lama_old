@@ -79,6 +79,8 @@ macro ( scai_example_makefile )
         endforeach ( module ${REVERT_LIST} )
     endif ()
 
+    set ( SCAI_EXAMPLE_LINK_LIBRARIES "${SCAI_START_LINK_LIBRARIES} ${SCAI_EXAMPLE_LINK_LIBRARIES} ${SCAI_END_LINK_LIBRARIES}" )
+
     ## set project specific SCAI_DEFINES
 
     if ( SCAI_ASSERT_LEVEL )
@@ -92,6 +94,8 @@ macro ( scai_example_makefile )
     if ( SCAI_TRACE )
         set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACE_${SCAI_TRACE}" )
     endif ()
+
+    listToString ( " " "${EXAMPLE_EXECUTABLES}" EXAMPLE_EXECUTABLES )
 
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_Makefile.in" "${CMAKE_CURRENT_BINARY_DIR}/install_Makefile" COPYONLY )
