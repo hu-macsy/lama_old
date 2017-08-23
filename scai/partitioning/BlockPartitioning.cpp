@@ -33,7 +33,7 @@
  */
 
 // hpp
-#include <scai/dmemo/BlockPartitioning.hpp>
+#include <scai/partitioning/BlockPartitioning.hpp>
 
 // local library
 #include <scai/dmemo/GenBlockDistribution.hpp>
@@ -45,7 +45,10 @@
 namespace scai
 {
 
-namespace dmemo
+using namespace lama;
+using namespace dmemo;
+
+namespace partitioning
 {
 
 SCAI_LOG_DEF_LOGGER( BlockPartitioning::logger, "Partitioning.BlockPartitioning" )
@@ -64,9 +67,9 @@ void BlockPartitioning::writeAt( std::ostream& stream ) const
     stream << "BlockPartitioning";
 }
 
-DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, const Distributed& matrix, float weight ) const
+DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, const Matrix& matrix, float weight ) const
 {
-    IndexType globalSize = matrix.getDistribution().getGlobalSize();
+    IndexType globalSize = matrix.getRowDistribution().getGlobalSize();
 
     // Block partitioning : just create a 'general' block distribution
     // Note: this does not take the connections into account 
@@ -90,6 +93,6 @@ PartitioningPtr BlockPartitioning::create()
     return PartitioningPtr( new BlockPartitioning() );
 }
 
-} /* end namespace dmemo */
+} /* end namespace partitioning */
 
 } /* end namespace scai */

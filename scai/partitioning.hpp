@@ -1,5 +1,5 @@
 /**
- * @file Distributed.cpp
+ * @file partitioning.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,51 +27,12 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Distributed.cpp
- * @author Jiri Kraus
- * @date 22.02.2011
+ * @brief General header file that includes the main header files of the partitioning
+ * @author Thomas Brandes
+ * @date 23.08.2017
  */
 
-// hpp
-#include <scai/dmemo/Distributed.hpp>
+// We include only base class and BlockPartitioning as other interface classes are optional
 
-namespace scai
-{
-
-namespace dmemo
-{
-
-Distributed::Distributed( DistributionPtr distribution )
-
-    : mDistribution( distribution )
-{
-    if ( !distribution )
-    {
-        COMMON_THROWEXCEPTION( "Distributed object must not have NULL distribution" )
-    }
-}
-
-Distributed::Distributed( const Distributed& other )
-
-    : mDistribution( other.mDistribution )
-{
-    // copy shared pointer is okay, mDistribution can never be NULL
-}
-
-Distributed::~Distributed()
-{
-}
-
-void Distributed::swap( Distributed& other )
-{
-    mDistribution.swap( other.mDistribution );
-}
-
-void Distributed::setDistributionPtr( DistributionPtr distributionPtr )
-{
-    mDistribution = distributionPtr;
-}
-
-} /* end namespace dmemo */
-
-} /* end namespace scai */
+#include <scai/partitioning/Partitioning.hpp>
+#include <scai/partitioning/BlockPartitioning.hpp>

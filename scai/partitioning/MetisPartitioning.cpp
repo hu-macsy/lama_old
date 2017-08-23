@@ -33,7 +33,7 @@
  */
 
 // hpp
-#include <scai/dmemo/MetisPartitioning.hpp>
+#include <scai/partitioning/MetisPartitioning.hpp>
 
 // local library
 #include <scai/dmemo/NoDistribution.hpp>
@@ -51,7 +51,10 @@ extern "C"
 namespace scai
 {
 
-namespace dmemo
+using namespace dmemo;
+using namespace lama;
+
+namespace partitioning
 {
 
 SCAI_LOG_DEF_LOGGER( MetisPartitioning::logger, "Partitioning.MetisPartitioning" )
@@ -67,7 +70,7 @@ void MetisPartitioning::writeAt( std::ostream& stream ) const
     stream << "MetisPartitioning";
 }
 
-DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, const Distributed& matrix, float weight ) const
+DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, const Matrix& matrix, float weight ) const
 {
     std::vector<float> weights;
     gatherWeights( weights, weight, *comm );
@@ -76,17 +79,17 @@ DistributionPtr MetisPartitioning::partitionIt( const CommunicatorPtr comm, cons
     return computeIt( comm, matrix, weights );
 }
 
-DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const Distributed& matrix, std::vector<float>& weights ) const
+DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const Matrix& matrix, std::vector<float>& weights ) const
 {
     // TODO check only for replicated matrix
     IndexType size = comm->getSize();
     IndexType myRank = comm->getRank();
-    IndexType totalRows = matrix.getDistribution().getGlobalSize();
+    IndexType totalRows = matrix.getRowDistribution().getGlobalSize();
 
     if ( myRank == MASTER )
     {
         // MASTER must have all values of the matrix to build the graph
-        SCAI_ASSERT_EQ_ERROR( totalRows, matrix.getDistribution().getLocalSize(),
+        SCAI_ASSERT_EQ_ERROR( totalRows, matrix.getRowDistribution().getLocalSize(),
                               *comm << ": must have all values of the distributed object" );
     }
 
@@ -181,7 +184,7 @@ DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const 
     SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LT ), 
                        *comm << ": local row indexes unsorted." )
 
-    IndexType globalSize = matrix.getDistribution().getGlobalSize();
+    IndexType globalSize = matrix.getRowDistribution().getGlobalSize();
 
     return DistributionPtr( new GeneralDistribution( globalSize, myGlobalIndexes, comm ) );
 }
@@ -198,11 +201,11 @@ void MetisPartitioning::callPartitioning(
     IndexType& parts,
     std::vector<WeightType>& tpwgts,
     const CommunicatorPtr,
-    const Distributed& matrix ) const
+    const Matrix& matrix ) const
 {
     SCAI_REGION( "METIScall" )
     // Note that here we have: global size == local size of distribution
-    IndexType totalRows = matrix.getDistribution().getGlobalSize();
+    IndexType totalRows = matrix.getRowDistribution().getGlobalSize();
     std::vector<IndexType> csrXadj( totalRows + 1 ); // #rows + 1
     // std::vector<IndexType> csrAdjncy( matrix.getLocalNumValues() - totalRows ); // #values - #diagonalelements(rows)
     std::vector<IndexType> csrAdjncy( matrix.getCSRGraphSize() );
@@ -258,6 +261,6 @@ PartitioningPtr MetisPartitioning::create()
     return PartitioningPtr( new MetisPartitioning() );
 }
 
-} /* end namespace dmemo */
+} /* end namespace partitioning */
 
 } /* end namespace scai */

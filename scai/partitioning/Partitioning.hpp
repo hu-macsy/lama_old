@@ -44,14 +44,14 @@
 #include <scai/common/Factory.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/dmemo/Distributed.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 
 #include <vector>
 
 namespace scai
 {
 
-namespace dmemo
+namespace partitioning
 {
 
 typedef common::shared_ptr<const class Partitioning> PartitioningPtr;
@@ -88,7 +88,7 @@ public:
 
     /** Pure method that must be implemented by each partitioning class */
 
-    virtual DistributionPtr partitionIt( const CommunicatorPtr comm, const Distributed& matrix, float weight ) const = 0;
+    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const = 0;
 
     /** Override Printable::writeAt */
 
@@ -96,7 +96,7 @@ public:
 
 protected:
 
-    static void gatherWeights( std::vector<float>& weights, const float weight, const Communicator& comm );
+    static void gatherWeights( std::vector<float>& weights, const float weight, const dmemo::Communicator& comm );
 
     /** Norm the weights that its sum is exactly 1. */
 
@@ -105,6 +105,6 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-} /* end namespace dmemo */
+} /* end namespace partitioning */
 
 } /* end namespace scai */

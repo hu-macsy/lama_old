@@ -46,16 +46,8 @@ scai_module(
 
     MODULE_NAME   dmemo
     INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel 
-    EXTERNAL_DEPS OpenMP MPI GASPI Metis 
+    EXTERNAL_DEPS OpenMP MPI GASPI
 )
-
-## MetisDistribution only added as source if enabled and IndexType is int
-
-if ( METIS_FOUND AND USE_METIS )
-    if ( SCAI_INDEX_TYPE STREQUAL "int" )
-        set ( METISPARTITIONING MetisPartitioning )
-    endif ()
-endif ()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -79,12 +71,6 @@ scai_project (
         NoDistribution
         Redistributor
         SingleDistribution
-
-        Partitioning
-        BlockPartitioning
-
-        ${METISPARTITIONING}
-
     )
 
 ### add subdirectories
