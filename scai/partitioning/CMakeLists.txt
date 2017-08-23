@@ -69,6 +69,8 @@ scai_project (
         ${METISPARTITIONING}
     )
 
+scai_subdirectories( EXAMPLES TEST )
+
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
 
