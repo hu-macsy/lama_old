@@ -1,5 +1,5 @@
 ###
- # @file scai/solver/CMakeLists.txt
+ # @file scai/partitioning/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for SCAI module solver
+ # @brief CMake configuration file for SCAI module partitioning
  # @author Thomas Brandes
- # @date 04.07.2017
+ # @date 23.08.2017
 ###
 
 ## Include required scai macros
@@ -39,17 +39,23 @@ include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
 include ( scai_function/relative_install )
- 
+
 ## Define new SCAI module project with its internal/external dependencies
-## Note: only some examples depend on partitioning
- 
-scai_module (
 
-    MODULE_NAME   solver 
+scai_module(
 
-    INTERNAL_DEPS common logging tracing tasking hmemo kregistry 
-                  blaskernel utilskernel sparsekernel dmemo lama partitioning
-) 
+    MODULE_NAME   partitioning
+    INTERNAL_DEPS common logging tracing hmemo kregistry dmemo lama
+    EXTERNAL_DEPS Metis 
+)
+
+## MetisDistribution only added as source if enabled and IndexType is int
+
+if ( METIS_FOUND AND USE_METIS )
+    if ( SCAI_INDEX_TYPE STREQUAL "int" )
+        set ( METISPARTITIONING MetisPartitioning )
+    endif ()
+endif ()
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
 
@@ -57,70 +63,30 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        AMGSetup
-        BiCG
-        BiCGstab
-        CG
-        CGNE
-        CGNR
-        CGS
-        DecompositionSolver
-        GMRES
-        InverseSolver
-        IterativeSolver
-        Jacobi
-        Kaczmarz
-        MINRES
-        OmegaSolver
-        QMR
-        Richardson
-        SimpleAMG
-        SingleGridSetup
-        SolutionProxy
-        Solver
-        TFQMR
-        TrivialPreconditioner
+        Partitioning
+        BlockPartitioning
 
+        ${METISPARTITIONING}
     )
 
-## add subdirectories
-
-scai_subdirectories ( criteria EXAMPLES logger TEST )
-
-### for external amg ###
-
-file ( GLOB AMG_SUBDIRPRESENT "amg" )
-
-if ( AMG_SUBDIRPRESENT )
-    add_subdirectory ( ${AMG_SUBDIRPRESENT} )
-    message ( STATUS "amg subdir provides following solver libraries: ${SOLVER_SUB_LIBRARIES}" )
-    #set ( SOLVER_SUB_LIBRARIES ${SOLVER_SUB_LIBRARIES} PARENT_SCOPE )
-endif ( AMG_SUBDIRPRESENT )
-
-### add library ###
+scai_subdirectories( EXAMPLES TEST )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
-
-# Might be some additional solver libraries have been defined
 
 scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
                TYPE    ${SCAI_LIBRARY_TYPE}
                VERSION ${SCAI_VERSION}
                ${CXX_SOURCES} )
 
-target_link_libraries ( ${MODULE_LIBRARY} ${SOLVER_SUB_LIBRARIES} )
-
 ### install ###
 
 ## install headers
-
 relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
 
-## install library.hpp
-install ( FILES ../solver.hpp DESTINATION include/scai )
+## install "<library>.hpp"
+install ( FILES ../${MODULE_NAME}.hpp DESTINATION include/scai )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
-
 include ( CustomCommands/SphinxDoc )
 

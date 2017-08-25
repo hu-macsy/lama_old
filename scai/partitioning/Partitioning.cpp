@@ -32,12 +32,14 @@
  * @date 18.07.2017
  */
 
-#include <scai/dmemo/Partitioning.hpp>
+#include <scai/partitioning/Partitioning.hpp>
 
 namespace scai
 {
 
-namespace dmemo
+using namespace dmemo;
+
+namespace partitioning
 {
 
 /* ------  Static class variables --------------------------------------- */
@@ -101,6 +103,6 @@ void Partitioning::writeAt( std::ostream& stream ) const
     stream << "Partitioning( any )";
 }
 
-} /* end namespace dmemo */
+} /* end namespace partitioning */
 
 } /* end namespace scai */

@@ -42,7 +42,7 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/SingleDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
-#include <scai/dmemo/Partitioning.hpp>
+#include <scai/partitioning/Partitioning.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
 #include <scai/solver/GMRES.hpp>
@@ -303,11 +303,13 @@ int main( int argc, const char* argv[] )
 
             if ( lamaconf.useMetis() )
             {
+                using namespace partitioning;
+
                 LamaTiming timer( comm, "Metis" );
 
-                PartitioningPtr partitioning( Partitioning::create( "METIS" ) );
-                SCAI_ASSERT_ERROR( partitioning.get(), "METIS partitioning not available" )
-                dist = partitioning->partitionIt( lamaconf.getCommunicatorPtr(), inMatrix, weight );
+                PartitioningPtr graphPartitioning( Partitioning::create( "METIS" ) );
+                SCAI_ASSERT_ERROR( graphPartitioning.get(), "METIS partitioning not available" )
+                dist = graphPartitioning->partitionIt( lamaconf.getCommunicatorPtr(), inMatrix, weight );
             }
             else if ( *oldDist == dmemo::SingleDistribution( numRows, oldDist->getCommunicatorPtr(), 0 ) )
             {

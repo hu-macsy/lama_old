@@ -1,5 +1,5 @@
 /**
- * @file Distributed.cpp
+ * @file DemoPartitioning.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,51 +27,46 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Distributed.cpp
- * @author Jiri Kraus
- * @date 22.02.2011
+ * @brief Demo program for using partitioning
+ * @author Thomas Brandes
+ * @date 23.08.2017
  */
 
-// hpp
-#include <scai/dmemo/Distributed.hpp>
+#include <scai/partitioning.hpp>
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
-namespace scai
+using namespace scai;
+using namespace dmemo;
+using namespace lama;
+using namespace partitioning;
+
+int main( int narg, const char* argv[] )
 {
-
-namespace dmemo
-{
-
-Distributed::Distributed( DistributionPtr distribution )
-
-    : mDistribution( distribution )
-{
-    if ( !distribution )
+    if ( narg < 2 )
     {
-        COMMON_THROWEXCEPTION( "Distributed object must not have NULL distribution" )
+        std::cout << "call " << argv[0] << " <matrixFileName>" << std::endl;
     }
+
+    std::string fileName = argv[1];
+
+    CSRSparseMatrix<double> A( fileName );
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    std::cout << *comm << ": Read matrix A = " << A << std::endl;
+
+    PartitioningPtr thePartitioning( Partitioning::create( "METIS" ) );
+
+    if ( !thePartitioning.get() )
+    {
+        thePartitioning = Partitioning::create( "BLOCK" );
+    }
+
+    DistributionPtr dist( thePartitioning->partitionIt( comm, A, 1.0f ) );
+
+    A.redistribute( dist, dist );
+
+    std::cout << *comm << ": Write matrix A = " << A << std::endl;
+
+    A.writeToFile( "matrix%r.mtx" );
 }
-
-Distributed::Distributed( const Distributed& other )
-
-    : mDistribution( other.mDistribution )
-{
-    // copy shared pointer is okay, mDistribution can never be NULL
-}
-
-Distributed::~Distributed()
-{
-}
-
-void Distributed::swap( Distributed& other )
-{
-    mDistribution.swap( other.mDistribution );
-}
-
-void Distributed::setDistributionPtr( DistributionPtr distributionPtr )
-{
-    mDistribution = distributionPtr;
-}
-
-} /* end namespace dmemo */
-
-} /* end namespace scai */

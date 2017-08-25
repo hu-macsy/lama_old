@@ -1,5 +1,5 @@
 /**
- * @file BlockPartitioning.hpp
+ * @file MetisPartitioning.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief BlockPartitioning.hpp
+ * @brief MetisPartitioning.hpp
  * @author Thomas Brandes
  * @date 18.08.2017
  */
@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/dmemo/Partitioning.hpp>
+#include <scai/partitioning/Partitioning.hpp>
 
 // std
 #include <vector>
@@ -46,32 +46,34 @@
 namespace scai
 {
 
-namespace dmemo
+namespace partitioning
 {
 
-/** This block partitioning creates just a block distribution where the size of the local part depends on its weight.
+/** Metis creates a distribution with load balance in the pieces and less communication volume
+ *  for a dedicated sparse matrix.
+ *
+ *  MetisPartitioning is noncopyable as Partitioning is noncopyable
  *
  */
 
-class COMMON_DLL_IMPORTEXPORT BlockPartitioning:
+class COMMON_DLL_IMPORTEXPORT MetisPartitioning:
 
     public Partitioning,
-    private Partitioning::Register<BlockPartitioning>
+    private Partitioning::Register<MetisPartitioning>
 
 {
 public:
 
-    /** Constructor */
+    /** Constructor of an object that can partitition 'serial' graph data
+     *
+     */
+    MetisPartitioning();
 
-    BlockPartitioning();
-
-    /** Destructor */
-
-    virtual ~BlockPartitioning();
+    virtual ~MetisPartitioning();
 
     /** Implementation of pure method Partitioning::partitionIt */
 
-    virtual DistributionPtr partitionIt( const CommunicatorPtr comm, const Distributed& matrix, float weight ) const;
+    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const;
 
     /** Override Printable::writeAt */
 
@@ -85,15 +87,32 @@ public:
 
     static std::string createValue();
 
-protected:
+private:
+
+    dmemo::DistributionPtr computeIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, std::vector<float>& weights ) const;
+
+    template<typename weightType>
+    void callPartitioning(
+        std::vector<IndexType>& partition,
+        IndexType& minConstraint,
+        IndexType& parts,
+        std::vector<weightType>& tpwgts,
+        const dmemo::CommunicatorPtr comm,
+        const lama::Matrix& matrix ) const;
+
+    template<typename weightType>
+    void checkAndMapWeights(
+        std::vector<weightType>& tpwgts,
+        std::vector<IndexType>& mapping,
+        IndexType& count,
+        std::vector<float>& weights,
+        IndexType size ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-private:
 
     static const char theCreateValue[];
 };
 
-} /* end namespace dmemo */
+} /* end namespace partitioning */
 
 } /* end namespace scai */

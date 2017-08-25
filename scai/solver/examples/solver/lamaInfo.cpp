@@ -46,7 +46,7 @@
 #include <scai/solver/AMGSetup.hpp>
 
 #include <scai/dmemo/NoCommunicator.hpp>
-#include <scai/dmemo/Partitioning.hpp>
+#include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/common/ContextType.hpp>
 #include <scai/common/shared_ptr.hpp>
@@ -225,7 +225,7 @@ void distributionInfo()
 
 void partitioningInfo()
 {
-    using namespace scai::dmemo;
+    using namespace scai::partitioning;
     vector<string> values;  // string is create type for the factory
     Partitioning::getCreateValues( values );
     cout << endl;
@@ -236,7 +236,6 @@ void partitioningInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
-        CommunicatorPtr comm = Communicator::getCommunicatorPtr();  
         PartitioningPtr partitioner( Partitioning::create( values[i] ) );
         cout << "    Partitioning: " << *partitioner << endl;
     }
