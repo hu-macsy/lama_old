@@ -1,4 +1,4 @@
-.. _Partitioning
+.. _Partitioning:
 
 Partitioning
 ============

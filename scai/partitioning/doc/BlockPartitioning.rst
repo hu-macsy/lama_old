@@ -1,4 +1,4 @@
-.. _BlockPartitioning
+.. _BlockPartitioning:
 
 Block Partitioning
 ==================

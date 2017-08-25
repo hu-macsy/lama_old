@@ -79,3 +79,11 @@ The Linear Algebra Package contains the subprojects:
 
 * :ref:`SCAI LAMA - LAMA core <scailama:main-page_lama>`
 * :ref:`SCAI Solver - Iterative Solver <scaisolver:main-page_solver>`
+
+Optimization
+------------
+
+Partitioning provides routines to optimize the distribution of sparse matrices in such a way that halo parts become small and therefore communication
+is minimized.
+
+* :ref:`SCAI Partitioning - Partitioning to get optimized distributions  <scaipartitioning:main-page_partitioning>`
