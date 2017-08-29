@@ -291,6 +291,9 @@ SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
     mHaloData = shared_ptr<MatrixStorage<ValueType> >( other.getHaloStorage().copy() );
     // just copy the halo
     mHalo = other.getHalo();
+
+    this->setCommunicationKind( other.getCommunicationKind() );
+    this->setContextPtr( other.getContextPtr() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1245,7 +1248,7 @@ void SparseMatrix<ValueType>::reduce(
 
         denseV = ValueType( 0 );
 
-        SCAI_LOG_ERROR( logger, "reduce dim = 0, denseV = " << denseV );
+        SCAI_LOG_INFO( logger, "reduce dim = 0, denseV = " << denseV );
 
         mLocalData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
         
@@ -1254,7 +1257,7 @@ void SparseMatrix<ValueType>::reduce(
             mHaloData->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
         }
 
-        SCAI_LOG_ERROR( logger, "reduced dim = 0, denseV = " << denseV );
+        SCAI_LOG_INFO( logger, "reduced dim = 0, denseV = " << denseV );
 
         return;
     }

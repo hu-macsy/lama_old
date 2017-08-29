@@ -29,7 +29,7 @@
  *
  * @brief Implementation and instantiation for template class StencilStorage.
  * @author Thomas Brandes
- * @date 04.06.2011
+ * @date 04.06.2017
  */
 
 // hpp
@@ -44,9 +44,6 @@
 #include <scai/lama/storage/StorageMethods.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/Scalar.hpp>
-
-#include <scai/dmemo/Redistributor.hpp>
-
 
 // internal scai libraries
 #include <scai/sparsekernel/openmp/OpenMPCSRUtils.hpp>
@@ -157,6 +154,48 @@ ValueType StencilStorage<ValueType>::maxNorm() const
     return 0;
 }
 
+template<typename ValueType>
+void StencilStorage<ValueType>::setIdentity( const common::Grid& grid )
+{
+    mGrid = grid;
+
+    switch ( grid.nDims() )
+    {
+        case 1 : 
+        {
+            common::Stencil1D<ValueType> stencil1D;
+            stencil1D.addPoint( 0, 1 );
+            mStencil = stencil1D;
+            break;
+        }
+        case 2 : 
+        {
+            common::Stencil2D<ValueType> stencil2D;
+            stencil2D.addPoint( 0, 0, 1 );
+            mStencil = stencil2D;
+            break;
+        }
+        case 3 : 
+        {
+            common::Stencil3D<ValueType> stencil3D;
+            stencil3D.addPoint( 0, 0, 0, 1 );
+            mStencil = stencil3D;
+            break;
+        }
+        case 4 : 
+        {
+            common::Stencil4D<ValueType> stencil4D;
+            stencil4D.addPoint( 0, 0, 0, 0, 1 );
+            mStencil = stencil4D;
+            break;
+        }
+        default:
+            COMMON_THROWEXCEPTION( "unsupported stencil dim for grid " << grid )
+    }
+
+    mDiagonalProperty = true;
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -225,6 +264,32 @@ template<typename ValueType>
 void StencilStorage<ValueType>::scale( const ValueType val )
 {
     mStencil.scale( val );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::buildCSRSizes( HArray<IndexType>& sizeIA ) const
+{
+    ContextPtr ctx = Context::getHostPtr();    //  we build all data on the host
+
+    IndexType n = this->getNumRows();
+
+    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+
+    IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
+
+    mGrid.getDistances( gridDistances );
+
+    mStencil.getLinearOffsets( stencilOffsets.get(), gridDistances );
+
+    {
+        WriteOnlyAccess<IndexType> sizes( sizeIA, n );
+  
+        sparsekernel::OpenMPStencilKernel::stencilLocalSizes( 
+            sizes.get(), mStencil.nDims(), mGrid.sizes(), gridDistances, mGrid.borders(),
+            mStencil.nPoints(), mStencil.positions() );
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -385,6 +450,60 @@ void StencilStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmem
 
         utilskernel::HArrayUtils::assign( values, typedValues );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType i ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+
+    values.resize( mNumColumns );
+
+    HArrayUtils::assignScalar( values, 0, common::binary::COPY );
+
+    HArray<IndexType> sparseIA;
+    HArray<ValueType> sparseValues;
+
+    getSparseRow( sparseIA, sparseValues, i );
+
+    bool unique = true;  // sparseIA has only unique values
+
+    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, common::binary::COPY );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+ValueType StencilStorage<ValueType>::getValue( const IndexType i, const IndexType j ) const
+{
+    SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
+    SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
+
+    HArray<IndexType> sparseIA;
+    utilskernel::LArray<ValueType> sparseValues;
+
+    getSparseRow( sparseIA, sparseValues, i );
+
+    SCAI_ASSERT_EQ_DEBUG( sparseIA.size(), sparseValues.size(), "serious mismatch" )
+
+    ValueType value = 0;
+
+    {
+        ReadAccess<IndexType> rIA( sparseIA );
+
+        for ( IndexType jj = 0; jj < rIA.size(); ++jj )
+        {
+            if ( rIA[jj] == j )
+            {
+                value = sparseValues[jj];
+                break;
+            }
+        }
+    }
+
+    return value;
 }
 
 /* --------------------------------------------------------------------------- */
@@ -598,6 +717,30 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void StencilStorage<ValueType>::assign( const _MatrixStorage& other )
+{
+    SCAI_ASSERT_EQ_ERROR( Format::STENCIL, other.getFormat(),
+                          "stencil matrix/storage: assign only possible if other is also stencil" );
+
+    SCAI_ASSERT_EQ_ERROR( this->getValueType(), other.getValueType(),
+                          "stencil matrix/storage: assigon only supported here if other has same value type" );
+
+    _MatrixStorage::setDimension( other.getNumRows(), other.getNumColumns() );
+
+    const StencilStorage<ValueType> otherStencilStorage = reinterpret_cast<const StencilStorage<ValueType>&>( other );
+
+    // Important: swap the border types in each, border type must not be BORDER_REFLECTING
+
+    mGrid = otherStencilStorage.mGrid;
+
+    mStencil = otherStencilStorage.mStencil;
+
+    mDiagonalProperty = other.hasDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>& other )
 {
     _MatrixStorage::setDimension( other.getNumColumns(), other.getNumRows() );
@@ -615,10 +758,10 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
 
     for ( IndexType i = 0; i < mGrid.nDims(); ++i )
     {
-        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i], 
+        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i],
                               "no transpose possible with reflecting boundary" )
 
-        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i + 1], 
+        SCAI_ASSERT_NE_ERROR( common::Grid::BORDER_REFLECTING, borders[2 * i + 1],
                               "no transpose possible with reflecting boundary" )
 
         mGrid.setBorderType( i, borders[ 2 * i + 1 ], borders[ 2 * i ] );
@@ -627,6 +770,14 @@ void StencilStorage<ValueType>::assignTranspose( const MatrixStorage<ValueType>&
     mStencil.transpose( otherStencilStorage.mStencil );
 
     mDiagonalProperty = other.hasDiagonalProperty();
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilStorage<ValueType>* StencilStorage<ValueType>::copy() const
+{
+    return new StencilStorage<ValueType>( *this );
 }
 
 /* --------------------------------------------------------------------------- */

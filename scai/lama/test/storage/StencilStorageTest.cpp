@@ -73,6 +73,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( constructorTest, ValueType, scai_numeric_test_typ
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
+{
+    const IndexType N1 = 5;
+    const IndexType N2 = 8;
+    common::Grid2D grid( N1, N2 );
+
+    common::Stencil2D<ValueType> stencil( 5 ); // take 5-point stencil
+
+    StencilStorage<ValueType> storage1( grid, stencil );
+    StencilStorage<ValueType> storage2( storage1 );
+    common::unique_ptr<StencilStorage<ValueType> > storage3( storage1.copy() );
+
+    BOOST_CHECK_EQUAL( storage1.getNumRows(), storage2.getNumRows() );
+    BOOST_CHECK_EQUAL( storage1.getNumRows(), storage3->getNumRows() );
+
+    BOOST_CHECK_EQUAL( storage1.getNumColumns(), storage2.getNumColumns() );
+    BOOST_CHECK_EQUAL( storage1.getNumColumns(), storage3->getNumColumns() );
+
+    BOOST_CHECK_EQUAL( storage1.getStencil(), storage2.getStencil() );
+    BOOST_CHECK_EQUAL( storage1.getStencil(), storage3->getStencil() );
+    BOOST_CHECK_EQUAL( storage1.getGrid(), storage2.getGrid() );
+    BOOST_CHECK_EQUAL( storage1.getGrid(), storage3->getGrid() );
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( convertTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N1 = 5;
@@ -177,7 +203,47 @@ BOOST_AUTO_TEST_CASE( transposeTest )
         }
     }
 }
+        
+/* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( getTest )
+{
+    typedef RealType ValueType;
+
+    const IndexType N1 = 6;
+    const IndexType N2 = 8;
+
+    common::Grid2D grid( N1, N2 );
+
+    const int stencilData[9] = {  -1, -2, 1,
+                                  -1, 4, 5,
+                                   3, 2, 1   };
+
+    common::Stencil2D<ValueType> stencil( 3, 3, stencilData );
+
+    StencilStorage<ValueType> stencilStorage( grid, stencil );
+
+    CSRStorage<ValueType> csrStorage( stencilStorage );
+
+    for ( IndexType i = 0; i < N1; i++ )
+    {
+        LArray<ValueType> row1;
+        LArray<ValueType> row2;
+
+        stencilStorage.getRow( row1, i );
+        BOOST_CHECK_EQUAL( row1.size(), N1 * N2 );
+        csrStorage.getRow( row2, i );
+        BOOST_CHECK_EQUAL( row1.maxDiffNorm( row2 ), 0 );
+    }
+
+    for ( IndexType i = 0; i < N1; i++ )
+    {
+        for ( IndexType j = 0; j < N2; j++ )
+        {
+            BOOST_CHECK_EQUAL( stencilStorage.getValue( i, j ), csrStorage.getValue( i, j ) );
+        }
+    }
+}
         
 /* ------------------------------------------------------------------------- */
 
