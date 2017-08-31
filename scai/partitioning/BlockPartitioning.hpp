@@ -73,6 +73,17 @@ public:
 
     virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const;
 
+    /** Implementation of pure method Partitioning::rectangularPartitioning */
+
+    virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping,
+                                          hmemo::HArray<PartitionId>& colMapping,
+                                          const lama::Matrix& matrix,
+                                          const hmemo::HArray<float>& processorWeights ) const;
+
+    /** Override of Partitioning::rectangularRedistribute */
+
+    virtual void rectangularRedistribute( lama::Matrix& matrix, const float weight ) const;
+
     /** Override Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;

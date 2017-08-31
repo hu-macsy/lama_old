@@ -37,7 +37,7 @@ include ( scai_macro/scai_example_makefile )
 include ( scai_macro/scai_run_script )
 include ( scai_function/scai_example_directory )
 
-foreach ( executable DemoPartitioning )
+foreach ( executable DemoPartitioning rectangular resortMatrix BenchMatTimesVector )
 
     scai_add_example( EXECUTABLE ${executable}.exe 
                       FILES      ${executable}.cpp )

@@ -34,6 +34,10 @@
 
 #include <scai/partitioning/Partitioning.hpp>
 
+#include <scai/dmemo/GeneralDistribution.hpp>
+
+#include <scai/tracing.hpp>
+
 namespace scai
 {
 
@@ -86,6 +90,46 @@ void Partitioning::normWeights( std::vector<float>& weights )
     }
 
     weights[numPartitions - 1] = 1.0f - sumNorm;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Partitioning::rectangularRedistribute( lama::Matrix& matrix, const float weight ) const
+{
+    SCAI_REGION( "partitioning.rect" )
+
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
+
+    if ( comm->getSize() < 2 )
+    {
+        // no repartitioning for a single processor
+        return;
+    }
+
+    hmemo::HArray<PartitionId> rowOwners;
+    hmemo::HArray<PartitionId> colOwners;
+
+    std::vector<float> weightVector;
+
+    gatherWeights( weightVector, weight, *comm );
+    normWeights( weightVector );
+
+    hmemo::HArrayRef<float> weights( weightVector );
+
+    // call the 'virtual' partitioning method, i.e. the one of the derived class
+
+    {
+        SCAI_REGION( "partitioning.rect_get" )
+        rectangularPartitioning( rowOwners, colOwners, matrix, weights );
+    }
+
+    {
+        SCAI_REGION( "partitioning.rect_redist" )
+        DistributionPtr rowDist( new GeneralDistribution( rowOwners, comm ) );
+        DistributionPtr colDist( new GeneralDistribution( colOwners, comm ) );
+
+        matrix.redistribute( rowDist, colDist );
+    }
 }
 
 /* ------  Constructors  ------------------------------------------------ */

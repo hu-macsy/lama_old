@@ -47,6 +47,7 @@ namespace scai
 
 using namespace lama;
 using namespace dmemo;
+using namespace hmemo;
 
 namespace partitioning
 {
@@ -75,6 +76,72 @@ DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, cons
     // Note: this does not take the connections into account 
 
     return DistributionPtr( new GenBlockDistribution( globalSize, weight, comm ) );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void BlockPartitioning::rectangularPartitioning( 
+    HArray<PartitionId>& rowMapping,
+    HArray<PartitionId>& colMapping,
+    const Matrix& matrix,
+    const HArray<float>& processorWeights ) const
+{
+    IndexType npart = processorWeights.size();
+
+    IndexType numRows = matrix.getNumRows();
+    IndexType numCols = matrix.getNumColumns();
+
+    IndexType rowBlockSize = ( numRows + npart - 1 ) / npart;
+    IndexType colBlockSize = ( numCols + npart - 1 ) / npart;
+
+    // distribute numRows according to the weights on the processors
+    // distribute numColumns according to the weights on the processors
+ 
+    const Distribution& rowDist = matrix.getRowDistribution();
+    const Distribution& colDist = matrix.getColDistribution();
+
+    IndexType numLocalRows = rowDist.getLocalSize();
+    IndexType numLocalCols = colDist.getLocalSize();
+
+    WriteOnlyAccess<PartitionId> wRowMapping( rowMapping, numLocalRows );
+
+    for ( IndexType i = 0; i < numLocalRows; ++i )
+    {
+        IndexType globalI = rowDist.local2global( i );
+        wRowMapping[i] = globalI / rowBlockSize;
+    }
+
+    WriteOnlyAccess<PartitionId> wColMapping( colMapping, numLocalCols );
+
+    for ( IndexType j = 0; j < numLocalCols; ++j )
+    {
+        IndexType globalJ = colDist.local2global( j );
+        wColMapping[j] = globalJ / colBlockSize;
+    }
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void BlockPartitioning::rectangularRedistribute( Matrix& matrix, const float weight ) const
+{
+    CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
+
+    if ( comm->getSize() < 2 )
+    {
+        // no repartitioning for a single processor
+        return;
+    }
+
+    IndexType numRows    = matrix.getRowDistribution().getGlobalSize();
+    IndexType numColumns = matrix.getColDistribution().getGlobalSize();
+
+    // Block partitioning : just create a 'general' block distribution
+    // Note: this does not take the connections into account 
+
+    DistributionPtr rowDist( new GenBlockDistribution( numRows, weight, comm ) );
+    DistributionPtr colDist( new GenBlockDistribution( numColumns, weight, comm ) );
+
+    matrix.redistribute( rowDist, colDist );
 }
 
 /* ---------------------------------------------------------------------------------*

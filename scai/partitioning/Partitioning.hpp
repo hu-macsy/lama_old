@@ -90,6 +90,39 @@ public:
 
     virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const = 0;
 
+    /** Partitioning of rectangular matrix
+     *
+     *  @param[in]  matrix            might be any distributed matrix
+     *  @param[in]  processorWeights  is an array that specifies the desired weight for the partitions
+     *  @param[out] rowMapping        array with new mapping for the local rows
+     *  @param[out] colMapping        array with new mapping for the local columns
+     * 
+     *  Notes: 
+     *
+     *   - the number of partitions is implicitly given by processorWeights.size()
+     *     (so this routine might also be called on a serial machine)
+     *   - rowMapping.size() will be matrix.getRowDistribution.getLocalSize()
+     *   - colMapping.size() will be matrix.getColDistribution.getLocalSize()
+     *   - this routine does not any remapping here
+     */
+    virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping,
+                                          hmemo::HArray<PartitionId>& colMapping,
+                                          const lama::Matrix& matrix,
+                                          const hmemo::HArray<float>& processorWeights ) const = 0;
+
+    /** Repartitioning of a rectangular matrix with redistribution.
+     *
+     *  @param[in,out]  matrix  that will be redistributed
+     *  @param[in]      weight  is the weight used by the calling processor
+     *
+     *  Matrix must be distributed among the calling processors with a given communicator
+     *  that is taken for the redistribution.
+     *
+     *  Default implementation uses rectangular partititioning by determining the owners and
+     *  building a general distribution.
+     */
+    virtual void rectangularRedistribute( lama::Matrix& matrix, const float weight ) const;
+
     /** Override Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;

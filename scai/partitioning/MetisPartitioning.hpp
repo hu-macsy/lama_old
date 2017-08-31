@@ -75,6 +75,36 @@ public:
 
     virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const;
 
+    /** Implementation of pure method Partitioning::rectangularPartitioning */
+
+    virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping, 
+                                          hmemo::HArray<PartitionId>& colMapping, 
+                                          const lama::Matrix& matrix, 
+                                          const hmemo::HArray<float>& processorWeights ) const;
+
+    /** Partitioning of square matrix 
+     *
+     *  @param[in]  matrix must be square sparse matrix that is partitioned, matrix.getNumRows() == matrix.getNumColumns()
+     *  @param[in]  processorWeights specifies the weight for load on each processor, must be same on all procs
+     *  @param[out] mapping defines the mapping of the rows to np processors, np = processorWeights.size()
+    virtual squarePartitioning( HArray<PartitionId>& mapping, 
+                                const lama::Matrix& matrix, 
+                                const HArray<float>& processorWeights );
+
+    */
+
+    /*
+    virtual rowPartitioning( HArray<PartitionId>& rowMapping, 
+                             const HArray<PartitionId>& colMapping,
+                             const lama::Matrix& matrix, 
+                             const HArray<float>& processorWeights );
+
+    virtual colPartitioning( HArray<PartitionId>& colMapping, 
+                             const HArray<PartitionId>& rowMapping,
+                             const lama::Matrix& matrix, 
+                             const HArray<float>& processorWeights );
+    */
+
     /** Override Printable::writeAt */
 
     virtual void writeAt( std::ostream& stream ) const;

@@ -36,10 +36,13 @@
 #include <scai/partitioning/MetisPartitioning.hpp>
 
 // local library
+
+#include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
 
 // internal scai libraries
+
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/tracing.hpp>
 
@@ -51,8 +54,9 @@ extern "C"
 namespace scai
 {
 
-using namespace dmemo;
 using namespace lama;
+using namespace dmemo;
+using namespace hmemo;
 
 namespace partitioning
 {
@@ -241,6 +245,118 @@ void MetisPartitioning::checkAndMapWeights(
             mapping[count] = i;
             tpwgts[count] = weights[i];
             ++count;
+        }
+    }
+}
+
+void MetisPartitioning::rectangularPartitioning( 
+    HArray<PartitionId>& rowMapping,
+    HArray<PartitionId>& colMapping,
+    const lama::Matrix& matrix,
+    const HArray<float>& processorWeights ) const
+{
+    IndexType np = processorWeights.size();
+
+    DistributionPtr rowDist( new NoDistribution( matrix.getNumRows() ) );
+    DistributionPtr colDist( new NoDistribution( matrix.getNumColumns() ) );
+
+    CSRSparseMatrix<double> csrMatrix( matrix, rowDist, colDist );
+    CSRStorage<double>& storage = csrMatrix.getLocalStorage();
+    CSRStorage<double> storageT;
+    storageT.assignTranspose( storage );
+
+    IndexType numRows    = storage.getNumRows();
+    IndexType numColumns = storage.getNumColumns();
+    IndexType numValues  = storage.getNumValues();
+
+    // now build the bipartite CSR graph of it
+
+    IndexType nNodes = numRows + numColumns;
+    IndexType nEdges = 2 * numValues;
+
+    common::scoped_array<int> adjIA( new int[ nNodes + 1 ] );
+    common::scoped_array<int> adjJA( new int[ nEdges ] );
+    common::scoped_array<int> vwgt( new int[ nNodes ] );
+
+    ReadAccess<IndexType> csrIA( storage.getIA() );
+    ReadAccess<IndexType> csrJA( storage.getJA() );
+    ReadAccess<IndexType> csrTIA( storageT.getIA() );
+    ReadAccess<IndexType> csrTJA( storageT.getJA() );
+
+    IndexType offset = 0;
+
+    for ( IndexType i = 0; i < nNodes; ++i )
+    {
+        if ( i < numRows )
+        {
+            adjIA[i] = offset;
+            vwgt[i] = csrIA[i+1] - csrIA[i];
+            for ( IndexType jj = csrIA[i]; jj < csrIA[i+1]; ++jj )
+            {
+                // edge from row i to column csrJA[jj]
+
+                adjJA[offset++] = numRows + csrJA[jj];
+            }
+        }
+        else
+        {
+            IndexType j = i - numRows;
+            adjIA[i] = offset;
+            vwgt[i] = csrTIA[ j + 1 ] - csrTIA[ j ];
+            for ( IndexType ii = csrTIA[j]; ii < csrTIA[j+1]; ++ii )
+            {
+                // edge from col j to row csrTJA[ii]
+
+                adjJA[offset++] = csrTJA[ii];
+            }
+        }
+    }
+
+    SCAI_ASSERT_EQ_ERROR( offset, 2 * numValues, "serious traversing problem" );
+
+    adjIA[nNodes] = 2 * numValues;
+
+    int ncon = 1;
+
+    HArray<real_t> metisPWeights;
+
+    utilskernel::HArrayUtils::assign( metisPWeights, processorWeights );
+
+    WriteAccess<real_t> tpwgts( metisPWeights );  // otherwise const cast required
+
+    IndexType options[METIS_NOPTIONS];
+    METIS_SetDefaultOptions( options );
+    options[METIS_OPTION_PTYPE] = METIS_PTYPE_RB;
+
+    IndexType minConstraint = 0;
+
+    common::scoped_array<int> partition( new int [nNodes] );
+
+    for ( IndexType i = 0; i < nNodes; ++i )
+    {
+        partition[i] = nIndex;
+    }
+
+    METIS_PartGraphRecursive( &nNodes, &ncon, &adjIA[0], &adjJA[0], &vwgt[0], NULL, NULL, &np,
+                              &tpwgts[0], NULL, options, &minConstraint, &partition[0] );
+
+    // now write distribution of rows ( m ) + columns ( m )
+
+    {
+        WriteOnlyAccess<PartitionId> wRowMapping( rowMapping, numRows );
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            wRowMapping[i] = partition[i];
+        }
+    }
+
+    {
+        WriteOnlyAccess<PartitionId> wColMapping( colMapping, numColumns );
+
+        for ( IndexType j = 0; j < numColumns; ++j )
+        {
+            wColMapping[j] = partition[numRows + j];
         }
     }
 }
