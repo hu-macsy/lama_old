@@ -443,7 +443,7 @@ void IOStream::writeFormatted( const hmemo::HArray<ValueType>& val, int prec )
 
     for ( IndexType k = 0; k < n; ++k )
     {
-        *this << std::setprecision( prec ) << rVal[k] << std::endl;
+        *this << std::setprecision( prec ) << rVal[k] << '\n';
 
         if ( this->fail() )
         {
@@ -483,7 +483,7 @@ void IOStream::writeFormatted(
     {
         *this << std::setprecision( prec1 ) << rVal1[k] << ' ';
         *this << std::setprecision( prec2 ) << rVal2[k] << ' ';
-        *this << std::setprecision( prec3 ) << rVal3[k] << std::endl;
+        *this << std::setprecision( prec3 ) << rVal3[k] << '\n';
 
         if ( this->fail() )
         {
@@ -518,7 +518,7 @@ void IOStream::writeFormatted(
     for ( IndexType k = 0; k < n; ++k )
     {
         *this << std::setprecision( prec1 ) << rVal1[k] << ' ';
-        *this << std::setprecision( prec2 ) << rVal2[k] << std::endl;
+        *this << std::setprecision( prec2 ) << rVal2[k] << '\n';
 
         if ( this->fail() )
         {
@@ -562,7 +562,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
 
     hmemo::WriteOnlyAccess<ValueType> wVal( val, ctx, nlines );
 
+    // define variables outside of loop to avoid reallocations
+
     std::string line;
+    std::istringstream iss;
 
     for ( IndexType k = 0; k < nlines; ++k )
     {
@@ -576,7 +579,8 @@ void IOStream::readFormatted( hmemo::HArray<ValueType>& val,
                                  << " at entry line " << k << " of " << nlines )
         }
 
-        std::istringstream iss( line );
+        iss.str( line );
+        iss.clear();
 
         iss >> wVal[k];
     }
@@ -599,7 +603,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
     hmemo::WriteOnlyAccess<ValueType1> wVal1( val1, ctx, nlines );
     hmemo::WriteOnlyAccess<ValueType2> wVal2( val2, ctx, nlines );
 
+    // define variables outside of loop to avoid reallocations
+
     std::string line;
+    std::istringstream iss;
 
     for ( IndexType k = 0; k < nlines; ++k )
     {
@@ -614,7 +621,8 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
                                  << " at entry line " << k << " of " << nlines )
         }
 
-        std::istringstream iss( line );
+        iss.str( line );
+        iss.clear();
 
         iss >> wVal1[k];
         iss >> wVal2[k];
@@ -647,7 +655,10 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
     hmemo::WriteOnlyAccess<ValueType2> wVal2( val2, ctx, nlines );
     hmemo::WriteOnlyAccess<ValueType3> wVal3( val3, ctx, nlines );
 
+    // define variables outside of loop to avoid reallocations
+
     std::string line;
+    std::istringstream iss;
 
     for ( IndexType k = 0; k < nlines; ++k )
     {
@@ -663,7 +674,8 @@ void IOStream::readFormatted( hmemo::HArray<ValueType1>& val1,
                                  << " at entry line " << k << " of " << nlines )
         }
 
-        std::istringstream iss( line );
+        iss.str( line );
+        iss.clear();
 
         iss >> wVal1[k];
         iss >> wVal2[k];
