@@ -1,6 +1,6 @@
-#############
-Documentation
-#############
+###############
+LAMA User Guide
+###############
 
 LAMA is a multi-layer framework offering four main modules (see below) for fast heterogeneous software development. 
 It targets multi-core CPUs, NVIDIA GPUs and Intel Xeon Phi’s – for single-node or multi-node usage. 
