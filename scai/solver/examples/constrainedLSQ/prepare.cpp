@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Example of least square problem with boundary conditions
- * @author Thomas Brandes, Andreas Borgen Langva
+ * @author Thomas Brandes, Andreas Borgen Longva
  * @date 21.07.2017
  */
 

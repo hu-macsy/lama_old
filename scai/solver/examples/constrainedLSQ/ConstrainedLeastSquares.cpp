@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Implementation of methods for class to solve LeastSquares with constraints
- * @author Thomas Brandes, Andreas Borgen Langva
+ * @author Thomas Brandes, Andreas Borgen Longva
  * @date 21.07.2017
  */
 

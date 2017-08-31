@@ -26,7 +26,7 @@
  * @endlicense
  *
  * @brief Example of least square problem with boundary conditions
- * @author Thomas Brandes, Andreas Borgen Langva
+ * @author Thomas Brandes, Andreas Borgen Longva
  * @date 21.07.2017
  */
 
@@ -35,12 +35,14 @@
 
 #include <scai/tracing.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/common/Settings.hpp>
 
 using namespace scai;
 using namespace lama;
 using namespace solver;
+using namespace partitioning;
 
 int main( int argc, const char* argv[] )
 {
@@ -83,12 +85,37 @@ int main( int argc, const char* argv[] )
     ub.setContextPtr( ctx );
     lb.setContextPtr( ctx );
 
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    std::string partitioningKind = "BLOCK";
 
-    dmemo::DistributionPtr colDist( new dmemo::BlockDistribution( A.getNumColumns(), comm ));
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( A.getNumRows(), comm ));
+    common::Settings::getEnvironment( partitioningKind, "SCAI_PARTITIONING" );
 
-    A.redistribute( rowDist, colDist );
+    if ( !Partitioning::canCreate( partitioningKind ) )
+    {
+        std::cout << "ERROR: Partitioning kind = " << partitioningKind << " not supported" << std::endl;
+
+        std::vector<std::string> values;  // string is create type for the factory
+
+        Partitioning::getCreateValues( values );
+
+        std::cout << "Supported partitiong types are:";
+
+        for ( size_t i = 0; i < values.size(); ++i )
+        {
+            std::cout << " " << values[i];
+        }
+
+        std::cout << std::endl;
+
+        return -1;
+    }
+
+    PartitioningPtr thePartitioning( Partitioning::create( partitioningKind ) );
+  
+    thePartitioning->rectangularRedistribute( A, ( float ) 1.0 );
+
+    dmemo::DistributionPtr rowDist = A.getRowDistributionPtr();
+    dmemo::DistributionPtr colDist = A.getColDistributionPtr();
+
     lb.redistribute( colDist );
     ub.redistribute( colDist );
     b.redistribute( rowDist );
