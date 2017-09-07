@@ -51,6 +51,8 @@ scai_project (
         StencilMatrixTest
         DenseMatrixTest
 
+        MatrixAssemblyTest
+
         lamaMatrixTest
     )
 

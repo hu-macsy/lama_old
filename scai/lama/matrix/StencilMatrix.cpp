@@ -284,7 +284,7 @@ StencilMatrix<ValueType>::StencilMatrix( const StencilMatrix<ValueType>& other )
 {
     // copy constructor of sparse matrix should have already done all 
 
-    SCAI_LOG_ERROR( logger, "copy constructed stencil matrix. " << *this )
+    SCAI_LOG_INFO( logger, "copy constructed stencil matrix. " << *this )
 }
 
 /* -------------------------------------------------------------------------- */

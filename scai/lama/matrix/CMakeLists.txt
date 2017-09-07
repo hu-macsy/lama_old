@@ -48,6 +48,8 @@ scai_project (
         SparseMatrix
         StencilMatrix
 
+        MatrixAssemblyAccess
+
     HEADERS 
  
         all 
