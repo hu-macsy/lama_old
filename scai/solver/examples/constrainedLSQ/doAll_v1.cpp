@@ -148,7 +148,7 @@ int main( int argc, const char* argv[] )
 
     setupSmoothMatrix( L, ny, nz, double( strength ) );
 
-    joinMatrix( A, D, L );
+    A.vcat( D, L );    // A = [ D; L ]
 
     DenseVector<double> T_ext;
 

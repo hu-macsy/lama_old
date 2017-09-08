@@ -141,9 +141,16 @@ void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, cons
     }
     else
     {
-        // concatenate all input storages in a new CSR storage
+        IndexType ns = storageVector.size();
 
-        storage.rowCat( storageVector );
+        common::scoped_array<const _MatrixStorage*> storages( new const _MatrixStorage*[ ns ] );
+
+        for ( IndexType i = 0; i < ns; ++i )
+        {
+            storages[i] = storageVector[i].get();
+        }
+
+        storage.cat( 0, storages.get(), ns );   // vertical concatenation, dim = 0
     }
 }
 

@@ -720,6 +720,36 @@ public:
         const Scalar beta,
         const Matrix& C ) const = 0;
 
+    /**
+     * @brief Computes this = [ this; other ] dim = 0, or [this, other] dim = 1
+     *
+     * @param[in]   alpha   the Scalar alpha of the expression
+     * @param[in]   A       the Matrix A of the expression
+     * @param[in]   beta    the Scalar beta of the expression
+     * @param[in]   B       the Matrix B of the expression
+     */
+    virtual void cat( const IndexType dim, const Matrix* other[], const IndexType n );
+
+    /**
+     *   shorthand for cat( 0, { this, &other }, 2 )
+     */
+    virtual void vcat( const Matrix& other );
+
+    /**
+     *   shorthand for cat( 1, { this, &other }, 2 )
+     */
+    virtual void hcat( const Matrix& other );
+
+    /**
+     *   shorthand for cat( 0, { &m1, &m2 }, 2 )
+     */
+    virtual void vcat( const Matrix& m1, const Matrix& m2 );
+
+    /**
+     *   shorthand for cat( 1, { &m1, &m2 }, 2 )
+     */
+    virtual void hcat( const Matrix& m1, const Matrix& m2 );
+
     /** Getter routine for the local number of stored values. */
 
     virtual IndexType getLocalNumValues() const = 0;

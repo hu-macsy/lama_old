@@ -139,12 +139,14 @@ int main( int argc, const char* argv[] )
     common::Settings::getEnvironment( variation, "SCAI_VARIATION" );
 
     std::cout << "Use strength = " << strength << ", variation = " << variation << std::endl;
-    CSRSparseMatrix<double> A;
+
     CSRSparseMatrix<double> L;
 
     setupSmoothMatrix( L, ny, nz, double( strength ) );
 
-    joinMatrix( A, D, L );
+    CSRSparseMatrix<double> A;
+
+    A.vcat( D, L );   // A = [ D, L ]
 
     DenseVector<double> T_ext;
 

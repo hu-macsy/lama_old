@@ -615,7 +615,26 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others )
+void MatrixStorage<ValueType>::cat( const IndexType dim, const _MatrixStorage* others[], const IndexType n )
+{
+    if ( dim == 0 )
+    {
+        vcat( others, n );
+    }
+    else if ( dim == 1 )
+    {
+        hcat( others, n );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "dim = " << dim << " is illegal for concatenation, must be 0 or 1" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::vcat( const _MatrixStorage* others[], const IndexType n )
 {
     using namespace utilskernel;
 
@@ -623,11 +642,11 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
     IndexType numColumns = 0;
     IndexType numValues  = 0;
 
-    for ( size_t k = 0; k < others.size(); ++k )
+    for ( IndexType k = 0; k < n; ++k )
     {
         SCAI_ASSERT_ERROR( others[k], "NULL pointer in concatenation" )
 
-        _MatrixStorage& other = *others[k];
+        const _MatrixStorage& other = *others[k];
 
         numRows   += other.getNumRows();
         numValues += other.getNumValues();
@@ -651,9 +670,9 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
 
     ContextPtr ctx = this->getContextPtr();
 
-    for ( size_t k = 0; k < others.size(); ++k )
+    for ( IndexType k = 0; k < n; ++k )
     {
-        _MatrixStorage& other = *others[k];
+        const _MatrixStorage& other = *others[k];
 
         // Get CSR data of other block on same context as this storage
 
@@ -682,6 +701,45 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
     // Still set the final value
 
     csrIA[ numRows ] = numValues;
+
+    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::hcat( const _MatrixStorage* others[], const IndexType n )
+{
+    using namespace utilskernel;
+
+    IndexType numRows    = 0;
+    IndexType numColumns = 0;
+    IndexType numValues  = 0;
+
+    for ( IndexType k = 0; k < n; ++k )
+    {
+        SCAI_ASSERT_ERROR( others[k], "NULL pointer in concatenation" )
+
+        const _MatrixStorage& other = *others[k];
+
+        numRows   += other.getNumColumns();
+        numValues += other.getNumValues();
+
+        if ( other.getNumRows() > numRows )
+        {
+            numRows = other.getNumRows();
+        }
+    }
+
+    SCAI_LOG_ERROR( logger, "horizontal cat: final matrix " << numRows << " x " << numColumns << ", #non-zeros = " << numValues )
+
+    // now we know the final size and can allocate CSR storage for it
+
+    LArray<IndexType> csrIA( numRows + 1 );
+    LArray<IndexType> csrJA( numValues );
+    LArray<ValueType> csrValues( numValues );
+
+    COMMON_THROWEXCEPTION( "hcat not available yet" )
 
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }

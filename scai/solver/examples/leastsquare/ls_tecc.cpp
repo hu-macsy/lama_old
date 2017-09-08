@@ -50,7 +50,6 @@ using namespace scai::lama;
 
 typedef double ValueType;
 
-// build matrix result = [ a; b ]
 
 void joinMatrix( CSRSparseMatrix<ValueType>& result, const CSRSparseMatrix<ValueType>& a, const CSRSparseMatrix<ValueType>& b )
 {
@@ -438,7 +437,7 @@ int main( int, char** )
 
     setupSmoothMatrix( L, yMax, zMax );
 
-    joinMatrix( A, D, L );
+    A.vcat( D, L );    // A = [ D; L ]
 
     // Extend the T vector: T_ext = [ T; zeros( size( L, 1 ) ]
 

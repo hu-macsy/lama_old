@@ -1450,6 +1450,61 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::cat( const IndexType dim, const Matrix* other[], const IndexType n )
+{
+    SCAI_ASSERT_GT_ERROR( n, 0, "concatenation of 0 matrices" )
+
+    SCAI_ASSERT_VALID_INDEX_ERROR( dim, 2, "Illegal dimension for matrix concatentation, must be 0 or 1" )
+
+    if ( n == 1 )
+    {
+        SCAI_ASSERT_ERROR( other[0], "NULL matrix for concatenation" )
+        assign( *other[0] );
+        return;
+    }
+
+    // check for valid concatenation
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        SCAI_ASSERT_ERROR( other[i], "other matrix " << i << " is NULL for concatenation" )
+        
+        const Distribution& rowDist = other[i]->getRowDistribution();
+        const Distribution& colDist = other[i]->getColDistribution();
+
+        if ( dim == 0 )
+        {
+            SCAI_ASSERT_ERROR( rowDist.isReplicated(), "vertical concatenation, row dist must be replicated" )
+            SCAI_ASSERT_EQ_ERROR( colDist, other[0]->getColDistribution(), "vertical concatenation, col dist must be same" )
+        }
+        else
+        {
+            SCAI_ASSERT_ERROR( colDist.isReplicated(), "horizontal concatenation, col dist must be replicated" )
+            SCAI_ASSERT_EQ_ERROR( rowDist, other[0]->getRowDistribution(), "horizontal concatenaton, row dist must be same" )
+        }
+    }
+
+    if ( dim == 0  )
+    {
+        common::scoped_array<const _MatrixStorage*> storages( new const _MatrixStorage*[ n ] );
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            storages[i] = &other[i]->getLocalStorage();
+        }
+        mLocalData->cat( 0, storages.get(), n );
+        dmemo::DistributionPtr rowDist( new NoDistribution( mLocalData->getNumRows() ) );
+        assign( *mLocalData, rowDist, other[0]->getColDistributionPtr() );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "horizontal concatenation not supported yet" )
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     const ValueType alpha,
     const SparseMatrix<ValueType>& A,

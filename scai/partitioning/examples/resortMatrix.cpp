@@ -31,8 +31,6 @@
 
 #include <scai/lama.hpp>
 
-#include <metis.h>
-
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
