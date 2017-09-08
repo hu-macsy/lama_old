@@ -42,7 +42,8 @@ project ( LAMA_ALL CXX )
 ##  NOTE: list must be extended if new modules are added
 
 set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo 
-                       blaskernel utilskernel sparsekernel dmemo lama partitioning solver  )
+                       blaskernel utilskernel sparsekernel dmemo lama 
+                       partitioning solver tools )
  
 ### Define modules that should be used; default: use all modules
 ### The used modules can be configured explicitly via command line or cmake GUI

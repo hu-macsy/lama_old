@@ -37,15 +37,12 @@ include ( scai_macro/scai_example_makefile )
 
 set ( HEADER LamaConfig.hpp LamaTiming.hpp )
 
-foreach ( executable lamaSolver lamaInfo matrixStencilGenerator matrixRandomGenerator stencilSolver vectorGenerator )
+foreach ( executable stencilSolver )
 
     scai_add_example( EXECUTABLE ${executable}.exe
                       FILES      ${executable}.cpp )
 
 endforeach ( executable )
-
-# GenMatrices.py: copy only to build and install directory
-configure_file( GenMatrices.py GenMatrices.py COPYONLY )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )
@@ -55,6 +52,6 @@ scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
 ## install examples sources
 
-install ( FILES       ${EXAMPLE_FILES} ${HEADER} GenMatrices.py MultiBench.py README.txt
+install ( FILES       ${EXAMPLE_FILES} ${HEADER} MultiBench.py README.txt
           DESTINATION ${INSTALL_EXAMPLE_DIR} )
 

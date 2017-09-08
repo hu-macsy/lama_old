@@ -721,24 +721,15 @@ public:
         const Matrix& C ) const = 0;
 
     /**
-     * @brief Computes this = [ this; other ] dim = 0, or [this, other] dim = 1
+     * @brief Concatenate a certain number of matrices and store the result in this matrix
      *
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   A       the Matrix A of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   B       the Matrix B of the expression
+     * @param[in]   dim     dimension used for concatenation, either 0 or 1
+     * @param[in]   other   array with n const pointer to the matrices that will be concatenated
+     * @param[in]   n       the number of matrices to concatenate 
+     *
+     * Current restriction: the distribution must be replicated for all involved matrices.
      */
     virtual void cat( const IndexType dim, const Matrix* other[], const IndexType n );
-
-    /**
-     *   shorthand for cat( 0, { this, &other }, 2 )
-     */
-    virtual void vcat( const Matrix& other );
-
-    /**
-     *   shorthand for cat( 1, { this, &other }, 2 )
-     */
-    virtual void hcat( const Matrix& other );
 
     /**
      *   shorthand for cat( 0, { &m1, &m2 }, 2 )

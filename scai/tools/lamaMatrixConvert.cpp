@@ -1,5 +1,5 @@
 /**
- * @file lama/examples/io/matrixConvert.cpp
+ * @file tools/lamaMatrixConvert.cpp
  *
  * @license
  * Copyright (c) 2009-2017

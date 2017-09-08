@@ -938,18 +938,6 @@ void Matrix::cat( const IndexType dim, const Matrix*[], const IndexType n )
                             << ", n = " << n << ", kind = " << getMatrixKind() )
 }
 
-void Matrix::vcat( const Matrix& other )
-{
-    const Matrix* mlist[2] = { this, &other };
-    cat ( 0, mlist, 2 );
-}
-
-void Matrix::hcat( const Matrix& other )
-{
-    const Matrix* mlist[2] = { this, &other };
-    cat ( 1, mlist, 2 );
-}
-
 void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
 {
     const Matrix* mlist[2] = { &m1, &m2 };

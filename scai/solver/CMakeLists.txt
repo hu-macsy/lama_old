@@ -41,14 +41,13 @@ include ( scai_macro/scai_library )
 include ( scai_function/relative_install )
  
 ## Define new SCAI module project with its internal/external dependencies
-## Note: only some examples depend on partitioning
  
 scai_module (
 
     MODULE_NAME   solver 
 
     INTERNAL_DEPS common logging tracing tasking hmemo kregistry 
-                  blaskernel utilskernel sparsekernel dmemo lama partitioning
+                  blaskernel utilskernel sparsekernel dmemo lama
 ) 
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
