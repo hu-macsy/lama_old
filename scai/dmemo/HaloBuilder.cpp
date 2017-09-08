@@ -40,6 +40,8 @@
 
 #include <scai/common/macros/assert.hpp>
 
+#include <set>
+
 using namespace scai::hmemo;
 
 namespace scai
@@ -232,6 +234,78 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
         providesIndexesAccess[i] = distribution.global2local( pIndexes[i] );
     }
 }
+
+void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo& halo, const scai::hmemo::HArray<IndexType>& localFineToCoarse, const scai::hmemo::HArray<IndexType>& haloFineToCoarse, Halo& coarseHalo) {
+    SCAI_REGION( "HaloBuilder.coarsenHalo" )
+    scai::hmemo::ReadAccess<IndexType> providedIndices(halo.getProvidesIndexes());
+    scai::hmemo::ReadAccess<IndexType> requiredIndices(halo.getRequiredIndexes());
+    scai::dmemo::CommunicationPlan sendPlan = halo.getProvidesPlan();
+    scai::dmemo::CommunicationPlan recvPlan = halo.getRequiredPlan();
+
+    SCAI_ASSERT(providedIndices.size() == sendPlan.totalQuantity(), "Communication plan does not fit provided indices.");
+    SCAI_ASSERT(requiredIndices.size() == recvPlan.totalQuantity(), "Communication plan does not fit required indices.");
+
+    std::vector<IndexType> newProvidedIndices;
+    std::vector<IndexType> sendQuantities;
+
+    {
+        scai::hmemo::ReadAccess<IndexType> rFineToCoarse(localFineToCoarse);
+        //construct new send plan
+        for (IndexType i = 0; i < sendPlan.size(); i++) {
+            scai::dmemo::CommunicationPlan::Entry entry = sendPlan[i];
+            if (IndexType(sendQuantities.size()) <= entry.partitionId) sendQuantities.resize(entry.partitionId+1);
+            std::set<IndexType> sendSet;
+            for (IndexType j = entry.offset; j < entry.offset + entry.quantity; j++) {
+                SCAI_ASSERT(j < providedIndices.size(), "Communication plan does not fit provided indices.");
+                IndexType provIndex = providedIndices[j];
+                SCAI_ASSERT(provIndex < rFineToCoarse.size(), "Provided index " << provIndex << " seemingly not local.");
+                sendSet.insert(coarseDistribution.global2local(rFineToCoarse[providedIndices[j]]));
+            }
+            newProvidedIndices.insert(newProvidedIndices.end(), sendSet.begin(), sendSet.end());
+            sendQuantities[entry.partitionId] = sendSet.size();
+        }
+    }
+    SCAI_ASSERT(IndexType(newProvidedIndices.size()) <= providedIndices.size(), "New index list is bigger than old one.");
+    coarseHalo.mProvidesPlan.allocate(sendQuantities.data(), sendQuantities.size());
+
+    SCAI_ASSERT( coarseHalo.mProvidesPlan.totalQuantity() == IndexType(newProvidedIndices.size()),
+        "Send plan has " << coarseHalo.mProvidesPlan.totalQuantity() << " entries, but " << newProvidedIndices.size() << " were given." )
+
+    std::vector<IndexType> newRequiredIndices;
+    std::vector<IndexType> recvQuantities;
+
+    {
+        scai::hmemo::ReadAccess<IndexType> rFineToCoarse(haloFineToCoarse);
+        //construct new recv plan
+        for (IndexType i = 0; i < recvPlan.size(); i++) {
+            scai::dmemo::CommunicationPlan::Entry entry = recvPlan[i];
+            if (IndexType(recvQuantities.size()) <= entry.partitionId) recvQuantities.resize(entry.partitionId+1);
+            std::set<IndexType> recvSet;
+            for (IndexType j = entry.offset; j < entry.offset + entry.quantity; j++) {
+                IndexType reqIndex = requiredIndices[j];
+                SCAI_ASSERT(halo.global2halo(reqIndex) != nIndex, "Index" << reqIndex << " seemingly not in halo");
+                SCAI_ASSERT(halo.global2halo(reqIndex) < rFineToCoarse.size(), "Index" << halo.global2halo(reqIndex) << " too big for halo data");
+                recvSet.insert(rFineToCoarse[halo.global2halo(requiredIndices[j])]);
+            }
+            for (IndexType reqIndex : recvSet) {
+                coarseHalo.setGlobal2Halo(reqIndex, newRequiredIndices.size());
+                newRequiredIndices.push_back(reqIndex);
+            }
+            recvQuantities[entry.partitionId] = recvSet.size();
+        }
+    }
+    SCAI_ASSERT(IndexType(newRequiredIndices.size()) <= requiredIndices.size(), "New index list is bigger than old one.");
+
+    coarseHalo.mRequiredPlan.allocate(recvQuantities.data(), recvQuantities.size());
+
+    SCAI_ASSERT( coarseHalo.mRequiredPlan.totalQuantity() == IndexType(newRequiredIndices.size()),
+        "Provides plan has " << coarseHalo.mRequiredPlan.totalQuantity() << " entries, but " << newRequiredIndices.size() << " were given." )
+    
+    coarseHalo.mRequiredIndexes = HArray<IndexType>(newRequiredIndices.size(), newRequiredIndices.data());
+    coarseHalo.mProvidesIndexes = HArray<IndexType>(newProvidedIndices.size(), newProvidedIndices.data());
+
+}
+
 
 } /* end namespace dmemo */
 
