@@ -288,7 +288,6 @@ void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo
                 recvSet.insert(rFineToCoarse[halo.global2halo(requiredIndices[j])]);
             }
             for (IndexType reqIndex : recvSet) {
-                coarseHalo.setGlobal2Halo(reqIndex, newRequiredIndices.size());
                 newRequiredIndices.push_back(reqIndex);
             }
             recvQuantities[entry.partitionId] = recvSet.size();
@@ -303,7 +302,10 @@ void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo
     
     coarseHalo.mRequiredIndexes = HArray<IndexType>(newRequiredIndices.size(), newRequiredIndices.data());
     coarseHalo.mProvidesIndexes = HArray<IndexType>(newProvidedIndices.size(), newProvidedIndices.data());
-
+    scai::hmemo::ReadAccess<IndexType> rRequired(coarseHalo.mRequiredIndexes);
+    for (IndexType i = 0; i < rRequired.size(); i++) {
+        coarseHalo.setGlobal2Halo(rRequired[i], i);
+    }
 }
 
 
