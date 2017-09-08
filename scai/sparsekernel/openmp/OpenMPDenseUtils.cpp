@@ -70,7 +70,7 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     SCAI_REGION( "OpenMP.DenseUtils.nonZeroValues" )
 
     IndexType count = 0;
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE ) reduction( + : count )
+    #pragma omp parallel for reduction( + : count )
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -107,7 +107,7 @@ void OpenMPDenseUtils::getCSRSizes(
         }
     }
 
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -148,7 +148,7 @@ void OpenMPDenseUtils::getCSRValues(
 
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -202,7 +202,7 @@ void OpenMPDenseUtils::setCSRValues(
     SCAI_LOG_INFO( logger,
                    "set CSRValues<" << TypeTraits<DenseValueType>::id() << ", " << TypeTraits<CSRValueType>::id() << ">" << ", size is " << numRows << " x " << numColumns )
     // parallelization possible as offset array csrIA is available
-    #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; i++ )
     {
@@ -242,7 +242,7 @@ void OpenMPDenseUtils::set(
     {
         case binary::COPY :
         {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {
@@ -258,7 +258,7 @@ void OpenMPDenseUtils::set(
 
         default:
         {
-            #pragma omp parallel for schedule( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {
@@ -284,7 +284,7 @@ void OpenMPDenseUtils::setDiagonalValue(
     SCAI_REGION( "OpenMP.DenseUtils.setDiagonalValue" )
 
     IndexType numDiagonalValues = std::min( numRows, numColumns );
-    #pragma omp parallel for schedule (SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numDiagonalValues; ++i )
     {
@@ -312,7 +312,7 @@ void OpenMPDenseUtils::setValue(
         case binary::COPY :
         {
             // Parallel initialization very important for efficient  allocation
-            #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {
@@ -329,7 +329,7 @@ void OpenMPDenseUtils::setValue(
         {
             // Parallel initialization very important for efficient  allocation
 
-            #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {
@@ -344,7 +344,7 @@ void OpenMPDenseUtils::setValue(
 
         default :
         {
-            #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+            #pragma omp parallel for 
 
             for ( IndexType i = 0; i < numRows; ++i )
             {
@@ -369,7 +369,7 @@ void OpenMPDenseUtils::scaleRows(
 {
     SCAI_REGION( "OpenMP.DenseUtils.scaleRows" )
 
-    #pragma omp parallel for schedule ( SCAI_OMP_SCHEDULE )
+    #pragma omp parallel for
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

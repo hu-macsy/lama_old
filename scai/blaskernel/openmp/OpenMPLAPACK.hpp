@@ -54,7 +54,7 @@ namespace scai
 namespace blaskernel
 {
 
-class OpenMPLAPACK
+class COMMON_DLL_IMPORTEXPORT OpenMPLAPACK
 {
 public:
 

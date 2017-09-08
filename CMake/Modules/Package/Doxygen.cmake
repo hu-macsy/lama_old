@@ -37,3 +37,14 @@
 ### DOXYGEN_EXECUTABLE
 
 find_package ( Doxygen ${SCAI_FIND_PACKAGE_FLAGS} )
+
+scai_build_variable ( NAME      USE_DOXYGEN
+                      BOOL 
+                      DEFAULT   ${DOXYGEN_FOUND}
+                      DOCSTRING "use of doxygen (for system documentation)" )
+
+scai_summary_external ( NAME       Doyxgen
+                        FOUND      ${DOXYGEN_FOUND}
+                        ENABLED    ${USE_DOXYGEN} 
+                        VERSION    ${DOXYGEN_VERSION} 
+                        EXECUTABLE ${DOXYGEN_EXECUTABLE} )

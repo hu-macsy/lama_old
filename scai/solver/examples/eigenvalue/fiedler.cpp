@@ -93,7 +93,7 @@ void makeLaplacian( CSRSparseMatrix<double>& L )
 
         for ( IndexType i = 0; i < localStorage.getNumRows() ; ++i )
         {
-            const double sum = rIA[i+1] - rIA[i] - 1;
+            const double sum = static_cast<double>( rIA[i+1] - rIA[i] - 1 );
  
             for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
             {
@@ -133,9 +133,11 @@ int main( int argc, const char* argv[] )
     CSRSparseMatrix<double> L;  // laplacian matrix
 
     IndexType kmax = 100;        // maximal number of iterations
-    Scalar    eps  = 1e-7;       // accuracy for maxNorm 
+    Scalar    eps  = 1e-5;       // accuracy for maxNorm 
 
     L.readFromFile( argv[1] );
+
+    double time = common::Walltime::get();
 
     SCAI_ASSERT_EQ_ERROR( L.getNumRows(), L.getNumColumns(), "matrix not square" )
 
@@ -171,7 +173,7 @@ int main( int argc, const char* argv[] )
     // set up the CG solver that is used for the inverse power method
 
     CG cgSolver( "InversePowerMethodSolver" );
-    CriterionPtr criterion1( new IterationCount( 20 ) );
+    CriterionPtr criterion1( new IterationCount( 50 ) );
     NormPtr norm( Norm::create( "L2" ) );   // Norm from factory
     CriterionPtr criterion2( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
     CriterionPtr criterion( new Criterion( criterion1, criterion2, Criterion::OR ) );
@@ -207,6 +209,10 @@ int main( int argc, const char* argv[] )
     t[0] = 0.0;
     Scalar beta = u.dotProduct( t ) / alpha;
     t = t - beta * u;
+
+    time = common::Walltime::get() - time ;
+
+    std::cout << "Time: " << time << " seconds" << std::endl;
 
     t.writeToFile( "eigenvector.mtx" );
 }

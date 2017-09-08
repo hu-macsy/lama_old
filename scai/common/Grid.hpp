@@ -55,7 +55,7 @@ namespace common
  *  Might be increased as required. 
  */
 
-#define SCAI_GRID_MAX_DIMENSION 4
+#define SCAI_GRID_MAX_DIMENSION ( (IndexType) 4 )
 
 /** Data structure for an n-dimensional grid.
  *
@@ -170,7 +170,7 @@ public:
      *  @param[in]     offsets specifies the offsets in each dim, can be positive or negative
      *  @param[in]     sizes   sizes for each dim needed for checking boundaries
      *  @param[in]     borders specify the boundary types of the grid, size is 2 times nDims
-     *  @param8in]     nDims   number of dimensions for the position
+     *  @param[in]     nDims   number of dimensions for the position
      */
     static bool getOffsetPos( 
         IndexType pos[], 

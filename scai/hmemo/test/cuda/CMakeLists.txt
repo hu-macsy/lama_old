@@ -46,6 +46,8 @@ scai_project (
 
 include_directories ( ${BOOST_INCLUDE_DIR} )
 
-cuda_add_executable ( hmemoCUDATest ${CUDA_SOURCES} ${CXX_SOURCES} )
-
-target_link_libraries ( hmemoCUDATest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+scai_test ( EXECUTABLE hmemoCUDATest 
+            CUDA
+            FILES ${CUDA_SOURCES} ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN )

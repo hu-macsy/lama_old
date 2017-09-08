@@ -32,6 +32,10 @@
  # @date 03.07.2016
 ###
 
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
+
 enable_language ( C )
 
 find_package( OpenGL )
@@ -39,33 +43,28 @@ find_package( GLUT )
 
 if    ( OPENGL_FOUND AND GLUT_FOUND )
 
-	include_directories( ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} )
+    include_directories( ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR} )
 
-	set ( EXECUTABLES nbody test )
+    set ( EXECUTABLES nbody test )
 
-	foreach ( executable ${EXECUTABLES} )
-	    add_executable( ${executable}.exe ${executable}.cpp )
-	    target_link_libraries( ${executable}.exe ${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
-	    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp )
-	    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
-	endforeach ( executable )
+    foreach ( executable ${EXECUTABLES} )
 
-	# configure make.inc for examples
-	include ( Functions/prepareExamplesMakeInc )
-	prepareExamplesMakeInc()
-	configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-	configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+        scai_add_example ( EXECUTABLE ${executable}.exe
+                           FILES      ${executable}.cpp )
 
-	## install examples
+        target_link_libraries( ${executable}.exe ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} )
 
-	set ( PROJECT_EXAMPLE_SUB_DIR ${PROJECT_EXAMPLE_DIR}/mandelbrot )
+    endforeach ( executable )
 
-	install ( FILES       ${EXAMPLE_FILES}
-	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-	install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-	          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-	          RENAME      Makefile  )
+    # use the recommended installation directory for this example directory
+    scai_example_directory ( INSTALL_EXAMPLE_DIR )
+
+    # generate build file in example directory
+    scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+
+    ## install examples sources
+    install ( FILES       ${EXAMPLE_FILES}
+              DESTINATION ${INSTALL_EXAMPLE_DIR} )
+
 
 endif ( OPENGL_FOUND AND GLUT_FOUND )

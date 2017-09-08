@@ -334,6 +334,14 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
+    virtual void reduce( 
+        Vector& v, 
+        const IndexType dim, 
+        const common::binary::BinaryOp reduceOp, 
+        const common::unary::UnaryOp elemOp ) const;
+
+    /* Implementation of pure method of class Matrix. */
+
     virtual void scale( const Vector& scaling );
 
     /* Implementation of pure method of class Matrix. */
@@ -468,6 +476,11 @@ public:
     /* Implemenation of pure method of class Matrix */
 
     virtual void matrixPlusMatrix( const Scalar alpha, const Matrix& A, const Scalar beta, const Matrix& B );
+
+    /**
+     * Override Matrix::cat
+     */
+    virtual void cat( const IndexType dim, const Matrix* other[], const IndexType n );
 
     /* Implemenation of pure method of class Matrix */
 

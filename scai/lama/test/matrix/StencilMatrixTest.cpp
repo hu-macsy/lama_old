@@ -144,4 +144,64 @@ BOOST_AUTO_TEST_CASE( Stencil3D27PTest )
 
 /* ------------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( CopyConstructorTest )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType N1 = 5;
+    const IndexType N2 = 3;
+    const IndexType N3 = 4;
+
+    common::Stencil3D<RealType> stencil( 27 );
+    common::Grid3D grid( N1, N2, N3 );
+
+    StencilMatrix<RealType> stencilMatrix1( grid, stencil );
+    SCAI_LOG_INFO( logger, "copy this stencil matrix: " << stencilMatrix1 )
+    StencilMatrix<RealType> stencilMatrix2( stencilMatrix1 );
+    SCAI_LOG_INFO( logger, "copied stencil matrix = " << stencilMatrix2 )
+
+    CSRSparseMatrix<RealType> csrMatrixStencil1( stencilMatrix1 );
+    SCAI_LOG_INFO( logger, "csr matrix 1 = " << csrMatrixStencil1 )
+    CSRSparseMatrix<RealType> csrMatrixStencil2( stencilMatrix2 );
+    SCAI_LOG_INFO( logger, "csr matrix 2 = " << csrMatrixStencil2 )
+
+    Scalar diffNorm = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
+
+    RealType diff = diffNorm.getValue<RealType>();
+
+    BOOST_CHECK( diff < 1e-5 );
+}
+
+/* ------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( AssignTest )
+{
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
+
+    const IndexType N1 = 5;
+    const IndexType N2 = 3;
+    const IndexType N3 = 4;
+
+    common::Stencil3D<RealType> stencil( 27 );
+    common::Grid3D grid( N1, N2, N3 );
+
+    StencilMatrix<RealType> stencilMatrix1( grid, stencil );
+    StencilMatrix<RealType> stencilMatrix2;
+
+    stencilMatrix2 = stencilMatrix1;
+
+    CSRSparseMatrix<RealType> csrMatrixStencil1( stencilMatrix1 );
+    CSRSparseMatrix<RealType> csrMatrixStencil2( stencilMatrix2 );
+
+    Scalar diffNorm = csrMatrixStencil1.maxDiffNorm( csrMatrixStencil2 );
+
+    RealType diff = diffNorm.getValue<RealType>();
+
+    BOOST_CHECK( diff < 1e-5 );
+}
+
+/* ------------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_SUITE_END();

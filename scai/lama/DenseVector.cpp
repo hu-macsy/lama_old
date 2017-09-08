@@ -1095,6 +1095,32 @@ Scalar DenseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+bool DenseVector<ValueType>::all( const common::binary::CompareOp, const Scalar ) const
+{
+    COMMON_THROWEXCEPTION( "not supported yet" )
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Vector& other ) const
+{
+    SCAI_ASSERT_EQ_ERROR( other.getValueType(), getValueType(), "all only with same type" )
+    SCAI_ASSERT_EQ_ERROR( other.getVectorKind(), Vector::DENSE, "only same kind" )
+    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch" )
+
+    const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+
+    bool localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseVector<ValueType>::swap( Vector& other )
 {
     SCAI_LOG_DEBUG( logger, "swap:" << *this << " with " << other )

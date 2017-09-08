@@ -257,7 +257,34 @@ const CSRStorage<ValueType>& StencilMatrix<ValueType>::getHaloStorage() const
 template<typename ValueType>
 StencilMatrix<ValueType>* StencilMatrix<ValueType>::newMatrix() const
 {
-    return NULL;
+    return new StencilMatrix<ValueType>();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+const Stencil<ValueType>& StencilMatrix<ValueType>::getStencil() const
+{
+    SCAI_ASSERT_ERROR( mLocalData.get(), "no local data available" )
+
+    const StencilStorage<ValueType>* localStencilStorage = dynamic_cast<const StencilStorage<ValueType>*>( mLocalData.get() );
+
+    SCAI_ASSERT_ERROR( localStencilStorage, "local data no stencil storage: " << mLocalData )
+
+    return localStencilStorage->getStencil();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+StencilMatrix<ValueType>::StencilMatrix( const StencilMatrix<ValueType>& other ) :
+
+    SparseMatrix<ValueType>( other )
+
+{
+    // copy constructor of sparse matrix should have already done all 
+
+    SCAI_LOG_INFO( logger, "copy constructed stencil matrix. " << *this )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -265,7 +292,7 @@ StencilMatrix<ValueType>* StencilMatrix<ValueType>::newMatrix() const
 template<typename ValueType>
 StencilMatrix<ValueType>* StencilMatrix<ValueType>::copy() const
 {
-    return NULL;
+    return new StencilMatrix<ValueType>( *this );
 }
 
 /* -------------------------------------------------------------------------- */

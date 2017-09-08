@@ -273,11 +273,18 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 
     // column major ordering of grid( n1, n2, n3, n4 ) is dist (1, n1, n1*n2, n1*n2*n3 )
 
-    colMajorDist[ 0 ] = 1;
-
-    for ( IndexType i = 1; i < nDims; ++i )
+    if ( nDims > SCAI_GRID_MAX_DIMENSION )
     {
-        colMajorDist[i] = colMajorDist[ i - 1 ] * grid.size( i - 1 );
+        COMMON_THROWEXCEPTION( "serious: too many dims" )
+    }
+    else
+    {
+        colMajorDist[ 0 ] = 1;
+
+        for ( IndexType i = 1; i < nDims; ++i )
+        {
+            colMajorDist[i] = colMajorDist[ i - 1 ] * grid.size( i - 1 );
+        }
     }
 
     hmemo::ReadAccess<ValueType> rIn( in );

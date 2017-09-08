@@ -323,12 +323,14 @@ inline MPI_Datatype MPICommunicator::getMPIType( common::scalar::ScalarType styp
             return MPI_DOUBLE;
         case common::scalar::LONG_DOUBLE         :
             return MPI_LONG_DOUBLE;
+#ifdef SCAI_COMPLEX_SUPPORTED
         case common::scalar::COMPLEX             :
             return MPI_COMPLEX;
         case common::scalar::DOUBLE_COMPLEX      :
             return MPI_DOUBLE_COMPLEX;
         case common::scalar::LONG_DOUBLE_COMPLEX :
             return mComplexLongDoubleType;
+#endif 
         case common::scalar::CHAR                :
             return MPI_CHAR;
         case common::scalar::UNSIGNED_INT        :

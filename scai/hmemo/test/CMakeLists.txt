@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_hmemo tests
+ # @brief CMake configuration file for SCAI module hmemo
  # @author Thomas Brandes
- # @date 16.06.2015
+ # @date 04.07.2017
 ###
 
 set ( CXX_SOURCES
@@ -41,31 +41,22 @@ set ( CXX_SOURCES
       MemoryTest
 ) 
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
+scai_test ( EXECUTABLE hmemoTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN )
 
-add_executable ( hmemoTest ${CXX_SOURCES} )
-
-target_link_libraries ( hmemoTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
-
-if    ( CUDA_FOUND AND USE_CUDA )
-    add_subdirectory ( cuda )
-endif ( CUDA_FOUND AND USE_CUDA )
-
-if    ( USE_MIC )
-    add_subdirectory ( mic )
-endif ( USE_MIC )
+scai_subdirectories( CUDA MIC )
 
 ### Copy the README and xmltest.sh file in build directory ### 
 
 file ( COPY README DESTINATION ${CMAKE_CURRENT_BINARY_DIR} ) 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
 
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverage.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverage.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+###  copy xmltest.sh script
+
+scai_test_scripts( SCRIPTS       xmltest.sh )
+
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
+
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )
+

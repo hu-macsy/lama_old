@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 
                 for ( IndexType i = 0; i < n; ++i )
                 {
-                    ValueType expected = ( i + 1 ) * ( i + 2 ) / 2;
+                    ValueType expected = static_cast<double>( ( i + 1 ) * ( i + 2 ) / 2  );
                     Scalar computed = rVector[i];
                     BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
                 }

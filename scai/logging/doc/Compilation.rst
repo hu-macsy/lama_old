@@ -89,38 +89,3 @@ innermost loops.
 Please keep in mind that setting a certain level at compile time will remove all logging statements with a
 lower level and they can not be used at runtime any more.
 
-CMake-Support
--------------
-
-The logging library itself is built with CMake.
-
-For using the logging library an CMake module ``Findscai_logging.cmake`` is provided.
-
-.. code-block:: c++
-
-    # find installation of logging library
-
-    find_package( scai_logging REQUIRED )
-
-    if ( SCAI_LOGGING_FOUND )
-       # set the include directory containing logging.hpp
-       include_directories( ${SCAI_LOGGING_INCLUDE_DIR} )
-       # set compilation flag, same as -DSCAI_LOG_${SCAI_LOGGING_LEVEL} )
-       add_definitions( -D${SCAI_LOGGING_FLAG} )
-       ...
-       target_link_libraries( <newlib> ${SCAI_LOGGING_LIBRARY} )
-    endif ( SCAI_LOGGING_FOUND )
-
-The default logging level is chosen by the built type.
-
-.. code-block:: c++
-
-    #  CMAKE_BUILD_TYPE == Debug   : use -DSCAI_LOG_LEVEL_DEBUG
-    #  CMAKE_BUILD_TYPE == Release : use -DSCAI_LOG_LEVEL_INFO
-    #
-    #  For serious problems: -DSCAI_LOG_LEVEL_TRACE
-    #  For benchmarks:       -DSCAI_LOG_LEVEL_OFF (or -DSCAI_LOG_LEVEL_FATAL, -DSCAI_LOG_LEVEL_ERROR)
-
-The logging level can be set via ccmake using the CMake variable ``SCAI_LOGGING_LEVEL``.
-
-

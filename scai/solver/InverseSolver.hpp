@@ -97,11 +97,6 @@ public:
      */
     virtual void solveImpl();
 
-    /**
-     * @brief Override method of solver as we set also context in runtime stuff
-     */
-    virtual void setContextPtr( hmemo::ContextPtr context );
-
     /** This method returns the inverse of the coefficient matrix.
      *
      *  This routine must not be called before having called 'initialize'.

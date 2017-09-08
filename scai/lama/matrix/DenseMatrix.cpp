@@ -1539,6 +1539,101 @@ void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
     getLocalStorage().setDiagonal( diagonalValue.getValue<ValueType>() );
 }
 
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseMatrix<ValueType>::reduce(
+    Vector& v, 
+    const IndexType dim, 
+    const common::binary::BinaryOp reduceOp, 
+    const common::unary::UnaryOp elemOp ) const
+{
+    SCAI_REGION( "Mat.Dense.reduce" )
+
+    // SCAI_ASSERT_EQ_ERROR( v.getValueType(), 
+
+    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
+
+    if ( dim == 0 )
+    {
+        denseV.allocate( getRowDistributionPtr() );
+
+        denseV = ValueType( 0 );   // initialize v with neutral element
+
+        for ( size_t k = 0; k < mData.size(); ++k )
+        {
+            mData[k]->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+        }
+
+        return;
+    }
+
+    if ( dim == 1 )
+    {
+        denseV.allocate( getColDistributionPtr() );
+
+        denseV = ValueType( 0 );   // initialize v with neutral element
+
+        if ( getRowDistribution().getCommunicator().getSize() == 1 )
+        {
+            // full matrix is replicated, the columns might have any distribution
+
+            PartitionId rank = getColDistribution().getCommunicator().getRank();
+
+            mData[rank]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+
+            return;   // matrix is replicated, compute just my values
+        }
+
+        // rows are distributed
+
+        IndexType np = getColDistribution().getCommunicator().getSize();
+
+        if ( np == 1 )
+        {
+             SCAI_ASSERT_EQ_ERROR( reduceOp, common::binary::ADD, "only add supported" )
+
+             mData[0]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+             getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
+             return;
+        }
+
+        // circular shift of local parts and reduce vals from here
+
+        const int COMM_DIRECTION = 1;       // circular shifting
+        HArray<ValueType>& sendValues = mSendValues;
+        HArray<ValueType>& recvValues = mReceiveValues;
+        IndexType maxSize = getColDistribution().getMaxLocalSize();
+
+        // send/recv buffers must be large enough to keep largest amout of data from any processor
+
+        ContextPtr contextPtr = Context::getHostPtr();
+        recvValues.reserve( contextPtr, maxSize );
+        sendValues.reserve( contextPtr, maxSize );
+
+        utilskernel::HArrayUtils::assign( sendValues, denseV.getLocalValues() );
+
+        const Communicator& comm = getColDistribution().getCommunicator();
+
+        for ( PartitionId p = 0; p < np; ++p )
+        {
+            // compute the owner of the values that are in the current send buffer
+            PartitionId actualPartition = comm.getNeighbor( -p );
+            mData[actualPartition]->reduce( sendValues, 1, reduceOp, elemOp );
+            comm.shiftArray( recvValues, sendValues, COMM_DIRECTION );
+            std::swap( sendValues, recvValues );
+        }
+
+        utilskernel::HArrayUtils::assign( denseV.getLocalValues(), sendValues );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "illegal reduce dim = " << dim << " for dense matrix" )
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseMatrix<ValueType>::scale( const Vector& vector )
 {

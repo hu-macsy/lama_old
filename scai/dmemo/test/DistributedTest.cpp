@@ -133,42 +133,6 @@ BOOST_AUTO_TEST_CASE( swapTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( csrGraphTest )
-{
-    const IndexType globalSize = 5;
-
-    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
-
-    DistributionPtr dist( new BlockDistribution( globalSize, comm ) );
-
-    MockDistributed mock( dist );
-
-    IndexType localSize = dist->getLocalSize();
-
-    common::scoped_array<IndexType> ia ( new IndexType[localSize] );
-    common::scoped_array<IndexType> ja ( new IndexType[localSize] );
-    common::scoped_array<IndexType> vwgt ( new IndexType[localSize] );
-    IndexType global;
-
-    for ( IndexType i = 0; i < localSize; ++i )
-    {
-        ia[i] = nIndex;
-        vwgt[i] = nIndex;
-    }
-
-    // test the default implementation
-
-    mock.buildCSRGraph( ia.get(), ja.get(), vwgt.get(), &global );
-
-    for ( IndexType i = 0; i < localSize; ++i )
-    {
-        BOOST_CHECK( ia[i] != nIndex );
-        BOOST_CHECK( vwgt[i] != nIndex );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_SUITE_END();
 
 /* --------------------------------------------------------------------- */

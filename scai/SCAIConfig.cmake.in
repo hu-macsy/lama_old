@@ -1,0 +1,50 @@
+#
+# SCAIConfig.cmake
+#
+# Result variables
+# ^^^^^^^^^^^^^^^^
+#
+# This module will set the following variables in your project:
+#
+# ``SCAI_INCLUDE_DIRS``
+#   where to find lama.hpp, and all other include files
+# ``SCAI_LIBRARIES``
+#   the libraries to link against to use SCAI lama.
+# ``SCAI_DEFINITIONS``
+#   You should add_definitons(${SCAI_DEFINITIONS}) before compiling code
+# ``SCAI_CXX_FLAGS``
+#   You should set( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} ${SCAI_CXX_FLAGS} ) 
+# ``SCAI_FOUND``
+#   If false, do not try to use SCAI lama.
+# ``SCAI_VERSION``
+#   the version of the SCAI library found.
+
+
+set ( SCAI_DEFINITIONS  "-DSCAI_ASSERT_LEVEL_@SCAI_ASSERT_LEVEL@" 
+                        "-DSCAI_LOG_LEVEL_@SCAI_LOG_LEVEL@" 
+                        "-DSCAI_TRACE_@SCAI_TRACE@"  )
+
+set ( SCAI_CXX_FLAGS "@CMAKE_CXX_FLAGS@" )
+
+set ( SCAI_ROOT @CMAKE_INSTALL_PREFIX@ )
+
+set ( SCAI_INCLUDE_DIRS ${SCAI_ROOT}/include @BOOST_INCLUDE_DIR@ @SCAI_CUDA_INCLUDE_DIR@ )
+ 
+set ( SCAI_MODULES @SCAI_DEFINED_MODULES@ )
+
+set ( SCAI_VERSION @SCAI_VERSION@ )
+
+set ( SCAI_LIBRARIES "" )
+
+set ( SCAI_FOUND true )
+
+foreach ( module ${SCAI_MODULES} )
+
+     find_library ( SCAI_LIBRARY_${module} 
+                    NAMES scai_${module}
+                    PATHS ${SCAI_ROOT}/lib )
+
+     set ( SCAI_LIBRARIES ${SCAI_LIBRARY_${module}} ${SCAI_LIBRARIES} )
+
+endforeach ()
+

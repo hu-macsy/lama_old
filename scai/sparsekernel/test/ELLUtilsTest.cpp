@@ -1683,7 +1683,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types 
         const IndexType numValuesPerRow    = numValues    / numRows;
         const IndexType newNumValuesPerRow = newNumValues / numRows;
 
-        IndexType newNumValuesPerRow_calc = -1;
+        IndexType newNumValuesPerRow_calc = nIndex;
         HArray<ValueType> ellValues( numValues, valuesELLValues, testContext );
         HArray<IndexType> ellIa( numRows, valuesELLIa, testContext );
         HArray<IndexType> ellJa( numValues, valuesELLJa, testContext );

@@ -584,7 +584,7 @@ void MICJDSUtils::normalGEMV(
     else
     {
         // result = beta * y
-        MICUtils::binaryOpScalar1( result, beta, y, numRows, common::binary::MULT );
+        MICUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
     }
 
     if ( ndlg == 0 )

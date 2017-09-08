@@ -910,6 +910,77 @@ void GPICommunicator::maxImpl( void* outValues, const void* inValues, const Inde
 }
 
 /* ---------------------------------------------------------------------------------- */
+/*      scanImpl                                                                      */
+/* ---------------------------------------------------------------------------------- */
+
+template <typename ValueType> 
+static void scanArray( ValueType outArray[], const ValueType inArray[], 
+                       const IndexType n, const IndexType rank )
+{
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        outArray[i] = inArray[i];
+    }
+
+    for ( PartitionId p = 1; p <= rank; ++p )
+    {
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            outArray[i] += inArray[p * n + i ];
+        }
+    }
+}
+
+void GPICommunicator::scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const
+{
+    PartitionId size = getSize();
+    PartitionId rank = getRank();
+    PartitionId root = 0;
+
+    IndexType elem_size = common::typeSize( stype );
+
+    SCAI_LOG_ERROR( logger, "scanImpl " << stype << ", n = " << n << " needs temp data of " << n * elem_size * size << " bytes" )
+
+    common::scoped_array<char> allValues( new char[ n * elem_size * size ] );
+
+    gatherImpl( allValues.get(), n, root, inValues, stype );
+    bcastImpl ( allValues.get(), n, root, stype );
+
+    if ( stype == common::scalar::DOUBLE )
+    {
+        double *typedOutValues = reinterpret_cast<double*>( outValues );
+        const double *typedAllValues = reinterpret_cast<const double*>( allValues.get() );
+
+        scanArray( typedOutValues, typedAllValues, n, rank );
+    }
+    else if ( stype == common::scalar::FLOAT )
+    {
+        float *typedOutValues = reinterpret_cast<float*>( outValues );
+        const float *typedAllValues = reinterpret_cast<const float*>( allValues.get() );
+
+        scanArray( typedOutValues, typedAllValues, n, rank );
+    }
+    else if ( stype == common::scalar::INT )
+    {
+        int *typedOutValues = reinterpret_cast<int*>( outValues );
+        const int *typedAllValues = reinterpret_cast<const int*>( allValues.get() );
+
+        scanArray( typedOutValues, typedAllValues, n, rank );
+    }
+    else if ( stype == common::scalar::COMPLEX )
+    {
+        ComplexFloat *typedOutValues = reinterpret_cast<ComplexFloat*>( outValues );
+        const ComplexFloat *typedAllValues = reinterpret_cast<const ComplexFloat*>( allValues.get() );
+
+        scanArray( typedOutValues, typedAllValues, n, rank );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "scanImpl unsupported for type = " << stype )
+    }
+}
+
+/* ---------------------------------------------------------------------------------- */
 /*      synchronize                                                                   */
 /* ---------------------------------------------------------------------------------- */
 

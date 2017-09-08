@@ -269,6 +269,42 @@ Except from a constructor with a passed string, you can use ``readFromFile`` and
    // writing a vector to file in matrix market format in single precision
    csrMatrix.writeToFile( "output.mtx", File::MatrixMarket, File::FLOAT );
 
+Matrix Assembly
+---------------
+
+The template class MatrixAssemblyAccess allows to assemble matrix entries by different processors
+independently. 
+
+.. code-block:: c++
+
+    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( numRows, comm ) );
+    dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numColumns ) );
+
+    CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
+
+    {
+        MatrixAssemblyAccess<ValueType> assembly( matrix );
+
+        // each processor might push arbitrary matrix elements
+
+        assembly.push( i, j, val );
+        ...
+        assembly.push( i, j, val );
+
+        // destructor of access, implies release, that inserts the elements
+    }
+
+- During an assembly access the matrix must not be changed or accessed otherwise.
+- All processors must access the 'distributed' matrix by the corresponding constructor.
+- The end of assembling is indicated by either calling the destructor of the access or by an explicit release call.
+- Zero elements might be filled explicitly to reserve memory in the sparse matrix.
+- Entries will just be inserted, entries at the same place might be undefined if they are assembled with different values.
+- An ADD mode will be added in future versions.
+- Assembly access is only possible for matrices without any entries. Assembling additional entries will be possible in future
+  versions.
+- The row distribution must be set before the assembling.
+- The column distribution should be NoDistribution before the assembling and might be changed afterwards.
+
 Math Functions
 --------------
 

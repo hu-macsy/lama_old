@@ -43,6 +43,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/UnaryOp.hpp>
 
 namespace scai
 {
@@ -166,6 +167,18 @@ public:
         const IndexType csrIA[],
         const IndexType numRows,
         const ValueType2 values[] );
+
+
+    template<typename ValueType>
+    static void reduce(
+        ValueType result[],
+        const IndexType csrIA[],
+        const IndexType csrJA[],
+        const ValueType csrValues[],
+        const IndexType numRows,
+        const IndexType dim,
+        const common::binary::BinaryOp reduceOp,
+        const common::unary::UnaryOp elemOp );
 
     /** Implementation for CSRKernelTrait::normalGEMV  */
 

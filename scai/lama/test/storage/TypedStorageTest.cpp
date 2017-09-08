@@ -1078,11 +1078,11 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         storage.clear();
 
         // with diagonal element shifting
-        const IndexType minus5 = -5;
-        const IndexType minus4 = -4;
-        const IndexType minus3 = -3;
-        const IndexType minus2 = -2;
-        const IndexType minus1 = -1;
+        const IndexType minus5 = IndexType( -5 );
+        const IndexType minus4 = IndexType( -4 );
+        const IndexType minus3 = IndexType( -3 );
+        const IndexType minus2 = IndexType( -2 );
+        const IndexType minus1 = IndexType( -1 );
         const IndexType offsets[] = { 0, minus5, minus4, minus3, minus2, minus1, 1, 3 }; // --> with diagonal property
         const ValueType values[] = { 6.0, 0.0, 9.0, 3.0, 0.0, 0.0, 0.0,
                                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,

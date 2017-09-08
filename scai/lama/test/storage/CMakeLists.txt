@@ -28,8 +28,8 @@
  # @endlicense
  #
  # @brief Build configuration for test of LAMA storage classes
- # @author Jan Ecker
- # @date 03.04.2013
+ # @author Thomas Brandes
+ # @date 03.07.2017
 ###
 
 scai_project ( 
@@ -63,28 +63,11 @@ scai_project (
         lamaStorageTest
     )
 
-### checks ####
-if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-   message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
-endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
-
-### set include directories ###
-include_directories ( ${BOOST_INCLUDE_DIR} )
-
 ### add definitions ###
+
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-### add link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
-### add executeable ###
-add_executable ( lamaStorageTest ${CXX_SOURCES} )
-
-### target link libraries ###
-if ( WIN32 )
-    target_link_libraries ( lamaStorageTest ${PROJECT_NAME} )
-else ( WIN32 )
-    target_link_libraries ( lamaStorageTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-endif ( WIN32 )
+scai_test ( EXECUTABLE lamaStorageTest 
+            FILES      ${CXX_SOURCES} 
+            RUN 
+            UNIT_TEST )

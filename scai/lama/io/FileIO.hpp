@@ -70,7 +70,7 @@ class _MatrixStorage;
  *        funtionality.
  */
 
-class FileIO :
+class COMMON_DLL_IMPORTEXPORT FileIO :
 
     public common::Factory<std::string, FileIO*>,
     public common::Printable

@@ -107,6 +107,10 @@ public:
      */
     ~StencilMatrix();
 
+    /** Copy constructor */
+
+    StencilMatrix( const StencilMatrix& other );
+
     /** Override MatrixStorage<ValueType>::getLocalStorage with covariant return type. */
 
     virtual const StencilStorage<ValueType>& getLocalStorage() const;
@@ -129,6 +133,10 @@ public:
     {
         return Format::CSR;
     }
+
+    /* Query the stencil that has been used to define the stencil matrix */
+
+    const common::Stencil<ValueType>& getStencil() const;
 
     /* Implementation of pure method of class Matrix. */
 

@@ -493,7 +493,7 @@ void CUDAStencilKernel::stencilGEMV3(
         {
             // get routine with the right signature
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            void ( *unbind1 ) ( const IndexType* ) = &vectorUnbindTexture;
+            void ( *unbind1 ) ( const int* ) = &vectorUnbindTexture;
             // delay unbind until synchroniziaton
             syncToken->pushRoutine( common::bind( unbind, stencilVal ) );
             syncToken->pushRoutine( common::bind( unbind1, stencilOffset ) );

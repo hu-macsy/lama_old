@@ -88,7 +88,7 @@ void StorageMethods<ValueType>::localizeCSR(
     WriteOnlyAccess<IndexType> wLocalIA( localIA, localNumRows + 1 );
     // By using the routine local2global of a distribution we can
     // set the local sizes independently
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < localNumRows; i++ )
     {
@@ -106,7 +106,7 @@ void StorageMethods<ValueType>::localizeCSR(
     ReadAccess<ValueType> rGlobalValues( globalValues );
     // Due to the availability of offsets for both storages we
     // can copy the global matrix data to the local one independently
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < localNumRows; i++ )
     {
@@ -312,7 +312,7 @@ void StorageMethods<ValueType>::splitCSR(
     {
         SCAI_REGION( "Storage.splitCount" )
 
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -362,7 +362,7 @@ void StorageMethods<ValueType>::splitCSR(
     #pragma omp parallel
     {
         SCAI_REGION( "Storage.splitTransfer" )
-        #pragma omp for schedule( SCAI_OMP_SCHEDULE )
+        #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; i++ )
         {
@@ -493,7 +493,7 @@ void StorageMethods<ValueType>::joinCSR(
     WriteOnlyAccess<IndexType> ia( outIA, numRows + 1 );
     ReadAccess<IndexType> ia1( localIA );
     ReadAccess<IndexType> ia2( haloIA );
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {
@@ -512,7 +512,7 @@ void StorageMethods<ValueType>::joinCSR(
     ReadAccess<IndexType> ja2( haloJA );
     ReadAccess<ValueType> values2( haloValues );
     // merging of each row is independent from other rows
-    #pragma omp parallel for schedule(SCAI_OMP_SCHEDULE)
+    #pragma omp parallel for 
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

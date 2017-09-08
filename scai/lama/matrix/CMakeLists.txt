@@ -48,10 +48,13 @@ scai_project (
         SparseMatrix
         StencilMatrix
 
+        MatrixAssemblyAccess
+
     HEADERS 
  
         all 
         CRTPMatrix 
+        AbstractMatrix
 
     ADD_PARENT_SCOPE
 )

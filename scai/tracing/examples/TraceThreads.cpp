@@ -34,6 +34,7 @@
 
 #include <scai/common/Thread.hpp>
 #include <scai/tracing.hpp>
+#include <scai/logging.hpp>
 #include <scai/common/Walltime.hpp>
 
 using scai::common::Thread;

@@ -99,8 +99,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
                 for ( IndexType i3 = 0; i3 < n3; ++i3 )
                 {
                     for ( IndexType i4 = 0; i4 < n4; ++i4 )
-                    {
-                        wGV1( i1, i2, i3, i4 ) = 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1;
+                    { 
+                        wGV1( i1, i2, i3, i4 ) = 
+                            static_cast<double>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
                     }
                 }
             }

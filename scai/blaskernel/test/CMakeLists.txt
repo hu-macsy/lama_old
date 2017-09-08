@@ -1,5 +1,5 @@
 ###
- # @file CMakeLists.txt
+ # @file blaskernel/test/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_blaskernel tests
- # @author Eric Schricker
- # @date 18.11.2015
+ # @brief CMake configuration file for tests of SCAI mdoule blaskernel
+ # @author Thomas Brandes
+ # @date 04.07.2017
 ###
 
 set ( CXX_SOURCES
@@ -40,30 +40,16 @@ set ( CXX_SOURCES
       LAPACKTest
 ) 
 
-include_directories ( ${BOOST_INCLUDE_DIR} )
+scai_test ( EXECUTABLE blaskernelTest 
+            FILES      ${CXX_SOURCES} 
+            UNIT_TEST
+            RUN
+)   
 
-add_executable ( blaskernelTest ${CXX_SOURCES} )
+###  copy xmltest.sh script
 
-target_link_libraries ( blaskernelTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${PROJECT_NAME} )
+scai_test_scripts( SCRIPTS       xmltest.sh )
 
-### Copy the xmltest.sh file in build directory ### 
+###  configure code_coverage.sh (if USE_CODE_COVERAGE ) in build direcotry
 
-file ( COPY xmltest.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} ) 
-
-if ( USE_CODE_COVERAGE )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageFirst.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageFirst.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageFirst.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageSecond.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageSecond.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageSecond.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    configure_file( "${CMAKE_CURRENT_SOURCE_DIR}/code_coverageThird.sh.in" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageThird.sh" @ONLY)
-    file ( COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/code_coverageThird.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-    file ( COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../scai_code_coverage_functions.sh 
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-           FILE_PERMISSIONS ${PROJECT_FILE_PERMISSIONS} )
-endif ( USE_CODE_COVERAGE )
+scai_test_code_coverage( ${USE_CODE_COVERAGE} )

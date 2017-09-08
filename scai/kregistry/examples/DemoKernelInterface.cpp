@@ -123,7 +123,7 @@ static void example1()
     std::cout << "Example 1:" << std::endl;
     std::cout << "==========" << std::endl;
     typedef bool ( *SigIsSorted ) ( const double*, int N, bool ascending );
-    SigIsSorted isSorted;
+    SigIsSorted isSorted = NULL;
     // double ( *isSorted ) ( const double*, int, bool );
     KernelRegistry::get( isSorted, "Utils.isSorted", context::Host );
     double a[] = { 3.0, 4.0, 5.0 };

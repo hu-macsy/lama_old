@@ -1,5 +1,5 @@
 /**
- * @file GridSector.hpp
+ * @file GridSection.hpp
  *
  * @license
  * Copyright (c) 2009-2017

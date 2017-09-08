@@ -615,7 +615,26 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixStorage> > others )
+void MatrixStorage<ValueType>::cat( const IndexType dim, const _MatrixStorage* others[], const IndexType n )
+{
+    if ( dim == 0 )
+    {
+        vcat( others, n );
+    }
+    else if ( dim == 1 )
+    {
+        hcat( others, n );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "dim = " << dim << " is illegal for concatenation, must be 0 or 1" )
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::vcat( const _MatrixStorage* others[], const IndexType n )
 {
     using namespace utilskernel;
 
@@ -623,11 +642,11 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
     IndexType numColumns = 0;
     IndexType numValues  = 0;
 
-    for ( size_t k = 0; k < others.size(); ++k )
+    for ( IndexType k = 0; k < n; ++k )
     {
         SCAI_ASSERT_ERROR( others[k], "NULL pointer in concatenation" )
 
-        _MatrixStorage& other = *others[k];
+        const _MatrixStorage& other = *others[k];
 
         numRows   += other.getNumRows();
         numValues += other.getNumValues();
@@ -651,9 +670,9 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
 
     ContextPtr ctx = this->getContextPtr();
 
-    for ( size_t k = 0; k < others.size(); ++k )
+    for ( IndexType k = 0; k < n; ++k )
     {
-        _MatrixStorage& other = *others[k];
+        const _MatrixStorage& other = *others[k];
 
         // Get CSR data of other block on same context as this storage
 
@@ -682,6 +701,45 @@ void MatrixStorage<ValueType>::rowCat( std::vector<common::shared_ptr<_MatrixSto
     // Still set the final value
 
     csrIA[ numRows ] = numValues;
+
+    setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::hcat( const _MatrixStorage* others[], const IndexType n )
+{
+    using namespace utilskernel;
+
+    IndexType numRows    = 0;
+    IndexType numColumns = 0;
+    IndexType numValues  = 0;
+
+    for ( IndexType k = 0; k < n; ++k )
+    {
+        SCAI_ASSERT_ERROR( others[k], "NULL pointer in concatenation" )
+
+        const _MatrixStorage& other = *others[k];
+
+        numRows   += other.getNumColumns();
+        numValues += other.getNumValues();
+
+        if ( other.getNumRows() > numRows )
+        {
+            numRows = other.getNumRows();
+        }
+    }
+
+    SCAI_LOG_ERROR( logger, "horizontal cat: final matrix " << numRows << " x " << numColumns << ", #non-zeros = " << numValues )
+
+    // now we know the final size and can allocate CSR storage for it
+
+    LArray<IndexType> csrIA( numRows + 1 );
+    LArray<IndexType> csrJA( numValues );
+    LArray<ValueType> csrValues( numValues );
+
+    COMMON_THROWEXCEPTION( "hcat not available yet" )
 
     setCSRData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
 }
@@ -1031,6 +1089,69 @@ void MatrixStorage<ValueType>::invert( const MatrixStorage<ValueType>& other )
     DenseStorage<ValueType> otherDense( other );
     otherDense.invert( otherDense );
     this->assign( otherDense );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixStorage<ValueType>::reduce(
+    hmemo::HArray<ValueType>& array, 
+    const IndexType dim, 
+    const common::binary::BinaryOp reduceOp,
+    const common::unary::UnaryOp elemOp )
+{
+    HArray<IndexType> csrIA;
+    HArray<IndexType> csrJA;
+    HArray<ValueType> csrValues;
+
+    buildCSRData( csrIA, csrJA, csrValues );
+
+    hmemo::ReadAccess<ValueType> values( csrValues );
+    hmemo::ReadAccess<IndexType> ia( csrIA );
+    hmemo::ReadAccess<IndexType> ja( csrJA );
+
+    hmemo::WriteAccess<ValueType> a( array );
+
+    OpenMPCSRUtils::reduce( a.get(), ia.get(), ja.get(), values.get(), getNumRows(), dim, reduceOp, elemOp );
+
+    /*
+    if ( dim == 0 )
+    {
+        SCAI_ASSERT_EQ_ERROR( array.size(), getNumRows(), "size mismatch" );
+
+        for ( IndexType i = 0; i < getNumRows(); ++i )
+        {
+            // a[i] = 0;
+
+            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
+            {
+                ValueType v = values[jj];
+                v = applyUnaryOp( elemOp, v );
+                a[i] += v;
+            }
+        }
+    }
+    else if ( dim == 1 )
+    {
+        SCAI_ASSERT_EQ_ERROR( array.size(), getNumColumns(), "size mismatch" );
+
+        // for ( IndexType j = 0; j < getNumColumns(); ++j )
+        // {
+            // a[j] = 0;
+        // }
+
+        for ( IndexType i = 0; i < getNumRows(); ++i )
+        {
+            for ( IndexType jj = ia[i]; jj < ia[i+1]; ++jj )
+            {
+                IndexType j = ja[jj];
+                ValueType v = values[jj];
+                v = applyUnaryOp( elemOp, v );
+                a[j] += v;
+            }
+        }
+    }
+    */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1409,7 +1530,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_ERROR( epsilon > 0, "epsilon = " << epsilon << ", must not be negative" )
+    SCAI_ASSERT_GT_ERROR( epsilon, 0, "epsilon = " << epsilon << ", must not be negative" )
     mEpsilon = epsilon;
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )

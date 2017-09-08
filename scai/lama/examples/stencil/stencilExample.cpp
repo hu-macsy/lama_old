@@ -89,6 +89,11 @@ int main( int argc, const char* argv[] )
 
     StencilMatrix<double> m( grid, stencilY );
 
+    StencilMatrix<double> copyM1( m );
+
+    StencilMatrix<double> copyM2;
+    copyM2 = m;
+
     m.scale( 0.3 );
 
     CSRSparseMatrix<double> m1;

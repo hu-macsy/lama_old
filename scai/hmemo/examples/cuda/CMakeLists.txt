@@ -32,39 +32,30 @@
  # @date 16.06.2015
 ###
 
-# REMARKS
-#
-#   - include_directories are taken over from project
-#
-
-#empty EXAMPLE_FILES and EXAMPLE_EXECUTES in subdir
-set ( EXAMPLE_FILES "" )
-set ( EXAMPLE_EXECUTABLES "" )
-
-string (REPLACE ";" " " CUDA_NVCC_FLAGS_CLEAN "${CUDA_NVCC_FLAGS}")
+scai_init_examples ()
 
 foreach ( executable CUSparseExample CUBlasExample MemBandwidth Prefetch Allocate )
-    add_executable( ${executable}.exe ${executable}.cpp )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cpp ) 
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe 
+                      FILES      ${executable}.cpp )
+
 endforeach ( executable )
 
 foreach ( executable Example1 Example2 Devices CUDABenchContext AliasProblem )
-    cuda_add_executable( ${executable}.exe ${executable}.cu )
-    target_link_libraries( ${executable}.exe ${PROJECT_NAME} )
-    set ( EXAMPLE_FILES ${EXAMPLE_FILES} ${executable}.cu )
-    set ( EXAMPLE_EXECUTABLES "${EXAMPLE_EXECUTABLES} ${executable}.exe" )
+
+    scai_add_example( EXECUTABLE ${executable}.exe 
+                      CUDA
+                      FILES      ${executable}.cu )
+
 endforeach ( executable )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-## install examples
-install ( FILES ${EXAMPLE_FILES} ${CMAKE_CURRENT_BINARY_DIR}/make.inc DESTINATION ${PROJECT_EXAMPLE_DIR}/cuda )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
 
-# install Makefile
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in"
-				 "${CMAKE_INSTALL_PREFIX}/${PROJECT_EXAMPLE_DIR}/cuda/Makefile" COPYONLY )
+## install examples sources
+
+install ( FILES       ${EXAMPLE_FILES}
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )

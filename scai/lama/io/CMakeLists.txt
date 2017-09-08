@@ -48,13 +48,17 @@ set ( IO_CLASSES
         BitmapIO
 ) 
 
+## IO for Matlab format only possible if ZLIB is available
+
 if ( ZLIB_FOUND AND USE_ZLIB )
     set ( IO_CLASSES ${IO_CLASSES} MatlabIO MATIOStream )
-endif ( ZLIB_FOUND AND USE_ZLIB )
+endif ()
 
-if ( PNGLIB_FOUND AND USE_PNG )
+## IO for PNG format only possible if libpng is available 
+
+if ( PNG_FOUND AND USE_PNG )
     set ( IO_CLASSES ${IO_CLASSES} PngIO )
-endif ( PNGLIB_FOUND AND USE_PNG )
+endif ()
 
 scai_project (
 

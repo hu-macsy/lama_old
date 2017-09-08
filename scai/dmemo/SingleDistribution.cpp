@@ -227,7 +227,7 @@ bool SingleDistribution::isEqual( const Distribution& other ) const
 void SingleDistribution::writeAt( std::ostream& stream ) const
 {
     // write identification of this object
-    stream << "SingleDistribution( comm = " << *mCommunicator << ", owner = " << mOwner << " )";
+    stream << "SingleDistribution( size = " << mGlobalSize << ", comm = " << *mCommunicator << ", owner = " << mOwner << " )";
 }
 
 /* ---------------------------------------------------------------------------------*

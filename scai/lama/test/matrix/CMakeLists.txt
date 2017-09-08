@@ -51,6 +51,8 @@ scai_project (
         StencilMatrixTest
         DenseMatrixTest
 
+        MatrixAssemblyTest
+
         lamaMatrixTest
     )
 
@@ -59,23 +61,10 @@ if ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
    message ( STATUS "WARNING: tests will not check for exceptions (assertions are switched off)" )
 endif ( ${SCAI_ASSERT_LEVEL} STREQUAL "OFF" )
 
-### set include directories ###
-include_directories ( ${BOOST_INCLUDE_DIR} )
-
 ### add definitions ###
 add_definitions ( -DLAMA_TESTFILE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../../../res/testfiles" )
 
-### add link directories ###
-if ( WIN32 )
-    link_directories ( ${Boost_LIBRARY_DIRS} )
-endif ( WIN32 )
-
-### add executeable ###
-add_executable ( lamaMatrixTest ${CXX_SOURCES} )
-
-### target link libraries ###
-if ( WIN32 )
-    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} )
-else ( WIN32 )
-    target_link_libraries ( lamaMatrixTest ${PROJECT_NAME} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} ${Boost_REGEX_LIBRARY} )
-endif ( WIN32 )
+### define unit test (executable) ###
+scai_test ( EXECUTABLE lamaMatrixTest 
+            FILES      ${CXX_SOURCES} 
+            RUN UNIT_TEST )

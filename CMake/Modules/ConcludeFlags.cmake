@@ -48,33 +48,18 @@ set ( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 if    ( UNIX AND NOT APPLE )
     if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
-    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
+        set ( SCAI_START_LINK_LIBRARIES "-Wl,--whole-archive" )
+        set ( SCAI_END_LINK_LIBRARIES "-Wl,--no-whole-archive" )
     else  ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
-    	set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
-    	set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
+        set ( SCAI_START_LINK_LIBRARIES "-Wl,--no-as-needed" )
+        set ( SCAI_END_LINK_LIBRARIES "-Wl,--as-needed" )
     endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 endif ( UNIX AND NOT APPLE )
-
-# check if Complex is in SCAI_HOST_TYPES then set USE_COMPLEX true
-include ( Functions/checkValue )
-include ( Functions/parseBoolean )
-
-set ( USE_COMPLEX FALSE )
-foreach    ( ITEM ${SCAI_HOST_TYPES_LIST} )
-    list ( FIND COMPLEX_VALUES ${ITEM} BOOLVALUE )
-    if    ( ${BOOLVALUE} GREATER -1 )
-        set ( USE_COMPLEX TRUE )
-    endif ( ${BOOLVALUE} GREATER -1 )
-endforeach ( ITEM ${SCAI_HOST_TYPES_LIST} )
-parseBoolean( USE_COMPLEX )
-checkValue ( ${USE_COMPLEX} "${TRUE_FALSE_CHOICES}" )
 
 ## add variables to cache with new names so they can be modified by the user via CCMAKE
 
 # moved to packages
 #set ( ADDITIONAL_CXX_FLAGS_LANG          "${SCAI_LANG_FLAGS}"          CACHE STRING "Addition language flags for using C++11 (if compiler capable)" )
-#set ( ADDITIONAL_CXX_FLAGS_OPENMP        "${OpenMP_CXX_FLAGS}"         CACHE STRING "OpenMP flag (only if enabled)" )
 
 set ( ADDITIONAL_CXX_FLAGS               "${SCAI_CXX_FLAGS}"           CACHE STRING "Additional CXX flags" )
 set ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE "${SCAI_CODE_COVERAGE_FLAGS}" CACHE STRING "CXX flags used for code coverage (only if CC enabled)" )
@@ -86,7 +71,7 @@ set ( ADDITIONAL_LINKER_FLAGS            "${SCAI_LINKER_FLAGS}"        CACHE STR
 set ( ADDITIONAL_WARNING_FLAGS           "${SCAI_WARNING_FLAGS}"       CACHE STRING "Compilation flags concerning warnings" )
 
 mark_as_advanced ( ADDITIONAL_CXX_FLAGS_CODE_COVERAGE  ADDITIONAL_CXX_FLAGS_DEBUG  ADDITIONAL_CXX_FLAGS_RELEASE
-                   ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG   ADDITIONAL_CXX_FLAGS_OPENMP
+                   ADDITIONAL_CXX_FLAGS_NO_OFFLOAD     #ADDITIONAL_CXX_FLAGS_LANG  
                    ADDITIONAL_LINKER_FLAGS             ADDITIONAL_WARNING_FLAGS    ADDITIONAL_CXX_FLAGS
                    ADDITIONAL_CXX_FLAGS_STATIC
                  )
@@ -97,21 +82,15 @@ if    ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_STATIC}" )
 endif ( ${SCAI_LIBRARY_TYPE} MATCHES "STATIC" )
 
-if    ( SCAI_COMMON_FOUND )
-    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${SCAI_COMMON_FLAGS}")
-else  ( SCAI_COMMON_FOUND )
+if    ( USE_OPENMP )
+    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
+else  ( USE_OPENMP )
+    set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OPENMP}" )
+endif ( USE_OPENMP)
 
-    if    ( USE_OPENMP )
-        set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_OPENMP}" )
-    else  ( USE_OPENMP )
-        set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_NO_OPENMP}" )
-    endif ( USE_OPENMP)
-
-    if    ( CXX_SUPPORTS_C11 )
-        set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_LANG}" )
-    endif ( CXX_SUPPORTS_C11 )
-
-endif ( SCAI_COMMON_FOUND )
+if    ( CXX_SUPPORTS_C11 )
+     set ( CONCLUDE_CXX_FLAGS "${CONCLUDE_CXX_FLAGS} ${ADDITIONAL_CXX_FLAGS_LANG}" )
+endif ( CXX_SUPPORTS_C11 )
 
 if    ( DEFINED USE_MIC )
     if    ( NOT USE_MIC )

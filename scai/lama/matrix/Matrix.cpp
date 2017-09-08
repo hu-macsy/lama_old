@@ -932,6 +932,26 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
 /* ---------------------------------------------------------------------------------*/
 
+void Matrix::cat( const IndexType dim, const Matrix*[], const IndexType n )
+{
+    COMMON_THROWEXCEPTION( "concatenation of matrices not supported, dim = " << dim 
+                            << ", n = " << n << ", kind = " << getMatrixKind() )
+}
+
+void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
+{
+    const Matrix* mlist[2] = { &m1, &m2 };
+    cat ( 0, mlist, 2 );
+}
+
+void Matrix::hcat( const Matrix& m1, const Matrix& m2 )
+{
+    const Matrix* mlist[2] = { &m1, &m2 };
+    cat ( 1, mlist, 2 );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 Scalar Matrix::maxDiffNorm( const Matrix& other ) const
 {
     IndexType nRows = getNumRows();

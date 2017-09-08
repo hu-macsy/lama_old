@@ -32,32 +32,24 @@
  # @date 02.12.2015
 ###
 
-set ( EXAMPLE_FILES matrixConvert.cpp vectorConvert.cpp matrixRepartition.cpp vectorRepartition.cpp )
+include ( scai_macro/scai_add_example )
+include ( scai_macro/scai_example_makefile )
+include ( scai_macro/scai_run_script )
 
-add_executable( matrixConvert.exe matrixConvert.cpp )
-add_executable( vectorConvert.exe vectorConvert.cpp )
-add_executable( matrixRepartition.exe matrixRepartition.cpp )
-add_executable( vectorRepartition.exe vectorRepartition.cpp )
+foreach ( executable matrixRepartition vectorRepartition )
 
-target_link_libraries( matrixConvert.exe ${PROJECT_NAME} )
-target_link_libraries( vectorConvert.exe ${PROJECT_NAME} )
-target_link_libraries( matrixRepartition.exe ${PROJECT_NAME} )
-target_link_libraries( vectorRepartition.exe ${PROJECT_NAME} )
+    scai_add_example( EXECUTABLE ${executable}.exe
+                      FILES      ${executable}.cpp )
 
-# configure make.inc for examples
-include ( Functions/prepareExamplesMakeInc )
-prepareExamplesMakeInc()
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_make.inc.in" make.inc )
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/../../../examples_Makefile.in" install_Makefile COPYONLY )
+endforeach ( executable )
 
-## install examples
+# use the recommended installation directory for this example directory
+scai_example_directory ( INSTALL_EXAMPLE_DIR )
 
-set ( PROJECT_EXAMPLE_SUB_DIR ${PROJECT_EXAMPLE_DIR}/io )
+# generate build file in example directory
+scai_example_makefile ( DESTINATION ${INSTALL_EXAMPLE_DIR} )
+
+## install examples sources
 
 install ( FILES       ${EXAMPLE_FILES}
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/make.inc
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR} )
-install ( FILES       ${CMAKE_CURRENT_BINARY_DIR}/install_Makefile
-          DESTINATION ${PROJECT_EXAMPLE_SUB_DIR}
-          RENAME      Makefile  )
+          DESTINATION ${INSTALL_EXAMPLE_DIR} )
