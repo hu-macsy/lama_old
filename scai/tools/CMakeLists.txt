@@ -38,6 +38,7 @@ include ( scai_macro/scai_module )
 include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
+include ( scai_macro/scai_test_scripts )
 include ( scai_function/relative_install )
  
 ## Define new SCAI module project with its internal/external dependencies
@@ -73,4 +74,9 @@ endforeach ( executable )
 # lamaGenMatrices.py: copy only to build and install directory
 
 configure_file( lamaGenMatrices.py lamaGenMatrices.py COPYONLY )
-install ( FILES  lamaGenMatrices.py DESTINATION bin )
+install ( PROGRAMS  lamaGenMatrices.py DESTINATION bin )
+
+## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
+
+include ( CustomCommands/SphinxDoc )
+

@@ -87,3 +87,10 @@ Partitioning provides routines to optimize the distribution of sparse matrices i
 is minimized.
 
 * :ref:`SCAI Partitioning - Partitioning to get optimized distributions  <scaipartitioning:main-page_partitioning>`
+
+Tools
+-----
+
+Tools, utilities and other utilities built on top of LAMA.
+
+* :ref:`SCAI Tools -  <scaitools:main-page_tools>`
