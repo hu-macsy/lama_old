@@ -59,7 +59,7 @@ public:
 
     /** Construct an access */
 
-    MatrixAssemblyAccess( Matrix& matrix );
+    MatrixAssemblyAccess( Matrix& matrix, const common::binary::BinaryOp op = common::binary::COPY );
 
     /** Destructor of the access, also inserts the assembled entries into the matrix. */
 
@@ -127,6 +127,8 @@ private:
     std::vector<ValueType> mValues;
 
     bool mIsReleased;
+
+    common::binary::BinaryOp mOp;   // specifies how to combine with available entries
 };
 
 }

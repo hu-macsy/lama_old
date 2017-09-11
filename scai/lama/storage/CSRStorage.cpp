@@ -2249,6 +2249,64 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void CSRStorage<ValueType>::binaryOpCSR(
+    const CSRStorage<ValueType>& a,
+    const CSRStorage<ValueType>& b,
+    common::binary::BinaryOp op )
+{
+    SCAI_LOG_INFO( logger, "this = a " << op << " b " )
+
+    if ( &a == this || &b == this )
+    {
+        // due to alias we would get problems with Write/Read access, so use a temporary
+
+        CSRStorage<ValueType> tmp;
+        tmp.setContextPtr( getContextPtr() ); 
+        tmp.binaryOpCSR( a, b, op );
+        swap( tmp ); // safe as tmp will be destroyed afterwards
+
+        return;
+    }
+
+    allocate( a.getNumRows(), a.getNumColumns() );
+
+    SCAI_ASSERT_EQ_ERROR( mNumRows, b.getNumRows(), "#rows must be equal for storages in binary op" )
+    SCAI_ASSERT_EQ_ERROR( mNumColumns, b.getNumColumns(), "#cols must be equal for storages in binary op" )
+
+    mDiagonalProperty = a.hasDiagonalProperty();   // inherit diagonal property from first storage
+ 
+    {
+        ReadAccess<IndexType> aIa( a.getIA() );
+        ReadAccess<IndexType> aJa( a.getJA() );
+        ReadAccess<ValueType> aValues( a.getValues() );
+        ReadAccess<IndexType> bIa( b.getIA() );
+        ReadAccess<IndexType> bJa( b.getJA() );
+        ReadAccess<ValueType> bValues( b.getValues() );
+
+        // Step 1: compute new row sizes of C, build offsets
+
+        SCAI_LOG_DEBUG( logger, "Determing sizes of result matrix C" )
+
+        WriteOnlyAccess<IndexType> cIa( mIa, mNumRows + 1 );
+
+        mNumValues = OpenMPCSRUtils::matrixAddSizes ( cIa.get(), mNumRows, mNumColumns, mDiagonalProperty, 
+                                                      aIa.get(), aJa.get(), bIa.get(), bJa.get() );
+        // Step 2: fill in ja, values
+
+        SCAI_LOG_DEBUG( logger, "Compute the sparse values, # = " << mNumValues )
+
+        WriteOnlyAccess<IndexType> cJa( mJa, mNumValues );
+        WriteOnlyAccess<ValueType> cValues( mValues, mNumValues );
+        OpenMPCSRUtils::binaryOp( cJa.get(), cValues.get(), cIa.get(), 
+                                  mNumRows, mNumColumns, mDiagonalProperty, 
+                                  aIa.get(), aJa.get(), aValues.get(), 
+                                  bIa.get(), bJa.get(), bValues.get(), op );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void CSRStorage<ValueType>::matrixAddMatrixCSR(
     const ValueType alpha,
     const CSRStorage<ValueType>& a,

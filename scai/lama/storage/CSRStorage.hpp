@@ -562,6 +562,17 @@ public:
         const ValueType beta,
         const MatrixStorage<ValueType>& c );
 
+    /** binary operation between two CSR storages
+     *
+     *  @param a, b are the two CSR storages to which the operation is applied to
+     *  @param op specifies the binary operator this is applied to entries at same position
+     *
+     *  Note: op == common::binary::ADD stands for summing elements up, 
+     *        op == common::binary::COPY for replacing
+     *        op == common::binary::MIN  for minimal values
+     */
+    void binaryOpCSR( const CSRStorage<ValueType>& a, const CSRStorage<ValueType>& b, common::binary::BinaryOp op );
+
     /** solution = xxx */
 
     virtual void jacobiIterate(
@@ -662,7 +673,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Matrix + Matrix for CSR only */
+    /** Matrix times Matrix for CSR only */
 
     void    matrixAddMatrixCSR( const ValueType alpha,
                                 const CSRStorage<ValueType>& a,
