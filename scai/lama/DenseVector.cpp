@@ -1868,6 +1868,14 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
 }
 
+template<typename ValueType>
+void DenseVector<ValueType>::redistribute( const Redistributor& redistributor) {
+    HArray<ValueType> newLocalValues( redistributor.getTargetLocalSize() );
+    redistributor.redistribute( newLocalValues, mLocalValues );
+    mLocalValues.swap( newLocalValues );
+    setDistributionPtr( redistributor.getTargetDistributionPtr() );
+}
+
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>

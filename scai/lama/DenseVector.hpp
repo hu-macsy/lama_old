@@ -44,6 +44,7 @@
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/dmemo/Distribution.hpp>
 #include <scai/dmemo/Halo.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 #include <scai/hmemo.hpp>
 
 #include <scai/tasking/SyncToken.hpp>
@@ -592,6 +593,8 @@ public:
     virtual size_t getMemoryUsage() const;
 
     virtual void redistribute( dmemo::DistributionPtr distribution );
+
+    virtual void redistribute( const dmemo::Redistributor& redistributor );
 
 protected:
 
