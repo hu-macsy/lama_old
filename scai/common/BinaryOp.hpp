@@ -224,6 +224,7 @@ inline ValueType zeroBinary( const binary::BinaryOp op )
 {
     switch ( op )
     {
+        case binary::COPY:
         case binary::ADD:
         case binary::SUB:
         case binary::ABS_MAX:
