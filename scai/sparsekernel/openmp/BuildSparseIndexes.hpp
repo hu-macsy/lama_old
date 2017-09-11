@@ -40,6 +40,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 namespace scai
 {
@@ -126,31 +127,31 @@ class COMMON_DLL_IMPORTEXPORT BuildSparseVector : public BuildSparseIndexes
 {
 public:
 
-    BuildSparseVector( const IndexType n ) :
+    BuildSparseVector( const IndexType n, const common::binary::BinaryOp op ) :
 
         BuildSparseIndexes( n ),
-        mValueList( new ValueType[n] )
+        mValueList( new ValueType[n] ),
+        mZero( common::zeroBinary<ValueType>( op ) ),
+        mOp( op )
 
     {
-        const ValueType zero = 0;
-
         for ( IndexType j = 0; j < n; j++ )
         {
-            mValueList[j] = zero;
+            mValueList[j] = mZero;
         }
     }
 
     void push( const IndexType i, const ValueType v )
     {
         pushIndex( i );
-        mValueList[i] += v;
+        mValueList[i] = common::applyBinary( mValueList[i], mOp, v );
     }
 
     void pop( IndexType& i, ValueType& v )
     {
         i = popIndex();
         v = mValueList[i];
-        mValueList[i] = static_cast<ValueType>( 0 );
+        mValueList[i] = mZero;
     }
 
     using BuildSparseIndexes::isEmpty;
@@ -158,6 +159,10 @@ public:
 private:
 
     common::scoped_array<ValueType> mValueList;
+
+    ValueType mZero;
+
+    common::binary::BinaryOp mOp;
 };
 
 

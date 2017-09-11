@@ -730,6 +730,45 @@ struct CSRKernelTrait
     };
 
     template<typename ValueType>
+    struct binaryOp
+    {
+        /** computes c = a <op> b for CSR sparse storages a, b, c
+         *
+         *  @param[out] cJA, cValues are the matrix values of output matrix
+         *  @param[in]  cIA contains already computed offsets
+         *  @param[in]  numRows is number of rows for matrices a, b, c
+         *  @param[in]  numColums is number of columns for matrices a, b, c
+         *  @param[in]  diagonalProperty if true result matrix gets diagonal property
+         *  @param[in]  aIA, aJA, aValues is input matrix a in CSR format
+         *  @param[in]  bIA, bJA, bValues is input matrix b in CSR format
+         *  @param[in]  op specifies the binary operation
+         *
+         *  In this routine the row offsets of C must already be determined
+         *  before.
+         */
+
+        typedef void ( *FuncType ) (
+            IndexType cJA[],
+            ValueType cValues[],
+            const IndexType cIA[],
+            const IndexType numRows,
+            const IndexType numColumns,
+            const bool diagonalProperty,
+            const IndexType aIA[],
+            const IndexType aJA[],
+            const ValueType aValues[],
+            const IndexType bIA[],
+            const IndexType bJA[],
+            const ValueType bValues[],
+            const common::binary::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "CSR.binaryOp";
+        }
+    };
+
+    template<typename ValueType>
     struct matrixAdd
     {
         /** computes c = alpha * a + beta * b for CSR sparse matrices a, b, c

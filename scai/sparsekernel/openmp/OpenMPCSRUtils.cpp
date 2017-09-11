@@ -1436,7 +1436,7 @@ void OpenMPCSRUtils::matrixAdd(
 
     #pragma omp parallel
     {
-        BuildSparseVector<ValueType> sparseRow( numColumns );
+        BuildSparseVector<ValueType> sparseRow( numColumns, common::binary::ADD );
 
         #pragma omp for
 
@@ -1515,6 +1515,96 @@ void OpenMPCSRUtils::matrixAdd(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void OpenMPCSRUtils::binaryOp(
+    IndexType cJA[],
+    ValueType cValues[],
+    const IndexType cIA[],
+    const IndexType numRows,
+    const IndexType numColumns,
+    bool diagonalProperty,
+    const IndexType aIA[],
+    const IndexType aJA[],
+    const ValueType aValues[],
+    const IndexType bIA[],
+    const IndexType bJA[],
+    const ValueType bValues[],
+    const common::binary::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.CSR.binaryOp" )
+
+    SCAI_LOG_INFO( logger,
+                   "binaryOp for " << numRows << " x " << numColumns << " matrix" << ", diagonalProperty = " << diagonalProperty )
+
+    // determine the number of entries in output matrix
+
+    ValueType zero = common::zeroBinary<ValueType>( op );
+
+    #pragma omp parallel
+    {
+        BuildSparseVector<ValueType> sparseRow( numColumns, op );
+
+        #pragma omp for
+
+        for ( IndexType i = 0; i < numRows; ++i )
+        {
+            for ( IndexType jj = aIA[i]; jj < aIA[i + 1]; ++jj )
+            {
+                sparseRow.push( aJA[jj], aValues[jj] );
+            }
+
+            for ( IndexType jj = bIA[i]; jj < bIA[i + 1]; ++jj )
+            {
+                sparseRow.push( bJA[jj], bValues[jj] );
+            }
+
+            IndexType offset = cIA[i];
+
+            if ( diagonalProperty )
+            {
+                // first element is reserved for diagonal element
+
+                SCAI_LOG_TRACE( logger, "entry for [" << i << "," << i << "] as diagonal" )
+                cJA[offset] = i;
+                cValues[offset] = zero;
+                ++offset;
+            }
+
+            SCAI_LOG_DEBUG( logger, "fill row " << i << ", has " << sparseRow.getLength() << " entries, offset = " << offset )
+
+            // fill in csrJA, csrValues and reset indexList, valueList for next use
+
+            while ( !sparseRow.isEmpty() )
+            {
+                IndexType col;
+                ValueType val;
+
+                sparseRow.pop( col, val );
+
+                SCAI_LOG_TRACE( logger, "row " << i << " has entry at col " << col << ", val = " << val << ", offset = " << offset )
+
+                if ( diagonalProperty && col == i )
+                {
+                    cValues[cIA[i]] = val;
+                }
+                else
+                {
+                    cJA[offset] = col;
+                    cValues[offset] = val;
+                    ++offset;
+                }
+            }
+
+            // make sure that we have still the right offsets
+
+            SCAI_ASSERT_EQUAL_DEBUG( offset, cIA[i + 1] )
+
+        } //end loop over all rows of input matrix a
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void OpenMPCSRUtils::matrixMultiply(
     const IndexType cIA[],
     IndexType cJA[],
@@ -1535,7 +1625,7 @@ void OpenMPCSRUtils::matrixMultiply(
     {
         SCAI_REGION( "OpenMP.CSR.matrixMultiply" )
 
-        BuildSparseVector<ValueType> sparseRow( n ); // one for each thread
+        BuildSparseVector<ValueType> sparseRow( n, common::binary::ADD ); // one for each thread
 
         #pragma omp for
 
@@ -1863,6 +1953,7 @@ void OpenMPCSRUtils::RegistratorV<ValueType>::registerKernels( kregistry::Kernel
     KernelRegistry::set<CSRKernelTrait::sparseGEVM<ValueType> >( sparseGEVM, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::gemm<ValueType> >( gemm, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixAdd<ValueType> >( matrixAdd, ctx, flag );
+    KernelRegistry::set<CSRKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::matrixMultiply<ValueType> >( matrixMultiply, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobi<ValueType> >( jacobi, ctx, flag );
     KernelRegistry::set<CSRKernelTrait::jacobiHalo<ValueType> >( jacobiHalo, ctx, flag );

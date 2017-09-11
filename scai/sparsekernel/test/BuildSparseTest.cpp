@@ -76,12 +76,13 @@ BOOST_AUTO_TEST_CASE( buildSparseIndexesTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_test_types )
 {
-    BuildSparseVector<ValueType> myVector( 10 );
+    BuildSparseVector<ValueType> myVector( 10, common::binary::ADD );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
 
     myVector.push( 1, 5 );
+    myVector.push( 1, 3 );
 
     BOOST_CHECK_EQUAL( IndexType( 1 ), myVector.getLength() );
     BOOST_CHECK( !myVector.isEmpty() );
@@ -92,7 +93,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
     myVector.pop( i, v );
 
     BOOST_CHECK_EQUAL( static_cast<IndexType>( 1 ), i );
-    BOOST_CHECK_EQUAL( static_cast<ValueType>( 5 ), v );
+    BOOST_CHECK_EQUAL( static_cast<ValueType>( 8 ), v );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
+    BOOST_CHECK( myVector.isEmpty() );
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest1, ValueType, scai_numeric_test_types )
+{
+    BuildSparseVector<ValueType> myVector( 10, common::binary::COPY );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
+    BOOST_CHECK( myVector.isEmpty() );
+
+    myVector.push( 1, 5 );
+    myVector.push( 1, 3 );
+
+    BOOST_CHECK_EQUAL( IndexType( 1 ), myVector.getLength() );
+    BOOST_CHECK( !myVector.isEmpty() );
+
+    IndexType i;
+    ValueType v;
+
+    myVector.pop( i, v );
+
+    BOOST_CHECK_EQUAL( static_cast<IndexType>( 1 ), i );
+    BOOST_CHECK_EQUAL( static_cast<ValueType>( 3 ), v );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
