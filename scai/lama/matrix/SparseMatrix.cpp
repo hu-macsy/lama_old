@@ -1462,7 +1462,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
 
     if ( !B.getColDistribution().isReplicated() )
     {
-        COMMON_THROWEXCEPTION( "matrixA * matrixB only supported for replicated columns" << " in matrixB = " << B )
+        COMMON_THROWEXCEPTION( "matrixA + matrixB only supported for replicated columns" << " in matrixB = " << B )
     }
 
     // Now we can do it completly locally
