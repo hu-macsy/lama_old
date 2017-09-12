@@ -567,7 +567,13 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
+    /** Implementation of pure method Vector::redistribute */
+
     virtual void redistribute( dmemo::DistributionPtr distribution );
+
+    /** Implementation of pure method Vector::redistribute */
+
+    virtual void redistribute( const dmemo::Redistributor& redistributor );
 
 protected:
 

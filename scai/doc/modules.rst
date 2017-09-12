@@ -91,6 +91,7 @@ is minimized.
 Tools
 -----
 
-Tools, utilities and other utilities built on top of LAMA.
+In contrary to the other packages this package does not provide a library, but a lot of executables that use the functionality of LAMA.
+These executable are tools that might be helpful on its own, e.g. generation of matrices and vectors, file conversions, running and testing solvers.
 
-* :ref:`SCAI Tools -  <scaitools:main-page_tools>`
+* :ref:`SCAI Tools - Useful Executables  <scaitools:main-page_tools>`

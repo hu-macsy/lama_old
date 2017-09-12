@@ -82,7 +82,7 @@ public:
                                           const lama::Matrix& matrix, 
                                           const hmemo::HArray<float>& processorWeights ) const;
 
-    /** Partitioning of square matrix 
+    /* Partitioning of square matrix 
      *
      *  @param[in]  matrix must be square sparse matrix that is partitioned, matrix.getNumRows() == matrix.getNumColumns()
      *  @param[in]  processorWeights specifies the weight for load on each processor, must be same on all procs

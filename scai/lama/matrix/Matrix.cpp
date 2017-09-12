@@ -43,6 +43,7 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/GeneralDistribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
@@ -988,6 +989,24 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
     }
 
     return diff;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+void Matrix::redistribute( const dmemo::Redistributor& redistributor )
+{
+    if ( getColDistribution().isReplicated() ) 
+    {
+        redistribute( redistributor, getColDistributionPtr() );
+    }
+    else if ( getColDistribution() == getRowDistribution() )
+    {
+        redistribute( redistributor, redistributor.getTargetDistributionPtr() );
+    }
+    else
+    {
+        COMMON_THROWEXCEPTION( "redistribute: no new column distribution" )
+    }
 }
 
 /* ---------------------------------------------------------------------------------*/

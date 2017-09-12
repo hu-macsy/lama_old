@@ -1044,6 +1044,31 @@ void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, DistributionPtr colDistributionPtr )
+{
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), *redistributor.getSourceDistributionPtr(),
+                          "redistributor does not match to actual distribution of this vector" );
+
+    if ( !getColDistribution().isReplicated() )
+    {
+        // Halo must be removed before redistribution 
+
+        DistributionPtr repColDistributionPtr( new NoDistribution( getNumColumns() ) );
+        redistribute( getRowDistributionPtr(), repColDistributionPtr );
+    }
+
+    common::shared_ptr<DenseStorage<ValueType> > newData( mData[0]->newMatrixStorage() );
+    newData->redistribute( *mData[0], redistributor );
+    mData[0] = newData;
+
+    Matrix::setDistributedMatrix( redistributor.getTargetDistributionPtr(), getColDistributionPtr() );
+
+    redistribute( getRowDistributionPtr(), colDistributionPtr );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void DenseMatrix<ValueType>::localize(
     DenseStorage<ValueType>& local,
     const DenseStorage<ValueType>& global,

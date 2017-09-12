@@ -675,6 +675,31 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
 /* -------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void SparseMatrix<ValueType>::redistribute( const Redistributor& redistributor, DistributionPtr colDistributionPtr )
+{
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), *redistributor.getSourceDistributionPtr(),
+                          "redistributor does not match to actual distribution of this sparse matrix" );
+
+    if ( !getColDistribution().isReplicated() )
+    {
+        // Halo must be removed before redistribution 
+
+        DistributionPtr repColDistributionPtr( new NoDistribution( getNumColumns() ) );
+        redistribute( getRowDistributionPtr(), repColDistributionPtr );
+    }
+
+    common::shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );
+    newData->redistribute( *mLocalData, redistributor );
+    mLocalData = newData;
+
+    Matrix::setDistributedMatrix( redistributor.getTargetDistributionPtr(), getColDistributionPtr() );
+
+    redistribute( getRowDistributionPtr(), colDistributionPtr );
+}
+
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType> void SparseMatrix<ValueType>::invert( const Matrix& other )
 {
     // invert not supported for sparse matrices, so we need a temporary dense matrix
@@ -723,7 +748,8 @@ set( const MatrixStorage<ValueType>& otherLocalData, DistributionPtr otherDist )
         SCAI_LOG_INFO( logger, "assign is redistribute of distributed matrix" )
         Redistributor redistributor( getRowDistributionPtr(), otherDist );
         SCAI_LOG_INFO( logger,
-                       "Redistributor available: source halo = " << redistributor.getHaloSourceSize() << " target halo = " << redistributor.getHaloTargetSize() )
+                       "Redistributor available: source halo = " << redistributor.getHaloSourceSize() 
+                        << " target halo = " << redistributor.getHaloTargetSize() )
         mLocalData->redistribute( otherLocalData, redistributor );
         SCAI_LOG_INFO( logger, "redistributed, now assign locally" )
         mLocalData->splitHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), NULL );

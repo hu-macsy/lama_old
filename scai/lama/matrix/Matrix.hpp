@@ -445,7 +445,23 @@ public:
      *  For sparse matrices it might be allowed that the new number of columns might become larger with the
      *  new column distribution. 
      */
-    virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) = 0;
+    virtual void redistribute( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr ) = 0;
+
+    /**
+     *  @brief Redistribute this matrix with a redistributor 
+     *
+     *  Note: redistributor.getSourceDistribution() == this->getRowDistribution() must be valid
+     *        this->getDistribution() == redistributor.getTargetDistribution() is valid after the call.
+     *
+     *  This call is more efficient than redistribute( redistributor.getTargetDistributionPtr(), colDistribution )
+     *  as the communication schedule is already available and can be reused.
+     */
+    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr ) = 0;
+
+    /**
+     *  @brief Redistribute this matrix with a redistribution, columns are eiter replicated or have same dist as rows
+     */
+    virtual void redistribute( const dmemo::Redistributor& redistributor );
 
     /** @brief This method returns one row of this matrix.
      *

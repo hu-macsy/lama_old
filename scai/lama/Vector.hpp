@@ -61,6 +61,11 @@
 namespace scai
 {
 
+namespace dmemo
+{
+class Redistributor;    // forward declaration
+}
+
 namespace lama
 {
 
@@ -833,6 +838,15 @@ public:
      * can be different now.
      */
     virtual void redistribute( dmemo::DistributionPtr distribution ) = 0;
+
+    /**
+     *  @brief Redistribute this vector with a redistributor 
+     *
+     *  Note: redistributor.getSourceDistribution() == this->getDistribution(),
+     *        must hold before the call, this->getDistribution() == redistributor.getTargetDistribution()
+     *        is valid after the call.
+     */
+    virtual void redistribute( const dmemo::Redistributor& redistributor ) = 0;
 
     /** 
      * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )

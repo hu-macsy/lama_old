@@ -1847,13 +1847,29 @@ void DenseVector<ValueType>::redistribute( DistributionPtr distribution )
     else
     {
         SCAI_LOG_DEBUG( logger, *this << " will be redistributed to " << *distribution )
+
         // so we have now really a redistibution, build a Redistributor
+
         HArray<ValueType> newLocalValues( distribution->getLocalSize() );
         Redistributor redistributor( distribution, getDistributionPtr() ); // target, source distributions
         redistributor.redistribute( newLocalValues, mLocalValues );
         mLocalValues.swap( newLocalValues );
         setDistributionPtr( distribution );
     }
+}
+
+/* ------------------------------------------------------------------------ */
+
+template<typename ValueType>
+void DenseVector<ValueType>::redistribute( const Redistributor& redistributor )
+{
+    SCAI_ASSERT_EQ_ERROR( getDistribution(), *redistributor.getSourceDistributionPtr(), 
+                          "redistributor does not match to actual distribution of this vector" );
+
+    HArray<ValueType> newLocalValues( redistributor.getTargetLocalSize() );
+    redistributor.redistribute( newLocalValues, mLocalValues );
+    mLocalValues.swap( newLocalValues );
+    setDistributionPtr( redistributor.getTargetDistributionPtr() );
 }
 
 /* -- IO ------------------------------------------------------------------- */

@@ -732,7 +732,7 @@ struct CSRKernelTrait
     template<typename ValueType>
     struct binaryOp
     {
-        /** computes c = a <op> b for CSR sparse storages a, b, c
+        /** computes c = a 'op' b for CSR sparse storages a, b, c
          *
          *  @param[out] cJA, cValues are the matrix values of output matrix
          *  @param[in]  cIA contains already computed offsets

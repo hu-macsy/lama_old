@@ -583,7 +583,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+    virtual void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistribution );
 
     /**  */
     /**
@@ -609,6 +613,8 @@ public:
 
     using Matrix::getNumColumns;
     using Matrix::getNumRows;
+
+    using Matrix::redistribute;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
