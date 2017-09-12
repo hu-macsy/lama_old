@@ -59,7 +59,7 @@ scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
 
 set ( LAMA_TOOLS lamaInfo lamaMatrixConvert lamaVectorConvert
                  lamaGenVector lamaGenStencilMatrix lamaGenRandomMatrix 
-                 lamaSolver )
+                 lamaSolver lamaSpy )
 
 foreach ( executable ${LAMA_TOOLS} )
 
