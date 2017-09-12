@@ -59,9 +59,9 @@ scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
 
 set ( LAMA_TOOLS lamaInfo lamaMatrixConvert lamaVectorConvert
                  lamaGenVector lamaGenStencilMatrix lamaGenRandomMatrix 
-i                lamaSolver )
+                 lamaSolver )
 
-foreach ( executable lamaInfo lamaMatrixConvert lamaVectorConvert lamaSolver )
+foreach ( executable ${LAMA_TOOLS} )
 
     add_executable ( ${executable} ${executable}.cpp )
 
