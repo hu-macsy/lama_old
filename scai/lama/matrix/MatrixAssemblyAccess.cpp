@@ -54,12 +54,15 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixAssemblyAccess
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix ) : mMatrix( matrix )
+MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix, const common::binary::BinaryOp op ) : 
+
+    mMatrix( matrix ),
+    mIsReleased( false ),
+    mOp( op )
 {
     SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), Matrix::SPARSE, "Assembly only for sparse matrix supported" )
-    SCAI_ASSERT_EQ_ERROR( matrix.getNumValues(), 0, "Assembly only for zero sparse matrices supported" )
- 
-    mIsReleased = false;
+
+    // SCAI_ASSERT_EQ_ERROR( matrix.getNumValues(), 0, "Assembly only for zero sparse matrices supported" )
 }
 
 /* -------------------------------------------------------------------------- */
@@ -141,6 +144,8 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
     comm.exchangeByPlan( outValues, recvPlan, sendValues, sendPlan );
 }
 
+/* -------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void MatrixAssemblyAccess<ValueType>::release()
 {
@@ -172,14 +177,35 @@ void MatrixAssemblyAccess<ValueType>::release()
 
     global2local( ownedIA, rowDist );
 
+    dmemo::DistributionPtr saveColDist = mMatrix.getColDistributionPtr();
+
+    // adding matrix data is only possible on replicated local storage as halo must be rebuilt
+
+    if ( !saveColDist->isReplicated() )
+    {
+        dmemo::DistributionPtr repColDist( new dmemo::NoDistribution( mMatrix.getNumColumns() ) );
+        mMatrix.redistribute( mMatrix.getRowDistributionPtr(), repColDist );
+    }
+
     // now we add the owned COO data to the local storage
 
     COOStorage<ValueType> cooLocal;
-
     cooLocal.allocate( rowDist.getLocalSize(), mMatrix.getNumColumns() );
     cooLocal.swap( ownedIA, ownedJA, ownedValues );
 
-    mMatrix.assign( cooLocal, mMatrix.getRowDistributionPtr(), mMatrix.getColDistributionPtr() );
+    CSRStorage<ValueType> csrLocal( cooLocal );  // resorts also the entries corresponding to the rows
+
+    // we call the binary op routine in any case as cooLocal might also contain double values
+
+    CSRStorage<ValueType> matrixCSR( mMatrix.getLocalStorage() );
+
+    SCAI_LOG_DEBUG( logger, "assembled CSR = " << csrLocal << ", is added to this CSR: " << matrixCSR )
+
+    matrixCSR.binaryOpCSR( matrixCSR, csrLocal, mOp );
+
+    SCAI_LOG_DEBUG( logger, "merged CSR = " << matrixCSR )
+
+    mMatrix.assign( matrixCSR, mMatrix.getRowDistributionPtr(), saveColDist );
 
     // reset the data vectors as they are emptied now
 
