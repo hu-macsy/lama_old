@@ -49,7 +49,7 @@
 #include <scai/common/macros/assert.hpp>
 
 // std
-#include <map>
+#include <unordered_map>
 
 namespace scai
 {
@@ -110,7 +110,7 @@ public:
 
     inline bool isEmpty() const;
 
-    inline const std::map<IndexType, IndexType>& getMap() const
+    inline const std::unordered_map<IndexType, IndexType>& getMap() const
     {
         return mGlobal2Halo;
     }
@@ -132,7 +132,7 @@ private:
     hmemo::HArray<IndexType> mRequiredIndexes;
     hmemo::HArray<IndexType> mProvidesIndexes;
 
-    std::map<IndexType, IndexType> mGlobal2Halo;
+    std::unordered_map<IndexType, IndexType> mGlobal2Halo;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
@@ -166,7 +166,7 @@ void Halo::setGlobal2Halo( IndexType globalIndex, IndexType haloIndex )
 
 IndexType Halo::global2halo( const IndexType globalIndex ) const
 {
-    const std::map<IndexType, IndexType>::const_iterator elem = mGlobal2Halo.find( globalIndex );
+    const std::unordered_map<IndexType, IndexType>::const_iterator elem = mGlobal2Halo.find( globalIndex );
 
     if ( elem == mGlobal2Halo.end() )
     {

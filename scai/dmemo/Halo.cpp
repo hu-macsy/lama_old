@@ -72,7 +72,7 @@ void Halo::purge()
     mRequiredIndexes.purge();
     mProvidesIndexes.purge();
     // free memory of map by reallocation
-    std::map<IndexType, IndexType>().swap( mGlobal2Halo );
+    std::unordered_map<IndexType, IndexType>().swap( mGlobal2Halo );
 }
 
 Halo& Halo::operator=( const Halo& other )
