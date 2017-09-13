@@ -1,5 +1,5 @@
 ###
- # @file scai/lama/CMakeLists.txt
+ # @file scai/benchmark/CMakeLists.txt
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,9 +27,9 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration for module project lama ( linear algebra math )
+ # @brief CMake configuration file for SCAI package benchmark
  # @author Thomas Brandes
- # @date 04.07.2017
+ # @date 13.09.2017
 ###
 
 ## Include required scai macros
@@ -38,68 +38,58 @@ include ( scai_macro/scai_module )
 include ( scai_macro/scai_project )
 include ( scai_macro/scai_subdirectories )
 include ( scai_macro/scai_library )
+include ( scai_macro/scai_test_scripts )
 include ( scai_function/relative_install )
-
+ 
 ## Define new SCAI module project with its internal/external dependencies
+## Note: only some examples depend on partitioning
+ 
+scai_module (
 
-scai_module(
-
-    MODULE_NAME   lama
-
-    INTERNAL_DEPS common logging tracing tasking hmemo kregistry 
-                  blaskernel utilskernel sparsekernel dmemo 
-
-    EXTERNAL_DEPS OpenMP ZLIB PNG
-)
-
-### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
+    MODULE_NAME   benchmark
+    INTERNAL_DEPS common logging
+) 
 
 scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        _DenseVector
-        _SparseVector
-
-        DenseVector
-        GridVector
-        GridSection
-        SparseVector
-
-        Vector
-
-        GridVector
-        GridSection
-
-    HEADERS                  # .hpp only
-
-        Scalar
-        GridReadAccess
-        GridWriteAccess
+        BaseInputSetRegistry
+        Benchmark
+        BenchmarkPrinter
+        BenchmarkRegistry
+        BFError
+        BFException
+        Config
+        InputSet
+        readDir
+        frame_stdlib
+        string_helper
     )
 
-### add subdirectories
-
-scai_subdirectories( expression io matrix matutils mepr norm storage TEST EXAMPLES benchmark )
-
-## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
-## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....
+## Dummy library required to resolve dependencies
 
 scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
                TYPE    ${SCAI_LIBRARY_TYPE}
                VERSION ${SCAI_VERSION}
-               ${CXX_SOURCES} )
+               ${CXX_SOURCES}
+              )
 
-### install ###
+### add executables ###
 
-## install headers
+foreach ( executable RunBenchmark RegisteredInputSets RegisteredBenchmarks )
 
-relative_install ( FILES ${CXX_HEADERS} DESTINATION "include/scai/${MODULE_NAME}" )
+    add_executable ( ${executable} ${executable}.cpp )
 
-## install library.hpp
+    target_link_libraries ( ${executable} ${MODULE_LIBRARY} )
 
-configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/lama.hpp.in" "${CMAKE_BINARY_DIR}/include/scai/lama.hpp" )
-install ( FILES "${CMAKE_BINARY_DIR}/include/scai/lama.hpp" DESTINATION include/scai )
+    install( TARGETS ${executable} DESTINATION bin )
+
+endforeach ( executable )
+
+install ( PROGRAMS  BenchmarkRunner DESTINATION bin )
+
+install( DIRECTORY BenchmarkFramework DESTINATION bin )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 

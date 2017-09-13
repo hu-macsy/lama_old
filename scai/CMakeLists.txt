@@ -41,7 +41,8 @@ project ( LAMA_ALL CXX )
 ##
 ##  NOTE: list must be extended if new modules are added
 
-set ( SCAI_ALL_MODULES common logging tracing tasking kregistry hmemo 
+set ( SCAI_ALL_MODULES common logging tracing benchmark
+                       tasking kregistry hmemo 
                        blaskernel utilskernel sparsekernel dmemo lama 
                        partitioning solver tools )
  

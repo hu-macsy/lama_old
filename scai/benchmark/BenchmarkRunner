@@ -1,0 +1,21 @@
+#! /usr/bin/env python
+
+import os, sys
+
+directory  = os.path.realpath( os.path.dirname( sys.argv[0] ) )
+
+PREFIX= os.path.realpath( os.path.dirname( directory ) )
+
+# PREFIX is CMAKE_INSTALL_PREFIX for installation and CMAKE_BUILD_DIR in build
+
+# module BenchmarkFramework might be one level higher for installation
+
+sys.path.append( PREFIX )
+
+# In the bench directory is the dynamic benchmark library
+
+os.environ[ "BENCHMARK_LIBRARY_PATH" ] = PREFIX + "/bench"
+
+import BenchmarkFramework 
+
+BenchmarkFramework.main( )
