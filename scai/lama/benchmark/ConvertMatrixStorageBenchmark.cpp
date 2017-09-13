@@ -33,9 +33,8 @@
 
 #include <scai/lama/benchmark/ConvertMatrixStorageBenchmark.hpp>
 
-#include <scai/benchmark/benchmark_framework.hpp>
-
 #include <scai/lama/benchmark/LAMAInputSetComplexityVisitor.hpp>
+
 // Matrix storage types needed for instantiation
 
 #include <scai/lama/storage/CSRStorage.hpp>

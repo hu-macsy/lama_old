@@ -39,8 +39,6 @@
 #include <scai/lama/benchmark/LAMAFileInputSetCreator.hpp>
 #include <scai/lama/benchmark/LAMAInputSetComplexityVisitor.hpp>
 
-#include <scai/benchmark/benchmark_framework.hpp>
-
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 using namespace scai;

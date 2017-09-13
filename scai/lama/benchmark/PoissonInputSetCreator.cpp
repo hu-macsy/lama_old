@@ -33,8 +33,6 @@
 
 #include <scai/lama/benchmark/PoissonInputSetCreator.hpp>
 
-#include <scai/benchmark/benchmark_framework.hpp>
-
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>

@@ -33,8 +33,6 @@
 
 #include <scai/lama/benchmark/PMVBenchmark.hpp>
 
-#include <scai/benchmark/benchmark_framework.hpp>
-
 // Matrix storage types needed for instantiation
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>

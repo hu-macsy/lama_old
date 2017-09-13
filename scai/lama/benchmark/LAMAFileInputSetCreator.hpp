@@ -33,7 +33,7 @@
 
 #pragma once
 
-#include <scai/benchmark/benchmark.hpp>
+#include <scai/benchmark.hpp>
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
 
 #include <string>

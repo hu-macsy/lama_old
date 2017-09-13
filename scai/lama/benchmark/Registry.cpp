@@ -32,9 +32,7 @@
  */
 
 #include <scai/common/config.hpp>
-
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
-#include <scai/benchmark/benchmark_framework.hpp>
 
 extern "C" COMMON_DLL_IMPORTEXPORT bf::BenchmarkRegistry* getBenchmarkRegistry()
 {

@@ -33,10 +33,7 @@
 
 #include <scai/lama/benchmark/RandomInputSetCreator.hpp>
 
-#include <scai/benchmark/benchmark_framework.hpp>
-
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
-
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
