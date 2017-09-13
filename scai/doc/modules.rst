@@ -87,3 +87,11 @@ Partitioning provides routines to optimize the distribution of sparse matrices i
 is minimized.
 
 * :ref:`SCAI Partitioning - Partitioning to get optimized distributions  <scaipartitioning:main-page_partitioning>`
+
+Tools
+-----
+
+In contrary to the other packages this package does not provide a library, but a lot of executables that use the functionality of LAMA.
+These executable are tools that might be helpful on its own, e.g. generation of matrices and vectors, file conversions, running and testing solvers.
+
+* :ref:`SCAI Tools - Useful Executables  <scaitools:main-page_tools>`

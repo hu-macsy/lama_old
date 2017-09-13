@@ -43,6 +43,7 @@
 #include <scai/hmemo/HArrayRef.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
+#include <scai/dmemo/Redistributor.hpp>
 #include <scai/dmemo/test/TestDistributions.hpp>
 
 #include <scai/common/TypeTraits.hpp>
@@ -992,6 +993,68 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
             mat.setDIAData( dist, colDist, numDiagonals, offsets, values );
 
             BOOST_CHECK( mat.isConsistent() );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( redistributeTest )
+{
+    const IndexType n = 15;   // only square matrices here
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    CSRSparseMatrix<double> csr( n, n );
+    MatrixCreator::fillRandom( csr, 0.1f );
+
+    TestDistributions distributions( n );
+
+    DistributionPtr colDist( new NoDistribution( n ) );
+
+    for ( size_t d1 = 0; d1 < distributions.size(); ++d1 )
+    {
+        DistributionPtr dist1 = distributions[d1];
+
+        if ( dist1->isReplicated() ) 
+        {
+            continue;
+        }
+
+        for ( size_t d2 = 0; d2 < distributions.size(); ++d2 )
+        {
+        
+            DistributionPtr dist2 = distributions[d2];
+
+            if ( dist2->isReplicated() ) 
+            {
+                continue;
+            }
+
+            Matrices allMatrices( context );    // is created by factory
+
+            for ( size_t s = 0; s < allMatrices.size(); ++s )
+            {
+                Matrix& matrix = *allMatrices[s];
+
+                matrix = csr;
+
+                common::unique_ptr<Matrix> matrix1( matrix.copy() );
+
+                matrix.redistribute( dist1, colDist);
+
+                dmemo::Redistributor redistributor( dist2, dist1 );
+
+                SCAI_LOG_DEBUG( logger, "redistributor = " << redistributor << ", applied to " << matrix )
+
+                matrix.redistribute( redistributor );
+ 
+                matrix1->redistribute( dist2, colDist );
+
+                matrix -= *matrix1;   // sub works local as same distribution
+
+                BOOST_CHECK( matrix.maxNorm() < 0.001 );
+            }
         }
     }
 }

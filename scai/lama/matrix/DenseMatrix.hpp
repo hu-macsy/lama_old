@@ -421,7 +421,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    void redistribute( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+    virtual void redistribute( dmemo::DistributionPtr rowDistributionPtr, dmemo::DistributionPtr colDistributionPtr );
+
+    /* Implementation of pure method of class Matrix. */
+
+    virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -627,6 +631,8 @@ public:
     using Matrix::getRowDistributionPtr;
     using Matrix::getColDistribution;
     using Matrix::getColDistributionPtr;
+
+    using Matrix::redistribute;
 
     /** Implementation of pure methode Matrix::getRow */
 

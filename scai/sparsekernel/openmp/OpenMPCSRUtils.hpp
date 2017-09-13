@@ -354,6 +354,24 @@ public:
         const IndexType bJA[],
         const ValueType bValues[] );
 
+    /** binary operation for two CSR storages */
+
+    template<typename ValueType>
+    static void binaryOp(
+        IndexType cJA[],
+        ValueType cValues[],
+        const IndexType cIA[],
+        const IndexType numRows,
+        const IndexType numColumns,
+        bool diagonalProperty,
+        const IndexType aIA[],
+        const IndexType aJA[],
+        const ValueType aValues[],
+        const IndexType bIA[],
+        const IndexType bJA[],
+        const ValueType bValues[],
+        common::binary::BinaryOp op );
+
     /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
 
     template<typename ValueType>

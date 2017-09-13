@@ -81,21 +81,53 @@ BOOST_AUTO_TEST_CASE( simpleTest )
 
     CSRSparseMatrix<ValueType> matrix1( rowDist, colDist );
 
+    // Assemble matrix data by arbitrary processors, entries at same location are ignored
+
     {
         MatrixAssemblyAccess<ValueType> assembly( matrix1 );
 
         for ( IndexType i = 0; i < nnz; ++i )
         {
-            PartitionId p = i % commSize;
+            // choose two processors that push the elements
 
-            if ( p == commRank )
+            PartitionId p1 = i % commSize;
+            PartitionId p2 = ( i * 5 - 2 ) % commSize;
+
+            if ( p1 == commRank )
+            {
+                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+            }
+            if ( p2 == commRank )
             {
                 assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
             }
         }
     }
 
-    SCAI_LOG_INFO( logger, *comm << ": assembled this storage: " << matrix1 )
+    SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with REPLACE: " << matrix1 )
+
+    // Assemble matrix data by arbitrary processors, entries at same location are summed up
+
+    {
+        MatrixAssemblyAccess<ValueType> assembly( matrix1, common::binary::ADD );
+
+        for ( IndexType i = 0; i < nnz; ++i )
+        {
+            PartitionId p1 = ( i + 2 ) % commSize;
+            PartitionId p2 = ( i * 3 + 7 ) % commSize;
+
+            if ( p1 == commRank )
+            {
+                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+            }
+            if ( p2 == commRank )
+            {
+                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+            }
+        }
+    }
+
+    SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with SUM: " << matrix1 )
 
     hmemo::HArrayRef<IndexType> cooIA( nnz, raw_ia );
     hmemo::HArrayRef<IndexType> cooJA( nnz, raw_ja );
@@ -104,6 +136,8 @@ BOOST_AUTO_TEST_CASE( simpleTest )
     COOStorage<ValueType> coo( numRows, numColumns, cooIA, cooJA, cooValues );
 
     CSRSparseMatrix<ValueType> matrix2( coo, rowDist, colDist );
+
+    matrix2 *= 3;    // entries have been inserted once and added twice
 
     // verify that both matrices are same
 

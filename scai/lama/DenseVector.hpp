@@ -56,6 +56,11 @@
 namespace scai
 {
 
+namespace dmemo
+{
+class Redistributor;
+}
+
 namespace lama
 {
 
@@ -593,6 +598,8 @@ public:
     virtual size_t getMemoryUsage() const;
 
     virtual void redistribute( dmemo::DistributionPtr distribution );
+
+    /** Implementation of pure method Vector::redistribute */
 
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 

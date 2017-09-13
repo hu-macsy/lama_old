@@ -283,13 +283,13 @@ independently.
     CSRSparseMatrix<ValueType> matrix( rowDist, colDist );
 
     {
-        MatrixAssemblyAccess<ValueType> assembly( matrix );
+        MatrixAssemblyAccess<ValueType> assembly( matrix, common::binary::ADD );
 
         // each processor might push arbitrary matrix elements
 
-        assembly.push( i, j, val );
+        assembly.push( i1, j1, val1 );
         ...
-        assembly.push( i, j, val );
+        assembly.push( i2, j2, val2 );
 
         // destructor of access, implies release, that inserts the elements
     }
@@ -298,12 +298,13 @@ independently.
 - All processors must access the 'distributed' matrix by the corresponding constructor.
 - The end of assembling is indicated by either calling the destructor of the access or by an explicit release call.
 - Zero elements might be filled explicitly to reserve memory in the sparse matrix.
-- Entries will just be inserted, entries at the same place might be undefined if they are assembled with different values.
-- An ADD mode will be added in future versions.
-- Assembly access is only possible for matrices without any entries. Assembling additional entries will be possible in future
-  versions.
+- Different modes are supported if entries are assembled twice, either by same or by different processors or for existing entries.
+  In the REPLACE mode (default, common::binary::COPY) values will be replaced; different assembled values for the same entry
+  might be undefined. In the SUM mode (common::binary::ADD) assembled values for the same coordinates are added.
 - The row distribution must be set before the assembling.
-- The column distribution should be NoDistribution before the assembling and might be changed afterwards.
+- The column distribution should be NoDistribution before the assembling and might be changed afterwards. Otherwise 
+  the Halo schedule might be built multiple times.
+- Future versions might support an asynchronous version of the release of the access.
 
 Math Functions
 --------------

@@ -1353,6 +1353,20 @@ void SparseVector<ValueType>::redistribute( DistributionPtr distribution )
     }
 }
 
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void SparseVector<ValueType>::redistribute( const Redistributor& redistributor )
+{
+    // use a temporary dense vector for redistribution
+
+    SCAI_LOG_WARN( logger, "use dense vector for redistribution" )
+
+    DenseVector<ValueType> tmp( *this );
+    tmp.redistribute( redistributor );
+    assign( tmp );
+}
+
 /* -- IO ------------------------------------------------------------------- */
 
 template<typename ValueType>
