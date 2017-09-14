@@ -2,33 +2,34 @@
  * @file LAMAInputSet.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the SCAI framework LAMA.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief LAMAInputSet.cpp
  * @author Thomas Brandes, Jiri Kraus
  * @date 12.09.2011
- * $Id$
  */
 
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
@@ -53,18 +54,19 @@ LAMAInputSet::LAMAInputSet(
     : InputSet( id ), mAlpha( alpha ), mBeta( beta ), mX( x.release() ), mY( mX ), mA( A.release() ), mB(
         mA ), mC( mA ), mDenseA( 0 ), mDenseB( 0 ), mDenseC( 0 )
 {
-    if( mX && mA )
+    if ( mX && mA )
     {
         SCAI_LOG_INFO( logger,
                        "LAMA Input set " << id << " created, " << ", alpha = " << alpha << ", beta = " << beta << ", x = " << *mX << ", A = " << *mA );
     }
     else
     {
-        if( !mX )
+        if ( !mX )
         {
             SCAI_LOG_WARN( logger, "LAMA Input set with x = NULL created" );
         }
-        if( !mA )
+
+        if ( !mA )
         {
             SCAI_LOG_WARN( logger, "LAMA Input set with A = NULL created" );
         }
@@ -103,66 +105,85 @@ LAMAInputSet::~LAMAInputSet()
 {
     SCAI_LOG_INFO( logger, "~LAMAInputSet, will free input data" );
 
-    if( mX == mY )
+    if ( mX == mY )
     {
         mY = 0;
     }
-    if( mX != 0 )
+
+    if ( mX != 0 )
     {
         delete mX;
     }
+
     mX = 0;
-    if( mY != 0 )
+
+    if ( mY != 0 )
     {
         delete mY;
     }
+
     mY = 0;
-    if( mC == mA || mC == mB )
+
+    if ( mC == mA || mC == mB )
     {
         mC = 0;
     }
-    if( mB == mA )
+
+    if ( mB == mA )
     {
         mB = 0;
     }
-    if( mA != 0 )
+
+    if ( mA != 0 )
     {
         delete mA;
     }
+
     mA = 0;
-    if( mB != 0 )
+
+    if ( mB != 0 )
     {
         delete mB;
     }
+
     mB = 0;
-    if( mC != 0 )
+
+    if ( mC != 0 )
     {
         delete mC;
     }
+
     mC = 0;
 
-    if( mDenseC == mDenseA || mDenseC == mDenseB )
+    if ( mDenseC == mDenseA || mDenseC == mDenseB )
     {
         mDenseC = 0;
     }
-    if( mDenseB == mDenseA )
+
+    if ( mDenseB == mDenseA )
     {
         mDenseB = 0;
     }
-    if( mDenseA != 0 )
+
+    if ( mDenseA != 0 )
     {
         delete mDenseA;
     }
+
     mDenseA = 0;
-    if( mDenseB != 0 )
+
+    if ( mDenseB != 0 )
     {
         delete mDenseB;
     }
+
     mDenseB = 0;
-    if( mDenseC != 0 )
+
+    if ( mDenseC != 0 )
     {
         delete mDenseC;
     }
+
     mDenseC = 0;
 }
 
@@ -188,13 +209,13 @@ const lama::DenseVector<double>& LAMAInputSet::getY() const
 
 const lama::CSRSparseMatrix<double>& LAMAInputSet::getA() const
 {
-    if( mA == 0 )
+    if ( mA == 0 )
     {
-        if( mDenseA == mDenseB && mB != 0 )
+        if ( mDenseA == mDenseB && mB != 0 )
         {
             mA = mB;
         }
-        else if( mDenseA == mDenseC && mC != 0 )
+        else if ( mDenseA == mDenseC && mC != 0 )
         {
             mA = mC;
         }
@@ -203,18 +224,19 @@ const lama::CSRSparseMatrix<double>& LAMAInputSet::getA() const
             mA = new lama::CSRSparseMatrix<double>( *mDenseA );
         }
     }
+
     return *mA;
 }
 
 const lama::CSRSparseMatrix<double>& LAMAInputSet::getB() const
 {
-    if( mB == 0 )
+    if ( mB == 0 )
     {
-        if( mDenseB == mDenseA && mA != 0 )
+        if ( mDenseB == mDenseA && mA != 0 )
         {
             mB = mA;
         }
-        else if( mDenseB == mDenseC && mC != 0 )
+        else if ( mDenseB == mDenseC && mC != 0 )
         {
             mB = mC;
         }
@@ -223,18 +245,19 @@ const lama::CSRSparseMatrix<double>& LAMAInputSet::getB() const
             mB = new lama::CSRSparseMatrix<double>( *mDenseB );
         }
     }
+
     return *mB;
 }
 
 const lama::CSRSparseMatrix<double>& LAMAInputSet::getC() const
 {
-    if( mC == 0 )
+    if ( mC == 0 )
     {
-        if( mDenseC == mDenseA && mA != 0 )
+        if ( mDenseC == mDenseA && mA != 0 )
         {
             mC = mA;
         }
-        else if( mDenseC == mDenseB && mB != 0 )
+        else if ( mDenseC == mDenseB && mB != 0 )
         {
             mC = mB;
         }
@@ -243,18 +266,19 @@ const lama::CSRSparseMatrix<double>& LAMAInputSet::getC() const
             mC = new lama::CSRSparseMatrix<double>( *mDenseC );
         }
     }
+
     return *mC;
 }
 
 const lama::DenseMatrix<double>& LAMAInputSet::getDenseA() const
 {
-    if( mDenseA == 0 )
+    if ( mDenseA == 0 )
     {
-        if( mA == mB && mDenseB != 0 )
+        if ( mA == mB && mDenseB != 0 )
         {
             mDenseA = mDenseB;
         }
-        else if( mA == mC && mDenseC != 0 )
+        else if ( mA == mC && mDenseC != 0 )
         {
             mDenseA = mDenseC;
         }
@@ -263,18 +287,19 @@ const lama::DenseMatrix<double>& LAMAInputSet::getDenseA() const
             mDenseA = new lama::DenseMatrix<double>( *mA );
         }
     }
+
     return *mDenseA;
 }
 
 const lama::DenseMatrix<double>& LAMAInputSet::getDenseB() const
 {
-    if( mDenseB == 0 )
+    if ( mDenseB == 0 )
     {
-        if( mB == mA && mDenseA != 0 )
+        if ( mB == mA && mDenseA != 0 )
         {
             mDenseB = mDenseA;
         }
-        else if( mB == mC && mDenseC != 0 )
+        else if ( mB == mC && mDenseC != 0 )
         {
             mDenseB = mDenseC;
         }
@@ -283,18 +308,19 @@ const lama::DenseMatrix<double>& LAMAInputSet::getDenseB() const
             mDenseB = new lama::DenseMatrix<double>( *mB );
         }
     }
+
     return *mDenseB;
 }
 
 const lama::DenseMatrix<double>& LAMAInputSet::getDenseC() const
 {
-    if( mDenseC == 0 )
+    if ( mDenseC == 0 )
     {
-        if( mC == mA && mDenseA != 0 )
+        if ( mC == mA && mDenseA != 0 )
         {
             mDenseC = mDenseA;
         }
-        else if( mC == mB && mDenseB != 0 )
+        else if ( mC == mB && mDenseB != 0 )
         {
             mDenseC = mDenseB;
         }
@@ -303,5 +329,6 @@ const lama::DenseMatrix<double>& LAMAInputSet::getDenseC() const
             mDenseC = new lama::DenseMatrix<double>( *mC );
         }
     }
+
     return *mDenseC;
 }

@@ -2,33 +2,34 @@
  * @file PoissonInputSetCreator.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the SCAI framework LAMA.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief PoissonInputSetCreator.cpp
  * @author Jiri Kraus
  * @date 06.05.2010
- * $Id$
  */
 
 #include <scai/lama/benchmark/PoissonInputSetCreator.hpp>
@@ -62,7 +63,8 @@ std::vector<std::string> split( const std::string& params, const char seperator 
         size_t prevFound = found + 1;
         found = params.find( seperator, prevFound );
         args.push_back( params.substr( prevFound, found - prevFound ) );
-    } while( found != std::string::npos );
+    }
+    while ( found != std::string::npos );
 
     return args;
 }
@@ -99,7 +101,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
     // 2D5P_10000_10
     std::vector<std::string> args = split( params, '_' );
 
-    if( args.size() < 2 || args.size() > 4 )
+    if ( args.size() < 2 || args.size() > 4 )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Wrong number of " << "parameters (" << args.size()
@@ -116,7 +118,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
     IndexType dimZ = 1;
     std::vector<std::string> vals;
 
-    if( args[0].find( 'D', 0 ) == std::string::npos || args[0].find( 'P', 0 ) == std::string::npos )
+    if ( args[0].find( 'D', 0 ) == std::string::npos || args[0].find( 'P', 0 ) == std::string::npos )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Expected 'D' and 'P' within " << args[0]
@@ -126,7 +128,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
 
     vals = split( args[0], 'D' );
 
-    if( vals.size() != 2 )
+    if ( vals.size() != 2 )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Illegal format for " << args[0] << std::endl
@@ -140,7 +142,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
 
     SCAI_LOG_DEBUG( logger, "Stencil dimension = " << dimension );
 
-    if( convert.fail() )
+    if ( convert.fail() )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
@@ -152,7 +154,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
     convert.str( vals[1] );
     convert >> stencilType;
 
-    if( convert.fail() )
+    if ( convert.fail() )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
@@ -162,7 +164,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
 
     convert.clear();
 
-    if( dimension != (IndexType) args.size() - 1 )
+    if ( dimension != ( IndexType ) args.size() - 1 )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): '" << params << "' said " << "to have " << dimension
@@ -170,68 +172,68 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
         throw bf::BFException( message.str() );
     }
 
-    switch( dimension )
+    switch ( dimension )
     {
-    case 3:
-        convert.str( args[3] );
-        convert >> std::dec >> dimZ;
+        case 3:
+            convert.str( args[3] );
+            convert >> std::dec >> dimZ;
 
-        if( convert.fail() )
-        {
+            if ( convert.fail() )
+            {
+                std::ostringstream message;
+                message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
+                        << "' (should have been dimZ)." << std::endl;
+                throw bf::BFException( message.str() );
+            }
+
+            convert.clear();
+        case 2:
+            convert.str( args[2] );
+            convert >> std::dec >> dimY;
+
+            if ( convert.fail() )
+            {
+                std::ostringstream message;
+                message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
+                        << "' (should have been dimY)." << std::endl;
+                throw bf::BFException( message.str() );
+            }
+
+            convert.clear();
+        case 1:
+            convert.str( args[1] );
+            convert >> std::dec >> dimX;
+
+            if ( convert.fail() )
+            {
+                std::ostringstream message;
+                message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
+                        << "' (should have been dimX)." << std::endl;
+                throw bf::BFException( message.str() );
+            }
+
+            convert.clear();
+            break;
+        default:
             std::ostringstream message;
-            message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
-                    << "' (should have been dimZ)." << std::endl;
+            message << "PoissonInputSetCreator::create( ): Invalid number of " << "dimensions (" << dimension
+                    << "). Expected 1, 2 or 3." << std::endl;
             throw bf::BFException( message.str() );
-        }
-
-        convert.clear();
-    case 2:
-        convert.str( args[2] );
-        convert >> std::dec >> dimY;
-
-        if( convert.fail() )
-        {
-            std::ostringstream message;
-            message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
-                    << "' (should have been dimY)." << std::endl;
-            throw bf::BFException( message.str() );
-        }
-
-        convert.clear();
-    case 1:
-        convert.str( args[1] );
-        convert >> std::dec >> dimX;
-
-        if( convert.fail() )
-        {
-            std::ostringstream message;
-            message << "PoissonInputSetCreator::create( ): Unable to convert '" << convert.str()
-                    << "' (should have been dimX)." << std::endl;
-            throw bf::BFException( message.str() );
-        }
-
-        convert.clear();
-        break;
-    default:
-        std::ostringstream message;
-        message << "PoissonInputSetCreator::create( ): Invalid number of " << "dimensions (" << dimension
-                << "). Expected 1, 2 or 3." << std::endl;
-        throw bf::BFException( message.str() );
     }
 
     SCAI_LOG_INFO( logger, "dimX = " << dimX << ", dimY = " << dimY << ", dimZ = " << dimZ );
 
     bool exception = false;
 
-    if( dimZ == 1 && dimY == 1 )
+    if ( dimZ == 1 && dimY == 1 )
     {
         exception = ( stencilType != 3 );
     }
-    else if( dimZ == 1 )
+    else if ( dimZ == 1 )
     {
         exception = ( stencilType != 5 && stencilType != 9 );
     }
-    else if( dimZ >= 1 && dimY >= 1 )
+    else if ( dimZ >= 1 && dimY >= 1 )
     {
         exception = ( stencilType != 7 && stencilType != 19 && stencilType != 27 );
     }
@@ -240,7 +242,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
         exception = true;
     }
 
-    if( exception )
+    if ( exception )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Wrong values for parameters:" << std::endl << "Valid values are:"

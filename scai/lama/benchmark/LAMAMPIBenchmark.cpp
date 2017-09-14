@@ -2,33 +2,34 @@
  * @file LAMAMPIBenchmark.cpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the SCAI framework LAMA.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief LAMAMPIBenchmark.cpp
  * @author Jiri Kraus
  * @date 13.05.2011
- * $Id$
  */
 
 #include <scai/lama/benchmark/LAMAMPIBenchmark.hpp>
@@ -79,7 +80,7 @@ static void tokenize( const string& str, vector<string>& tokens, const string& d
     // Find first "non-delimiter".
     string::size_type pos = str.find_first_of( delimiters, lastPos );
 
-    while( string::npos != pos || string::npos != lastPos )
+    while ( string::npos != pos || string::npos != lastPos )
     {
         // Found a token, add it to the vector.
         tokens.push_back( str.substr( lastPos, pos - lastPos ) );
@@ -94,7 +95,7 @@ void LAMAMPIBenchmark::readConfig()
 {
     const char* envConfig = getenv( "LAMA_CONFIG" );
 
-    if( envConfig != NULL )
+    if ( envConfig != NULL )
     {
         config = envConfig;
     }
@@ -108,15 +109,15 @@ void LAMAMPIBenchmark::readConfig()
     int size = mComm->getSize();
     int rank = mComm->getRank();
 
-    if( ntoken == 0 )
+    if ( ntoken == 0 )
     {
         config = "";
     }
-    else if( ntoken == 1 )
+    else if ( ntoken == 1 )
     {
         config = tokens[0];
     }
-    else if( ntoken == size )
+    else if ( ntoken == size )
     {
         config = tokens[rank];
     }
@@ -127,7 +128,7 @@ void LAMAMPIBenchmark::readConfig()
 
     // for convenience: make upper case of config
 
-    for( size_t j = 0; j < config.length(); j++ )
+    for ( size_t j = 0; j < config.length(); j++ )
     {
         config[j] = static_cast<std::string::value_type>( toupper( config[j] ) );
     }
@@ -135,13 +136,14 @@ void LAMAMPIBenchmark::readConfig()
     SCAI_LOG_INFO( logger, "Process " << rank << " of " << size << " has config = " << config );
 }
 
-void LAMAMPIBenchmark::getConfig( std::map<std::string,std::string>& tokens ) const
+void LAMAMPIBenchmark::getConfig( std::map<std::string, std::string>& tokens ) const
 {
     std::vector<std::string> tmpTokens;
     tokenize( config, tmpTokens, ":" );
     typedef std::vector<std::string>::const_iterator VecIter;
     VecIter end = tmpTokens.end();
-    for( VecIter it = tmpTokens.begin(); it != end; ++it )
+
+    for ( VecIter it = tmpTokens.begin(); it != end; ++it )
     {
         std::vector<std::string> keyValue;
         tokenize( *it, keyValue, "=" );
@@ -191,9 +193,11 @@ std::string LAMAMPIBenchmark::getNumThreads() const
 bool LAMAMPIBenchmark::doOutput() const
 {
     bool doOutput = true;
-    if( mComm->getRank() != 0 )
+
+    if ( mComm->getRank() != 0 )
     {
         doOutput = false;
     }
+
     return doOutput;
 }

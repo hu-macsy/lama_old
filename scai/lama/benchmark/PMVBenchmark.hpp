@@ -2,33 +2,34 @@
  * @file PMVBenchmark.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the SCAI framework LAMA.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Benchmark for parallel matrix-vector multiplication with different settings.
  * @author Thomas Brandes, Jiri Kraus
  * @date 11.05.2011
- * $Id$
  */
 
 #pragma once
@@ -54,7 +55,7 @@
 #include <map>
 #include <string>
 
-// Benchmark: here we allow using namespace in .hpp file 
+// Benchmark: here we allow using namespace in .hpp file
 
 using namespace scai;
 
@@ -136,23 +137,23 @@ const std::string& PMVBenchmark<MatrixType>::id()
 }
 
 template<typename MatrixType>
-PMVBenchmark<MatrixType>::PMVBenchmark() : 
+PMVBenchmark<MatrixType>::PMVBenchmark() :
 
-    LAMAMPIBenchmark( sid(), LAMAInputSetComplexityVisitor::getGroupId( group() ) ), 
+    LAMAMPIBenchmark( sid(), LAMAInputSetComplexityVisitor::getGroupId( group() ) ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
-    mNumFloatingPointOperations( 0 ), 
-    mNumProcessedBytesFloat( 0 ), 
+    mNumFloatingPointOperations( 0 ),
+    mNumProcessedBytesFloat( 0 ),
     mNumProcessedBytesDouble( 0 )
 {
 }
 
 template<typename MatrixType>
-PMVBenchmark<MatrixType>::PMVBenchmark( const std::string& arguments ) : 
+PMVBenchmark<MatrixType>::PMVBenchmark( const std::string& arguments ) :
 
     LAMAMPIBenchmark( sid(), LAMAInputSetComplexityVisitor::getGroupId( group() ), arguments ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
-    mNumFloatingPointOperations( 0 ), 
-    mNumProcessedBytesFloat( 0 ), 
+    mNumFloatingPointOperations( 0 ),
+    mNumProcessedBytesFloat( 0 ),
     mNumProcessedBytesDouble( 0 )
 {
 }
@@ -162,8 +163,8 @@ PMVBenchmark<MatrixType>::PMVBenchmark( const PMVBenchmark<MatrixType>& other ) 
 
     LAMAMPIBenchmark( other ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
-    mNumFloatingPointOperations( 0 ), 
-    mNumProcessedBytesFloat( 0 ), 
+    mNumFloatingPointOperations( 0 ),
+    mNumProcessedBytesFloat( 0 ),
     mNumProcessedBytesDouble( 0 )
 {
 }
@@ -203,14 +204,14 @@ void PMVBenchmark<MatrixType>::initialize()
 {
     //device initialization + comunicator
 
-    map<string,string> tokens;
+    map<string, string> tokens;
 
     getConfig( tokens );
 
     int noThreads = 1;
     int devNo = -1; // default device
 
-    if( tokens.count( "CUDA" ) > 0 )
+    if ( tokens.count( "CUDA" ) > 0 )
     {
         istringstream tokenStream( tokens["CUDA"] );
         tokenStream >> devNo;
@@ -218,7 +219,8 @@ void PMVBenchmark<MatrixType>::initialize()
 
     std::ostringstream idStream;
     idStream << " (Proc " << mComm->getRank() << " LOCAL=";
-    if( tokens["LOCAL"] == "CUDA" )
+
+    if ( tokens["LOCAL"] == "CUDA" )
     {
         mContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, devNo );
         idStream << "CUDA:";
@@ -228,7 +230,8 @@ void PMVBenchmark<MatrixType>::initialize()
         mContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
         idStream << "HOST:";
     }
-    if( tokens.count( "THREADS" ) > 0 )
+
+    if ( tokens.count( "THREADS" ) > 0 )
     {
         istringstream tokenStream( tokens["THREADS"] );
         tokenStream >> noThreads;
@@ -237,13 +240,17 @@ void PMVBenchmark<MatrixType>::initialize()
     {
         noThreads = 1;
     }
+
     idStream << "THREADS=" << noThreads << ":";
-    if( mContext->getType() == hmemo::Context::CUDA  )
+
+    if ( mContext->getType() == hmemo::Context::CUDA  )
     {
         idStream << "DEVICE=" << devNo << ":";
     }
+
     idStream << "COMM=";
-    if( tokens["COMM"] == "SYNC" )
+
+    if ( tokens["COMM"] == "SYNC" )
     {
         mCommunicationKind = lama::Matrix::SYNCHRONOUS;
         idStream << "SYNC:";
@@ -253,12 +260,15 @@ void PMVBenchmark<MatrixType>::initialize()
         mCommunicationKind = lama::Matrix::ASYNCHRONOUS;
         idStream << "ASYNC:";
     }
+
     float weight = 1.0;
-    if( tokens.count( "W" ) > 0 )
+
+    if ( tokens.count( "W" ) > 0 )
     {
         istringstream tokenStream( tokens["W"] );
         tokenStream >> weight;
     }
+
     idStream << "W=" << weight;
 
     //mName += idStream.str();
@@ -338,8 +348,8 @@ void PMVBenchmark<MatrixType>::shutdown()
     const LAMAInputSet& inputSet = bf::InputSetRegistry<LAMAInputSet>::getRegistry().get( mInputSetId );
 
     //TODO: Complexity Calculation needs to be ported
-    if( ( typeid(MatrixType) == typeid(lama::DenseMatrix<float>) )
-            || ( typeid(MatrixType) == typeid(lama::DenseMatrix<double>) ) )
+    if ( ( typeid( MatrixType ) == typeid( lama::DenseMatrix<float> ) )
+            || ( typeid( MatrixType ) == typeid( lama::DenseMatrix<double> ) ) )
     {
         LAMAInputSetComplexityVisitor::getMVComplexity( inputSet.getDenseA(), mNumFloatingPointOperations,
                 mNumProcessedBytesFloat, mNumProcessedBytesDouble );
@@ -356,7 +366,7 @@ void PMVBenchmark<MatrixType>::shutdown()
 
     ValueType maxDiff = 1E-4f;
 
-    if( typeid(ValueType) == typeid(double) )
+    if ( typeid( ValueType ) == typeid( double ) )
     {
         maxDiff = maxDiff * maxDiff; // double precision
     }
@@ -375,15 +385,17 @@ void PMVBenchmark<MatrixType>::shutdown()
         SCAI_LOG_INFO( logger, "correct result: " << correctResult );
 
 #if defined( SCAI_LOG_TRACE_ENABLED)
-        for ( int i = 0; i < correctResult.size(); i++)
+
+        for ( int i = 0; i < correctResult.size(); i++ )
         {
             ValueType inputValue = lama::cast<ValueType>( ( *mVectorX )( i ) );
-            ValueType correctValue = lama::cast<ValueType>( correctResult(i) );
-            ValueType computedValue = lama::cast<ValueType>( computedResult(i) );
+            ValueType correctValue = lama::cast<ValueType>( correctResult( i ) );
+            ValueType computedValue = lama::cast<ValueType>( computedResult( i ) );
             SCAI_LOG_TRACE( logger, i << ": correct = " << correctValue
                             << ", computed = " << computedValue
                             << ", input = " << inputValue );
         }
+
 #endif
 
         lama::Vector& diff = correctResult;
@@ -397,7 +409,7 @@ void PMVBenchmark<MatrixType>::shutdown()
         LAMA_CHECK_BENCHMARK( diffNorm.getValue<ValueType>() < maxDiff );
 
     }
-    catch( bf::BFException& e )
+    catch ( bf::BFException& e )
     {
         std::stringstream message;
         message << e.what() << " std::fabs( result[i] - computedResultValue ) is bigger than " << maxDiff << std::endl;
@@ -420,13 +432,14 @@ CounterType PMVBenchmark<MatrixType>::getProcessedBytes() const
 {
     typedef typename MatrixType::MatrixValueType ValueType;
 
-    if( sizeof(ValueType) == sizeof(float) )
+    if ( sizeof( ValueType ) == sizeof( float ) )
     {
         return mNumProcessedBytesFloat;
     }
-    else if( sizeof(ValueType) == sizeof(double) )
+    else if ( sizeof( ValueType ) == sizeof( double ) )
     {
         return mNumProcessedBytesDouble;
     }
+
     return 0;
 }
