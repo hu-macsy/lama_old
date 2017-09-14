@@ -2,33 +2,34 @@
  * @file Benchmark.hpp
  *
  * @license
- * Copyright (c) 2011
+ * Copyright (c) 2009-2017
  * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
  * for Fraunhofer-Gesellschaft
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This file is part of the SCAI framework LAMA.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * LAMA is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Other Usage
+ * Alternatively, this file may be used in accordance with the terms and
+ * conditions contained in a signed written agreement between you and
+ * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
  * @brief Benchmark.hpp
  * @author jiri
  * @date 04.05.2010
- * $Id$
  */
 
 #pragma once
@@ -58,6 +59,8 @@ public:
      *        values.
      */
     Benchmark();
+
+    /** Overrride the default copy constructor as timing is reset */
     Benchmark( const Benchmark& other );
 
     /**
@@ -96,7 +99,7 @@ public:
      * @brief Copies this Benchmark.
      * @return The copy of this benchmark.
      */
-    virtual Benchmark* copy() const =0;
+    virtual Benchmark* copy() const = 0;
 
     /**
      * @brief executes the Benchmark
@@ -127,7 +130,7 @@ public:
      * @brief Returns the ID of the benchmark.
      * @return The id of the benchmark.
      */
-    virtual const std::string& getId() const =0;
+    virtual const std::string& getId() const = 0;
 
     /**
      * @brief Returns the number of threads, if threadded, 'unthreadded' otherwise.
@@ -245,7 +248,7 @@ public:
      * @brief Returns the size of the value type.
      * @return The size of the value type.
      */
-    virtual short getValueTypeSize() const =0;
+    virtual short getValueTypeSize() const = 0;
 
     /**
      * @brief Returns the time, function execute( ) was run.
@@ -357,7 +360,7 @@ protected:
      * The execution of this function is not timed. Therefore it can prepare
      * anything for the benchmark that does not have to be timed.
      */
-    virtual void initialize() =0;
+    virtual void initialize() = 0;
 
     /**
      * @brief Prepares the benchmark.
@@ -365,7 +368,7 @@ protected:
      * Prepares the benchmark. For example this function could initialize
      * important variables or upload data from host to device.
      */
-    virtual void setUp() =0;
+    virtual void setUp() = 0;
 
     /**
      * @brief Executes the main part of the benchmark.
@@ -373,7 +376,7 @@ protected:
      * Executes the main part of the benchmark. For example this function could
      * execute a complicate algorithm.
      */
-    virtual void execute() =0;
+    virtual void execute() = 0;
 
     /**
      * @brief Cleans memory.
@@ -381,7 +384,7 @@ protected:
      * Cleans memory. For example this function could free those variables,
      * initialized in setUp( ) or download data from device to host.
      */
-    virtual void tearDown() =0;
+    virtual void tearDown() = 0;
 
     /**
      * @brief Cleans up everything, before leaving the program.
@@ -391,7 +394,7 @@ protected:
      * The execution of this function is not timed. Therefore it can clean
      * anything from the benchmark that does not have to be timed.
      */
-    virtual void shutdown() =0;
+    virtual void shutdown() = 0;
 
     virtual void synchronize() const;
 
@@ -402,7 +405,7 @@ protected:
      *        so we should add it.
      * @return The absolute number of floating point operations.
      */
-    virtual CounterType getNumFloatingPointOperations() const =0;
+    virtual CounterType getNumFloatingPointOperations() const = 0;
 
     /**
      * @brief Returns the absolute number of processed bytes.
@@ -411,7 +414,7 @@ protected:
      *        so we should add it.
      * @return The absolute number of processed bytes.
      */
-    virtual CounterType getProcessedBytes() const =0;
+    virtual CounterType getProcessedBytes() const = 0;
 
     /** The id of the expression. */
     std::string mName;
@@ -430,7 +433,7 @@ protected:
 
     /** Logger for Benchmark, can be used in derived classes. */
 
-    SCAI_LOG_DECL_STATIC_LOGGER(logger);
+    SCAI_LOG_DECL_STATIC_LOGGER( logger );
 
 private:
     int mNumRepitions;
