@@ -16,6 +16,6 @@ sys.path.append( PREFIX )
 
 os.environ[ "BENCHMARK_LIBRARY_PATH" ] = PREFIX + "/bench"
 
-import BenchmarkFramework 
+import pybench
 
-BenchmarkFramework.main( )
+pybench.main( )

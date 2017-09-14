@@ -506,7 +506,7 @@ def main( ):
 		                                benchOut.setLanguage( 'de' )
 			                __print_results( benchOut,cmdOpt,stream,csv ) 
 			                print >> stream,"Created on;%s" % datetime.datetime.fromtimestamp( time.mktime( datetime.datetime.now( ).timetuple( ) ) )
-			                print >> stream,"By;Fraunhofer SCAI (c) 2011 Benchmark-Framework"
+			                print >> stream,"By;Fraunhofer SCAI (c) 2017 Benchmark-Framework"
 			                print >> stream,"Author;Robin Rehrmann"
 			                stream.close( )
 			                print colors.OKGREEN + "Created %s.%s" % ( output,colors.END )
@@ -528,7 +528,7 @@ def main( ):
 	                                        benchOut.setLanguage( 'de' )
 	                                __print_results( benchOut,cmdOpt,stream,csv )
 	                                print >> stream,"Created on;%s" % datetime.datetime.fromtimestamp( time.mktime( datetime.datetime.now( ).timetuple( ) ) )
-	                                print >> stream,"By;Fraunhofer SCAI (c) 2011 Benchmark-Framework"
+	                                print >> stream,"By;Fraunhofer SCAI (c) 2017 Benchmark-Framework"
 	                                print >> stream,"Author;Robin Rehrmann"
 	                                stream.close( )
 	                                print colors.OKGREEN + "Created %s.%s" % ( output,colors.END )

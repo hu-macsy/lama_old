@@ -89,7 +89,7 @@ endforeach ( executable )
 
 install ( PROGRAMS  BenchmarkRunner DESTINATION bin )
 
-install( DIRECTORY BenchmarkFramework DESTINATION bin )
+install( DIRECTORY pybench DESTINATION bin )
 
 ## add custom target doc_${MODULE_NAME} to generate Sphinx user documentation 
 
