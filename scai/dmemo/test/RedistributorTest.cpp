@@ -68,6 +68,33 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.RedistributorTest" );
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( constructRedistributorFromOwnersTest )
+{
+    IndexType size = 1000;
+    DistributionPtr distBlock(new BlockDistribution(size, comm));
+    IndexType numPEs = comm->getSize();
+    IndexType blockLocalSize = distBlock->getLocalSize();
+    HArray<IndexType> newOwners(blockLocalSize);
+    {
+        WriteAccess<IndexType> wOwners(newOwners);
+        for (IndexType i = 0; i < blockLocalSize; i++) {
+            wOwners[i] = i % numPEs;
+        }
+    }
+
+    Redistributor redist(newOwners, distBlock);
+    DistributionPtr targetDist = redist.getTargetDistributionPtr();
+    BOOST_CHECK_EQUAL(comm->sum(targetDist->getLocalSize()), distBlock->getGlobalSize());
+
+    HArray<IndexType> targetArray(targetDist->getLocalSize());
+    redist.redistribute(targetArray, newOwners);
+
+    ReadAccess<IndexType> rTarget(targetArray);
+    for (IndexType i = 0; i < rTarget.size(); i++) {
+        BOOST_CHECK_EQUAL(rTarget[i], comm->getRank());
+    }
+}
+
 BOOST_AUTO_TEST_CASE( redistributeTest )
 {
     typedef SCAI_TEST_TYPE ValueType;
