@@ -48,6 +48,12 @@
 #include <vector>
 #include <ctime>
 
+namespace scai
+{
+
+namespace lama
+{
+
 /** This class creates 'distributed' input sets for poisson solvers.
  *
  *  \code
@@ -85,3 +91,8 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };
+
+}
+
+}
+

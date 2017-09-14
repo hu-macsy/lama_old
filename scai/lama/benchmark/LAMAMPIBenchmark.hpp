@@ -38,6 +38,9 @@
 #include <map>
 #include <string>
 
+namespace scai
+{
+
 class LAMAMPIBenchmark: public bf::Benchmark
 {
 public:
@@ -100,3 +103,5 @@ private:
 
     std::string config;
 };
+
+}

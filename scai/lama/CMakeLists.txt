@@ -80,7 +80,7 @@ scai_project (
 
 ### add subdirectories
 
-scai_subdirectories( expression io matrix matutils mepr norm storage TEST EXAMPLES benchmark )
+scai_subdirectories( expression io matrix matutils mepr norm storage TEST EXAMPLES BENCHMARK )
 
 ## Define library via macro using MODULE_NAME, INTERNAL_DEPS, EXTERNAL_DEPS
 ## and global variables SCAI_LIBRARY_PREFIX, SCAI_VERSION, ....

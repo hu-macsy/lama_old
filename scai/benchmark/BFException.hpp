@@ -41,9 +41,9 @@
 #include <scai/common/config.hpp>
 #include <scai/benchmark/BFError.hpp>
 
-/**
- * @brief The namespace bf holds everything of the benchmark framework
- */
+namespace scai
+{
+
 namespace bf
 {
 
@@ -64,6 +64,8 @@ public:
      */
     virtual ~BFException() throw ();
 };
+
+}
 
 }
 

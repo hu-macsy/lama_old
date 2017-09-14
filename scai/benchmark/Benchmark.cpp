@@ -39,6 +39,9 @@
 #include <numeric>
 #include <omp.h>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -407,3 +410,5 @@ bool Benchmark::HasId::operator( )( const Benchmark* const benchmark )
 }
 
 } //namespace bf
+
+} // scai

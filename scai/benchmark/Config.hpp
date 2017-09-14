@@ -44,6 +44,9 @@
 
 #include <scai/common/config.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -93,3 +96,5 @@ private:
 };
 
 } // namespace bf
+
+} 

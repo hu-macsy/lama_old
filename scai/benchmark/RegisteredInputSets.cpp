@@ -46,6 +46,8 @@
 #include <scai/benchmark/BenchmarkPrinter.hpp>
 #include <scai/benchmark/frame_stdlib.hpp>
 
+using namespace scai;
+
 extern "C" bf::BaseInputSetRegistry* getInputSetRegistry();
 
 int main( void )

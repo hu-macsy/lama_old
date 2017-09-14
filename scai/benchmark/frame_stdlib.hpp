@@ -52,6 +52,9 @@
 #include <scai/benchmark/BenchmarkPrinter.hpp>
 #include <scai/benchmark/string_helper.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -153,6 +156,8 @@ void freeLibHandle( LibraryHandleType handle )
 #else
     dlclose( handle );
 #endif //WIN32
+}
+
 }
 
 }

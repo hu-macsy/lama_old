@@ -47,65 +47,11 @@
 #include <vector>
 #include <ctime>
 
-/** This class creates 'distributed' input sets for poisson solvers.
- *
- *  \code
- *     common::unique_ptr<LAMAInputSet> inputSet( PoissonInputSetCreator::createSet( "2D_9P_4_4" ) );
- *  \endcode
- *
- *  The matrix A will have a general block distribution and is in CSR format.
- */
-
-class PoissonInputSetCreator: public bf::InputSetCreator<LAMAInputSet>
+namespace scai
 {
-public:
 
-    typedef bf::InputSetCreator<LAMAInputSet>::InputSetType InputSetType;
-
-    static const std::string& id();
-
-    static InputSetType* createSet( const std::string& params );
-
-    PoissonInputSetCreator();
-
-    virtual ~PoissonInputSetCreator();
-
-    virtual InputSetType* create() const;
-
-    /** Implements pure method by using static method createSet. */
-
-    virtual InputSetType* create( const std::string& params ) const;
-
-    /** Implements pure method by using static method id. */
-
-    virtual const std::string& getId() const;
-
-private:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger );
-};
-
-/****************************************************************************
- *   EmptyDiagnonalInputSetCreator                                           *
- ****************************************************************************/
-
-class EmptyDiagonalInputSetCreator: public bf::InputSetCreator<LAMAInputSet>
+namespace lama
 {
-public:
-
-    typedef double ValueType;
-    static const std::string& id();
-
-    EmptyDiagonalInputSetCreator();
-    virtual ~EmptyDiagonalInputSetCreator();
-    virtual LAMAInputSet* create() const;
-    virtual LAMAInputSet* create( const std::string& arguments ) const;
-    virtual const std::string& getId() const;
-
-private:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger );
-};
 
 /****************************************************************************
  *   RandomInputSetCreator                                                   *
@@ -131,3 +77,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };
+
+}
+
+}

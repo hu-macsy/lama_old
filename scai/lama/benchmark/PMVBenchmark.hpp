@@ -115,7 +115,7 @@ private:
 
     dmemo::DistributionPtr mDistribution;
     hmemo::ContextPtr mContext;
-    scai::lama::Matrix::SyncKind mCommunicationKind;
+    lama::Matrix::SyncKind mCommunicationKind;
 
     CounterType mNumFloatingPointOperations;
     CounterType mNumProcessedBytesFloat;
@@ -280,7 +280,7 @@ void PMVBenchmark<MatrixType>::initialize()
 
     SCAI_LOG_INFO( logger, "get input set " << mInputSetId );
 
-    const LAMAInputSet& inputSet = bf::InputSetRegistry<LAMAInputSet>::getRegistry().get( mInputSetId );
+    const lama::LAMAInputSet& inputSet = bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry().get( mInputSetId );
 
     const lama::DenseVector<double>& inputX = inputSet.getX();
     const lama::CSRSparseMatrix<double>& inputA = inputSet.getA();
@@ -345,7 +345,7 @@ void PMVBenchmark<MatrixType>::tearDown()
 template<typename MatrixType>
 void PMVBenchmark<MatrixType>::shutdown()
 {
-    const LAMAInputSet& inputSet = bf::InputSetRegistry<LAMAInputSet>::getRegistry().get( mInputSetId );
+    const lama::LAMAInputSet& inputSet = bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry().get( mInputSetId );
 
     //TODO: Complexity Calculation needs to be ported
     if ( ( typeid( MatrixType ) == typeid( lama::DenseMatrix<float> ) )

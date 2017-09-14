@@ -44,6 +44,9 @@
 
 #include <scai/benchmark/Benchmark.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -123,3 +126,5 @@ inline void BenchmarkPrinter::warning( const T& message )
 }
 
 } // namespace bf
+
+} // namespace scai

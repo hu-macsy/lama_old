@@ -70,7 +70,11 @@ std::vector<std::string> split( const std::string& params, const char seperator 
 }
 }
 
-using namespace scai;
+namespace scai
+{
+
+namespace lama
+{
 
 SCAI_LOG_DEF_LOGGER( PoissonInputSetCreator::logger, "InputSetCreator.PoissonInputSetCreator" );
 
@@ -290,3 +294,7 @@ const std::string& PoissonInputSetCreator::getId() const
 }
 
 LAMA_INPUTSET_REGISTRATION( PoissonInputSetCreator );
+
+}
+
+}

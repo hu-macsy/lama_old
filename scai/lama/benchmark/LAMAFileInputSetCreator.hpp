@@ -39,6 +39,12 @@
 
 #include <string>
 
+namespace scai
+{
+
+namespace lama
+{
+
 class LAMAFileInputSetCreator: public bf::InputSetCreator<LAMAInputSet>
 {
 public:
@@ -57,3 +63,7 @@ public:
 
     virtual const std::string& getId() const;
 };
+
+}
+
+}

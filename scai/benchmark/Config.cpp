@@ -39,26 +39,36 @@
 
 #include <scai/benchmark/Config.hpp>
 
-bf::Config& bf::Config::getInstance()
+namespace scai
+{
+
+namespace bf
+{
+
+Config& Config::getInstance()
 {
     static Config config;
     return config;
 }
 
-const std::string& bf::Config::getValueOf( const std::string& param )
+const std::string& Config::getValueOf( const std::string& param )
 {
     return m_params.operator[]( param );
 }
 
-void bf::Config::setValueFor( std::string param, std::string value )
+void Config::setValueFor( std::string param, std::string value )
 {
     m_params[param] = value;
 }
 
-bf::Config::~Config()
+Config::~Config()
 {
 }
 
-bf::Config::Config()
+Config::Config()
 {
+}
+
+}
+
 }

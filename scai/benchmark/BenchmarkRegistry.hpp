@@ -40,9 +40,9 @@
 #include <scai/benchmark/Benchmark.hpp>
 #include <scai/benchmark/macros.hpp>
 
-/**
- * @brief The namespace bf holds everything of the benchmark framework
- */
+namespace scai
+{
+
 namespace bf
 {
 class COMMON_DLL_IMPORTEXPORT AbstractBenchmarkCreator
@@ -195,6 +195,10 @@ public:
     }
 };
 
+}
+
+}
+
 /**
  * @brief Register the type.
  */
@@ -207,6 +211,4 @@ public:
 #define LAMA_BENCHMARK_REGISTRATION2(type,post)                                      \
     static bf::BenchmarkRegistration<type >                                  \
     LAMA_UNIQUE_NAME( benchRegObj, post )(type::id())
-
-}
 

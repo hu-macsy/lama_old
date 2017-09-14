@@ -40,21 +40,31 @@
 
 #include <scai/benchmark/BFError.hpp>
 
-bf::BFError::BFError()
+namespace scai
+{
+
+namespace bf
+{
+
+BFError::BFError()
     : m_message()
 {
 }
 
-bf::BFError::BFError( const std::string& message )
+BFError::BFError( const std::string& message )
     : m_message( message )
 {
 }
 
-bf::BFError::~BFError() throw ()
+BFError::~BFError() throw ()
 {
 }
 
-const char* bf::BFError::what() const throw ()
+const char* BFError::what() const throw ()
 {
     return m_message.c_str();
+}
+
+}
+
 }

@@ -42,7 +42,11 @@
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-using namespace scai;
+namespace scai
+{
+
+namespace lama
+{
 
 const std::string& LAMAFileInputSetCreator::id()
 {
@@ -87,3 +91,7 @@ const std::string& LAMAFileInputSetCreator::getId() const
 }
 
 LAMA_INPUTSET_REGISTRATION( LAMAFileInputSetCreator );
+
+}
+
+}

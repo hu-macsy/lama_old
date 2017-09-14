@@ -34,11 +34,16 @@
 
 #include <scai/benchmark/BaseInputSetRegistry.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
 BaseInputSetRegistry::~BaseInputSetRegistry()
 {
+}
+
 }
 
 }

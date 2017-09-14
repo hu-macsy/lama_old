@@ -38,6 +38,9 @@
 
 #include <scai/common/config.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -50,3 +53,5 @@ public:
 };
 
 }
+
+} 

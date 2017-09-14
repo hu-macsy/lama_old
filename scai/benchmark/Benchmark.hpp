@@ -46,6 +46,9 @@
 
 #include <scai/logging.hpp>
 
+namespace scai
+{
+
 /**
  * @brief The namespace bf holds everything of the benchmark framework
  */
@@ -444,3 +447,5 @@ private:
 };
 
 } //namespace bf
+
+}

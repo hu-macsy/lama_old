@@ -44,6 +44,9 @@
 #include <scai/benchmark/BFError.hpp>
 #include <scai/benchmark/readDir.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -71,3 +74,5 @@ void getSharedLibraries( std::vector<std::string>& files )
 }
 
 } // namespace bf
+
+} // namespace scai

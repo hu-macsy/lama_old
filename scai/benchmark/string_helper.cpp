@@ -42,6 +42,9 @@
 
 #include <string>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -58,3 +61,5 @@ void trimm( std::string& s )
 }
 
 } // namespace bf
+
+} // namespace scai

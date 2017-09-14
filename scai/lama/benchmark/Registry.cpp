@@ -35,6 +35,8 @@
 #include <scai/common/config.hpp>
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
 
+using namespace scai;
+
 extern "C" COMMON_DLL_IMPORTEXPORT bf::BenchmarkRegistry* getBenchmarkRegistry()
 {
     return &( bf::BenchmarkRegistry::getRegistry() );
@@ -47,17 +49,17 @@ extern "C" COMMON_DLL_IMPORTEXPORT void releaseBenchmarkRegistry()
 
 extern "C" COMMON_DLL_IMPORTEXPORT bf::BaseInputSetRegistry* getInputSetRegistry()
 {
-    return &( bf::InputSetRegistry<LAMAInputSet>::getRegistry() );
+    return &( bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry() );
 }
 
 extern "C" COMMON_DLL_IMPORTEXPORT void releaseInputSetRegistry()
 {
-    bf::InputSetRegistry<LAMAInputSet>::freeRegistry();
+    bf::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
 }
 
 extern "C" COMMON_DLL_IMPORTEXPORT void releaseBenchmarkLibraryResources()
 {
     bf::BenchmarkRegistry::freeRegistry();
-    bf::InputSetRegistry<LAMAInputSet>::freeRegistry();
+    bf::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
 }
 

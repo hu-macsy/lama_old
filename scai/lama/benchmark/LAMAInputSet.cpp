@@ -34,9 +34,13 @@
 
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
 
-SCAI_LOG_DEF_LOGGER( LAMAInputSet::logger, "InputSet.LAMAInputSet" );
+namespace scai
+{
 
-using namespace scai;
+namespace lama
+{
+
+SCAI_LOG_DEF_LOGGER( LAMAInputSet::logger, "InputSet.LAMAInputSet" );
 
 LAMAInputSet::LAMAInputSet( const std::string& id )
     : InputSet( id ), mAlpha( 0.0 ), mBeta( 0.0 ), mX( 0 ), mY( 0 ), mA( 0 ), mB( 0 ), mC( 0 ), mDenseA(
@@ -331,4 +335,8 @@ const lama::DenseMatrix<double>& LAMAInputSet::getDenseC() const
     }
 
     return *mDenseC;
+}
+
+}
+
 }

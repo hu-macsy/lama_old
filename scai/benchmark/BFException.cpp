@@ -39,6 +39,9 @@
 
 #include <scai/benchmark/BFException.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -53,6 +56,8 @@ BFException::BFException( const std::string & message )
 
 BFException::~BFException() throw ()
 {
+}
+
 }
 
 }

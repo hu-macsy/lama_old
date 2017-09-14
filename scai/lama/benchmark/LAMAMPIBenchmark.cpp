@@ -37,7 +37,9 @@
 #include <scai/dmemo/NoCommunicator.hpp>
 
 using namespace std;
-using namespace scai;
+
+namespace scai
+{
 
 SCAI_LOG_DEF_LOGGER( LAMAMPIBenchmark::logger, "Benchmark.MPIBenchmark" );
 
@@ -200,4 +202,6 @@ bool LAMAMPIBenchmark::doOutput() const
     }
 
     return doOutput;
+}
+
 }

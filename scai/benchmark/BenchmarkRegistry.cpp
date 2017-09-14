@@ -44,6 +44,9 @@
 #include <iostream>
 #include <sstream>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -234,4 +237,6 @@ BenchmarkRegistry::const_iterator BenchmarkRegistry::end() const
 {
     return mCreatorMap.end();
 }
-} // namespace bf
+}
+
+} 

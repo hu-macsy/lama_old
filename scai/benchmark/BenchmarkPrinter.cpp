@@ -33,6 +33,9 @@
  */
 #include <scai/benchmark/BenchmarkPrinter.hpp>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -49,5 +52,7 @@ const char* const BenchmarkPrinter::error_begin = "%_BENCHMARK_FRAMEWORK_!ERROR_
 const char* const BenchmarkPrinter::error_end = "%_BENCHMARK_FRAMEWORK_!ERROR_END_!";
 const char* const BenchmarkPrinter::warning_begin = "%_BENCHMARK_FRAMEWORK_!WARNING_START_!";
 const char* const BenchmarkPrinter::warning_end = "%_BENCHMARK_FRAMEWORK_!WARNING_END_!";
+
+}
 
 }

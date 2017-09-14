@@ -50,6 +50,12 @@
  all of type double.
  */
 
+namespace scai
+{
+
+namespace lama
+{
+
 class COMMON_DLL_IMPORTEXPORT LAMAInputSet: public bf::InputSet, private scai::common::NonCopyable
 {
 public:
@@ -60,38 +66,38 @@ public:
         const std::string& id,
         double alpha,
         double beta,
-        scai::common::unique_ptr<scai::lama::DenseVector<double> > x,
-        scai::common::unique_ptr<scai::lama::CSRSparseMatrix<double> > A );
+        scai::common::unique_ptr<DenseVector<double> > x,
+        scai::common::unique_ptr<CSRSparseMatrix<double> > A );
 
     LAMAInputSet(
         const std::string& id,
         double alpha,
         double beta,
-        scai::common::unique_ptr<scai::lama::DenseVector<double> > x,
-        scai::common::unique_ptr<scai::lama::DenseVector<double> > y,
-        scai::common::unique_ptr<scai::lama::CSRSparseMatrix<double> > A );
+        scai::common::unique_ptr<DenseVector<double> > x,
+        scai::common::unique_ptr<DenseVector<double> > y,
+        scai::common::unique_ptr<CSRSparseMatrix<double> > A );
 
     LAMAInputSet(
         const std::string& id,
         double alpha,
         double beta,
-        scai::common::unique_ptr<scai::lama::DenseVector<double> > x,
-        scai::common::unique_ptr<scai::lama::DenseVector<double> > y,
-        scai::common::unique_ptr<scai::lama::DenseMatrix<double> > A );
+        scai::common::unique_ptr<DenseVector<double> > x,
+        scai::common::unique_ptr<DenseVector<double> > y,
+        scai::common::unique_ptr<DenseMatrix<double> > A );
 
     virtual ~LAMAInputSet();
 
     double getAlpha() const;
     double getBeta() const;
-    const scai::lama::DenseVector<double>& getX() const;
-    const scai::lama::DenseVector<double>& getY() const;
-    const scai::lama::CSRSparseMatrix<double>& getA() const;
-    const scai::lama::CSRSparseMatrix<double>& getB() const;
-    const scai::lama::CSRSparseMatrix<double>& getC() const;
+    const DenseVector<double>& getX() const;
+    const DenseVector<double>& getY() const;
+    const CSRSparseMatrix<double>& getA() const;
+    const CSRSparseMatrix<double>& getB() const;
+    const CSRSparseMatrix<double>& getC() const;
 
-    const scai::lama::DenseMatrix<double>& getDenseA() const;
-    const scai::lama::DenseMatrix<double>& getDenseB() const;
-    const scai::lama::DenseMatrix<double>& getDenseC() const;
+    const DenseMatrix<double>& getDenseA() const;
+    const DenseMatrix<double>& getDenseB() const;
+    const DenseMatrix<double>& getDenseC() const;
 
 private:
 
@@ -100,14 +106,18 @@ private:
     double mAlpha;
     double mBeta;
 
-    scai::lama::DenseVector<double>* mX;
-    scai::lama::DenseVector<double>* mY;
+    DenseVector<double>* mX;
+    DenseVector<double>* mY;
 
-    mutable scai::lama::CSRSparseMatrix<double>* mA;
-    mutable scai::lama::CSRSparseMatrix<double>* mB;
-    mutable scai::lama::CSRSparseMatrix<double>* mC;
+    mutable CSRSparseMatrix<double>* mA;
+    mutable CSRSparseMatrix<double>* mB;
+    mutable CSRSparseMatrix<double>* mC;
 
-    mutable scai::lama::DenseMatrix<double>* mDenseA;
-    mutable scai::lama::DenseMatrix<double>* mDenseB;
-    mutable scai::lama::DenseMatrix<double>* mDenseC;
+    mutable DenseMatrix<double>* mDenseA;
+    mutable DenseMatrix<double>* mDenseB;
+    mutable DenseMatrix<double>* mDenseC;
 };
+
+}
+
+}

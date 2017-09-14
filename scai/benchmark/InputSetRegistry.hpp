@@ -48,9 +48,9 @@
 
 #include <scai/common/exception/Exception.hpp>
 
-/**
- * @brief The namespace bf holds everything of the benchmark framework
- */
+namespace scai
+{
+
 namespace bf
 {
 
@@ -422,3 +422,4 @@ public:
 
 } // namespace bf
 
+} // namespace scai

@@ -40,6 +40,9 @@
 #include <scai/benchmark/InputSet.hpp>
 #include <utility>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -103,6 +106,8 @@ void InputSet::setProcessedBytes(
     const unsigned long numBytes )
 {
     mBWMap[sizeOfValueType][gid] = numBytes;
+}
+
 }
 
 }

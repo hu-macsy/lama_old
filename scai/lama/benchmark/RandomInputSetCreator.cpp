@@ -47,7 +47,11 @@
 #include <cstdlib>
 #include <cstdio>
 
-using namespace scai;
+namespace scai
+{
+
+namespace lama
+{
 
 // Random Creator
 
@@ -130,3 +134,8 @@ LAMAInputSet* RandomInputSetCreator::create( const std::string& arguments ) cons
 }
 
 LAMA_INPUTSET_REGISTRATION( RandomInputSetCreator );
+
+}
+
+}
+

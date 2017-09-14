@@ -54,6 +54,9 @@
 #include <windows.h>
 #include <strsafe.h>
 #endif //__windows__
+
+using namespace scai;
+
 void getFilesFromDirectory( const char* dir, std::vector<std::string>& files )
 {
 #ifdef __unix__

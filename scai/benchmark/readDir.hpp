@@ -43,6 +43,9 @@
 #include <vector>
 #include <string>
 
+namespace scai
+{
+
 namespace bf
 {
 
@@ -58,3 +61,4 @@ void getFilesFromPath( const std::string& path, std::vector<std::string>& files 
 
 } // namespace bf
 
+} // namespace scai

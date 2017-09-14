@@ -43,9 +43,9 @@
 
 #include <scai/common/config.hpp>
 
-/**
- * @brief The namespace sblas holds everything of the Template-Library sblas++
- */
+namespace scai
+{
+
 namespace bf
 {
 
@@ -130,3 +130,5 @@ private:
 };
 
 } // namespace bf
+
+} // namespace scai
