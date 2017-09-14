@@ -42,6 +42,8 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/unique_ptr.hpp>
 
+#include <scai/dmemo/GeneralDistribution.hpp>
+
 using namespace scai::hmemo;
 
 namespace scai
@@ -152,6 +154,130 @@ Redistributor::Redistributor( DistributionPtr targetDistribution, DistributionPt
                         "saved mapping for target dist: local = " << localIndex << ", global = " << globalIndex << ", halo = " << haloIndex )
         haloTargetIndexes[haloIndex] = localIndex;
     }
+
+    // all info needed for redistribution is now available
+    SCAI_LOG_INFO( logger, "constructed " << *this )
+}
+
+Redistributor::Redistributor( const HArray<IndexType>& newOwners, DistributionPtr sourceDistribution )
+
+    : mSourceDistribution( sourceDistribution )
+{
+    SCAI_ASSERT_ERROR( sourceDistribution, "NULL pointer for source distribution" )
+    const Distribution& sourceDist = *sourceDistribution;
+    const Communicator& communicator = sourceDist.getCommunicator();
+    const IndexType ownID = communicator.getRank();
+    const IndexType numPEs = communicator.getSize();
+    const IndexType globalN = sourceDist.getGlobalSize();
+
+    mSourceSize = sourceDist.getLocalSize();
+    ReadAccess<IndexType> rNewOwners(newOwners);
+    SCAI_ASSERT_EQ_ERROR(mSourceSize, rNewOwners.size(), "Got array of " << rNewOwners.size() << " new owners but " << mSourceSize << " local values in distribution.");
+    mLocalSourceIndexes = HArray<IndexType>(mSourceSize);
+
+    WriteAccess<IndexType> localSourceIndexes( mLocalSourceIndexes, mSourceSize );
+    mNumLocalValues = 0; // count number of local copies from source to target
+    for (IndexType i = 0; i < mSourceSize; i++) {
+        SCAI_ASSERT_DEBUG(rNewOwners[i] < numPEs, "Illegal future owner.");
+        if (rNewOwners[i] == ownID) {
+            localSourceIndexes[mNumLocalValues] = i;
+            mNumLocalValues++;
+        }
+    }
+
+    SCAI_LOG_DEBUG( logger, "Of the " << mSourceSize << " local values, " << mNumLocalValues << " will stay local.")
+
+    //even if numLocalValues == mSourceSize, we cannot know if the distributions are equal, it may have changed for someone else
+    localSourceIndexes.resize( mNumLocalValues );
+
+    HaloBuilder::buildFromTargets( newOwners, sourceDist, mHalo );
+    const Halo& halo = mHalo;
+
+    //build new list of local indices
+    const IndexType haloSize = halo.getHaloSize();
+    mTargetSize = halo.getHaloSize() + mNumLocalValues;
+    SCAI_ASSERT(communicator.sum(mTargetSize) == globalN, "Sum of target sizes is only " << communicator.sum(mTargetSize) << " of " << globalN)
+    SCAI_LOG_DEBUG( logger, "Will get " << halo.getHaloSize() << " values from other PEs for " << mTargetSize << " total.")
+    HArray<IndexType> myTargetGlobalIndices(mTargetSize);
+    {
+        WriteAccess<IndexType> wTargetGlobalIndices(myTargetGlobalIndices);
+        for (IndexType i = 0; i < mNumLocalValues; i++) {//maybe improve this with scatter and gather?
+            wTargetGlobalIndices[i] = sourceDist.local2global(localSourceIndexes[i]);
+        }
+        ReadAccess<IndexType> haloIndices(halo.getRequiredIndexes());
+        SCAI_ASSERT_EQ_ERROR(haloIndices.size(), haloSize, "Halo inconsistent.");
+        for (IndexType i = 0; i < haloSize; i++) {
+            SCAI_ASSERT_DEBUG(haloIndices[i] < globalN, "Illegal halo index " << haloIndices[i]);
+            wTargetGlobalIndices[i+mNumLocalValues]  = haloIndices[i];
+        }
+        std::sort(wTargetGlobalIndices.get(), wTargetGlobalIndices.get()+mTargetSize);
+    }
+
+    mTargetDistribution = DistributionPtr(new GeneralDistribution(globalN, myTargetGlobalIndices, sourceDist.getCommunicatorPtr()));
+    const Distribution& targetDist = *mTargetDistribution;
+    ContextPtr contextPtr = Context::getHostPtr();
+    {
+        //assign local target indices
+        WriteAccess<IndexType> localTargetIndexes( mLocalTargetIndexes, contextPtr );
+        localTargetIndexes.resize(mNumLocalValues);
+        for (IndexType i = 0; i < mNumLocalValues; i++) {
+            IndexType globalI = sourceDist.local2global(localSourceIndexes[i]);
+            IndexType targetLocal = targetDist.global2local(globalI);//TODO: maybe optimize
+            SCAI_ASSERT_DEBUG( targetLocal < mTargetSize, "Index " << targetLocal << " illegal." );
+            localTargetIndexes[i] = targetLocal;
+        }
+    }
+    
+    WriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes, contextPtr );
+    WriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes, contextPtr );
+    const CommunicationPlan& providesPlan = halo.getProvidesPlan();
+    const CommunicationPlan& requiresPlan = halo.getRequiredPlan();
+
+    SCAI_ASSERT_ERROR(providesPlan.totalQuantity() <= mSourceSize, "Cannot send more indices than I have.");
+
+    ReadAccess<IndexType> haloProvidesIndexes( halo.getProvidesIndexes(), contextPtr );
+    ReadAccess<IndexType> haloRequiresIndexes( halo.getRequiredIndexes(), contextPtr );
+
+    //now significant amount of duplicate code. TODO: maybe split off in separate method?
+    haloSourceIndexes.resize( providesPlan.totalQuantity() );
+    IndexType offset = 0; // runs through halo source indexes
+
+    for ( PartitionId i = 0; i < providesPlan.size(); i++ )
+    {
+        const IndexType n = providesPlan[i].quantity;
+        const IndexType planOffset = providesPlan[i].offset;
+
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            SCAI_ASSERT_DEBUG( planOffset+j < haloProvidesIndexes.size(), "Index " << planOffset+j << " illegal." );
+            haloSourceIndexes[offset++] = haloProvidesIndexes[planOffset+j];
+        }
+    }
+
+    SCAI_LOG_INFO( logger, "have set " << offset << " halo source indexes" )
+    // In contrary to Halo schedules we have here the situation that each non-local
+    // index of source should be required by some other processor.
+    SCAI_ASSERT_EQ_ERROR( offset, haloSourceIndexes.size(), "serious mismatch" )
+    SCAI_ASSERT_EQ_ERROR( mNumLocalValues + offset, mSourceSize, "serious mismatch" )
+    // Now add the indexes where to scatter the halo into destination
+    haloTargetIndexes.resize( haloSize );
+    IndexType targetOffset = 0;
+
+    for ( PartitionId i = 0; i < requiresPlan.size(); i++ )
+    {
+        const IndexType n = requiresPlan[i].quantity;
+        const IndexType planOffset = requiresPlan[i].offset;
+
+        for ( IndexType j = 0; j < n; j++ )
+        {
+            SCAI_ASSERT_DEBUG( planOffset+j < haloRequiresIndexes.size(), "Index " << planOffset+j << " illegal." );
+
+            haloTargetIndexes[targetOffset] = mTargetDistribution->global2local(haloRequiresIndexes[planOffset+j]);
+            SCAI_ASSERT_VALID_INDEX(haloTargetIndexes[targetOffset], mTargetSize, "invalid index");
+            targetOffset++;
+        }
+    }
+    SCAI_ASSERT_EQ_ERROR( targetOffset, haloTargetIndexes.size(), "serious mismatch" )
 
     // all info needed for redistribution is now available
     SCAI_LOG_INFO( logger, "constructed " << *this )

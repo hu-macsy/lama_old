@@ -80,6 +80,8 @@ public:
 
     Redistributor( DistributionPtr targetDistribution, DistributionPtr sourceDistribution );
 
+    Redistributor( const hmemo::HArray<IndexType>& newOwners, DistributionPtr sourceDistribution );
+
     /** Getter needed for distributions */
 
     DistributionPtr getTargetDistributionPtr() const;

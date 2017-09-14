@@ -235,6 +235,63 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     }
 }
 
+void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Distribution& sourceDistribution, Halo& halo ) {
+    const PartitionId noPartitions = sourceDistribution.getNumPartitions();
+    const Communicator& communicator = sourceDistribution.getCommunicator();
+    const IndexType ownID = communicator.getRank();
+    const IndexType globalN = sourceDistribution.getGlobalSize();
+    const IndexType oldLocalN = sourceDistribution.getLocalSize();
+
+    SCAI_ASSERT(newOwners.size() == sourceDistribution.getLocalSize(), "Size of new owners array does not fit sourceDistribution.");
+
+    std::vector<IndexType> sendQuantity(noPartitions,0);
+    ReadAccess<IndexType> rOwners(newOwners);
+    for (IndexType i = 0; i < rOwners.size(); i++) {
+        SCAI_ASSERT_DEBUG(rOwners[i] < noPartitions, "Illegal owner value.");
+        sendQuantity[rOwners[i]]++;
+    }
+
+    sendQuantity[ownID] = 0;//not sending anything to myself
+    CommunicationPlan& sendPlan = halo.mProvidesPlan;
+    sendPlan.allocate(sendQuantity.data(), noPartitions);
+    SCAI_ASSERT_DEBUG(sendPlan.totalQuantity() <= oldLocalN, "Bug in send plan allocation: Total quantity higher than local size");
+
+    std::vector<IndexType> offsets( noPartitions, nIndex );  // initialize with illegal index
+    for ( IndexType p = 0; p < sendPlan.size(); ++p )
+    {
+        offsets[sendPlan[p].partitionId] = sendPlan[p].offset;
+    }
+
+    std::vector<IndexType> localSendIndices(sendPlan.totalQuantity());
+    std::vector<IndexType> globalSendIndices(sendPlan.totalQuantity());
+
+    for (IndexType i = 0; i < oldLocalN; i++) {
+        const IndexType targetPartition = rOwners[i];
+        if (targetPartition != ownID) {
+            IndexType offset = offsets[targetPartition];
+            SCAI_ASSERT_VALID_INDEX(offset, sendPlan.totalQuantity(), "size mismatch")
+            localSendIndices[offset] = i;
+            globalSendIndices[offset] = sourceDistribution.local2global(i);//TODO: maybe optimize
+            offsets[targetPartition]++;
+        }
+    }
+    
+    CommunicationPlan& recvPlan = halo.mRequiredPlan;
+    recvPlan.allocateTranspose(sendPlan, communicator);
+
+    halo.mProvidesIndexes = HArray<IndexType>(localSendIndices.size(), localSendIndices.data());
+    WriteAccess<IndexType> wRequire(halo.mRequiredIndexes);
+    wRequire.resize(recvPlan.totalQuantity());
+
+    communicator.exchangeByPlan(wRequire.get(), recvPlan, globalSendIndices.data(), sendPlan);
+    wRequire.release();
+    ReadAccess<IndexType> rRequire(halo.mRequiredIndexes);
+    for (IndexType i = 0; i < rRequire.size(); i++) {
+        SCAI_ASSERT(rRequire[i] < globalN, "illegal index " << rRequire[i]);
+        halo.setGlobal2Halo(rRequire[i], i);
+    }
+}
+
 void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo& halo, const scai::hmemo::HArray<IndexType>& localFineToCoarse, const scai::hmemo::HArray<IndexType>& haloFineToCoarse, Halo& coarseHalo) {
     SCAI_REGION( "HaloBuilder.coarsenHalo" )
     scai::hmemo::ReadAccess<IndexType> providedIndices(halo.getProvidesIndexes());
@@ -287,12 +344,14 @@ void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo
                 SCAI_ASSERT(halo.global2halo(reqIndex) < rFineToCoarse.size(), "Index" << halo.global2halo(reqIndex) << " too big for halo data");
                 recvSet.insert(rFineToCoarse[halo.global2halo(requiredIndices[j])]);
             }
+
             for (IndexType reqIndex : recvSet) {
                 newRequiredIndices.push_back(reqIndex);
             }
             recvQuantities[entry.partitionId] = recvSet.size();
         }
     }
+
     SCAI_ASSERT(IndexType(newRequiredIndices.size()) <= requiredIndices.size(), "New index list is bigger than old one.");
 
     coarseHalo.mRequiredPlan.allocate(recvQuantities.data(), recvQuantities.size());
