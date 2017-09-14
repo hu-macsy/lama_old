@@ -38,7 +38,6 @@
 #include <scai/benchmark/BFException.hpp>
 #include <scai/benchmark/BFError.hpp>
 #include <scai/benchmark/Benchmark.hpp>
-#include <scai/benchmark/BenchmarkRegistry.hpp>
 #include <scai/benchmark/BenchmarkTypes.hpp>
 
 #include <scai/benchmark/InputSet.hpp>

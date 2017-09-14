@@ -43,7 +43,7 @@ macro ( scai_subdirectories )
 
     ## Note: no need to check if dir exists as CMake will give error message
 
-    set ( options TEST CUDA MIC EXAMPLES )
+    set ( options TEST CUDA MIC EXAMPLES BENCHMARK )
     set ( oneValueArgs )
     set ( multiValueArgs )
 
@@ -58,6 +58,13 @@ macro ( scai_subdirectories )
     if ( ${scai_subdirectories_TEST} )
         if ( FOUND_BOOST_TEST AND USE_BOOST_TEST )
             add_subdirectory ( test )
+        endif ()
+    endif ()
+
+    if ( ${scai_subdirectories_BENCHMARK} )
+        # Benchmark directory is only added if package for benchmark framework was enabled
+        if ( TARGET ${SCAI_LIBRARY_PREFIX}_benchmark )
+            add_subdirectory ( benchmark )
         endif ()
     endif ()
 
