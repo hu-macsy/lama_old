@@ -28,95 +28,57 @@
  * @endlicense
  *
  * @brief RegisteredBenchmarks.cpp
- * @author Jiri Kraus
- * @date 06.04.2011
+ * @author Jiri Kraus, Robin Rehrmann
+ * @date 03.02.2011
  */
-/*
- * RegisteredBenchmarks.cpp
- *
- *  Created on: 03.02.2011
- *      Author: rrehrman
- */
+
 #include <scai/benchmark.hpp>
 #include <scai/benchmark/BenchmarkPrinter.hpp>
+#include <scai/benchmark/Benchmark.hpp>
 #include <scai/benchmark/frame_stdlib.hpp>
 
-using namespace scai;
+#include <scai/common/Settings.hpp>
+#include <scai/common/LibModule.hpp>
+#include <scai/common/unique_ptr.hpp>
 
-extern "C" bf::BenchmarkRegistry* getBenchmarkRegistry();
+#include <vector>
+
+using namespace scai;
+using namespace std;
 
 int main( void )
 {
-    std::vector<std::string> files;
+    using namespace bf;
 
-    try
+    std::string benchLibPath;
+
+    if ( !common::Settings::getEnvironment( benchLibPath, "BENCHMARK_LIBRARY_PATH" ) )
     {
-        bf::getSharedLibraries( files );
-    }
-    catch( std::exception& e )
-    {
-        bf::BenchmarkPrinter::error( e.what() );
-        return 1;
+        throw BFError( "Set BENCHMARK_LIBRARY_PATH to the directory holding the "
+                       "shared libraries of your benchmarks." );
     }
 
-    std::map<std::string,std::string> benchmarks;
-    bf::BenchmarkRegistry* registry;
+    std::map<std::string,std::string> benchmarks;   // keep all pairs of id, gid
 
-    for( unsigned int i = 0; i < files.size(); ++i )
+    common::LibModule::loadLibsInDir( benchLibPath.c_str() );
+
+    vector<string> values;  // string is create type for benchmarks
+
+    Benchmark::getCreateValues( values );
+
+    for ( size_t i = 0; i < values.size(); ++i )
     {
-        typedef bf::BenchmarkRegistry* (*registry_t)();
-        registry_t reg_handle = NULL;
+        cout << "  Registered values[" << i << "] = " << values[i] << endl;
 
-        LAMA_LIB_HANDLE_TYPE handle;
+        common::unique_ptr<Benchmark> bench( Benchmark::create( values[i] ) );
 
-        int error = bf::loadLibAndGetFunctionHandle( reg_handle, handle, files[i].c_str(), "getBenchmarkRegistry" );
+        cout << "  Id = " << bench->getId() << ", Name = " << bench->getName() << endl;
 
-        if( error != 0 )
-        {
-            continue;
-        }
-
-        typedef void (*free_registry_t)();
-        free_registry_t reg_free_handle;
-
-        error = bf::getFunctionHandle( reg_free_handle, handle, "releaseBenchmarkRegistry" );
-        if( error != 0 )
-        {
-            std::stringstream message;
-            message << files[i] << " does not define releaseBenchmarkRegistry skipping it.";
-            bf::BenchmarkPrinter::warning( message.str() );
-            //bf::freeLibHandle( handle );
-            continue;
-        }
-
-        // getting registry from library.
-        registry = reg_handle();
-
-        bf::Benchmark* bench;
-
-        // iterate over registry and save all BenchmarkIDs and Names, if those
-        // Benchmarks need any unknown arguments, insert '<parametered>', instead.
-        for( bf::BenchmarkRegistry::const_iterator it = registry->begin(); it != registry->end(); ++it )
-        {
-            try
-            {
-                bench = it->second->create();
-            }
-            catch( bf::BFError& )
-            {
-                benchmarks.insert( std::make_pair( it->first, "<parametered>" ) );
-                continue;
-            }
-            // insert ID and Name.
-            benchmarks.insert( std::make_pair( bench->getId(), bench->getName() ) );
-            delete bench;
-        }
-
-        reg_free_handle();
-        //bf::freeLibHandle( handle );
+        benchmarks.insert( std::make_pair( bench->getId(), bench->getName() ) );
     }
 
     std::stringstream message;
+
     for( std::map<std::string,std::string>::const_iterator it = benchmarks.begin(); it != benchmarks.end(); ++it )
     {
         message << it->first << "%_:_%" << it->second << "%,";

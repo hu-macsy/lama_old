@@ -37,16 +37,6 @@
 
 using namespace scai;
 
-extern "C" COMMON_DLL_IMPORTEXPORT bf::BenchmarkRegistry* getBenchmarkRegistry()
-{
-    return &( bf::BenchmarkRegistry::getRegistry() );
-}
-
-extern "C" COMMON_DLL_IMPORTEXPORT void releaseBenchmarkRegistry()
-{
-    bf::BenchmarkRegistry::freeRegistry();
-}
-
 extern "C" COMMON_DLL_IMPORTEXPORT bf::BaseInputSetRegistry* getInputSetRegistry()
 {
     return &( bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry() );
@@ -59,7 +49,6 @@ extern "C" COMMON_DLL_IMPORTEXPORT void releaseInputSetRegistry()
 
 extern "C" COMMON_DLL_IMPORTEXPORT void releaseBenchmarkLibraryResources()
 {
-    bf::BenchmarkRegistry::freeRegistry();
     bf::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
 }
 

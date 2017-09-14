@@ -40,45 +40,7 @@
 
 #include <scai/lama/storage/CSRStorage.hpp>
 #include <scai/lama/storage/JDSStorage.hpp>
+#include <scai/lama/storage/ELLStorage.hpp>
 
-#define LAMACONVERTMATRIXSTORAGEBENCHMARKREGISTRATION( STORAGE1, STORAGE2, GROUP )               \
-    template<>                                                                                   \
-    const LAMAInputSetComplexityVisitor::Group&                                                  \
-    ConvertMatrixStorageBenchmark<STORAGE1<float>, STORAGE2<float> >::group()                    \
-    {                                                                                            \
-        static const LAMAInputSetComplexityVisitor::Group group                                  \
-        = LAMAInputSetComplexityVisitor::GROUP;                                                  \
-        return group;                                                                            \
-    }                                                                                            \
-    \
-    template<>                                                                                   \
-    const LAMAInputSetComplexityVisitor::Group&                                                  \
-    ConvertMatrixStorageBenchmark<STORAGE1<double>, STORAGE2<double> >::group()                  \
-    {                                                                                            \
-        static const LAMAInputSetComplexityVisitor::Group group                                  \
-        = LAMAInputSetComplexityVisitor::GROUP;                                                  \
-        return group;                                                                            \
-    }                                                                                            \
-    \
-    template<>                                                                                   \
-    const std::string& ConvertMatrixStorageBenchmark<STORAGE1<float>, STORAGE2<float> >::sid()   \
-    {                                                                                            \
-        static const std::string sid = "LAMA<float>";                                            \
-        return sid;                                                                              \
-    }                                                                                            \
-    \
-    template<>                                                                                   \
-    const std::string& ConvertMatrixStorageBenchmark<STORAGE1<double>, STORAGE2<double> >::sid() \
-    {                                                                                            \
-        static const std::string sid = "LAMA<double>";                                           \
-        return sid;                                                                              \
-    }                                                                                            \
-    \
-    typedef ConvertMatrixStorageBenchmark<STORAGE1<float>, STORAGE2<float> > MYTYPE##float;      \
-    typedef ConvertMatrixStorageBenchmark<STORAGE1<double>, STORAGE2<double> > MYTYPE##double;   \
-    \
-    LAMA_BENCHMARK_REGISTRATION2(MYTYPE##float,GROUP##float);                                    \
-    LAMA_BENCHMARK_REGISTRATION2(MYTYPE##double,GROUP##double);
-
-LAMACONVERTMATRIXSTORAGEBENCHMARKREGISTRATION( lama::CSRStorage, lama::JDSStorage, ConvertCSR2JDS )
+template class ConvertMatrixStorageBenchmark<CSRStorage<float>, JDSStorage<float> >;
 

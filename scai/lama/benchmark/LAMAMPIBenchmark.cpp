@@ -32,6 +32,8 @@
  * @date 13.05.2011
  */
 
+#include <scai/common/OpenMP.hpp>
+
 #include <scai/lama/benchmark/LAMAMPIBenchmark.hpp>
 #include <scai/dmemo/Communicator.hpp>
 #include <scai/dmemo/NoCommunicator.hpp>
@@ -57,15 +59,6 @@ LAMAMPIBenchmark::LAMAMPIBenchmark( const string& id, const string& gid )
     mComm = dmemo::Communicator::getCommunicatorPtr();
     SCAI_LOG_INFO( logger,
                    "Communicator created for Benchmark (id = " << id << ", gid = " << gid << ") : " << *mComm );
-    readConfig();
-}
-
-LAMAMPIBenchmark::LAMAMPIBenchmark( const string& id, const string& gid, const string& arguments )
-    : bf::Benchmark( id, gid, arguments )
-{
-    mComm = dmemo::Communicator::getCommunicatorPtr();
-    SCAI_LOG_INFO( logger,
-                   "MPI communicator created for Benchmark (id = " << id << ", gid = " << gid << ", args = " << arguments << ") : " << *mComm );
     readConfig();
 }
 

@@ -35,9 +35,11 @@
 #include <scai/benchmark/Benchmark.hpp>
 #include <scai/benchmark/InputSetRegistry.hpp>
 
+#include <scai/common/Walltime.hpp>
+#include <scai/common/OpenMP.hpp>
+
 #include <algorithm>
 #include <numeric>
-#include <omp.h>
 
 namespace scai
 {
@@ -88,20 +90,6 @@ Benchmark::Benchmark( const std::string& id, const std::string& gid ) :
     SCAI_LOG_INFO( logger, "Benchmark( id = " << id << ", gid = " << gid << " )" );
 }
 
-Benchmark::Benchmark( const std::string& )
-    : mMinTime( 0.0 ), mExecutedTime( 0 ), mActNumRep( 0 ), mNumRepitions( 1 ), mSetUpTime( 0.0 ), mTearDownTime(
-        0.0 )
-{
-    SCAI_LOG_INFO( logger, "Benchmark( arg IGNORED ?)" );
-}
-
-Benchmark::Benchmark( const std::string& id, const std::string& gid, const std::string& )
-    : mName( id ), mGId( gid ), mMinTime( 0.0 ), mExecutedTime( 0 ), mActNumRep( 0 ), mNumRepitions( 1 ), mSetUpTime(
-        0.0 ), mTearDownTime( 0.0 )
-{
-    SCAI_LOG_INFO( logger, "Benchmark( id = " << id << ", gid = " << gid << ", arg = ?IGNORED? )" );
-}
-
 Benchmark::~Benchmark()
 {
 }
@@ -122,10 +110,10 @@ void Benchmark::run( std::ostream& out )
     }
 
     synchronize();
-    mSetUpTime = omp_get_wtime();
+    mSetUpTime = common::Walltime::get();
     setUp();
     synchronize();
-    mSetUpTime = omp_get_wtime() - mSetUpTime;
+    mSetUpTime = common::Walltime::get() - mSetUpTime;
 
     mExecutionTimes.clear();
     double executionTime = 0.0;
@@ -133,19 +121,19 @@ void Benchmark::run( std::ostream& out )
     for ( ; mActNumRep < mNumRepitions || mExecutedTime < mMinTime; ++mActNumRep )
     {
         synchronize();
-        executionTime = omp_get_wtime();
+        executionTime = common::Walltime::get();
         execute();
         synchronize();
-        executionTime = omp_get_wtime() - executionTime;
+        executionTime = common::Walltime::get() - executionTime;
         mExecutedTime += executionTime;
         mExecutionTimes.push_back( executionTime );
     }
 
     synchronize();
-    mTearDownTime = omp_get_wtime();
+    mTearDownTime = common::Walltime::get();
     tearDown();
     synchronize();
-    mTearDownTime = omp_get_wtime() - mTearDownTime;
+    mTearDownTime = common::Walltime::get() - mTearDownTime;
 
     shutdown();
 }
@@ -398,15 +386,6 @@ bool Benchmark::LessNumThreads::operator( )( const Benchmark* const arg1, const 
     }
 
     return arg1->getNumThreads() < arg2->getNumThreads();
-}
-
-Benchmark::HasId::HasId( const std::string& id ) : mId( id )
-{
-}
-
-bool Benchmark::HasId::operator( )( const Benchmark* const benchmark )
-{
-    return benchmark->getId() == mId;
 }
 
 } //namespace bf

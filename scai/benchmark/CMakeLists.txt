@@ -57,7 +57,6 @@ scai_project (
         BaseInputSetRegistry
         Benchmark
         BenchmarkPrinter
-        BenchmarkRegistry
         BFError
         BFException
         Config

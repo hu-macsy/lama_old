@@ -28,8 +28,8 @@
  * @endlicense
  *
  * @brief Benchmark.hpp
- * @author jiri
- * @date 04.05.2010
+ * @author Jiri Kraus, Thomas Brandes
+ * @date 04.05.2010, revised 14.09.2017
  */
 
 #pragma once
@@ -39,9 +39,10 @@
 #include <algorithm>
 #include <numeric>
 #include <memory>
-#include <omp.h>
 
 #include <scai/common/config.hpp>
+#include <scai/common/Factory.hpp>
+
 #include <scai/benchmark/BenchmarkTypes.hpp>
 
 #include <scai/logging.hpp>
@@ -54,7 +55,8 @@ namespace scai
  */
 namespace bf
 {
-class COMMON_DLL_IMPORTEXPORT Benchmark
+class COMMON_DLL_IMPORTEXPORT Benchmark : public common::Factory< std::string, Benchmark* >
+
 {
 public:
     /**
@@ -64,6 +66,7 @@ public:
     Benchmark();
 
     /** Overrride the default copy constructor as timing is reset */
+
     Benchmark( const Benchmark& other );
 
     /**
@@ -72,26 +75,6 @@ public:
      * @param[in] gid   The id of the group of this Benchmark.
      */
     Benchmark( const std::string& id, const std::string& gid );
-
-private:
-
-    // ToDo: seems to be unused, arguments is ignored
-
-    /**
-     * @brief creates a Benchmark with the given arguments.
-     * @param[in] arguments A string of arguments for the benchmark.
-     */
-    Benchmark( const std::string& arguments );
-
-public:
-
-    /**
-     * @brief The constructor creates a Benchmark-object.
-     * @param[in] id        The id of this Benchmark.
-     * @param[in] gid       The id of the group of this Benchmark.
-     * @param[in] arguments A string of arguments for the benchmark.
-     */
-    Benchmark( const std::string& id, const std::string& gid, const std::string& arguments );
 
     /**
      * @brief The destructor destroys this object and frees all inner resources.
@@ -320,15 +303,6 @@ public:
         bool operator( )( const Benchmark* const arg1, const Benchmark* const arg2 );
     };
 
-    class HasId
-    {
-    public:
-        HasId( const std::string& id );
-        bool operator( )( const Benchmark* const benchmark );
-    private:
-        std::string mId;
-    };
-
     virtual bool doOutput() const;
 
 protected:
@@ -439,6 +413,7 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 
 private:
+
     int mNumRepitions;
     double mSetUpTime;
     double mTearDownTime;

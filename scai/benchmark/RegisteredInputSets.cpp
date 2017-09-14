@@ -31,12 +31,6 @@
  * @author Jiri Kraus
  * @date 06.04.2011
  */
-/*
- * RegisteredInputSets.cpp
- *
- *  Created on: 31.01.2011
- *      Author: rrehrman
- */
 
 #include <string>
 #include <vector>

@@ -49,8 +49,8 @@
 #include <scai/lama/expression/VectorExpressions.hpp>
 
 #include <scai/lama/norm/MaxNorm.hpp>
+#include <scai/common/OpenMP.hpp>
 
-#include <boost/shared_ptr.hpp>
 #include <sstream>
 #include <map>
 #include <string>
@@ -64,13 +64,14 @@ using std::map;
 using std::string;
 
 template<typename MatrixType>
-class PMVBenchmark: public LAMAMPIBenchmark
+class PMVBenchmark: 
+ 
+    public  LAMAMPIBenchmark,
+    private bf::Benchmark::Register< PMVBenchmark<MatrixType> >
 {
 public:
 
     typedef typename MatrixType::MatrixValueType ValueType;
-
-    static const std::string& id();
 
     PMVBenchmark();
 
@@ -86,7 +87,16 @@ public:
 
     virtual bool isThreadded() const;
 
+    /** Implementation of pure method Benchmark::getId()   */
+
     virtual const std::string& getId() const;
+
+    static std::string createValue();
+
+    static Benchmark* create()
+    {
+        return new PMVBenchmark();
+    }
 
 protected:
     virtual void initialize();
@@ -105,9 +115,7 @@ protected:
 
 private:
 
-    static const LAMAInputSetComplexityVisitor::Group& group();
-
-    static const std::string& sid();
+    static const std::string& getGroupId();
 
     common::unique_ptr<MatrixType> mMatrixA;
     common::unique_ptr<lama::DenseVector<ValueType> > mVectorX;
@@ -123,34 +131,16 @@ private:
 };
 
 template<typename MatrixType>
-const std::string& PMVBenchmark<MatrixType>::sid()
+const std::string& PMVBenchmark<MatrixType>::getGroupId()
 {
-    static const std::string sid = "LAMA<T>";
-    return sid;
-}
-
-template<typename MatrixType>
-const std::string& PMVBenchmark<MatrixType>::id()
-{
-    static const std::string id = sid() + ": " + LAMAInputSetComplexityVisitor::getGroupId( group() );
+    static const std::string id = "PMV";
     return id;
 }
 
 template<typename MatrixType>
 PMVBenchmark<MatrixType>::PMVBenchmark() :
 
-    LAMAMPIBenchmark( sid(), LAMAInputSetComplexityVisitor::getGroupId( group() ) ),
-    mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
-    mNumFloatingPointOperations( 0 ),
-    mNumProcessedBytesFloat( 0 ),
-    mNumProcessedBytesDouble( 0 )
-{
-}
-
-template<typename MatrixType>
-PMVBenchmark<MatrixType>::PMVBenchmark( const std::string& arguments ) :
-
-    LAMAMPIBenchmark( sid(), LAMAInputSetComplexityVisitor::getGroupId( group() ), arguments ),
+    LAMAMPIBenchmark( getId(), getGroupId() ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
     mNumFloatingPointOperations( 0 ),
     mNumProcessedBytesFloat( 0 ),
@@ -196,7 +186,16 @@ bool PMVBenchmark<MatrixType>::isThreadded() const
 template<typename MatrixType>
 const std::string& PMVBenchmark<MatrixType>::getId() const
 {
-    return id();
+    static std::string id = createValue();
+    return id;
+}
+
+template<typename MatrixType>
+std::string PMVBenchmark<MatrixType>::createValue() 
+{
+    std::string value ( "PMV_" );
+    value += MatrixType::typeName();
+    return value;
 }
 
 template<typename MatrixType>
