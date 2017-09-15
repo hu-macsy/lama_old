@@ -39,6 +39,9 @@ scai_project(
     CUDA_CLASSES
 
         CUDAUtils
+        CUDASparseUtils
+        CUDAReduceUtils
+        CUDASortUtils
         CUDASection
         
     ADD_PARENT_SCOPE
