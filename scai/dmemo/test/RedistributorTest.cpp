@@ -79,7 +79,9 @@ BOOST_AUTO_TEST_CASE( constructRedistributorFromOwnersTest )
     HArray<IndexType> newOwners(blockLocalSize);
     {
         WriteAccess<IndexType> wOwners(newOwners);
-        for (IndexType i = 0; i < blockLocalSize; i++) {
+
+        for (IndexType i = 0; i < blockLocalSize; i++)
+        {
             wOwners[i] = distCyclic->getAnyOwner(distBlock->local2global(i));
         }
     }
@@ -90,7 +92,8 @@ BOOST_AUTO_TEST_CASE( constructRedistributorFromOwnersTest )
     BOOST_CHECK_EQUAL(targetDist->getLocalSize(), distCyclic->getLocalSize());
 
     //compare distributions
-    for (IndexType i = 0; i < targetDist->getLocalSize(); i++) {
+    for (IndexType i = 0; i < targetDist->getLocalSize(); i++)
+    {
         BOOST_CHECK_EQUAL(targetDist->local2global(i), distCyclic->local2global(i));
     }
 
@@ -98,7 +101,9 @@ BOOST_AUTO_TEST_CASE( constructRedistributorFromOwnersTest )
     redist.redistribute(targetArray, newOwners);
 
     ReadAccess<IndexType> rTarget(targetArray);
-    for (IndexType i = 0; i < rTarget.size(); i++) {
+
+    for (IndexType i = 0; i < rTarget.size(); i++)
+    {
         BOOST_CHECK_EQUAL(rTarget[i], comm->getRank());
     }
 
@@ -110,7 +115,9 @@ BOOST_AUTO_TEST_CASE( constructRedistributorFromOwnersTest )
 
     redist.redistribute(redistributedGlobalIDs, globalIDs);
     ReadAccess<IndexType> rNewGlobal(redistributedGlobalIDs);
-    for (IndexType i = 0; i < targetDist->getLocalSize(); i++) {
+
+    for (IndexType i = 0; i < targetDist->getLocalSize(); i++)
+    {
         BOOST_CHECK_EQUAL(rNewGlobal[i], targetDist->local2global(i));
     }
 }

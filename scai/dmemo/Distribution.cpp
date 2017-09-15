@@ -214,7 +214,7 @@ PartitionId  Distribution::findOwner( const IndexType globalIndex ) const
 
     IndexType owner = 0;
 
-	IndexType localIndex = global2local( globalIndex );
+    IndexType localIndex = global2local( globalIndex );
 
     if ( localIndex != nIndex )
     {
@@ -288,6 +288,7 @@ void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexT
 
     {
         WriteOnlyAccess<IndexType> wOwners( owners, n );
+
         for ( IndexType i = 0; i < getGlobalSize(); ++i )
         {
             wOwners[i] = getAnyOwner( i );

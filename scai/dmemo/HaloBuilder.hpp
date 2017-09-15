@@ -51,8 +51,8 @@ class COMMON_DLL_IMPORTEXPORT HaloBuilder
 {
 public:
     static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, Halo& halo );
-    static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes, 
-    const hmemo::HArray<IndexType>& providedIndexes, const PartitionId partner, Halo& halo);
+    static void build( const Distribution& distribution, const hmemo::HArray<IndexType>& requiredIndexes,
+                       const hmemo::HArray<IndexType>& providedIndexes, const PartitionId partner, Halo& halo);
     static void buildFromTargets( const hmemo::HArray<IndexType>& newOwners, const Distribution& sourceDistribution, Halo& halo );
     static void coarsenHalo(const Distribution& coarseDistribution, const Halo& halo, const scai::hmemo::HArray<IndexType>& localFineToCoarse, const scai::hmemo::HArray<IndexType>& haloFineToCoarse, Halo& coarseHalo);
 

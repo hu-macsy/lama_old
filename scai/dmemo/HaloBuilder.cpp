@@ -170,8 +170,8 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     }
 }
 
-void HaloBuilder::build( const Distribution& distribution, const HArray<IndexType>& requiredIndexes, 
-    const HArray<IndexType>& providedIndexes, const PartitionId partner, Halo& halo)
+void HaloBuilder::build( const Distribution& distribution, const HArray<IndexType>& requiredIndexes,
+                         const HArray<IndexType>& providedIndexes, const PartitionId partner, Halo& halo)
 {
     SCAI_REGION( "HaloBuilder.buildWithPartner" )
     const PartitionId noPartitions = distribution.getNumPartitions();
@@ -192,8 +192,9 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
         ReadAccess<PartitionId> rOwners( owners );
         requiredPlan.allocate( noPartitions, rOwners.get(), owners.size() );
     }
-    
+
     std::vector<IndexType> counts( noPartitions, nIndex );  // initialize with illegal index
+
     for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
     {
         counts[requiredPlan[p].partitionId] = requiredPlan[p].offset;
@@ -210,6 +211,7 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
         halo.setGlobal2Halo( rIndexes[jj], haloIndex );
         ++counts[partner];
     }
+
     requiredIndexesByOwner.release();
 
     CommunicationPlan& providesPlan = halo.mProvidesPlan;
@@ -223,19 +225,21 @@ void HaloBuilder::build( const Distribution& distribution, const HArray<IndexTyp
     }
 
     SCAI_ASSERT( providesPlan.totalQuantity() == nProvidedIndexes,
-        "Provides plan has " << providesPlan.totalQuantity() << " entries, but " << nProvidedIndexes << " were given." )
+                 "Provides plan has " << providesPlan.totalQuantity() << " entries, but " << nProvidedIndexes << " were given." )
 
     WriteAccess<IndexType> providesIndexesAccess( halo.mProvidesIndexes, contextPtr );
     ReadAccess<IndexType> pIndexes( providedIndexes, contextPtr );
 
     providesIndexesAccess.resize( providesPlan.totalQuantity() );
 
-    for (IndexType i = 0; i < nProvidedIndexes; i++) {
+    for (IndexType i = 0; i < nProvidedIndexes; i++)
+    {
         providesIndexesAccess[i] = distribution.global2local( pIndexes[i] );
     }
 }
 
-void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Distribution& sourceDistribution, Halo& halo ) {
+void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Distribution& sourceDistribution, Halo& halo )
+{
     const PartitionId noPartitions = sourceDistribution.getNumPartitions();
     const Communicator& communicator = sourceDistribution.getCommunicator();
     const IndexType ownID = communicator.getRank();
@@ -246,7 +250,9 @@ void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Di
 
     std::vector<IndexType> sendQuantity(noPartitions,0);
     ReadAccess<IndexType> rOwners(newOwners);
-    for (IndexType i = 0; i < rOwners.size(); i++) {
+
+    for (IndexType i = 0; i < rOwners.size(); i++)
+    {
         SCAI_ASSERT_DEBUG(rOwners[i] < noPartitions, "Illegal owner value.");
         sendQuantity[rOwners[i]]++;
     }
@@ -257,6 +263,7 @@ void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Di
     SCAI_ASSERT_DEBUG(sendPlan.totalQuantity() <= oldLocalN, "Bug in send plan allocation: Total quantity higher than local size");
 
     std::vector<IndexType> offsets( noPartitions, nIndex );  // initialize with illegal index
+
     for ( IndexType p = 0; p < sendPlan.size(); ++p )
     {
         offsets[sendPlan[p].partitionId] = sendPlan[p].offset;
@@ -265,9 +272,12 @@ void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Di
     std::vector<IndexType> localSendIndices(sendPlan.totalQuantity());
     std::vector<IndexType> globalSendIndices(sendPlan.totalQuantity());
 
-    for (IndexType i = 0; i < oldLocalN; i++) {
+    for (IndexType i = 0; i < oldLocalN; i++)
+    {
         const IndexType targetPartition = rOwners[i];
-        if (targetPartition != ownID) {
+
+        if (targetPartition != ownID)
+        {
             IndexType offset = offsets[targetPartition];
             SCAI_ASSERT_VALID_INDEX(offset, sendPlan.totalQuantity(), "size mismatch")
             localSendIndices[offset] = i;
@@ -275,7 +285,7 @@ void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Di
             offsets[targetPartition]++;
         }
     }
-    
+
     CommunicationPlan& recvPlan = halo.mRequiredPlan;
     recvPlan.allocateTranspose(sendPlan, communicator);
 
@@ -286,13 +296,16 @@ void HaloBuilder::buildFromTargets( const HArray<IndexType>& newOwners, const Di
     communicator.exchangeByPlan(wRequire.get(), recvPlan, globalSendIndices.data(), sendPlan);
     wRequire.release();
     ReadAccess<IndexType> rRequire(halo.mRequiredIndexes);
-    for (IndexType i = 0; i < rRequire.size(); i++) {
+
+    for (IndexType i = 0; i < rRequire.size(); i++)
+    {
         SCAI_ASSERT(rRequire[i] < globalN, "illegal index " << rRequire[i]);
         halo.setGlobal2Halo(rRequire[i], i);
     }
 }
 
-void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo& halo, const scai::hmemo::HArray<IndexType>& localFineToCoarse, const scai::hmemo::HArray<IndexType>& haloFineToCoarse, Halo& coarseHalo) {
+void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo& halo, const scai::hmemo::HArray<IndexType>& localFineToCoarse, const scai::hmemo::HArray<IndexType>& haloFineToCoarse, Halo& coarseHalo)
+{
     SCAI_REGION( "HaloBuilder.coarsenHalo" )
     scai::hmemo::ReadAccess<IndexType> providedIndices(halo.getProvidesIndexes());
     scai::hmemo::ReadAccess<IndexType> requiredIndices(halo.getRequiredIndexes());
@@ -307,17 +320,27 @@ void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo
 
     {
         scai::hmemo::ReadAccess<IndexType> rFineToCoarse(localFineToCoarse);
+
         //construct new send plan
-        for (IndexType i = 0; i < sendPlan.size(); i++) {
+        for (IndexType i = 0; i < sendPlan.size(); i++)
+        {
             scai::dmemo::CommunicationPlan::Entry entry = sendPlan[i];
-            if (IndexType(sendQuantities.size()) <= entry.partitionId) sendQuantities.resize(entry.partitionId+1);
+
+            if (IndexType(sendQuantities.size()) <= entry.partitionId)
+            {
+                sendQuantities.resize(entry.partitionId+1);
+            }
+
             std::set<IndexType> sendSet;
-            for (IndexType j = entry.offset; j < entry.offset + entry.quantity; j++) {
+
+            for (IndexType j = entry.offset; j < entry.offset + entry.quantity; j++)
+            {
                 SCAI_ASSERT(j < providedIndices.size(), "Communication plan does not fit provided indices.");
                 IndexType provIndex = providedIndices[j];
                 SCAI_ASSERT(provIndex < rFineToCoarse.size(), "Provided index " << provIndex << " seemingly not local.");
                 sendSet.insert(coarseDistribution.global2local(rFineToCoarse[providedIndices[j]]));
             }
+
             newProvidedIndices.insert(newProvidedIndices.end(), sendSet.begin(), sendSet.end());
             sendQuantities[entry.partitionId] = sendSet.size();
         }
@@ -326,28 +349,39 @@ void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo
     coarseHalo.mProvidesPlan.allocate(sendQuantities.data(), sendQuantities.size());
 
     SCAI_ASSERT( coarseHalo.mProvidesPlan.totalQuantity() == IndexType(newProvidedIndices.size()),
-        "Send plan has " << coarseHalo.mProvidesPlan.totalQuantity() << " entries, but " << newProvidedIndices.size() << " were given." )
+                 "Send plan has " << coarseHalo.mProvidesPlan.totalQuantity() << " entries, but " << newProvidedIndices.size() << " were given." )
 
     std::vector<IndexType> newRequiredIndices;
     std::vector<IndexType> recvQuantities;
 
     {
         scai::hmemo::ReadAccess<IndexType> rFineToCoarse(haloFineToCoarse);
+
         //construct new recv plan
-        for (IndexType i = 0; i < recvPlan.size(); i++) {
+        for (IndexType i = 0; i < recvPlan.size(); i++)
+        {
             scai::dmemo::CommunicationPlan::Entry entry = recvPlan[i];
-            if (IndexType(recvQuantities.size()) <= entry.partitionId) recvQuantities.resize(entry.partitionId+1);
+
+            if (IndexType(recvQuantities.size()) <= entry.partitionId)
+            {
+                recvQuantities.resize(entry.partitionId+1);
+            }
+
             std::set<IndexType> recvSet;
-            for (IndexType j = entry.offset; j < entry.offset + entry.quantity; j++) {
+
+            for (IndexType j = entry.offset; j < entry.offset + entry.quantity; j++)
+            {
                 IndexType reqIndex = requiredIndices[j];
                 SCAI_ASSERT(halo.global2halo(reqIndex) != nIndex, "Index" << reqIndex << " seemingly not in halo");
                 SCAI_ASSERT(halo.global2halo(reqIndex) < rFineToCoarse.size(), "Index" << halo.global2halo(reqIndex) << " too big for halo data");
                 recvSet.insert(rFineToCoarse[halo.global2halo(requiredIndices[j])]);
             }
 
-            for (IndexType reqIndex : recvSet) {
+            for (IndexType reqIndex : recvSet)
+            {
                 newRequiredIndices.push_back(reqIndex);
             }
+
             recvQuantities[entry.partitionId] = recvSet.size();
         }
     }
@@ -357,12 +391,14 @@ void HaloBuilder::coarsenHalo(const Distribution& coarseDistribution, const Halo
     coarseHalo.mRequiredPlan.allocate(recvQuantities.data(), recvQuantities.size());
 
     SCAI_ASSERT( coarseHalo.mRequiredPlan.totalQuantity() == IndexType(newRequiredIndices.size()),
-        "Provides plan has " << coarseHalo.mRequiredPlan.totalQuantity() << " entries, but " << newRequiredIndices.size() << " were given." )
-    
+                 "Provides plan has " << coarseHalo.mRequiredPlan.totalQuantity() << " entries, but " << newRequiredIndices.size() << " were given." )
+
     coarseHalo.mRequiredIndexes = HArray<IndexType>(newRequiredIndices.size(), newRequiredIndices.data());
     coarseHalo.mProvidesIndexes = HArray<IndexType>(newProvidedIndices.size(), newProvidedIndices.data());
     scai::hmemo::ReadAccess<IndexType> rRequired(coarseHalo.mRequiredIndexes);
-    for (IndexType i = 0; i < rRequired.size(); i++) {
+
+    for (IndexType i = 0; i < rRequired.size(); i++)
+    {
         coarseHalo.setGlobal2Halo(rRequired[i], i);
     }
 }

@@ -177,9 +177,13 @@ Redistributor::Redistributor( const HArray<IndexType>& newOwners, DistributionPt
 
     WriteAccess<IndexType> localSourceIndexes( mLocalSourceIndexes, mSourceSize );
     mNumLocalValues = 0; // count number of local copies from source to target
-    for (IndexType i = 0; i < mSourceSize; i++) {
+
+    for (IndexType i = 0; i < mSourceSize; i++)
+    {
         SCAI_ASSERT_DEBUG(rNewOwners[i] < numPEs, "Illegal future owner.");
-        if (rNewOwners[i] == ownID) {
+
+        if (rNewOwners[i] == ownID)
+        {
             localSourceIndexes[mNumLocalValues] = i;
             mNumLocalValues++;
         }
@@ -201,15 +205,21 @@ Redistributor::Redistributor( const HArray<IndexType>& newOwners, DistributionPt
     HArray<IndexType> myTargetGlobalIndices(mTargetSize);
     {
         WriteAccess<IndexType> wTargetGlobalIndices(myTargetGlobalIndices);
-        for (IndexType i = 0; i < mNumLocalValues; i++) {//maybe improve this with scatter and gather?
+
+        for (IndexType i = 0; i < mNumLocalValues; i++)  //maybe improve this with scatter and gather?
+        {
             wTargetGlobalIndices[i] = sourceDist.local2global(localSourceIndexes[i]);
         }
+
         ReadAccess<IndexType> haloIndices(halo.getRequiredIndexes());
         SCAI_ASSERT_EQ_ERROR(haloIndices.size(), haloSize, "Halo inconsistent.");
-        for (IndexType i = 0; i < haloSize; i++) {
+
+        for (IndexType i = 0; i < haloSize; i++)
+        {
             SCAI_ASSERT_DEBUG(haloIndices[i] < globalN, "Illegal halo index " << haloIndices[i]);
             wTargetGlobalIndices[i+mNumLocalValues]  = haloIndices[i];
         }
+
         std::sort(wTargetGlobalIndices.get(), wTargetGlobalIndices.get()+mTargetSize);
     }
 
@@ -220,14 +230,16 @@ Redistributor::Redistributor( const HArray<IndexType>& newOwners, DistributionPt
         //assign local target indices
         WriteAccess<IndexType> localTargetIndexes( mLocalTargetIndexes, contextPtr );
         localTargetIndexes.resize(mNumLocalValues);
-        for (IndexType i = 0; i < mNumLocalValues; i++) {
+
+        for (IndexType i = 0; i < mNumLocalValues; i++)
+        {
             IndexType globalI = sourceDist.local2global(localSourceIndexes[i]);
             IndexType targetLocal = targetDist.global2local(globalI);//TODO: maybe optimize
             SCAI_ASSERT_DEBUG( targetLocal < mTargetSize, "Index " << targetLocal << " illegal." );
             localTargetIndexes[i] = targetLocal;
         }
     }
-    
+
     WriteAccess<IndexType> haloSourceIndexes( mHaloSourceIndexes, contextPtr );
     WriteAccess<IndexType> haloTargetIndexes( mHaloTargetIndexes, contextPtr );
     const CommunicationPlan& providesPlan = halo.getProvidesPlan();
@@ -277,6 +289,7 @@ Redistributor::Redistributor( const HArray<IndexType>& newOwners, DistributionPt
             targetOffset++;
         }
     }
+
     SCAI_ASSERT_EQ_ERROR( targetOffset, haloTargetIndexes.size(), "serious mismatch" )
 
     // all info needed for redistribution is now available
