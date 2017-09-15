@@ -47,7 +47,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 /** Static class for printing messages within benchmarks.
@@ -125,6 +125,6 @@ inline void BenchmarkPrinter::warning( const T& message )
     }
 }
 
-} // namespace bf
+} // namespace benchmark
 
 } // namespace scai

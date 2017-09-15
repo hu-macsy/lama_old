@@ -27,15 +27,15 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief RegisteredBenchmarks.cpp
- * @author Jiri Kraus, Robin Rehrmann
- * @date 03.02.2011
+ * @brief Print all benchmark classes registered in the Benchmark factory.
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
 
 #include <scai/benchmark.hpp>
+#include <scai/logging.hpp>
 #include <scai/benchmark/BenchmarkPrinter.hpp>
 #include <scai/benchmark/Benchmark.hpp>
-#include <scai/benchmark/frame_stdlib.hpp>
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/LibModule.hpp>
@@ -46,9 +46,11 @@
 using namespace scai;
 using namespace std;
 
+SCAI_LOG_DEF_LOGGER( logger, "RegisteredBenchmarks" )
+
 int main( void )
 {
-    using namespace bf;
+    using namespace benchmark;
 
     std::string benchLibPath;
 
@@ -58,34 +60,28 @@ int main( void )
                        "shared libraries of your benchmarks." );
     }
 
-    std::map<std::string,std::string> benchmarks;   // keep all pairs of id, gid
-
     common::LibModule::loadLibsInDir( benchLibPath.c_str() );
 
     vector<string> values;  // string is create type for benchmarks
 
     Benchmark::getCreateValues( values );
 
-    for ( size_t i = 0; i < values.size(); ++i )
-    {
-        cout << "  Registered values[" << i << "] = " << values[i] << endl;
-
-        common::unique_ptr<Benchmark> bench( Benchmark::create( values[i] ) );
-
-        cout << "  Id = " << bench->getId() << ", Name = " << bench->getName() << endl;
-
-        benchmarks.insert( std::make_pair( bench->getId(), bench->getName() ) );
-    }
-
     std::stringstream message;
 
-    for( std::map<std::string,std::string>::const_iterator it = benchmarks.begin(); it != benchmarks.end(); ++it )
+    for ( size_t i = 0; i < values.size(); ++i )
     {
-        message << it->first << "%_:_%" << it->second << "%,";
+        common::unique_ptr<Benchmark> bench( Benchmark::create( values[i] ) );
+  
+        SCAI_LOG_INFO( logger, "Benchmark " << i << " of " << values.size() << ": key = " << values[i] 
+                                << ", Id = " << bench->getId() << ", Name = " << bench->getName() )
+
+        if ( i != 0 )
+        {
+            message << "%,";  // add separator after previous output
+        }
+
+        message << bench->getId() << "%_:_%" << bench->getName();
     }
 
-    std::string idsAndNames = message.str();
-
-    // remove the last '%,'
-    bf::BenchmarkPrinter::print( idsAndNames.substr( 0, idsAndNames.size() - 2 ) );
+    benchmark::BenchmarkPrinter::print( message.str() );
 }

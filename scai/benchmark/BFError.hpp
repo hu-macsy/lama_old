@@ -48,7 +48,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 class COMMON_DLL_IMPORTEXPORT BFError: public std::exception
@@ -78,6 +78,6 @@ private:
     std::string m_message;
 };
 
-} // namespace bf
+} // namespace benchmark
 
 } // namespace scai

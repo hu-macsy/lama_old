@@ -80,7 +80,7 @@ const std::string& RandomInputSetCreator::getId() const
 
 LAMAInputSet* RandomInputSetCreator::create() const
 {
-    throw bf::BFError( "RandomInputSetCreator needs an argument of type size to create a matrix of size n" );
+    throw benchmark::BFError( "RandomInputSetCreator needs an argument of type size to create a matrix of size n" );
 }
 
 LAMAInputSet* RandomInputSetCreator::create( const std::string& arguments ) const
@@ -98,12 +98,12 @@ LAMAInputSet* RandomInputSetCreator::create( const std::string& arguments ) cons
 
     if ( size <= 0 )
     {
-        throw bf::BFException( "RandomInputSetCreator creator needs a size to create a InputSet." );
+        throw benchmark::BFException( "RandomInputSetCreator creator needs a size to create a InputSet." );
     };
 
     if ( input.good() && ( fillingGrade <= 0.0 || fillingGrade > 1.0 ) )
     {
-        throw bf::BFException(
+        throw benchmark::BFException(
             "RandomInputSetCreator creator needs valid filling grade > 0.0 and <= 1.0 to create a InputSet." );
     }
 

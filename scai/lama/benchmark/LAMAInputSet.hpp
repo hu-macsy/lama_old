@@ -45,9 +45,10 @@
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 /** Input set for LAMA is always distributed CSR sparse matrix with two vectors,
- all of type double.
+ *   all of type double.
  */
 
 namespace scai
@@ -56,66 +57,39 @@ namespace scai
 namespace lama
 {
 
-class COMMON_DLL_IMPORTEXPORT LAMAInputSet: public bf::InputSet, private scai::common::NonCopyable
+/** This kind of input set consists of scalars alpha and beta, vectors X and Y, and matrix A */
+
+class COMMON_DLL_IMPORTEXPORT LAMAInputSet: public benchmark::InputSet
 {
 public:
 
-    LAMAInputSet( const std::string& id );
-
-    LAMAInputSet(
-        const std::string& id,
-        double alpha,
-        double beta,
-        scai::common::unique_ptr<DenseVector<double> > x,
-        scai::common::unique_ptr<CSRSparseMatrix<double> > A );
-
-    LAMAInputSet(
-        const std::string& id,
-        double alpha,
-        double beta,
-        scai::common::unique_ptr<DenseVector<double> > x,
-        scai::common::unique_ptr<DenseVector<double> > y,
-        scai::common::unique_ptr<CSRSparseMatrix<double> > A );
-
-    LAMAInputSet(
-        const std::string& id,
-        double alpha,
-        double beta,
-        scai::common::unique_ptr<DenseVector<double> > x,
-        scai::common::unique_ptr<DenseVector<double> > y,
-        scai::common::unique_ptr<DenseMatrix<double> > A );
-
     virtual ~LAMAInputSet();
+
+    /** Override implementation InputSet::writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
 
     double getAlpha() const;
     double getBeta() const;
+
     const DenseVector<double>& getX() const;
     const DenseVector<double>& getY() const;
+
     const CSRSparseMatrix<double>& getA() const;
-    const CSRSparseMatrix<double>& getB() const;
-    const CSRSparseMatrix<double>& getC() const;
 
-    const DenseMatrix<double>& getDenseA() const;
-    const DenseMatrix<double>& getDenseB() const;
-    const DenseMatrix<double>& getDenseC() const;
+protected:
 
-private:
+    LAMAInputSet();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 
     double mAlpha;
     double mBeta;
 
-    DenseVector<double>* mX;
-    DenseVector<double>* mY;
+    common::unique_ptr<DenseVector<double> > mX;
+    common::unique_ptr<DenseVector<double> > mY;
 
-    mutable CSRSparseMatrix<double>* mA;
-    mutable CSRSparseMatrix<double>* mB;
-    mutable CSRSparseMatrix<double>* mC;
-
-    mutable DenseMatrix<double>* mDenseA;
-    mutable DenseMatrix<double>* mDenseB;
-    mutable DenseMatrix<double>* mDenseC;
+    common::unique_ptr<CSRSparseMatrix<double> > mA;
 };
 
 }

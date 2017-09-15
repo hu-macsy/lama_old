@@ -46,7 +46,7 @@ namespace scai
 SCAI_LOG_DEF_LOGGER( LAMAMPIBenchmark::logger, "Benchmark.MPIBenchmark" );
 
 LAMAMPIBenchmark::LAMAMPIBenchmark()
-    : bf::Benchmark()
+    : benchmark::Benchmark()
 {
     mComm = dmemo::Communicator::getCommunicatorPtr();
     SCAI_LOG_INFO( logger, "Communicator created for Benchmark: " << *mComm );
@@ -54,7 +54,7 @@ LAMAMPIBenchmark::LAMAMPIBenchmark()
 }
 
 LAMAMPIBenchmark::LAMAMPIBenchmark( const string& id, const string& gid )
-    : bf::Benchmark( id, gid )
+    : benchmark::Benchmark( id, gid )
 {
     mComm = dmemo::Communicator::getCommunicatorPtr();
     SCAI_LOG_INFO( logger,
@@ -63,7 +63,7 @@ LAMAMPIBenchmark::LAMAMPIBenchmark( const string& id, const string& gid )
 }
 
 LAMAMPIBenchmark::LAMAMPIBenchmark( const LAMAMPIBenchmark& other )
-    : bf::Benchmark( other ), mComm( other.mComm )
+    : benchmark::Benchmark( other ), mComm( other.mComm )
 {
     readConfig();
 }
@@ -158,7 +158,7 @@ LAMAMPIBenchmark::~LAMAMPIBenchmark()
 
 LAMAMPIBenchmark& LAMAMPIBenchmark::operator=( const LAMAMPIBenchmark& other )
 {
-    bf::Benchmark::operator ==( other );
+    benchmark::Benchmark::operator ==( other );
     mComm = other.mComm;
     return *this;
 }

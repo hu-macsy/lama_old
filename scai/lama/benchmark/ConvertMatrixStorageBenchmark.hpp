@@ -47,7 +47,7 @@
 using namespace scai;
 using namespace lama;
 using namespace hmemo;
-using namespace bf;
+using namespace benchmark;
 
 template<typename StorageType1, typename StorageType2>
 class ConvertMatrixStorageBenchmark : 
@@ -213,13 +213,21 @@ void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::initialize()
 {
     SCAI_LOG_DEBUG( logger, "initialize, mInputSetId = " << mInputSetId )
 
-    const LAMAInputSet& inputSet = InputSetRegistry<LAMAInputSet>::getRegistry().get( mInputSetId );
+    common::unique_ptr<InputSet> mInputSet;
 
-    SCAI_LOG_DEBUG( logger, "inputSet" )
+    mInputSet.reset( benchmark::InputSet::parseAndCreate( mInputSetId ) );
+
+    SCAI_LOG_ERROR( logger, "input set: " << *mInputSet )
+
+    SCAI_ASSERT_EQ_ERROR( mInputSet->getId(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
+
+    // Now it is safe to cast
+
+    const LAMAInputSet* mLAMAInputSet = reinterpret_cast<lama::LAMAInputSet*>( mInputSet.get() );
 
     //TODO: assign should do the value type conversion
 
-    const CSRStorage<double>& csrStorage = inputSet.getA().getLocalStorage();
+    const CSRStorage<double>& csrStorage = mLAMAInputSet->getA().getLocalStorage();
 
     SCAI_LOG_DEBUG( logger, "csrStorage = " << csrStorage )
 

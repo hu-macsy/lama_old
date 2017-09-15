@@ -33,7 +33,6 @@
  */
 
 #include <scai/benchmark/Benchmark.hpp>
-#include <scai/benchmark/InputSetRegistry.hpp>
 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/OpenMP.hpp>
@@ -44,7 +43,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 SCAI_LOG_DEF_LOGGER( Benchmark::logger, "Benchmark" );
@@ -183,6 +182,8 @@ int Benchmark::getNumRepitions() const
 
 void Benchmark::setNumRepitions( const int numRepitions )
 {
+    SCAI_ASSERT_GT_ERROR( numRepitions, 0, "#repitions must be positive" )
+
     mNumRepitions = numRepitions;
 }
 
@@ -388,6 +389,6 @@ bool Benchmark::LessNumThreads::operator( )( const Benchmark* const arg1, const 
     return arg1->getNumThreads() < arg2->getNumThreads();
 }
 
-} //namespace bf
+} //namespace benchmark
 
 } // scai

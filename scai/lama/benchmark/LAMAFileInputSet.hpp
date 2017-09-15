@@ -1,5 +1,5 @@
 /**
- * @file string_helper.hpp
+ * @file LAMAFileInputSet.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,21 +27,42 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief string_helper.hpp
- * @author Jiri Kraus
- * @date 02.04.2012
+ * @brief LAMAFileInputSet.hpp
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
+
 #pragma once
 
-#include <scai/common/config.hpp>
+#include <scai/benchmark.hpp>
+#include <scai/lama/benchmark/LAMAInputSet.hpp>
+
+#include <string>
 
 namespace scai
 {
 
-namespace bf
+namespace lama
 {
 
-    COMMON_DLL_IMPORTEXPORT void trimm( std::string& s );
+/** Derived class of LAMAInputSet that creates the data by an input file */
+
+class LAMAFileInputSet: public  LAMAInputSet, 
+                        private benchmark::InputSet::Register<LAMAFileInputSet>
+{
+public:
+
+    /** Constructor of a file input set */
+
+    LAMAFileInputSet( const std::string filename );
+
+    static std::string createValue();
+
+    /** Static method required for create, callsed by InputSet::create( LAMAFileInputSet::createValue(), argument ) */
+
+    static InputSet* create( const std::string argument );
+
+};
 
 }
 

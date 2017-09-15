@@ -51,9 +51,9 @@ namespace scai
 {
 
 /**
- * @brief The namespace bf holds everything of the benchmark framework
+ * @brief The namespace benchmark holds everything of the benchmark framework
  */
-namespace bf
+namespace benchmark
 {
 class COMMON_DLL_IMPORTEXPORT Benchmark : public common::Factory< std::string, Benchmark* >
 
@@ -421,6 +421,6 @@ private:
 
 };
 
-} //namespace bf
+} //namespace benchmark
 
 }

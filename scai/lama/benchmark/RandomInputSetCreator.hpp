@@ -61,7 +61,7 @@ namespace lama
  *         a certain filling density.
  */
 
-class RandomInputSetCreator: public bf::InputSetCreator<LAMAInputSet>
+class RandomInputSetCreator: public benchmark::InputSetCreator<LAMAInputSet>
 {
 public:
     typedef double ValueType;

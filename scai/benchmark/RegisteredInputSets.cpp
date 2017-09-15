@@ -27,89 +27,59 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief RegisteredInputSets.cpp
- * @author Jiri Kraus
- * @date 06.04.2011
+ * @brief Print all input set classes that have been registered in factory.
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
-
-#include <string>
-#include <vector>
-#include <map>
 
 #include <scai/benchmark.hpp>
 #include <scai/benchmark/BenchmarkPrinter.hpp>
-#include <scai/benchmark/frame_stdlib.hpp>
+#include <scai/benchmark/InputSet.hpp>
+
+#include <scai/common/Settings.hpp>
+#include <scai/common/LibModule.hpp>
+#include <scai/common/unique_ptr.hpp>
+
+#include <vector>
 
 using namespace scai;
+using namespace std;
 
-extern "C" bf::BaseInputSetRegistry* getInputSetRegistry();
+SCAI_LOG_DEF_LOGGER( logger, "RegisteredInputSets" )
 
 int main( void )
 {
-    std::vector<std::string> files;
+    using namespace benchmark;
 
-    try
+    std::string benchLibPath;
+
+    if ( !common::Settings::getEnvironment( benchLibPath, "BENCHMARK_LIBRARY_PATH" ) )
     {
-        bf::getSharedLibraries( files );
-    }
-    catch( std::exception& e )
-    {
-        bf::BenchmarkPrinter::error( e.what() );
-        return 1;
+        throw BFError( "Set BENCHMARK_LIBRARY_PATH to the directory holding the "
+                       "shared libraries of your benchmarks." );
     }
 
-    bf::BaseInputSetRegistry* registry = NULL;
-    std::map<std::string,std::string> inputSets;
+    std::map<std::string,std::string> benchmarks;   // keep all pairs of id, gid
 
-    // try dlopen on the shared libraries, saving all registered InputSets from
-    // the shared libraries in a vector of strings.
-    for( unsigned int i = 0; i < files.size(); ++i )
-    {
-        typedef bf::BaseInputSetRegistry* (*registry_t)();
-        registry_t reg_handle = NULL;
+    common::LibModule::loadLibsInDir( benchLibPath.c_str() );
 
-        LAMA_LIB_HANDLE_TYPE handle;
+    vector<string> values;  // string is create type for benchmarks
 
-        int error = bf::loadLibAndGetFunctionHandle( reg_handle, handle, files[i].c_str(), "getInputSetRegistry" );
-
-        if( error != 0 )
-        {
-            continue;
-        }
-
-        typedef void (*free_registry_t)();
-        free_registry_t reg_free_handle;
-
-        error = bf::getFunctionHandle( reg_free_handle, handle, "releaseInputSetRegistry" );
-        if( error != 0 )
-        {
-            std::stringstream message;
-            message << files[i] << " does not define releaseInputSetRegistry skipping it.";
-            bf::BenchmarkPrinter::warning( message.str() );
-            //bf::freeLibHandle( handle );
-            continue;
-        }
-
-        // getting registry from library.
-        registry = reg_handle();
-
-        std::map<std::string,std::string> iSets;
-
-        registry->getInputSetMap( iSets );
-        inputSets.insert( iSets.begin(), iSets.end() );
-
-        reg_free_handle();
-        //bf::freeLibHandle( handle );
-    }
+    InputSet::getCreateValues( values );
 
     std::stringstream message;
 
-    for( std::map<std::string,std::string>::const_iterator it = inputSets.begin(); it != inputSets.end(); ++it )
+    for ( size_t i = 0; i < values.size(); ++i )
     {
-        message << it->first << "%,";
-    }
-    std::string messagestr = message.str();
+        SCAI_LOG_INFO( logger, "  Registered values[" << i << "] = " << values[i]  )
 
-    // remove the last '%,'
-    bf::BenchmarkPrinter::print( messagestr.substr( 0, messagestr.size() - 2 ) );
+        if ( i > 0 ) 
+        {
+            message << "%,";
+        }
+
+        message << values[i];
+    }
+
+    benchmark::BenchmarkPrinter::print( message.str() );
 }

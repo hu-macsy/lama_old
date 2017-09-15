@@ -42,7 +42,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 Config& Config::getInstance()

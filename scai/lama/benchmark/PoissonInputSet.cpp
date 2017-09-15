@@ -1,5 +1,5 @@
 /**
- * @file PoissonInputSetCreator.cpp
+ * @file PoissonInputSet.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,48 +27,16 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief PoissonInputSetCreator.cpp
- * @author Jiri Kraus
- * @date 06.05.2010
+ * @brief PoissonInputSet.cpp
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
 
-#include <scai/lama/benchmark/PoissonInputSetCreator.hpp>
-
-#include <scai/lama/matrix/CSRSparseMatrix.hpp>
-
-#include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/GeneralDistribution.hpp>
-#include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/benchmark/PoissonInputSet.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
+#include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <sstream>
-#include <iostream>
-#include <algorithm>
-#include <functional>
-#include <vector>
-#include <ctime>
-#include <cstdlib>
-#include <cstdio>
-
-namespace
-{
-
-std::vector<std::string> split( const std::string& params, const char seperator )
-{
-    std::vector<std::string> args;
-    size_t found = std::string::npos;
-
-    do
-    {
-        size_t prevFound = found + 1;
-        found = params.find( seperator, prevFound );
-        args.push_back( params.substr( prevFound, found - prevFound ) );
-    }
-    while ( found != std::string::npos );
-
-    return args;
-}
-}
+#include <scai/common/Settings.hpp>
 
 namespace scai
 {
@@ -76,34 +44,13 @@ namespace scai
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( PoissonInputSetCreator::logger, "InputSetCreator.PoissonInputSetCreator" );
-
-PoissonInputSetCreator::PoissonInputSetCreator()
-{
-    SCAI_LOG_INFO( logger, "PoissonInputSetCreator" );
-}
-
-PoissonInputSetCreator::~PoissonInputSetCreator()
-{
-    SCAI_LOG_INFO( logger, "~PoissonInputSetCreator" );
-}
-
-PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::create() const
-{
-    std::ostringstream message;
-    message << "PoissonInputSetCreator::create: This InputSetCreator requires the following arguments:" << std::endl
-            << "    aDbP_dimX_dimY_dimZ," << std::endl
-            << "where a is in (1, 2, 3) and b is in (3, 5, 7, 9, 19, 27) and dimY "
-            << "and dimZ are needed in case of unequality to one, only." << std::endl;
-    throw benchmark::BFException( message.str() );
-}
-
-PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const std::string& params )
+PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
 {
     SCAI_LOG_INFO( logger, "create, params = " << params );
 
-    // 2D5P_10000_10
-    std::vector<std::string> args = split( params, '_' );
+    std::vector<std::string> args;   // tokens of 2D5P_10000_10
+
+    common::Settings::tokenize( args, params, "_" );
 
     if ( args.size() < 2 || args.size() > 4 )
     {
@@ -130,7 +77,7 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
         throw benchmark::BFException( message.str() );
     }
 
-    vals = split( args[0], 'D' );
+    common::Settings::tokenize( vals, args[0], "D" );
 
     if ( vals.size() != 2 )
     {
@@ -140,7 +87,6 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
         throw benchmark::BFException( message.str() );
     }
 
-    vals[1] = split( vals[1], 'P' )[0];
     std::istringstream convert( vals[0] );
     convert >> dimension;
 
@@ -154,8 +100,10 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
         throw benchmark::BFException( message.str() );
     }
 
+    common::Settings::tokenize( vals, vals[1], "P" );
+
     convert.clear();
-    convert.str( vals[1] );
+    convert.str( vals[0] );
     convert >> stencilType;
 
     if ( convert.fail() )
@@ -256,44 +204,34 @@ PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::createSet( const s
         throw benchmark::BFException( message.str() );
     }
 
-    common::unique_ptr<lama::CSRSparseMatrix<double> > matrixA( new lama::CSRSparseMatrix<double>() );
+    mAlpha = 1.0;
+    mBeta  = 1.0;
 
-    lama::MatrixCreator::buildPoisson( *matrixA, dimension, stencilType, dimX, dimY, dimZ );
+    mA.reset( new lama::CSRSparseMatrix<double>() );
 
-    dmemo::DistributionPtr rowDistribution = matrixA->getRowDistributionPtr();
-    dmemo::DistributionPtr colDistribution = matrixA->getColDistributionPtr();
+    lama::MatrixCreator::buildPoisson( *mA, dimension, stencilType, dimX, dimY, dimZ );
 
-    common::unique_ptr<lama::DenseVector<double> > vectorX( new lama::DenseVector<double>( colDistribution, 1.0 ) );
-    common::unique_ptr<lama::DenseVector<double> > vectorY( new lama::DenseVector<double>( rowDistribution, 0.0 ) );
+    dmemo::DistributionPtr rowDistribution = mA->getRowDistributionPtr();
+    dmemo::DistributionPtr colDistribution = mA->getColDistributionPtr();
 
-    SCAI_LOG_DEBUG( logger, "distributed vectors X, Y allocated: " << *vectorX << ", " << *vectorY );
+    mX.reset( new lama::DenseVector<double>( colDistribution, 1.0 ) );
+    mY.reset( new lama::DenseVector<double>( *mA * *mX ) );
 
-    // Note: in previous versions Y was set when building Poisson matrices, now we do just mult
-
-    *vectorY = ( *matrixA ) * ( *vectorX );
-
-    SCAI_LOG_INFO( logger, "created input set: A = " << *matrixA << ", X = " << *vectorX << ", Y = " << *vectorY );
-
-    return new InputSetType( id(), 1.0, 1.0, vectorX, vectorY, matrixA );
+    SCAI_LOG_INFO( logger, "created input set: A = " << *mA << ", X = " << *mX << ", Y = " << *mY );
 }
 
-PoissonInputSetCreator::InputSetType* PoissonInputSetCreator::create( const std::string& params ) const
+benchmark::InputSet* PoissonInputSet::create( const std::string argument )
 {
-    return createSet( params );
+    // argment specfies kind of stencil, e.g. 2D5P_100_100
+
+    return new PoissonInputSet( argument );
 }
 
-const std::string& PoissonInputSetCreator::id()
+std::string PoissonInputSet::createValue()
 {
-    static const std::string id = "Poisson";
+    std::string id = "Poisson";
     return id;
 }
-
-const std::string& PoissonInputSetCreator::getId() const
-{
-    return id();
-}
-
-LAMA_INPUTSET_REGISTRATION( PoissonInputSetCreator );
 
 }
 

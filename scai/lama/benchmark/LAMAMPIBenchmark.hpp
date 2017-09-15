@@ -41,7 +41,7 @@
 namespace scai
 {
 
-class LAMAMPIBenchmark: public bf::Benchmark
+class LAMAMPIBenchmark: public benchmark::Benchmark
 {
 public:
 

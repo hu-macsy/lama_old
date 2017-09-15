@@ -37,18 +37,18 @@
 
 using namespace scai;
 
-extern "C" COMMON_DLL_IMPORTEXPORT bf::BaseInputSetRegistry* getInputSetRegistry()
+extern "C" COMMON_DLL_IMPORTEXPORT benchmark::BaseInputSetRegistry* getInputSetRegistry()
 {
-    return &( bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry() );
+    return &( benchmark::InputSetRegistry<lama::LAMAInputSet>::getRegistry() );
 }
 
 extern "C" COMMON_DLL_IMPORTEXPORT void releaseInputSetRegistry()
 {
-    bf::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
+    benchmark::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
 }
 
 extern "C" COMMON_DLL_IMPORTEXPORT void releaseBenchmarkLibraryResources()
 {
-    bf::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
+    benchmark::InputSetRegistry<lama::LAMAInputSet>::freeRegistry();
 }
 

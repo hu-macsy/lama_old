@@ -67,7 +67,7 @@ template<typename MatrixType>
 class PMVBenchmark: 
  
     public  LAMAMPIBenchmark,
-    private bf::Benchmark::Register< PMVBenchmark<MatrixType> >
+    private benchmark::Benchmark::Register< PMVBenchmark<MatrixType> >
 {
 public:
 
@@ -81,7 +81,7 @@ public:
 
     virtual ~PMVBenchmark();
 
-    virtual bf::Benchmark* copy() const;
+    virtual benchmark::Benchmark* copy() const;
 
     virtual short getValueTypeSize() const;
 
@@ -108,8 +108,8 @@ protected:
     virtual CounterType getNumFloatingPointOperations() const;
     virtual CounterType getProcessedBytes() const;
 
-    using bf::Benchmark::mName;
-    using bf::Benchmark::mGId;
+    using benchmark::Benchmark::mName;
+    using benchmark::Benchmark::mGId;
 
     using LAMAMPIBenchmark::mComm;
 
@@ -117,11 +117,13 @@ private:
 
     static const std::string& getGroupId();
 
+    common::unique_ptr<benchmark::InputSet> mInputSet;
+    const lama::LAMAInputSet* mLAMAInputSet;
+
     common::unique_ptr<MatrixType> mMatrixA;
     common::unique_ptr<lama::DenseVector<ValueType> > mVectorX;
     common::unique_ptr<lama::DenseVector<ValueType> > mVectorY;
 
-    dmemo::DistributionPtr mDistribution;
     hmemo::ContextPtr mContext;
     lama::Matrix::SyncKind mCommunicationKind;
 
@@ -166,7 +168,7 @@ PMVBenchmark<MatrixType>::~PMVBenchmark()
 }
 
 template<typename MatrixType>
-bf::Benchmark* PMVBenchmark<MatrixType>::copy() const
+benchmark::Benchmark* PMVBenchmark<MatrixType>::copy() const
 {
     return new PMVBenchmark<MatrixType>( *this );
 }
@@ -277,16 +279,26 @@ void PMVBenchmark<MatrixType>::initialize()
 
     omp_set_num_threads( noThreads );
 
-    SCAI_LOG_INFO( logger, "get input set " << mInputSetId );
+    SCAI_LOG_INFO( logger, "get input set by this id " << mInputSetId );
 
-    const lama::LAMAInputSet& inputSet = bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry().get( mInputSetId );
+    // mInputSetId = "inputSetId( argument )" must also be parsed ( "inputSetId", "argument" )
 
-    const lama::DenseVector<double>& inputX = inputSet.getX();
-    const lama::CSRSparseMatrix<double>& inputA = inputSet.getA();
+    mInputSet.reset( benchmark::InputSet::parseAndCreate( mInputSetId ) );
 
-    SCAI_LOG_INFO( logger, "input matrix A = " << inputA );
+    SCAI_LOG_ERROR( logger, "input set: " << *mInputSet )
+
+    SCAI_ASSERT_EQ_ERROR( mInputSet->getId(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
+
+    // Now it is safe to cast
+
+    mLAMAInputSet = reinterpret_cast<lama::LAMAInputSet*>( mInputSet.get() );
+
+    const lama::DenseVector<double>& inputX = mLAMAInputSet->getX();
+    const lama::CSRSparseMatrix<double>& inputA = mLAMAInputSet->getA();
 
     // mDistribution = lama::DistributionPtr ( new lama::GenBlockDistribution( inputA.getNumRows(), weight, mComm ) );
+
+    dmemo::DistributionPtr mDistribution;
 
     mDistribution = inputA.getRowDistributionPtr();
 
@@ -308,7 +320,7 @@ void PMVBenchmark<MatrixType>::initialize()
     mMatrixA->setCommunicationKind( mCommunicationKind );
 
     SCAI_LOG_INFO( logger,
-                   "Matrix: context at " << mContext << ", comm = " << mCommunicationKind );
+                   "Matrix: context at " << *mContext << ", comm = " << mCommunicationKind );
 }
 
 template<typename MatrixType>
@@ -320,16 +332,17 @@ void PMVBenchmark<MatrixType>::setUp()
     mMatrixA->wait();
 
     SCAI_LOG_INFO( logger,
-                   "setUp done for p = " << mComm->getRank() << " : X, A at " << mContext );
+                   "setUp done for p = " << mComm->getRank() << " : X, A at " << *mContext );
 }
 
 template<typename MatrixType>
 void PMVBenchmark<MatrixType>::execute()
 {
-    lama::Vector& result = *mVectorY;
-    const lama::Matrix& A = *mMatrixA;
-    const lama::Vector& x = *mVectorX;
-    result = A * x;
+    SCAI_LOG_INFO( logger, "execute: y = A * x" );
+
+    *mVectorY = *mMatrixA * *mVectorX;
+
+    mVectorY->writeToFile( "result.mtx" );
 }
 
 template<typename MatrixType>
@@ -344,22 +357,12 @@ void PMVBenchmark<MatrixType>::tearDown()
 template<typename MatrixType>
 void PMVBenchmark<MatrixType>::shutdown()
 {
-    const lama::LAMAInputSet& inputSet = bf::InputSetRegistry<lama::LAMAInputSet>::getRegistry().get( mInputSetId );
+    SCAI_ASSERT_ERROR( mLAMAInputSet, "No LAMA input set available" )
 
-    //TODO: Complexity Calculation needs to be ported
-    if ( ( typeid( MatrixType ) == typeid( lama::DenseMatrix<float> ) )
-            || ( typeid( MatrixType ) == typeid( lama::DenseMatrix<double> ) ) )
-    {
-        LAMAInputSetComplexityVisitor::getMVComplexity( inputSet.getDenseA(), mNumFloatingPointOperations,
-                mNumProcessedBytesFloat, mNumProcessedBytesDouble );
-    }
-    else
-    {
-        LAMAInputSetComplexityVisitor::getMVComplexity( inputSet.getA(), mNumFloatingPointOperations,
-                mNumProcessedBytesFloat, mNumProcessedBytesDouble );
-    }
+    LAMAInputSetComplexityVisitor::getMVComplexity( mLAMAInputSet->getA(), mNumFloatingPointOperations,
+                                                    mNumProcessedBytesFloat, mNumProcessedBytesDouble );
 
-    const lama::DenseVector<double>& result = inputSet.getY();
+    const lama::DenseVector<double>& result = mLAMAInputSet->getY();
 
     // set the maximal difference that is allowed, depends on ValueType
 
@@ -397,6 +400,9 @@ void PMVBenchmark<MatrixType>::shutdown()
 
 #endif
 
+        correctResult.writeToFile( "correct.mtx" );
+        computedResult.writeToFile( "computed.mtx" );
+
         lama::Vector& diff = correctResult;
 
         diff = computedResult - correctResult;
@@ -405,14 +411,14 @@ void PMVBenchmark<MatrixType>::shutdown()
 
         SCAI_LOG_INFO( logger, "max diff = " << diffNorm );
 
-        LAMA_CHECK_BENCHMARK( diffNorm.getValue<ValueType>() < maxDiff );
+        SCAI_ASSERT_LT_ERROR( diffNorm.getValue<ValueType>(), maxDiff, "illegal result" );
 
     }
-    catch ( bf::BFException& e )
+    catch ( benchmark::BFException& e )
     {
         std::stringstream message;
         message << e.what() << " std::fabs( result[i] - computedResultValue ) is bigger than " << maxDiff << std::endl;
-        throw bf::BFException( message.str() );
+        throw benchmark::BFException( message.str() );
     }
 
     mMatrixA.reset();

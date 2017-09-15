@@ -41,8 +41,7 @@ include ( scai_macro/scai_library )
 include ( scai_macro/scai_test_scripts )
 include ( scai_function/relative_install )
  
-## Define new SCAI module project with its internal/external dependencies
-## Note: only some examples depend on partitioning
+## Benchmark framework uses only common classes and logging
  
 scai_module (
 
@@ -54,16 +53,12 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        BaseInputSetRegistry
         Benchmark
         BenchmarkPrinter
         BFError
         BFException
         Config
         InputSet
-        readDir
-        frame_stdlib
-        string_helper
     )
 
 ## Dummy library required to resolve dependencies
@@ -86,7 +81,7 @@ foreach ( executable RunBenchmark RegisteredInputSets RegisteredBenchmarks )
 
 endforeach ( executable )
 
-install ( PROGRAMS  BenchmarkRunner DESTINATION bin )
+install ( PROGRAMS BenchmarkRunner DESTINATION bin )
 
 install( DIRECTORY pybench DESTINATION bin )
 

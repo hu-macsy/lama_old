@@ -45,11 +45,11 @@ namespace scai
 namespace lama
 {
 
-class LAMAFileInputSetCreator: public bf::InputSetCreator<LAMAInputSet>
+class LAMAFileInputSetCreator: public benchmark::InputSetCreator<LAMAInputSet>
 {
 public:
 
-    typedef bf::InputSetCreator<LAMAInputSet>::InputSetType InputSetType;
+    typedef benchmark::InputSetCreator<LAMAInputSet>::InputSetType InputSetType;
 
     static const std::string& id();
 

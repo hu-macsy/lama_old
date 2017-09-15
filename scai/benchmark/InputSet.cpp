@@ -38,12 +38,14 @@
  */
 
 #include <scai/benchmark/InputSet.hpp>
+
 #include <utility>
+#include <iostream>
 
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 InputSet::InputSet( const std::string& id )
@@ -68,6 +70,11 @@ const std::string& InputSet::getId() const
 const std::string& InputSet::getName() const
 {
     return mName;
+}
+
+void InputSet::writeAt( std::ostream& stream ) const
+{
+    stream << "InputSet( id = " << mId << ", name = " << mName << " )";
 }
 
 unsigned long InputSet::getNumFloatingPointOperations( const std::string& gid ) const
@@ -106,6 +113,28 @@ void InputSet::setProcessedBytes(
     const unsigned long numBytes )
 {
     mBWMap[sizeOfValueType][gid] = numBytes;
+}
+
+InputSet* InputSet::parseAndCreate( const std::string& specification )
+{
+    std::string::size_type pos1 = specification.find_first_of( " (" );
+    SCAI_ASSERT_NE_ERROR( pos1, std::string::npos, specification << ": no ( found" )
+    std::string::size_type pos2 = specification.find_first_not_of( " (", pos1 );
+    SCAI_ASSERT_NE_ERROR( pos2, std::string::npos, specification << ": no arg found" )
+
+    std::string::size_type pos3 = specification.find_first_of( " )", pos2 );
+    if ( pos3 == std::string::npos )
+    {
+        pos3 = specification.length();
+    }
+
+    std::string keyValue = specification.substr( 0, pos1 );
+    std::string argument = specification.substr( pos2, pos3 - pos2  );
+
+    std::cout << "pos1 = " << pos1 << ", pos2 = " << pos2 << ", pos3 = " << pos3 
+              << ", keyValue=<" << keyValue << ">, arg=<" << argument << ">" << std::endl;
+
+    return create( keyValue, argument );
 }
 
 }

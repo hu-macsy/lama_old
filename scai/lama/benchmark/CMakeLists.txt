@@ -27,28 +27,34 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief CMake configuration file for scai_lama examples
+ # @brief CMake configuration file for benchmarks of the LAMA package
  # @author Thomas Brandes
  # @date 13.09.2017
 ###
 
-## Add lama include directory for all examples 
+## Add scai include directory for all benchmarks
 
 include_directories( "${CMAKE_CURRENT_BINARY_DIR}/../include" )
 
-set ( CXX_SOURCES
-                  ConvertMatrixStorageBenchmark.cpp 
-                  LAMAMPIBenchmark.cpp
+## not yet added. ConvertMatrixStorageBenchmark.cpp
+
+set ( CXX_SOURCES LAMAMPIBenchmark.cpp
                   PMVBenchmark.cpp
-                  LAMAInputSet.cpp LAMAInputSetComplexityVisitor.cpp 
-                  Registry.cpp RandomInputSetCreator.cpp PoissonInputSetCreator.cpp LAMAFileInputSetCreator.cpp )
+                  ConvertMatrixStorageBenchmark.cpp
+                  LAMAInputSet.cpp 
+                  LAMAFileInputSet.cpp 
+                  LAMAInputSetComplexityVisitor.cpp
+                  PoissonInputSet.cpp
+                  RandomInputSet.cpp
+    )
 
-add_library ( lama_benchmarks SHARED ${CXX_SOURCES} )
+add_library ( lama_benchmark SHARED ${CXX_SOURCES} )
 
-target_link_libraries( lama_benchmarks ${SCAI_LIBRARY_PREFIX}_benchmark )
-target_link_libraries( lama_benchmarks ${MODULE_LIBRARY} )
+## Benchmarks are linked with module library and benchmark framework
 
-## copy Makefile from source directory, not configured here
+target_link_libraries( lama_benchmark ${SCAI_LIBRARY_PREFIX}_benchmark ${MODULE_LIBRARY} )
 
-install ( TARGETS lama_benchmarks
-          DESTINATION bench )
+## All benchmarks are installed as libraries in the benchmark directory where they might be loaded dynamically
+
+install ( TARGETS lama_benchmark DESTINATION benchmark )
+

@@ -44,7 +44,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 class COMMON_DLL_IMPORTEXPORT BFException: public BFError
@@ -68,18 +68,3 @@ public:
 }
 
 }
-
-#ifndef LAMA_CHECK_BENCHMARK
-/**
- * Checks an expression and prints out a warning at compile time, if
- * expression was not true.
- */
-#define LAMA_CHECK_BENCHMARK(exp)                                              \
-    if (!(exp))                                                                     \
-    {                                                                               \
-        std::ostringstream errorStr;                                                \
-        errorStr<<"Warning: Incorrect Results.\n";                                  \
-        throw bf::BFException(errorStr.str( ));                                \
-    }
-
-#endif

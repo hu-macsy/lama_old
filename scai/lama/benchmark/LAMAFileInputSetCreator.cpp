@@ -51,7 +51,7 @@ namespace lama
 const std::string& LAMAFileInputSetCreator::id()
 {
     static const std::string id =
-        bf::InputSetRegistry<LAMAFileInputSetCreator::InputSetType>::getFileInputSetCreatorId();
+        benchmark::InputSetRegistry<LAMAFileInputSetCreator::InputSetType>::getFileInputSetCreatorId();
     return id;
 }
 
@@ -65,12 +65,12 @@ LAMAFileInputSetCreator::~LAMAFileInputSetCreator()
 
 LAMAFileInputSetCreator::InputSetType* LAMAFileInputSetCreator::create() const
 {
-    throw bf::BFError( "File LAMAFileInputSetCreator creator needs a filename to create a InputSet." );
+    throw benchmark::BFError( "File LAMAFileInputSetCreator creator needs a filename to create a InputSet." );
 }
 
 LAMAFileInputSetCreator::InputSetType* LAMAFileInputSetCreator::create( const std::string& filename ) const
 {
-    std::string prefix = bf::Config::getInstance().getValueOf( "path" );
+    std::string prefix = benchmark::Config::getInstance().getValueOf( "path" );
 
     std::string file = prefix + filename;
 

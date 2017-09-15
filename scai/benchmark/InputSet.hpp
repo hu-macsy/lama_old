@@ -27,15 +27,11 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief InputSet.h
+ * @brief Definition of base class for all input sets used in benchmarks.
  * @author jiri
  * @date 06.04.2011
  */
-/**
- * @file InputSet.h
- * @author jiri
- * Created on: 04.05.2010
- */
+
 #pragma once
 
 #include <map>
@@ -43,16 +39,31 @@
 
 #include <scai/common/config.hpp>
 
+#include <scai/common/Factory1.hpp>
+#include <scai/common/Printable.hpp>
+#include <scai/common/NonCopyable.hpp>
+
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
-class COMMON_DLL_IMPORTEXPORT InputSet
+/** Base class for all kind of input sets that are managed via a factory.
+ *
+ *  An input set is created by its unique id and an additional string argument.
+ */
+class COMMON_DLL_IMPORTEXPORT InputSet : 
+
+    public common::Factory1< std::string, std::string, InputSet* >,
+    public common::Printable, 
+    private common::NonCopyable
+
 {
 public:
+
     typedef std::map<std::string,unsigned long> ComplexityMap;
+
     /**
      * @brief Creates this object with the given id.
      * @param[in] id The unique id of this InputSet.
@@ -69,6 +80,10 @@ public:
      *        necessary.
      */
     virtual ~InputSet();
+  
+    /** Override default implementation of Printable::writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
 
     /**
      * @brief Returns the id of the InputSet.
@@ -118,17 +133,20 @@ public:
         const unsigned short sizeOfValueType,
         const unsigned long numBytes );
 
+    /** @brief create of a input set via "KeyId( argument )" */
+
+    static InputSet* parseAndCreate( const std::string& specification );
+
 private:
-    InputSet( const InputSet& other );
-    InputSet& operator=( const InputSet& other );
 
     const std::string mId;
     const std::string mName;
 
     ComplexityMap mFlopMap;
-    std::map<unsigned short,ComplexityMap> mBWMap;
+
+    std::map<unsigned short, ComplexityMap> mBWMap;
 };
 
-} // namespace bf
+} // namespace benchmark
 
 } // namespace scai

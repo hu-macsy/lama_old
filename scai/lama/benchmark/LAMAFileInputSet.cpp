@@ -1,5 +1,5 @@
 /**
- * @file string_helper.cpp
+ * @file LAMAFileInputSet.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,39 +27,55 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief frame_stdlib.cpp
- * @author Jiri Kraus
- * @date 06.04.2011
- */
-/*
- * frame_stdlib.cpp
- *
- *  Created on: 01.02.2011
- *      Author: rrehrman
+ * @brief LAMAFileInputSet.cpp
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
 
-#include <scai/benchmark/frame_stdlib.hpp>
-
-#include <string>
+#include <scai/lama/benchmark/LAMAFileInputSet.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 namespace scai
 {
 
-namespace bf
+namespace lama
 {
 
-void trimm( std::string& s )
+LAMAFileInputSet::LAMAFileInputSet( const std::string filename ) : LAMAInputSet()
 {
-    while( s[0] == ' ' )
-    {
-        s.replace( 0, 1, "" );
+    std::string file;
+
+    if ( filename.find( "/" ) == 0 )
+    { 
+        file = filename;
     }
-    while( s[s.size() - 1] == ' ' )
+    else
     {
-        s.replace( s.size() - 1, 1, "" );
+        std::string prefix = benchmark::Config::getInstance().getValueOf( "path" );
+        file = prefix + filename;
     }
+
+    mAlpha = 1.0;
+    mBeta  = 1.0;
+
+    mA.reset( new CSRSparseMatrix<double>( file ) );
+    mX.reset( new DenseVector<double>( mA->getNumColumns(), 1.0 ) );
+    mY.reset( new DenseVector<double>( *mA * *mX  ) );
 }
 
-} // namespace bf
+benchmark::InputSet* LAMAFileInputSet::create( const std::string argument )
+{
+    // argment is take as correspoding file name
 
-} // namespace scai
+    return new LAMAFileInputSet( argument );
+}
+
+std::string LAMAFileInputSet::createValue()
+{
+    std::string id = "File";
+    return id;
+}
+
+}
+
+}

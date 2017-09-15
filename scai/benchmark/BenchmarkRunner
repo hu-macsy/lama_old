@@ -12,9 +12,9 @@ PREFIX= os.path.realpath( os.path.dirname( directory ) )
 
 sys.path.append( PREFIX )
 
-# In the bench directory is the dynamic benchmark library
+# In the benchmark directory are the lib modules containing the benchmarks
 
-os.environ[ "BENCHMARK_LIBRARY_PATH" ] = PREFIX + "/bench"
+os.environ[ "BENCHMARK_LIBRARY_PATH" ] = PREFIX + "/benchmark"
 
 import pybench
 

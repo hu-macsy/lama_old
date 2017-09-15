@@ -47,7 +47,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 /**
@@ -95,6 +95,6 @@ private:
     std::map<std::string,std::string> m_params;
 };
 
-} // namespace bf
+} // namespace benchmark
 
 } 

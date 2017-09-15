@@ -45,7 +45,7 @@
 #include <scai/common/unique_ptr.hpp>
 
 using namespace scai;
-using namespace bf;
+using namespace benchmark;
 
 int main( int argc, const char* argv[] )
 {
@@ -73,7 +73,7 @@ int main( int argc, const char* argv[] )
     std::string path = argv[5];
     std::string tmp = argv[6];
 
-    bf::Config& conf = bf::Config::getInstance();
+    benchmark::Config& conf = benchmark::Config::getInstance();
     conf.setValueFor( "path", path );
     conf.setValueFor( "tmp", tmp );
 
@@ -92,14 +92,14 @@ int main( int argc, const char* argv[] )
     try
     {
         bench.reset( Benchmark::create( benchId ) );
-        bf::BenchmarkPrinter::setDoOutput( bench->doOutput() );
+        benchmark::BenchmarkPrinter::setDoOutput( bench->doOutput() );
         bench->setInputSetId( inputSetId );
         bench->setMinTime( minTime );
         bench->setNumRepitions( numRep );
     }
     catch( std::exception& e )
     {
-        bf::BenchmarkPrinter::warning( e.what() );
+        benchmark::BenchmarkPrinter::warning( e.what() );
         return 1;
     }
 
@@ -107,14 +107,14 @@ int main( int argc, const char* argv[] )
     {
         bench->run( std::cout );
     }
-    catch( bf::BFException& be )
+    catch( benchmark::BFException& be )
     {
-        bf::BenchmarkPrinter::warning( be.what() );
+        benchmark::BenchmarkPrinter::warning( be.what() );
         return 1;
     }
     catch( std::exception& e )
     {
-        bf::BenchmarkPrinter::error( e.what() );
+        benchmark::BenchmarkPrinter::error( e.what() );
         return 1;
     }
 

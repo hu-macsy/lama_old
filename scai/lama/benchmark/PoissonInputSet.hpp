@@ -1,5 +1,5 @@
 /**
- * @file readDir.hpp
+ * @file PoissonInputSet.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,38 +27,44 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief readDir.h
- * @author Jiri Kraus
- * @date 06.04.2011
- */
-/*
- * readDir.h
- *
- *  Created on: 31.01.2011
- *      Author: rrehrman
+ * @brief PoissonInputSet.hpp
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
 
 #pragma once
 
-#include <vector>
+#include <scai/benchmark.hpp>
+#include <scai/lama/benchmark/LAMAInputSet.hpp>
+
 #include <string>
 
 namespace scai
 {
 
-namespace bf
+namespace lama
 {
 
-/**
- * @brief Returns the names of the shared libraries listed in path in the given
- *        vector.
- * @param[in]  path     The path holding the shared libraries.
- * @param[out] files    The vector holding the names of the shared libraries
- *                      within the given path.
- * @throws Exception    If directory within the path could not be opened.
- */
-void getFilesFromPath( const std::string& path, std::vector<std::string>& files );
+/** Derived class of LAMAInputSet that creates the data by a stencil matrix */
 
-} // namespace bf
+class PoissonInputSet: public  LAMAInputSet, 
+                       private benchmark::InputSet::Register<PoissonInputSet>
+{
+public:
 
-} // namespace scai
+    /** Constructor of an input set with poisson stencil matrix */
+
+    PoissonInputSet( const std::string argument );
+
+    /** Unique id for this derived class, used for InputSet::Factory to create objects */
+
+    static std::string createValue();
+
+    /** Static method required for create, called by InputSet::create( PoissonInputSet::createValue(), argument ) */
+
+    static InputSet* create( const std::string argument );
+};
+
+}
+
+}

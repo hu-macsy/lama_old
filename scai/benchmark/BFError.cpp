@@ -43,7 +43,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 BFError::BFError()

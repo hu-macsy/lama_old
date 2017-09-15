@@ -1,5 +1,5 @@
 /**
- * @file frame_stdlib.cpp
+ * @file RandomInputSet.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,52 +27,42 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief frame_stdlib.cpp
- * @author Jiri Kraus
- * @date 06.04.2011
- */
-/*
- * frame_stdlib.cpp
- *
- *  Created on: 01.02.2011
- *      Author: rrehrman
+ * @brief RandomInputSet.hpp
+ * @author Thomas Brandes
+ * @date 15.09.2017
  */
 
-#include <cstdlib>
+#pragma once
 
-#include <scai/benchmark/frame_stdlib.hpp>
-#include <scai/benchmark/BFError.hpp>
-#include <scai/benchmark/readDir.hpp>
+#include <scai/benchmark.hpp>
+#include <scai/lama/benchmark/LAMAInputSet.hpp>
+
+#include <string>
 
 namespace scai
 {
 
-namespace bf
+namespace lama
 {
 
-void getSharedLibraries( std::vector<std::string>& files )
+/** Derived class of LAMAInputSet that creates random data */
+
+class RandomInputSet: public  LAMAInputSet, 
+                      private benchmark::InputSet::Register<RandomInputSet>
 {
-    std::string benchmark_library_path;
-    char* val = getenv( "BENCHMARK_LIBRARY_PATH" );
-    if( val != NULL )
-    {
-        benchmark_library_path = val;
-    }
-    if( benchmark_library_path.empty() )
-    {
-        throw BFError( "Set BENCHMARK_LIBRARY_PATH to the directory holding the "
-                       "shared libraries of your benchmarks." );
-    }
+public:
 
-    // collect shared libraries from path.
-    getFilesFromPath( benchmark_library_path, files );
+    /** Constructor of a random LAMA input set, specified by size, fillRate */
 
-    if( files.empty() )
-    {
-        throw BFError( "No shared libraries found in BENCHMARK_LIBRARY_PATH" );
-    }
+    RandomInputSet( const std::string argument );
+
+    static std::string createValue();
+
+    /** Static method required for create, callsed by InputSet::create( RandomInputSet::createValue(), argument ) */
+
+    static InputSet* create( const std::string argument );
+};
+
 }
 
-} // namespace bf
-
-} // namespace scai
+}

@@ -36,7 +36,7 @@
 namespace scai
 {
 
-namespace bf
+namespace benchmark
 {
 
 bool BenchmarkPrinter::doOutput = true;

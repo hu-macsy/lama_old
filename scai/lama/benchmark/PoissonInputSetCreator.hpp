@@ -63,11 +63,11 @@ namespace lama
  *  The matrix A will have a general block distribution and is in CSR format.
  */
 
-class PoissonInputSetCreator: public bf::InputSetCreator<LAMAInputSet>
+class PoissonInputSetCreator: public benchmark::InputSetCreator<LAMAInputSet>
 {
 public:
 
-    typedef bf::InputSetCreator<LAMAInputSet>::InputSetType InputSetType;
+    typedef benchmark::InputSetCreator<LAMAInputSet>::InputSetType InputSetType;
 
     static const std::string& id();
 
