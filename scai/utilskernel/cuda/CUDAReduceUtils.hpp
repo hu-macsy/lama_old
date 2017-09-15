@@ -1,5 +1,5 @@
 /**
- * @file utilskernel/cuda/CUDAUtils.hpp
+ * @file utilskernel/cuda/CUDAReduceUtils.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -54,59 +54,69 @@ namespace utilskernel
 
 /** General utilities of the LAMA Interface implemented in CUDA  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAUtils
+class COMMON_DLL_IMPORTEXPORT CUDAReduceUtils
 {
 public:
 
-    /** CUDA implementation of UtilKernelTrait::setVal  */
+    /** CUDA implementation of UtilKernelTrait::reduce  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::scaleVectorAddScalar */
-
-    template<typename ValueType>
-    static void scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
-
-    /** CUDA implementation of UtilKernelTrait::getValue  */
-
-    template<typename ValueType>
-    static ValueType getValue( const ValueType* array, const IndexType i );
-
-    /** CUDA implementation for UtilKernelTrait::unaryOp */
-
-    template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::binaryOp */
-
-    template<typename ValueType>
-    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::binaryOpScalar */
-
-    template<typename ValueType>
-    static void binaryOpScalar(
-        ValueType out[],
-        const ValueType in[],
-        const ValueType value,
+    static ValueType reduce(
+        const ValueType array[],
         const IndexType n,
-        const common::binary::BinaryOp op,
-        const bool swapScalar );
+        const ValueType zero,
+        const common::binary::BinaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::scatterVal */
+    /** CUDA implementation for UtilKernelTrait::reduce2 */
 
     template<typename ValueType>
-    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+    static ValueType reduce2(
+        const ValueType array1[],
+        const ValueType array2[],
+        const IndexType n,
+        const common::binary::BinaryOp binOp,
+        const ValueType zero,
+        const common::binary::BinaryOp redOp );
+
+    /** CUDA implementation for UtilKernelTrait::scan */
+
+    template<typename ValueType>
+    static ValueType scan(
+        ValueType array[],
+        const IndexType n,
+        const ValueType first,
+        const bool exclusive,
+        const bool append );
+
+    /** CUDA implementation for UtilKernelTrait::isSorted */
+
+    template<typename ValueType>
+    static bool isSorted( const ValueType array[], const IndexType n, const common::binary::CompareOp op );
+
+    /** CUDA implementation of UtilKernelTrait::validIndexes, contains bool reduction  */
+
+    static bool validIndexes( const IndexType array[], const IndexType n, const IndexType size );
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    template<typename ValueType>
+    static ValueType reduceSum( const ValueType array[], const IndexType n, const ValueType zero );
+
+    template<typename ValueType>
+    static ValueType reduceMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    template<typename ValueType>
+    static ValueType reduceMinVal( const ValueType array[], const IndexType n, const ValueType zero );
+
+    template<typename ValueType>
+    static ValueType reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero );
+
     /** Routine that registers all methods at the kernel registry. */
 
     struct Registrator
-    {
+    {   
         static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
@@ -116,23 +126,17 @@ private:
         static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
-    {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
     /** Constructor for registration. */
 
-    CUDAUtils();
+    CUDAReduceUtils();
 
     /** Destructor for unregistration. */
 
-    ~CUDAUtils();
+    ~CUDAReduceUtils();
 
     /** Static variable for registration at static initialization. */
 
-    static CUDAUtils guard;
+    static CUDAReduceUtils guard;
 };
 
 } /* end namespace utilskernel */

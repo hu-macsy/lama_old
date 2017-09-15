@@ -118,7 +118,7 @@ include ( scai_macro/scai_build_variable )
 
 scai_build_variable ( NAME      CMAKE_BUILD_TYPE
                       CHOICES   "Debug" "Release" "RelWithDebInfo" "MinSizeRel" ""
-                      DEFAULT   "Debug"
+                      DEFAULT   "Release"
                       DOCSTRING "Set build type" )
 
 scai_build_variable ( NAME      USE_CODE_COVERAGE

@@ -54,56 +54,75 @@ namespace utilskernel
 
 /** General utilities of the LAMA Interface implemented in CUDA  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAUtils
+class COMMON_DLL_IMPORTEXPORT CUDASparseUtils
 {
 public:
 
-    /** CUDA implementation of UtilKernelTrait::setVal  */
+    /** CUDA implementation of UtilKernelTrait::setOrder  */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
+    static void setOrder( ValueType array[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::scaleVectorAddScalar */
-
-    template<typename ValueType>
-    static void scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
-
-    /** CUDA implementation of UtilKernelTrait::getValue  */
+    /** CUDA implementation for UtilKernelTrait::Setter::setSequence */
 
     template<typename ValueType>
-    static ValueType getValue( const ValueType* array, const IndexType i );
+    static void setSequence( ValueType array[], const ValueType startValue, const ValueType inc, const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::unaryOp */
+    /** CUDA implementation for UtilKernelTrait::setInversePerm */
 
-    template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
+    static void setInversePerm( IndexType inversePerm[], const IndexType perm[], const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::binaryOp */
+    /** CUDA implementation for UtilKernelTrait::set */
 
-    template<typename ValueType>
-    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
+    template<typename ValueType, typename otherValueType>
+    static void set( ValueType out[], const otherValueType in[], const IndexType n, const common::binary::BinaryOp op );
 
-    /** CUDA implementation for UtilKernelTrait::binaryOpScalar */
+    /** CUDA implementation for UtilKernelTrait::setSection */
 
-    template<typename ValueType>
-    static void binaryOpScalar(
+    template<typename ValueType, typename otherValueType>
+    static void setSection( ValueType out[], const IndexType inc_out,
+                            const otherValueType in[], const IndexType inc_in, const IndexType n, const common::binary::BinaryOp op );
+
+
+    /** CUDA implementation for UtilKernelTrait::setGather */
+
+    template<typename ValueType, typename otherValueType>
+    static void setGather(
         ValueType out[],
-        const ValueType in[],
-        const ValueType value,
-        const IndexType n,
+        const otherValueType in[],
+        const IndexType indexes[],
         const common::binary::BinaryOp op,
-        const bool swapScalar );
+        const IndexType n );
 
-    /** CUDA implementation for UtilKernelTrait::scatterVal */
+    /** CUDA implementation for UtilKernelTrait::setScatter */
+
+    template<typename ValueType, typename otherValueType>
+    static void setScatter(
+        ValueType out[],
+        const IndexType indexes[],
+        const bool unique,
+        const otherValueType in[],
+        const common::binary::BinaryOp op,
+        const IndexType n );
+
+    /** CUDA implementation of UtilKernelTrait::countNonZeros */
 
     template<typename ValueType>
-    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+    static IndexType countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps );
+
+    /** CUDA implementation of UtilKernelTrait::compress */
+
+    template<typename TargetValueType, typename SourceValueType>
+    static IndexType compress(
+        TargetValueType sparseArray[],
+        IndexType sparseIndexes[],
+        const SourceValueType denseArray[],
+        const IndexType n,
+        const SourceValueType eps );
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
-    /** Routine that registers all methods at the kernel registry. */
 
     struct Registrator
     {
@@ -124,15 +143,15 @@ private:
 
     /** Constructor for registration. */
 
-    CUDAUtils();
+    CUDASparseUtils();
 
     /** Destructor for unregistration. */
 
-    ~CUDAUtils();
+    ~CUDASparseUtils();
 
     /** Static variable for registration at static initialization. */
 
-    static CUDAUtils guard;
+    static CUDASparseUtils guard;
 };
 
 } /* end namespace utilskernel */

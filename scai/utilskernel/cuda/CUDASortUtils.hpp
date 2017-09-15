@@ -1,5 +1,5 @@
 /**
- * @file utilskernel/cuda/CUDAUtils.hpp
+ * @file utilskernel/cuda/CUDASortUtils.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -54,61 +54,43 @@ namespace utilskernel
 
 /** General utilities of the LAMA Interface implemented in CUDA  */
 
-class COMMON_DLL_IMPORTEXPORT CUDAUtils
+class COMMON_DLL_IMPORTEXPORT CUDASortUtils
 {
 public:
 
-    /** CUDA implementation of UtilKernelTrait::setVal  */
+    /** CUDA implementation for UtilKernelTrait::sort */
 
     template<typename ValueType>
-    static void setVal( ValueType array[], const IndexType n, const ValueType val, const common::binary::BinaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::scaleVectorAddScalar */
-
-    template<typename ValueType>
-    static void scaleVectorAddScalar( ValueType array1[], const ValueType array2[], const IndexType n, const ValueType alpha, const ValueType beta );
-
-    /** CUDA implementation of UtilKernelTrait::getValue  */
-
-    template<typename ValueType>
-    static ValueType getValue( const ValueType* array, const IndexType i );
-
-    /** CUDA implementation for UtilKernelTrait::unaryOp */
-
-    template<typename ValueType>
-    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::unary::UnaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::binaryOp */
-
-    template<typename ValueType>
-    static void binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const common::binary::BinaryOp op );
-
-    /** CUDA implementation for UtilKernelTrait::binaryOpScalar */
-
-    template<typename ValueType>
-    static void binaryOpScalar(
-        ValueType out[],
-        const ValueType in[],
-        const ValueType value,
+    static void sort(
+        IndexType perm[],
+        ValueType outValues[],
+        const ValueType inValues[],
         const IndexType n,
-        const common::binary::BinaryOp op,
-        const bool swapScalar );
+        const bool ascending );
 
-    /** CUDA implementation for UtilKernelTrait::scatterVal */
+    /** CUDA implementation for UtilKernelTrait::sortInPlace */
 
     template<typename ValueType>
-    static void scatterVal( ValueType out[], const IndexType indexes[], const ValueType value, const IndexType n );
+    static void sortInPlace(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType n,
+        const bool ascending );
 
 private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Routine that registers all methods at the kernel registry. */
+    template<typename ValueType>
+    static void sortPerm( IndexType perm[], const ValueType array[], const IndexType n, bool ascending );
 
-    struct Registrator
-    {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
+    template<typename ValueType>
+    static void sortValues( ValueType array[], const IndexType n, bool ascending );
+
+    template<typename ValueType>
+    static void sortBoth( ValueType array[], IndexType perm[], const IndexType n, bool ascending );
+
+    /** Routine that registers all methods at the kernel registry. */
 
     template<typename ValueType>
     struct RegArrayKernels
@@ -116,23 +98,17 @@ private:
         static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
     };
 
-    template<typename ValueType, typename OtherValueType>
-    struct RegistratorVO
-    {
-        static void registerKernels( const scai::kregistry::KernelRegistry::KernelRegistryFlag flag );
-    };
-
     /** Constructor for registration. */
 
-    CUDAUtils();
+    CUDASortUtils();
 
     /** Destructor for unregistration. */
 
-    ~CUDAUtils();
+    ~CUDASortUtils();
 
     /** Static variable for registration at static initialization. */
 
-    static CUDAUtils guard;
+    static CUDASortUtils guard;
 };
 
 } /* end namespace utilskernel */
