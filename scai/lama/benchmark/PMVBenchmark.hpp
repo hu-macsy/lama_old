@@ -38,6 +38,8 @@
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
 #include <scai/lama/benchmark/LAMAInputSetComplexityVisitor.hpp>
 
+#include <scai/benchmark/Parser.hpp>
+
 #include <scai/lama/DenseVector.hpp>
 #include <scai/hmemo/Context.hpp>
 
@@ -57,48 +59,49 @@
 
 // Benchmark: here we allow using namespace in .hpp file
 
-using namespace scai;
+namespace scai
+{
 
 using std::istringstream;
 using std::map;
 using std::string;
 
-template<typename MatrixType>
+namespace lama
+{
+
 class PMVBenchmark: 
  
     public  LAMAMPIBenchmark,
-    private benchmark::Benchmark::Register< PMVBenchmark<MatrixType> >
+    private benchmark::Benchmark::Register<PMVBenchmark>
+
 {
 public:
 
-    typedef typename MatrixType::MatrixValueType ValueType;
-
-    PMVBenchmark();
-
     PMVBenchmark( const std::string& arguments );
 
-    PMVBenchmark( const PMVBenchmark<MatrixType>& other );
-
     virtual ~PMVBenchmark();
-
-    virtual benchmark::Benchmark* copy() const;
 
     virtual short getValueTypeSize() const;
 
     virtual bool isThreadded() const;
 
-    /** Implementation of pure method Benchmark::getId()   */
+    /** Implementation of pure method Benchmark::getCreateId()   */
 
-    virtual const std::string& getId() const;
+    virtual const std::string& getCreateId() const;
+
+    /** Implementation of pure method Benchmark::getArguments()   */
+
+    virtual const std::string& getArguments() const;
 
     static std::string createValue();
 
-    static Benchmark* create()
+    static Benchmark* create( const std::string arguments )
     {
-        return new PMVBenchmark();
+        return new PMVBenchmark( arguments );
     }
 
 protected:
+
     virtual void initialize();
     virtual void setUp();
     virtual void execute();
@@ -115,336 +118,27 @@ protected:
 
 private:
 
+    PMVBenchmark();
+
     static const std::string& getGroupId();
 
     common::unique_ptr<benchmark::InputSet> mInputSet;
-    const lama::LAMAInputSet* mLAMAInputSet;
+    const LAMAInputSet* mLAMAInputSet;
 
-    common::unique_ptr<MatrixType> mMatrixA;
-    common::unique_ptr<lama::DenseVector<ValueType> > mVectorX;
-    common::unique_ptr<lama::DenseVector<ValueType> > mVectorY;
+    common::unique_ptr<Matrix> mMatrixA;
+    common::unique_ptr<_DenseVector> mVectorX;
+    common::unique_ptr<_DenseVector> mVectorY;
 
     hmemo::ContextPtr mContext;
-    lama::Matrix::SyncKind mCommunicationKind;
+    Matrix::SyncKind mCommunicationKind;
 
     CounterType mNumFloatingPointOperations;
     CounterType mNumProcessedBytesFloat;
     CounterType mNumProcessedBytesDouble;
+
+    std::string mArguments;  // arguments used for creating this benchmark
 };
 
-template<typename MatrixType>
-const std::string& PMVBenchmark<MatrixType>::getGroupId()
-{
-    static const std::string id = "PMV";
-    return id;
 }
 
-template<typename MatrixType>
-PMVBenchmark<MatrixType>::PMVBenchmark() :
-
-    LAMAMPIBenchmark( getId(), getGroupId() ),
-    mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
-    mNumFloatingPointOperations( 0 ),
-    mNumProcessedBytesFloat( 0 ),
-    mNumProcessedBytesDouble( 0 )
-{
-}
-
-template<typename MatrixType>
-PMVBenchmark<MatrixType>::PMVBenchmark( const PMVBenchmark<MatrixType>& other ) :
-
-    LAMAMPIBenchmark( other ),
-    mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
-    mNumFloatingPointOperations( 0 ),
-    mNumProcessedBytesFloat( 0 ),
-    mNumProcessedBytesDouble( 0 )
-{
-}
-
-template<typename MatrixType>
-PMVBenchmark<MatrixType>::~PMVBenchmark()
-{
-    // Note: mMatrixA, mVectorX, mVectorY will be freed
-}
-
-template<typename MatrixType>
-benchmark::Benchmark* PMVBenchmark<MatrixType>::copy() const
-{
-    return new PMVBenchmark<MatrixType>( *this );
-}
-
-template<typename MatrixType>
-short PMVBenchmark<MatrixType>::getValueTypeSize() const
-{
-    return sizeof( ValueType );
-}
-
-template<typename MatrixType>
-bool PMVBenchmark<MatrixType>::isThreadded() const
-{
-    return true;
-}
-
-template<typename MatrixType>
-const std::string& PMVBenchmark<MatrixType>::getId() const
-{
-    static std::string id = createValue();
-    return id;
-}
-
-template<typename MatrixType>
-std::string PMVBenchmark<MatrixType>::createValue() 
-{
-    std::string value ( "PMV_" );
-    value += MatrixType::typeName();
-    return value;
-}
-
-template<typename MatrixType>
-void PMVBenchmark<MatrixType>::initialize()
-{
-    //device initialization + comunicator
-
-    map<string, string> tokens;
-
-    getConfig( tokens );
-
-    int noThreads = 1;
-    int devNo = -1; // default device
-
-    if ( tokens.count( "CUDA" ) > 0 )
-    {
-        istringstream tokenStream( tokens["CUDA"] );
-        tokenStream >> devNo;
-    }
-
-    std::ostringstream idStream;
-    idStream << " (Proc " << mComm->getRank() << " LOCAL=";
-
-    if ( tokens["LOCAL"] == "CUDA" )
-    {
-        mContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, devNo );
-        idStream << "CUDA:";
-    }
-    else
-    {
-        mContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
-        idStream << "HOST:";
-    }
-
-    if ( tokens.count( "THREADS" ) > 0 )
-    {
-        istringstream tokenStream( tokens["THREADS"] );
-        tokenStream >> noThreads;
-    }
-    else
-    {
-        noThreads = 1;
-    }
-
-    idStream << "THREADS=" << noThreads << ":";
-
-    if ( mContext->getType() == hmemo::Context::CUDA  )
-    {
-        idStream << "DEVICE=" << devNo << ":";
-    }
-
-    idStream << "COMM=";
-
-    if ( tokens["COMM"] == "SYNC" )
-    {
-        mCommunicationKind = lama::Matrix::SYNCHRONOUS;
-        idStream << "SYNC:";
-    }
-    else
-    {
-        mCommunicationKind = lama::Matrix::ASYNCHRONOUS;
-        idStream << "ASYNC:";
-    }
-
-    float weight = 1.0;
-
-    if ( tokens.count( "W" ) > 0 )
-    {
-        istringstream tokenStream( tokens["W"] );
-        tokenStream >> weight;
-    }
-
-    idStream << "W=" << weight;
-
-    //mName += idStream.str();
-
-    //TODO: Aggregate Name at Proc 0 to print it in output
-    printf( " Name: %s )\n", idStream.str().c_str() );
-
-    omp_set_num_threads( noThreads );
-
-    SCAI_LOG_INFO( logger, "get input set by this id " << mInputSetId );
-
-    // mInputSetId = "inputSetId( argument )" must also be parsed ( "inputSetId", "argument" )
-
-    mInputSet.reset( benchmark::InputSet::parseAndCreate( mInputSetId ) );
-
-    SCAI_LOG_ERROR( logger, "input set: " << *mInputSet )
-
-    SCAI_ASSERT_EQ_ERROR( mInputSet->getId(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
-
-    // Now it is safe to cast
-
-    mLAMAInputSet = reinterpret_cast<lama::LAMAInputSet*>( mInputSet.get() );
-
-    const lama::DenseVector<double>& inputX = mLAMAInputSet->getX();
-    const lama::CSRSparseMatrix<double>& inputA = mLAMAInputSet->getA();
-
-    // mDistribution = lama::DistributionPtr ( new lama::GenBlockDistribution( inputA.getNumRows(), weight, mComm ) );
-
-    dmemo::DistributionPtr mDistribution;
-
-    mDistribution = inputA.getRowDistributionPtr();
-
-    SCAI_LOG_INFO( logger,
-                   "General block distribution of matrix with weight " << weight << ", local size = " << mDistribution->getLocalSize() );
-
-    mVectorX.reset( new lama::DenseVector<ValueType>( inputX, mDistribution ) );
-    mVectorY.reset( new lama::DenseVector<ValueType>( mDistribution, 0.0 ) );
-
-    SCAI_LOG_DEBUG( logger, "convert and redistribute the input matrix " << inputA );
-
-    mMatrixA.reset( new MatrixType( inputA ) );
-
-    mMatrixA->redistribute( mDistribution, mDistribution );
-
-    SCAI_LOG_DEBUG( logger, "matrix " << *mMatrixA << " now available for MV" );
-
-    mMatrixA->setContextPtr( mContext );
-    mMatrixA->setCommunicationKind( mCommunicationKind );
-
-    SCAI_LOG_INFO( logger,
-                   "Matrix: context at " << *mContext << ", comm = " << mCommunicationKind );
-}
-
-template<typename MatrixType>
-void PMVBenchmark<MatrixType>::setUp()
-{
-    mVectorX->prefetch( mContext );
-    mMatrixA->prefetch();
-    mVectorX->wait();
-    mMatrixA->wait();
-
-    SCAI_LOG_INFO( logger,
-                   "setUp done for p = " << mComm->getRank() << " : X, A at " << *mContext );
-}
-
-template<typename MatrixType>
-void PMVBenchmark<MatrixType>::execute()
-{
-    SCAI_LOG_INFO( logger, "execute: y = A * x" );
-
-    *mVectorY = *mMatrixA * *mVectorX;
-
-    mVectorY->writeToFile( "result.mtx" );
-}
-
-template<typename MatrixType>
-void PMVBenchmark<MatrixType>::tearDown()
-{
-    hmemo::ContextPtr host = hmemo::Context::getHostPtr();
-    mVectorY->prefetch( host );
-    mVectorY->wait();
-    SCAI_LOG_INFO( logger, "tearDown done, Y at Host" );
-}
-
-template<typename MatrixType>
-void PMVBenchmark<MatrixType>::shutdown()
-{
-    SCAI_ASSERT_ERROR( mLAMAInputSet, "No LAMA input set available" )
-
-    LAMAInputSetComplexityVisitor::getMVComplexity( mLAMAInputSet->getA(), mNumFloatingPointOperations,
-                                                    mNumProcessedBytesFloat, mNumProcessedBytesDouble );
-
-    const lama::DenseVector<double>& result = mLAMAInputSet->getY();
-
-    // set the maximal difference that is allowed, depends on ValueType
-
-    ValueType maxDiff = 1E-4f;
-
-    if ( typeid( ValueType ) == typeid( double ) )
-    {
-        maxDiff = maxDiff * maxDiff; // double precision
-    }
-
-    try
-    {
-        const lama::DenseVector<ValueType>& computedResult = *mVectorY;
-
-        SCAI_LOG_INFO( logger, "computed result: " << computedResult );
-
-        // Note: there might be type conversion from double to float
-
-        lama::DenseVector<ValueType> correctResult( result );
-
-        SCAI_LOG_INFO( logger, "result ( by inputSet ): " << result );
-        SCAI_LOG_INFO( logger, "correct result: " << correctResult );
-
-#if defined( SCAI_LOG_TRACE_ENABLED)
-
-        for ( int i = 0; i < correctResult.size(); i++ )
-        {
-            ValueType inputValue = lama::cast<ValueType>( ( *mVectorX )( i ) );
-            ValueType correctValue = lama::cast<ValueType>( correctResult( i ) );
-            ValueType computedValue = lama::cast<ValueType>( computedResult( i ) );
-            SCAI_LOG_TRACE( logger, i << ": correct = " << correctValue
-                            << ", computed = " << computedValue
-                            << ", input = " << inputValue );
-        }
-
-#endif
-
-        correctResult.writeToFile( "correct.mtx" );
-        computedResult.writeToFile( "computed.mtx" );
-
-        lama::Vector& diff = correctResult;
-
-        diff = computedResult - correctResult;
-
-        lama::Scalar diffNorm = lama::maxNorm( diff );
-
-        SCAI_LOG_INFO( logger, "max diff = " << diffNorm );
-
-        SCAI_ASSERT_LT_ERROR( diffNorm.getValue<ValueType>(), maxDiff, "illegal result" );
-
-    }
-    catch ( benchmark::BFException& e )
-    {
-        std::stringstream message;
-        message << e.what() << " std::fabs( result[i] - computedResultValue ) is bigger than " << maxDiff << std::endl;
-        throw benchmark::BFException( message.str() );
-    }
-
-    mMatrixA.reset();
-    mVectorX.reset();
-    mVectorY.reset();
-}
-
-template<typename MatrixType>
-CounterType PMVBenchmark<MatrixType>::getNumFloatingPointOperations() const
-{
-    return mNumFloatingPointOperations;
-}
-
-template<typename MatrixType>
-CounterType PMVBenchmark<MatrixType>::getProcessedBytes() const
-{
-    typedef typename MatrixType::MatrixValueType ValueType;
-
-    if ( sizeof( ValueType ) == sizeof( float ) )
-    {
-        return mNumProcessedBytesFloat;
-    }
-    else if ( sizeof( ValueType ) == sizeof( double ) )
-    {
-        return mNumProcessedBytesDouble;
-    }
-
-    return 0;
 }

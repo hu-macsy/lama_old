@@ -38,9 +38,6 @@
 
 // Matrix storage types needed for instantiation
 
-#include <scai/lama/storage/CSRStorage.hpp>
-#include <scai/lama/storage/JDSStorage.hpp>
-#include <scai/lama/storage/ELLStorage.hpp>
-
-template class ConvertMatrixStorageBenchmark<CSRStorage<float>, JDSStorage<float> >;
+template class ConvertMatrixStorageBenchmark<float>;
+template class ConvertMatrixStorageBenchmark<double>;
 

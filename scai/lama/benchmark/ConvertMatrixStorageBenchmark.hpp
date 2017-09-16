@@ -35,8 +35,8 @@
 #pragma once
 
 #include <scai/benchmark.hpp>
-
-#include <scai/lama/benchmark/LAMAInputSetComplexityVisitor.hpp>
+#include <scai/benchmark/Parser.hpp>
+#include <scai/lama/benchmark/LAMAInputSet.hpp>
 
 #include <scai/hmemo/HArray.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
@@ -49,45 +49,32 @@ using namespace lama;
 using namespace hmemo;
 using namespace benchmark;
 
-template<typename StorageType1, typename StorageType2>
+template<typename ValueType>
 class ConvertMatrixStorageBenchmark : 
 
     public Benchmark, 
-    private Benchmark::Register<ConvertMatrixStorageBenchmark< StorageType1, StorageType2> >
+    private Benchmark::Register<ConvertMatrixStorageBenchmark<ValueType> >
 
 {
 public:
 
-    typedef StorageType1 SourceStorageType;
-    typedef StorageType2 DestinationStorageType;
-    typedef typename StorageType2::StorageValueType ValueType;
-
-    static const std::string& id();
-
-    ConvertMatrixStorageBenchmark();
-
     ConvertMatrixStorageBenchmark( const std::string& arguments );
 
-    ConvertMatrixStorageBenchmark(
-        const ConvertMatrixStorageBenchmark<SourceStorageType, DestinationStorageType>& other );
-
     virtual ~ConvertMatrixStorageBenchmark();
-
-    /** Implementation of Benchmark::copy with covariant return type */
-
-    virtual ConvertMatrixStorageBenchmark<SourceStorageType, DestinationStorageType>* copy() const;
 
     virtual short getValueTypeSize() const;
 
     virtual bool isThreadded() const;
 
-    virtual const std::string& getId() const;
+    virtual const std::string& getCreateId() const;
+
+    virtual const std::string& getArguments() const;
 
     static std::string createValue();
 
-    static Benchmark* create()
+    static Benchmark* create( std::string arguments )
     {
-        return new ConvertMatrixStorageBenchmark();
+        return new ConvertMatrixStorageBenchmark( arguments );
     }
 
 protected:
@@ -101,115 +88,97 @@ protected:
     virtual CounterType getProcessedBytes() const;
 
 private:
-    SourceStorageType mSourceStorage;
-    DestinationStorageType mDestinationStorage;
-    int mDevice;
 
-    HArray<IndexType> mCsrIA;
-    HArray<IndexType> mCsrJA;
-    HArray<ValueType> mCsrValues;
+    ConvertMatrixStorageBenchmark();
 
-    static const LAMAInputSetComplexityVisitor::Group& group();
+    common::unique_ptr<_MatrixStorage> mSourceStorage;
+    common::unique_ptr<_MatrixStorage> mTargetStorage;
 
-    static const std::string& sid();
+    std::string mArguments;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };
 
-#ifndef SCAI_LOG_LEVEL_OFF
+template<typename ValueType>
+SCAI_LOG_DEF_LOGGER( ConvertMatrixStorageBenchmark<ValueType>::logger, "Benchmark.ConvertMatrixStorageBenchmark" );
 
-#define LAMA_KOMMA ,
-template<typename StorageType1, typename StorageType2>
-SCAI_LOG_DEF_LOGGER( ConvertMatrixStorageBenchmark<StorageType1 LAMA_KOMMA StorageType2>::logger, "Benchmark.ConvertMatrixStorageBenchmark" );
-#undef LAMA_KOMMA
-
-#endif
-
-template<typename StorageType1, typename StorageType2>
-const std::string& ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::sid()
-{
-    static const std::string sid = "LAMA<T>";
-    return sid;
-}
-
-template<typename StorageType1, typename StorageType2>
-const std::string& ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::id()
-{
-    static const std::string id = sid() + ": " + LAMAInputSetComplexityVisitor::getGroupId( group() );
-    return id;
-}
-
-template<typename StorageType1, typename StorageType2>
-std::string ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::createValue()
+template<typename ValueType>
+std::string ConvertMatrixStorageBenchmark<ValueType>::createValue()
 {
     std::ostringstream value;
   
-    value << "Convert_" << StorageType1::typeName() << "2" << StorageType2::typeName();
+    value << "Convert_" << common::TypeTraits<ValueType>::id();
 
     return value.str();
 }
 
-template<typename StorageType1, typename StorageType2>
-ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::ConvertMatrixStorageBenchmark() :
+template<typename ValueType>
+ConvertMatrixStorageBenchmark<ValueType>::ConvertMatrixStorageBenchmark( const std::string& arg ) :
 
-    Benchmark( sid(), LAMAInputSetComplexityVisitor::getGroupId( group() ) )
+    Benchmark( getCreateId() + "( " + arg + " )" , "ConvertStorage" )
 
 {
-    SCAI_LOG_DEBUG( logger, "ConvertMatrixStorageBenchmark created" );
-    // means HOST
-    mDevice = -1;
+    SCAI_LOG_ERROR( logger, "ConvertMatrixStorageBenchmark( arg = " << arg << " )" );
+
+    std::vector<std::string> storageTypes;
+
+    if ( arg == "" )
+    {
+        tokenize( storageTypes, "CSR, JDS", ", " );
+    }
+    else
+    {
+        tokenize( storageTypes, arg, ", " );
+    }
+
+    SCAI_ASSERT_EQ_ERROR( storageTypes.size(), 2, "two storage types expected as arguments" )
+
+    _MatrixStorage::MatrixStorageFormat sourceFormat = str2Format( storageTypes[0].c_str() );
+    _MatrixStorage::MatrixStorageFormat targetFormat = str2Format( storageTypes[1].c_str() );
+
+    common::scalar::ScalarType type = common::TypeTraits<ValueType>::stype;
+
+    // allocate source and target storage of the required type
+
+    mSourceStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( sourceFormat, type ) ) );
+    mTargetStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( targetFormat, type ) ) );
+
+    mArguments = storageTypes[0] + ", " + storageTypes[1];
 }
 
-template<typename StorageType1, typename StorageType2>
-ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::ConvertMatrixStorageBenchmark(
-    const ConvertMatrixStorageBenchmark<SourceStorageType, DestinationStorageType>& other )
-    : Benchmark( other ), mDevice( other.mDevice )
-{
-    SCAI_LOG_DEBUG( logger, "copy constructror" )
-}
-
-template<typename StorageType1, typename StorageType2>
-ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::~ConvertMatrixStorageBenchmark()
+template<typename ValueType>
+ConvertMatrixStorageBenchmark<ValueType>::~ConvertMatrixStorageBenchmark()
 {
     SCAI_LOG_DEBUG( logger, "~ConvertMatrixStorageBenchmark" )
 }
 
-template<typename StorageType1, typename StorageType2>
-ConvertMatrixStorageBenchmark<StorageType1, StorageType2>* ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::copy() const
-{
-    SCAI_LOG_DEBUG( logger, "copy ConvertMatrixStorageBenchmark" )
-
-    return  new ConvertMatrixStorageBenchmark<SourceStorageType, DestinationStorageType>( *this );
-}
-
-template<typename StorageType1, typename StorageType2>
-short ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::getValueTypeSize() const
+template<typename ValueType>
+short ConvertMatrixStorageBenchmark<ValueType>::getValueTypeSize() const
 {
     return sizeof( ValueType );
 }
 
-template<typename StorageType1, typename StorageType2>
-bool ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::isThreadded() const
+template<typename ValueType>
+bool ConvertMatrixStorageBenchmark<ValueType>::isThreadded() const
 {
     return true;
 }
 
-template<typename StorageType1, typename StorageType2>
-const std::string& ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::getId() const
+template<typename ValueType>
+const std::string& ConvertMatrixStorageBenchmark<ValueType>::getCreateId() const
 {
     static std::string id = createValue();
     return id;
 }
 
-template<typename StorageType1, typename StorageType2>
-const LAMAInputSetComplexityVisitor::Group& ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::group()
+template<typename ValueType>
+const std::string& ConvertMatrixStorageBenchmark<ValueType>::getArguments() const
 {
-    static const LAMAInputSetComplexityVisitor::Group group = LAMAInputSetComplexityVisitor::ConvertCSR2JDS;
-    return group;
+    return mArguments;
 }
 
-template<typename StorageType1, typename StorageType2>
-void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::initialize()
+template<typename ValueType>
+void ConvertMatrixStorageBenchmark<ValueType>::initialize()
 {
     SCAI_LOG_DEBUG( logger, "initialize, mInputSetId = " << mInputSetId )
 
@@ -231,70 +200,48 @@ void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::initialize()
 
     SCAI_LOG_DEBUG( logger, "csrStorage = " << csrStorage )
 
-    mSourceStorage.setCSRData( csrStorage.getNumRows(), csrStorage.getNumColumns(), csrStorage.getNumValues(),
-                               csrStorage.getIA(), csrStorage.getJA(), csrStorage.getValues() );
+    mSourceStorage->setCSRData( csrStorage.getNumRows(), csrStorage.getNumColumns(), csrStorage.getNumValues(),
+                                csrStorage.getIA(), csrStorage.getJA(), csrStorage.getValues() );
 
-    ContextPtr context;
+    ContextPtr context = Context::getContextPtr();
 
-    if ( mDevice < 0 )
-    {
-        context = Context::getContextPtr( Context::Host );
-    }
-    else
-    {
-        context = Context::getContextPtr( Context::CUDA, mDevice );
-    }
-
-    mSourceStorage.setContextPtr( context );
-    mDestinationStorage.setContextPtr( context );
+    mSourceStorage->setContextPtr( context );
+    mTargetStorage->setContextPtr( context );
 }
 
-template<typename StorageType1, typename StorageType2>
-void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::setUp()
+template<typename ValueType>
+void ConvertMatrixStorageBenchmark<ValueType>::setUp()
 {
-    mSourceStorage.prefetch( mSourceStorage.getContextPtr() );
-    mDestinationStorage.prefetch( mDestinationStorage.getContextPtr() );
-    mSourceStorage.wait();
-    mDestinationStorage.wait();
-
-//    mDestinationStorage._MatrixStorage::assign( mSourceStorage );
-    mSourceStorage.buildCSRData( mCsrIA, mCsrJA, mCsrValues );
-
+    mSourceStorage->prefetch( mSourceStorage->getContextPtr() );
+    mSourceStorage->wait();
+ 
+    // no prefetch on target storage required
 }
 
-template<typename StorageType1, typename StorageType2>
-void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::execute()
+template<typename ValueType>
+void ConvertMatrixStorageBenchmark<ValueType>::execute()
 {
-    SCAI_LOG_DEBUG( logger, "execute conversion" )
-
-    mDestinationStorage.setContextPtr( mSourceStorage.getContextPtr() );
-
-    // Note: conversion will be done at context of target matrix mDestinationStorage
-
-    mDestinationStorage.setCSRData( mSourceStorage.getNumRows(), mSourceStorage.getNumColumns(), mCsrJA.size(), mCsrIA,
-                                    mCsrJA, mCsrValues );
-
-    SCAI_LOG_DEBUG( logger, "execute conversion done" )
+    *mTargetStorage = *mSourceStorage;
 }
 
-template<typename StorageType1, typename StorageType2>
-void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::tearDown()
+template<typename ValueType>
+void ConvertMatrixStorageBenchmark<ValueType>::tearDown()
 {
 }
 
-template<typename StorageType1, typename StorageType2>
-void ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::shutdown()
+template<typename ValueType>
+void ConvertMatrixStorageBenchmark<ValueType>::shutdown()
 {
 }
 
-template<typename StorageType1, typename StorageType2>
-CounterType ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::getNumFloatingPointOperations() const
+template<typename ValueType>
+CounterType ConvertMatrixStorageBenchmark<ValueType>::getNumFloatingPointOperations() const
 {
     return 0;
 }
 
-template<typename StorageType1, typename StorageType2>
-CounterType ConvertMatrixStorageBenchmark<StorageType1, StorageType2>::getProcessedBytes() const
+template<typename ValueType>
+CounterType ConvertMatrixStorageBenchmark<ValueType>::getProcessedBytes() const
 {
     return 0;
 }

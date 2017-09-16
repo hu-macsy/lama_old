@@ -70,17 +70,17 @@ int main( void )
 
     for ( size_t i = 0; i < values.size(); ++i )
     {
-        common::unique_ptr<Benchmark> bench( Benchmark::create( values[i] ) );
+        common::unique_ptr<Benchmark> bench( Benchmark::create( values[i], "" ) );
   
         SCAI_LOG_INFO( logger, "Benchmark " << i << " of " << values.size() << ": key = " << values[i] 
-                                << ", Id = " << bench->getId() << ", Name = " << bench->getName() )
+                                << ", Id = " << bench->getCreateId() << ", Name = " << bench->getName() )
 
         if ( i != 0 )
         {
             message << "%,";  // add separator after previous output
         }
 
-        message << bench->getId() << "%_:_%" << bench->getName();
+        message << bench->getCreateId() << "%_:_%" << bench->getArguments();
     }
 
     benchmark::BenchmarkPrinter::print( message.str() );

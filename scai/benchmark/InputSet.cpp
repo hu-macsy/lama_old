@@ -38,6 +38,7 @@
  */
 
 #include <scai/benchmark/InputSet.hpp>
+#include <scai/benchmark/Parser.hpp>
 
 #include <utility>
 #include <iostream>
@@ -117,22 +118,10 @@ void InputSet::setProcessedBytes(
 
 InputSet* InputSet::parseAndCreate( const std::string& specification )
 {
-    std::string::size_type pos1 = specification.find_first_of( " (" );
-    SCAI_ASSERT_NE_ERROR( pos1, std::string::npos, specification << ": no ( found" )
-    std::string::size_type pos2 = specification.find_first_not_of( " (", pos1 );
-    SCAI_ASSERT_NE_ERROR( pos2, std::string::npos, specification << ": no arg found" )
+    std::string keyValue;
+    std::string argument;
 
-    std::string::size_type pos3 = specification.find_first_of( " )", pos2 );
-    if ( pos3 == std::string::npos )
-    {
-        pos3 = specification.length();
-    }
-
-    std::string keyValue = specification.substr( 0, pos1 );
-    std::string argument = specification.substr( pos2, pos3 - pos2  );
-
-    std::cout << "pos1 = " << pos1 << ", pos2 = " << pos2 << ", pos3 = " << pos3 
-              << ", keyValue=<" << keyValue << ">, arg=<" << argument << ">" << std::endl;
+    parseCommand( keyValue, argument, specification );
 
     return create( keyValue, argument );
 }

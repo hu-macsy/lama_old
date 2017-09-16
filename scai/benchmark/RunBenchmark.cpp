@@ -91,7 +91,7 @@ int main( int argc, const char* argv[] )
 
     try
     {
-        bench.reset( Benchmark::create( benchId ) );
+        bench.reset( Benchmark::parseAndCreate( benchId ) );
         benchmark::BenchmarkPrinter::setDoOutput( bench->doOutput() );
         bench->setInputSetId( inputSetId );
         bench->setMinTime( minTime );

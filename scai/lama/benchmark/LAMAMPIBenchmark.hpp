@@ -45,17 +45,9 @@ class LAMAMPIBenchmark: public benchmark::Benchmark
 {
 public:
 
-    LAMAMPIBenchmark();
-
-    LAMAMPIBenchmark( const std::string& id, const std::string& gid );
-
-    LAMAMPIBenchmark( const std::string& id, const std::string& gid, const std::string& arguments );
-
-    LAMAMPIBenchmark( const LAMAMPIBenchmark& other );
+    LAMAMPIBenchmark( const std::string& name, const std::string& gId );
 
     virtual ~LAMAMPIBenchmark();
-
-    LAMAMPIBenchmark& operator=( const LAMAMPIBenchmark& other );
 
     virtual std::string getNumThreads() const;
 

@@ -33,6 +33,7 @@
  */
 
 #include <scai/benchmark/Benchmark.hpp>
+#include <scai/benchmark/Parser.hpp>
 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/OpenMP.hpp>
@@ -48,36 +49,9 @@ namespace benchmark
 
 SCAI_LOG_DEF_LOGGER( Benchmark::logger, "Benchmark" );
 
-Benchmark::Benchmark() :
+Benchmark::Benchmark( const std::string& name, const std::string& gid ) : 
 
-    mMinTime( 0.0 ),
-    mExecutedTime( 0 ),
-    mActNumRep( 0 ),
-    mNumRepitions( 1 ),
-    mSetUpTime( 0.0 ),
-    mTearDownTime( 0.0 )
-{
-    SCAI_LOG_INFO( logger, "Benchmark()" );
-}
-
-Benchmark::Benchmark( const Benchmark& other ) : 
-
-    mName( other.mName ), 
-    mGId( other.mGId ), 
-    mMinTime( other.mMinTime ), 
-    mExecutedTime( 0 ), 
-    mInputSetId( other.mInputSetId ), 
-    mActNumRep( 0 ), 
-    mNumRepitions( other.mNumRepitions ), 
-    mSetUpTime( 0.0 ), 
-    mTearDownTime( 0.0 )
-{
-    SCAI_LOG_INFO( logger, "Benchmark( " << other.mName << ")" );
-}
-
-Benchmark::Benchmark( const std::string& id, const std::string& gid ) : 
-
-    mName( id ), 
+    mName( name ), 
     mGId( gid ), 
     mMinTime( 0.0 ), 
     mExecutedTime( 0 ), 
@@ -86,7 +60,7 @@ Benchmark::Benchmark( const std::string& id, const std::string& gid ) :
     mSetUpTime( 0.0 ), 
     mTearDownTime( 0.0 )
 {
-    SCAI_LOG_INFO( logger, "Benchmark( id = " << id << ", gid = " << gid << " )" );
+    SCAI_LOG_INFO( logger, "Benchmark( id = " << name << ", gid = " << gid << " )" );
 }
 
 Benchmark::~Benchmark()
@@ -97,7 +71,7 @@ void Benchmark::run( std::ostream& out )
 {
     if ( doOutput() )
     {
-        out << "  " << getId() << std::endl;
+        out << "  " << getCreateId() << std::endl;
         out << "  " << getInputSetId() << std::endl;
     }
 
@@ -294,36 +268,6 @@ void Benchmark::synchronize() const
 {
 }
 
-bool Benchmark::operator ==( const Benchmark& other )
-{
-    if ( getId() != other.getId() )
-    {
-        return false;
-    }
-
-    if ( getGid() != other.getGid() )
-    {
-        return false;
-    }
-
-    if ( getName() != other.getName() )
-    {
-        return false;
-    }
-
-    if ( getNumThreads() != other.getNumThreads() )
-    {
-        return false;
-    }
-
-    if ( getInputSetId() != other.getInputSetId() )
-    {
-        return false;
-    }
-
-    return true;
-}
-
 bool Benchmark::CompareGroupIds::operator( )( const Benchmark* const arg1, const Benchmark* const arg2 )
 {
     return arg1->getGid() < arg2->getGid();
@@ -387,6 +331,16 @@ bool Benchmark::LessNumThreads::operator( )( const Benchmark* const arg1, const 
     }
 
     return arg1->getNumThreads() < arg2->getNumThreads();
+}
+
+Benchmark* Benchmark::parseAndCreate( const std::string& specification )
+{
+    std::string keyValue;
+    std::string argument;
+
+    parseCommand( keyValue, argument, specification );
+
+    return create( keyValue, argument );
 }
 
 } //namespace benchmark

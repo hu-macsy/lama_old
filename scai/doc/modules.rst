@@ -95,3 +95,12 @@ In contrary to the other packages this package does not provide a library, but a
 These executable are tools that might be helpful on its own, e.g. generation of matrices and vectors, file conversions, running and testing solvers.
 
 * :ref:`SCAI Tools - Useful Executables  <scaitools:main-page_tools>`
+
+Benchmark
+---------
+
+The benchmark package provides a framework to run benchmarks in a standardized way. It includes a library that
+helps to setup benchmarks and to load and register them dynamically. Furthermore, scripts are provided to
+run them and to present the results in a convenient way.
+
+* :ref:`SCAI Benchmark - Framework to set up and run benchmarks <scaitools:main-page_benchmark>`

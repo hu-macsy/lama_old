@@ -32,6 +32,8 @@
  * @date 15.09.2017
  */
 
+#include <scai/benchmark/Parser.hpp>
+
 #include <scai/lama/benchmark/RandomInputSet.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
@@ -46,40 +48,40 @@ RandomInputSet::RandomInputSet( const std::string arguments ) : LAMAInputSet()
 {
     SCAI_LOG_INFO( logger, "create " << arguments );
 
-    std::istringstream input( arguments );
+    std::vector<std::string> args;
 
-    IndexType size = 0;
-    double fillingGrade = 1.0;
+    tokenize( args, arguments, " ,:" );
+ 
+    SCAI_ASSERT_EQ_ERROR( args.size(), 2, "arguments: " << arguments );
 
-    input >> size >> fillingGrade;
+    IndexType size = std::stoi( args[0] );
+    double fillingGrade = std::stod( args[1] );
 
     SCAI_LOG_INFO( logger, "create( " << arguments << ") : size = " << size << ", fillingGrade = " << fillingGrade );
 
-    if ( size <= 0 )
-    {
-        throw benchmark::BFException( "RandomInputSetCreator creator needs a size to create a InputSet." );
-    };
-
-    if ( input.good() && ( fillingGrade <= 0.0 || fillingGrade > 1.0 ) )
+    if ( fillingGrade <= 0.0 || fillingGrade > 1.0 ) 
     {
         throw benchmark::BFException(
             "RandomInputSetCreator creator needs valid filling grade > 0.0 and <= 1.0 to create a InputSet." );
     }
 
-    if ( input.fail() )
-    {
-        fillingGrade = 1.0;
-    }
-
     mA.reset( new lama::CSRSparseMatrix<double>() );
+
+    SCAI_LOG_INFO( logger, "mA = " << *mA )
 
     lama::MatrixCreator::buildRandom( *mA, size, fillingGrade );
 
+    SCAI_LOG_INFO( logger, "random: mA = " << *mA )
+
     dmemo::DistributionPtr colDistribution = mA->getColDistributionPtr();
+
+    SCAI_LOG_INFO( logger, "col dist = " << *colDistribution )
 
     mX.reset( new lama::DenseVector<double>( colDistribution, 1.0 ) );
 
-    *mY = *mA  * *mX;   // result vector as matrix-vector product
+    SCAI_LOG_INFO( logger, "mX = " << *mX )
+
+    mY.reset( new lama::DenseVector<double>( *mA * *mX ) );
 
     SCAI_LOG_INFO( logger, "created input set: A = " << *mA << ", X = " << *mX << ", Y = " << *mY );
 }

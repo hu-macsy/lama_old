@@ -41,7 +41,8 @@
 #include <memory>
 
 #include <scai/common/config.hpp>
-#include <scai/common/Factory.hpp>
+#include <scai/common/Factory1.hpp>
+#include <scai/common/NonCopyable.hpp>
 
 #include <scai/benchmark/BenchmarkTypes.hpp>
 
@@ -55,37 +56,32 @@ namespace scai
  */
 namespace benchmark
 {
-class COMMON_DLL_IMPORTEXPORT Benchmark : public common::Factory< std::string, Benchmark* >
+
+/** Common base class for all benchmark classes.
+ *
+ *  New benchmark classes must derive from this base class and should register themselves
+ *  at the benchmark factory.
+ */
+class COMMON_DLL_IMPORTEXPORT Benchmark : 
+
+    public common::Factory1< std::string, std::string, Benchmark* >,
+    private common::NonCopyable
 
 {
 public:
-    /**
-     * @brief The constructor creates a default Benchmark-object with default
-     *        values.
-     */
-    Benchmark();
-
-    /** Overrride the default copy constructor as timing is reset */
-
-    Benchmark( const Benchmark& other );
 
     /**
-     * @brief The constructor creates a Benchmark-object.
-     * @param[in] id    The id of this Benchmark.
-     * @param[in] gid   The id of the group of this Benchmark.
+     * @brief Constructor of the base class
+     *
+     * @param[in] name      name of the benchmark used in statistics
+     * @param[in] groupName group name of the benchmark, used for grouping results
      */
-    Benchmark( const std::string& id, const std::string& gid );
+    Benchmark( const std::string& name, const std::string& groupId );
 
     /**
      * @brief The destructor destroys this object and frees all inner resources.
      */
     virtual ~Benchmark();
-
-    /**
-     * @brief Copies this Benchmark.
-     * @return The copy of this benchmark.
-     */
-    virtual Benchmark* copy() const = 0;
 
     /**
      * @brief executes the Benchmark
@@ -113,10 +109,13 @@ public:
     virtual const std::string& getGid() const;
 
     /**
-     * @brief Returns the ID of the benchmark.
-     * @return The id of the benchmark.
+     * @brief Returns the create id of the benchmark, i.e. the class name of the derived benchmark class.
+     *
+     * @return id that has been used to create the benchmark.
      */
-    virtual const std::string& getId() const = 0;
+    virtual const std::string& getCreateId() const = 0;
+
+    virtual const std::string& getArguments() const = 0;
 
     /**
      * @brief Returns the number of threads, if threadded, 'unthreadded' otherwise.
@@ -158,7 +157,7 @@ public:
      * The number of repititions defines, how many times the function execute( )
      * is called.
      *
-     * @param[in] numRepititions The number of repititions.
+     * @param[in] numRepitions The number of repititions.
      */
     void setNumRepitions( const int numRepitions );
 
@@ -249,17 +248,6 @@ public:
     virtual int getNumActualRepititons() const;
 
     /**
-     * @brief Compares this benchmark to another.
-     *
-     * Two benchmarks are the same, if they have the same ID, because the ID of
-     * the benchmark makes it unique.
-     *
-     * @param[in] other The other benchmark.
-     * @return true, if both benchmarks are identical, false, otherwise.
-     */
-    virtual bool operator==( const Benchmark& other );
-
-    /**
      * @brief This struct is used to sort benchmarks according to their group
      *        ids.
      */
@@ -304,6 +292,10 @@ public:
     };
 
     virtual bool doOutput() const;
+
+    /** @brief create of a input set via "Benchmark( argument )" */
+
+    static Benchmark* parseAndCreate( const std::string& specification );
 
 protected:
 
@@ -393,8 +385,9 @@ protected:
      */
     virtual CounterType getProcessedBytes() const = 0;
 
-    /** The id of the expression. */
+    /** Name of this benchmark, used in statistics */
     std::string mName;
+
     /** The id of the group. */
     std::string mGId;
     /** The number of threads on which the benchmark will be executed. */
@@ -413,6 +406,11 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 
 private:
+
+    /**
+     * @brief Disable the default constructor.
+     */
+    Benchmark();
 
     int mNumRepitions;
     double mSetUpTime;

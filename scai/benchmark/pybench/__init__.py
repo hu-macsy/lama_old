@@ -558,7 +558,7 @@ def main( ):
 	if listbenchmarks and listinputsets:
 		table = texttable.Texttable( 0 )
 		table.set_deco( texttable.Texttable.BORDER | texttable.Texttable.HEADER | texttable.Texttable.VLINES )
-		table.header( ['Benchmark ID','Benchmark Name','   ','Registered InputSets'] )
+		table.header( ['Benchmark ID','Benchmark Arguments','   ','Registered InputSets'] )
 		i = 0
 		for key,value in benchmarkMap['BENCHMARKS'].iteritems( ):
 			row = [ key,value,'' ]
@@ -577,7 +577,7 @@ def main( ):
 	elif listbenchmarks:
 		table = texttable.Texttable( 0 )
                 table.set_deco( texttable.Texttable.BORDER | texttable.Texttable.HEADER | texttable.Texttable.VLINES )
-		table.header( ['Benchmark ID','Benchmark Name'] )
+		table.header( ['Benchmark ID','Benchmark Arguments'] )
 		for key,value in benchmarkMap['BENCHMARKS'].iteritems( ):
                         table.add_row( [ key,value, ] )
 		print table.draw( )

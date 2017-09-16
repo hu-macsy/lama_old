@@ -45,26 +45,12 @@ namespace scai
 
 SCAI_LOG_DEF_LOGGER( LAMAMPIBenchmark::logger, "Benchmark.MPIBenchmark" );
 
-LAMAMPIBenchmark::LAMAMPIBenchmark()
-    : benchmark::Benchmark()
-{
-    mComm = dmemo::Communicator::getCommunicatorPtr();
-    SCAI_LOG_INFO( logger, "Communicator created for Benchmark: " << *mComm );
-    readConfig();
-}
+LAMAMPIBenchmark::LAMAMPIBenchmark( const string& name, const string& gId ) : benchmark::Benchmark( name, gId )
 
-LAMAMPIBenchmark::LAMAMPIBenchmark( const string& id, const string& gid )
-    : benchmark::Benchmark( id, gid )
 {
     mComm = dmemo::Communicator::getCommunicatorPtr();
     SCAI_LOG_INFO( logger,
-                   "Communicator created for Benchmark (id = " << id << ", gid = " << gid << ") : " << *mComm );
-    readConfig();
-}
-
-LAMAMPIBenchmark::LAMAMPIBenchmark( const LAMAMPIBenchmark& other )
-    : benchmark::Benchmark( other ), mComm( other.mComm )
-{
+                   "Communicator created for Benchmark( name = " << name << ", group = " << gId << ") : " << *mComm );
     readConfig();
 }
 
@@ -154,13 +140,6 @@ void LAMAMPIBenchmark::synchronize() const
 LAMAMPIBenchmark::~LAMAMPIBenchmark()
 {
     mComm.reset();
-}
-
-LAMAMPIBenchmark& LAMAMPIBenchmark::operator=( const LAMAMPIBenchmark& other )
-{
-    benchmark::Benchmark::operator ==( other );
-    mComm = other.mComm;
-    return *this;
 }
 
 std::string LAMAMPIBenchmark::getNumThreads() const
