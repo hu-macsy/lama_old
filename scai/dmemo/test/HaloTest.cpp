@@ -41,6 +41,7 @@
 #include <scai/dmemo/HaloBuilder.hpp>
 #include <scai/dmemo/Communicator.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/common/test/TestMacros.hpp>
 
@@ -172,6 +173,114 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         const IndexType haloIndex = halo.global2halo( requiredIndexes[i] );
         BOOST_CHECK( common::Utils::validIndex( haloIndex, halo.getHaloSize() ) );
     }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildHaloWithPartnerTest )
+{
+    IndexType partner = -1;
+    if (rank % 2 == 0 && rank < rightNeighbor) {
+        partner = rightNeighbor;
+    } else if (rank % 2 == 1 && rank > leftNeighbor) {
+        partner = leftNeighbor;
+    }
+
+    //TODO: define own list of requiredIndexes
+    HArray<IndexType> indexesFromPartner(1,partner);
+    HArray<IndexType> providesIndexesToPartner(1, rank);
+    if (partner >= 0) {
+        Halo halo2;
+        HaloBuilder::build( *dist, indexesFromPartner, providesIndexesToPartner, partner, halo2 );
+    
+
+        const IndexType noReqIndexes = static_cast<IndexType>( indexesFromPartner.size() );
+
+        const Halo& haloRef = halo2;
+        const CommunicationPlan& requiredPlan = haloRef.getRequiredPlan();
+        const CommunicationPlan& providesPlan = haloRef.getProvidesPlan();
+
+        // check for a correct required plan
+
+        IndexType offsetCheck = 0;
+
+        for ( PartitionId p = 0; p < requiredPlan.size(); ++p )
+        {
+            IndexType n = requiredPlan[p].quantity;
+            BOOST_CHECK_EQUAL( ( IndexType ) 1, n );
+            PartitionId neighbor = requiredPlan[p].partitionId;
+            BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
+            BOOST_CHECK_EQUAL( requiredPlan[p].offset, offsetCheck );
+            offsetCheck += n;
+        }
+
+        BOOST_CHECK_EQUAL( noReqIndexes, requiredPlan.totalQuantity() );
+
+        // check for a correct provide plan
+
+        offsetCheck = 0;
+        PartitionId nProvides = providesPlan.size();
+
+        for ( PartitionId p = 0; p < nProvides; ++p )
+        {
+            IndexType n = providesPlan[p].quantity;
+            BOOST_CHECK_EQUAL( n, static_cast<IndexType>( 1 ) );
+            PartitionId neighbor = providesPlan[p].partitionId;
+            BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
+            BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
+            offsetCheck += n;
+        }
+
+        // we have a symmetric halo exchange
+        BOOST_CHECK_EQUAL( noReqIndexes, providesPlan.totalQuantity() );
+
+        const ReadAccess<IndexType> providesIndexes( haloRef.getProvidesIndexes() );
+
+        for ( PartitionId p = 0; p < providesPlan.size(); ++p )
+        {
+            const IndexType* indexes = providesIndexes + providesPlan[p].offset;
+            IndexType expectedLocalIndex = rank;
+            BOOST_CHECK_EQUAL( expectedLocalIndex, dist->local2global( indexes[0] ) );
+        }
+
+        BOOST_CHECK_EQUAL( noReqIndexes, halo2.getHaloSize() );
+
+        const IndexType haloIndex = halo2.global2halo( partner );
+        BOOST_CHECK( common::Utils::validIndex( haloIndex, halo2.getHaloSize() ) );
+    }
+    
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( buildFromTargetsTest )
+{
+    IndexType size = 1000;
+    IndexType chunkSize = 1;
+    DistributionPtr distBlock( new BlockDistribution(size, comm) );
+    DistributionPtr distCyclic( new CyclicDistribution( size, chunkSize, comm ) );
+
+    IndexType blockLocalSize = distBlock->getLocalSize();
+    HArray<IndexType> targets(blockLocalSize);
+    {
+        WriteAccess<IndexType> wTargets(targets);
+
+        for (IndexType i = 0; i < blockLocalSize; i++)
+        {
+            wTargets[i] = distCyclic->getAnyOwner(distBlock->local2global(i));
+        }
+    }
+
+    Halo targetHalo;
+    HaloBuilder::buildFromTargets( targets, *distBlock, targetHalo );
+
+    for (IndexType i = 0; i < distCyclic->getLocalSize(); i++) {
+        IndexType globalI = distCyclic->local2global(i);
+        IndexType haloIndex = targetHalo.global2halo(globalI);
+        IndexType localIndex = distBlock->global2local(globalI);
+        BOOST_CHECK(haloIndex != nIndex || localIndex != nIndex);
+    }
+    
 }
 
 /* --------------------------------------------------------------------- */
