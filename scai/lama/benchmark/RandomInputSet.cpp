@@ -44,20 +44,30 @@ namespace scai
 namespace lama
 {
 
-RandomInputSet::RandomInputSet( const std::string arguments ) : LAMAInputSet()
+RandomInputSet::RandomInputSet( const std::string argument ) : 
+
+    LAMAInputSet(), 
+    mArgument( argument )
+
 {
-    SCAI_LOG_INFO( logger, "create " << arguments );
+    SCAI_LOG_INFO( logger, "create " << argument << ", must be <size>, <fillingGrade>" );
 
-    std::vector<std::string> args;
+    std::vector<std::string> argToken;
 
-    tokenize( args, arguments, " ,:" );
+    if ( argument == "" )
+    {
+        mArgument = "100, 0.1";   // default value without string
+    }
+
+    tokenize( argToken, mArgument, " ,:" );
  
-    SCAI_ASSERT_EQ_ERROR( args.size(), 2, "arguments: " << arguments );
+    SCAI_ASSERT_EQ_ERROR( argToken.size(), 2, "arguments: " << mArgument );
 
-    IndexType size = std::stoi( args[0] );
-    double fillingGrade = std::stod( args[1] );
+    IndexType size = std::stoi( argToken[0] );
 
-    SCAI_LOG_INFO( logger, "create( " << arguments << ") : size = " << size << ", fillingGrade = " << fillingGrade );
+    double fillingGrade = std::stod( argToken[1] );
+
+    SCAI_LOG_INFO( logger, "create( " << mArgument << ") : size = " << size << ", fillingGrade = " << fillingGrade );
 
     if ( fillingGrade <= 0.0 || fillingGrade > 1.0 ) 
     {
@@ -97,6 +107,17 @@ std::string RandomInputSet::createValue()
 {
     std::string id = "Random";
     return id;
+}
+
+const std::string& RandomInputSet::getCreateId() const
+{
+    static std::string id = createValue();
+    return id;
+}
+
+const std::string& RandomInputSet::getArgument() const
+{
+    return mArgument;
 }
 
 }

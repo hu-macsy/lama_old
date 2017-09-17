@@ -1,5 +1,5 @@
 /**
- * @file LAMAFileInputSet.cpp
+ * @file FileInputSet.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,13 +27,15 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief LAMAFileInputSet.cpp
+ * @brief FileInputSet.cpp
  * @author Thomas Brandes
  * @date 15.09.2017
  */
 
-#include <scai/lama/benchmark/LAMAFileInputSet.hpp>
+#include <scai/lama/benchmark/FileInputSet.hpp>
+
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
+#include <scai/lama/io/FileIO.hpp>
 
 namespace scai
 {
@@ -41,39 +43,57 @@ namespace scai
 namespace lama
 {
 
-LAMAFileInputSet::LAMAFileInputSet( const std::string filename ) : LAMAInputSet()
+FileInputSet::FileInputSet( const std::string filename ) : LAMAInputSet()
 {
-    std::string file;
-
     if ( filename.find( "/" ) == 0 )
     { 
-        file = filename;
+        mFileName = filename;
     }
     else
     {
         std::string prefix = benchmark::Config::getInstance().getValueOf( "path" );
-        file = prefix + filename;
+        mFileName = prefix + filename;
     }
 
     mAlpha = 1.0;
     mBeta  = 1.0;
 
-    mA.reset( new CSRSparseMatrix<double>( file ) );
-    mX.reset( new DenseVector<double>( mA->getNumColumns(), 1.0 ) );
-    mY.reset( new DenseVector<double>( *mA * *mX  ) );
+    if ( FileIO::fileExists( mFileName ) )
+    {
+        mA.reset( new CSRSparseMatrix<double>( mFileName ) );
+        mX.reset( new DenseVector<double>( mA->getNumColumns(), 1.0 ) );
+        mY.reset( new DenseVector<double>( *mA * *mX  ) );
+    }
+    else
+    {
+        // do not throw an error, as input set might be created to query arguments
+
+        mFileName = "<valid filename>";
+    }
 }
 
-benchmark::InputSet* LAMAFileInputSet::create( const std::string argument )
+benchmark::InputSet* FileInputSet::create( const std::string argument )
 {
     // argment is take as correspoding file name
 
-    return new LAMAFileInputSet( argument );
+    return new FileInputSet( argument );
 }
 
-std::string LAMAFileInputSet::createValue()
+std::string FileInputSet::createValue()
 {
     std::string id = "File";
     return id;
+}
+
+const std::string& FileInputSet::getCreateId() const
+{
+    static std::string id = createValue();
+    return id;
+}
+
+const std::string& FileInputSet::getArgument() const
+{
+    return mFileName;
 }
 
 }

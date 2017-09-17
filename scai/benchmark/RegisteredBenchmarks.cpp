@@ -80,7 +80,7 @@ int main( void )
             message << "%,";  // add separator after previous output
         }
 
-        message << bench->getCreateId() << "%_:_%" << bench->getArguments();
+        message << bench->getCreateId() << "%_:_%" << bench->getArgument();
     }
 
     benchmark::BenchmarkPrinter::print( message.str() );

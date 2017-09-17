@@ -1,5 +1,5 @@
 /**
- * @file LAMAFileInputSet.hpp
+ * @file FileInputSet.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,15 +27,15 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief LAMAFileInputSet.hpp
+ * @brief FileInputSet.hpp
  * @author Thomas Brandes
  * @date 15.09.2017
  */
 
 #pragma once
 
-#include <scai/benchmark.hpp>
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
+#include <scai/benchmark.hpp>
 
 #include <string>
 
@@ -47,21 +47,38 @@ namespace lama
 
 /** Derived class of LAMAInputSet that creates the data by an input file */
 
-class LAMAFileInputSet: public  LAMAInputSet, 
-                        private benchmark::InputSet::Register<LAMAFileInputSet>
+class FileInputSet: public  LAMAInputSet, 
+                    private benchmark::InputSet::Register<FileInputSet>
 {
 public:
 
-    /** Constructor of a file input set */
+    /** Constructor of a file input set
+     *
+     *  This method does not throw an error if the filename does not exist but the
+     *  LAMAInputSet remains empty.
+     */
+    FileInputSet( const std::string filename );
 
-    LAMAFileInputSet( const std::string filename );
+    /** Implemenation of method that returns the key for creating an object via the factory. */
 
     static std::string createValue();
 
-    /** Static method required for create, callsed by InputSet::create( LAMAFileInputSet::createValue(), argument ) */
+    /** Implementation of pure method InputSet::getCreateId()   */
+
+    virtual const std::string& getCreateId() const;
+
+    /** Static method required for create, called by InputSet::create( InputSet::createValue(), argument ) */
 
     static InputSet* create( const std::string argument );
 
+    /**
+     * @brief Implementation of pure method InputSet::getArgument()
+     */
+    virtual const std::string& getArgument() const;
+
+private:
+
+    std::string mFileName;
 };
 
 }

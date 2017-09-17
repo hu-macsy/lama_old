@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Benchmark.hpp
+ * @brief Definition of a common base class for all benchmarks.
  * @author Jiri Kraus, Thomas Brandes
  * @date 04.05.2010, revised 14.09.2017
  */
@@ -61,6 +61,9 @@ namespace benchmark
  *
  *  New benchmark classes must derive from this base class and should register themselves
  *  at the benchmark factory.
+ *
+ *  Each derived benchmark class must implement certain routines so that it can be
+ *  called in a unified manner.
  */
 class COMMON_DLL_IMPORTEXPORT Benchmark : 
 
@@ -106,7 +109,7 @@ public:
      * @brief Returns the name of the group, the benchmark belongs to.
      * @return The name of the group.
      */
-    virtual const std::string& getGid() const;
+    virtual const std::string& getGroup() const;
 
     /**
      * @brief Returns the create id of the benchmark, i.e. the class name of the derived benchmark class.
@@ -115,7 +118,10 @@ public:
      */
     virtual const std::string& getCreateId() const = 0;
 
-    virtual const std::string& getArguments() const = 0;
+    /**
+     * @brief Return the argument string that has been used to create the benchmark.
+     */
+    virtual const std::string& getArgument() const = 0;
 
     /**
      * @brief Returns the number of threads, if threadded, 'unthreadded' otherwise.
@@ -295,7 +301,7 @@ public:
 
     /** @brief create of a input set via "Benchmark( argument )" */
 
-    static Benchmark* parseAndCreate( const std::string& specification );
+    static Benchmark* createWithArgument( const std::string& specification );
 
 protected:
 
@@ -386,10 +392,10 @@ protected:
     virtual CounterType getProcessedBytes() const = 0;
 
     /** Name of this benchmark, used in statistics */
-    std::string mName;
+    std::string mName;  
 
-    /** The id of the group. */
-    std::string mGId;
+    std::string mGroup;  //!< The name of the group
+
     /** The number of threads on which the benchmark will be executed. */
     int mNumThreads;
     /** The minimum runtime. */

@@ -77,7 +77,7 @@ class PMVBenchmark:
 {
 public:
 
-    PMVBenchmark( const std::string& arguments );
+    PMVBenchmark( const std::string& argument );
 
     virtual ~PMVBenchmark();
 
@@ -89,15 +89,15 @@ public:
 
     virtual const std::string& getCreateId() const;
 
-    /** Implementation of pure method Benchmark::getArguments()   */
+    /** Implementation of pure method Benchmark::getArgument()   */
 
-    virtual const std::string& getArguments() const;
+    virtual const std::string& getArgument() const;
 
     static std::string createValue();
 
-    static Benchmark* create( const std::string arguments )
+    static Benchmark* create( const std::string argument )
     {
-        return new PMVBenchmark( arguments );
+        return new PMVBenchmark( argument );
     }
 
 protected:
@@ -112,7 +112,6 @@ protected:
     virtual CounterType getProcessedBytes() const;
 
     using benchmark::Benchmark::mName;
-    using benchmark::Benchmark::mGId;
 
     using LAMAMPIBenchmark::mComm;
 
@@ -136,7 +135,7 @@ private:
     CounterType mNumProcessedBytesFloat;
     CounterType mNumProcessedBytesDouble;
 
-    std::string mArguments;  // arguments used for creating this benchmark
+    std::string mArgument;  // argument used for creating this benchmark
 };
 
 }

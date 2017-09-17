@@ -65,16 +65,16 @@ public:
     typedef std::map<std::string,unsigned long> ComplexityMap;
 
     /**
-     * @brief Creates this object with the given id.
-     * @param[in] id The unique id of this InputSet.
-     */
-    InputSet( const std::string& id );
-    /**
-     * @brief Creates this object with the given id and the given name.
-     * @param[in] id    The unique id of this InputSet.
+     * @brief Creates this object with the given name and the given group.
+     *
      * @param[in] name  The name of this InputSet.
+     * @param[in] group The group to which this input set belongs.
+     *
+     * The group might be useful to reinterpret cast an InputSet pointer to a 
+     * derived class pointer.
      */
-    InputSet( const std::string& id, const std::string& name );
+    InputSet( const std::string& name, const std::string& group );
+
     /**
      * @brief Default Destructor. Frees or destroys all inner ressources, if
      *        necessary.
@@ -89,13 +89,22 @@ public:
      * @brief Returns the id of the InputSet.
      * @return The unique id of the InputSet.
      */
-    const std::string& getId() const;
+    virtual const std::string& getCreateId() const = 0;
 
     /**
      * @brief Returns the name of the InputSet.
      * @return The name of the InputSet.
      */
     const std::string& getName() const;
+
+    /** Query method for the name of the group to which this input set belongs */
+
+    const std::string& getGroup() const;
+
+    /**
+     * @brief Return the argument string that has been used to create the input set.
+     */
+    virtual const std::string& getArgument() const = 0;
 
     /**
      * @brief Returns the number of floating point operations of the group with
@@ -135,12 +144,19 @@ public:
 
     /** @brief create of a input set via "KeyId( argument )" */
 
-    static InputSet* parseAndCreate( const std::string& specification );
+    static InputSet* createWithArgument( const std::string& specification );
+
+protected:
+
+    /** Derived classes might reset the name of the input set  */
+
+    void resetName( const std::string& name );
 
 private:
 
-    const std::string mId;
-    const std::string mName;
+    std::string mName;
+
+    const std::string mGroup;
 
     ComplexityMap mFlopMap;
 

@@ -61,6 +61,19 @@ public:
     /** Static method required for create, callsed by InputSet::create( RandomInputSet::createValue(), argument ) */
 
     static InputSet* create( const std::string argument );
+
+    /** Implementation of pure method InputSet::getCreateId()  */
+
+    virtual const std::string& getCreateId() const;
+
+    /** Implementation of pure method InputSet::getArgument()  */
+
+    virtual const std::string& getArgument() const;
+
+private:
+
+    std::string mArgument;
+
 };
 
 }

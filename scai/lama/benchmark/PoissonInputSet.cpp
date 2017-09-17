@@ -44,29 +44,22 @@ namespace scai
 namespace lama
 {
 
-PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
+void PoissonInputSet::parsePoissonSpecification()
 {
-    SCAI_LOG_INFO( logger, "create, params = " << params );
-
     std::vector<std::string> args;   // tokens of 2D5P_10000_10
 
-    common::Settings::tokenize( args, params, "_" );
+    common::Settings::tokenize( args, mArgument, "_" );
 
     if ( args.size() < 2 || args.size() > 4 )
     {
         std::ostringstream message;
         message << "PoissonInputSetCreator::create( ): Wrong number of " << "parameters (" << args.size()
-                << "). Expected:" << std::endl << "    aDbP_dimX_dimY_dimZ," << std::endl
-                << "where a is in (1, 2, 3) and b is in (3, 5, 7, 9, 19, 27) and dimY "
+                << "). Expected:" << std::endl << "    aDbP_sizeX_sizeY_sizeZ," << std::endl
+                << "where a is in (1, 2, 3) and b is in (3, 5, 7, 9, 19, 27) and sizeY "
                 << "and dimZ are needed in case of unequality to one, only." << std::endl;
         throw benchmark::BFException( message.str() );
     }
 
-    IndexType stencilType;
-    IndexType dimension;
-    IndexType dimX;
-    IndexType dimY = 1;
-    IndexType dimZ = 1;
     std::vector<std::string> vals;
 
     if ( args[0].find( 'D', 0 ) == std::string::npos || args[0].find( 'P', 0 ) == std::string::npos )
@@ -88,9 +81,9 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
     }
 
     std::istringstream convert( vals[0] );
-    convert >> dimension;
+    convert >> mDimension;
 
-    SCAI_LOG_DEBUG( logger, "Stencil dimension = " << dimension );
+    SCAI_LOG_DEBUG( logger, "Stencil dimension = " << mDimension );
 
     if ( convert.fail() )
     {
@@ -104,7 +97,7 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
 
     convert.clear();
     convert.str( vals[0] );
-    convert >> stencilType;
+    convert >> mStencilType;
 
     if ( convert.fail() )
     {
@@ -116,19 +109,19 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
 
     convert.clear();
 
-    if ( dimension != ( IndexType ) args.size() - 1 )
+    if ( mDimension != ( IndexType ) args.size() - 1 )
     {
         std::ostringstream message;
-        message << "PoissonInputSetCreator::create( ): '" << params << "' said " << "to have " << dimension
+        message << "PoissonInputSetCreator::create( ): '" << mArgument << "' said " << "to have " << mDimension
                 << " dimensions, but had " << ( args.size() - 1 ) << " dimension parameters." << std::endl;
         throw benchmark::BFException( message.str() );
     }
 
-    switch ( dimension )
+    switch ( mDimension )
     {
         case 3:
             convert.str( args[3] );
-            convert >> std::dec >> dimZ;
+            convert >> std::dec >> mSizeZ;
 
             if ( convert.fail() )
             {
@@ -141,7 +134,7 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
             convert.clear();
         case 2:
             convert.str( args[2] );
-            convert >> std::dec >> dimY;
+            convert >> std::dec >> mSizeY;
 
             if ( convert.fail() )
             {
@@ -154,7 +147,7 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
             convert.clear();
         case 1:
             convert.str( args[1] );
-            convert >> std::dec >> dimX;
+            convert >> std::dec >> mSizeX;
 
             if ( convert.fail() )
             {
@@ -168,26 +161,49 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
             break;
         default:
             std::ostringstream message;
-            message << "PoissonInputSetCreator::create( ): Invalid number of " << "dimensions (" << dimension
+            message << "PoissonInputSetCreator::create( ): Invalid number of " << "dimensions (" << mDimension
                     << "). Expected 1, 2 or 3." << std::endl;
             throw benchmark::BFException( message.str() );
     }
 
-    SCAI_LOG_INFO( logger, "dimX = " << dimX << ", dimY = " << dimY << ", dimZ = " << dimZ );
+}
+
+PoissonInputSet::PoissonInputSet( const std::string argument ) : 
+
+    LAMAInputSet(),
+    mArgument( argument ),
+    mDimension( 1 ),
+    mStencilType( 3 ),
+    mSizeX( 100 ),
+    mSizeY(  1  ),
+    mSizeZ(  1  )
+
+{
+    SCAI_LOG_INFO( logger, "create, argument = " << argument );
+
+    if ( argument == "" )
+    {
+        mArgument = "2D5P_100_150";
+    }
+
+    parsePoissonSpecification();
+
+    SCAI_LOG_INFO( logger, "Stencil: #dim = " << mDimension << ", type = " << mStencilType
+                            << ", size = " << mSizeX << " x " << mSizeY << " x " << mSizeZ );
 
     bool exception = false;
 
-    if ( dimZ == 1 && dimY == 1 )
+    if ( mSizeZ == 1 && mSizeY == 1 )
     {
-        exception = ( stencilType != 3 );
+        exception = ( mStencilType != 3 );
     }
-    else if ( dimZ == 1 )
+    else if ( mSizeZ == 1 )
     {
-        exception = ( stencilType != 5 && stencilType != 9 );
+        exception = ( mStencilType != 5 && mStencilType != 9 );
     }
-    else if ( dimZ >= 1 && dimY >= 1 )
+    else if ( mSizeZ >= 1 && mSizeY >= 1 )
     {
-        exception = ( stencilType != 7 && stencilType != 19 && stencilType != 27 );
+        exception = ( mStencilType != 7 && mStencilType != 19 && mStencilType != 27 );
     }
     else
     {
@@ -209,7 +225,7 @@ PoissonInputSet::PoissonInputSet( const std::string params ) : LAMAInputSet()
 
     mA.reset( new lama::CSRSparseMatrix<double>() );
 
-    lama::MatrixCreator::buildPoisson( *mA, dimension, stencilType, dimX, dimY, dimZ );
+    lama::MatrixCreator::buildPoisson( *mA, mDimension, mStencilType, mSizeX, mSizeY, mSizeZ );
 
     dmemo::DistributionPtr rowDistribution = mA->getRowDistributionPtr();
     dmemo::DistributionPtr colDistribution = mA->getColDistributionPtr();
@@ -231,6 +247,17 @@ std::string PoissonInputSet::createValue()
 {
     std::string id = "Poisson";
     return id;
+}
+
+const std::string& PoissonInputSet::getCreateId() const
+{
+    static std::string id = createValue();
+    return id;
+}
+
+const std::string& PoissonInputSet::getArgument() const
+{
+    return mArgument;
 }
 
 }

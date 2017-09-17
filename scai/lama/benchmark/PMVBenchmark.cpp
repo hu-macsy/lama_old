@@ -52,7 +52,7 @@ const std::string& PMVBenchmark::getGroupId()
     return id;
 }
 
-PMVBenchmark::PMVBenchmark( const std::string& arguments ) :
+PMVBenchmark::PMVBenchmark( const std::string& argument ) :
 
     LAMAMPIBenchmark( getCreateId(), getGroupId() ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
@@ -64,16 +64,16 @@ PMVBenchmark::PMVBenchmark( const std::string& arguments ) :
 
     std::vector<std::string> argTokens;
 
-    if ( arguments == "" )
+    if ( argument == "" )
     {
         tokenize( argTokens, "CSR double", " ,:" );
     }
     else
     {
-        tokenize( argTokens, arguments, " ,:" );
+        tokenize( argTokens, argument, " ,:" );
     }
 
-    SCAI_ASSERT_EQ_ERROR( argTokens.size(), 2, "format, type expected as arguments" )
+    SCAI_ASSERT_EQ_ERROR( argTokens.size(), 2, "format, type expected as argument" )
 
     Matrix::MatrixStorageFormat format = str2Format( argTokens[0].c_str() );
 
@@ -85,7 +85,7 @@ PMVBenchmark::PMVBenchmark( const std::string& arguments ) :
     mVectorX.reset( _DenseVector::create( type ) );
     mVectorY.reset( _DenseVector::create( type ) );
 
-    mArguments = argTokens[0] + ", " + argTokens[1];
+    mArgument = argTokens[0] + ", " + argTokens[1];
 }
 
 PMVBenchmark::~PMVBenchmark()
@@ -109,9 +109,9 @@ const std::string& PMVBenchmark::getCreateId() const
     return id;
 }
 
-const std::string& PMVBenchmark::getArguments() const
+const std::string& PMVBenchmark::getArgument() const
 {
-    return mArguments;
+    return mArgument;
 }
 
 std::string PMVBenchmark::createValue() 
@@ -202,11 +202,11 @@ void PMVBenchmark::initialize()
 
     // mInputSetId = "inputSetId( argument )" must also be parsed ( "inputSetId", "argument" )
 
-    mInputSet.reset( benchmark::InputSet::parseAndCreate( mInputSetId ) );
+    mInputSet.reset( benchmark::InputSet::createWithArgument( mInputSetId ) );
 
     SCAI_LOG_ERROR( logger, "input set: " << *mInputSet )
 
-    SCAI_ASSERT_EQ_ERROR( mInputSet->getId(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
+    SCAI_ASSERT_EQ_ERROR( mInputSet->getGroup(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
 
     // Now it is safe to cast
 

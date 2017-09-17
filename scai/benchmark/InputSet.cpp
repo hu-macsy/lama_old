@@ -49,13 +49,10 @@ namespace scai
 namespace benchmark
 {
 
-InputSet::InputSet( const std::string& id )
-    : mId( id ), mName( id )
-{
-}
+InputSet::InputSet( const std::string& name, const std::string& group ) :
 
-InputSet::InputSet( const std::string& id, const std::string& name )
-    : mId( id ), mName( name )
+    mName( name ),
+    mGroup( group )
 {
 }
 
@@ -63,19 +60,24 @@ InputSet::~InputSet()
 {
 }
 
-const std::string& InputSet::getId() const
-{
-    return mId;
-}
-
 const std::string& InputSet::getName() const
 {
     return mName;
 }
 
+void InputSet::resetName( const std::string& name )
+{
+    mName = name;
+}
+
+const std::string& InputSet::getGroup() const
+{
+    return mGroup;
+}
+
 void InputSet::writeAt( std::ostream& stream ) const
 {
-    stream << "InputSet( id = " << mId << ", name = " << mName << " )";
+    stream << "InputSet( name = " << mName << ", group = " << mGroup << " )";
 }
 
 unsigned long InputSet::getNumFloatingPointOperations( const std::string& gid ) const
@@ -116,7 +118,7 @@ void InputSet::setProcessedBytes(
     mBWMap[sizeOfValueType][gid] = numBytes;
 }
 
-InputSet* InputSet::parseAndCreate( const std::string& specification )
+InputSet* InputSet::createWithArgument( const std::string& specification )
 {
     std::string keyValue;
     std::string argument;

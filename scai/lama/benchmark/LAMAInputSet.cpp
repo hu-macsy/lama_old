@@ -42,7 +42,7 @@ namespace lama
 
 SCAI_LOG_DEF_LOGGER( LAMAInputSet::logger, "InputSet.LAMAInputSet" );
 
-LAMAInputSet::LAMAInputSet() : InputSet( "LAMAInputSet" )
+LAMAInputSet::LAMAInputSet() : InputSet( "", "LAMAInputSet" )
 {
     mAlpha = 1.0;
     mBeta  = 1.0;

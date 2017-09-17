@@ -45,7 +45,7 @@ namespace scai
 namespace lama
 {
 
-/** Derived class of LAMAInputSet that creates the data by a stencil matrix */
+/** Derived class of LAMAInputSet that creates the input data as a stencil matrix */
 
 class PoissonInputSet: public  LAMAInputSet, 
                        private benchmark::InputSet::Register<PoissonInputSet>
@@ -63,6 +63,30 @@ public:
     /** Static method required for create, called by InputSet::create( PoissonInputSet::createValue(), argument ) */
 
     static InputSet* create( const std::string argument );
+
+    /** Implementation of pure method InputSet::getCreateId()   */
+
+    virtual const std::string& getCreateId() const;
+
+    /** Implementation of pure method InputSet::getArgument() */
+
+    virtual const std::string& getArgument() const;
+
+private:
+
+    std::string mArgument;
+
+    IndexType mDimension;     // dimension of stencil
+
+    IndexType mStencilType;   // type points for stencils
+
+    IndexType mSizeX;         // size of first dimensions
+    IndexType mSizeY;         // size of 2nd dimenion, 1 if mDimension < 2
+    IndexType mSizeZ;         // size of 3rd dimenion, 1 if mDimension < 3
+
+    // subroutine to parse the argument into a stencil specification, e.g. 2D5P_100_150 
+
+    void parsePoissonSpecification();
 };
 
 }

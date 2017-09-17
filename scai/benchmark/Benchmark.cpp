@@ -49,10 +49,10 @@ namespace benchmark
 
 SCAI_LOG_DEF_LOGGER( Benchmark::logger, "Benchmark" );
 
-Benchmark::Benchmark( const std::string& name, const std::string& gid ) : 
+Benchmark::Benchmark( const std::string& name, const std::string& group ) : 
 
     mName( name ), 
-    mGId( gid ), 
+    mGroup( group ), 
     mMinTime( 0.0 ), 
     mExecutedTime( 0 ), 
     mActNumRep( 0 ), 
@@ -60,7 +60,7 @@ Benchmark::Benchmark( const std::string& name, const std::string& gid ) :
     mSetUpTime( 0.0 ), 
     mTearDownTime( 0.0 )
 {
-    SCAI_LOG_INFO( logger, "Benchmark( id = " << name << ", gid = " << gid << " )" );
+    SCAI_LOG_INFO( logger, "Benchmark( name = " << name << ", group = " << group << " )" );
 }
 
 Benchmark::~Benchmark()
@@ -116,9 +116,9 @@ const std::string& Benchmark::getName() const
     return mName;
 }
 
-const std::string& Benchmark::getGid() const
+const std::string& Benchmark::getGroup() const
 {
-    return mGId;
+    return mGroup;
 }
 
 std::string Benchmark::getNumThreads() const
@@ -270,7 +270,7 @@ void Benchmark::synchronize() const
 
 bool Benchmark::CompareGroupIds::operator( )( const Benchmark* const arg1, const Benchmark* const arg2 )
 {
-    return arg1->getGid() < arg2->getGid();
+    return arg1->getGroup() < arg2->getGroup();
 }
 
 bool Benchmark::CompareInputSetIds::operator( )( const Benchmark* const arg1, const Benchmark* const arg2 )
@@ -333,7 +333,7 @@ bool Benchmark::LessNumThreads::operator( )( const Benchmark* const arg1, const 
     return arg1->getNumThreads() < arg2->getNumThreads();
 }
 
-Benchmark* Benchmark::parseAndCreate( const std::string& specification )
+Benchmark* Benchmark::createWithArgument( const std::string& specification )
 {
     std::string keyValue;
     std::string argument;

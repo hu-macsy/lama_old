@@ -73,12 +73,19 @@ int main( void )
     {
         SCAI_LOG_INFO( logger, "  Registered values[" << i << "] = " << values[i]  )
 
-        if ( i > 0 ) 
+        common::unique_ptr<InputSet> input( InputSet::create( values[i], "" ) );
+
+        SCAI_LOG_INFO( logger, "InputSet " << i << " of " << values.size() << ": key = " << values[i]
+                                << ", Id = " << input->getGroup() << ", Name = " << input->getName() )
+
+        SCAI_ASSERT_EQ_ERROR( values[i], input->getCreateId(), "Illegally registered input set" )
+
+        if ( i != 0 )
         {
-            message << "%,";
+            message << "%,";  // add separator after previous output
         }
 
-        message << values[i];
+        message << input->getCreateId() << "%_:_%" << input->getArgument();
     }
 
     benchmark::BenchmarkPrinter::print( message.str() );

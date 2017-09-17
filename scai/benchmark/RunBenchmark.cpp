@@ -91,7 +91,7 @@ int main( int argc, const char* argv[] )
 
     try
     {
-        bench.reset( Benchmark::parseAndCreate( benchId ) );
+        bench.reset( Benchmark::createWithArgument( benchId ) );
         benchmark::BenchmarkPrinter::setDoOutput( bench->doOutput() );
         bench->setInputSetId( inputSetId );
         bench->setMinTime( minTime );
@@ -120,7 +120,7 @@ int main( int argc, const char* argv[] )
 
     std::stringstream message;
 
-    message << bench->getName() << "%," << bench->getInputSetId() << "%," << bench->getGid() << "%,"
+    message << bench->getName() << "%," << bench->getInputSetId() << "%," << bench->getGroup() << "%,"
             << bench->getNumThreads() << "%," << bench->getValueTypeSize() << "%," << bench->getExecutionFlops()
             << "%," << bench->getExecutionBandwidth() << "%," << bench->getSetupTime() << "%,"
             << bench->getMinExecutionTime() << "%," << bench->getMaxExecutionTime() << "%,"

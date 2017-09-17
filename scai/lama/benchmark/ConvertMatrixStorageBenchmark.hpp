@@ -68,7 +68,7 @@ public:
 
     virtual const std::string& getCreateId() const;
 
-    virtual const std::string& getArguments() const;
+    virtual const std::string& getArgument() const;
 
     static std::string createValue();
 
@@ -94,7 +94,7 @@ private:
     common::unique_ptr<_MatrixStorage> mSourceStorage;
     common::unique_ptr<_MatrixStorage> mTargetStorage;
 
-    std::string mArguments;
+    std::string mArgument;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };
@@ -143,7 +143,7 @@ ConvertMatrixStorageBenchmark<ValueType>::ConvertMatrixStorageBenchmark( const s
     mSourceStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( sourceFormat, type ) ) );
     mTargetStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( targetFormat, type ) ) );
 
-    mArguments = storageTypes[0] + ", " + storageTypes[1];
+    mArgument = storageTypes[0] + ", " + storageTypes[1];
 }
 
 template<typename ValueType>
@@ -172,9 +172,9 @@ const std::string& ConvertMatrixStorageBenchmark<ValueType>::getCreateId() const
 }
 
 template<typename ValueType>
-const std::string& ConvertMatrixStorageBenchmark<ValueType>::getArguments() const
+const std::string& ConvertMatrixStorageBenchmark<ValueType>::getArgument() const
 {
-    return mArguments;
+    return mArgument;
 }
 
 template<typename ValueType>
@@ -184,11 +184,11 @@ void ConvertMatrixStorageBenchmark<ValueType>::initialize()
 
     common::unique_ptr<InputSet> mInputSet;
 
-    mInputSet.reset( benchmark::InputSet::parseAndCreate( mInputSetId ) );
+    mInputSet.reset( benchmark::InputSet::createWithArgument( mInputSetId ) );
 
     SCAI_LOG_ERROR( logger, "input set: " << *mInputSet )
 
-    SCAI_ASSERT_EQ_ERROR( mInputSet->getId(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
+    SCAI_ASSERT_EQ_ERROR( mInputSet->getGroup(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
 
     // Now it is safe to cast
 
