@@ -44,16 +44,17 @@
 
 #include <scai/lama/storage/CSRStorage.hpp>
 
-using namespace scai;
-using namespace lama;
-using namespace hmemo;
-using namespace benchmark;
+namespace scai
+{
+
+namespace lama
+{
 
 template<typename ValueType>
 class ConvertMatrixStorageBenchmark : 
 
-    public Benchmark, 
-    private Benchmark::Register<ConvertMatrixStorageBenchmark<ValueType> >
+    public benchmark::Benchmark, 
+    private benchmark::Benchmark::Register<ConvertMatrixStorageBenchmark<ValueType> >
 
 {
 public:
@@ -99,150 +100,6 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger );
 };
 
-template<typename ValueType>
-SCAI_LOG_DEF_LOGGER( ConvertMatrixStorageBenchmark<ValueType>::logger, "Benchmark.ConvertMatrixStorageBenchmark" );
-
-template<typename ValueType>
-std::string ConvertMatrixStorageBenchmark<ValueType>::createValue()
-{
-    std::ostringstream value;
-  
-    value << "Convert_" << common::TypeTraits<ValueType>::id();
-
-    return value.str();
 }
 
-template<typename ValueType>
-ConvertMatrixStorageBenchmark<ValueType>::ConvertMatrixStorageBenchmark( const std::string& arg ) :
-
-    Benchmark( getCreateId() + "( " + arg + " )" , "ConvertStorage" )
-
-{
-    SCAI_LOG_ERROR( logger, "ConvertMatrixStorageBenchmark( arg = " << arg << " )" );
-
-    std::vector<std::string> storageTypes;
-
-    if ( arg == "" )
-    {
-        tokenize( storageTypes, "CSR, JDS", ", " );
-    }
-    else
-    {
-        tokenize( storageTypes, arg, ", " );
-    }
-
-    SCAI_ASSERT_EQ_ERROR( storageTypes.size(), 2, "two storage types expected as arguments" )
-
-    _MatrixStorage::MatrixStorageFormat sourceFormat = str2Format( storageTypes[0].c_str() );
-    _MatrixStorage::MatrixStorageFormat targetFormat = str2Format( storageTypes[1].c_str() );
-
-    common::scalar::ScalarType type = common::TypeTraits<ValueType>::stype;
-
-    // allocate source and target storage of the required type
-
-    mSourceStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( sourceFormat, type ) ) );
-    mTargetStorage.reset( _MatrixStorage::create( MatrixStorageCreateKeyType( targetFormat, type ) ) );
-
-    mArgument = storageTypes[0] + ", " + storageTypes[1];
 }
-
-template<typename ValueType>
-ConvertMatrixStorageBenchmark<ValueType>::~ConvertMatrixStorageBenchmark()
-{
-    SCAI_LOG_DEBUG( logger, "~ConvertMatrixStorageBenchmark" )
-}
-
-template<typename ValueType>
-short ConvertMatrixStorageBenchmark<ValueType>::getValueTypeSize() const
-{
-    return sizeof( ValueType );
-}
-
-template<typename ValueType>
-bool ConvertMatrixStorageBenchmark<ValueType>::isThreadded() const
-{
-    return true;
-}
-
-template<typename ValueType>
-const std::string& ConvertMatrixStorageBenchmark<ValueType>::getCreateId() const
-{
-    static std::string id = createValue();
-    return id;
-}
-
-template<typename ValueType>
-const std::string& ConvertMatrixStorageBenchmark<ValueType>::getArgument() const
-{
-    return mArgument;
-}
-
-template<typename ValueType>
-void ConvertMatrixStorageBenchmark<ValueType>::initialize()
-{
-    SCAI_LOG_DEBUG( logger, "initialize, mInputSetId = " << mInputSetId )
-
-    common::unique_ptr<InputSet> mInputSet;
-
-    mInputSet.reset( benchmark::InputSet::createWithArgument( mInputSetId ) );
-
-    SCAI_LOG_ERROR( logger, "input set: " << *mInputSet )
-
-    SCAI_ASSERT_EQ_ERROR( mInputSet->getGroup(), "LAMAInputSet", "Illegal LAMAInputSet: " << *mInputSet )
-
-    // Now it is safe to cast
-
-    const LAMAInputSet* mLAMAInputSet = reinterpret_cast<lama::LAMAInputSet*>( mInputSet.get() );
-
-    //TODO: assign should do the value type conversion
-
-    const CSRStorage<double>& csrStorage = mLAMAInputSet->getA().getLocalStorage();
-
-    SCAI_LOG_DEBUG( logger, "csrStorage = " << csrStorage )
-
-    mSourceStorage->setCSRData( csrStorage.getNumRows(), csrStorage.getNumColumns(), csrStorage.getNumValues(),
-                                csrStorage.getIA(), csrStorage.getJA(), csrStorage.getValues() );
-
-    ContextPtr context = Context::getContextPtr();
-
-    mSourceStorage->setContextPtr( context );
-    mTargetStorage->setContextPtr( context );
-}
-
-template<typename ValueType>
-void ConvertMatrixStorageBenchmark<ValueType>::setUp()
-{
-    mSourceStorage->prefetch( mSourceStorage->getContextPtr() );
-    mSourceStorage->wait();
- 
-    // no prefetch on target storage required
-}
-
-template<typename ValueType>
-void ConvertMatrixStorageBenchmark<ValueType>::execute()
-{
-    *mTargetStorage = *mSourceStorage;
-}
-
-template<typename ValueType>
-void ConvertMatrixStorageBenchmark<ValueType>::tearDown()
-{
-}
-
-template<typename ValueType>
-void ConvertMatrixStorageBenchmark<ValueType>::shutdown()
-{
-}
-
-template<typename ValueType>
-CounterType ConvertMatrixStorageBenchmark<ValueType>::getNumFloatingPointOperations() const
-{
-    return 0;
-}
-
-template<typename ValueType>
-CounterType ConvertMatrixStorageBenchmark<ValueType>::getProcessedBytes() const
-{
-    return 0;
-}
-

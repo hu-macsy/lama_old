@@ -93,7 +93,7 @@ private:
 
     void readConfig();
 
-    std::string config;
+    std::string mConfig;
 };
 
 }

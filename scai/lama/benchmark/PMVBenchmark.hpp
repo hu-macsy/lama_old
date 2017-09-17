@@ -36,7 +36,6 @@
 
 #include <scai/lama/benchmark/LAMAMPIBenchmark.hpp>
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
-#include <scai/lama/benchmark/LAMAInputSetComplexityVisitor.hpp>
 
 #include <scai/benchmark/Parser.hpp>
 
@@ -121,6 +120,12 @@ private:
 
     static const std::string& getGroupId();
 
+    static void getComplexity( 
+        CounterType& numFlops, 
+        CounterType& numProcessedIndexes, 
+        CounterType& numPprocessedValues,
+        const Matrix& matrix );
+
     common::unique_ptr<benchmark::InputSet> mInputSet;
     const LAMAInputSet* mLAMAInputSet;
 
@@ -131,9 +136,11 @@ private:
     hmemo::ContextPtr mContext;
     Matrix::SyncKind mCommunicationKind;
 
+    common::scalar::ScalarType mType;  // value type of input data
+
     CounterType mNumFloatingPointOperations;
-    CounterType mNumProcessedBytesFloat;
-    CounterType mNumProcessedBytesDouble;
+    CounterType mNumProcessedIndexes;
+    CounterType mNumProcessedValues;
 
     std::string mArgument;  // argument used for creating this benchmark
 };

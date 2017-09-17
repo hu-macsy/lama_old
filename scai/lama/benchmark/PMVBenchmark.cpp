@@ -57,11 +57,9 @@ PMVBenchmark::PMVBenchmark( const std::string& argument ) :
     LAMAMPIBenchmark( getCreateId(), getGroupId() ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
     mNumFloatingPointOperations( 0 ),
-    mNumProcessedBytesFloat( 0 ),
-    mNumProcessedBytesDouble( 0 )
+    mNumProcessedIndexes( 0 ),
+    mNumProcessedValues( 0 )
 {
-    // ToDo: args = CSR , double -> use as key to create matrix storage
-
     std::vector<std::string> argTokens;
 
     if ( argument == "" )
@@ -77,15 +75,22 @@ PMVBenchmark::PMVBenchmark( const std::string& argument ) :
 
     Matrix::MatrixStorageFormat format = str2Format( argTokens[0].c_str() );
 
-    common::scalar::ScalarType type = common::str2ScalarType( argTokens[1].c_str() );
+    if ( format == Matrix::UNDEFINED )
+    {
+        COMMON_THROWEXCEPTION( "unknowm matrix format: " << argTokens[0] )
+    }
+
+    mType = common::str2ScalarType( argTokens[1].c_str() );
 
     // allocate source and target storage of the required type
 
-    mMatrixA.reset( Matrix::create( MatrixCreateKeyType( format, type ) ) );
-    mVectorX.reset( _DenseVector::create( type ) );
-    mVectorY.reset( _DenseVector::create( type ) );
+    mMatrixA.reset( Matrix::create( MatrixCreateKeyType( format, mType ) ) );
+    mVectorX.reset( _DenseVector::create( mType ) );
+    mVectorY.reset( _DenseVector::create( mType ) );
 
     mArgument = argTokens[0] + ", " + argTokens[1];
+
+    mName = "PMV( " + mArgument + " )";
 }
 
 PMVBenchmark::~PMVBenchmark()
@@ -95,7 +100,7 @@ PMVBenchmark::~PMVBenchmark()
 
 short PMVBenchmark::getValueTypeSize() const
 {
-    return common::typeSize( mMatrixA->getValueType() );
+    return common::typeSize( mType );
 }
 
 bool PMVBenchmark::isThreadded() const
@@ -268,12 +273,48 @@ void PMVBenchmark::tearDown()
     SCAI_LOG_INFO( logger, "tearDown done, Y at Host" );
 }
 
+void PMVBenchmark::getComplexity( 
+    CounterType& numFlops,
+    CounterType& numProcessedIndexes,
+    CounterType& numProcessedValues,
+    const Matrix& matrix )
+{
+    IndexType numRows = matrix.getNumRows(); // used for all formats
+
+    if ( matrix.getMatrixKind() == Matrix::DENSE )
+    {
+        IndexType numCols = matrix.getNumColumns();
+        numFlops = numRows * ( 2 * numCols - 1 );
+        numProcessedValues = 0;
+        numProcessedValues = 2 * numRows * numCols + numRows;
+        return;
+    }
+    else
+    {
+        IndexType numValues = matrix.getNumValues();
+        //every matrix element is multiplied once
+        //and all products of one row of the matrix are added together
+        //so we have numValues float multiplies and numValues - numRows float adds.
+        numFlops = 2 * numValues - numRows;
+        //The whole matrix need to be accessed once
+        //for each row of the matrix two values of the index array need to be loaded
+        numProcessedIndexes = numValues + numRows;
+        //we need to load the values of the matrix once
+        numProcessedValues  = numValues;
+        //we need to load one value of the input vector for each element of
+        //the matrix (we ignore the cache)
+        numProcessedValues += numValues;
+        //we need to write each value of the output vector once
+        numProcessedValues += numRows;
+        return;
+    }
+}
+
 void PMVBenchmark::shutdown()
 {
     SCAI_ASSERT_ERROR( mLAMAInputSet, "No LAMA input set available" )
 
-    LAMAInputSetComplexityVisitor::getMVComplexity( mLAMAInputSet->getA(), mNumFloatingPointOperations,
-                                                    mNumProcessedBytesFloat, mNumProcessedBytesDouble );
+    getComplexity( mNumFloatingPointOperations, mNumProcessedIndexes, mNumProcessedValues, mLAMAInputSet->getA() );
 
     const DenseVector<double>& result = mLAMAInputSet->getY();
 
@@ -318,23 +359,15 @@ void PMVBenchmark::shutdown()
 
 CounterType PMVBenchmark::getNumFloatingPointOperations() const
 {
+    // ToDo: for complex values we have some more floating point operations
+
     return mNumFloatingPointOperations;
 }
 
 CounterType PMVBenchmark::getProcessedBytes() const
 {
-    size_t typeSize = getValueTypeSize();
-
-    if ( typeSize == sizeof( float ) )
-    {
-        return mNumProcessedBytesFloat;
-    }
-    else if ( typeSize == sizeof( double ) )
-    {
-        return mNumProcessedBytesDouble;
-    }
-
-    return 0;
+    return   mNumProcessedValues * getValueTypeSize() 
+           + mNumProcessedIndexes * sizeof( IndexType );
 }
 
 }

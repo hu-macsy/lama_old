@@ -35,6 +35,8 @@
 #include <scai/common/OpenMP.hpp>
 
 #include <scai/lama/benchmark/LAMAMPIBenchmark.hpp>
+#include <scai/benchmark/Parser.hpp>
+
 #include <scai/dmemo/Communicator.hpp>
 #include <scai/dmemo/NoCommunicator.hpp>
 
@@ -54,36 +56,18 @@ LAMAMPIBenchmark::LAMAMPIBenchmark( const string& name, const string& gId ) : be
     readConfig();
 }
 
-static void tokenize( const string& str, vector<string>& tokens, const string& delimiters = " " )
-{
-    // Skip delimiters at beginning.
-    string::size_type lastPos = str.find_first_not_of( delimiters, 0 );
-    // Find first "non-delimiter".
-    string::size_type pos = str.find_first_of( delimiters, lastPos );
-
-    while ( string::npos != pos || string::npos != lastPos )
-    {
-        // Found a token, add it to the vector.
-        tokens.push_back( str.substr( lastPos, pos - lastPos ) );
-        // Skip delimiters.  Note the "not_of"
-        lastPos = str.find_first_not_of( delimiters, pos );
-        // Find next "non-delimiter"
-        pos = str.find_first_of( delimiters, lastPos );
-    }
-}
-
 void LAMAMPIBenchmark::readConfig()
 {
     const char* envConfig = getenv( "LAMA_CONFIG" );
 
     if ( envConfig != NULL )
     {
-        config = envConfig;
+        mConfig = envConfig;
     }
 
     std::vector<std::string> tokens;
 
-    tokenize( config, tokens, "," );
+    tokenize( tokens, mConfig, "," );
 
     int ntoken = static_cast<int>( tokens.size() );
 
@@ -92,42 +76,44 @@ void LAMAMPIBenchmark::readConfig()
 
     if ( ntoken == 0 )
     {
-        config = "";
+        mConfig = "";
     }
     else if ( ntoken == 1 )
     {
-        config = tokens[0];
+        mConfig = tokens[0];
     }
     else if ( ntoken == size )
     {
-        config = tokens[rank];
+        mConfig = tokens[rank];
     }
     else
     {
-        COMMON_THROWEXCEPTION( "Mismatch of #processors = " << size << " and LAMA_CONFIG=" << config );
+        COMMON_THROWEXCEPTION( "Mismatch of #processors = " << size << " and LAMA_CONFIG=" << mConfig );
     }
 
-    // for convenience: make upper case of config
+    // for convenience: make upper case of mConfig
 
-    for ( size_t j = 0; j < config.length(); j++ )
+    for ( size_t j = 0; j < mConfig.length(); j++ )
     {
-        config[j] = static_cast<std::string::value_type>( toupper( config[j] ) );
+        mConfig[j] = static_cast<std::string::value_type>( toupper( mConfig[j] ) );
     }
 
-    SCAI_LOG_INFO( logger, "Process " << rank << " of " << size << " has config = " << config );
+    SCAI_LOG_INFO( logger, "Process " << rank << " of " << size << " has config = " << mConfig );
 }
 
 void LAMAMPIBenchmark::getConfig( std::map<std::string, std::string>& tokens ) const
 {
     std::vector<std::string> tmpTokens;
-    tokenize( config, tmpTokens, ":" );
+
+    tokenize( tmpTokens, mConfig, ":" );
+
     typedef std::vector<std::string>::const_iterator VecIter;
     VecIter end = tmpTokens.end();
 
     for ( VecIter it = tmpTokens.begin(); it != end; ++it )
     {
         std::vector<std::string> keyValue;
-        tokenize( *it, keyValue, "=" );
+        tokenize( keyValue, *it, "=" );
         tokens[keyValue[0]] = keyValue[1];
     }
 }
@@ -166,12 +152,7 @@ std::string LAMAMPIBenchmark::getNumThreads() const
 
 bool LAMAMPIBenchmark::doOutput() const
 {
-    bool doOutput = true;
-
-    if ( mComm->getRank() != 0 )
-    {
-        doOutput = false;
-    }
+    bool doOutput = mComm->getRank() == 0;  // only proc 0
 
     return doOutput;
 }

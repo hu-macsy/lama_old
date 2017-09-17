@@ -43,7 +43,6 @@ set ( CXX_SOURCES LAMAMPIBenchmark.cpp
                   ConvertMatrixStorageBenchmark.cpp
                   LAMAInputSet.cpp 
                   FileInputSet.cpp 
-                  LAMAInputSetComplexityVisitor.cpp
                   PoissonInputSet.cpp
                   RandomInputSet.cpp
     )
