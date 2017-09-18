@@ -67,6 +67,11 @@ Benchmark::~Benchmark()
 {
 }
 
+void Benchmark::writeAt( std::ostream& stream ) const
+{
+    stream << "Benchmark( name = " << mName << ", group = " << mGroup << " )";
+}
+
 void Benchmark::run( std::ostream& out )
 {
     if ( doOutput() )
@@ -280,7 +285,8 @@ bool Benchmark::CompareInputSetIds::operator( )( const Benchmark* const arg1, co
 
 bool Benchmark::CompareValueTypeSize::operator( )( const Benchmark* const arg1, const Benchmark* const arg2 )
 {
-    return arg1->getValueTypeSize() < arg2->getValueTypeSize();
+    return   common::typeSize( arg1->getValueType() )
+           < common::typeSize( arg2->getValueType() );
 }
 
 bool Benchmark::GreaterNumThreads::operator( )( const Benchmark* const arg1, const Benchmark* const arg2 )

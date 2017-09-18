@@ -121,7 +121,7 @@ int main( int argc, const char* argv[] )
     std::stringstream message;
 
     message << bench->getName() << "%," << bench->getInputSetId() << "%," << bench->getGroup() << "%,"
-            << bench->getNumThreads() << "%," << bench->getValueTypeSize() << "%," << bench->getExecutionFlops()
+            << bench->getNumThreads() << "%," << common::typeSize( bench->getValueType() ) << "%," << bench->getExecutionFlops()
             << "%," << bench->getExecutionBandwidth() << "%," << bench->getSetupTime() << "%,"
             << bench->getMinExecutionTime() << "%," << bench->getMaxExecutionTime() << "%,"
             << bench->getExecutionTime() << "%," << bench->getTearDownTime() << "%,"

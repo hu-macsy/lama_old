@@ -86,9 +86,9 @@ ConvertMatrixStorageBenchmark<ValueType>::~ConvertMatrixStorageBenchmark()
 }
 
 template<typename ValueType>
-short ConvertMatrixStorageBenchmark<ValueType>::getValueTypeSize() const
+common::scalar::ScalarType ConvertMatrixStorageBenchmark<ValueType>::getValueType() const
 {
-    return sizeof( ValueType );
+    return common::TypeTraits<ValueType>::stype;
 }
 
 template<typename ValueType>

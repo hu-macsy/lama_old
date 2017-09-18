@@ -63,9 +63,9 @@ RandomInputSet::RandomInputSet( const std::string argument ) :
  
     SCAI_ASSERT_EQ_ERROR( argToken.size(), 2, "arguments: " << mArgument );
 
-    IndexType size = std::stoi( argToken[0] );
+    IndexType size = static_cast<IndexType>( std::strtol( argToken[0].c_str(), NULL, 10 ) );
 
-    double fillingGrade = std::stod( argToken[1] );
+    double fillingGrade = std::strtod( argToken[1].c_str(), NULL );
 
     SCAI_LOG_INFO( logger, "create( " << mArgument << ") : size = " << size << ", fillingGrade = " << fillingGrade );
 

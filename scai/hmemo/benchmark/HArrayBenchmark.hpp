@@ -1,5 +1,5 @@
 /**
- * @file PMVBenchmark.hpp
+ * @file HArrayBenchmark.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,34 +27,45 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Benchmark for parallel matrix-vector multiplication with different settings.
+ * @brief Benchmark for copying HArray data between different devices
  * @author Thomas Brandes, Jiri Kraus
  * @date 19.09.2017
  */
 
 #pragma once
 
-#include <scai/lama/benchmark/LAMAMPIBenchmark.hpp>
-#include <scai/lama/benchmark/LAMAInputSet.hpp>
+#include <scai/benchmark.hpp>
+
+#include <scai/hmemo/benchmark/HArrayInputSet.hpp>
+
+#include <scai/hmemo/Context.hpp>
+#include <scai/hmemo/HArray.hpp>
+
+#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
 
-namespace lama
+namespace hmemo
 {
 
-/** (Parallel) benchmark for matrix-vector multiplication.
+/** Benchmark to measure transfer time between two devices.
  *
  *  This benchmark registers at the benchmark factory, benchmarks can be created
- *  by PMV( <matrix format>, <value type> ).
+ *  by HArrayBenchmark( targetContext, sourceContext ).
  *
- *  This benchmark can be used with any LAMAInputSet, i.e. with all objects that
- *  derive from this class.
+ *  This benchmark must be used with an HArrayInputSet as input set.
+ *
+ *  \code
+ *     HArrayBenchmark inputData( "Host, CUDA" );
+ *     common::unique_ptr<HArrayBenchmark> inputData1( Benchmark::create( "HArrayBenchmark", "CUDA, Host" ) );
+ *     common::unique_ptr<HArrayBenchmark> inputData2( Benchmark::createWithArg( "HArrayBenchmark( Host, CUDA )" ) );
+ *  \endcode
  */
-class PMVBenchmark: 
+class HArrayBenchmark: 
  
-    public  LAMAMPIBenchmark,
-    private benchmark::Benchmark::Register<PMVBenchmark>
+    public  benchmark::Benchmark,
+    private benchmark::Benchmark::Register<HArrayBenchmark>
 
 {
 public:
@@ -63,30 +74,49 @@ public:
      *
      *  @param[in] argument must be a string like "CSR, double"
      */
-    PMVBenchmark( const std::string& argument );
+    HArrayBenchmark( const std::string& argument );
 
-    virtual ~PMVBenchmark();
-
-    virtual common::scalar::ScalarType getValueType() const;
-
-    virtual bool isThreadded() const;
+    virtual ~HArrayBenchmark();
 
     /** Implementation of pure method Benchmark::getCreateId()   */
 
-    virtual const std::string& getCreateId() const;
+    virtual const std::string& getCreateId() const
+    {
+        static std::string id = createValue();
+        return id;
+    }
 
     /** Implementation of pure method Benchmark::getArgument()   */
 
-    virtual const std::string& getArgument() const;
+    virtual const std::string& getArgument() const
+    {
+        return mArgument;
+    }
 
-    static std::string createValue();
+    static std::string createValue()
+    {
+        return "HArrayBenchmark";
+    }
 
     static Benchmark* create( const std::string argument )
     {
-        return new PMVBenchmark( argument );
+        return new HArrayBenchmark( argument );
     }
 
-protected:
+    virtual common::scalar::ScalarType getValueType() const
+    {
+        return common::scalar::DOUBLE;
+    }
+
+    /** Override implementation Benchmark::writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
+
+private:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger );
+
+    HArrayBenchmark();
 
     /** Implementation of pure method Benchmark::initialize */
 
@@ -102,39 +132,17 @@ protected:
     virtual CounterType getNumFloatingPointOperations() const;
     virtual CounterType getProcessedBytes() const;
 
-    using benchmark::Benchmark::mName;
-
-    using LAMAMPIBenchmark::mComm;
-
-private:
-
-    PMVBenchmark();
-
-    static const std::string& getGroupId();
-
-    static void getComplexity( 
-        CounterType& numFlops, 
-        CounterType& numProcessedIndexes, 
-        CounterType& numPprocessedValues,
-        const Matrix& matrix );
+    std::string mArgument;  // argument used for creating this benchmark
 
     common::unique_ptr<benchmark::InputSet> mInputSet;
-    const LAMAInputSet* mLAMAInputSet;
 
-    common::unique_ptr<Matrix> mMatrixA;
-    common::unique_ptr<_DenseVector> mVectorX;
-    common::unique_ptr<_DenseVector> mVectorY;
+    HArrayInputSet* mHArrayInputSet;
 
-    hmemo::ContextPtr mContext;
-    Matrix::SyncKind mCommunicationKind;
+    HArray<double>* mArray;   // pointer to the input array
+    
+    ContextPtr mTargetContext;
+    ContextPtr mSourceContext;
 
-    common::scalar::ScalarType mType;  // value type of input data
-
-    CounterType mNumFloatingPointOperations;
-    CounterType mNumProcessedIndexes;
-    CounterType mNumProcessedValues;
-
-    std::string mArgument;  // argument used for creating this benchmark
 };
 
 }

@@ -43,6 +43,8 @@
 #include <scai/common/config.hpp>
 #include <scai/common/Factory1.hpp>
 #include <scai/common/NonCopyable.hpp>
+#include <scai/common/ScalarType.hpp>
+#include <scai/common/Printable.hpp>
 
 #include <scai/benchmark/BenchmarkTypes.hpp>
 
@@ -68,6 +70,7 @@ namespace benchmark
 class COMMON_DLL_IMPORTEXPORT Benchmark : 
 
     public common::Factory1< std::string, std::string, Benchmark* >,
+    public common::Printable,
     private common::NonCopyable
 
 {
@@ -86,6 +89,9 @@ public:
      */
     virtual ~Benchmark();
 
+    /** Override default implementation of Printable::writeAt */
+
+    virtual void writeAt( std::ostream& stream ) const;
     /**
      * @brief executes the Benchmark
      *
@@ -236,10 +242,9 @@ public:
     virtual double getTotalExecutionTime() const;
 
     /**
-     * @brief Returns the size of the value type.
-     * @return The size of the value type.
+     * @brief Returns the value type of benchmark data.
      */
-    virtual short getValueTypeSize() const = 0;
+    virtual common::scalar::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns the time, function execute( ) was run.

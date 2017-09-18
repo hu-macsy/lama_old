@@ -75,7 +75,7 @@ public:
 
     virtual ~ConvertMatrixStorageBenchmark();
 
-    virtual short getValueTypeSize() const;
+    virtual common::scalar::ScalarType getValueType() const;
 
     virtual bool isThreadded() const;
 

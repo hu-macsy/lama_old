@@ -76,7 +76,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( CUDA EXAMPLES MIC TEST exception )
+scai_subdirectories( CUDA EXAMPLES MIC TEST exception BENCHMARK )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )

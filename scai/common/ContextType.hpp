@@ -87,6 +87,10 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const co
 
 COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const context::AccessKind& kind );
 
+COMMON_DLL_IMPORTEXPORT const char* contextType2str( const context::ContextType type );
+
+COMMON_DLL_IMPORTEXPORT context::ContextType str2ContextType( const char* str );
+
 } /* end namespace common */
 
 } /* end namespace scai */

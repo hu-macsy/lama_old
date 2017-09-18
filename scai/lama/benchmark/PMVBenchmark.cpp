@@ -105,9 +105,9 @@ PMVBenchmark::~PMVBenchmark()
     // Note: mMatrixA, mVectorX, mVectorY will be freed
 }
 
-short PMVBenchmark::getValueTypeSize() const
+common::scalar::ScalarType PMVBenchmark::getValueType() const
 {
-    return common::typeSize( mType );
+    return mType;
 }
 
 bool PMVBenchmark::isThreadded() const
@@ -373,7 +373,7 @@ CounterType PMVBenchmark::getNumFloatingPointOperations() const
 
 CounterType PMVBenchmark::getProcessedBytes() const
 {
-    return   mNumProcessedValues * getValueTypeSize() 
+    return   mNumProcessedValues * common::typeSize( getValueType() )
            + mNumProcessedIndexes * sizeof( IndexType );
 }
 
