@@ -29,7 +29,7 @@
  *
  * @brief Benchmark for parallel matrix-vector multiplication with different settings.
  * @author Thomas Brandes, Jiri Kraus
- * @date 11.05.2011
+ * @date 19.09.2017
  */
 
 #pragma once
@@ -37,37 +37,20 @@
 #include <scai/lama/benchmark/LAMAMPIBenchmark.hpp>
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
 
-#include <scai/benchmark/Parser.hpp>
-
-#include <scai/lama/DenseVector.hpp>
-#include <scai/hmemo/Context.hpp>
-
-#include <scai/lama/matrix/DenseMatrix.hpp>
-
-#include <scai/dmemo/GenBlockDistribution.hpp>
-
-#include <scai/lama/expression/MatrixVectorExpressions.hpp>
-#include <scai/lama/expression/VectorExpressions.hpp>
-
-#include <scai/lama/norm/MaxNorm.hpp>
-#include <scai/common/OpenMP.hpp>
-
-#include <sstream>
-#include <map>
-#include <string>
-
-// Benchmark: here we allow using namespace in .hpp file
-
 namespace scai
 {
-
-using std::istringstream;
-using std::map;
-using std::string;
 
 namespace lama
 {
 
+/** (Parallel) benchmark for matrix-vector multiplication.
+ *
+ *  This benchmark registers at the benchmark factory, benchmarks can be created
+ *  by PMV( <matrix format>, <value type> ).
+ *
+ *  This benchmark can be used with any LAMAInputSet, i.e. with all objects that
+ *  derive from this class.
+ */
 class PMVBenchmark: 
  
     public  LAMAMPIBenchmark,
@@ -76,6 +59,10 @@ class PMVBenchmark:
 {
 public:
 
+    /** Constructor of the benchmark.
+     *
+     *  @param[in] argument must be a string like "CSR, double"
+     */
     PMVBenchmark( const std::string& argument );
 
     virtual ~PMVBenchmark();
@@ -101,7 +88,12 @@ public:
 
 protected:
 
+    /** Implementation of pure method Benchmark::initialize */
+
     virtual void initialize();
+
+    /** Implementation of pure method Benchmark::setUp */
+
     virtual void setUp();
     virtual void execute();
     virtual void tearDown();

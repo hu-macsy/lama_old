@@ -287,7 +287,7 @@ const char* format2Str( const Format::MatrixStorageFormat storageFormat )
 
 Format::MatrixStorageFormat str2Format( const char* str )
 {
-    for ( int format = Format::CSR; format < Format::UNDEFINED; ++format )
+    for ( int format = 0; format < Format::UNDEFINED; ++format )
     {
         if ( strcmp( format2Str( Format::MatrixStorageFormat( format ) ), str ) == 0 )
         {

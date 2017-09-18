@@ -46,16 +46,6 @@ template<typename ValueType>
 SCAI_LOG_DEF_LOGGER( ConvertMatrixStorageBenchmark<ValueType>::logger, "Benchmark.ConvertMatrixStorageBenchmark" );
 
 template<typename ValueType>
-std::string ConvertMatrixStorageBenchmark<ValueType>::createValue()
-{
-    std::ostringstream value;
-  
-    value << "Convert_" << common::TypeTraits<ValueType>::id();
-
-    return value.str();
-}
-
-template<typename ValueType>
 ConvertMatrixStorageBenchmark<ValueType>::ConvertMatrixStorageBenchmark( const std::string& arg ) :
 
     Benchmark( getCreateId() + "( " + arg + " )" , "ConvertStorage" )

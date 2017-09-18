@@ -34,7 +34,9 @@
 
 #include <scai/lama/benchmark/PMVBenchmark.hpp>
 
-#include <scai/common/macros/loop.hpp>
+#include <scai/benchmark/Parser.hpp>
+#include <scai/common/OpenMP.hpp>
+#include <scai/lama/norm/MaxNorm.hpp>
 
 namespace scai
 {
@@ -46,13 +48,13 @@ using std::string;
 namespace lama
 {
 
-const std::string& PMVBenchmark::getGroupId()
+const string& PMVBenchmark::getGroupId()
 {
-    static const std::string id = "PMV";
+    static const string id = "PMV";
     return id;
 }
 
-PMVBenchmark::PMVBenchmark( const std::string& argument ) :
+PMVBenchmark::PMVBenchmark( const string& argument ) :
 
     LAMAMPIBenchmark( getCreateId(), getGroupId() ),
     mContext( hmemo::Context::getContextPtr( hmemo::Context::Host ) ),
@@ -60,7 +62,7 @@ PMVBenchmark::PMVBenchmark( const std::string& argument ) :
     mNumProcessedIndexes( 0 ),
     mNumProcessedValues( 0 )
 {
-    std::vector<std::string> argTokens;
+    std::vector<string> argTokens;
 
     if ( argument == "" )
     {
@@ -81,6 +83,11 @@ PMVBenchmark::PMVBenchmark( const std::string& argument ) :
     }
 
     mType = common::str2ScalarType( argTokens[1].c_str() );
+
+    if ( mType == common::scalar::UNKNOWN )
+    {
+        COMMON_THROWEXCEPTION( "unknowm value type: " << argTokens[1] )
+    }
 
     // allocate source and target storage of the required type
 
@@ -108,20 +115,20 @@ bool PMVBenchmark::isThreadded() const
     return true;
 }
 
-const std::string& PMVBenchmark::getCreateId() const
+const string& PMVBenchmark::getCreateId() const
 {
-    static std::string id = createValue();
+    static string id = createValue();
     return id;
 }
 
-const std::string& PMVBenchmark::getArgument() const
+const string& PMVBenchmark::getArgument() const
 {
     return mArgument;
 }
 
-std::string PMVBenchmark::createValue() 
+string PMVBenchmark::createValue() 
 {
-    std::string value ( "PMatTimesVector" );
+    string value ( "PMatTimesVector" );
     return value;
 }
 
@@ -347,7 +354,7 @@ void PMVBenchmark::shutdown()
     }
     catch ( benchmark::BFException& e )
     {
-        std::stringstream message;
+        std::ostringstream message;
         message << e.what() << " std::fabs( result[i] - computedResultValue ) is bigger than " << maxDiff << std::endl;
         throw benchmark::BFException( message.str() );
     }

@@ -28,7 +28,7 @@
  * @endlicense
  *
  * @brief Benchmark to measure the storage conversion times between different sparse matrix storages.
- * @author Jiri Kraus and Bea Hornef
+ * @author Thomas Brandes, Jiri Kraus
  * @date 02.12.2011
  */
 
@@ -38,11 +38,8 @@
 #include <scai/benchmark/Parser.hpp>
 #include <scai/lama/benchmark/LAMAInputSet.hpp>
 
-#include <scai/hmemo/HArray.hpp>
-#include <scai/hmemo/ReadAccess.hpp>
-#include <scai/hmemo/Context.hpp>
 
-#include <scai/lama/storage/CSRStorage.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
@@ -50,6 +47,21 @@ namespace scai
 namespace lama
 {
 
+/** (Serial) Benchmark to convert matrix storage from one format to another one.
+ *
+ *  Target and source format of the storage can be specified via the argument
+ *  used in the constructor. Value type is given by the template argument.
+ *
+ *  This benchmark class registers in the benchmark factory via "Convert_ValueType".
+ *
+ *  @tparam ValueType specifies the type of the matrix storage.
+ *
+ *  \code
+ *     ConvertMatrixStorageBenchmark<float> bench1( "CSR, JDS" );
+ *     common::unique_ptr<Benchmark> bench2( Benchmark::create( "Convert_double", "ELL, DIA" ) );
+ *     common::unique_ptr<Benchmark> bench3( Benchmark::createWithArgument( "Convert_ComplexFloat", "DENSE, CSR" ) );
+ *  \endcode
+ */
 template<typename ValueType>
 class ConvertMatrixStorageBenchmark : 
 
@@ -71,7 +83,10 @@ public:
 
     virtual const std::string& getArgument() const;
 
-    static std::string createValue();
+    static std::string createValue()
+    {
+        return std::string( "Convert_" ) + std::string( common::TypeTraits<ValueType>::id() );
+    }
 
     static Benchmark* create( std::string arguments )
     {
@@ -79,6 +94,7 @@ public:
     }
 
 protected:
+
     virtual void initialize();
     virtual void setUp();
     virtual void execute();
