@@ -35,13 +35,15 @@
 // hpp
 #include <scai/common/ContextType.hpp>
 
+#include <cstring>
+
 namespace scai
 {
 
 namespace common
 {
 
-const char* contextType2str( const context::ContextType& type )
+const char* contextType2str( const context::ContextType type )
 {
     switch ( type )
     {
@@ -64,6 +66,23 @@ const char* contextType2str( const context::ContextType& type )
             return "UnknownContext";
     }
 }
+
+/* -----------------------------------------------------------------------------*/
+
+context::ContextType str2ContextType( const char* str )
+{
+    for ( int type = context::Host; type < context::MaxContext; ++type )
+    {
+        if ( strcmp( contextType2str( context::ContextType( type ) ), str ) == 0 )
+        {
+            return context::ContextType( type );
+        }
+    }
+
+    return context::MaxContext;
+}
+
+/* -----------------------------------------------------------------------------*/
 
 std::ostream& operator<<( std::ostream& stream, const context::ContextType& type )
 {
