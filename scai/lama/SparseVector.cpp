@@ -69,6 +69,7 @@ namespace scai
 {
 
 using common::scoped_array;
+using common::Math;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
 using utilskernel::LArray;
@@ -726,11 +727,31 @@ Scalar SparseVector<ValueType>::min() const
 
     if ( nZero > 0 )
     {
-         localMin = common::Math::min( localMin, mZeroValue );
+        localMin = Math::min( localMin, mZeroValue );
     }
 
     return Scalar( getDistribution().getCommunicator().min( localMin ) );
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+template<>
+Scalar SparseVector<ComplexFloat>::min() const
+{
+    COMMON_THROWEXCEPTION( "min unsupported on complex (float) (sparse) vector." )
+}
+
+template<>
+Scalar SparseVector<ComplexDouble>::min() const
+{
+    COMMON_THROWEXCEPTION( "min unsupported on complex (double) (sparse) vector." )
+}
+
+template<>
+Scalar SparseVector<ComplexLongDouble>::min() const
+{
+    COMMON_THROWEXCEPTION( "min unsupported on complex (long double) (sparse) vector." )
+}
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -745,13 +766,31 @@ Scalar SparseVector<ValueType>::max() const
 
     if ( nZero > 0 )
     {
-        // ToDo: replace ABS with ASUM, is different for complex numbers
-
-        localMax = common::Math::max( localMax, mZeroValue );
+        localMax = Math::max( localMax, mZeroValue );
     }
 
     return Scalar( getDistribution().getCommunicator().max( localMax ) );
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+template<>
+Scalar SparseVector<ComplexFloat>::max() const
+{
+    COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
+}
+
+template<>
+Scalar SparseVector<ComplexDouble>::max() const
+{
+    COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
+}
+
+template<>
+Scalar SparseVector<ComplexLongDouble>::max() const
+{
+    COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
+}
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -810,7 +849,7 @@ Scalar SparseVector<ValueType>::l2Norm() const
  
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    return Scalar( Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -824,7 +863,7 @@ Scalar SparseVector<IndexType>::l2Norm() const
 
     ScalarRepType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
     ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    return Scalar( Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -843,7 +882,7 @@ Scalar SparseVector<ValueType>::maxNorm() const
     if ( nZero > 0 )
     {
         SCAI_LOG_DEBUG( logger, "maxNorm, zero = " << mZeroValue << ", non-zero = " << localMaxNorm )
-        localMaxNorm = common::Math::max( common::Math::abs( localMaxNorm ), common::Math::abs( mZeroValue ) );
+        localMaxNorm = Math::max( Math::abs( localMaxNorm ), Math::abs( mZeroValue ) );
     }
 
     const Communicator& comm = getDistribution().getCommunicator();

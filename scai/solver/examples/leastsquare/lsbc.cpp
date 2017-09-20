@@ -64,39 +64,41 @@ using namespace solver;
 
 // return: lb < x < ub, elementwise
 
-bool isInterior( const DenseVector<double>& x,
-                 const DenseVector<double>& lb,
-                 const DenseVector<double>& ub )
+typedef RealType ValueType;
+
+bool isInterior( const DenseVector<ValueType>& x,
+                 const DenseVector<ValueType>& lb,
+                 const DenseVector<ValueType>& ub )
 {
     return x.all( common::binary::LT, ub ) && x.all( common::binary::GT, lb );
 }
 
-void dualityGap( double& gap, double& dualObj, 
-                 const CSRSparseMatrix<double>& A, 
-                 const DenseVector<double>& b, 
-                 const DenseVector<double>& x, 
-                 const DenseVector<double>& lb, 
-                 const DenseVector<double>& ub )
+void dualityGap( ValueType& gap, ValueType& dualObj, 
+                 const CSRSparseMatrix<ValueType>& A, 
+                 const DenseVector<ValueType>& b, 
+                 const DenseVector<ValueType>& x, 
+                 const DenseVector<ValueType>& lb, 
+                 const DenseVector<ValueType>& ub )
 
 {
     // Given x*, compute an estimate for the duality gap by implictly and
     // analytically computing a dual feasible point which converges to the 
     // optimum as x* converges to the optimum for the primal problem
 
-    DenseVector<double> x_s( x - lb );
-    DenseVector<double> b_s( b - A * lb );
-    DenseVector<double> u_s( ub - lb  );
-    DenseVector<double> res( A * x_s - b_s );
-    DenseVector<double> kappa( 2 * res );
-    DenseVector<double> tmp( kappa * A * Scalar( -1 ) );
-    DenseVector<double> mu = tmp;
+    DenseVector<ValueType> x_s( x - lb );
+    DenseVector<ValueType> b_s( b - A * lb );
+    DenseVector<ValueType> u_s( ub - lb  );
+    DenseVector<ValueType> res( A * x_s - b_s );
+    DenseVector<ValueType> kappa( 2 * res );
+    DenseVector<ValueType> tmp( kappa * A * Scalar( -1 ) );
+    DenseVector<ValueType> mu = tmp;
     mu.setScalar( Scalar( 0 ), common::binary::MAX );
 
     Scalar sDualObj = - kappa.dotProduct( kappa ) * 0.25  - kappa.dotProduct( b_s ) - mu.dotProduct( u_s );
     Scalar sGap = res.dotProduct( res ) - sDualObj;
 
-    dualObj = sDualObj.getValue<double>();
-    gap = sGap.getValue<double>();
+    dualObj = sDualObj.getValue<ValueType>();
+    gap = sGap.getValue<ValueType>();
 }
 
 class HessianMatrix : public AbstractMatrix 
@@ -126,7 +128,7 @@ public:
         result = mD * x;
         result += beta * y;
 
-        DenseVector<double> tmp( mA * x );
+        DenseVector<ValueType> tmp( mA * x );
         result += ( 2 * mTau * alpha ) * tmp * mA;
     }
 
@@ -152,24 +154,24 @@ private:
     const Scalar mTau;
 };
 
-double centralPathObjective(
-    const CSRSparseMatrix<double>& A,
-    const DenseVector<double>& b,
-    const DenseVector<double>& x,
-    const double tau,
-    const DenseVector<double>& lb,
-    const DenseVector<double>& ub )
+ValueType centralPathObjective(
+    const CSRSparseMatrix<ValueType>& A,
+    const DenseVector<ValueType>& b,
+    const DenseVector<ValueType>& x,
+    const ValueType tau,
+    const DenseVector<ValueType>& lb,
+    const DenseVector<ValueType>& ub )
 {
-    DenseVector<double> tmp ( x - lb );
+    DenseVector<ValueType> tmp ( x - lb );
     tmp.log(); 
-    double s1 = tmp.sum().getValue<double>();
+    ValueType s1 = tmp.sum().getValue<ValueType>();
     tmp = ub - x;
     tmp.log(); 
-    double s2 = tmp.sum().getValue<double>();
-    double barrier = -s1 - s2;
-    DenseVector<double> res( A * x - b );
-    double dp = res.dotProduct( res ).getValue<double>();
-    double value = tau * dp + barrier;
+    ValueType s2 = tmp.sum().getValue<ValueType>();
+    ValueType barrier = -s1 - s2;
+    DenseVector<ValueType> res( A * x - b );
+    ValueType dp = res.dotProduct( res ).getValue<ValueType>();
+    ValueType value = tau * dp + barrier;
 
     std::cout << "central path, t = " << tau << ", resnorm = " << common::Math::sqrt( dp ) 
               << ", barrier = " << barrier << ", value = " << value << std::endl;
@@ -177,15 +179,15 @@ double centralPathObjective(
     return value;
 }
 
-double stepSize( const CSRSparseMatrix<double>& A,
-                 const DenseVector<double>& b,
-                 const DenseVector<double>& x,
-                 const double tau,
-                 const DenseVector<double>& lb,
-                 const DenseVector<double>& ub,
-                 const DenseVector<double>& dx,
-                 const double alpha,
-                 const double beta )
+ValueType stepSize( const CSRSparseMatrix<ValueType>& A,
+                 const DenseVector<ValueType>& b,
+                 const DenseVector<ValueType>& x,
+                 const ValueType tau,
+                 const DenseVector<ValueType>& lb,
+                 const DenseVector<ValueType>& ub,
+                 const DenseVector<ValueType>& dx,
+                 const ValueType alpha,
+                 const ValueType beta )
 {
 
 //      function [ s ] = step_size (A, b, Vector x, t, l, u, Vector dx, alpha, beta)
@@ -194,32 +196,32 @@ double stepSize( const CSRSparseMatrix<double>& A,
 // d = 1 ./ (u - x) - 1 ./ (x - l);
 // g = 2 * t * A' * (A * x - b) + d;
 
-    DenseVector<double> d1( ub - x ); d1.invert();
-    DenseVector<double> d2( x - lb ); d2.invert();
-    DenseVector<double> d( d1 - d2 );
+    DenseVector<ValueType> d1( ub - x ); d1.invert();
+    DenseVector<ValueType> d2( x - lb ); d2.invert();
+    DenseVector<ValueType> d( d1 - d2 );
 
-    DenseVector<double> g( A * x - b );
+    DenseVector<ValueType> g( A * x - b );
     g = 2 * tau * g * A + d;
 
     IndexType k = 0;
 
-    double objValueAtX = centralPathObjective( A, b, x, tau, lb, ub );
+    ValueType objValueAtX = centralPathObjective( A, b, x, tau, lb, ub );
 
     Scalar objDiff = alpha * g.dotProduct( dx );
 
     std::cout << "objValue@X = " << objValueAtX << ", diff = " << objDiff << std::endl;
 
-    double s = 1.0;
+    ValueType s = 1.0;
 
     while ( true )
     {
-        DenseVector<double> x_new( x + s * dx );
+        DenseVector<ValueType> x_new( x + s * dx );
 
         if ( isInterior( x_new, lb, ub ) )
         {
-            double objValueAtXNew = centralPathObjective(A, b, x_new, tau, lb, ub );
+            ValueType objValueAtXNew = centralPathObjective(A, b, x_new, tau, lb, ub );
 
-            double objDiff = objValueAtXNew - objValueAtX;
+            ValueType objDiff = objValueAtXNew - objValueAtX;
 
             std::cout << "objValue@Xnew = " << objValueAtXNew << ", diff = " << objDiff << std::endl;
 
@@ -242,30 +244,30 @@ double stepSize( const CSRSparseMatrix<double>& A,
 }
 
 void computeSearchDirection(
-     DenseVector<double>& dx,
-     const CSRSparseMatrix<double>& A,
-     const DenseVector<double>& b,
-     const DenseVector<double>& x,
-     const double tau,
-     const DenseVector<double>& lb,
-     const DenseVector<double>& ub,
-     const double gap,
-     const DenseVector<double>& diagATA )
+     DenseVector<ValueType>& dx,
+     const CSRSparseMatrix<ValueType>& A,
+     const DenseVector<ValueType>& b,
+     const DenseVector<ValueType>& x,
+     const ValueType tau,
+     const DenseVector<ValueType>& lb,
+     const DenseVector<ValueType>& ub,
+     const ValueType gap,
+     const DenseVector<ValueType>& diagATA )
 {
     // Gradient g = g(x, t)
 
     // d = 1 ./ (u - x) - 1 ./ (x - l);
 
-    DenseVector<double> d1( ub - x );  
+    DenseVector<ValueType> d1( ub - x );  
     d1.invert();
-    DenseVector<double> d2( x - lb ); 
+    DenseVector<ValueType> d2( x - lb ); 
     d2.invert();
-    DenseVector<double> d( d1 - d2 );
+    DenseVector<ValueType> d( d1 - d2 );
 
     // g = 2 * t * A' * (A * x - b) + d;
 
-    DenseVector<double> tmp( A * x - b );
-    DenseVector<double> g( 2 * tau * tmp * A + d );
+    DenseVector<ValueType> tmp( A * x - b );
+    DenseVector<ValueType> g( 2 * tau * tmp * A + d );
     g *= -1;
 
     // Hessian H = H(x, t)
@@ -274,7 +276,7 @@ void computeSearchDirection(
 
     d1 *= d1;
     d2 *= d2;
-    DenseVector<double> D( d1 + d2 );
+    DenseVector<ValueType> D( d1 + d2 );
 
     HessianMatrix H( A, D, tau );
 
@@ -292,12 +294,12 @@ void computeSearchDirection(
 
     // definie stopping criteria
 
-    double eps = 1e-14;
-    double e = 0.01;
+    ValueType eps = 1e-14;
+    ValueType e = 0.01;
 
-    double normG = g.l2Norm().getValue<double>();
+    ValueType normG = g.l2Norm().getValue<ValueType>();
    
-    double tol = common::Math::max( eps, common::Math::min( 0.1, e * gap / normG ) );
+    ValueType tol = common::Math::max( eps, common::Math::min( ValueType( 0.1 ), e * gap / normG ) );
 
     std::cout << "Use relative tol = " << tol << " for CG" << std::endl;
 
@@ -310,8 +312,8 @@ void computeSearchDirection(
 
     LoggerPtr logger( new CommonLogger ( "", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly) );
 
-    DenseVector<double> diagonal( 2 * tau * diagATA + D );
-    CSRSparseMatrix<double> diagonalMatrix;
+    DenseVector<ValueType> diagonal( 2 * tau * diagATA + D );
+    CSRSparseMatrix<ValueType> diagonalMatrix;
     diagonalMatrix.setIdentity( diagonal.getDistributionPtr() );
     diagonalMatrix.setDiagonal( diagonal );
 
@@ -329,12 +331,12 @@ void computeSearchDirection(
 }
 
 void lsqBox(
-    DenseVector<double>& x,
-    const CSRSparseMatrix<double>& A,
-    const DenseVector<double>& b,
-    const DenseVector<double>& lb,
-    const DenseVector<double>& ub,
-    const double tolerance )
+    DenseVector<ValueType>& x,
+    const CSRSparseMatrix<ValueType>& A,
+    const DenseVector<ValueType>& b,
+    const DenseVector<ValueType>& lb,
+    const DenseVector<ValueType>& ub,
+    const ValueType tolerance )
 {
     SCAI_REGION ( "lsqBC" )
 
@@ -345,7 +347,7 @@ void lsqBox(
 
     SCAI_ASSERT_EQ_ERROR( b.size(), A.getNumRows(), "size mismatch" )
 
-    SCAI_ASSERT_GT_ERROR( tolerance, double( 0 ), " must be positive" )
+    SCAI_ASSERT_GT_ERROR( tolerance, ValueType( 0 ), " must be positive" )
 
     x = 0.5 * lb + 0.5 * ub;
 
@@ -353,22 +355,22 @@ void lsqBox(
 
     std::cout << "All okay, start least square with box constraints" << std::endl;
 
-    DenseVector<double> residual( A * x - b );
+    DenseVector<ValueType> residual( A * x - b );
 
-    double tau = 1.0 / residual.l2Norm().getValue<double>();
+    ValueType tau = 1.0 / residual.l2Norm().getValue<ValueType>();
 
-    double gap = 0.0;
-    double dualObj = 1.0;
+    ValueType gap = 0.0;
+    ValueType dualObj = 1.0;
 
     // Line search parameters
 
-    const double alpha = 0.01;
-    const double beta  = 0.5;
+    const ValueType alpha = 0.01;
+    const ValueType beta  = 0.5;
 
     // Parameters for the t-update rule
 
-    const double mu = 2;
-    const double s_min = 0.5;
+    const ValueType mu = 2;
+    const ValueType s_min = 0.5;
 
     const IndexType maxIter = 10000;
 
@@ -378,7 +380,7 @@ void lsqBox(
 
     // diagATA = sum(A .* A)';
 
-    DenseVector<double> diagATA;
+    DenseVector<ValueType> diagATA;
 
     std::cout << "build diagATA" << std::endl;
 
@@ -388,17 +390,17 @@ void lsqBox(
 
     SCAI_ASSERT_EQ_ERROR( diagATA.size(), n, "serious mismatch" )
 
-    // SparseVector<double> col;
+    // SparseVector<ValueType> col;
 
     // for( IndexType i = 0; i < n; ++i )
     // {
         // A.getColumn ( col, i );
-        // diagATA[i] = col.dotProduct( col ).getValue<double>();
+        // diagATA[i] = col.dotProduct( col ).getValue<ValueType>();
     // }
 
     std::cout << "norm ATA = " << diagATA.l2Norm() << std::endl;
 
-    DenseVector<double> dx( A.getColDistributionPtr() );
+    DenseVector<ValueType> dx( A.getColDistributionPtr() );
 
     for ( IndexType iter = 0; iter < maxIter; ++iter )
     {
@@ -408,7 +410,7 @@ void lsqBox(
 
         computeSearchDirection( dx, A, b, x, tau, lb, ub, gap, diagATA);
 
-        double s = stepSize( A, b, x, tau, lb, ub, dx, alpha, beta );
+        ValueType s = stepSize( A, b, x, tau, lb, ub, dx, alpha, beta );
 
         std::cout << "Step size = " << s << std::endl;
 
@@ -441,10 +443,10 @@ int main( int argc, const char* argv[] )
     
     common::Settings::parseArgs( argc, argv );
 
-    CSRSparseMatrix<double> A( "A.mat" );
-    DenseVector<double> b ( "b.mat" );
-    DenseVector<double> lb ( "lb.mat" );
-    DenseVector<double> ub ( "ub.mat" );
+    CSRSparseMatrix<ValueType> A( "A.mat" );
+    DenseVector<ValueType> b ( "b.mat" );
+    DenseVector<ValueType> lb ( "lb.mat" );
+    DenseVector<ValueType> ub ( "ub.mat" );
 
     std::cout << "A = " << A << std::endl;
     std::cout << "b = " << b << std::endl;
@@ -468,9 +470,9 @@ int main( int argc, const char* argv[] )
     ub.setContextPtr( ctx );
     lb.setContextPtr( ctx );
 
-    DenseVector<double> x( ctx );
+    DenseVector<ValueType> x( ctx );
 
-    double tolerance = 0.01;
+    ValueType tolerance = 0.01;
 
     try 
     {
@@ -483,7 +485,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    DenseVector<double> residual( A * x - b );
+    DenseVector<ValueType> residual( A * x - b );
 
     std::cout << "res norm = " << residual.l2Norm() << std::endl;
 

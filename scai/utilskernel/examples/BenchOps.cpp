@@ -50,7 +50,7 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    typedef double ValueType;
+    typedef RealType ValueType;
 
     const IndexType N = 10 * 1000 * 1000;
 

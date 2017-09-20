@@ -633,6 +633,28 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
     return is;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+bool DenseVector<ComplexFloat>::isSorted( bool ) const
+{
+    COMMON_THROWEXCEPTION( "isSorted unsupported for complex vectors." )
+}
+
+template<>
+bool DenseVector<ComplexDouble>::isSorted( bool ) const
+{
+    COMMON_THROWEXCEPTION( "isSorted unsupported for complex vectors." )
+}
+
+template<>
+bool DenseVector<ComplexLongDouble>::isSorted( bool ) const
+{
+    COMMON_THROWEXCEPTION( "isSorted unsupported for complex vectors." )
+}
+
+#endif
+
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -823,6 +845,30 @@ void DenseVector<ValueType>::sortImpl(
         perm->swap( *localPerm, newDist );
     }
 }
+
+/* ------------------------------------------------------------------------- */
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void DenseVector<ComplexFloat>::sortImpl( DenseVector<IndexType>*, DenseVector<ComplexFloat>*, DenseVector<ComplexFloat>&, bool )
+{
+    COMMON_THROWEXCEPTION( "no sort on complex vector" )
+}
+
+template<>
+void DenseVector<ComplexDouble>::sortImpl( DenseVector<IndexType>*, DenseVector<ComplexDouble>*, DenseVector<ComplexDouble>&, bool )
+{
+    COMMON_THROWEXCEPTION( "no sort on complex vector" )
+}
+
+template<>
+void DenseVector<ComplexLongDouble>::sortImpl( DenseVector<IndexType>*, DenseVector<ComplexLongDouble>*, DenseVector<ComplexLongDouble>&, bool )
+{
+    COMMON_THROWEXCEPTION( "no sort on complex vector" )
+}
+
+#endif
 
 /* ------------------------------------------------------------------------- */
 

@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 
                 for ( IndexType i = 0; i < n; ++i )
                 {
-                    ValueType expected = static_cast<double>( ( i + 1 ) * ( i + 2 ) / 2  );
+                    ValueType expected = static_cast<ValueType>( ( i + 1 ) * ( i + 2 ) / 2  );
                     Scalar computed = rVector[i];
                     BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
                 }
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
         {
             dmemo::DistributionPtr colDist = colDists[i];
 
-            CSRSparseMatrix<double> mat( rowDist, colDist );
+            CSRSparseMatrix<RealType> mat( rowDist, colDist );
 
             DenseVector<ValueType> x( colDist, 3 );
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );

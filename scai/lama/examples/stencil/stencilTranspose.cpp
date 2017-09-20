@@ -58,12 +58,13 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+typedef RealType ValueType;
 
 int main( int argc, const char* argv[] )
 {
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil1D<double> stencilFD8;
+    common::Stencil1D<ValueType> stencilFD8;
 
     stencilFD8.reserve( 4 );   // just for convenience, not mandatory
 
@@ -81,7 +82,7 @@ int main( int argc, const char* argv[] )
     // stencilFD8.addPoint( 3, -49.0/5120.0 );
     // stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    common::Stencil1D<double> stencilBD8;
+    common::Stencil1D<ValueType> stencilBD8;
     stencilBD8.transpose( stencilFD8 );
 
     common::Grid1D grid1( 5 );
@@ -90,17 +91,17 @@ int main( int argc, const char* argv[] )
     grid1.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
     grid2.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
 
-    StencilStorage<double> s1( grid1, stencilFD8 );
-    StencilStorage<double> s2( grid2, stencilBD8 );
+    StencilStorage<ValueType> s1( grid1, stencilFD8 );
+    StencilStorage<ValueType> s2( grid2, stencilBD8 );
 
-    CSRStorage<double> csr1( s1 );
+    CSRStorage<ValueType> csr1( s1 );
     csr1.writeToFile( "csr1.mtx" );
-    CSRStorage<double> csr2( s2 );
+    CSRStorage<ValueType> csr2( s2 );
     csr2.writeToFile( "csr2.mtx" );
-    CSRStorage<double> csrT;
+    CSRStorage<ValueType> csrT;
     csrT.assignTranspose( csr1 );
     csr2.writeToFile( "csrT.mtx" );
 
-    double diff = csr2.maxDiffNorm( csrT );
+    ValueType diff = csr2.maxDiffNorm( csrT );
     std::cout << "max diff = " << diff << std::endl;
 }

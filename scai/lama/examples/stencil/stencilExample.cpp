@@ -57,6 +57,7 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+typedef RealType ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -66,7 +67,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil1D<double> stencilFD8;
+    common::Stencil1D<ValueType> stencilFD8;
 
     stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
@@ -79,38 +80,38 @@ int main( int argc, const char* argv[] )
     stencilFD8.addPoint( 3, -49.0/5120.0 );
     stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    common::Stencil1D<double> stencilDummy( 1 );
+    common::Stencil1D<ValueType> stencilDummy( 1 );
 
     // 1-dimensional stencils can be combined
 
-    common::Stencil3D<double> stencilY( stencilDummy, stencilFD8, stencilDummy );
+    common::Stencil3D<ValueType> stencilY( stencilDummy, stencilFD8, stencilDummy );
 
     common::Grid3D grid( 20, 20, 20 );
 
-    StencilMatrix<double> m( grid, stencilY );
+    StencilMatrix<ValueType> m( grid, stencilY );
 
-    StencilMatrix<double> copyM1( m );
+    StencilMatrix<ValueType> copyM1( m );
 
-    StencilMatrix<double> copyM2;
+    StencilMatrix<ValueType> copyM2;
     copyM2 = m;
 
     m.scale( 0.3 );
 
-    CSRSparseMatrix<double> m1;
+    CSRSparseMatrix<ValueType> m1;
 
     m1.assignTranspose( m );
     m1.writeToFile( "m1.mtx" );
 
-    StencilMatrix<double> m2;
+    StencilMatrix<ValueType> m2;
 
     m2.assignTranspose( m );
     m2.writeToFile( "m2.mtx" );
 
-    GridVector<double> v( grid, 1.0 );
+    GridVector<ValueType> v( grid, 1.0 );
 
-    GridVector<double> v1;
+    GridVector<ValueType> v1;
     v1 = m * v;
-    GridVector<double> v2;
+    GridVector<ValueType> v2;
     v2 = v * m2;
 
     std::cout << "max diff = " << v1.maxDiffNorm( v2 ) << std::endl;

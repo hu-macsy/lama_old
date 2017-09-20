@@ -598,7 +598,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( nRows, nCols );
+    CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -651,7 +651,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( nRows, nCols );
+    CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     common::binary::BinaryOp reduceOp = common::binary::ADD;
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
     for ( IndexType dim = 0; dim < 2; ++dim )
     {
-        DenseVector<double> sRow;
+        DenseVector<RealType> sRow;
         csr.reduce( sRow, dim, reduceOp, elemOp );
 
         for ( size_t i = 0; i < rowDistributions.size(); ++i )
@@ -722,7 +722,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( nRows, nCols );
+    CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -780,7 +780,7 @@ BOOST_AUTO_TEST_CASE( getTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( nRows, nCols );
+    CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -834,7 +834,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( nRows, nCols );
+    CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -1005,7 +1005,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<double> csr( n, n );
+    CSRSparseMatrix<RealType> csr( n, n );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions distributions( n );

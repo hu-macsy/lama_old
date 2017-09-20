@@ -48,8 +48,7 @@
 using namespace scai::solver;
 using namespace scai::lama;
 
-typedef double ValueType;
-
+typedef RealType ValueType;
 
 void joinMatrix( CSRSparseMatrix<ValueType>& result, const CSRSparseMatrix<ValueType>& a, const CSRSparseMatrix<ValueType>& b )
 {
@@ -86,8 +85,8 @@ void zeroExtend( DenseVector<ValueType>& T_ext,
 {
     T_ext.allocate(	T.size() + nZeros );
 
-    hmemo::WriteAccess<double> wT( T_ext.getLocal() );
-    hmemo::ReadAccess<double> rT( T.getLocal() );
+    hmemo::WriteAccess<ValueType> wT( T_ext.getLocal() );
+    hmemo::ReadAccess<ValueType> rT( T.getLocal() );
 
     for ( IndexType i = 0; i < rT.size(); ++i )
     {
@@ -96,25 +95,25 @@ void zeroExtend( DenseVector<ValueType>& T_ext,
 }
 
 void computeSearchDirection( 
-     DenseVector<double>& dx,
-     const CSRSparseMatrix<double>& A,
-     const DenseVector<double>& lb,
-     const DenseVector<double>& ub,
-     const double tau,
-     const DenseVector<double>& ATA_diag,
+     DenseVector<ValueType>& dx,
+     const CSRSparseMatrix<ValueType>& A,
+     const DenseVector<ValueType>& lb,
+     const DenseVector<ValueType>& ub,
+     const ValueType tau,
+     const DenseVector<ValueType>& ATA_diag,
 
 {
     // Gradient g = g(x, t)
 
     // d = 1 ./ (u - x) - 1 ./ (x - l);
 
-    DenseVector<double> d1 = ub - x; d1.invert();
-    DenseVector<double> d2 = x - lb; d2.invert();
-    DenseVector<double> d  = d1 - d2;
+    DenseVector<ValueType> d1 = ub - x; d1.invert();
+    DenseVector<ValueType> d2 = x - lb; d2.invert();
+    DenseVector<ValueType> d  = d1 - d2;
     
     // g = 2 * t * A' * (A * x - b) + d;
 
-    DenseVector<double> g( A * x - b );
+    DenseVector<ValueType> g( A * x - b );
     g = 2 * tau * g * A + d;
 
     // % Hessian H = H(x, t)
@@ -134,15 +133,15 @@ void computeSearchDirection(
    // [dx, ~, ~, ~] = pcg(H, - g, tol, 1000, @(x) P_inv .* x);
 }
 
-double stepSize( const CSRSparseMatrix<double>& A,
-                 const DenseVector<double>& b,
-                 const DenseVector<double>& x,
-                 const double tau,
-                 const DenseVector<double>& lb, 
-                 const DenseVector<double>& ub, 
-                 const DenseVector<double>& dx,
-                 const double alpha, 
-                 const double beta )
+ValueType stepSize( const CSRSparseMatrix<ValueType>& A,
+                 const DenseVector<ValueType>& b,
+                 const DenseVector<ValueType>& x,
+                 const ValueType tau,
+                 const DenseVector<ValueType>& lb, 
+                 const DenseVector<ValueType>& ub, 
+                 const DenseVector<ValueType>& dx,
+                 const ValueType alpha, 
+                 const ValueType beta )
 {
 
 //      function [ s ] = step_size (A, b, Vector x, t, l, u, Vector dx, alpha, beta)
@@ -151,24 +150,24 @@ double stepSize( const CSRSparseMatrix<double>& A,
 // d = 1 ./ (u - x) - 1 ./ (x - l);
 // g = 2 * t * A' * (A * x - b) + d;
 
-    DenseVector<double> d1 = ub - x; d1.invert();
-    DenseVector<double> d2 = x - lb; d2.invert();
-    DenseVector<double> d  = d1 - d2;
+    DenseVector<ValueType> d1 = ub - x; d1.invert();
+    DenseVector<ValueType> d2 = x - lb; d2.invert();
+    DenseVector<ValueType> d  = d1 - d2;
     
-    DenseVector<double> g( A * x - b );
+    DenseVector<ValueType> g( A * x - b );
     g = 2 * tau * g * A + d;
 
     IndexType k = 0;
 
-    double objValueAtX = centralPathObjective( A, b, x, tau, lb, ub );
+    ValueType objValueAtX = centralPathObjective( A, b, x, tau, lb, ub );
 
     while ( true )
     {
-        double s = beta ^ k;
+        ValueType s = beta ^ k;
 
         Vector x_new = x + s * dx;
 
-        double objValueAtXNew = centralPathObjective(A, b, x_new, tau, lb, ub );
+        ValueType objValueAtXNew = centralPathObjective(A, b, x_new, tau, lb, ub );
 
         if ( !isInterior( x_new, lb, ub ) )
         {
@@ -236,7 +235,7 @@ void lsqBox( DenseVector<ValueType>& x,
 
     DenseVector<ValueType> ATA_diag( n );
 
-    SparseVector<double> col;
+    SparseVector<ValueType> col;
 
     for( IndexType i = 0; i < n; ++i )
     {
@@ -299,15 +298,15 @@ private
 
 // retrn: bool inBounds
 
-bool inBounds( const DenseVector<double>& x,
-               const DenseVector<double>& lb,
-               const DenseVector<double>& ub )
+bool inBounds( const DenseVector<ValueType>& x,
+               const DenseVector<ValueType>& lb,
+               const DenseVector<ValueType>& ub )
 {
      bool okay = true;
 
-     ReadAccess<double> rX( x.local() );
-     ReadAccess<double> rLB( lb.local() );
-     ReadAccess<double> rUB( ub.local() );
+     ReadAccess<ValueType> rX( x.local() );
+     ReadAccess<ValueType> rLB( lb.local() );
+     ReadAccess<ValueType> rUB( ub.local() );
 
      for ( IndexType i = 0; i < rX.size(), ++i )
      {
@@ -319,21 +318,21 @@ bool inBounds( const DenseVector<double>& x,
      return okay;
 }
 
-double centralPathObjective( 
-    const CSRSparseMatrix<double>& A,
-    const DenseVector<double>& b,
+ValueTypValueType centralPathObjective( 
+    const CSRSparseMatrix<ValueType>& A,
+    const DenseVector<ValueType>& b,
     const Scalar tau,
-    const DenseVector<double>& lb,
-    const DenseVector<double>& ub )
+    const DenseVector<ValueType>& lb,
+    const DenseVector<ValueType>& ub )
 {
-    DenseVector<double> tmp = x - lb;
+    DenseVector<ValueType> tmp = x - lb;
     tmp.log();
-    double s1 = tmp.sum();
+    ValueType s1 = tmp.sum();
     tmp = ub - x;
     tmp.log();
-    double s2 = tmp.sum();
-    double barrier = -s1 - s2;
-    DenseVector<double> res( A * x - b );
+    ValueType s2 = tmp.sum();
+    ValueType barrier = -s1 - s2;
+    DenseVector<ValueType> res( A * x - b );
     value = tau * res.dotProduct( res ) + barrier;
     return value;
 }
@@ -369,7 +368,7 @@ void dualityGap( Scalar& gap, Scalar& dualObj, const Matrix& A, cont Vector& b, 
     gap = r.dotProduct( r ) - dual_obj;
 }
 
-void real_log ( DenseVector<double> result, const DenseVector<double> x )
+void real_log ( DenseVector<ValueType> result, const DenseVector<ValueType> x )
 {
            result[i] = log( x[i] )
         else

@@ -2158,11 +2158,13 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 template<typename ValueType>
 Scalar DenseMatrix<ValueType>::maxNorm() const
 {
-    ValueType myMaxDiff = static_cast<ValueType>( 0.0 );
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType myMaxDiff = 0;
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        ValueType maxDiff = mData[i]->maxNorm();
+        AbsType maxDiff = mData[i]->maxNorm();
 
         if ( maxDiff > myMaxDiff )
         {
@@ -2243,14 +2245,17 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
 template<typename ValueType>
 ValueType DenseMatrix<ValueType>::maxDiffNormImpl( const DenseMatrix<ValueType>& other ) const
 {
-// implementation only supported for same distributions
+    // implementation only supported for same distributions
     SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), other.getRowDistribution() )
     SCAI_ASSERT_EQUAL_ERROR( getColDistribution(), other.getColDistribution() )
-    ValueType myMaxDiff = static_cast<ValueType>( 0.0 );
+
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType myMaxDiff = 0;
 
     for ( unsigned int i = 0; i < mData.size(); ++i )
     {
-        ValueType maxDiff = mData[i]->maxDiffNorm( *other.mData[i] );
+        AbsType maxDiff = mData[i]->maxDiffNorm( *other.mData[i] );
 
         if ( maxDiff > myMaxDiff )
         {

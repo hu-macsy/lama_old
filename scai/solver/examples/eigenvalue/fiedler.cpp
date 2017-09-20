@@ -57,6 +57,8 @@
 #include <iostream>
 #include <stdlib.h>
 
+typedef RealType ValueType;  // is double, only float if double not instantiated
+
 using namespace scai;
 using namespace lama;
 using namespace solver;
@@ -71,29 +73,29 @@ using namespace solver;
  *      -    -   -0.1 0.2    -   -   -1   2 
  *  \endcode
  */
-void makeLaplacian( CSRSparseMatrix<double>& L )
+void makeLaplacian( CSRSparseMatrix<ValueType>& L )
 {
     using namespace hmemo;
 
     // set all non-zero non-diagonal elements to -1
     // set all diagonal elements to number of non-diagonal elements
 
-    CSRStorage<double>& localStorage = L.getLocalStorage();
+    CSRStorage<ValueType>& localStorage = L.getLocalStorage();
 
     const HArray<IndexType>& ia = localStorage.getIA();
     const HArray<IndexType>& ja = localStorage.getJA();
-    HArray<double>& values = localStorage.getValues();
+    HArray<ValueType>& values = localStorage.getValues();
 
     {
-        const double minusOne = -1;
+        const ValueType minusOne = -1;
 
         ReadAccess<IndexType> rIA( ia );
         ReadAccess<IndexType> rJA( ja );
-        WriteAccess<double> wValues( values );
+        WriteAccess<ValueType> wValues( values );
 
         for ( IndexType i = 0; i < localStorage.getNumRows() ; ++i )
         {
-            const double sum = static_cast<double>( rIA[i+1] - rIA[i] - 1 );
+            const ValueType sum = static_cast<ValueType>( rIA[i+1] - rIA[i] - 1 );
  
             for ( IndexType jj = rIA[i]; jj < rIA[i + 1]; ++jj )
             {
@@ -104,8 +106,8 @@ void makeLaplacian( CSRSparseMatrix<double>& L )
 
     // check that x = (1, 1, ..., 1 ) is eigenvector with eigenvalue 0
 
-    DenseVector<double> x( L.getColDistributionPtr(), 1 );
-    DenseVector<double> y( L * x );
+    DenseVector<ValueType> x( L.getColDistributionPtr(), 1 );
+    DenseVector<ValueType> y( L * x );
 
     SCAI_ASSERT_LT_ERROR( y.maxNorm(), Scalar( 1e-8 ), "L not Laplacian matrix" )
 }
@@ -130,7 +132,7 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<double> L;  // laplacian matrix
+    CSRSparseMatrix<ValueType> L;  // laplacian matrix
 
     IndexType kmax = 100;        // maximal number of iterations
     Scalar    eps  = 1e-5;       // accuracy for maxNorm 
@@ -150,9 +152,9 @@ int main( int argc, const char* argv[] )
     dmemo::DistributionPtr blockDist( new dmemo::BlockDistribution( n, comm ) );
     L.redistribute( blockDist, blockDist );
 
-    DenseVector<double> u( L.getRowDistributionPtr(), 1 );
+    DenseVector<ValueType> u( L.getRowDistributionPtr(), 1 );
 
-    double n12 = common::Math::sqrt( double( n  ) );
+    ValueType n12 = common::Math::sqrt( ValueType( n  ) );
 
     u[0] = n12 + 1;
  
@@ -160,15 +162,15 @@ int main( int argc, const char* argv[] )
 
     HouseholderTransformedMatrix HLH( L, u, alpha );
 
-    DenseVector<double> t( L.getRowDistributionPtr(), 1.0 );
+    DenseVector<ValueType> t( L.getRowDistributionPtr(), 1.0 );
 
-    DenseVector<double> y;
-    DenseVector<double> diff;
+    DenseVector<ValueType> y;
+    DenseVector<ValueType> diff;
 
 
     t[0] = 0.0;
 
-    DenseVector<double> z( t );
+    DenseVector<ValueType> z( t );
     
     // set up the CG solver that is used for the inverse power method
 

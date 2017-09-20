@@ -59,6 +59,7 @@ namespace sparsekernel
 {
 
 using common::TypeTraits;
+using common::Math;
 using tasking::TaskSyncToken;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDIAUtils::logger, "OpenMP.DIAUtils" )
@@ -99,11 +100,13 @@ ValueType OpenMPDIAUtils::absMaxVal(
     const IndexType diaOffsets[],
     const ValueType diaValues[] )
 {
-    ValueType maxValue = 0;
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType maxValue = 0;
 
     #pragma omp parallel
     {
-        ValueType threadVal = 0;
+        AbsType threadVal = 0;
 
         #pragma omp for 
 
@@ -118,7 +121,7 @@ ValueType OpenMPDIAUtils::absMaxVal(
                     continue;
                 }
 
-                const ValueType val = common::Math::abs( diaValues[i + d * numRows] );
+                const AbsType val = common::Math::abs( diaValues[i + d * numRows] );
 
                 if ( val > threadVal )
                 {
@@ -155,6 +158,10 @@ void OpenMPDIAUtils::getCSRValues(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
+    typedef typename common::TypeTraits<DIAValueType>::AbsType AbsType;
+
+    AbsType absEps = eps;
+
     SCAI_LOG_INFO( logger,
                    "get CSRValues<" << TypeTraits<DIAValueType>::id() << ", " << TypeTraits<CSRValueType>::id()
                    << ">" << ", #rows = " << numRows << ", #diagonals = " << numDiagonals
@@ -228,7 +235,7 @@ void OpenMPDIAUtils::getCSRValues(
 
                 const DIAValueType value = diaValues[i + ii * numRows];
 
-                bool nonZero = common::Math::abs( value ) > eps;
+                bool nonZero = common::Math::abs( value ) > absEps;
 
                 if ( nonZero )
                 {
@@ -258,6 +265,9 @@ void OpenMPDIAUtils::getCSRSizes(
     const DIAValueType diaValues[],
     const DIAValueType eps )
 {
+    typedef typename common::TypeTraits<DIAValueType>::AbsType AbsType;
+    AbsType absEps = eps;
+
     SCAI_LOG_INFO( logger,
                    "get CSRSizes<" << TypeTraits<DIAValueType>::id() << "> for DIA matrix " << numRows << " x " << numColumns
                    << ", #diagonals = " << numDiagonals << ", eps = " << eps << ", diagonalFlag = " << diagonalFlag )
@@ -281,7 +291,7 @@ void OpenMPDIAUtils::getCSRSizes(
                 continue;
             }
 
-            bool nonZero = common::Math::abs( diaValues[i + ii * numRows] ) > eps;
+            bool nonZero = common::Math::abs( diaValues[i + ii * numRows] ) > absEps;
 
             if ( diagonalFlag && ( i == j ) )
             {

@@ -536,6 +536,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 {
     using common::Math;
+    using common::TypeTraits;
+
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;   // only here comparison
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -546,14 +549,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
     for ( PartitionId root = 0; root < comm->getSize(); ++root )
     {
         IndexType N = 5;
-        LArray<ValueType> vals;
+        LArray<AbsType> vals;
         HArrayUtils::setRandom( vals, N, 1.0f );
-        ValueType localMax = vals[0];
+        AbsType localMax = vals[0];
         IndexType localMaxLoc = 0;
 
         for ( IndexType i = 0; i < N; ++i )
         {
-            ValueType v = vals[i];
+            AbsType v = vals[i];
 
             if ( v > localMax )
             {
@@ -564,13 +567,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxLocTest, ValueType, scai_array_test_types )
 
         SCAI_LOG_INFO( logger, *comm << ": checkMaxLoc, local " << localMax << " @ " << localMaxLoc )
 
-
-        ValueType globalMax1 = comm->max( localMax );
+        AbsType globalMax1 = comm->max( localMax );
 
         BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
 
         IndexType globalMaxLoc = localMaxLoc;
-        ValueType globalMax    = localMax;
+        AbsType globalMax    = localMax;
 
         comm->maxloc( globalMax, globalMaxLoc, root );
 
@@ -597,6 +599,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
 {
     using common::Math;
 
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;   // for comparison
+
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::srand( 11171 + comm->getRank() * 17 );
@@ -606,14 +610,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
     for ( PartitionId root = 0; root < comm->getSize(); ++root )
     {
         IndexType N = 5;
-        LArray<ValueType> vals;
+        LArray<AbsType> vals;
         HArrayUtils::setRandom( vals, N, 1.0f );
-        ValueType localMin = vals[0];
+        AbsType localMin = vals[0];
         IndexType localMinLoc = 0;
 
         for ( IndexType i = 0; i < N; ++i )
         {
-            ValueType v = vals[i];
+            AbsType v = vals[i];
 
             if ( v < localMin )
             {
@@ -624,7 +628,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
 
         SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, local " << localMin << " @ " << localMinLoc )
 
-        ValueType globalMin1 = comm->min( localMin );
+        AbsType globalMin1 = comm->min( localMin );
 
         bool error1 = localMin < globalMin1;
 
@@ -633,7 +637,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
         // BOOST_CHECK( Math::abs( globalMax1 ) >= Math::abs( localMax ) );
 
         IndexType globalMinLoc = localMinLoc;
-        ValueType globalMin = localMin;
+        AbsType globalMin = localMin;
 
         comm->minloc( globalMin, globalMinLoc, root );
 
@@ -644,7 +648,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minLocTest, ValueType, scai_array_test_types )
 
         SCAI_LOG_INFO( logger, *comm << ": checkMinLoc, global " << globalMin << " @ " << globalMinLoc )
 
-        bool error = localMin < globalMin;
+        bool error = AbsType( localMin ) < AbsType( globalMin );
 
         BOOST_CHECK( !error );
 
@@ -662,18 +666,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
 {
     using common::Math;
 
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;   // for comparison
+
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
     std::srand( 1751 + comm->getRank() * 17 );
 
     IndexType N = 5;
-    LArray<ValueType> vals;
+    LArray<AbsType> vals;
     HArrayUtils::setRandom( vals, N, 1.0f );
-    ValueType localMin = vals[0];
+    AbsType localMin = vals[0];
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        ValueType v = Math::abs( vals[i] );
+        AbsType v = Math::abs( vals[i] );
 
         if ( v > localMin )
         {
@@ -681,7 +687,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
         }
     }
 
-    ValueType globalMin = comm->min( localMin );
+    AbsType globalMin = comm->min( localMin );
 
     BOOST_CHECK( Math::abs( globalMin ) <= Math::abs( localMin ) );
 }

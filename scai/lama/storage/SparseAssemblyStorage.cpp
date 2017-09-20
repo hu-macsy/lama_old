@@ -51,6 +51,8 @@
 namespace scai
 {
 
+using common::Math;
+
 using namespace hmemo;
 
 using utilskernel::HArrayUtils;
@@ -270,7 +272,7 @@ ValueType SparseAssemblyStorage<ValueType>::l1Norm() const
     {
         for ( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            val += common::Math::abs( mRows[i].values[jj] );
+            val += Math::abs( mRows[i].values[jj] );
         }
     }
 
@@ -289,22 +291,23 @@ ValueType SparseAssemblyStorage<ValueType>::l2Norm() const
     {
         for ( size_t jj = 0; jj < mRows[i].values.size(); ++jj )
         {
-            tmp = common::Math::abs( mRows[i].values[jj] );
+            tmp = Math::abs( mRows[i].values[jj] );
             val += tmp * tmp;
         }
     }
 
-    return common::Math::sqrt( val );
+    return Math::sqrt( val );
 }
 
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
+typename SparseAssemblyStorage<ValueType>::StorageAbsType SparseAssemblyStorage<ValueType>::maxNorm() const
 {
     // SparseAssemblyStorage not supported on GPUs
-    ValueType maxval = static_cast<ValueType>( 0.0 );
+
+    StorageAbsType maxval = 0;
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
@@ -312,8 +315,7 @@ ValueType SparseAssemblyStorage<ValueType>::maxNorm() const
 
         for ( size_t jj = 0; jj < values.size(); ++jj )
         {
-            ValueType val = mRows[i].values[jj];
-            val = common::Math::abs( val );
+            StorageAbsType val = Math::abs( mRows[i].values[jj] );
 
             if ( val > maxval )
             {
@@ -415,7 +417,7 @@ void SparseAssemblyStorage<ValueType>::Row::conj()
 {
     for ( size_t i = 0; i < values.size(); i++ )
     {
-        values[i] = common::Math::conj( values[i] );
+        values[i] = Math::conj( values[i] );
     }
 }
 
@@ -966,7 +968,7 @@ void SparseAssemblyStorage<ValueType>::setColumnImpl( const HArray<OtherType>& c
 template<typename ValueType>
 void SparseAssemblyStorage<ValueType>::setDiagonalImpl( const ValueType value )
 {
-    const IndexType numDiagonalElements = common::Math::min( mNumColumns, mNumRows );
+    const IndexType numDiagonalElements = Math::min( mNumColumns, mNumRows );
 
     for ( IndexType i = 0; i < numDiagonalElements; ++i )
     {
@@ -1002,7 +1004,7 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseAssemblyStorage<ValueType>::scaleImpl( const HArray<OtherValueType>& diagonal )
 {
-    IndexType n = common::Math::min( mNumRows, diagonal.size() );
+    IndexType n = Math::min( mNumRows, diagonal.size() );
     ReadAccess<OtherValueType> rDiagonal( diagonal );
 
     for ( IndexType i = 0; i < n; ++i )

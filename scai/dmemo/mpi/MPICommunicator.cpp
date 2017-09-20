@@ -48,7 +48,7 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/loop.hpp>
-#include <scai/common/Math.hpp>
+#include <scai/common/BinaryOp.hpp>
 
 // std
 #include <iostream>
@@ -295,7 +295,7 @@ void MPICommunicator::max_operator( void* in, void* out, int* count, MPI_Datatyp
 
     for ( int i = 0; i < *count; ++i )
     {
-        b[i] = common::Math::max( a[i], b[i] );
+        b[i] = common::applyBinary( a[i], common::binary::MAX, b[i] );
     }
 }
 
@@ -307,7 +307,7 @@ void MPICommunicator::min_operator( void* in, void* out, int* count, MPI_Datatyp
 
     for ( int i = 0; i < *count; ++i )
     {
-        b[i] = common::Math::min( a[i], b[i] );
+        b[i] = common::applyBinary( a[i], common::binary::MIN, b[i] );
     }
 }
 

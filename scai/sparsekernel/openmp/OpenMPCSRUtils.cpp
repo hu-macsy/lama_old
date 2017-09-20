@@ -401,6 +401,10 @@ void OpenMPCSRUtils::countNonZeros(
     const ValueType eps,
     const bool diagonalFlag )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType absEps = eps;
+
     SCAI_REGION( "OpenMP.CSRUtils.countNonZeros" )
     SCAI_LOG_INFO( logger, "countNonZeros of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
                    << "), eps = " << eps << ", diagonal = " << diagonalFlag )
@@ -422,7 +426,9 @@ void OpenMPCSRUtils::countNonZeros(
                 countDiagonal = true;
             }
 
-            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+            AbsType absVal = common::Math::abs( values[jj] );
+
+            bool nonZero = absVal > absEps;
 
             SCAI_LOG_TRACE( logger, "i = " << i << ", j = " << ja[jj] << ", val = " << values[jj]
                             << ", isDiagonal = " << countDiagonal << ", nonZero = " << nonZero )
@@ -452,6 +458,10 @@ void OpenMPCSRUtils::compress(
     const ValueType eps,
     const bool diagonalFlag )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType absEps = eps;
+
     SCAI_REGION( "OpenMP.CSR.compress" )
     SCAI_LOG_INFO( logger, "compress of CSR<" << TypeTraits<ValueType>::id() << ">( " << numRows
                    << "), eps = " << eps << ", diagonal = " << diagonalFlag )
@@ -475,7 +485,9 @@ void OpenMPCSRUtils::compress(
                 countDiagonal = true;
             }
 
-            bool nonZero    = common::Math::abs( values[jj] ) > eps;
+            AbsType absVal = common::Math::abs( values[jj] );
+
+            bool nonZero = absVal > absEps;
 
             if ( nonZero || countDiagonal )
             {
@@ -1727,13 +1739,18 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     // No assumption about any sorting in a row
-    ValueType val = static_cast<ValueType>( 0.0 );
+
+    AbsType val = 0;
+
     IndexType helpIndex = 0; // some kind of thread-safe global value for findCol
 
     for ( IndexType i1 = 0; i1 < n1; ++i1 )
     {
         ValueType diff = csrValues1[i1];
+
         IndexType j = csrJA1[i1];
         IndexType i2 = findCol( csrJA2, n2, j, helpIndex );
 
@@ -1742,11 +1759,11 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             diff -= csrValues2[i2];
         }
 
-        diff = common::Math::abs( diff );
+        AbsType absDiff = common::Math::abs( diff );
 
-        if ( diff > val )
+        if ( absDiff > val )
         {
-            val = diff;
+            val = absDiff;
         }
     }
 
@@ -1763,11 +1780,11 @@ ValueType OpenMPCSRUtils::absMaxDiffRowUnsorted(
             continue; // already compare in first loop
         }
 
-        ValueType diff = common::Math::abs( csrValues2[i2] );
+        AbsType absDiff = common::Math::abs( csrValues2[i2] );
 
-        if ( diff > val )
+        if ( absDiff > val )
         {
-            val = diff;
+            val = absDiff;
         }
     }
 
@@ -1786,7 +1803,11 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
     const ValueType csrValues2[] )
 {
     // Note: the implementation assumes that rows are sorted according to column indexes
-    ValueType val = static_cast<ValueType>( 0.0 );
+
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType val = 0;
+
     IndexType i2 = 0;
     IndexType i1 = 0;
 
@@ -1838,11 +1859,11 @@ ValueType OpenMPCSRUtils::absMaxDiffRowSorted(
             }
         }
 
-        diff = common::Math::abs( diff );
+        AbsType absDiff = common::Math::abs( diff );
 
-        if ( diff > val )
+        if ( absDiff > val )
         {
-            val = diff;
+            val = absDiff;
         }
     }
 
@@ -1862,6 +1883,8 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
     const IndexType csrJA2[],
     const ValueType csrValues2[] )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_LOG_INFO( logger,
                    "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "csr[" << numRows << "], sorted = " << sortedRows )
     ValueType ( *absMaxDiffRow )(
@@ -1881,10 +1904,12 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
         absMaxDiffRow = OpenMPCSRUtils::absMaxDiffRowUnsorted<ValueType>;
     }
 
-    ValueType val = static_cast<ValueType>( 0.0 );
+    AbsType val = 0;
+
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        AbsType threadVal = 0;
+
         #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -1893,8 +1918,8 @@ ValueType OpenMPCSRUtils::absMaxDiffVal(
             IndexType offs2 = csrIA2[i];
             IndexType n1 = csrIA1[i + 1] - offs1;
             IndexType n2 = csrIA2[i + 1] - offs2;
-            ValueType maxRow = static_cast<ValueType>( 0.0 );
-            maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
+
+            AbsType maxRow = absMaxDiffRow( n1, &csrJA1[offs1], &csrValues1[offs1], n2, &csrJA2[offs2], &csrValues2[offs2] );
 
             if ( maxRow > threadVal )
             {

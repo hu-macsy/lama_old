@@ -53,6 +53,7 @@ namespace sparsekernel
 {
 
 using common::TypeTraits;
+using common::Math;
 
 SCAI_LOG_DEF_LOGGER( OpenMPDenseUtils::logger, "OpenMP.DenseUtils" )
 
@@ -67,6 +68,9 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     const IndexType numColumns,
     const DenseValueType eps )
 {
+    typedef typename TypeTraits<DenseValueType>::AbsType AbsType;
+    AbsType absEps = Math::abs( eps );
+
     SCAI_REGION( "OpenMP.DenseUtils.nonZeroValues" )
 
     IndexType count = 0;
@@ -76,13 +80,12 @@ IndexType OpenMPDenseUtils::nonZeroValues(
     {
         for ( IndexType j = 0; j < numColumns; ++j )
         {
-            if ( common::Math::abs( denseValues[denseindex( i, j, numRows, numColumns )] ) > eps )
+            if ( Math::abs( denseValues[denseindex( i, j, numRows, numColumns) ] ) > absEps )
             {
                 count++;
             }
         }
     }
-
     return count;
 }
 
@@ -95,6 +98,10 @@ void OpenMPDenseUtils::getCSRSizes(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
+    typedef typename TypeTraits<DenseValueType>::AbsType AbsType;
+
+    AbsType absEps = Math::abs( eps );
+
     SCAI_REGION( "OpenMP.DenseUtils.getCSRSizes" )
 
     if ( numRows > 0 )
@@ -117,7 +124,7 @@ void OpenMPDenseUtils::getCSRSizes(
         {
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if ( common::Math::abs( value ) > eps )
+            if ( common::Math::abs( value ) > absEps )
             {
                 ++nonZeros;
             }
@@ -144,6 +151,10 @@ void OpenMPDenseUtils::getCSRValues(
     const DenseValueType denseValues[],
     const DenseValueType eps )
 {
+    typedef typename TypeTraits<DenseValueType>::AbsType AbsType;
+
+    AbsType absEps = eps;
+
     SCAI_REGION( "OpenMP.DenseUtils.getCSRValues" )
 
     SCAI_LOG_INFO( logger,
@@ -172,7 +183,9 @@ void OpenMPDenseUtils::getCSRValues(
 
             const DenseValueType& value = denseValues[denseindex( i, j, numRows, numColumns )];
 
-            if ( common::Math::abs( value ) > eps )
+            AbsType absValue = common::Math::abs( value );
+
+            if ( absValue > absEps )
             {
                 csrValues[offset] = static_cast<CSRValueType>( value );
                 csrJA[offset] = j;

@@ -75,6 +75,7 @@ class COMMON_DLL_IMPORTEXPORT ELLStorage:
 public:
 
     typedef ValueType StorageValueType;
+    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** get typename of the matrix storage format. */
 
@@ -461,7 +462,7 @@ public:
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual ValueType maxNorm() const;
+    virtual StorageAbsType maxNorm() const;
 
     /**
      * @brief compress compresses this by removing non-diagonal elements that

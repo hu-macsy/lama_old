@@ -420,11 +420,13 @@ struct Math
     static inline MIC_CALLABLE_MEMBER long double min( const long double& x, const long double& y );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
+    /*
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> min( const Complex<float>& x, const Complex<float>& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> min( const Complex<double>& x, const Complex<double>& y );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> min( const Complex<long double>& x, const Complex<long double>& y );
+    */
 #endif
 
     /*
@@ -445,11 +447,13 @@ struct Math
     static inline MIC_CALLABLE_MEMBER long double max( const long double& x, const long double& y );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
+    /*
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> max( const Complex<float>& x, const Complex<float>& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> max( const Complex<double>& x, const Complex<double>& y );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> max( const Complex<long double>& x, const Complex<long double>& y );
+    */
 #endif
 
     /*

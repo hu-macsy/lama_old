@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
     ValueType rawNonZeroValues1[] = { 5, 6, 7 };
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
-    double rawNonZeroValues2[] = { 5, 4, 9 };
+    ValueType rawNonZeroValues2[] = { 5, 4, 9 };
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
     ValueType rawNonZeroValues1[] = { 5, 6, 7 };
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
-    double rawNonZeroValues2[] = { 5, 4, 9 };
+    ValueType rawNonZeroValues2[] = { 5, 4, 9 };
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE( binOpDenseTest )
 
 BOOST_AUTO_TEST_CASE( reduceTest )
 {
-    // Test of different redcution operations on sparse vector
+    // Test of different reduction operations on sparse vector
     // Note: it is sufficient to consider one value type
 
     typedef RealType ValueType;
@@ -420,10 +420,10 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     IndexType n = 10;
 
     IndexType rawNonZeroIndexes1[] = { 0, 5, 6 };
-    ValueType rawNonZeroValues1[] = { 5, 6, 7 };
+    ValueType rawNonZeroValues1[] = { 5, -6, 7 };
 
     IndexType rawNonZeroIndexes2[] = { 0, 4, 6 };
-    double rawNonZeroValues2[] = { 5, 4, 9 };
+    ValueType rawNonZeroValues2[] = { -5, 4, 9 };
 
     // Note: binary operations should give sparse vector with maximal 4 elements
 

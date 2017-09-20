@@ -126,20 +126,23 @@ ValueType CUDAReduceUtils::reduceMinVal( const ValueType array[], const IndexTyp
 
 /* --------------------------------------------------------------------------- */
 
-template<typename ValueType>
-struct absolute_value: public thrust::unary_function<ValueType, ValueType>
+// Be careful: template<ResultType, ArgumentType>, but unary_function<ArgumentType, ResultType> 
+
+template<typename AbsType, typename ValueType>
+struct absolute_value: public thrust::unary_function<ValueType, AbsType>
 {
     __host__ __device__
-    ValueType operator()( const ValueType& x ) const
+    AbsType operator()( const ValueType& x ) const
     {
-        // return x < ValueType( 0 ) ? -x : x;
-        return Math::abs( x );
+        return static_cast<AbsType>( Math::abs( x ) );
     }
 };
 
 template<typename ValueType>
 ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "CUDA.Utils.reduceAbsMax" )
 
     SCAI_LOG_INFO( logger, "absMaxVal for " << n << " elements " )
@@ -148,12 +151,12 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 
     thrust::device_ptr<ValueType> data( const_cast<ValueType*>( array ) );
 
-    ValueType result = thrust::transform_reduce(
+    AbsType result = thrust::transform_reduce(
                            data,
                            data + n,
-                           absolute_value<ValueType>(),
-                           zero,
-                           thrust::maximum<ValueType>() );
+                           absolute_value<AbsType, ValueType>(),
+                           AbsType( zero ),
+                           thrust::maximum<AbsType>() );
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
     SCAI_LOG_INFO( logger, "abs max of " << n << " values = " << result )
@@ -166,7 +169,14 @@ template<typename ValueType>
 ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, const ValueType zero, binary::BinaryOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
+
     ValueType result;
+
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType absResult;
+    AbsType absZero = zero;
+    const AbsType* absArray = reinterpret_cast<const AbsType*>( array );
 
     switch ( op )
     {
@@ -175,11 +185,14 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
             break;
 
         case binary::MAX :
-            result = reduceMaxVal( array, n, zero );
+            // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<AbsType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
+            absResult = reduceMaxVal( absArray, n, absZero );
+            result = absResult;
             break;
 
         case binary::MIN :
-            result = reduceMinVal( array, n, zero );
+            absResult = reduceMinVal( absArray, n, absZero );
+            result = absResult;
             break;
 
         case binary::ABS_MAX :

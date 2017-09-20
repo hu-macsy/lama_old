@@ -148,7 +148,7 @@ ValueType StencilStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType StencilStorage<ValueType>::maxNorm() const
+typename StencilStorage<ValueType>::StorageAbsType StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;

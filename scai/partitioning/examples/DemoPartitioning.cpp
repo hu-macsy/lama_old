@@ -40,6 +40,8 @@ using namespace dmemo;
 using namespace lama;
 using namespace partitioning;
 
+typedef RealType ValueType;
+
 int main( int narg, const char* argv[] )
 {
     if ( narg < 2 )
@@ -49,7 +51,7 @@ int main( int narg, const char* argv[] )
 
     std::string fileName = argv[1];
 
-    CSRSparseMatrix<double> A( fileName );
+    CSRSparseMatrix<ValueType> A( fileName );
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 

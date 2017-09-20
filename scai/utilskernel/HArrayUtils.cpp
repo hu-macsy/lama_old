@@ -1695,6 +1695,43 @@ void HArrayUtils::mergeSortOptional(
     }
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ComplexFloat>& ,
+    hmemo::HArray<IndexType>*,
+    const hmemo::HArray<IndexType>&,
+    bool,
+    hmemo::ContextPtr )
+{
+    COMMON_THROWEXCEPTION( "unsupported" )
+}
+
+template<>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ComplexDouble>& ,
+    hmemo::HArray<IndexType>*,
+    const hmemo::HArray<IndexType>&,
+    bool,
+    hmemo::ContextPtr )
+{
+    COMMON_THROWEXCEPTION( "unsupported" )
+}
+
+template<>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ComplexLongDouble>& ,
+    hmemo::HArray<IndexType>*,
+    const hmemo::HArray<IndexType>&,
+    bool,
+    hmemo::ContextPtr )
+{
+    COMMON_THROWEXCEPTION( "unsupported" )
+}
+
+#endif
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1772,37 +1809,51 @@ void HArrayUtils::buildSparseArrayImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType HArrayUtils::insertSorted( 
+IndexType HArrayUtils::insertSorted(
     hmemo::HArray<ValueType>& array,
     const ValueType value, 
     hmemo::ContextPtr )
 {
-    IndexType n = array.size();
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
 
-    WriteAccess<ValueType> wArray( array );
-
-    wArray.resize( n + 1 );
-
-    IndexType pos = n;
-
-    // move up entries of index array until we have a smaller element
-
-    for ( IndexType i = n;  i-- > 0;  )
+    if ( common::TypeTraits<ValueType>::stype != common::TypeTraits<AbsType>::stype )
     {
-        if ( wArray[i] > value ) 
-        {
-            pos = i;
-            wArray[i+1] = wArray[i];
-        }
-        else
-        {
-            break;
-        }
+        COMMON_THROWEXCEPTION( "unsupported" )
+        return 0;
     }
- 
-    wArray[pos] = value;
+    else
+    {
+        AbsType value1 = value;
 
-    return pos;
+        IndexType n = array.size();
+ 
+        HArray<AbsType>& array1 = reinterpret_cast<HArray<AbsType>&>( array );
+
+        WriteAccess<AbsType> wArray( array1 );
+
+        wArray.resize( n + 1 );
+
+        IndexType pos = n;
+
+        // move up entries of index array until we have a smaller element
+
+        for ( IndexType i = n;  i-- > 0;  )
+        {
+            if ( wArray[i] > value1 ) 
+            {
+                pos = i;
+                wArray[i+1] = wArray[i];
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        wArray[pos] = value1;
+
+        return pos;
+    }
 }
 
 /* --------------------------------------------------------------------------- */

@@ -63,7 +63,7 @@ using scai::dmemo::Distributed;
 using scai::common::Math;
 
 
-typedef double ValueType;
+typedef RealType ValueType;
 
 
 #define DIMx 900                // dimension of displayed window

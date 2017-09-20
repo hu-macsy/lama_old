@@ -59,6 +59,8 @@ using namespace scai;
 using namespace lama;
 using namespace solver;
 
+typedef RealType ValueType;
+
 int main( int argc, const char* argv[] )
 {
     // relevant SCAI arguments: 
@@ -69,9 +71,9 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<double> A( filename );
+    CSRSparseMatrix<ValueType> A( filename );
 
-    DenseVector<double> diag;
+    DenseVector<ValueType> diag;
 
     Scalar theta = 0.0;
 
@@ -79,16 +81,16 @@ int main( int argc, const char* argv[] )
     diag -= theta;
     A.setDiagonal( diag );
 
-    DenseVector<double> x( A.getRowDistributionPtr(), 1 );
-    DenseVector<double> q;
-    DenseVector<double> y;
+    DenseVector<ValueType> x( A.getRowDistributionPtr(), 1 );
+    DenseVector<ValueType> q;
+    DenseVector<ValueType> y;
 
     LoggerPtr slogger( new CommonLogger( "CGLogger:", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly ) );
     CG solver( "CG", slogger );
     solver.initialize( A );
 
     NormPtr norm = NormPtr( new L1Norm() );
-    double eps = 1e-6;
+    ValueType eps = 1e-6;
 
     CriterionPtr rt( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
     CriterionPtr it( new IterationCount( 100 ) );

@@ -741,58 +741,6 @@ ValueType Complex<ValueType>::metrikHost( void ) const
 }
 
 /*
- * @brief Check if a is lower than b.
- *
- * @param[in] a     the 1st Complex to compare this to.
- * @param[in] b     the 2nd Complex to compare this to.
- * @return          if a is lower than b
- */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator<, < , double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<, < , long double )
-
-/*
- * @brief Check if a is greater than b.
- *
- * @param[in] a     the 1st Complex to compare this to.
- * @param[in] b     the 2nd Complex to compare this to.
- * @return          if a is greater than b
- */
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , int )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , long )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , float )
-COMPLEX_OPERATOR_COMPARISON_CUDA( operator>, > , double )
-COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>, > , long double )
-
-/*
- * @brief Check if a is lower than b or equal to b.
- *
- * @param[in] a     the 1st Complex to compare this to.
- * @param[in] b     the 2nd Complex to compare this to.
- * @return          if a is lower than b or equal to b
- */
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , int )
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , long )
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , float )
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator<=, <= , double )
-//COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator<=, <= , long double )
-
-/*
- * @brief Check if a is greater than b or equal to b.
- *
- * @param[in] a     the 1st Complex to compare this to.
- * @param[in] b     the 2nd Complex to compare this to.
- * @return          if a is greater than b or equal to b
- */
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , int )
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , long )
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , float )
-//COMPLEX_OPERATOR_COMPARISON_CUDA( operator>=, >= , double )
-//COMPLEX_OPERATOR_COMPARISON_NONCUDA( operator>=, >= , long double )
-
-/*
  * @brief Check equality of a and b.
  *
  * @param[in] a     the 1st Complex to compare this to.
@@ -1349,38 +1297,6 @@ double Math::imag( const Complex<double>& a )
 long double Math::imag( const Complex<long double>& a )
 {
     return a.imag();
-}
-
-// ------------------ Math::min ---------------------------------
-Complex<float> Math::min( const Complex<float>& x, const Complex<float>& y )
-{
-    return Math::abs( x ) < Math::abs( y ) ? x : y;
-}
-
-Complex<double> Math::min( const Complex<double>& x, const Complex<double>& y )
-{
-    return Math::abs( x ) < Math::abs( y ) ? x : y;
-}
-
-Complex<long double> Math::min( const Complex<long double>& x, const Complex<long double>& y )
-{
-    return Math::abs( x ) < Math::abs( y ) ? x : y;
-}
-
-// ------------------ Math::max ---------------------------------
-Complex<float> Math::max( const Complex<float>& x, const Complex<float>& y )
-{
-    return Math::abs( x ) > Math::abs( y ) ? x : y;
-}
-
-Complex<double> Math::max( const Complex<double>& x, const Complex<double>& y )
-{
-    return Math::abs( x ) > Math::abs( y ) ? x : y;
-}
-
-Complex<long double> Math::max( const Complex<long double>& x, const Complex<long double>& y )
-{
-    return Math::abs( x ) > Math::abs( y ) ? x : y;
 }
 
 // ------------------ Math::random ------------------------------

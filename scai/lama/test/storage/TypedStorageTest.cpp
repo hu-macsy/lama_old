@@ -243,6 +243,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
     TypedStorages<ValueType> allMatrixStorages( context );
@@ -263,7 +265,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
             storage.setRow( row, i, common::binary::SUB );
         }
 
-        BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
+        BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
     }
 }
 
@@ -271,6 +273,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
     TypedStorages<ValueType> allMatrixStorages( context );
@@ -291,7 +295,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
             storage.setColumn( column, j, common::binary::SUB );
         }
 
-        BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
+        BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
     }
 }
 

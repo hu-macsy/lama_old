@@ -260,6 +260,28 @@ void ImageIO::writeSC( const GridVector<ValueType>& arrayData, const std::string
     writeSC( arrayData, minVal, maxVal, outputFileName );
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void ImageIO::writeSC( const GridVector<ComplexFloat>&, const std::string& )
+{
+    COMMON_THROWEXCEPTION( "writeSC not supported for complex grid values" )
+}
+
+template<>
+void ImageIO::writeSC( const GridVector<ComplexDouble>&, const std::string& )
+{
+    COMMON_THROWEXCEPTION( "writeSC not supported for complex grid values" )
+}
+
+template<>
+void ImageIO::writeSC( const GridVector<ComplexLongDouble>&, const std::string& )
+{
+    COMMON_THROWEXCEPTION( "writeSC not supported for complex grid values" )
+}
+
+#endif 
+
 // instantiate methods for supported array/vector types
 
 #define SCAI_IMAGE_IO_INSTANTIATIONS( _type )                              \

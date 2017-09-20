@@ -46,6 +46,8 @@ using namespace lama;
 
 typedef float real_t;
 
+typedef RealType ValueType;
+
 int main( int narg, const char* argv[] )
 {
     if ( narg < 5 )
@@ -61,7 +63,7 @@ int main( int narg, const char* argv[] )
 
     // read in the CSR storage
 
-    CSRStorage<double> storage;
+    CSRStorage<ValueType> storage;
 
     storage.readFromFile( inFileName );
 
@@ -112,16 +114,16 @@ int main( int narg, const char* argv[] )
 
     HArray<IndexType> ia;
     HArray<IndexType> ja;
-    HArray<double> values;
+    HArray<ValueType> values;
 
     {
         ReadAccess<IndexType> oldIA( storage.getIA() );
         ReadAccess<IndexType> oldJA( storage.getJA() );
-        ReadAccess<double> oldValues( storage.getValues() );
+        ReadAccess<ValueType> oldValues( storage.getValues() );
 
         WriteOnlyAccess<IndexType> newIA( ia, numRows + 1 );
         WriteOnlyAccess<IndexType> newJA( ja, numValues );
-        WriteOnlyAccess<double> newValues( values, numValues );
+        WriteOnlyAccess<ValueType> newValues( values, numValues );
 
         IndexType offset = 0;
 
