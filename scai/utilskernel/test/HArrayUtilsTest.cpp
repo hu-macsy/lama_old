@@ -910,11 +910,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
-    LArray<ValueType> array( loc );
     const IndexType n = 100;
-    float fillRate = 1.0f;
-    HArrayUtils::setRandom( array, n, fillRate, loc );
-    BOOST_CHECK_EQUAL( array.size(), n );
+    LArray<ValueType> array( n, loc );
+    array.setRandom( 1 );
     ValueType sum = array.sum();
 
     SCAI_LOG_INFO( logger, "Draw " << n << " random values of type " << common::TypeTraits<ValueType>::id()
@@ -927,19 +925,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     else
     {
         typedef typename TypeTraits<ValueType>::AbsType AbsType;
-        AbsType asum = Math::abs( sum );
-        // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum  < AbsType( n / 5 ) );
+        // AbsType asum = Math::abs( sum );
+        AbsType asum = sum;   // only real part for complex numbers
+        // random numbers are between 0 and 1.0, so should sum up approximately to n/2
+        BOOST_CHECK( AbsType( asum - n / 2 )  < AbsType( n / 5 ) );
     }
   
-    // check that argument fillRate works correctly
-
-    fillRate = 0.1f;
-    HArrayUtils::setRandom( array, 10 * n, fillRate, loc );
-    BOOST_CHECK_EQUAL( array.size(), 10 * n );
+    float fillRate = 0.1f;
 
     HArray<IndexType> nonZeroIndexes;
-    HArrayUtils::buildSparseIndexes( nonZeroIndexes, array, loc );
+    HArrayUtils::randomSparseIndexes( nonZeroIndexes, 10 * n, fillRate );
 
     // nonZeroIndexes should have size around n 
 
@@ -949,18 +944,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     // not possible for unsigned int abs( n - nonZeroIndexes.size() )
 
     BOOST_CHECK( common::applyBinary( n, common::binary::ABS_DIFF, nonZeroIndexes.size() ) < ( n / 5 ) );
-
-    if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
-    {
-        // no check for integer types
-    }
-    else
-    {
-        typedef typename TypeTraits<ValueType>::AbsType AbsType;
-        AbsType asum = Math::abs( sum );
-        // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum  < AbsType( n / 5 ) );
-    }
 }
 
 /* --------------------------------------------------------------------- */

@@ -194,8 +194,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
 {
-    ValueType random_val;
-    Math::random( random_val );
+    ValueType random_val = Math::random<ValueType>( 1 );
+
     BOOST_CHECK( Math::abs( Math::real( random_val ) ) < 1.0 );
     BOOST_CHECK( Math::abs( Math::imag( random_val ) ) < 1.0 );
 }

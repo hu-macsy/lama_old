@@ -108,8 +108,8 @@ int main( int argc, const char* argv[] )
 
     std::cout << "replicated stencilMatrix " << repStencilMatrix << std::endl;
 
-    DenseVector<ValueType> repX;
-    repX.setRandom( repStencilMatrix.getColDistributionPtr(), 1.0f );
+    DenseVector<ValueType> repX( repStencilMatrix.getColDistributionPtr() );
+    repX.setRandom( 1 );
 
     DenseVector<ValueType> distX( repX, distStencilMatrix.getColDistributionPtr() );
 

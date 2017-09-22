@@ -325,9 +325,20 @@ public:
         return HArrayUtils::getVal<ValueType>( *this, i );
     }
 
-    void setRandom( IndexType n, float fillRate = 1.0f, hmemo::ContextPtr context = hmemo::ContextPtr() )
+    /** Fill the array with random values between 0 and bound 
+     *
+     *  @param bound    specifies range of random values
+     *  @param fillRate probability whether an existing element is replaced
+     *  @param context  optional argument for context where random data should be drawn
+     */
+    void setSparseRandom( float fillRate, IndexType bound, hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
-        HArrayUtils::setRandomImpl( *this, n, fillRate, context );
+        HArrayUtils::fillRandomImpl( *this, bound, fillRate, context );
+    }
+
+    void setRandom( IndexType bound, hmemo::ContextPtr context = hmemo::ContextPtr() )
+    {
+        HArrayUtils::fillRandomImpl( *this, bound, 1.0f, context );
     }
 
     /** Get the minimal value of an array */

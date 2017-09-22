@@ -1175,46 +1175,63 @@ void HArrayUtils::setSequence( hmemo::HArray<ValueType>& array, ValueType startV
 /* --------------------------------------------------------------------------- */
 
 void HArrayUtils::setRandom( hmemo::_HArray& array,
-                             const IndexType n,
-                             const float fillRate,
+                             const IndexType bound,
                              const hmemo::ContextPtr prefLoc )
 {
-    // use meta-programming to call setRandomImpl<ValueType> with the type of array
+    // use meta-programming to call fillRandomImpl<ValueType> with the type of array
 
-    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
+    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::fillRandom( array, bound, 1.0f, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::setSparseRandom( hmemo::_HArray& array,
+                                   const float fillRate,
+                                   const IndexType bound,
+                                   const hmemo::ContextPtr prefLoc )
+{
+    // use meta-programming to call fillRandomImpl<ValueType> with the type of array
+
+    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::fillRandom( array, bound, fillRate, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setRandomImpl( hmemo::HArray<ValueType>& array,
-                                 const IndexType n,
-                                 const float fillRate,
-                                 const hmemo::ContextPtr prefLoc )
+void HArrayUtils::fillRandomImpl( hmemo::HArray<ValueType>& array,
+                                  const IndexType bound,
+                                  const float fillRate,
+                                  const hmemo::ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
-    WriteOnlyAccess<ValueType> wArray( array, loc, n );
+
+    const IndexType n = array.size();
 
     if ( fillRate >= 1.0f )
     {
+        WriteOnlyAccess<ValueType> wArray( array, loc, n );
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            common::Math::random( wArray[i] );
+            wArray[i] = common::Math::random<ValueType>( bound );
         }
     }
     else
     {
+        if ( n > 0 && !array.isInitialized() )
+        {
+            COMMON_THROWEXCEPTION( "filling of uninitialized array: " << array )
+        }
+
+        WriteAccess<ValueType> wArray( array, loc );
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            float x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-
-            if ( x < fillRate )
+            bool fillIt = common::Math::randomBool( fillRate );
+ 
+            if ( fillIt )
             {
-                common::Math::random( wArray[i] );
-            }
-            else
-            {
-                wArray[i] = ValueType( 0 );
+                wArray[i] = common::Math::random<ValueType>( bound );
             }
         }
     }
@@ -1223,6 +1240,27 @@ void HArrayUtils::setRandomImpl( hmemo::HArray<ValueType>& array,
     {
         array.prefetch( prefLoc );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability )
+{
+    IndexType cnt = 0;
+
+    WriteOnlyAccess<IndexType> wArray( array, n );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        bool takeIt = common::Math::randomBool( probability );
+
+        if ( takeIt )
+        {
+            wArray[ cnt++ ] = i;
+        }
+    }
+
+    wArray.resize( cnt );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2234,7 +2272,7 @@ void HArrayUtils::binaryOpSparse(
             ValueType,                                                          \
             IndexType,                                                          \
             hmemo::ContextPtr );                                                \
-    template void HArrayUtils::setRandomImpl<ValueType>(                        \
+    template void HArrayUtils::fillRandomImpl<ValueType>(                       \
             hmemo::HArray<ValueType>&,                                          \
             IndexType,                                                          \
             float,                                                              \

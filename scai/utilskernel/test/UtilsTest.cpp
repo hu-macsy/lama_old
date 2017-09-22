@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            common::Math::random( wValues[i] );
+            wValues[i] = common::Math::random<ValueType>( 2 * n );
         }
     }
 

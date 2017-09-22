@@ -85,9 +85,9 @@ template<typename TList1, typename TList2> struct UtilsWrapperTT;
 
 template<> struct UtilsWrapper<common::mepr::NullType>
 {
-    static void setRandom( hmemo::_HArray& array, IndexType, float, hmemo::ContextPtr )
+    static void fillRandom( hmemo::_HArray& array, IndexType, float, hmemo::ContextPtr )
     {
-        COMMON_THROWEXCEPTION( "setRandom not instantiated for " << array.getValueType() )
+        COMMON_THROWEXCEPTION( "fillRandom not instantiated for " << array.getValueType() )
     }
 };
 
@@ -249,17 +249,17 @@ struct UtilsWrapperTT<common::mepr::NullType, TList>
 template<typename THead, typename TList>
 struct UtilsWrapper<common::mepr::TypeList<THead, TList> >
 {
-    static void setRandom( hmemo::_HArray& array, IndexType n, float fillRate, hmemo::ContextPtr loc )
+    static void fillRandom( hmemo::_HArray& array, IndexType bound, float fillRate, hmemo::ContextPtr loc )
     {
         if ( common::getScalarType<THead>() ==  array.getValueType() )
         {
             // now type of array is known, so we can make a safe cast
             hmemo::HArray<THead>& typedArray = reinterpret_cast<hmemo::HArray<THead>&>( array );
-            HArrayUtils::setRandomImpl( typedArray, n, fillRate, loc );
+            HArrayUtils::fillRandomImpl( typedArray, bound, fillRate, loc );
         }
         else
         {
-            UtilsWrapper<TList>::setRandom( array, n, fillRate, loc );
+            UtilsWrapper<TList>::fillRandom( array, bound, fillRate, loc );
         }
     }
 };

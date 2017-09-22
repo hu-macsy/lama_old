@@ -350,12 +350,15 @@ public:
     using Vector::assign;
 
     /**
-     * This method initializes a distributed vector with random numbers.
+     * This method sets the values of an allocated vector with random numbers.
      *
-     * @param[in] distribution specifies the distribution of the vector
-     * @param[in] fillRate for the number of non-zeros
+     * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
      */
-    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 );
+    virtual void setRandom( const IndexType bound );
+
+    /** Implementation of Vector::setSparseRandom */
+
+    virtual void setSparseRandom( const float fillRate, const IndexType bound );
 
     /** Implementation of pure method Vector::setSequence */
 

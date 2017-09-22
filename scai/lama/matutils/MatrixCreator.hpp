@@ -65,7 +65,7 @@ public:
      *
      */
 
-    static void fillRandom( Matrix& matrix, double density );
+    static void fillRandom( Matrix& matrix, float density );
 
     /** Builds a block distributed matrix with random values.
      *

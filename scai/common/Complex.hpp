@@ -1300,31 +1300,23 @@ long double Math::imag( const Complex<long double>& a )
 }
 
 // ------------------ Math::random ------------------------------
-void Math::random( Complex<float>& x )
+
+template<>
+inline Complex<float> Math::random( const unsigned bound )
 {
-    float val;
-    Math::random( val );
-    x.real( val );
-    Math::random( val );
-    x.imag( val );
+    return Complex<float>( random<float>( bound ), random<float>( bound ) );
 }
 
-void Math::random( Complex<double>& x )
+template<>
+inline Complex<double> Math::random( const unsigned bound )
 {
-    double val;
-    Math::random( val );
-    x.real( val );
-    Math::random( val );
-    x.imag( val );
+    return Complex<double>( random<double>( bound ), random<double>( bound ) );
 }
 
-void Math::random( Complex<long double>& x )
+template<>
+inline Complex<long double> Math::random( const unsigned bound )
 {
-    long double val;
-    Math::random( val );
-    x.real( val );
-    Math::random( val );
-    x.imag( val );
+    return Complex<long double>( random<long double>( bound ), random<long double>( bound ) );
 }
 
 } /* end namespace common */

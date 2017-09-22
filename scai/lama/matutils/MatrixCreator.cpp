@@ -433,7 +433,7 @@ void MatrixCreator::buildPoisson3D(
 
 /* ------------------------------------------------------------------------- */
 
-void MatrixCreator::fillRandom( Matrix& matrix, double density )
+void MatrixCreator::fillRandom( Matrix& matrix, float density )
 {
     // Shape and distribution of matrix is not changed
     const dmemo::Distribution& dist = matrix.getRowDistribution();
@@ -456,11 +456,11 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
     {
         for ( IndexType j = 0; j < colSize; ++j )
         {
-            double value;
-            common::Math::random( value );   // range -1.0 .. 1.0
-            value = 0.5 * ( value + 1.0 );   // range 0 .. 1.0
+            // density determines the true ratio of random bool value
 
-            if ( value < density )
+            bool takeIt = common::Math::randomBool( density );
+
+            if ( takeIt )
             {
                 csrJA.push_back( j );
                 ++numValues;
@@ -478,7 +478,8 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
 
     // draw the non-zero values, now with fill rate 1.0f
 
-    utilskernel::HArrayUtils::setRandom( values, numValues, 1.0f );
+    values.resize( numValues );
+    utilskernel::HArrayUtils::setRandom( values, 1 );
 
     // some tricky stuff to avoid an additional copy
 

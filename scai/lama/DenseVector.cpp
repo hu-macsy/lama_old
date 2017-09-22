@@ -273,10 +273,17 @@ DenseVector<ValueType>::DenseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setRandom( DistributionPtr distribution, const float fillRate )
+void DenseVector<ValueType>::setRandom( const IndexType bound )
 {
-    allocate( distribution );
-    mLocalValues.setRandom( mLocalValues.size(), fillRate, getContextPtr() );
+    mLocalValues.setRandom( bound, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::setSparseRandom( const float fillRate, const IndexType bound )
+{
+    mLocalValues.setSparseRandom( fillRate, bound, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */

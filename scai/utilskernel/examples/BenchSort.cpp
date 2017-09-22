@@ -46,13 +46,12 @@ void bucketSort( const IndexType N )
 {
     IndexType nBuckets = 2048;
 
-    HArray<IndexType> values;
+    HArray<IndexType> values( 2400 );
 
-    HArrayUtils::setRandom( values, N, 1.0 );
+    HArrayUtils::setRandom( values, nBuckets - 1 );
 
     // use setScalar on IndexType, binaryOp is only for numeric types
-
-    HArrayUtils::setScalar( values, nBuckets, common::binary::MODULO );
+    // HArrayUtils::setScalar( values, nBuckets, common::binary::MODULO );
 
     HArray<IndexType> offsets;
     HArray<IndexType> perm;
@@ -88,7 +87,8 @@ void sort( const IndexType N )
     HArray<ValueType> values( ctx );
     HArray<IndexType> perm;
 
-    HArrayUtils::setRandom( values, N, 1.0 );
+    values.resize( N );  
+    HArrayUtils::setRandom( values, 1 );
 
     bool ascending = true;
 

@@ -180,9 +180,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storageConstructorTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
@@ -227,9 +229,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData( ctx );
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, n * n , fillRate );
+    hmemo::HArray<ValueType> denseData( n * n, ValueType( 0 ), ctx );
+
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
 
@@ -280,9 +284,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
@@ -326,9 +330,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( AssignmentOpTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
@@ -374,9 +378,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( transposeConstructorTest, MatrixType, MatrixTypes
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 10 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
@@ -426,9 +430,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+
+    common::Math::srandom( 1317 );  // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
@@ -474,9 +480,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( expConstructorTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0) );
+
+    common::Math::srandom( 1317 );   // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );
@@ -520,11 +528,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
 
     const IndexType n = 13;
 
-    float fillRate = 0.2;
+    hmemo::HArray<ValueType> denseData( n * n, ValueType( 0 ) );
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, n * n, fillRate );
+    common::Math::srandom( 1317 );     // makes sure that all processors generate same data
+
+    float fillRate = 0.2;
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( n, n, denseData );
@@ -574,9 +583,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 31991 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+
+    common::Math::srandom( 31991 );     // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );

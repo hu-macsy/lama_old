@@ -235,6 +235,11 @@ public:
      */
     virtual void swap( _HArray& other ) = 0;
 
+    bool isInitialized() 
+    {
+        return mContextDataManager.isInitialized();
+    }
+
 protected:
 
     explicit _HArray( const IndexType n, const IndexType size ) :

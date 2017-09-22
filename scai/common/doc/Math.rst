@@ -44,3 +44,11 @@ code becomes:
       }
       return Math::sqrt( sum );
   }
+
+Beside the mathematical routines, the Math class provides also a common facitlity to generate
+random numbers.
+
+* ``Math::random<ValueType>( unsigned nb )`` return a value between 0 and nb for any value type
+* ``Math::randomBool( const float trueRatio )`` generates boolean value where the value true has of a probability of trueRatio.
+* ``Math::srandom( int )`` sets the seed for the randon number generator, allows to reproduce results or to force different results on different processors with different seeds.
+

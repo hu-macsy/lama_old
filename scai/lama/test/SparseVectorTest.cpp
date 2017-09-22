@@ -147,14 +147,15 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
     typedef RealType ValueType;
 
     IndexType n = 20;   // let it really small, this test is very inefficient
+    IndexType bound = 1000;
 
-    utilskernel::LArray<ValueType> data;
+    utilskernel::LArray<ValueType> data( n, ValueType( 0 ) );
 
-    std::srand( 13151 );   // This test only works if all processors have same random numbers
+    common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
     const float fillRate = 0.2;   // makes it worth to be sparse
 
-    utilskernel::HArrayUtils::setRandom( data, n, fillRate );
+    data.setSparseRandom( fillRate, bound ); // ~ 20% values are non-zero with value between 0 and 1
 
     dmemo::TestDistributions dists( n );
 
@@ -222,13 +223,13 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
     IndexType n = 20;   // let it really small, this test is very inefficient
 
-    utilskernel::LArray<ValueType> data;
+    utilskernel::LArray<ValueType> data( n, ValueType( 0 ) );
 
-    std::srand( 13151 );   // This test only works if all processors have same random numbers
+    common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
     const float fillRate = 0.2;   // makes it worth to be sparse
 
-    utilskernel::HArrayUtils::setRandom( data, n, fillRate );
+    data.setSparseRandom( fillRate, 1 );
 
     dmemo::TestDistributions dists( n );
 

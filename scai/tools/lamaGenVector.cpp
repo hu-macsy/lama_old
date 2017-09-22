@@ -282,13 +282,9 @@ int main( int argc, const char* argv[] )
 
         _HArray& vLocal = const_cast<_HArray&>( v->getLocalValues() );
 
-        IndexType n = vLocal.size();
+        utilskernel::HArrayUtils::setRandom( vLocal, 1 );
 
-        float fillRate = 1.0f;          // full fill, no zero entries
-
-        utilskernel::HArrayUtils::setRandom( vLocal, n, fillRate );
-
-        // scale random numbers from -1 .. 1 with options.value
+        // scale random numbers from 0 .. 1 with options.value
 
         utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), common::binary::MULT );
     }

@@ -159,6 +159,15 @@ SparseVector<ValueType>::SparseVector( const IndexType size, const ValueType val
 }
 
 template<typename ValueType>
+SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const ValueType value, ContextPtr context ) :
+
+    _SparseVector( distribution, context ),
+    mZeroValue( value )
+{
+    SCAI_LOG_INFO( logger, "Construct sparse vector, dist = " << *distribution  << ", ZERO =" << value )
+}
+
+template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Vector& other ) : 
 
     _SparseVector( other )
@@ -230,19 +239,29 @@ SparseVector<ValueType>::SparseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, const float fillRate )
+void SparseVector<ValueType>::setRandom( const IndexType bound )
 {
-    allocate( distribution );
+    const IndexType localSize = getDistribution().getLocalSize();
 
-    // build dense random array and compress it
+    LArray<ValueType> localValues( localSize );
 
-    LArray<ValueType> localValues;
+    localValues.setRandom( bound, getContextPtr() );
+
+    setDenseValues( localValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::setSparseRandom( const float fillRate, const IndexType bound )
+{
+    SCAI_ASSERT_EQ_ERROR( 0, mNonZeroIndexes.size(), "setSparseRandom illegal, vector has already non-zero elements" )
 
     const IndexType localSize = getDistribution().getLocalSize();
 
-    localValues.setRandom( localSize, fillRate, getContextPtr() );
-
-    setDenseValues( localValues );
+    HArrayUtils::randomSparseIndexes( mNonZeroIndexes, localSize, fillRate );
+    mNonZeroValues.resize( mNonZeroIndexes.size() );
+    mNonZeroValues.setRandom( bound );
 }
 
 /* ------------------------------------------------------------------------- */

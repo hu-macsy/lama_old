@@ -159,13 +159,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, scai_numeric_test_types )
 {
     // Use random data for the matrix to have complex numbers
+
     const IndexType numRows    = 3;
     const IndexType numColumns = 3;
-    const float fillRate = 0.2f;
-    LArray<ValueType> denseValues;
-    LArray<ValueType> x;
-    utilskernel::HArrayUtils::setRandom( denseValues, numRows * numColumns, fillRate );
-    utilskernel::HArrayUtils::setRandom( x, numColumns, 1.0f );
+
+    // Initialize dense array, with sparse random values
+
+    LArray<ValueType> denseValues( numRows * numColumns, ValueType( 0) );
+
+    denseValues.setSparseRandom( 0.2f, 1 );   // ~ 20% of values will be replaced
+
+    LArray<ValueType> x( numColumns );  // initialization not necessray
+    x.setRandom( 1 );    // completely random values between 0 and 1
+
     LArray<ValueType> xconj( x );
     xconj.conj();
     const ValueType alpha = 1.0;
@@ -721,7 +727,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
         LArray<ValueType> x( context );
         LArray<ValueType> y( storage1.getNumRows(), 0 );
         LArray<ValueType> result1( context );
-        utilskernel::HArrayUtils::setRandom( x, storage1.getNumColumns(), 1.0f );
+        x.resize( storage1.getNumColumns() );
+        utilskernel::HArrayUtils::setRandom( x, 1 );
         ValueType alpha = 1;
         ValueType beta  = 0;
         storage1.matrixTimesVector( result1, alpha, x, beta, result1 );

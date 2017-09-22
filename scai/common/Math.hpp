@@ -404,82 +404,32 @@ struct Math
     /*
      * min operation
      */
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int min( const int& x, const int& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int min( const unsigned int& x, const unsigned int& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long min( const long& x, const long& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long min( const unsigned long& x, const unsigned long& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float min( const float& x, const float& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double min( const double& x, const double& y );
-
-    static inline MIC_CALLABLE_MEMBER long double min( const long double& x, const long double& y );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-    /*
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> min( const Complex<float>& x, const Complex<float>& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> min( const Complex<double>& x, const Complex<double>& y );
-
-    static inline MIC_CALLABLE_MEMBER Complex<long double> min( const Complex<long double>& x, const Complex<long double>& y );
-    */
-#endif
+    template<typename ValueType>
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER ValueType min( const ValueType& x, const ValueType& y );
 
     /*
      * max operation
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int max( const int& x, const int& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int max( const unsigned int& x, const unsigned int& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long max( const long& x, const long& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long max( const unsigned long& x, const unsigned long& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float max( const float& x, const float& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double max( const double& x, const double& y );
-
-    static inline MIC_CALLABLE_MEMBER long double max( const long double& x, const long double& y );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-    /*
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> max( const Complex<float>& x, const Complex<float>& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> max( const Complex<double>& x, const Complex<double>& y );
-
-    static inline MIC_CALLABLE_MEMBER Complex<long double> max( const Complex<long double>& x, const Complex<long double>& y );
-    */
-#endif
+    template<typename ValueType>
+    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER ValueType max( const ValueType& x, const ValueType& y );
 
     /*
-     * random value creator
+     * @brief random value betweem 0 and bound inclusive
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( int& x );
+    template<typename ValueType>
+    static inline ValueType random( unsigned bound );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned int& x );
+    /** 
+     * @brief initialize seed of random number generator
+     */
+    static inline void srandom( unsigned int seed );
 
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( unsigned long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( double& x );
-
-    static inline MIC_CALLABLE_MEMBER  void random( long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( Complex<float>& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER void random( Complex<double>& x );
-
-    static inline MIC_CALLABLE_MEMBER  void random( Complex<long double>& x );
-#endif
+    /** @brief generate a boolean value by random with a certain ratio.
+     *
+     *  @param[in] trueRatio specifies probability for true, 0 returns always false, 1 returns always tru
+     *  @returns   a boolean value
+     */
+    static inline bool randomBool( const float trueRatio );
 };
 
 // -------------------------------- sqrt ----------------------------
@@ -839,113 +789,82 @@ long double Math::imag( const long double& )
 
 // -------------------------------- min ------------------------------
 
-int Math::min( const int& x, const int& y )
+template<typename ValueType>
+inline ValueType Math::min( const ValueType& x, const ValueType& y )
 {
-    return y < x ? y : x;
-}
-
-unsigned int Math::min( const unsigned int& x, const unsigned int& y )
-{
-    return y < x ? y : x;
-}
-
-long Math::min( const long& x, const long& y )
-{
-    return y < x ? y : x;
-}
-
-unsigned long Math::min( const unsigned long& x, const unsigned long& y )
-{
-    return y < x ? y : x;
-}
-
-float Math::min( const float& x, const float& y )
-{
-    return y < x ? y : x;
-}
-
-double Math::min( const double& x, const double& y )
-{
-    return y < x ? y : x;
-}
-
-long double Math::min( const long double& x, const long double& y )
-{
-    return y < x ? y : x;
+    if ( y < x )
+    {
+        return y;
+    }
+    else
+    {
+        return x;
+    }
 }
 
 // -------------------------------- max ------------------------------
 
-int Math::max( const int& x, const int& y )
+template<typename ValueType>
+inline ValueType Math::max( const ValueType& x, const ValueType& y )
 {
-    return x > y ? x : y;
-}
-
-unsigned int Math::max( const unsigned int& x, const unsigned int& y )
-{
-    return x > y ? x : y;
-}
-
-long Math::max( const long& x, const long& y )
-{
-    return x > y ? x : y;
-}
-
-unsigned long Math::max( const unsigned long& x, const unsigned long& y )
-{
-    return x > y ? x : y;
-}
-
-float Math::max( const float& x, const float& y )
-{
-    return x > y ? x : y;
-}
-
-double Math::max( const double& x, const double& y )
-{
-    return x > y ? x : y;
-}
-
-long double Math::max( const long double& x, const long double& y )
-{
-    return x > y ? x : y;
+    if ( x < y )
+    {
+        return y;
+    }
+    else
+    {
+        return x;
+    }
 }
 
 // -------------------------------- random ---------------------------
 
-void Math::random( int& x )
+template<typename ValueType>
+inline ValueType Math::random( const unsigned bound )
 {
-    x = rand();
+    return rand() % ( bound + 1 );
 }
 
-void Math::random( unsigned int& x )
+// Template specializations, must also have the inline attribute
+
+template<>
+inline float Math::random( const unsigned bound )
 {
-    x = rand();
+    return static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) * bound;
 }
 
-void Math::random( long& x )
+template<>
+inline double Math::random( const unsigned bound )
 {
-    x = rand();
+    return static_cast<double>( rand() ) / static_cast<double>( RAND_MAX ) * bound;
 }
 
-void Math::random( unsigned long& x )
+template<>
+inline long double Math::random( const unsigned bound )
 {
-    x = rand();
+    return static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX ) * bound;
 }
 
-void Math::random( float& x )
+inline void Math::srandom( unsigned int seed )
 {
-    x = 1 - static_cast<float>( rand() ) / static_cast<float>( RAND_MAX / 2 );
+    srand( seed );
 }
 
-void Math::random( double& x )
+bool Math::randomBool( const float trueRatio )
 {
-    x = 1 - static_cast<double>( rand() ) / static_cast<double>( RAND_MAX / 2 );
-}
-
-void Math::random( long double& x )
-{
-    x = 1 - static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX / 2 );
+    if ( trueRatio <= 0.0f )
+    {
+         return false;
+    }
+    else if ( trueRatio >= 1.0f )
+    {
+         return true;
+    }
+    else
+    {
+         float x = random<float>( 1 );   // value between 0 and 1, uniformly distributed
+         return x < trueRatio;
+    }
 }
 
 } /* end namespace common */

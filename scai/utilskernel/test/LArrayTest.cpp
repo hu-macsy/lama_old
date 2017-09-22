@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        // random numbers between -1.0 and 1.0, real and imag part for complex
-        Math::random( myVals[i] );
+        // random numbers between 0.0 and 1.0, real and imag part for complex
+        myVals[i] = Math::random<ValueType>( 1 );
     }
 
     typedef typename TypeTraits<ValueType>::AbsType AbsType;
@@ -285,8 +285,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
     testContext = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "conjTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     const IndexType N = 16;
-    LArray<ValueType> array;
-    HArrayUtils::setRandom( array, N, 1.0f, testContext );
+    LArray<ValueType> array( N );
+    array.setRandom( 1, testContext );
     LArray<ValueType> conjArray( array );
     conjArray.conj();   // build in place
 

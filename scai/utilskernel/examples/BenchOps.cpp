@@ -54,17 +54,20 @@ int main( int argc, const char* argv[] )
 
     const IndexType N = 10 * 1000 * 1000;
 
-    HArray<ValueType> values1( ctx );
+    HArray<ValueType> values1( N, ctx );
     HArray<ValueType> values2( ctx );
     HArray<ValueType> values3( ctx );
 
-    HArrayUtils::setRandom( values1, N, 1.0 );
-    HArrayUtils::setRandom( values2, N, 1.0 );
+    values1.resize( N );
+    values2.resize( N );
 
-    // move random values in range 1.0 - 3.0 instead of -1 .. 1
+    HArrayUtils::setRandom( values1, 2 );
+    HArrayUtils::setRandom( values2, 2 );
 
-    HArrayUtils::setScalar( values1, ValueType( 2 ), binary::ADD );
-    HArrayUtils::setScalar( values2, ValueType( 2 ), binary::ADD );
+    // move random values in range 1.0 - 3.0 instead of 0 .. 2 
+
+    HArrayUtils::setScalar( values1, ValueType( 1 ), binary::ADD );
+    HArrayUtils::setScalar( values2, ValueType( 1 ), binary::ADD );
 
     for ( int i = 0; i < unary::MAX_UNARY_OP; ++i )
     {

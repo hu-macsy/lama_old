@@ -649,30 +649,47 @@ public:
 
     /** Set an array with random values, untyped version.
      *
-     *  @param[out] array    arbitray array, will contain random values of its type
-     *  @param[in]  n        number of values, becomes size of array
-     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[out] array    arbitray array, is filled with random values of its type
+     *  @param[in]  fillRate probability whether one array element is filled or remains unchanged
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
 
     static void setRandom( hmemo::_HArray& array,
-                           IndexType n,
-                           float fillRate = 1.0f,
+                           IndexType bound,
                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Replace entries of an array with random values with a certain probability for each element
+     *
+     *  @param[out] array    arbitray array, is filled with random values of its type
+     *  @param[in]  fillRate probability whether one array element is filled or remains unchanged
+     *  @param[in]  bound    random values between 0 and bound
+     *  @param[in]  prefLoc  optional the context where random numbers should be drawn
+     */
+    static void setSparseRandom( hmemo::_HArray& array,
+                                 float fillRate,
+                                 IndexType bound,
+                                 hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Set an array with random values, typed version
      *
      *  @param[out] array    will contain random values of its type
-     *  @param[in]  n        number of values, becomes size of array
-     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[in]  bound    random values between 0 and bound
+     *  @param[in]  fillRate probability whether one array element is filled or remains unchanged
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
-
     template<typename ValueType>
-    static void setRandomImpl( hmemo::HArray<ValueType>& array,
-                               IndexType n,
-                               float fillRate = 1.0f,
-                               hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void fillRandomImpl( hmemo::HArray<ValueType>& array,
+                                IndexType bound,
+                                float fillRate,
+                                hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Create an array of sparse indexes where an index value appears only with a certain probability.
+     *
+     *  @param[out] array       with sparse indexes, maximal size is n
+     *  @param[in]  n           is upper bound of range, i.e. indexes are 0 to n-1
+     *  @param[in]  probability whether an index appears or not, 0 for never, 1 for always.
+     */
+    static void randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability );
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 

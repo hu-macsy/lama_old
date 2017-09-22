@@ -124,6 +124,15 @@ public:
     explicit HArray( const IndexType n );
 
     /**
+     * @brief Create an (unitialized) HArray of size n 
+     *
+     * @param[in] n       the size of the HArray to create
+     * @param[in] context the location the HArray should be located first
+     *
+     */
+    HArray( const IndexType n, ContextPtr context );
+
+    /**
      * @brief Create a HArray of size n and initialize it with one value.
      *
      * @param[in] n       the size of the HArray to create
@@ -314,6 +323,17 @@ HArray<ValueType>::HArray( const IndexType n ) :
     ContextPtr hostPtr = Context::getHostPtr();
     mContextDataManager.reserve( hostPtr, n * mValueSize, 0 );
     SCAI_LOG_DEBUG( logger, "created new HArray: " << *this )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+HArray<ValueType>::HArray( const IndexType n, ContextPtr context ) :
+
+    _HArray( n, sizeof( ValueType ) )
+{
+    mContextDataManager.reserve( context, n * mValueSize, 0 );
+    SCAI_LOG_DEBUG( logger, "created new HArray: " << *this)
 }
 
 /* ---------------------------------------------------------------------------------*/

@@ -76,9 +76,9 @@ void getMatrix_7_4 ( IndexType& numRows,
 template<typename ValueType>
 void setRandomData( scai::lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
 {
-    scai::hmemo::HArray<ValueType> values;
+    scai::hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
     float fillRate = 0.5f;
-    scai::utilskernel::HArrayUtils::setRandom( values, numRows * numColumns, fillRate );
+    scai::utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
     storage.setDenseData( numRows, numColumns, values );
 }
 
