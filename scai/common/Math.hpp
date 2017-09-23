@@ -34,11 +34,11 @@
 
 #pragma once
 
-#include <scai/common/mic/MICCallable.hpp>
-#include <scai/common/cuda/CUDACallable.hpp>
+#include <scai/common/Math.hpp>
 
-#include <cmath>
-#include <cstdlib>
+#ifdef SCAI_COMPLEX_SUPPORTED
+#include <scai/common/Complex.hpp>
+#endif
 
 namespace scai
 {
@@ -46,826 +46,591 @@ namespace scai
 namespace common
 {
 
-#ifdef SCAI_COMPLEX_SUPPORTED
-template<typename ValueType> class Complex;
-#endif
-
-/** Structure (instead of namespace) that contains the required mathematical functions
- *  for each supported arithmetic type.
+/** 
+ *  Math = MathReal + same routines for complex numbers
  */
 
-struct Math
+struct Math : public MathReal 
 {
-    /** Square root function for ValueType
-     *
-     *  In contrary to the routine of cmath it will be possible to
-     *  use always the same name for the routine.
-     *
-     *  \code
-     *    ValueType x = sqrt ( y );            // might not work always correctly
-     *    ValueType x = Math::sqrt ( y );      // this is guaranteed to work for all arithmetic types
-     *  \endcode
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float sqrt( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double sqrt( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double sqrt( const long double& x );
 
 #ifdef SCAI_COMPLEX_SUPPORTED
+
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> sqrt( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> sqrt( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> sqrt( const Complex<long double>& x );
-#endif
 
-    /** Absolute value function for ValueType
-     *
-     *  In contrary to the routine of cmath it will be possible to
-     *  use always the same name for the routine.
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int abs( const int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned int abs( const unsigned int& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER long abs( const long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER unsigned long abs( const unsigned long& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float abs( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double abs( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double abs( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float abs( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double abs( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER long double abs( const Complex<long double>& x );
-#endif
 
-    /*
-     * Computes the conjugated value of a given value
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float conj( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double conj( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double conj( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> conj( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> conj( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> conj( const Complex<long double>& x );
-#endif
 
-    /*
-     * Computes the exponential function of a given value
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float exp( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double exp( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double exp( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> exp( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> exp( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> exp( const Complex<long double>& x );
-#endif
 
-    /*
-     * pow-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER int pow( const int& base, const int& exponent );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float pow( const float& base, const float& exponent );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double pow( const double& base, const double& exponent );
-
-    static inline MIC_CALLABLE_MEMBER long double pow( const long double& base, const long double& exponent );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> pow( const Complex<float>& base, const Complex<float>& exponent );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> pow( const Complex<double>& base, const Complex<double>& exponent );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> pow( const Complex<long double>& base, const Complex<long double>& exponent );
-#endif
-
-    /*
-     * mod-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float mod( const float& x, const float& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double mod( const double& x, const double& y );
-
-    static inline MIC_CALLABLE_MEMBER long double mod( const long double& x, const long double& y );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
+ 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> mod( const Complex<float>& x, const Complex<float>& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> mod( const Complex<double>& x, const Complex<double>& y );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> mod( const Complex<long double>& x, const Complex<long double>& y );
-#endif
 
-    /*
-     * log-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float log( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double log( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double log( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> log( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> log( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> log( const Complex<long double>& x );
-#endif
 
-    /*
-     * floor-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float floor( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double floor( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double floor( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> floor( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> floor( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> floor( const Complex<long double>& x );
-#endif
 
-    /*
-     * ceil-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float ceil( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double ceil( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double ceil( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> ceil( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> ceil( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> ceil( const Complex<long double>& x );
-#endif
 
-    /*
-     * arg-function for ValueType
-     */
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float arg( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double arg( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER long double arg( const Complex<long double>& x );
-#endif
 
-    /*
-     * sin-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float sin( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double sin( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double sin( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> sin( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> sin( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> sin( const Complex<long double>& x );
-#endif
 
-    /*
-     * sinh-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float sinh( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double sinh( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double sinh( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> sinh( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> sinh( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> sinh( const Complex<long double>& x );
-#endif
 
-    /*
-     * cos-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float cos( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double cos( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double cos( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> cos( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> cos( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> cos( const Complex<long double>& x );
-#endif
 
-    /*
-     * cos-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float cosh( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double cosh( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double cosh( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> cosh( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> cosh( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> cosh( const Complex<long double>& x );
-#endif
 
-    /*
-     * tan-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float tan( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double tan( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double tan( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> tan( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> tan( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> tan( const Complex<long double>& x );
-#endif
 
-    /*
-     * atan-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float atan( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double atan( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double atan( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> atan( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> atan( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> atan( const Complex<long double>& x );
-#endif
 
-    /*
-     * atan2-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float atan2( const float& y, const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double atan2( const double& y, const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double atan2( const long double& y, const long double& x );
-
-    /*
-     * copysign-function for ValueType
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float copysign( const float& x, const float& y );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double copysign( const double& x, const double& y );
-
-    static inline MIC_CALLABLE_MEMBER long double copysign( const long double& x, const long double& y );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<float> copysign( const Complex<float>& x, const Complex<float>& y );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER Complex<double> copysign( const Complex<double>& x, const Complex<double>& y );
 
     static inline MIC_CALLABLE_MEMBER Complex<long double> copysign( const Complex<long double>& x, const Complex<long double>& y );
-#endif
 
-    /*
-     * Getter for the real part
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double real( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float real( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double real( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER long double real( const Complex<long double>& x );
-#endif
 
-    /*
-     * Getter for the imag part
-     */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const float& x );
-
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const double& x );
-
-    static inline MIC_CALLABLE_MEMBER long double imag( const long double& x );
-
-#ifdef SCAI_COMPLEX_SUPPORTED
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER float imag( const Complex<float>& x );
 
     static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER double imag( const Complex<double>& x );
 
     static inline MIC_CALLABLE_MEMBER long double imag( const Complex<long double>& x );
+
 #endif
 
-    /*
-     * min operation
-     */
-    template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER ValueType min( const ValueType& x, const ValueType& y );
+    using MathReal::sqrt;
+    using MathReal::abs;
+    using MathReal::conj;
+    using MathReal::exp;
+    using MathReal::pow;
+    using MathReal::mod;
+    using MathReal::log;
+    using MathReal::floor;
+    using MathReal::ceil;
+    using MathReal::sin;
+    using MathReal::sinh;
+    using MathReal::cos;
+    using MathReal::cosh;
+    using MathReal::tan;
+    using MathReal::atan;
+    using MathReal::atan2;
+    using MathReal::copysign;
+    using MathReal::real;
+    using MathReal::imag;
 
-    /*
-     * max operation
-     */
-    template<typename ValueType>
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER ValueType max( const ValueType& x, const ValueType& y );
-
-    /*
-     * @brief random value betweem 0 and bound inclusive
-     */
-    template<typename ValueType>
-    static inline ValueType random( unsigned bound );
-
-    /** 
-     * @brief initialize seed of random number generator
-     */
-    static inline void srandom( unsigned int seed );
-
-    /** @brief generate a boolean value by random with a certain ratio.
-     *
-     *  @param[in] trueRatio specifies probability for true, 0 returns always false, 1 returns always tru
-     *  @returns   a boolean value
-     */
-    static inline bool randomBool( const float trueRatio );
 };
 
-// -------------------------------- sqrt ----------------------------
+#ifdef SCAI_COMPLEX_SUPPORTED
 
-float Math::sqrt( const float& x )
-{
-    return ::sqrtf( x );
-}
-
-double Math::sqrt( const double& x )
-{
-    return ::sqrt( x );
-}
+// ------------------ Math::sqrt --------------------------------
 
-long double Math::sqrt( const long double& x )
-{
-    return ::sqrtl( x );
-}
+// Workaround for template function: code for complex abs function as macro
+// Reason: template function causes compiler warnings with attribute CUDA_CALLABLE
 
-// -------------------------------- abs -----------------------------
+#define SQRT_FUNCTION_CODE                                                            \
+    ValueType x = a.real();                                                           \
+    ValueType y = a.imag();                                                           \
+                                                                                      \
+    ValueType zero = 0;                                                               \
+                                                                                      \
+    if ( x == zero )                                                                  \
+    {                                                                                 \
+        ValueType t = MathReal::sqrt( MathReal::abs( y ) / 2 );                       \
+        return Complex<ValueType>( t, y < zero ? -t : t );                            \
+    }                                                                                 \
+    else                                                                              \
+    {                                                                                 \
+        ValueType t = MathReal::sqrt( 2 * ( Math::abs( a ) + MathReal::abs( x ) ) );  \
+        ValueType u = t * ValueType( 0.5 );                                           \
+        return x > zero ? Complex<ValueType>( u, y / t ) :                            \
+               Complex<ValueType>( MathReal::abs( y ) / t, y < zero ? -u : u );       \
+    }    
 
-int Math::abs( const int& x )
+Complex<float> Math::sqrt( const Complex<float>& a )
 {
-    return ::abs( x );
-}
+    typedef float ValueType;
 
-unsigned int Math::abs( const unsigned int& x )
-{
-    return x;
+    SQRT_FUNCTION_CODE
 }
 
-long Math::abs( const long& x )
+Complex<double> Math::sqrt( const Complex<double>& a )
 {
-    return ::labs( x );
-}
+    typedef double ValueType;
 
-unsigned long Math::abs( const unsigned long& x )
-{
-    return x;
+    SQRT_FUNCTION_CODE
 }
 
-float Math::abs( const float& x )
-{
-    return ::fabsf( x );
-}
+Complex<long double> Math::sqrt( const Complex<long double>& a )
+{   
+    typedef long double ValueType;
 
-double Math::abs( const double& x )
-{
-    return ::fabs( x );
+    SQRT_FUNCTION_CODE
 }
 
-long double Math::abs( const long double& x )
-{
-    return ::fabsl( x );
-}
+// ------------------ Math::abs --------------------------------
 
-// -------------------------------- conj -----------------------------
+// Workaround for template function: code for complex abs function as macro
+// Reason: template function causes compiler warnings with attribute CUDA_CALLABLE
 
-float Math::conj( const float& x )
+#define ABS_FUNCTION_CODE                       \
+    ValueType x = a.real();                     \
+    ValueType y = a.imag();                     \
+    const ValueType ax = MathReal::abs( x );    \
+    const ValueType ay = MathReal::abs( y );    \
+    const ValueType s  = ax > ay ? ax : ay;     \
+                                                \
+    if ( s == ValueType( 0 ) )                  \
+    {                                           \
+        return s;                               \
+    }                                           \
+                                                \
+    x /= s;                                     \
+    y /= s;                                     \
+                                                \
+    return s * MathReal::sqrt( x * x + y * y );
+
+float Math::abs( const Complex<float>& a )
 {
-    return x;
+    typedef float ValueType;
+
+    ABS_FUNCTION_CODE
 }
 
-double Math::conj( const double& x )
+double Math::abs( const Complex<double>& a )
 {
-    return x;
+    typedef float ValueType;
+
+    ABS_FUNCTION_CODE
 }
 
-long double Math::conj( const long double& x )
+long double Math::abs( const Complex<long double>& a )
 {
-    return x;
+    typedef long double ValueType;
+
+    ABS_FUNCTION_CODE
 }
 
-// -------------------------------- exp -----------------------------
+// ------------------ Math::conj --------------------------------
 
-float Math::exp( const float& x )
+Complex<float> Math::conj( const Complex<float>& a )
 {
-    return ::expf( x );
+    return Complex<float>( a.real(), -a.imag() );
 }
 
-double Math::exp( const double& x )
+Complex<double> Math::conj( const Complex<double>& a )
 {
-    return ::exp( x );
+    return Complex<double>( a.real(), -a.imag() );
 }
 
-long double Math::exp( const long double& x )
+Complex<long double> Math::conj( const Complex<long double>& a )
 {
-    return ::expl( x );
+    return Complex<long double>( a.real(), -a.imag() );
 }
-
-// -------------------------------- pow -----------------------------
-
-int Math::pow( const int& base, const int& exponent )
-{
-    int r = 1;
-
-    for ( int i = 0; i < exponent; ++i )
-    {
-        r *= base;
-    }
 
-    return r;
-}
+// ------------------ Math::exp --------------------------------
 
-float Math::pow( const float& base, const float& exponent )
+Complex<float> Math::exp( const Complex<float>& a )
 {
-    return powf( base, exponent );
+    float s, c;
+    float e = ::expf( a.real() );
+    s = ::sinf( a.imag() );
+    c = ::cosf( a.imag() );
+    return Complex<float>( c * e, s * e );
 }
-
-double Math::pow( const double& base, const double& exponent )
+Complex<double> Math::exp( const Complex<double>& a )
 {
-    return ::pow( base, exponent );
+    double s, c;
+    double e = ::exp( a.real() );
+    s = ::sin( a.imag() );
+    c = ::cos( a.imag() );
+    return Complex<double>( c * e, s * e );
 }
-
-long double Math::pow( const long double& base, const long double& exponent )
+Complex<long double> Math::exp( const Complex<long double>& a )
 {
-    return powl( base, exponent );
+    long double s, c;
+    long double e = ::expl( a.real() );
+    s = ::sinl( a.imag() );
+    c = ::cosl( a.imag() );
+    return Complex<long double>( c * e, s * e );
 }
 
-// -------------------------------- mod -----------------------------
+// ------------------ Math::pow --------------------------------
 
-float Math::mod( const float& x, const float& y )
+Complex<float> Math::pow( const Complex<float>& base, const Complex<float>& exponent )
 {
-    return fmodf( x, y );
+    return Math::exp( exponent * Math::log( base ) );
 }
 
-double Math::mod( const double& x, const double& y )
+Complex<double> Math::pow( const Complex<double>& base, const Complex<double>& exponent )
 {
-    return fmod( x, y );
+    return Math::exp( exponent * Math::log( base ) );
 }
 
-long double Math::mod( const long double& x, const long double& y )
+Complex<long double> Math::pow( const Complex<long double>& base, const Complex<long double>& exponent )
 {
-    return fmodl( x, y );
+    return Math::exp( exponent * Math::log( base ) );
 }
 
-// -------------------------------- log -----------------------------
+// ------------------ Math::log --------------------------------
 
-float Math::log( const float& x )
+Complex<float> Math::log( const Complex<float>& x )
 {
-    return logf( x );
+    return Complex<float>( Math::log( Math::abs( x ) ), Math::arg( x ) );
 }
 
-double Math::log( const double& x )
+Complex<double> Math::log( const Complex<double>& x )
 {
-    return ::log( x );
+    return Complex<double>( Math::log( Math::abs( x ) ), Math::arg( x ) );
 }
 
-long double Math::log( const long double& x )
+Complex<long double> Math::log( const Complex<long double>& x )
 {
-    return logl( x );
+    return Complex<long double>( Math::log( Math::abs( x ) ), Math::arg( x ) );
 }
 
-// -------------------------------- floor -----------------------------
+// ------------------ Math::floor --------------------------------
 
-float Math::floor( const float& x )
+Complex<float> Math::floor( const Complex<float>& x )
 {
-    return floorf( x );
+    return Complex<float>( Math::floor( x.real() ), Math::floor( x.imag() ) );
 }
 
-double Math::floor( const double& x )
+Complex<double> Math::floor( const Complex<double>& x )
 {
-    return ::floor( x );
+    return Complex<double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
 }
 
-long double Math::floor( const long double& x )
+Complex<long double> Math::floor( const Complex<long double>& x )
 {
-    return floorl( x );
+    return Complex<long double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
 }
 
-// -------------------------------- ceil -----------------------------
+// ------------------ Math::mod --------------------------------
 
-float Math::ceil( const float& x )
+Complex<float> Math::mod( const Complex<float>& x, const Complex<float>& y )
 {
-    return ceilf( x );
+    return x - floor( x / y ) * y;
 }
 
-double Math::ceil( const double& x )
+Complex<double> Math::mod( const Complex<double>& x, const Complex<double>& y )
 {
-    return ::ceil( x );
+    return x - floor( x / y ) * y;
 }
 
-long double Math::ceil( const long double& x )
+Complex<long double> Math::mod( const Complex<long double>& x, const Complex<long double>& y )
 {
-    return ceill( x );
+    return x - floor( x / y ) * y;
 }
 
-// -------------------------------- sin -----------------------------
+// ------------------ Math::ceil --------------------------------
 
-float Math::sin( const float& x )
+Complex<float> Math::ceil( const Complex<float>& x )
 {
-    return sinf( x );
+    return Complex<float>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
 }
 
-double Math::sin( const double& x )
+Complex<double> Math::ceil( const Complex<double>& x )
 {
-    return ::sin( x );
+    return Complex<double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
 }
 
-long double Math::sin( const long double& x )
+Complex<long double> Math::ceil( const Complex<long double>& x )
 {
-    return sinl( x );
+    return Complex<long double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
 }
 
-// -------------------------------- sinh -----------------------------
+// ------------------ Math::sin --------------------------------
 
-float Math::sinh( const float& x )
+Complex<float> Math::sin( const Complex<float>& x )
 {
-    return sinhf( x );
+    return Complex<float>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
 }
 
-double Math::sinh( const double& x )
+Complex<double> Math::sin( const Complex<double>& x )
 {
-    return ::sinh( x );
+    return Complex<double>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
 }
 
-long double Math::sinh( const long double& x )
+Complex<long double> Math::sin( const Complex<long double>& x )
 {
-    return sinhl( x );
+    return Complex<long double>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
 }
 
-// -------------------------------- cos -----------------------------
-
-float Math::cos( const float& x )
-{
-    return cosf( x );
+// ------------------ Math::sinh --------------------------------
+Complex<float> Math::sinh( const Complex<float>& x )
+{   
+    return Complex<float>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
 }
 
-double Math::cos( const double& x )
-{
-    return ::cos( x );
+Complex<double> Math::sinh( const Complex<double>& x )
+{   
+    return Complex<double>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
 }
 
-long double Math::cos( const long double& x )
+Complex<long double> Math::sinh( const Complex<long double>& x )
 {
-    return cosl( x );
+    return Complex<long double>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
 }
 
-// -------------------------------- cosh -----------------------------
-
-float Math::cosh( const float& x )
+// ------------------ Math::cos --------------------------------
+Complex<float> Math::cos( const Complex<float>& x )
 {
-    return coshf( x );
+    return Complex<float>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
 }
 
-double Math::cosh( const double& x )
+Complex<double> Math::cos( const Complex<double>& x )
 {
-    return ::cosh( x );
+    return Complex<double>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
 }
 
-long double Math::cosh( const long double& x )
+Complex<long double> Math::cos( const Complex<long double>& x )
 {
-    return coshl( x );
+    return Complex<long double>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
 }
 
-// -------------------------------- tan -----------------------------
+// ------------------ Math::cosh --------------------------------
 
-float Math::tan( const float& x )
+Complex<float> Math::cosh( const Complex<float>& x )
 {
-    return tanf( x );
+    return Complex<float>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
 }
 
-double Math::tan( const double& x )
+Complex<double> Math::cosh( const Complex<double>& x )
 {
-    return ::tan( x );
+    return Complex<double>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
 }
 
-long double Math::tan( const long double& x )
+Complex<long double> Math::cosh( const Complex<long double>& x )
 {
-    return tanl( x );
+    return Complex<long double>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
 }
 
-// -------------------------------- atan -----------------------------
+// ------------------ Math::tan --------------------------------
 
-float Math::atan( const float& x )
+Complex<float> Math::tan( const Complex<float>& x )
 {
-    return atanf( x );
+    return Math::sin( x ) / Math::cos( x );
 }
 
-double Math::atan( const double& x )
+Complex<double> Math::tan( const Complex<double>& x )
 {
-    return ::atan( x );
+    return Math::sin( x ) / Math::cos( x );
 }
 
-long double Math::atan( const long double& x )
+Complex<long double> Math::tan( const Complex<long double>& x )
 {
-    return atanl( x );
+    return Math::sin( x ) / Math::cos( x );
 }
 
-// -------------------------------- atan2 -----------------------------
+// ------------------ Math::atan --------------------------------
 
-float Math::atan2( const float& y, const float& x )
-{
-    return atan2f( y, x );
+Complex<float> Math::atan( const Complex<float>& x )
+{   
+    const float r2 = x.real() * x.real();
+    const float r1 = float( 1.0 ) - r2 - x.imag() * x.imag();
+    
+    float num = x.imag() + float( 1.0 );
+    float den = x.imag() - float( 1.0 );
+    
+    num = r2 + num * num;
+    den = r2 + den * den;
+    
+    return Complex<float>( float( 0.5 )  * atan2( float( 2.0 ) * x.real(), r1 ),
+                           float( 0.25 ) * log( num / den ) );
 }
 
-double Math::atan2( const double& y, const double& x )
+Complex<double> Math::atan( const Complex<double>& x )
 {
-    return ::atan2( y, x );
+    const double r2 = x.real() * x.real();
+    const double r1 = double( 1.0 ) - r2 - x.imag() * x.imag();
+    
+    double num = x.imag() + double( 1.0 );
+    double den = x.imag() - double( 1.0 );
+    
+    num = r2 + num * num;
+    den = r2 + den * den;
+    
+    return Complex<double>( double( 0.5 )  * atan2( double( 2.0 ) * x.real(), r1 ),
+                           double( 0.25 ) * log( num / den ) );
 }
 
-long double Math::atan2( const long double& y, const long double& x )
+Complex<long double> Math::atan( const Complex<long double>& x )
 {
-    return atan2l( y, x );
+    const long double r2 = x.real() * x.real();
+    const long double r1 = static_cast<long double>( 1.0 ) - r2 - x.imag() * x.imag();
+
+    long double num = x.imag() + static_cast<long double>( 1.0 );
+    long double den = x.imag() - static_cast<long double>( 1.0 );
+
+    num = r2 + num * num;
+    den = r2 + den * den;
+
+    return Complex<long double>( static_cast<long double>( 0.5 )  * atan2( static_cast<long double>( 2.0 ) * x.real(), r1 ),
+                                 static_cast<long double>( 0.25 ) * log( num / den ) );
 }
 
-// -------------------------------- copysign -----------------------------
+// ------------------ Math::copysign --------------------------------
 
-float Math::copysign( const float& y, const float& x )
+Complex<float> Math::copysign( const Complex<float>& x, const Complex<float>& y )
 {
-    return copysignf( y, x );
+    return Complex<float>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
 }
 
-double Math::copysign( const double& y, const double& x )
+Complex<double> Math::copysign( const Complex<double>& x, const Complex<double>& y )
 {
-    return ::copysign( y, x );
+    return Complex<double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
 }
 
-long double Math::copysign( const long double& y, const long double& x )
+Complex<long double> Math::copysign( const Complex<long double>& x, const Complex<long double>& y )
 {
-    return copysignl( y, x );
+    return Complex<long double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
 }
 
-// -------------------------------- real -----------------------------
+// ------------------ Math::arg --------------------------------
 
-float Math::real( const float& x )
+float Math::arg( const Complex<float>& x )
 {
-    return x;
+    return Math::atan2( x.imag(), x.real() );
 }
 
-double Math::real( const double& x )
+double Math::arg( const Complex<double>& x )
 {
-    return x;
+    return Math::atan2( x.imag(), x.real() );
 }
 
-long double Math::real( const long double& x )
+long double Math::arg( const Complex<long double>& x )
 {
-    return x;
+    return Math::atan2( x.imag(), x.real() );
 }
 
-// -------------------------------- imag -----------------------------
+// ------------------ Math::real --------------------------------
 
-float Math::imag( const float& )
+float Math::real( const Complex<float>& a )
 {
-    return 0;
+    return a.real();
 }
 
-double Math::imag( const double& )
+double Math::real( const Complex<double>& a )
 {
-    return 0;
+    return a.real();
 }
 
-long double Math::imag( const long double& )
+long double Math::real( const Complex<long double>& a )
 {
-    return 0;
+    return a.real();
 }
 
-// -------------------------------- min ------------------------------
+// ------------------ Math::imag --------------------------------
 
-template<typename ValueType>
-inline ValueType Math::min( const ValueType& x, const ValueType& y )
+float Math::imag( const Complex<float>& a )
 {
-    if ( y < x )
-    {
-        return y;
-    }
-    else
-    {
-        return x;
-    }
+    return a.imag();
 }
 
-// -------------------------------- max ------------------------------
-
-template<typename ValueType>
-inline ValueType Math::max( const ValueType& x, const ValueType& y )
+double Math::imag( const Complex<double>& a )
 {
-    if ( x < y )
-    {
-        return y;
-    }
-    else
-    {
-        return x;
-    }
+    return a.imag();
 }
-
-// -------------------------------- random ---------------------------
 
-template<typename ValueType>
-inline ValueType Math::random( const unsigned bound )
+long double Math::imag( const Complex<long double>& a )
 {
-    return rand() % ( bound + 1 );
+    return a.imag();
 }
 
-// Template specializations, must also have the inline attribute
+// ------------------ Math::random ------------------------------
 
 template<>
-inline float Math::random( const unsigned bound )
+inline Complex<float> MathReal::random( const unsigned bound )
 {
-    return static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) * bound;
+    return Complex<float>( random<float>( bound ), random<float>( bound ) );
 }
 
 template<>
-inline double Math::random( const unsigned bound )
+inline Complex<double> MathReal::random( const unsigned bound )
 {
-    return static_cast<double>( rand() ) / static_cast<double>( RAND_MAX ) * bound;
+    return Complex<double>( random<double>( bound ), random<double>( bound ) );
 }
 
 template<>
-inline long double Math::random( const unsigned bound )
+inline Complex<long double> MathReal::random( const unsigned bound )
 {
-    return static_cast<long double>( rand() ) / static_cast<long double>( RAND_MAX ) * bound;
+    return Complex<long double>( random<long double>( bound ), random<long double>( bound ) );
 }
 
-inline void Math::srandom( unsigned int seed )
-{
-    srand( seed );
-}
-
-bool Math::randomBool( const float trueRatio )
-{
-    if ( trueRatio <= 0.0f )
-    {
-         return false;
-    }
-    else if ( trueRatio >= 1.0f )
-    {
-         return true;
-    }
-    else
-    {
-         float x = random<float>( 1 );   // value between 0 and 1, uniformly distributed
-         return x < trueRatio;
-    }
-}
+#endif
 
 } /* end namespace common */
 

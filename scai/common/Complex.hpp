@@ -41,7 +41,7 @@
 #include <scai/common/config.hpp>
 #include <scai/common/cuda/CUDACallable.hpp>
 #include <scai/common/mic/MICCallable.hpp>
-#include <scai/common/Math.hpp>
+#include <scai/common/MathReal.hpp>
 
 // std
 #include <sstream>
@@ -136,262 +136,217 @@
  *
  */
 
-#define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline Complex( type value )                                                                        \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_CONSTRUCTOR_CUDA( type, method )                                    \
+    MIC_CALLABLE_MEMBER                                                             \
+    CUDA_CALLABLE_MEMBER                                                            \
+    inline Complex( type value )                                                    \
+    {                                                                               \
+        method                                                                      \
     }
 
-#define COMPLEX_CONSTRUCTOR_NONCUDA( type, method )                                                     \
-    inline Complex( type value )                                                                        \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_CONSTRUCTOR_NONCUDA( type, method )                                 \
+    inline Complex( type value )                                                    \
+    {                                                                               \
+        method                                                                      \
     }
 
-#define COMPLEX_CONSTRUCTOR_2_CUDA( type1, type2, method )                                              \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline Complex( type1 value1, type2 value2 )                                                        \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_CONSTRUCTOR_2_CUDA( type1, type2, method )                          \
+    MIC_CALLABLE_MEMBER                                                             \
+    CUDA_CALLABLE_MEMBER                                                            \
+    inline Complex( type1 value1, type2 value2 )                                    \
+    {                                                                               \
+        method                                                                      \
     }
 
-#define COMPLEX_CONSTRUCTOR_2_NONCUDA( type1, type2, method )                                           \
-    inline Complex( type1 value1, type2 value2 )                                                        \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_CONSTRUCTOR_2_NONCUDA( type1, type2, method )                       \
+    inline Complex( type1 value1, type2 value2 )                                    \
+    {                                                                               \
+        method                                                                      \
     }
 
 /*
  * For member calculation operators =, +=, -=, *= and /=
  */
 
-#define COMPLEX_OPERATOR_CUDA( op, type, method )                                                       \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline Complex<ValueType>& op( const type t )                                                       \
-    {                                                                                                   \
-        method                                                                                          \
-    }                                                                                                   \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline volatile Complex<ValueType>& op( const type t ) volatile                                     \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_OPERATOR_CUDA( op, type, method )                                   \
+    MIC_CALLABLE_MEMBER                                                             \
+    CUDA_CALLABLE_MEMBER                                                            \
+    inline Complex<ValueType>& op( const type t )                                   \
+    {                                                                               \
+        method                                                                      \
+    }                                                                               \
+    MIC_CALLABLE_MEMBER                                                             \
+    CUDA_CALLABLE_MEMBER                                                            \
+    inline volatile Complex<ValueType>& op( const type t ) volatile                 \
+    {                                                                               \
+        method                                                                      \
     }
 
-#define COMPLEX_OPERATOR_NONCUDA( op, type, method )                                                    \
-    inline Complex<ValueType>& op( const type t )                                                       \
-    {                                                                                                   \
-        method                                                                                          \
-    }                                                                                                   \
-    inline volatile Complex<ValueType>& op( const type t ) volatile                                     \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_OPERATOR_NONCUDA( op, type, method )                                \
+    inline Complex<ValueType>& op( const type t )                                   \
+    {                                                                               \
+        method                                                                      \
+    }                                                                               \
+    inline volatile Complex<ValueType>& op( const type t ) volatile                 \
+    {                                                                               \
+        method                                                                      \
     }
 
 /*
  * For cast operators
  */
 
-#define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                                      \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    operator type() const                                                                               \
-    {                                                                                                   \
-        method                                                                                          \
+#define COMPLEX_OPERATOR_CAST_CUDA( type, method )                                  \
+    MIC_CALLABLE_MEMBER                                                             \
+    CUDA_CALLABLE_MEMBER                                                            \
+    operator type() const                                                           \
+    {                                                                               \
+        method                                                                      \
     }
 
-#define COMPLEX_OPERATOR_CAST_NONCUDA( type, method )                                                   \
-    operator type() const                                                                               \
-    {                                                                                                   \
-        method                                                                                          \
-    }
-
-/*
- * For comparison operators: <, >, <=, >=
- *
- */
-
-#define COMPLEX_OPERATOR_COMPARISON_CUDA(op, sign, type)                                                \
-    template<typename ValueType>                                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
-    {                                                                                                   \
-        return a.metrikCuda() sign static_cast<ValueType>(b.metrikCuda());                              \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline bool op( const Complex<ValueType>& a, const type& b )                                        \
-    {                                                                                                   \
-        return a.metrikCuda() sign static_cast<ValueType>(b);                                           \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline bool op( const type& a, const Complex<ValueType>& b )                                        \
-    {                                                                                                   \
-        return a sign static_cast<type>(b.metrikCuda());                                                \
-    }
-
-#define COMPLEX_OPERATOR_COMPARISON_NONCUDA(op, sign, type)                                             \
-    template<typename ValueType>                                                                        \
-    inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
-    {                                                                                                   \
-        return a.metrikHost() sign static_cast<ValueType>(b.metrikHost());                              \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    inline bool op( const Complex<ValueType>& a, const type& b )                                        \
-    {                                                                                                   \
-        return a.metrikHost() sign static_cast<ValueType>(b);                                           \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    inline bool op( const type& a, const Complex<ValueType>& b )                                        \
-    {                                                                                                   \
-        return a sign static_cast<type>(b.metrikHost());                                                \
+#define COMPLEX_OPERATOR_CAST_NONCUDA( type, method )                               \
+    operator type() const                                                           \
+    {                                                                               \
+        method                                                                      \
     }
 
 /*
  * For equality operators: ==, !=
  */
 
-#define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                                      \
-    template<typename ValueType>                                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                               \
-    {                                                                                                   \
-        return a.real() sign b.real() connection a.imag() sign b.imag();                                \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline bool op( const Complex<ValueType>& a, const type& b )                                        \
-    {                                                                                                   \
-        return a.real() sign b connection a.imag() sign 0;                                              \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    MIC_CALLABLE_MEMBER                                                                                 \
-    CUDA_CALLABLE_MEMBER                                                                                \
-    inline bool op( const type& a, const Complex<ValueType>& b )                                        \
-    {                                                                                                   \
-        return a sign b.real() connection 0 sign b.imag();                                              \
+#define COMPLEX_OPERATOR_EQUALITY_CUDA(op, sign, connection, type)                            \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline bool op( const Complex<ValueType>& a, const Complex<type>& b )                     \
+    {                                                                                         \
+        return a.real() sign b.real() connection a.imag() sign b.imag();                      \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline bool op( const Complex<ValueType>& a, const type& b )                              \
+    {                                                                                         \
+        return a.real() sign b connection a.imag() sign 0;                                    \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline bool op( const type& a, const Complex<ValueType>& b )                              \
+    {                                                                                         \
+        return a sign b.real() connection 0 sign b.imag();                                    \
     }
 
-#define COMPLEX_OPERATOR_EQUALITY_NONCUDA(op, sign, connection, type)                                   \
-    template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )          \
-    {                                                                                                   \
-        return a.real() sign b.real() connection a.imag() sign b.imag();                                \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )                   \
-    {                                                                                                   \
-        return a.real() sign b connection a.imag() sign 0;                                              \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )                   \
-    {                                                                                                   \
-        return a sign b.real() connection 0 sign b.imag();                                              \
+#define COMPLEX_OPERATOR_EQUALITY_NONCUDA(op, sign, connection, type)                           \
+    template<typename ValueType>                                                                \
+    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const Complex<type>& b )  \
+    {                                                                                           \
+        return a.real() sign b.real() connection a.imag() sign b.imag();                        \
+    }                                                                                           \
+    template<typename ValueType>                                                                \
+    CUDA_CALLABLE_MEMBER inline bool op( const Complex<ValueType>& a, const type& b )           \
+    {                                                                                           \
+        return a.real() sign b connection a.imag() sign 0;                                      \
+    }                                                                                           \
+    template<typename ValueType>                                                                \
+    CUDA_CALLABLE_MEMBER inline bool op( const type& a, const Complex<ValueType>& b )           \
+    {                                                                                           \
+        return a sign b.real() connection 0 sign b.imag();                                      \
     }
 
 /*
  * For non-member calculation operators: +,-,*,/
  */
 
-#define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                                         \
-    template<typename ValueType>                                                                                \
-    MIC_CALLABLE_MEMBER                                                                                         \
-    CUDA_CALLABLE_MEMBER                                                                                        \
-    inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )                         \
-    {                                                                                                           \
-        Complex<ValueType> x = a;                                                                               \
-        x sign b;                                                                                               \
-        return x;                                                                                               \
-    }                                                                                                           \
-    template<typename ValueType>                                                                                \
-    MIC_CALLABLE_MEMBER                                                                                         \
-    CUDA_CALLABLE_MEMBER                                                                                        \
-    inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )                      \
-    {                                                                                                           \
-        Complex<ValueType> x = a;                                                                               \
-        x sign b;                                                                                               \
-        return x;                                                                                               \
-    }                                                                                                           \
-    MIC_CALLABLE_MEMBER                                                                                         \
-    CUDA_CALLABLE_MEMBER                                                                                        \
-    inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )                                \
-    {                                                                                                           \
-        Complex<type> x = a;                                                                                    \
-        x sign b;                                                                                               \
-        return x;                                                                                               \
-    }                                                                                                           \
-    template<typename ValueType>                                                                                \
-    MIC_CALLABLE_MEMBER                                                                                         \
-    CUDA_CALLABLE_MEMBER                                                                                        \
-    inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                                  \
-    {                                                                                                           \
-        Complex<ValueType> x = a;                                                                               \
-        x sign static_cast<ValueType>(b);                                                                       \
-        return x;                                                                                               \
-    }                                                                                                           \
-    template<typename ValueType>                                                                                \
-    MIC_CALLABLE_MEMBER                                                                                         \
-    CUDA_CALLABLE_MEMBER                                                                                        \
-    inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                                  \
-    {                                                                                                           \
-        Complex<ValueType> x = a;                                                                               \
-        x sign b;                                                                                               \
-        return x;                                                                                               \
-    }                                                                                                           \
-    template<typename ValueType>                                                                                \
-    MIC_CALLABLE_MEMBER                                                                                         \
-    CUDA_CALLABLE_MEMBER                                                                                        \
-    inline Complex<ValueType> op( Complex<ValueType>& a, Complex<type>& b )                                     \
-    {                                                                                                           \
-        Complex<ValueType> x = a;                                                                               \
-        x sign b;                                                                                               \
-        return x;                                                                                               \
-    }                                                                                                           \
+#define COMPLEX_OPERATOR_NONMEMBER_CUDA(op, sign, type)                                       \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )       \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )    \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )              \
+    {                                                                                         \
+        Complex<type> x = a;                                                                  \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign static_cast<ValueType>(b);                                                     \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    MIC_CALLABLE_MEMBER                                                                       \
+    CUDA_CALLABLE_MEMBER                                                                      \
+    inline Complex<ValueType> op( Complex<ValueType>& a, Complex<type>& b )                   \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }
      
-#define COMPLEX_OPERATOR_NONMEMBER_NONCUDA(op, sign, type)                                              \
-    template<typename ValueType>                                                                        \
-    inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )                 \
-    {                                                                                                   \
-        Complex<ValueType> x = a;                                                                       \
-        x sign b;                                                                                       \
-        return x;                                                                                       \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )              \
-    {                                                                                                   \
-        Complex<ValueType> x = a;                                                                       \
-        x sign b;                                                                                       \
-        return x;                                                                                       \
-    }                                                                                                   \
-    inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )                        \
-    {                                                                                                   \
-        Complex<type> x = a;                                                                            \
-        x sign b;                                                                                       \
-        return x;                                                                                       \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                          \
-    {                                                                                                   \
-        Complex<ValueType> x = a;                                                                       \
-        x sign static_cast<ValueType>(b);                                                               \
-        return x;                                                                                       \
-    }                                                                                                   \
-    template<typename ValueType>                                                                        \
-    inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                          \
-    {                                                                                                   \
-        Complex<ValueType> x = a;                                                                       \
-        x sign b;                                                                                       \
-        return x;                                                                                       \
+#define COMPLEX_OPERATOR_NONMEMBER_NONCUDA(op, sign, type)                                    \
+    template<typename ValueType>                                                              \
+    inline Complex<ValueType> op( const Complex<ValueType>& a, const Complex<type>& b )       \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    inline Complex<ValueType> op( volatile Complex<ValueType>& a, const Complex<type>& b )    \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    inline Complex<type> op( volatile Complex<type>& a, const Complex<type>& b )              \
+    {                                                                                         \
+        Complex<type> x = a;                                                                  \
+        x sign b;                                                                             \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    inline Complex<ValueType> op( const Complex<ValueType>& a, const type& b )                \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign static_cast<ValueType>(b);                                                     \
+        return x;                                                                             \
+    }                                                                                         \
+    template<typename ValueType>                                                              \
+    inline Complex<ValueType> op( const type& a, const Complex<ValueType>& b )                \
+    {                                                                                         \
+        Complex<ValueType> x = a;                                                             \
+        x sign b;                                                                             \
+        return x;                                                                             \
     }
 
 namespace scai
@@ -577,22 +532,6 @@ public:
     COMPLEX_OPERATOR_CAST_NONCUDA( long double, COMPLEX_CAST_REAL( long double ) )
 
     /*
-     * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is callable from CUDA space.
-     *
-     * @return      the metric of a complex number
-     */
-    inline MIC_CALLABLE_MEMBER
-    CUDA_CALLABLE_MEMBER
-    ValueType metrikCuda( void ) const;
-
-    /*
-     * @brief Returns the metric for a complex number which is used to determine an order for complex numbers. Through this it is possible to use functions like min or max. This one is not callable from CUDA space and used for long double operations.
-     *
-     * @return      the metric of a complex number
-     */
-    ValueType metrikHost( void ) const;
-
-    /*
      * @brief Returns imaginary part of the complex number
      *
      * @return     the imaginary part of a complex number
@@ -706,38 +645,6 @@ CUDA_CALLABLE_MEMBER
 Complex<ValueType>::Complex()
 {
     //Constructor have to be empty. Otherwise cuda will output a lot of warnings
-}
-
-template<typename ValueType>
-MIC_CALLABLE_MEMBER
-CUDA_CALLABLE_MEMBER
-ValueType Complex<ValueType>::metrikCuda( void ) const
-{
-    if ( imag() == ValueType( 0 ) )
-    {
-        // saves time and keeps precision, e.g. for eps0
-
-        return Math::abs( real() );
-    }
-    else
-    {
-        return Math::sqrt( real() * real() + imag() * imag() );
-    }
-}
-
-template<typename ValueType>
-ValueType Complex<ValueType>::metrikHost( void ) const
-{
-    if ( imag() == ValueType( 0 ) )
-    {
-        // saves time and keeps precision, e.g. for eps0
-
-        return Math::abs( real() );
-    }
-    else
-    {
-        return Math::sqrt( real() * real() + imag() * imag() );
-    }
 }
 
 /*
@@ -864,461 +771,6 @@ std::ostream& operator<<( std::ostream& stream, const Complex<ValueType>& object
     return stream;
 }
 
-/*
-
-template<>
-long double Complex<long double>::metrikCuda( void ) const
-{
-    return Math::sqrt( real() * real() + imag() * imag() );
-}
-
-*/
-
-// ------------------ Math::sqrt --------------------------------
-
-Complex<float> Math::sqrt( const Complex<float>& a )
-{
-    float x = a.real();
-    float y = a.imag();
-
-    if ( x == 0.0f )
-    {
-        float t = Math::sqrt( Math::abs( y ) / 2 );
-        return Complex<float>( t, y < 0.0f ? -t : t );
-    }
-    else
-    {
-        float t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
-        float u = t / 2;
-        return x > 0.0f ? Complex<float>( u, y / t ) :
-               Complex<float>( Math::abs( y ) / t, y < 0.0f ? -u : u );
-    }
-}
-
-Complex<double> Math::sqrt( const Complex<double>& a )
-{
-    double x = a.real();
-    double y = a.imag();
-
-    if ( x == 0.0 )
-    {
-        double t = Math::sqrt( Math::abs( y ) / 2 );
-        return Complex<double>( t, y < 0.0 ? -t : t );
-    }
-    else
-    {
-        double t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
-        double u = t / 2;
-        return x > 0.0 ? Complex<double>( u, y / t ) :
-               Complex<double>( Math::abs( y ) / t, y < 0.0 ? -u : u );
-    }
-}
-
-Complex<long double> Math::sqrt( const Complex<long double>& a )
-{
-    long double x = a.real();
-    long double y = a.imag();
-
-    if ( x == 0.0l )
-    {
-        long double t = Math::sqrt( Math::abs( y ) / 2 );
-        return Complex<long double>( t, y < 0.0l ? -t : t );
-    }
-    else
-    {
-        long double t = Math::sqrt( 2 * ( abs( a ) + Math::abs( x ) ) );
-        long double u = t / 2;
-        return x > 0.0l ? Complex<long double>( u, y / t ) :
-               Complex<long double>( Math::abs( y ) / t, y < 0.0l ? -u : u );
-    }
-}
-
-// ------------------ Math::abs --------------------------------
-float Math::abs( const Complex<float>& a )
-{
-    float x = a.real();
-    float y = a.imag();
-    const float ax = Math::abs( x );
-    const float ay = Math::abs( y );
-    const float s = ax > ay ? ax : ay;
-
-    if ( s == 0.0f )
-    {
-        return s;
-    }
-
-    x /= s;
-    y /= s;
-    return s * Math::sqrt( x * x + y * y );
-}
-
-double Math::abs( const Complex<double>& a )
-{
-    double x = a.real();
-    double y = a.imag();
-    const double ax = Math::abs( x );
-    const double ay = Math::abs( y );
-    const double s = ax > ay ? ax : ay;
-
-    if ( s == 0.0 )
-    {
-        return s;
-    }
-
-    x /= s;
-    y /= s;
-    return s * Math::sqrt( x * x + y * y );
-}
-
-long double Math::abs( const Complex<long double>& a )
-{
-    long double x = a.real();
-    long double y = a.imag();
-    const long double ax = Math::abs( x );
-    const long double ay = Math::abs( y );
-    const long double s = ax > ay ? ax : ay;
-
-    if ( s == 0.0l )
-    {
-        return s;
-    }
-
-    x /= s;
-    y /= s;
-    return s * Math::sqrt( x * x + y * y );
-}
-
-// ------------------ Math::conj --------------------------------
-Complex<float> Math::conj( const Complex<float>& a )
-{
-    return Complex<float>( a.real(), -a.imag() );
-}
-Complex<double> Math::conj( const Complex<double>& a )
-{
-    return Complex<double>( a.real(), -a.imag() );
-}
-Complex<long double> Math::conj( const Complex<long double>& a )
-{
-    return Complex<long double>( a.real(), -a.imag() );
-}
-
-// ------------------ Math::exp --------------------------------
-Complex<float> Math::exp( const Complex<float>& a )
-{
-    float s, c;
-    float e = ::expf( a.real() );
-    s = ::sinf( a.imag() );
-    c = ::cosf( a.imag() );
-    return Complex<float>( c * e, s * e );
-}
-Complex<double> Math::exp( const Complex<double>& a )
-{
-    double s, c;
-    double e = ::exp( a.real() );
-    s = ::sin( a.imag() );
-    c = ::cos( a.imag() );
-    return Complex<double>( c * e, s * e );
-}
-Complex<long double> Math::exp( const Complex<long double>& a )
-{
-    long double s, c;
-    long double e = ::expl( a.real() );
-    s = ::sinl( a.imag() );
-    c = ::cosl( a.imag() );
-    return Complex<long double>( c * e, s * e );
-}
-
-// ------------------ Math::pow --------------------------------
-Complex<float> Math::pow( const Complex<float>& base, const Complex<float>& exponent )
-{
-    return Math::exp( exponent * Math::log( base ) );
-}
-
-Complex<double> Math::pow( const Complex<double>& base, const Complex<double>& exponent )
-{
-    return Math::exp( exponent * Math::log( base ) );
-}
-
-Complex<long double> Math::pow( const Complex<long double>& base, const Complex<long double>& exponent )
-{
-    return Math::exp( exponent * Math::log( base ) );
-}
-
-// ------------------ Math::log --------------------------------
-Complex<float> Math::log( const Complex<float>& x )
-{
-    return Complex<float>( Math::log( Math::abs( x ) ), Math::arg( x ) );
-}
-
-Complex<double> Math::log( const Complex<double>& x )
-{
-    return Complex<double>( Math::log( Math::abs( x ) ), Math::arg( x ) );
-}
-
-Complex<long double> Math::log( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::log( Math::abs( x ) ), Math::arg( x ) );
-}
-
-// ------------------ Math::floor --------------------------------
-Complex<float> Math::floor( const Complex<float>& x )
-{
-    return Complex<float>( Math::floor( x.real() ), Math::floor( x.imag() ) );
-}
-
-Complex<double> Math::floor( const Complex<double>& x )
-{
-    return Complex<double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
-}
-
-Complex<long double> Math::floor( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::floor( x.real() ), Math::floor( x.imag() ) );
-}
-
-// ------------------ Math::mod --------------------------------
-
-Complex<float> Math::mod( const Complex<float>& x, const Complex<float>& y )
-{
-    return x - floor( x / y ) * y;
-}
-
-Complex<double> Math::mod( const Complex<double>& x, const Complex<double>& y )
-{
-    return x - floor( x / y ) * y;
-}
-
-Complex<long double> Math::mod( const Complex<long double>& x, const Complex<long double>& y )
-{
-    return x - floor( x / y ) * y;
-}
-
-// ------------------ Math::ceil --------------------------------
-Complex<float> Math::ceil( const Complex<float>& x )
-{
-    return Complex<float>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
-}
-
-Complex<double> Math::ceil( const Complex<double>& x )
-{
-    return Complex<double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
-}
-
-Complex<long double> Math::ceil( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::ceil( x.real() ), Math::ceil( x.imag() ) );
-}
-
-// ------------------ Math::sin --------------------------------
-Complex<float> Math::sin( const Complex<float>& x )
-{
-    return Complex<float>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
-}
-
-Complex<double> Math::sin( const Complex<double>& x )
-{
-    return Complex<double>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
-}
-
-Complex<long double> Math::sin( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::sin( x.real() ) * Math::cosh( x.imag() ), Math::cos( x.real() ) * Math::sinh( x.imag() ) );
-}
-
-// ------------------ Math::sinh --------------------------------
-Complex<float> Math::sinh( const Complex<float>& x )
-{
-    return Complex<float>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
-}
-
-Complex<double> Math::sinh( const Complex<double>& x )
-{
-    return Complex<double>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
-}
-
-Complex<long double> Math::sinh( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::sinh( x.real() ) * Math::cos( x.imag() ), Math::cosh( x.real() ) * Math::sin( x.imag() ) );
-}
-
-// ------------------ Math::cos --------------------------------
-Complex<float> Math::cos( const Complex<float>& x )
-{
-    return Complex<float>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
-}
-
-Complex<double> Math::cos( const Complex<double>& x )
-{
-    return Complex<double>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
-}
-
-Complex<long double> Math::cos( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::cos( x.real() ) * Math::cosh( x.imag() ) , -Math::sin( x.real() ) * Math::sinh( x.imag() ) );
-}
-
-// ------------------ Math::cosh --------------------------------
-Complex<float> Math::cosh( const Complex<float>& x )
-{
-    return Complex<float>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
-}
-
-Complex<double> Math::cosh( const Complex<double>& x )
-{
-    return Complex<double>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
-}
-
-Complex<long double> Math::cosh( const Complex<long double>& x )
-{
-    return Complex<long double>( Math::cosh( x.real() ) * Math::cos( x.imag() ) , Math::sinh( x.real() ) * Math::sin( x.imag() ) );
-}
-
-// ------------------ Math::tan --------------------------------
-Complex<float> Math::tan( const Complex<float>& x )
-{
-    return Math::sin( x ) / Math::cos( x );
-}
-
-Complex<double> Math::tan( const Complex<double>& x )
-{
-    return Math::sin( x ) / Math::cos( x );
-}
-
-Complex<long double> Math::tan( const Complex<long double>& x )
-{
-    return Math::sin( x ) / Math::cos( x );
-}
-
-// ------------------ Math::atan --------------------------------
-Complex<float> Math::atan( const Complex<float>& x )
-{
-    const float r2 = x.real() * x.real();
-    const float r1 = float( 1.0 ) - r2 - x.imag() * x.imag();
-
-    float num = x.imag() + float( 1.0 );
-    float den = x.imag() - float( 1.0 );
-
-    num = r2 + num * num;
-    den = r2 + den * den;
-
-    return Complex<float>( float( 0.5 )  * atan2( float( 2.0 ) * x.real(), r1 ),
-                           float( 0.25 ) * log( num / den ) );
-}
-
-Complex<double> Math::atan( const Complex<double>& x )
-{
-    const double r2 = x.real() * x.real();
-    const double r1 = double( 1.0 ) - r2 - x.imag() * x.imag();
-
-    double num = x.imag() + double( 1.0 );
-    double den = x.imag() - double( 1.0 );
-
-    num = r2 + num * num;
-    den = r2 + den * den;
-
-    return Complex<double>( double( 0.5 )  * atan2( double( 2.0 ) * x.real(), r1 ),
-                            double( 0.25 ) * log( num / den ) );
-}
-
-Complex<long double> Math::atan( const Complex<long double>& x )
-{
-    const long double r2 = x.real() * x.real();
-    const long double r1 = static_cast<long double>( 1.0 ) - r2 - x.imag() * x.imag();
-
-    long double num = x.imag() + static_cast<long double>( 1.0 );
-    long double den = x.imag() - static_cast<long double>( 1.0 );
-
-    num = r2 + num * num;
-    den = r2 + den * den;
-
-    return Complex<long double>( static_cast<long double>( 0.5 )  * atan2( static_cast<long double>( 2.0 ) * x.real(), r1 ),
-                                 static_cast<long double>( 0.25 ) * log( num / den ) );
-}
-
-// ------------------ Math::copysign --------------------------------
-Complex<float> Math::copysign( const Complex<float>& x, const Complex<float>& y )
-{
-    return Complex<float>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
-}
-
-Complex<double> Math::copysign( const Complex<double>& x, const Complex<double>& y )
-{
-    return Complex<double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
-}
-
-Complex<long double> Math::copysign( const Complex<long double>& x, const Complex<long double>& y )
-{
-    return Complex<long double>( copysign( x.real(), y.real() ), copysign( x.imag(), y.imag() ) );
-}
-
-// ------------------ Math::arg --------------------------------
-float Math::arg( const Complex<float>& x )
-{
-    return Math::atan2( x.imag(), x.real() );
-}
-
-double Math::arg( const Complex<double>& x )
-{
-    return Math::atan2( x.imag(), x.real() );
-}
-
-long double Math::arg( const Complex<long double>& x )
-{
-    return Math::atan2( x.imag(), x.real() );
-}
-
-// ------------------ Math::real --------------------------------
-float Math::real( const Complex<float>& a )
-{
-    return a.real();
-}
-
-double Math::real( const Complex<double>& a )
-{
-    return a.real();
-}
-
-long double Math::real( const Complex<long double>& a )
-{
-    return a.real();
-}
-
-// ------------------ Math::imag --------------------------------
-float Math::imag( const Complex<float>& a )
-{
-    return a.imag();
-}
-
-double Math::imag( const Complex<double>& a )
-{
-    return a.imag();
-}
-
-long double Math::imag( const Complex<long double>& a )
-{
-    return a.imag();
-}
-
-// ------------------ Math::random ------------------------------
-
-template<>
-inline Complex<float> Math::random( const unsigned bound )
-{
-    return Complex<float>( random<float>( bound ), random<float>( bound ) );
-}
-
-template<>
-inline Complex<double> Math::random( const unsigned bound )
-{
-    return Complex<double>( random<double>( bound ), random<double>( bound ) );
-}
-
-template<>
-inline Complex<long double> Math::random( const unsigned bound )
-{
-    return Complex<long double>( random<long double>( bound ), random<long double>( bound ) );
-}
-
 } /* end namespace common */
 
 } /* end namespace scai */
@@ -1344,8 +796,6 @@ inline Complex<long double> Math::random( const unsigned bound )
 #undef COMPLEX_OPERATOR_NONCUDA
 #undef COMPLEX_OPERATOR_CAST_CUDA
 #undef COMPLEX_OPERATOR_CAST_NONCUDA
-#undef COMPLEX_OPERATOR_COMPARISON_CUDA
-#undef COMPLEX_OPERATOR_COMPARISON_NONCUDA
 #undef COMPLEX_OPERATOR_EQUALITY_CUDA
 #undef COMPLEX_OPERATOR_EQUALITY_NONCUDA
 #undef COMPLEX_OPERATOR_NONMEMBER_CUDA
