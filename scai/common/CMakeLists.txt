@@ -198,7 +198,6 @@ set ( COMMON_HEADERS
         Constants
         Factory
         Factory1
-        MathReal
         Math
         OpenMP
         NonCopyable

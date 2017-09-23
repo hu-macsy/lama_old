@@ -41,7 +41,6 @@
 #include <scai/common/config.hpp>
 #include <scai/common/cuda/CUDACallable.hpp>
 #include <scai/common/mic/MICCallable.hpp>
-#include <scai/common/MathReal.hpp>
 
 // std
 #include <sstream>
