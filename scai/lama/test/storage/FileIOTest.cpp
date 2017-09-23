@@ -73,9 +73,10 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
 
     // values: take numRows x numColums random numbers of required type
 
-    LArray<ValueType> values;
-    float fillRate = 0.2;
-    values.setRandom( numRows * numColumns, fillRate );
+    LArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
+    SCAI_LOG_ERROR( logger, "setDenseData, values = " << values )
+
+    values.setSparseRandom( 0.2f, 1 );
 
     ValueType eps = static_cast<ValueType>( 1E-5 );
 
@@ -668,9 +669,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         fileIO->setMode( FileIO::FORMATTED );
 
-        LArray<ValueType> array;
+        LArray<ValueType> array( N );
 
-        array.setRandom( N );
+        array.setRandom( 100 );
 
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outArrayFormatted" + typeName + fileSuffix;
@@ -790,9 +791,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         fileIO->setMode( FileIO::BINARY );
 
-        LArray<ValueType> array;
+        LArray<ValueType> array( N );
 
-        array.setRandom( N );
+        IndexType range = 1000;
+
+        array.setRandom( range );
 
         std::string typeName = TypeTraits<ValueType>::id();
         std::string fileName = "outArrayBinary_" + typeName  + fileSuffix;
@@ -920,11 +923,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
             continue;
         }
 
-        LArray<ValueType> array;
+        LArray<ValueType> array( N, ValueType( 0 ) );
 
         float fillRate = 0.05f;   // make it really sparse
+        IndexType bound = 1;
 
-        array.setRandom( N, fillRate );
+        array.setSparseRandom( fillRate, bound );
 
         LArray<ValueType> sparseArray;
         LArray<IndexType> sparseIndexes;

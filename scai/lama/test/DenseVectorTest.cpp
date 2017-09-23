@@ -118,11 +118,11 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
     IndexType n = 5;   // let it really small, this test is very inefficient
 
-    utilskernel::LArray<ValueType> data;
+    utilskernel::LArray<ValueType> data( n );
 
-    std::srand( 13151 );   // This test only works if all processors have same random numbers
+    common::Math::srandom( 13151 );   // This test only works if all processors have same random numbers
 
-    utilskernel::HArrayUtils::setRandom( data, n, 1.0 );
+    data.setRandom( 1 );
 
     dmemo::TestDistributions dists( n );
 
@@ -164,15 +164,15 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV;
-
     dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
+
+    DenseVector<ValueType> repV( repDist );
 
     // Note: all processors must have the same random numbers
 
-    std::srand( 13141 );   // This test only works if all processors have same random numbers
+    common::Math::srandom( 13141 );   // This test only works if all processors have same random numbers
 
-    repV.setRandom( repDist, 1.0 );
+    repV.setRandom( 1 );
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
 
                 for ( IndexType i = 0; i < n; ++i )
                 {
-                    ValueType expected = static_cast<double>( ( i + 1 ) * ( i + 2 ) / 2  );
+                    ValueType expected = static_cast<ValueType>( ( i + 1 ) * ( i + 2 ) / 2  );
                     Scalar computed = rVector[i];
                     BOOST_CHECK_EQUAL( expected, computed.getValue<ValueType>() );
                 }
@@ -332,9 +332,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
     float fillRate = 0.2;
 
 
-    hmemo::HArray<ValueType> denseData( ctx );
+    hmemo::HArray<ValueType> denseData( n, ValueType( 0 ), ctx );
+
     std::srand( 31991 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, n, fillRate );
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     if ( comm->getRank() == 0 )
     {
@@ -418,7 +420,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
         {
             dmemo::DistributionPtr colDist = colDists[i];
 
-            CSRSparseMatrix<double> mat( rowDist, colDist );
+            CSRSparseMatrix<RealType> mat( rowDist, colDist );
 
             DenseVector<ValueType> x( colDist, 3 );
             SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
@@ -519,10 +521,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
     A.setContextPtr( ctx );
     A.allocate( nRows, nCols );
     MatrixCreator::fillRandom( A, 0.1 );
-    DenseVector<ValueType> x( ctx );
-    x.setRandom( A.getColDistributionPtr() );
-    DenseVector<ValueType> y( ctx );
-    y.setRandom( A.getRowDistributionPtr() );
+    DenseVector<ValueType> x( A.getColDistributionPtr(), ctx );
+    DenseVector<ValueType> y( A.getRowDistributionPtr(), ctx );
+    x.setRandom( 1 );
+    y.setRandom( 1 );
     DenseVector<ValueType> res( 2 * A * x - y );
 
     // Now we do the same with all other matrices and all kind of distributions
@@ -582,6 +584,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     // generate random input data, same on all processors
 
     std::srand( 51413 );
+    const IndexType bound = 1;
 
     // Do vector = scalar * vector * matrix + scalar * vector with replicated storage data
 
@@ -589,10 +592,15 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     A.setContextPtr( ctx );
     A.allocate( nRows, nCols );
     MatrixCreator::fillRandom( A, 0.1 );
-    DenseVector<ValueType> x( ctx );
-    x.setRandom( A.getRowDistributionPtr() );
-    DenseVector<ValueType> y( ctx );
-    y.setRandom( A.getColDistributionPtr() );
+
+    // Before call of setRandom, x and y must be allocated, but not initialized
+
+    DenseVector<ValueType> x( A.getRowDistributionPtr(), ctx );
+    DenseVector<ValueType> y( A.getColDistributionPtr(), ctx );
+
+    x.setRandom( bound );
+    y.setRandom( bound );
+
     DenseVector<ValueType> res( 2 * x * A - y );
 
     // Now we do the same with all distributed matrices/vectors and all kind of distributions
@@ -671,16 +679,18 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
     // generate random input data, same on all processors
 
-    std::srand( 1413 );
+    common::Math::srandom( 1413 );
 
     DenseMatrix<ValueType> A;
     A.setContextPtr( ctx );
     A.allocate( nRows, nCols );
     MatrixCreator::fillRandom( A, 0.1 );
-    DenseVector<ValueType> x( ctx );
-    x.setRandom( A.getRowDistributionPtr() );
-    DenseVector<ValueType> y( ctx );
-    y.setRandom( A.getColDistributionPtr() );
+
+    DenseVector<ValueType> x( A.getRowDistributionPtr(), ctx );
+    DenseVector<ValueType> y( A.getColDistributionPtr(), ctx );
+
+    x.setRandom( 1 );
+    y.setRandom( 1 );
 
     DenseMatrix<ValueType> At( A, true );
 

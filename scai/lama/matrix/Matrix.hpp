@@ -439,8 +439,8 @@ public:
 
     /** @brief This method allows any arbitrary redistribution of the matrix.
      *
-     *  @param[in] rowDistribution is new distribution of rows, global size must be getNumRows()
-     *  @param[in] colDistribution is new distribution of columns, global size must be getNumColumns()
+     *  @param[in] rowDistributionPtr is new distribution of rows, global size must be getNumRows()
+     *  @param[in] colDistributionPtr is new distribution of columns, global size must be getNumColumns()
      *
      *  For sparse matrices it might be allowed that the new number of columns might become larger with the
      *  new column distribution. 
@@ -449,6 +449,9 @@ public:
 
     /**
      *  @brief Redistribute this matrix with a redistributor 
+     *
+     *  @param[in] redistributor      object that supports redistribution of rows from old to new distribution
+     *  @param[in] colDistributionPtr is new distribution of columns, global size must be getNumColumns()
      *
      *  Note: redistributor.getSourceDistribution() == this->getRowDistribution() must be valid
      *        this->getDistribution() == redistributor.getTargetDistribution() is valid after the call.

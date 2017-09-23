@@ -95,7 +95,11 @@ macro ( scai_example_makefile )
         set ( SCAI_DEFINES "${SCAI_DEFINES} -DSCAI_TRACE_${SCAI_TRACE}" )
     endif ()
 
+    ## SCAI_MODULES = ${EXAMPLE_MODULES} Module.so;DummyModule.so  -> Moudle.so DummyModule.so
+
     listToString ( " " "${EXAMPLE_EXECUTABLES}" EXAMPLE_EXECUTABLES )
+    listToString ( " " "${EXAMPLE_MODULES}" EXAMPLE_MODULES )
+    listToString ( " " "${EXAMPLE_LIBS}" EXAMPLE_LIBS )
 
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_make.inc.in" "${CMAKE_CURRENT_BINARY_DIR}/make.inc" )
     configure_file ( "${CMAKE_SOURCE_DIR}/examples_Makefile.in" "${CMAKE_CURRENT_BINARY_DIR}/install_Makefile" COPYONLY )

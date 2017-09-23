@@ -238,7 +238,9 @@ BOOST_AUTO_TEST_CASE( ConjTest )
 
         float fillRate = 0.1f;
 
-        v->setRandom( dist, fillRate );
+        v->allocate( dist );
+        *v = 0;
+        v->setSparseRandom( fillRate, 1 );
         
         VectorPtr v1( v->copy() );
 
@@ -278,7 +280,9 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
         float fillRate = 0.1f;
 
-        v1.setRandom( dist, fillRate );
+        v1.allocate( dist );
+        v1 = 0;
+        v1.setSparseRandom( fillRate, 1 );
 
         v1 += 2;
 
@@ -321,7 +325,9 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
 
         float fillRate = 0.1f;
 
-        v1.setRandom( vectorDist, fillRate );
+        v1.allocate( vectorDist );
+        v1 = 0;
+        v1.setSparseRandom( fillRate, 1 );
 
         VectorPtr v2Ptr( v1.copy() );
         Vector& v2 = *v2Ptr;
@@ -367,9 +373,11 @@ BOOST_AUTO_TEST_CASE( PowTest )
 
         float fillRate = 0.1f;
 
-        v1.setRandom( vectorDist, fillRate );
+        v1.allocate( vectorDist );
+        v1 = 0;
+        v1.setSparseRandom( fillRate, 2 );
 
-        v1 += 3.0;   // range 2 .. 4
+        v1 += 2.0;   // range 2 .. 4
 
         VectorPtr v2Ptr( v1.copy() );
         Vector& v2 = *v2Ptr;
@@ -634,8 +642,11 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
             common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
             common::shared_ptr<_HArray> data2( _HArray::create( v2->getValueType() ) );
 
-            utilskernel::HArrayUtils::setRandom( *data1, n );
-            utilskernel::HArrayUtils::setRandom( *data2, n );
+            data1->resize( n );
+            data2->resize( n );
+
+            utilskernel::HArrayUtils::setRandom( *data1, 1 );
+            utilskernel::HArrayUtils::setRandom( *data2, 1 );
 
             v1->assign( *data1 );
             v2->assign( *data2 );
@@ -687,7 +698,8 @@ BOOST_AUTO_TEST_CASE( scaleTest )
         }
 
         common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-        utilskernel::HArrayUtils::setRandom( *data1, n );
+        data1->resize( n );
+        utilskernel::HArrayUtils::setRandom( *data1, 1 );
 
         v1->assign( *data1 );
 

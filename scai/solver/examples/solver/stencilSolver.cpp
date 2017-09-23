@@ -71,7 +71,7 @@ typedef RealType ValueType;
         }                                       \
     }                                           \
      
-static bool isNumeric( double& val, const string& str )
+static bool isNumeric( RealType& val, const string& str )
 {
     bool is = true;
 
@@ -175,31 +175,31 @@ int main( int argc, const char* argv[] )
         {
             case 1:  
             {
-                common::Stencil1D<double> stencil( nPoints );
+                common::Stencil1D<RealType> stencil( nPoints );
                 common::Grid1D grid( n1 );
-                matrixPtr.reset( new StencilMatrix<double>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<RealType>( grid, stencil ) );
                 break;
             }
          
             case 2:  
             {
-                common::Stencil2D<double> stencil( nPoints );
+                common::Stencil2D<RealType> stencil( nPoints );
                 IndexType n2 = n1;
                 stencilSpecification >> n2;
                 common::Grid2D grid( n1, n2 );
-                matrixPtr.reset( new StencilMatrix<double>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<RealType>( grid, stencil ) );
                 break;
             }
          
             case 3:  
             {
-                common::Stencil3D<double> stencil( nPoints );
+                common::Stencil3D<RealType> stencil( nPoints );
                 IndexType n2 = n1;
                 stencilSpecification >> n2;
                 IndexType n3 = n2;
                 stencilSpecification >> n3;
                 common::Grid3D grid( n1, n2, n3 );
-                matrixPtr.reset( new StencilMatrix<double>( grid, stencil ) );
+                matrixPtr.reset( new StencilMatrix<RealType>( grid, stencil ) );
                 break;
             }
         }
@@ -218,7 +218,7 @@ int main( int argc, const char* argv[] )
         {
             SCAI_REGION( "Main.loadData" )
 
-            double val;
+            RealType val;
 
             if ( isNumeric( val, rhsFilename ) )
             {
@@ -291,7 +291,7 @@ int main( int argc, const char* argv[] )
 
         // Now convert to th desired matrix format
 
-        double matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
+        RealType matrixSize  = matrix.getMemoryUsage() / 1024.0 / 1024.0;
 
         HOST_PRINT( myRank,  "Matrix Size = " << matrixSize << " MB" )
 
@@ -331,7 +331,7 @@ int main( int argc, const char* argv[] )
 
         NormPtr norm( Norm::create( lamaconf.getNorm() ) );   // Norm from factory
 
-        double eps = lamaconf.getAbsoluteTolerance();
+        RealType eps = lamaconf.getAbsoluteTolerance();
 
         if ( eps > 0.0 )
         {

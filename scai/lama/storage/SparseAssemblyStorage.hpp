@@ -65,6 +65,9 @@ class COMMON_DLL_IMPORTEXPORT SparseAssemblyStorage:
 {
 public:
 
+    typedef ValueType StorageValueType;
+    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
+
     /** Getter of the type name of the matrix storage format. */
 
     static const char* typeName();
@@ -175,7 +178,7 @@ public:
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual ValueType maxNorm() const;
+    virtual StorageAbsType maxNorm() const;
 
     ValueType getValue( const IndexType i, const IndexType j ) const
     {

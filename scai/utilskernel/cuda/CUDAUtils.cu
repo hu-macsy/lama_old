@@ -297,32 +297,6 @@ void divScalarKernel( ValueType out[], const ValueType value, const ValueType in
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-__global__
-void minScalarKernel( ValueType out[], const ValueType in[], const ValueType val, const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = common::Math::min( val, in[i] );
-    }
-}
-
-template<typename ValueType>
-__global__
-void maxScalarKernel( ValueType out[], const ValueType in[], const ValueType val, const IndexType n )
-{
-    const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
-
-    if ( i < n )
-    {
-        out[i] = common::Math::max( val, in[i] );
-    }
-}
-
-/* --------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op )
 {
     SCAI_REGION( "CUDA.Utils.setVal" )
@@ -632,19 +606,6 @@ void CUDAUtils::binaryOpScalar(
 
             break;
         }
-
-        case binary::MAX :
-        {
-            maxScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
-        case binary::MIN :
-        {
-            minScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
-            break;
-        }
-
         default:
         {
             if ( swapScalar )

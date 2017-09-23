@@ -59,6 +59,8 @@ using namespace scai;
 using namespace lama;
 using namespace solver;
 
+typedef RealType ValueType;
+
 int main( int argc, const char* argv[] )
 {
     // relevant SCAI arguments: 
@@ -69,10 +71,10 @@ int main( int argc, const char* argv[] )
 
     std::string filename = argv[1];
 
-    CSRSparseMatrix<double> A( filename );
+    CSRSparseMatrix<ValueType> A( filename );
 
-    DenseVector<double> r( A.getRowDistributionPtr(), 1 );
-    DenseVector<double> y;
+    DenseVector<ValueType> r( A.getRowDistributionPtr(), 1 );
+    DenseVector<ValueType> y;
 
     for ( int k = 0; k < 100; ++k )
     {

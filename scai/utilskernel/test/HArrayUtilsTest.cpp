@@ -910,11 +910,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
-    LArray<ValueType> array( loc );
     const IndexType n = 100;
-    float fillRate = 1.0f;
-    HArrayUtils::setRandom( array, n, fillRate, loc );
-    BOOST_CHECK_EQUAL( array.size(), n );
+    LArray<ValueType> array( n, loc );
+    array.setRandom( 1 );
     ValueType sum = array.sum();
 
     SCAI_LOG_INFO( logger, "Draw " << n << " random values of type " << common::TypeTraits<ValueType>::id()
@@ -927,19 +925,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     else
     {
         typedef typename TypeTraits<ValueType>::AbsType AbsType;
-        AbsType asum = Math::abs( sum );
-        // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum  < AbsType( n / 5 ) );
+        // AbsType asum = Math::abs( sum );
+        AbsType asum = sum;   // only real part for complex numbers
+        // random numbers are between 0 and 1.0, so should sum up approximately to n/2
+        BOOST_CHECK( AbsType( asum - n / 2 )  < AbsType( n / 5 ) );
     }
   
-    // check that argument fillRate works correctly
-
-    fillRate = 0.1f;
-    HArrayUtils::setRandom( array, 10 * n, fillRate, loc );
-    BOOST_CHECK_EQUAL( array.size(), 10 * n );
+    float fillRate = 0.1f;
 
     HArray<IndexType> nonZeroIndexes;
-    HArrayUtils::buildSparseIndexes( nonZeroIndexes, array, loc );
+    HArrayUtils::randomSparseIndexes( nonZeroIndexes, 10 * n, fillRate );
 
     // nonZeroIndexes should have size around n 
 
@@ -949,56 +944,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     // not possible for unsigned int abs( n - nonZeroIndexes.size() )
 
     BOOST_CHECK( common::applyBinary( n, common::binary::ABS_DIFF, nonZeroIndexes.size() ) < ( n / 5 ) );
-
-    if ( typeid( ValueType ).name() == typeid( IndexType ).name() )
-    {
-        // no check for integer types
-    }
-    else
-    {
-        typedef typename TypeTraits<ValueType>::AbsType AbsType;
-        AbsType asum = Math::abs( sum );
-        // random numbers are between -1.0 and 1.0, so should sum up approximately to 0
-        BOOST_CHECK( asum  < AbsType( n / 5 ) );
-    }
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType RealValueType;
+
     ContextPtr loc = Context::getContextPtr();
 
-    ValueType vals[] = { 13, 5, 14, 2 };
-    const IndexType n = sizeof( vals ) / sizeof( ValueType );
-    LArray<ValueType> array( n, vals, loc );
+    RealValueType vals[] = { 13, 5, 14, 2 };
+    const IndexType n = sizeof( vals ) / sizeof( RealValueType );
+    LArray<RealValueType> array( n, vals, loc );
 
     LArray<IndexType> perm;
-    LArray<ValueType> array1;
+    LArray<RealValueType> array1;
     HArrayUtils::sort( &perm, &array1, array, true );
 
     BOOST_REQUIRE_EQUAL( perm.size(), n );
     BOOST_REQUIRE_EQUAL( array1.size(), n );
 
-    LArray<ValueType> array2;   // = array[perm]
+    LArray<RealValueType> array2;   // = array[perm]
     HArrayUtils::gatherImpl( array2, array, perm, binary::COPY );
 
-    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
+    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), RealValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortSparseTest, ValueType, array_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType RealValueType;
+
     ContextPtr loc = Context::getContextPtr();
 
     IndexType raw_indexes[] = { 13, 5, 14, 2, 1, 9, 16, 31, 32, 17 };
-    ValueType raw_vals[] = { 13, 5, 14, 2, 1, 9, 16, 31, 32, 17 };
+    RealValueType raw_vals[] = { 13, 5, 14, 2, 1, 9, 16, 31, 32, 17 };
 
-    const IndexType n = sizeof( raw_vals ) / sizeof( ValueType );
+    const IndexType n = sizeof( raw_vals ) / sizeof( RealValueType );
 
     LArray<IndexType> indexes( n, raw_indexes, loc );
-    LArray<ValueType> values( n, raw_vals, loc );
+    LArray<RealValueType> values( n, raw_vals, loc );
 
     for ( IndexType i = 0; i < 2; ++i )
     { 
@@ -1045,25 +1032,27 @@ BOOST_AUTO_TEST_CASE( inversePermTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType RealValueType;
+
     ContextPtr loc = Context::getContextPtr();
 
     bool descending = false;
     bool ascending = true;
 
-    ValueType vals[] = { 13, 5, 14, 2, 8, 2, 1 };
+    RealValueType vals[] = { 13, 5, 14, 2, 8, 2, 1 };
 
-    const IndexType n = sizeof( vals ) / sizeof( ValueType );
-    LArray<ValueType> array( n, vals, loc );
+    const IndexType n = sizeof( vals ) / sizeof( RealValueType );
+    LArray<RealValueType> array( n, vals, loc );
 
     HArrayUtils::sort( NULL, &array, array, descending );
     BOOST_CHECK( HArrayUtils::isSorted( array, binary::GE ) );
 
-    ValueType expectedVals[] = { 1, 2,  2, 5, 8, 13, 14 };
-    LArray<ValueType> array1( n, expectedVals, loc );
-    LArray<ValueType> array2;
+    RealValueType expectedVals[] = { 1, 2,  2, 5, 8, 13, 14 };
+    LArray<RealValueType> array1( n, expectedVals, loc );
+    LArray<RealValueType> array2;
     HArrayUtils::sort( NULL, &array2, array, ascending );
 
-    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), ValueType( 0 ) );
+    BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), RealValueType( 0 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -1141,7 +1130,7 @@ BOOST_AUTO_TEST_CASE( bucketCountTest )
 
 BOOST_AUTO_TEST_CASE( mergeSortTest )
 {
-    typedef double ValueType;
+    typedef RealType ValueType;
 
     ContextPtr loc = Context::getContextPtr();
 

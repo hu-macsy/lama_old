@@ -356,7 +356,8 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
 int main( int /*argc*/, char** /*argv[]*/ )
 {
     // we do all calculation in double precision
-    typedef double ValueType;
+
+    typedef RealType ValueType;
 
     // read configuration parameter from file
     Configuration<ValueType> config( "Configuration.txt" );

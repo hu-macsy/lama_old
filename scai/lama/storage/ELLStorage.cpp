@@ -1758,13 +1758,13 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::maxNorm() const
+typename ELLStorage<ValueType>::StorageAbsType ELLStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     if ( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return static_cast<ValueType>( 0.0 );
+        return StorageAbsType( 0 );
     }
 
     static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;

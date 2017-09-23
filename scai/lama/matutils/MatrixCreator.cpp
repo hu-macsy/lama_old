@@ -323,18 +323,18 @@ void MatrixCreator::buildPoisson(
 
     // create new local CSR data ( # local rows x # columns )
 
-    CSRStorage<double> localMatrix;
+    CSRStorage<RealType> localMatrix;
 
     localMatrix.allocate( localSize, globalGrid.size() );
 
     hmemo::HArray<IndexType> csrIA;
     hmemo::HArray<IndexType> csrJA;
-    hmemo::HArray<double> csrValues;
+    hmemo::HArray<RealType> csrValues;
 
     {
         hmemo::WriteOnlyAccess<IndexType> ia( csrIA, localSize + 1 );
         hmemo::WriteOnlyAccess<IndexType> ja( csrJA, myNNA );
-        hmemo::WriteOnlyAccess<double> values( csrValues, myNNA );
+        hmemo::WriteOnlyAccess<RealType> values( csrValues, myNNA );
 
         ia[0] = 0;
 
@@ -376,7 +376,7 @@ void MatrixCreator::buildPoisson(
             for ( size_t k = 0; k < colIndexes.size(); ++k )
             {
                 ja[nnzCounter] = colIndexes[k];
-                values[nnzCounter] = static_cast<double>( colValues[k] );
+                values[nnzCounter] = static_cast<RealType>( colValues[k] );
                 ++nnzCounter;
             }
 
@@ -433,7 +433,7 @@ void MatrixCreator::buildPoisson3D(
 
 /* ------------------------------------------------------------------------- */
 
-void MatrixCreator::fillRandom( Matrix& matrix, double density )
+void MatrixCreator::fillRandom( Matrix& matrix, float density )
 {
     // Shape and distribution of matrix is not changed
     const dmemo::Distribution& dist = matrix.getRowDistribution();
@@ -456,11 +456,11 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
     {
         for ( IndexType j = 0; j < colSize; ++j )
         {
-            double value;
-            common::Math::random( value );   // range -1.0 .. 1.0
-            value = 0.5 * ( value + 1.0 );   // range 0 .. 1.0
+            // density determines the true ratio of random bool value
 
-            if ( value < density )
+            bool takeIt = common::Math::randomBool( density );
+
+            if ( takeIt )
             {
                 csrJA.push_back( j );
                 ++numValues;
@@ -478,7 +478,8 @@ void MatrixCreator::fillRandom( Matrix& matrix, double density )
 
     // draw the non-zero values, now with fill rate 1.0f
 
-    utilskernel::HArrayUtils::setRandom( values, numValues, 1.0f );
+    values.resize( numValues );
+    utilskernel::HArrayUtils::setRandom( values, 1 );
 
     // some tricky stuff to avoid an additional copy
 

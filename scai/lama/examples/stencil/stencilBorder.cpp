@@ -58,6 +58,7 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+typedef RealType ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -67,7 +68,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil1D<double> stencilFD8;
+    common::Stencil1D<ValueType> stencilFD8;
 
     stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
@@ -88,18 +89,18 @@ int main( int argc, const char* argv[] )
 
     grid.setBorderType( 0, common::Grid::BORDER_REFLECTING, common::Grid::BORDER_REFLECTING );
 
-    StencilStorage<double> st( grid, stencilFD8 );
+    StencilStorage<ValueType> st( grid, stencilFD8 );
 
     for ( IndexType i = 0; i < N1; ++i )
     {
-        HArray<double> vals;
+        HArray<ValueType> vals;
         HArray<IndexType> ja;
 
         st.getSparseRow( ja, vals, i );
 
         SCAI_ASSERT_EQ_ERROR( ja.size(), vals.size(), "serious mismatch"  );
 
-        hmemo::ReadAccess<double> rValues( vals );
+        hmemo::ReadAccess<ValueType> rValues( vals );
         hmemo::ReadAccess<IndexType> rJA( ja );
 
         std::cout << "Row " << i << " : ";
@@ -112,18 +113,18 @@ int main( int argc, const char* argv[] )
         std::cout << std::endl;
     }
 
-    CSRStorage<double> csr( st );
+    CSRStorage<ValueType> csr( st );
 
     for ( IndexType i = 0; i < N1; ++i )
     {
-        HArray<double> vals;
+        HArray<ValueType> vals;
         HArray<IndexType> ja;
 
         csr.getSparseRow( ja, vals, i );
 
         SCAI_ASSERT_EQ_ERROR( ja.size(), vals.size(), "serious mismatch"  );
 
-        hmemo::ReadAccess<double> rValues( vals );
+        hmemo::ReadAccess<ValueType> rValues( vals );
         hmemo::ReadAccess<IndexType> rJA( ja );
 
         std::cout << "Row " << i << " : ";

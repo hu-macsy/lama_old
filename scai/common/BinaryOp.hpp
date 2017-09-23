@@ -101,6 +101,8 @@ template <typename ValueType>
 MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
 inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, const ValueType& x2 )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     switch ( op )
     {
         case binary::COPY:
@@ -120,9 +122,9 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
         case binary::POW:
             return Math::pow( x1, x2 );
         case binary::MIN:
-            return Math::min( x1, x2 );
+            return Math::min( AbsType( x1 ), AbsType( x2 ) );
         case binary::MAX:
-            return Math::max( x1, x2 );
+            return Math::max( AbsType( x1 ), AbsType( x2 ) );
         case binary::ABS_MAX:
             return Math::max( Math::abs( x1 ), Math::abs( x2 ) );
         case binary::ABS_DIFF:
@@ -136,16 +138,23 @@ template <typename ValueType>
 MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
 inline bool applyBinary( const ValueType& x1, const binary::CompareOp op, const ValueType& x2 )
 {
+    // ToDo: throw exception if called with complex values
+
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType v1 = x1;
+    AbsType v2 = x2;
+
     switch ( op )
     {
         case binary::LT:
-            return x1 < x2;
+            return v1 < v2;
         case binary::LE:
-            return x1 < x2 || x1 == x2;
+            return v1 <= v2;
         case binary::GE:
-            return x1 > x2 || x1 == x2;
+            return v1 >= v2;
         case binary::GT:
-            return x1 > x2;
+            return v1 > v2;
         default:
             return false;
     }

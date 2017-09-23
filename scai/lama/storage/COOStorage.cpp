@@ -565,7 +565,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::maxNorm() const
+typename COOStorage<ValueType>::StorageAbsType COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return HArrayUtils::reduce( mValues, common::binary::ABS_MAX, this->getContextPtr() );

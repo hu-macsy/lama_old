@@ -59,10 +59,12 @@ using namespace partitioning;
 using namespace std;
 using scai::common::Walltime;
 
-static void bench( CSRSparseMatrix<double>& mat )
+typedef RealType ValueType;
+
+static void bench( CSRSparseMatrix<ValueType>& mat )
 {
-    DenseVector<double> y( mat.getColDistributionPtr(), 1.0 );
-    DenseVector<double> x( mat.getRowDistributionPtr(), 0.0 );
+    DenseVector<ValueType> y( mat.getColDistributionPtr(), 1.0 );
+    DenseVector<ValueType> x( mat.getRowDistributionPtr(), 0.0 );
 
     x = x + mat * y;  // warm up
     x = x + mat * y;  // warm up
@@ -116,7 +118,7 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    CSRSparseMatrix<double> m;
+    CSRSparseMatrix<ValueType> m;
     m.readFromFile( argv[1] );
 
     if ( !Partitioning::canCreate( argv[2] ) )

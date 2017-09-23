@@ -100,6 +100,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types 
     const Matrix& inverse = inverseSolver.getInverse();
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 
+    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+
     for ( IndexType i = 0; i < n; ++i )
     {
         for ( IndexType j = 0; j < n; ++j )
@@ -108,11 +110,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types 
 
             if ( i == j )
             {
-                SCAI_CHECK_CLOSE( 1.0, scalar.getValue<ValueType>(), 1 );
+                SCAI_CHECK_CLOSE( 1.0, scalar.getValue<AbsType>(), 1 );
             }
             else
             {
-                BOOST_CHECK( scalar.getValue<ValueType>() < 1E-6 );
+                BOOST_CHECK( scalar.getValue<AbsType>() < 1E-6 );
             }
         }
     }

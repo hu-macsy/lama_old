@@ -377,15 +377,16 @@ inline MPI_Datatype MPICommunicator::getMPI2Type( common::scalar::ScalarType sty
 
 inline MPI_Op MPICommunicator::getMPISum( common::scalar::ScalarType stype )
 {
-
-#ifdef SCAI_COMPLEX_SUPPORTED
-
     if ( stype == common::scalar::LONG_DOUBLE_COMPLEX )
     {
-        return mSumComplexLongDouble;
-    }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+        return mSumComplexLongDouble;
+#else
+        COMMON_THROWEXCEPTION( "MPI sum unsupported for " << stype )
+        return MPI_SUM;
 #endif
+    }
 
     return MPI_SUM;
 }

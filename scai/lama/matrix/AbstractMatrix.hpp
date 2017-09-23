@@ -139,6 +139,10 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
+    virtual void redistribute( const dmemo::Redistributor&, dmemo::DistributionPtr)
+    {
+        COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
+    }
     virtual void getRow(Vector&, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )

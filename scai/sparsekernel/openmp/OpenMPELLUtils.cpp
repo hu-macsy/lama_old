@@ -183,10 +183,14 @@ ValueType OpenMPELLUtils::absMaxVal(
     const IndexType ellSizes[],
     const ValueType values[] )
 {
-    ValueType maxValue = static_cast<ValueType>( 0.0 );
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType maxValue = 0;
+
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        AbsType threadVal = 0;
+
         #pragma omp for 
 
         for ( IndexType i = 0; i < numRows; ++i )
@@ -194,7 +198,8 @@ ValueType OpenMPELLUtils::absMaxVal(
             for ( IndexType jj = 0; jj < ellSizes[i]; ++jj )
             {
                 IndexType pos = ellindex( i, jj, numRows, numValuesPerRow );
-                ValueType val = common::Math::abs( values[pos] );
+
+                AbsType val = common::Math::abs( values[pos] );
 
                 if ( val > threadVal )
                 {
@@ -215,7 +220,9 @@ ValueType OpenMPELLUtils::absMaxVal(
             }
         }
     }
+
     SCAI_LOG_DEBUG( logger, "absMaxVal, maxVal = " << maxValue )
+
     return maxValue;
 }
 

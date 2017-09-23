@@ -79,14 +79,12 @@ static void bench( const IndexType N )
 
     // generate random numbers
 
-    DenseVector<ValueType> X;
+    DenseVector<ValueType> X( blockDist );
     DenseVector<IndexType> perm;
-
-    float fillRate = 1.0f;
 
     srand( 131 + comm->getRank() );
 
-    X.setRandom( blockDist, fillRate );
+    X.setRandom( 1 );
 
     DenseVector<ValueType> Xsave( X );  // save for comparison
 

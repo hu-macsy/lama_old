@@ -537,10 +537,12 @@ BOOST_AUTO_TEST_CASE( sortIndexesTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType RealType;
+
     ContextPtr testContext = Context::getContextPtr();
 
-    static LAMAKernel<UtilKernelTrait::sort<ValueType> > sort;
-    static LAMAKernel<UtilKernelTrait::isSorted<ValueType> > isSorted;
+    static LAMAKernel<UtilKernelTrait::sort<RealType> > sort;
+    static LAMAKernel<UtilKernelTrait::isSorted<RealType> > isSorted;
 
     ContextPtr loc = testContext;
     sort.getSupportedContext( loc, isSorted );
@@ -550,22 +552,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
     const IndexType n = 1000;
     const bool ascending = true;
 
-    HArray<ValueType> values( loc );
+    HArray<RealType> values( loc );
     {
         ContextPtr host = Context::getHostPtr();   // currently only available on host
 
-        WriteOnlyAccess<ValueType> wValues( values, host, n );
+        WriteOnlyAccess<RealType> wValues( values, host, n );
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            common::Math::random( wValues[i] );
+            wValues[i] = common::Math::random<ValueType>( 2 * n );
         }
     }
 
     HArray<IndexType> perm;
 
     WriteOnlyAccess<IndexType> wPerm( perm, loc, n );
-    WriteAccess<ValueType> wValues( values, loc );
+    WriteAccess<RealType> wValues( values, loc );
 
     SCAI_CONTEXT_ACCESS( loc );
 

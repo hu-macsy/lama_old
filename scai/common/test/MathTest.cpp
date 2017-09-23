@@ -42,6 +42,7 @@
 #include <scai/common/test/TestMacros.hpp>
 
 using scai::common::Math;
+using scai::common::TypeTraits;
 using scai::common::Utils;
 
 /* --------------------------------------------------------------------- */
@@ -66,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sqrtTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
     ValueType x;
     AbsType abs_val;
     x = 9;
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( absTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
     ValueType x;
     AbsType real_val;
     x = 9;
@@ -110,7 +111,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( realTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
     ValueType x;
     AbsType imag_val;
     x = 9;
@@ -122,7 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_numeric_test_types )
     x = static_cast<ValueType>( ComplexFloat( 3, 4 ) );
     imag_val = Math::imag( x );
 
-    if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
+    if ( scai::common::isComplex( TypeTraits<ValueType>::stype ) )
     {
         BOOST_CHECK( imag_val == 4 );
     }
@@ -138,11 +139,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( imagTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_numeric_test_types )
 {
-    ValueType x, y;
-    ValueType min_val;
-    x = 9;
-    y = 10;
-    min_val = Math::min( x, y );
+    typedef typename TypeTraits<ValueType>::AbsType RealValueType;
+
+    RealValueType x = 9;
+    RealValueType y = 10;
+
+    RealValueType min_val = Math::min( x, y );
     BOOST_CHECK( min_val == x );
     min_val = Math::min( y, x );
     BOOST_CHECK( min_val == x );
@@ -164,11 +166,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_numeric_test_types )
 {
-    ValueType x, y;
-    ValueType max_val;
-    x = 9;
-    y = 10;
-    max_val = Math::max( x, y );
+    typedef typename TypeTraits<ValueType>::AbsType RealValueType;
+
+    RealValueType x = 9;
+    RealValueType y = 10;
+
+    RealValueType max_val = Math::max( x, y );
+
     BOOST_CHECK( max_val == y );
     max_val = Math::max( y, x );
     BOOST_CHECK( max_val == y );
@@ -190,8 +194,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
 {
-    ValueType random_val;
-    Math::random( random_val );
+    ValueType random_val = Math::random<ValueType>( 1 );
+
     BOOST_CHECK( Math::abs( Math::real( random_val ) ) < 1.0 );
     BOOST_CHECK( Math::abs( Math::imag( random_val ) ) < 1.0 );
 }
@@ -230,12 +234,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( atan2Test, ValueType, scai_math_scalar_test_types
 #ifdef SCAI_COMPLEX_SUPPORTED
 BOOST_AUTO_TEST_CASE_TEMPLATE( argTest, ValueType, scai_math_complex_test_types )
 {
-    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
     ValueType x = ValueType( 3, 4 );
 
     AbsType y = Math::arg( x );
 
-    BOOST_CHECK_SMALL( y - AbsType( 0.927295218001612 ), scai::common::TypeTraits<ValueType>::small() );
+    BOOST_CHECK_SMALL( y - AbsType( 0.927295218001612 ), TypeTraits<ValueType>::small() );
 }
 #endif
 

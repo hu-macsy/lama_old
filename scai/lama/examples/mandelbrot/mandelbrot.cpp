@@ -46,7 +46,6 @@
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/Vector.hpp>
 
-#include <scai/common/Complex.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 

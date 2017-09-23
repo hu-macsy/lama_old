@@ -339,8 +339,8 @@ void TextIO::readData(
     const IndexType nnz,
     const std::string& fileName )
 {
-    LArray<double> dIA;
-    LArray<double> dJA;
+    LArray<RealType> dIA;
+    LArray<RealType> dJA;
 
     IOStream inFile( fileName, std::ios::in );
 
@@ -355,8 +355,8 @@ void TextIO::readData(
 
     ContextPtr ctx = Context::getHostPtr();
 
-    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from double to IndexType
-    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from double to IndexType
+    HArrayUtils::setArrayImpl( ia, dIA );  // conversion from RealType to IndexType
+    HArrayUtils::setArrayImpl( ja, dJA );  // conversion from RealType to IndexType
 
     IndexType minRowIndex = HArrayUtils::reduce( ia, common::binary::MIN );
 

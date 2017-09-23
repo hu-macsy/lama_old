@@ -1998,9 +1998,12 @@ Scalar SparseMatrix<ValueType>::l2Norm() const
 template<typename ValueType>
 Scalar SparseMatrix<ValueType>::maxNorm() const
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "Mat.Sp.maxNorm" )
-    ValueType myMax = mLocalData->maxNorm();
-    ValueType myMaxHalo = mHaloData->maxNorm();
+
+    AbsType myMax = mLocalData->maxNorm();
+    AbsType myMaxHalo = mHaloData->maxNorm();
 
     if ( myMaxHalo > myMax )
     {
@@ -2009,9 +2012,10 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    ValueType allMax = comm.max( myMax );
+    AbsType allMax = comm.max( myMax );
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
+
     return Scalar( allMax );
 }
 

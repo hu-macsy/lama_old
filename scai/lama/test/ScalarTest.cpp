@@ -165,13 +165,14 @@ BOOST_AUTO_TEST_CASE( MiscTests )
     BOOST_CHECK_EQUAL( abs( t ), 9.0 );
     BOOST_CHECK_EQUAL( max( s, t ), 9.0  );
     BOOST_CHECK_EQUAL( min( s, t ), 6.25 );
+
 #ifdef SCAI_COMPLEX_SUPPORTED
-    Scalar c1( ComplexFloat( 3.0, 4.0 ) );
-    Scalar c2( ComplexFloat( 2.0, 2.0 ) );
-    BOOST_CHECK_EQUAL( max( c1, c2 ), c1  );
-    BOOST_CHECK_EQUAL( min( c1, c2 ), c2 );
+    Scalar c1( ComplexFloat( 3, 4 ) );
+    Scalar c2( ComplexFloat( 4, 2 ) );
+    BOOST_CHECK_EQUAL( max( abs( c1 ), abs( c2 ) ), abs( c1 ) );
+    BOOST_CHECK_EQUAL( min( abs( c1 ), abs( c2 ) ), abs( c2 ) );
     // Pythagoras: 3^2 + 4^2 = 5^2
-    BOOST_CHECK_EQUAL( abs( c1 ), 5.0 );
+    BOOST_CHECK_EQUAL( abs( c1 ), 5.0f );
 #endif
 }
 

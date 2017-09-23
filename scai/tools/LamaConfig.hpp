@@ -218,7 +218,7 @@ private:
         std::ostringstream errorStr;                               \
         errorStr << msg;                                           \
         std::cout << "ERROR: " << errorStr.str()  <<  std::endl;   \
-        LamaConfig::printHelp( "<solver>" );                       \
+        LamaConfig::printHelp( "lamaSolver" );                     \
         exit( 1 );                                                 \
     }
 

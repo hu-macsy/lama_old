@@ -125,6 +125,28 @@ ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n,
     return val;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+ComplexFloat OpenMPUtils::reduceMaxVal( const ComplexFloat[], const IndexType, const ComplexFloat )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexDouble OpenMPUtils::reduceMaxVal( const ComplexDouble[], const IndexType, const ComplexDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexLongDouble OpenMPUtils::reduceMaxVal( const ComplexLongDouble[], const IndexType, const ComplexLongDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+#endif 
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -158,6 +180,28 @@ ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n,
     }
     return val;
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+ComplexFloat OpenMPUtils::reduceMinVal( const ComplexFloat[], const IndexType, const ComplexFloat )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexDouble OpenMPUtils::reduceMinVal( const ComplexDouble[], const IndexType, const ComplexDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexLongDouble OpenMPUtils::reduceMinVal( const ComplexLongDouble[], const IndexType, const ComplexLongDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+#endif 
 
 /* --------------------------------------------------------------------------- */
 
@@ -196,19 +240,21 @@ ValueType OpenMPUtils::reduceBinOp(
 template<typename ValueType>
 ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.reduceAbsMaxVal" )
 
-    ValueType val = zero;
+    AbsType val = zero;
 
     #pragma omp parallel
     {
-        ValueType threadVal = zero;
+        AbsType threadVal = zero;
 
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = common::Math::abs( array[i] );
+            AbsType elem = common::Math::abs( array[i] );
 
             if ( elem > threadVal )
             {
@@ -448,17 +494,22 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.absMaxDiffVal" )
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
-    ValueType val = static_cast<ValueType>( 0.0 );
+
+    AbsType val = static_cast<AbsType>( 0 );
+
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        AbsType threadVal = static_cast<AbsType>( 0 );
+
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = common::Math::abs( array1[i] - array2[i] );
+            AbsType elem = common::Math::abs( array1[i] - array2[i] );
 
             if ( elem > threadVal )
             {
@@ -969,31 +1020,6 @@ void OpenMPUtils::binaryOpScalar(
             }
             break;
         }
-
-        case binary::MIN :
-        {
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::min( value, in[i] );
-            }
-
-            break;
-        }
-
-        case binary::MAX :
-        {
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::max( value, in[i] );
-            }
-
-            break;
-        }
-
         default:
         {
             if ( swapScalar )
@@ -1608,6 +1634,28 @@ void OpenMPUtils::sort(
     }
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void OpenMPUtils::sort( IndexType[], ComplexFloat[], const ComplexFloat[], const IndexType, const bool )
+{
+    COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
+}
+
+template<>
+void OpenMPUtils::sort( IndexType[], ComplexDouble[], const ComplexDouble[], const IndexType, const bool )
+{
+    COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
+}
+
+template<>
+void OpenMPUtils::sort( IndexType[], ComplexLongDouble[], const ComplexLongDouble[], const IndexType, const bool )
+{
+    COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
+}
+
+#endif
+
 /* --------------------------------------------------------------------------- */
 
 template<typename KeyType, typename ValueType>
@@ -1679,6 +1727,8 @@ void OpenMPUtils::qsort( KeyType keys[], ValueType values[], IndexType left, Ind
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPUtils::sortInPlace(
     IndexType indexes[],
@@ -1696,15 +1746,21 @@ void OpenMPUtils::sortInPlace(
 template<typename ValueType>
 IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.countNZ" )
 
     IndexType nonZeros = 0;
+
+    AbsType absEps = eps;
 
     #pragma omp parallel for reduction( +:nonZeros )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        if ( common::Math::abs( denseArray[i] ) > eps )
+        AbsType absVal = common::Math::abs( denseArray[i] );
+
+        if ( absVal > absEps )
         {
             nonZeros++;
         }
@@ -1725,15 +1781,21 @@ IndexType OpenMPUtils::compress(
     const IndexType n,
     const SourceType eps )
 {
+    typedef typename common::TypeTraits<SourceType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.compress" )
 
     IndexType nonZeros = 0;
 
     // use of parallel for + atomicInc might be possible but would give an arbitrary order of sparse indexes
 
+    AbsType absEps = eps;
+
     for ( IndexType i = 0; i < n; ++i )
     {
-        if ( common::Math::abs( denseArray[i] ) > eps )
+        AbsType sourceVal = common::Math::abs( denseArray[i] );
+
+        if ( sourceVal > absEps )
         {
             IndexType k = nonZeros++;  // parallel: atomicInc( nonZeros );
 

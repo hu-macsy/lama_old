@@ -1387,7 +1387,7 @@ BOOST_AUTO_TEST_CASE( matrixAddSizesTest )
 
 BOOST_AUTO_TEST_CASE( matrixAddTest )
 {
-    typedef double ValueType;
+    typedef RealType ValueType;
     ContextPtr testContext = ContextFix::testContext;
     LAMAKernel<ELLKernelTrait::matrixAdd<ValueType> > matrixAdd;
 

@@ -34,14 +34,26 @@ Setting all array elements with one value.
 
     HArray<double> x;
 
-Heterogeneous arrays can be filled with random numbers. By an additional
-argument, a fill rate can be specified to generate sparse arrays.
+Heterogeneous arrays can be filled with random numbers. An upper
+bound can be specified to specify the range of random numbers.
+The array must have been allocated before.
 
 .. code-block:: c++
 
     _HArray& x = ...
-    float fillRate = 0.1;  
-    HArrayUtils::setRandom( x, 100, fillRate )
+    IndexType bound = 100;
+    HArrayUtils::setRandom( x, bound );  // random numbers between 0 and bound
+
+Another routine is available, that replaces the array elements only with 
+a certain probability. In this case, the array must have been initalized before.
+This is not mandatory for the previous version, where each array element is set.
+
+.. code-block:: c++
+
+    _HArray& x = ...
+    float fillRate = 0.1;  // means that ~ 10% of values are replaced
+    IndexType bound = 100;
+    HArrayUtils::setSparseRandom( x, fillRate, bound );  
 
 Reductions
 ----------

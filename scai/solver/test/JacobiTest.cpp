@@ -60,10 +60,11 @@
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
+using namespace dmemo;
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -142,6 +143,8 @@ template<typename MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
     typedef typename MatrixType::MatrixValueType ValueType;
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
     std::string id = solverId;
     LoggerPtr slogger(
@@ -172,7 +175,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     diff.redistribute( coefficients.getColDistributionPtr() );
     L2Norm l2Norm;
     Scalar norm = l2Norm( diff );
-    BOOST_CHECK( norm.getValue<ValueType>() < 1e-1 );
+    BOOST_CHECK( norm.getValue<AbsType>() < 1e-1 );
     //bad omega
     //test for even iterations
     DenseVector<ValueType> solutionA( system.coefficients.getNumRows(), 1.0 );
@@ -196,7 +199,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     diffAB.setContextPtr( context );
     diffAB.redistribute( coefficients.getColDistributionPtr() );
     Scalar l2norm = l2Norm( diffAB );
-    BOOST_CHECK( l2norm.getValue<ValueType>() < 1e-5 );
+    BOOST_CHECK( l2norm.getValue<AbsType>() < 1e-5 );
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( testSolve, ValueType, scai_numeric_test_types )

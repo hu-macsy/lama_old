@@ -420,12 +420,37 @@ public:
     virtual void clearValues() = 0;
 
     /**
-     * This method initializes a (distributed) vector with random numbers.
+     * This method sets the values of an allocated vector with random numbers.
      *
-     * @param[in] distribution specifies the distribution of the vector
-     * @param[in] fillRate for the number of non-zeros
+     * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
+     *
+     * Keep in mind that bound is an integer value. If you need randonm numbers with other numerical
+     * boundaries you should scale them as follows:
+     *
+     * \code
+     *     DistributionPtr dist ( ... );
+     *     DenseVector<ValueType> A( dist );
+     *     ValueType lb = -1.5, ub = 2.6;
+     *     A.setRandom( 1 );
+     *     A = lb + A * ( ub - lb );   // random numbers in the range of lb .. ub
+     * \endcode
      */
-    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
+    virtual void setRandom( const IndexType bound ) = 0;
+
+    /**
+     *  Similiar to fillRandom but only replaces the vector elements with a certain probability.
+     *
+     *  Keep in mind that posititions that are not filled keep their old values. Therefore, in
+     *  contrary to fillRandom, the vector must have been initialized before.
+     *
+     * \code
+     *     DistributionPtr dist ( ... );
+     *     DenseVector<ValueType> A( dist );
+     *     A = 0;
+     *     A.setSparseRandom( 0.5f, 1 );
+     * \endcode
+     */
+    virtual void setSparseRandom( const float fillRate, const IndexType bound ) = 0;
 
     /**
      * This method sets a vector by reading its values from one or multiple files.

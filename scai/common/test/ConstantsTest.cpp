@@ -67,8 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( oneTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, scai_numeric_test_types )
 {
-    ValueType val;
-    Math::random( val );
+    ValueType val = Math::random<ValueType>( 1000 );   // random val in 0..1000
     BOOST_CHECK( val - val == constants::ZERO );
     BOOST_CHECK( constants::ZERO == val - val );
 }
