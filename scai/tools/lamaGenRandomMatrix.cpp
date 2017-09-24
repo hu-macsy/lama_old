@@ -190,8 +190,7 @@ int main( int argc, const char* argv[] )
     Vector& x = *xPtr;
     Vector& b = *bPtr;
 
-    x.allocate( m.getColDistributionPtr() );
-    x.setRandom( 1 );
+    x.setRandom( m.getColDistributionPtr(), 1 );
     b = m * x;
 
     cout << "m = " << m << endl;

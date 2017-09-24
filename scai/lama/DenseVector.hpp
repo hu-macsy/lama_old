@@ -146,7 +146,7 @@ public:
      * @param[in] inc        the increment for the sequence of values
      * @param[in] context    specifies optionally the context where dense vector should reside
      */
-    DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    // DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief creates a distributed DenseVector of the passed size initilized a sequence of values
@@ -157,7 +157,7 @@ public:
      * @param[in] inc           the increment for the sequence of values
      * @param[in] context    specifies optionally the context where dense vector should reside
      */
-    DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    // DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Constructor of a replicated vector by replicated C++ array. */
 
@@ -350,23 +350,17 @@ public:
     using Vector::assign;
 
     /**
-     * This method sets the values of an allocated vector with random numbers.
-     *
-     * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
+     * Implementation of pure method Vector::fillRandom 
      */
-    virtual void setRandom( const IndexType bound );
+    virtual void fillRandom( const IndexType bound );
 
-    /** Implementation of Vector::setSparseRandom */
+    /** Implementation of pure method Vector::fillSparseRandom */
 
-    virtual void setSparseRandom( const float fillRate, const IndexType bound );
+    virtual void fillSparseRandom( const float fillRate, const IndexType bound );
 
-    /** Implementation of pure method Vector::setSequence */
+    /** Implementation of pure method _DenseVector::fillRange */
 
-    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n );
-
-    /** Implementation of pure method Vector::setSequence */
-
-    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution );
+    virtual void fillRange( const Scalar startValue, const Scalar inc );
 
     /** Sort all elements of this vector.
      *

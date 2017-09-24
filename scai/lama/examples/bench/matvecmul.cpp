@@ -65,7 +65,7 @@ static void bench( Matrix& mat )
 
     const IndexType size = mat.getNumRows();
 
-    x->setSequence( Scalar( 0 ), Scalar( 0.1 ), size );
+    x->setRange( size, 0, 0.1 );
 
     mat.setCommunicationKind( Matrix::SYNCHRONOUS );
 

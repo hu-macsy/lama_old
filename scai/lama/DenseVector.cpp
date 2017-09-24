@@ -161,62 +161,16 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
                    "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", value = " << value )
 }
 
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, ContextPtr context ) :
-
-    _DenseVector( size, context ), 
-    mLocalValues( size, startValue, inc, context )
-
-{
-    SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", startValue =" << startValue << ", inc=" << inc )
-}
-
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType startValue, const ValueType inc, ContextPtr context ) :
-
-    _DenseVector( distribution, context ),
-    mLocalValues( distribution->getLocalSize(), context )
-
-{
-    allocate();    // correct allocation of mLocalValues
-
-    SCAI_LOG_INFO( logger,
-                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution
-                   << ", local size = " << distribution->getLocalSize() << ", startValue = " << startValue << ", inc=" << inc )
-
-    // get my owned indexes
-
-    HArray<IndexType> myGlobalIndexes( context );
-
-    // mult with inc and add startValue
-
-    distribution->getOwnedIndexes( myGlobalIndexes );
-
-    // localValues[] =  indexes[] * inc + startValue
-
-    HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc, common::binary::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue, common::binary::ADD, context );
-}
-
 template <typename ValueType>
-void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, const IndexType n )
+void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar inc )
 {
-    setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
+    const Distribution& dist = getDistribution();
 
-    HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), n, getContextPtr() );
-}
-
-template <typename ValueType>
-void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, DistributionPtr distribution )
-{
-    setDistributionPtr( distribution );
-
-    if ( distribution->isReplicated() )
+    if (dist.isReplicated() )
     {
-        SCAI_ASSERT_EQ_DEBUG( distribution->getGlobalSize(), distribution->getLocalSize(), *distribution << " not replicated" );
+        SCAI_ASSERT_EQ_DEBUG( dist.getGlobalSize(), dist.getLocalSize(), dist << " not replicated" );
 
-        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), distribution->getGlobalSize() );
+        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), dist.getGlobalSize() );
         return;
     }
 
@@ -228,7 +182,7 @@ void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar 
 
     // mult with inc and add startValue
 
-    distribution->getOwnedIndexes( myGlobalIndexes );
+    dist.getOwnedIndexes( myGlobalIndexes );
 
     // localValues[] =  indexes[] * inc + startValue
 
@@ -273,7 +227,7 @@ DenseVector<ValueType>::DenseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setRandom( const IndexType bound )
+void DenseVector<ValueType>::fillRandom( const IndexType bound )
 {
     mLocalValues.setRandom( bound, getContextPtr() );
 }
@@ -281,7 +235,7 @@ void DenseVector<ValueType>::setRandom( const IndexType bound )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setSparseRandom( const float fillRate, const IndexType bound )
+void DenseVector<ValueType>::fillSparseRandom( const float fillRate, const IndexType bound )
 {
     mLocalValues.setSparseRandom( fillRate, bound, getContextPtr() );
 }

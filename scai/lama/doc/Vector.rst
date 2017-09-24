@@ -41,18 +41,8 @@ specific representation of a vector holding only non-zero entries.
     SparseVector<ValueType> vector9( "vector.mtx" );            // read vector from a file
     DenseVector<ValueType> vector10( vector1 + 2 * vector3 );   // any supported vector expression
 
-The following constructors are only available for a dense vector:
-
-.. code-block:: c++
-
-    DenseVector<ValueType> dVector1( n, ValueType(1), ValueType(0.1) [, ctx] );
-    DenseVector<ValueType> dVector2( blockDist , ValueType(1), ValueType(0.1) [, ctx] );
-
-    HArray<ValueType> localValues;
-    ...   // compute, set local values independently on each processor
-    DenseVector( localValues, blockDist );
-
-The following constructors are only available for a sparse vector:
+Sparse and dense vectors have syntactically nearly the same constructors.
+Only the following constructors are available only for a sparse vector:
 
 .. code-block:: c++
 
@@ -68,6 +58,108 @@ The following constructors are only available for a sparse vector:
 
 All index positions that do not appear in the array nonZeroIndexes are assumed to be zero. But keep
 in mind that the zero element of a sparse vector might be any value and not necessarily the value 0.
+
+
+The use of the following constructors is not really recommended as it results in vector that have
+undefined values.
+
+.. code-block:: c++
+
+    SparseVector<ValueType> vector3( n );
+    DenseVector<ValueType> vector4( blockDist );
+
+Furthermore, keep in mind that the size of a vector or a distributon is set or changed by most operations
+on vectors and so this attribute does not hold for the lifetime of a vector at all.
+
+
+Initializations
+---------------
+
+Usually a vector should be allocated and fully initialized by its constructor. There might
+be some situations where this is not possible:
+
+ * A corresponding constructor is not available, e.g. for setting random numbers or setting
+   a range of values like lb, lb + inc, lb + 2 * inc, ....
+ * The vector might have been created dynamically where these routines usually generate 
+   only a zero vector, i.e. not allocated and not initalized at all.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v1;
+
+    v1.setRange( n, 0, 1 );  // initializes the vector with the values 0, 1, ..., n-1
+
+    v1.setRandom( n, 10 );   // initialize the vector with n random numbers in the range 0..10
+
+
+    v1.allocate( n );
+    v1 = 5;                  // initialize the vector with n elements of the value 5
+
+Sparse vectors 
+
+.. code-block:: c++
+
+    v1.setSparseRandom( n, 0, 0.5f, 10 );   // initialize the vector with a certain ratio of random values
+   
+    // same as
+
+    v1.allocate( n );
+    v1 = 0;
+    v1.fillSparseRandom( 0.5f, 10 );  // replace values with a probibilty of 0.5 with a random value in range 0..10
+
+All initialization routines might be called with a distribution instead of a size n. The initializations
+of the local parts will be done independently.
+
+In the first place it seems to be strange to use the initializon routines always with a size
+or a distribution argument even if the vector has already been allocated. There are usually 
+counterparts of these routines that do not require this first argument.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v( n );   // define a vector of size n
+
+    for ( int iter = 0; iter < MAX_ITER; ++iter )
+    {
+        //  v.setRandom( n, maxval );
+
+        v.fillRandom( maxval ); 
+
+        ...  // do something useful with the generated random numbers
+    }
+
+
+Nevertheless the use of the set routines are recommended for the following reasons:
+
+* The size or distributon argument makes your code more stable and will even work
+  if the vector has not been allocated or initalized before.
+* There will be never any reallocation of memory as long as the size or distribution does not change.
+
+Please not that for safety it is always a good strategy to initialize vectors with their allocation.
+So in the following example code 1 might be more reliable than code 2 as in code 2 the allocated
+vectors has undefined values between constructor and the call of the fill routine. But it is less efficient
+as it does a complete write of the full vector data during the initializaton with 0 that is not 
+required at all.
+
+.. code-block:: c++
+
+    // Code 1                          
+    DenseVector<ValueType> v( n, 0 );   
+    ...
+    v.fillRandom( maxval ); 
+
+    // Code 2
+    DenseVector<ValueType> v( n );   
+    ...
+    v.fillRandom( maxval ); 
+
+    // Code 3
+    DenseVector<ValueType> v;
+    ...
+    v.setRandom( n, maxval ); 
+
+The code 3 has the same efficiency as code 2 but it is more safe. This is due to the fact
+that a zero vector causes less problems than an undefined allocated vector.
+
 
 Methods
 -------

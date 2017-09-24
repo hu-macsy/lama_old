@@ -239,7 +239,7 @@ SparseVector<ValueType>::SparseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setRandom( const IndexType bound )
+void SparseVector<ValueType>::fillRandom( const IndexType bound )
 {
     const IndexType localSize = getDistribution().getLocalSize();
 
@@ -253,9 +253,9 @@ void SparseVector<ValueType>::setRandom( const IndexType bound )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setSparseRandom( const float fillRate, const IndexType bound )
+void SparseVector<ValueType>::fillSparseRandom( const float fillRate, const IndexType bound )
 {
-    SCAI_ASSERT_EQ_ERROR( 0, mNonZeroIndexes.size(), "setSparseRandom illegal, vector has already non-zero elements" )
+    SCAI_ASSERT_EQ_ERROR( 0, mNonZeroIndexes.size(), "SparseRandom illegal, vector has already non-zero elements" )
 
     const IndexType localSize = getDistribution().getLocalSize();
 

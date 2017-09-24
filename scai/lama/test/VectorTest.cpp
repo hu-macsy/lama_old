@@ -238,9 +238,7 @@ BOOST_AUTO_TEST_CASE( ConjTest )
 
         float fillRate = 0.1f;
 
-        v->allocate( dist );
-        *v = 0;
-        v->setSparseRandom( fillRate, 1 );
+        v->setSparseRandom( dist, 0, fillRate, 1 );
         
         VectorPtr v1( v->copy() );
 
@@ -280,9 +278,9 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
         float fillRate = 0.1f;
 
-        v1.allocate( dist );
-        v1 = 0;
-        v1.setSparseRandom( fillRate, 1 );
+        Scalar zero = 0;
+
+        v1.setSparseRandom( dist, zero, fillRate, 1 );
 
         v1 += 2;
 
@@ -325,9 +323,7 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
 
         float fillRate = 0.1f;
 
-        v1.allocate( vectorDist );
-        v1 = 0;
-        v1.setSparseRandom( fillRate, 1 );
+        v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
         VectorPtr v2Ptr( v1.copy() );
         Vector& v2 = *v2Ptr;
@@ -373,9 +369,7 @@ BOOST_AUTO_TEST_CASE( PowTest )
 
         float fillRate = 0.1f;
 
-        v1.allocate( vectorDist );
-        v1 = 0;
-        v1.setSparseRandom( fillRate, 2 );
+        v1.setSparseRandom( vectorDist, 0, fillRate, 2 );
 
         v1 += 2.0;   // range 2 .. 4
 
@@ -478,7 +472,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
         {
             dmemo::DistributionPtr dist = dists[j];
 
-            dV1.setSequence( 3, 1, dist );   // only supported for dense vectors
+            dV1.setRange( dist, 3, 2 );   // only supported for dense vectors
 
             MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );

@@ -215,9 +215,9 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         SCAI_LOG_DEBUG( logger, "Test case " << i << " of " << testDists.size() << ": VectorSingleIO with dist = " << *dist )
 
-        DenseVector<ValueType> vector( dist );
+        DenseVector<ValueType> vector;
 
-        vector.setRandom( 1 );
+        vector.setRandom( dist, 1 );
 
         // now write the distributed vector and its distribution, each to a single file
 
@@ -275,9 +275,9 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        DenseVector<ValueType> vector( dist );
+        DenseVector<ValueType> vector;
 
-        vector.setRandom( 1 );
+        vector.setRandom( dist, 1 );
 
         bool withDist = dist->getBlockDistributionSize() == nIndex;
 
@@ -355,11 +355,11 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        SparseVector<ValueType> vector( dist, 0 );
+        SparseVector<ValueType> vector;
 
         float fillRate = 0.2;
 
-        vector.setSparseRandom( fillRate, 1 );
+        vector.setSparseRandom( dist, 0, fillRate, 1 );
 
         bool withDist = dist->getBlockDistributionSize() == nIndex;
 

@@ -136,11 +136,11 @@ static void bench( const IndexType N )
 
     // generate random numbers
 
-    DenseVector<ValueType> X( blockDist );
+    DenseVector<ValueType> X;
 
     srand( 131 + comm->getRank() );
 
-    X.setRandom( 1 );
+    X.setRandom( blockDist, 1 );
 
     DenseVector<ValueType> Y;  // save for comparison
 

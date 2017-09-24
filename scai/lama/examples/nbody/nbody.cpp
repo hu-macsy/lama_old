@@ -96,11 +96,11 @@ void randomBodies( )
 {
     // Random Positions (relative to the radius of the universe at the beginning)
 
-    x.setRandom( 2 );
+    x.setRandom( nBodies, 2 );
     x -= 1;
     x *= radius * ( ValueType )Math::exp( -1.8 ) ;
 
-    y.setRandom( 2 );
+    y.setRandom( nBodies, 2 );
     y -= 1;
     y *= radius * ( ValueType )Math::exp( -1.8 ) ;
 
@@ -123,8 +123,7 @@ void randomBodies( )
 
 
     // Random mass of Particles
-    mass.allocate( mass.getDistributionPtr() );
-    mass.setRandom( 1 );  // random numbers between 0 and 1
+    mass.setRandom( mass.getDistributionPtr(), 1 );  // random numbers between 0 and 1
     mass *= maxMass ;
 
     // put a heavy body in the center

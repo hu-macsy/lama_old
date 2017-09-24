@@ -385,7 +385,8 @@ int main( int /*argc*/, char** /*argv[]*/ )
     start_t = common::Walltime::get();
     // get source signal
     // init vector with a sequence of values (MATLAB t=0:DT:(NT*DT-DT);)
-    lama::DenseVector<ValueType> source( config.getNT(), ValueType( 0 ), config.getDT(), ctx );
+    lama::DenseVector<ValueType> source( ctx );
+    source.setRange( config.getNT(), ValueType( 0 ), config.getDT() );
     sourceFunction( source, config.getFC(), config.getAMP(), comm );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished calculating source in " << end_t - start_t << " sec.\n\n" );

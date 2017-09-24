@@ -420,9 +420,11 @@ public:
     virtual void clearValues() = 0;
 
     /**
-     * This method sets the values of an allocated vector with random numbers.
+     * This method initilaizes all values of an allocated vector with random numbers.
      *
      * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
+     *
+     * For complex vectors a random value is drawn for each real and imaginary part.
      *
      * Keep in mind that bound is an integer value. If you need randonm numbers with other numerical
      * boundaries you should scale them as follows:
@@ -431,11 +433,35 @@ public:
      *     DistributionPtr dist ( ... );
      *     DenseVector<ValueType> A( dist );
      *     ValueType lb = -1.5, ub = 2.6;
-     *     A.setRandom( 1 );
+     *     A.fillRandom( 1 );
      *     A = lb + A * ( ub - lb );   // random numbers in the range of lb .. ub
      * \endcode
      */
-    virtual void setRandom( const IndexType bound ) = 0;
+    virtual void fillRandom( const IndexType bound ) = 0;
+
+    /**
+     * This method sets a replicated vector by its size and initializes it with random numbers.
+     *
+     * In contrary to fillRandom this routine does not require an allocated and maybe uninitialized vector.
+     *
+     * Be careful: in a parallel environment each processor might initialize the array with different
+     * values. By calling Math::srandom( seed ) with the same seed on each processor, it can be forced
+     * to have the same values.
+     */
+    void setRandom( const IndexType n, const IndexType bound )
+    {
+        allocate ( n );
+        fillRandom( bound );
+    }
+
+    /**
+     * This method sets a distributed vector by its distribution and initializes it with random numbers.
+     */
+    void setRandom( dmemo::DistributionPtr dist, const IndexType bound )
+    {
+        allocate ( dist );
+        fillRandom( bound );
+    }
 
     /**
      *  Similiar to fillRandom but only replaces the vector elements with a certain probability.
@@ -447,10 +473,32 @@ public:
      *     DistributionPtr dist ( ... );
      *     DenseVector<ValueType> A( dist );
      *     A = 0;
-     *     A.setSparseRandom( 0.5f, 1 );
+     *     A.fillSparseRandom( 0.5f, 1 );
      * \endcode
      */
-    virtual void setSparseRandom( const float fillRate, const IndexType bound ) = 0;
+    virtual void fillSparseRandom( const float fillRate, const IndexType bound ) = 0;
+
+    /**
+     *  Allocate a vector by its size, initialize it with a zero value and fill it sparsely.
+     *
+     * \code
+     *     A.allocate( n );
+     *     A = zeroValue;
+     *     A.fillSparseRandom( fill, bound );
+     * \endcode
+     */
+    void setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound );
+
+    /**
+     *  Allocate a vector by its distribution, initialize it with a zero value and fill it sparsely.
+     *
+     * \code
+     *     A.allocate( dist );
+     *     A = zeroValue;
+     *     A.fillSparseRandom( fill, bound );
+     * \endcode
+     */
+    void setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound );
 
     /**
      * This method sets a vector by reading its values from one or multiple files.

@@ -398,6 +398,42 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 }
 
 /* ---------------------------------------------------------------------------------------*/
+/*   setRandom, setSparseRandom                                                           */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( n );
+
+    if ( fillRate < 1.0f )
+    {
+        assign( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+void Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( dist );
+
+    if ( fillRate < 1.0f )
+    {
+        assign( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
 /*    Assignment operator                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 

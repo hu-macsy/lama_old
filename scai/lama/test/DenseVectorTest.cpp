@@ -166,13 +166,13 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
     dmemo::DistributionPtr repDist( new dmemo::NoDistribution( n ) );
 
-    DenseVector<ValueType> repV( repDist );
+    DenseVector<ValueType> repV;
 
     // Note: all processors must have the same random numbers
 
     common::Math::srandom( 13141 );   // This test only works if all processors have same random numbers
 
-    repV.setRandom( 1 );
+    repV.setRandom( repDist, 1 );
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( SetAndBuildTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SequenceTest )
+BOOST_AUTO_TEST_CASE( RangeTest )
 {
     // Note: it is sufficient to consider one value type
 
@@ -215,7 +215,9 @@ BOOST_AUTO_TEST_CASE( SequenceTest )
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
+    DenseVector<ValueType> repV( ctx );  // just a sequence: 0, 1, ...
+
+    repV.setRange( n, 0, 1 ); 
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -236,7 +238,9 @@ BOOST_AUTO_TEST_CASE( SequenceTest )
 
         // distV1 = [ 0, ..., n-1] distributed, must be same
 
-        DenseVector<ValueType> distV1( dist, 0, 1, ctx );
+        DenseVector<ValueType> distV1( ctx );
+
+        distV1.setRange( dist, 0, 1 );
 
         BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
     }
@@ -285,7 +289,9 @@ BOOST_AUTO_TEST_CASE( ScanTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> distV( dist, 1, 1, ctx );   // sequence: 1, 2, ..., n
+        DenseVector<ValueType> distV( ctx );
+
+        distV.setRange( dist, 1, 1 );  // set vector elements as sequence 1, 2, ... 
 
         try
         {
@@ -521,10 +527,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
     A.setContextPtr( ctx );
     A.allocate( nRows, nCols );
     MatrixCreator::fillRandom( A, 0.1 );
-    DenseVector<ValueType> x( A.getColDistributionPtr(), ctx );
-    DenseVector<ValueType> y( A.getRowDistributionPtr(), ctx );
-    x.setRandom( 1 );
-    y.setRandom( 1 );
+    DenseVector<ValueType> x( ctx );
+    DenseVector<ValueType> y( ctx );
+    x.setRandom( A.getColDistributionPtr(), 1 );
+    y.setRandom( A.getRowDistributionPtr(), 1 );
     DenseVector<ValueType> res( 2 * A * x - y );
 
     // Now we do the same with all other matrices and all kind of distributions
@@ -598,8 +604,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     DenseVector<ValueType> x( A.getRowDistributionPtr(), ctx );
     DenseVector<ValueType> y( A.getColDistributionPtr(), ctx );
 
-    x.setRandom( bound );
-    y.setRandom( bound );
+    x.setRandom( A.getRowDistributionPtr(), bound );
+    y.setRandom( A.getColDistributionPtr(), bound );
 
     DenseVector<ValueType> res( 2 * x * A - y );
 
@@ -686,11 +692,11 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
     A.allocate( nRows, nCols );
     MatrixCreator::fillRandom( A, 0.1 );
 
-    DenseVector<ValueType> x( A.getRowDistributionPtr(), ctx );
-    DenseVector<ValueType> y( A.getColDistributionPtr(), ctx );
+    DenseVector<ValueType> x( ctx );
+    DenseVector<ValueType> y( ctx );
 
-    x.setRandom( 1 );
-    y.setRandom( 1 );
+    x.setRandom( A.getRowDistributionPtr(), 1 );
+    y.setRandom( A.getColDistributionPtr(), 1 );
 
     DenseMatrix<ValueType> At( A, true );
 

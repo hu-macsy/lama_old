@@ -207,6 +207,7 @@ public:
     /**
      * @brief Constrcutor of sparse vector with raw arrays.
      */
+
     template<typename OtherValueType>
     SparseVector(
         const IndexType size,
@@ -405,13 +406,13 @@ public:
     using Vector::assign;
 
     /**
-     * Implementation of Vector::setRandom for sparse vectors.
+     * Implementation of Vector::fillRandom for sparse vectors.
      *
      * This method is only available to keep consistency with the dense vector.
      * If applied to a sparse vector it would not remain really sparse. 
      * Please use  setSparseRandom to generate a sparse random vector.
      */
-    virtual void setRandom( const IndexType bound );
+    virtual void fillRandom( const IndexType bound );
 
     /**
      *  This method generates a random sparse vector with a certain fillRate.
@@ -419,7 +420,7 @@ public:
      *  @param[in] bound     draw random non-zero values in range of $[0,bound]$.
      *  @param[in] fillRate  probablity for a non-zero entry
      */
-    virtual void setSparseRandom( const float fillRate, const IndexType bound );
+    virtual void fillSparseRandom( const float fillRate, const IndexType bound );
 
     /** Implementation of Vector::getValueType */
 
