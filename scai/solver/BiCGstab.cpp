@@ -92,16 +92,16 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mResNorm = 1.0;
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     // get runtime vectors with same row distribution / context / type as cofficients matrix
-    runtime.mRes0.reset( coefficients.newDenseVector() );
-    runtime.mVecV.reset( coefficients.newDenseVector() );
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecS.reset( coefficients.newDenseVector() );
-    runtime.mVecT.reset( coefficients.newDenseVector() );
-    runtime.mVecPT.reset( coefficients.newDenseVector() );
-    runtime.mVecST.reset( coefficients.newDenseVector() );
-    runtime.mVecTT.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
+    runtime.mRes0.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecV.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecS.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecST.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecTT.reset( coefficients.newVector( rowDist ) );
 }
-
 
 void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 {

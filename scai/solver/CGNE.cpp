@@ -95,8 +95,9 @@ void CGNE::initialize( const Matrix& coefficients )
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
     // get runtime vector with same type / row distribution / context as coefficients
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecZ.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist( coefficients.getRowDistributionPtr() );
+    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecZ.reset( coefficients.newVector( rowDist ) );
 }
 
 

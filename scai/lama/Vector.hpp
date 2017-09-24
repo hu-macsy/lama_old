@@ -607,7 +607,7 @@ public:
      *    new->setContextPtr( new.getContextPtr() );
      *  /endcode
      *
-     *  The new vector is a zero vector, not allocated, not initialized.
+     *  The new vector is a zero vector, neither allocated, nor initialized.
      */
     virtual Vector* newVector() const = 0;
 

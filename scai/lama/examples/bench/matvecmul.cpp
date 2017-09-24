@@ -59,9 +59,9 @@ static void bench( Matrix& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
-    DenseVectorPtr x( mat.newDenseVector() );
-    DenseVectorPtr y1( mat.newDenseVector() );
-    DenseVectorPtr y2( mat.newDenseVector() );
+    DenseVectorPtr x( mat.newVector( mat.getRowDistributionPtr() ) );
+    DenseVectorPtr y1( mat.newVector( mat.getRowDistributionPtr() ) );
+    DenseVectorPtr y2( mat.newVector( mat.getRowDistributionPtr() ) );
 
     const IndexType size = mat.getNumRows();
 

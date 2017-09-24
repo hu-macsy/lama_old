@@ -90,13 +90,14 @@ void TFQMR::initialize( const Matrix& coefficients )
     runtime.mTheta = 0.0;
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     // create dense runtime vectors with same row distribution, type, context as coefficients
-    runtime.mVecD.reset( coefficients.newDenseVector() );
-    runtime.mInitialR.reset( coefficients.newDenseVector() );
-    runtime.mVecVEven.reset( coefficients.newDenseVector() );
-    runtime.mVecVOdd.reset( coefficients.newDenseVector() );
-    runtime.mVecW.reset( coefficients.newDenseVector() );
-    runtime.mVecZ.reset( coefficients.newDenseVector() );
-    runtime.mVecVT.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    runtime.mVecD.reset( coefficients.newVector( dist ) );
+    runtime.mInitialR.reset( coefficients.newVector( dist ) );
+    runtime.mVecVEven.reset( coefficients.newVector( dist ) );
+    runtime.mVecVOdd.reset( coefficients.newVector( dist ) );
+    runtime.mVecW.reset( coefficients.newVector( dist ) );
+    runtime.mVecZ.reset( coefficients.newVector( dist ) );
+    runtime.mVecVT.reset( coefficients.newVector( dist ) );
 }
 
 void TFQMR::solveInit( Vector& solution, const Vector& rhs )

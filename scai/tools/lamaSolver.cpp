@@ -164,7 +164,7 @@ int main( int argc, const char* argv[] )
         // use auto pointer so that matrix will be deleted at program exit
 
         scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
+        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
         scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
 
         Matrix& matrix   = *matrixPtr;

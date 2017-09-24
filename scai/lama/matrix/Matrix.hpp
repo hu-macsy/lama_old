@@ -969,7 +969,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l1Norm() const = 0;
+    virtual Scalar l1Norm( void ) const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -978,14 +978,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l2Norm() const = 0;
+    virtual Scalar l2Norm( void ) const = 0;
 
     /**
      * @brief Getter routine of the max norm of this matrix.
      *
      * @return the maximal absolute value for elements of this matrix
      */
-    virtual Scalar maxNorm() const = 0;
+    virtual Scalar maxNorm( void ) const = 0;
 
     /**
      * @brief Returns the max norm of ( this - other ).
@@ -1025,36 +1025,36 @@ public:
      * This method is a workaround to call the constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual Matrix* newMatrix() const = 0;
+    virtual Matrix* newMatrix( void ) const = 0;
 
-    /*
-     *  @brief Create a dense vector with same type/context as matrix and same row distribution
+    /**
+     *  @brief Create a new dense vector with same value type and context as matrix
      *
-     *  Note: this method is for a more convenient use
+     *  Be careful: the new vector has size zero.
+     *
+     *  This routine might be very helpful for writing linear algebra code that works
+     *  for any value type of matrices.
      */
-
-    _DenseVector* newDenseVector() const
+    _DenseVector* newVector( void ) const
     {
         _DenseVector* v = _DenseVector::create( getValueType() );
-        v->allocate( getRowDistributionPtr() );
         v->setContextPtr( getContextPtr() );
         return v;
     }
 
-    virtual Vector* newVector( const IndexType dim ) const
+    /*
+     *  @brief Create a dense vector with same value type and context as matrix
+     *
+     *  @param dist specifies the distribution of the vector
+     *
+     *  Be careful: the vector remains uninitialized.
+     */
+
+    _DenseVector* newVector( dmemo::DistributionPtr dist ) const
     {
-        Vector* v = _DenseVector::create( getValueType() );
+        _DenseVector* v = _DenseVector::create( getValueType() );
         v->setContextPtr( getContextPtr() );
-
-        if ( dim == 0 )
-        {
-            v->allocate( getRowDistributionPtr() );
-        }
-        else if ( dim == 1 )
-        {
-            v->allocate( getColDistributionPtr() );
-        }
-
+        v->allocate( dist );
         return v;
     }
 

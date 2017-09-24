@@ -100,19 +100,20 @@ void QMR::initialize( const Matrix& coefficients )
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();
-    runtime.mVecD.reset( coefficients.newDenseVector() );
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecQ.reset( coefficients.newDenseVector() );
-    runtime.mVecS.reset( coefficients.newDenseVector() );
-    runtime.mVecV.reset( coefficients.newDenseVector() );
-    runtime.mVecW.reset( coefficients.newDenseVector() );
-    runtime.mVecY.reset( coefficients.newDenseVector() );  // preconditioning 1
-    runtime.mVecZ.reset( coefficients.newDenseVector() );
-    runtime.mVecPT.reset( coefficients.newDenseVector() );
-    runtime.mVecVT.reset( coefficients.newDenseVector() );
-    runtime.mVecWT.reset( coefficients.newDenseVector() );
-    runtime.mVecYT.reset( coefficients.newDenseVector() );
-    runtime.mVecZT.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
+    runtime.mVecD.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecQ.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecS.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecV.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecW.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecY.reset( coefficients.newVector( rowDist ) );  // preconditioning 1
+    runtime.mVecZ.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecVT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecWT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecYT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecZT.reset( coefficients.newVector( rowDist ) );
 }
 
 void QMR::solveInit( Vector& solution, const Vector& rhs )

@@ -91,9 +91,10 @@ void CG::initialize( const Matrix& coefficients )
     IterativeSolver::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
     runtime.mPScalar = 0.0;
-    runtime.mP.reset( coefficients.newDenseVector() );
-    runtime.mQ.reset( coefficients.newDenseVector() );
-    runtime.mZ.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    runtime.mP.reset( coefficients.newVector( dist ) );
+    runtime.mQ.reset( coefficients.newVector( dist ) );
+    runtime.mZ.reset( coefficients.newVector( dist ) );
 }
 
 void CG::iterate()

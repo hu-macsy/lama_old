@@ -367,7 +367,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        BOOST_CHECK_CLOSE( Math::real( myVals[i] ), Math::real( array[i] ), 0.01 );
+        ValueType ai = array[i];
+        BOOST_CHECK_CLOSE( Math::real( myVals[i] ), Math::real( ai ), 0.01 );
     }
 }
 

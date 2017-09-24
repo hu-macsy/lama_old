@@ -679,7 +679,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minTest, ValueType, scai_array_test_types )
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        AbsType v = Math::abs( vals[i] );
+        AbsType v = vals[i];
+        v = Math::abs( v );
 
         if ( v > localMin )
         {

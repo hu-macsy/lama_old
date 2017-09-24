@@ -119,7 +119,8 @@ void Jacobi::initialize( const Matrix& coefficients )
     if ( !runtime.mOldSolution.get() )
     {
         SCAI_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
-        runtime.mOldSolution.reset( runtime.mCoefficients->newDenseVector() );
+        const Matrix& m = *runtime.mCoefficients;
+        runtime.mOldSolution.reset( m.newVector( m.getRowDistributionPtr() ) );
     }
 
     if ( runtime.mCoefficients->getMatrixKind() == Matrix::SPARSE )

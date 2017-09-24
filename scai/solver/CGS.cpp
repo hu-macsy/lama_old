@@ -85,14 +85,15 @@ void CGS::initialize( const Matrix& coefficients )
     CGSRuntime& runtime = getRuntime();
     runtime.mNormRes = 1.0;
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
-    runtime.mRes0.reset( coefficients.newDenseVector() );
-    runtime.mVecT.reset( coefficients.newDenseVector() );
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecQ.reset( coefficients.newDenseVector() );
-    runtime.mVecU.reset( coefficients.newDenseVector() );
-    runtime.mVecPT.reset( coefficients.newDenseVector() );
-    runtime.mVecUT.reset( coefficients.newDenseVector() );
-    runtime.mVecTemp.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
+    runtime.mRes0.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecQ.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecU.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecUT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecTemp.reset( coefficients.newVector( rowDist ) );
 }
 
 
