@@ -87,10 +87,13 @@ be some situations where this is not possible:
 
     DenseVector<ValueType> v1;
 
+    v1.setRawData( n, rawData );   // initialize a vector with any 'raw' data
+
     v1.setRange( n, 0, 1 );  // initializes the vector with the values 0, 1, ..., n-1
 
     v1.setRandom( n, 10 );   // initialize the vector with n random numbers in the range 0..10
 
+    v1.setScalar( 5 );
 
     v1.allocate( n );
     v1 = 5;                  // initialize the vector with n elements of the value 5

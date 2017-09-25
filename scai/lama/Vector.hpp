@@ -652,7 +652,7 @@ public:
      *    // is same as
      *
      *    Vector* new = Vector::create( old.getCreateValue() );
-     *    new->setContextPtr( new.getContextPtr() );
+     *    new->setContextPtr( old.getContextPtr() );
      *  /endcode
      *
      *  The new vector is a zero vector, neither allocated, nor initialized.

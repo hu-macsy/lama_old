@@ -1,5 +1,5 @@
 /**
- * @file AbstractMatrix.pp
+ * @file AbstractMatrix.hpp
  *
  * @license
  * Copyright (c) 2009-2017

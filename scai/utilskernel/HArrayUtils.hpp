@@ -650,10 +650,9 @@ public:
     /** Set an array with random values, untyped version.
      *
      *  @param[out] array    arbitray array, is filled with random values of its type
-     *  @param[in]  fillRate probability whether one array element is filled or remains unchanged
+     *  @param[in]  bound    random values between 0 and bound
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
-
     static void setRandom( hmemo::_HArray& array,
                            IndexType bound,
                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );

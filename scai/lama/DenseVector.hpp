@@ -138,40 +138,6 @@ public:
     DenseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
-     * @brief creates a replicated DenseVector of the passed size initilized a sequence of values
-     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
-     *
-     * @param[in] size       the size of the new DenseVector.
-     * @param[in] startValue the first value of the new DenseVector
-     * @param[in] inc        the increment for the sequence of values
-     * @param[in] context    specifies optionally the context where dense vector should reside
-     */
-    // DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
-
-    /**
-     * @brief creates a distributed DenseVector of the passed size initilized a sequence of values
-     *        starting wiht startValue, increased by inc, e.g. [5, 15, 25, 35] with value 5, inc 10
-     *
-     * @param[in] distribution  the distribution to use for the new vector.
-     * @param[in] startValue    the first value of the new DenseVector
-     * @param[in] inc           the increment for the sequence of values
-     * @param[in] context    specifies optionally the context where dense vector should reside
-     */
-    // DenseVector( dmemo::DistributionPtr distribution, const ValueType startValue, const ValueType inc, hmemo::ContextPtr context = hmemo::ContextPtr() );
-
-    /** Constructor of a replicated vector by replicated C++ array. */
-
-    /**
-     * @brief creates a new replicated DenseVector initialized with the passed values.
-     *
-     * @param[in] size      the size of the new DenseVector.
-     * @param[in] values    the values to initialize the new DenseVector with.
-     * @param[in] context   specifies optionally the context where dense vector should reside
-     */
-    template<typename OtherValueType>
-    DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context = hmemo::ContextPtr() );
-
-    /**
      * Override the default copy constructor to guarantee a deep copy.
      *
      * @param[in] other the dense vector that will be copied
@@ -335,6 +301,25 @@ public:
     /** Implememenation of pure routine Vector::allocate. */
 
     virtual void allocate( const IndexType n );
+
+    /** Allocate and initialize this vector with raw values 
+     *
+     *  @tparam OtherValueType data type of the raw data
+     *  @param[in] size becomes the size of the vector and specifies number of entries in values
+     *  @param[in] values is the array with the raw data
+     *
+     *  \code
+     *    std::vector<float> values;
+     *    ....  // build the vector values 
+     *    DenseVector<double> v;
+     *    v.setRawData( values.size(), &values[0] );
+     *  \endcode
+     *
+     *  Note: the vector is not distributed, i.e. each processor might either set it 
+     *        with individual local values or with same values.
+     */
+    template<typename OtherValueType>
+    void setRawData( const IndexType size, const OtherValueType values[] );
 
     /** Override the default assignment operator.  */
 
@@ -676,16 +661,13 @@ utilskernel::LArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
 
 template<typename ValueType>
 template<typename OtherValueType>
-DenseVector<ValueType>::DenseVector( const IndexType size, const OtherValueType* values, hmemo::ContextPtr context ) :
-
-    _DenseVector( size, context )
-
+void DenseVector<ValueType>::setRawData( const IndexType size, const OtherValueType values[] )
 {
+    allocate( size );
     // use LAMA array reference to avoid copy of the raw data
     hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
     // use mContext instead of context to avoid NULL pointer
     utilskernel::HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
-    // Halo is not used yet
 }
 
 } /* end namespace lama */

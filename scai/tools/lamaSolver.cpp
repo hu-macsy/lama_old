@@ -1,5 +1,5 @@
 /**
- * @file lamaSolver.cpp
+ * @file tools/lamaSolver.cpp
  *
  * @license
  * Copyright (c) 2009-2017

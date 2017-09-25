@@ -719,7 +719,8 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
     ValueType sourceVals[] = { 3, 1, 4, 2 };
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    DenseVector<ValueType> x( n, sourceVals, ctx );
+    DenseVector<ValueType> x( ctx );
+    x.setRawData( n, sourceVals );
 
     ValueType alpha = 34.7;
     ValueType beta  = 5.2;

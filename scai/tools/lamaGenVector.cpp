@@ -1,5 +1,5 @@
 /**
- * @file solver/examples/solver/vectorGenerator.cpp
+ * @file lamaGenVector.cpp
  *
  * @license
  * Copyright (c) 2009-2017

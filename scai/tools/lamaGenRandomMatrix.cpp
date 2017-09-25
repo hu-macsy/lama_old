@@ -1,5 +1,5 @@
 /**
- * @file matrixRandomGenerator.cpp
+ * @file lamaGenRandomMatrix.cpp
  *
  * @license
  * Copyright (c) 2009-2017

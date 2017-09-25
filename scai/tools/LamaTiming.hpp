@@ -1,5 +1,5 @@
 /**
- * @file solver/examples/solver/LamaTiming.hpp
+ * @file LamaTiming.hpp
  *
  * @license
  * Copyright (c) 2009-2017
