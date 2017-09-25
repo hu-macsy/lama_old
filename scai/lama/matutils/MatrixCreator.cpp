@@ -503,7 +503,7 @@ void MatrixCreator::fillRandom( Matrix& matrix, float density )
 void MatrixCreator::buildRandom(
     Matrix& matrix,
     const IndexType size,
-    const double density )
+    const float density )
 {
     dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr( );
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( size, comm ) );
