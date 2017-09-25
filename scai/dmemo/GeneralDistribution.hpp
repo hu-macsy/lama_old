@@ -44,6 +44,9 @@
 // internal scai libraries
 #include <scai/common/SCAITypes.hpp>
 
+//std
+#include <unordered_map>
+
 namespace scai
 {
 
@@ -169,6 +172,8 @@ public:
 
     virtual inline const char* getKind() const;
 
+    virtual void fillIndexMap();
+
 protected:
 
     static const char theCreateValue[];
@@ -178,6 +183,7 @@ protected:
     GeneralDistribution( const IndexType globalSize, const CommunicatorPtr communicator );
 
     utilskernel::LArray<IndexType> mLocal2Global;   //!< for each local index its global index, entries are sorted
+    std::unordered_map<IndexType, IndexType> mGlobal2Local;
  
     // the following arrays will only be available if enableAnyAddressing has been called
     // Note: if set the array mGlobal2Local is no more needed

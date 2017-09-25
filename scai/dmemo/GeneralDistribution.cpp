@@ -84,6 +84,8 @@ GeneralDistribution::GeneralDistribution(
 
     HArrayUtils::sort( NULL, &mLocal2Global, myIndexes, true );
 
+    fillIndexMap();
+
     // Note: the constructor is completely local, but make some consistency check now
 
     //IndexType nLocal = myIndexes.size(); 
@@ -193,6 +195,9 @@ GeneralDistribution::GeneralDistribution(
         mCommunicator->scatterV( wLocal2Global.get(), localSize, MASTER, rIndexes.get(), rSizes.get() );
         SCAI_LOG_DEBUG( logger, *mCommunicator << ": after scatterV, sortedIndexes = " << sortedIndexes )
     }
+
+    wLocal2Global.release();
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -280,6 +285,8 @@ GeneralDistribution::GeneralDistribution(
     // Note: actually it would be sufficient to have a mergesort
 
     HArrayUtils::sort( NULL, &mLocal2Global, myNewIndexes, true );
+
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -297,6 +304,8 @@ GeneralDistribution::GeneralDistribution( const Distribution& other ) :
 
     SCAI_ASSERT_EQ_DEBUG( mLocal2Global.size(), other.getLocalSize(), 
                           "serious mismatch in other dist = " << other )
+
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -309,6 +318,8 @@ GeneralDistribution::GeneralDistribution( const GeneralDistribution& other ) :
     SCAI_LOG_INFO( logger, "GeneralDistribution( copy = " << other << " ) " )
 
     mLocal2Global = other.mLocal2Global;
+
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -318,6 +329,7 @@ GeneralDistribution::GeneralDistribution( const IndexType globalSize, const Comm
     Distribution( globalSize, communicator )
 {
     SCAI_LOG_INFO( logger, "GeneralDistribuiton constructor only for derived classes" )
+    fillIndexMap();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -331,8 +343,7 @@ GeneralDistribution::~GeneralDistribution()
 
 bool GeneralDistribution::isLocal( const IndexType globalIndex ) const
 {
-    IndexType pos = HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
-    return pos != nIndex;
+    return mGlobal2Local.count(globalIndex) > 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -353,9 +364,11 @@ IndexType GeneralDistribution::local2global( const IndexType localIndex ) const
 
 IndexType GeneralDistribution::global2local( const IndexType globalIndex ) const
 {
-    // do a binary search in the array of global indexes for entries owned by this partition
-
-    return HArrayUtils::findPosInSortedIndexes( mLocal2Global, globalIndex );
+    if (mGlobal2Local.count(globalIndex)) {
+        return (*mGlobal2Local.find(globalIndex)).second;
+    } else {
+        return nIndex;
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -614,6 +627,16 @@ IndexType GeneralDistribution::getAnyGlobalIndex( const IndexType localIndex, co
     // here the owner is important as local index  requires size offsets
 
     return mAllLocal2Global[ localIndex + mAllLocalOffsets[ owner ] ];
+}
+
+void GeneralDistribution::fillIndexMap()
+{
+    //add local indexes into unordered_map
+    
+    ReadAccess<IndexType> rIndexes(mLocal2Global);
+    for (IndexType i = 0; i < rIndexes.size(); i++) {
+        mGlobal2Local[rIndexes[i]] = i;
+    }
 }
 
 } /* end namespace dmemo */
