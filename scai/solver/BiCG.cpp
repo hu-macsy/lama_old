@@ -141,9 +141,9 @@ void BiCG::iterate()
     }
     else
     {
-        z = Scalar( 0.0 );
+        z.setSameValue( residual.getDistributionPtr(), 0 );
         mPreconditioner->solve( z, residual );
-        z2 = Scalar( 0.0 );
+        z2.setSameValue( residual2.getDistributionPtr(), 0 );
 // THIS IS WRONG!!
 // Instead of solving P * z2 = residual2 we need to solve P^H * z2 = residual2
 // where P is the preconditioner

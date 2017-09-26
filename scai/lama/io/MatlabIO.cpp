@@ -686,7 +686,7 @@ uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage,
 
     if ( mScalarTypeData == common::scalar::PATTERN )
     {
-        values.init( ValueType( 1 ), nnz );   // set values with default value
+        values.setSameValue( nnz, ValueType( 1 ) );   // set values with default value
     }
     else
     {

@@ -110,7 +110,8 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
 
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecZ = Scalar( 0.0 );
+        // *runtime.mVecZ = 0;
+        runtime.mVecZ->setSameValue( runtime.mResidual2->getDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecZ, *runtime.mResidual2 );
     }
     else

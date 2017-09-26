@@ -74,20 +74,20 @@ static void getDenseTestData(
 
     SCAI_ASSERT_EQ_ERROR( numValues, numRows * numColumns, "size mismatch" )
 
-    denseValues.init( values, numValues );
+    denseValues.setRawData( numValues, values );
 }
 
 /* ------------------------------------------------------------------------------------- */
 
 /** Return  a vector with indexes of all rows that are not empty */
 
-static inline void getRowIndexes( IndexType& numNonEmptyRows, HArray<IndexType>& rowIndexes )
+static inline void getRowIndexes( HArray<IndexType>& rowIndexes )
 {
-    const IndexType nonzero_rows[] = { 0, 1, 2, 3, 4, 6 };   // only row 5 is empty
+    const IndexType nonzero_rows[]  = { 0, 1, 2, 3, 4, 6 };   // only row 5 is empty
 
-    numNonEmptyRows = sizeof( nonzero_rows ) / sizeof( IndexType );
+    const IndexType numNonEmptyRows = sizeof( nonzero_rows ) / sizeof( IndexType );
 
-    rowIndexes.init( nonzero_rows, numNonEmptyRows );
+    rowIndexes.setRawData( numNonEmptyRows, nonzero_rows );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -120,9 +120,9 @@ static void getCSRTestData(
 
     SCAI_ASSERT_EQ_ERROR( numValues, ia_values[numRows], "size mismatch" )
 
-    csrIA.init( ia_values, numRows + 1 );
-    csrJA.init( ja_values, numValues );
-    csrValues.init( nz_values, numValues );
+    csrIA.setRawData( numRows + 1, ia_values );
+    csrJA.setRawData( numValues, ja_values );
+    csrValues.setRawData( numValues, nz_values );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -155,9 +155,9 @@ static void getCSCTestData(
 
     SCAI_ASSERT_EQ_ERROR( numValues, ja_values[numColumns], "size mismatch" )
 
-    cscJA.init( ja_values, numColumns + 1 );
-    cscIA.init( ia_values, numValues );
-    cscValues.init( nz_values, numValues );
+    cscJA.setRawData( numColumns + 1, ja_values );
+    cscIA.setRawData( numValues, ia_values );
+    cscValues.setRawData( numValues, nz_values );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -200,9 +200,9 @@ static void getELLTestData(
 
     SCAI_ASSERT_EQ_ERROR( numValues, numValuesPerRow * numRows, "size mismatch" )
 
-    ellIA.init( ia_sizes, numRows );
-    ellJA.init( ja_values, numValues );
-    ellValues.init( nz_values, numValues );
+    ellIA.setRawData( numRows, ia_sizes );
+    ellJA.setRawData( numValues, ja_values );
+    ellValues.setRawData( numValues, nz_values );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -253,11 +253,11 @@ static void getJDSTestData(
     IndexType nz_n = sizeof( nz_values ) / sizeof( ValueType );
     SCAI_ASSERT_EQ_ERROR( nz_n, numValues, "ja and values must have same number of entries" );
 
-    jdsPerm.init( perm_values, numRows );
-    jdsILG.init( ilg_values, numRows );
-    jdsDLG.init( dlg_values, numDiagonals );
-    jdsJA.init( ja_values, numValues );
-    jdsValues.init( nz_values, numValues );
+    jdsPerm.setRawData( numRows, perm_values );
+    jdsILG.setRawData( numRows, ilg_values );
+    jdsDLG.setRawData( numDiagonals, dlg_values );
+    jdsJA.setRawData( numValues, ja_values );
+    jdsValues.setRawData( numValues, nz_values );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -309,8 +309,8 @@ static void getDIATestData(
 
     BOOST_REQUIRE_EQUAL( diag_nvalues, numRows * numDiagonals );
 
-    diaOffsets.init( diag_offsets, numDiagonals );
-    diaValues.init( diag_values, diag_nvalues );
+    diaOffsets.setRawData( numDiagonals, diag_offsets );
+    diaValues.setRawData( diag_nvalues, diag_values );
 }
 
 /* ------------------------------------------------------------------------------------- */
@@ -341,9 +341,9 @@ static void getCOOTestData(
     numColumns  = 4;
     numValues   = sizeof( nz_values ) / sizeof( ValueType );
 
-    cooIA.init( ia_values, numValues );
-    cooJA.init( ja_values, numValues );
-    cooValues.init( nz_values, numValues );
+    cooIA.setRawData( numValues, ia_values );
+    cooJA.setRawData( numValues, ja_values );
+    cooValues.setRawData( numValues, nz_values );
 }
 
 /* ------------------------------------------------------------------------------------- */

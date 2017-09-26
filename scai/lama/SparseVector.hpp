@@ -463,12 +463,12 @@ public:
     virtual void setDenseValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of pure method Vector::setSparseValues.
+     * Implementation of pure method Vector::fillSparseData
      */
-    virtual void setSparseValues(
-        const hmemo::HArray<IndexType>& nonZeroIndexes,
+    virtual void fillSparseData( 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const Scalar zeroValue = Scalar( 0 ) );
+        const common::binary::BinaryOp op );
 
     /**
      * Setting sparse values with raw data 
@@ -674,12 +674,16 @@ void SparseVector<ValueType>::setSparseValues(
     const OtherValueType nonZeroValues[],
     const OtherValueType zeroValue )
 {
+    assign( zeroValue );
+
     // use LAMA array reference to avoid copy of the raw data
 
     hmemo::HArrayRef<OtherValueType> values( nnz, nonZeroValues );
     hmemo::HArrayRef<IndexType> indexes( nnz, nonZeroIndexes );
 
-    setSparseValues( indexes, values, zeroValue );
+    // values at same index will be replaced
+
+    fillSparseData( indexes, values, common::binary::COPY );
 }
 
 Vector::VectorKind _SparseVector::getVectorKind() const

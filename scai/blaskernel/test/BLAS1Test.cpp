@@ -216,9 +216,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
         const IndexType incX = 2;
         const IndexType incY = 3;
         HArray<ValueType> Ax( testContext );
-        Ax.init( x, lenx );
+        Ax.setRawData( lenx, x );
         HArray<ValueType> Ay( testContext );
-        Ay.init( y, leny );
+        Ay.setRawData( leny, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -263,9 +263,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
         const IndexType incX = 2;
         const IndexType incY = 3;
         HArray<ValueType> Ax( testContext );
-        Ax.init( x, 6 );
+        Ax.setRawData( 6, x );
         HArray<ValueType> Ay( testContext );
-        Ay.init( y, 9 );
+        Ay.setRawData( 9, y );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );
@@ -294,10 +294,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
 
         const IndexType incX = 0;
         const IndexType incY = 0;
-        HArray<ValueType> Ax( testContext );
-        Ax.init( x, 6 );
-        HArray<ValueType> Ay( testContext );
-        Ay.init( y, 9 );
+
+        HArray<ValueType> Ax( 6, x, testContext );
+        HArray<ValueType> Ay( 9, y, testContext );
         {
             SCAI_CONTEXT_ACCESS( loc );
             ReadAccess<ValueType> wAx( Ax, loc );

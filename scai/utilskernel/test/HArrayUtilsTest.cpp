@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 
         HArray<ValueType> array( ctx );
 
-        array.init( values, n );
+        array.setRawData( n, values );
 
         SCAI_LOG_DEBUG( logger, "test unary op " << op << " for " << array )
 
@@ -300,8 +300,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
         HArray<ValueType> array2( ctx );
         HArray<ValueType> array3( ctx );
 
-        array1.init( values1, n );
-        array2.init( values2, n );
+        array1.setRawData( n, values1 );
+        array2.setRawData( n, values2 );
 
         if ( op == binary::POW )
         {
@@ -370,8 +370,8 @@ BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
         HArray<IndexType> array2( ctx );
         HArray<IndexType> array3( ctx );
 
-        array1.init( values1, n );
-        array2.init( values2, n );
+        array1.setRawData( n, values1 );
+        array2.setRawData( n, values2 );
 
         if ( ! isBinarySupported<IndexType>( op ) )
         {
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
         HArray<ValueType> array1( ctx );
         HArray<ValueType> array2( ctx );
 
-        array1.init( values, n );
+        array1.setRawData( n, values );
 
         // array2 = scalar <op> array1
 
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
         HArray<ValueType> array1( ctx );
         HArray<ValueType> array2( ctx );
 
-        array1.init( values, n );
+        array1.setRawData( n, values );
 
         HArrayUtils::compute( array2, array1, op, scalar, ctx );
 
@@ -525,10 +525,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
         HArray<ValueType> array2( ctx );
         HArray<ValueType> array3( ctx );
 
-        ia1.init( indexes1, nnz1 );
-        array1.init( values1, nnz1 );
-        ia2.init( indexes2, nnz1 );
-        array2.init( values2, nnz2 );
+        ia1.setRawData( nnz1, indexes1 );
+        array1.setRawData( nnz1, values1 );
+        ia2.setRawData( nnz1, indexes2 );
+        array2.setRawData( nnz2, values2 );
 
         ValueType zero1 = 1;
         ValueType zero2 = 2;
@@ -633,10 +633,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
         LArray<ValueType> array2( ctx );
         LArray<ValueType> array3( ctx );
 
-        ia1.init( indexes, nnz );
-        array1.init( values1, nnz );
-        ia2.init( indexes, nnz1 );
-        array2.init( values2, nnz );
+        ia1.setRawData( nnz, indexes );
+        array1.setRawData( nnz, values1 );
+        ia2.setRawData( nnz, indexes );
+        array2.setRawData( nnz, values2 );
 
         // zero values are not really needed if indexes are all same
 
@@ -684,9 +684,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types 
     HArray<ValueType> magArray( ctx );
     HArray<ValueType> signArray( ctx );
     HArray<ValueType> resultArray( ctx );
-    magArray.init( magnitude, n );
-    signArray.init( sign, n );
-    resultArray.init( result, n );
+    magArray.setRawData( n, magnitude );
+    signArray.setRawData( n, sign );
+    resultArray.setRawData( n, result );
     HArrayUtils::binaryOp( resultArray, magArray, signArray, binary::COPY_SIGN, ctx );
     {
         ReadAccess<ValueType> readMag( magArray, host );
@@ -837,7 +837,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scan1Test, ValueType, array_types )
 
     LArray<ValueType> array;
     array.reserve( loc, n + 1 );
-    array.init( vals, n );
+    array.setRawData( n, vals );
     LArray<ValueType> correct( n + 1, scans.get(), loc );
     SCAI_LOG_DEBUG( logger, "scan1( " << array << " )" )
     ValueType total = HArrayUtils::scan1( array );
@@ -1156,7 +1156,7 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
 
     BOOST_CHECK( HArrayUtils::isSorted( array, binary::LE, loc ) );
 
-    array.init( vals, n );
+    array.setRawData( n, vals );
 
     LArray<IndexType> perm;                   // will contain the sort permutation
     HArrayUtils::setOrder( perm, n, loc );
@@ -1742,6 +1742,60 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseAddTestSame, ValueType, scai_array_test_typ
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes1 ) );
     BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values1 ) );
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( mergeSparseTest, ValueType, scai_array_test_types )
+{
+    // sparseArray = alpha * sparseArray1 + beta * sparseArray2, result gets new pattern
+
+    ContextPtr testContext = Context::getContextPtr();
+
+    const IndexType indexes1_values[]   = { 0,    2, 5,    7 };
+    const IndexType indexes2_values[]   = {    1, 2, 5, 5,    8 };
+    const IndexType indexes_values[]    = { 0, 1, 2, 5,    7, 8 };
+
+    const ValueType values1_values[] =    { 1,    2, 3,    4 };
+    const ValueType values2_values[] =    {    5, 2, 3, 3,    1 };
+    const ValueType values_values[]  =    { 1, 5, 2, 3,    4, 1 };
+
+    IndexType n1 = sizeof( indexes1_values ) / sizeof( IndexType );
+    IndexType n2 = sizeof( indexes2_values ) / sizeof( IndexType );
+    IndexType n  = sizeof( indexes_values ) / sizeof( IndexType );
+
+    SCAI_ASSERT_EQ_ERROR( n1, sizeof( values1_values ) / sizeof( ValueType ), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( n2, sizeof( values2_values ) / sizeof( ValueType ), "size mismatch" )
+    SCAI_ASSERT_EQ_ERROR( n, sizeof( values_values ) / sizeof( ValueType ), "size mismatch" )
+
+    HArray<IndexType> indexes1( n1, indexes1_values, testContext );
+    HArray<IndexType> indexes2( n2, indexes2_values, testContext );
+
+    HArray<ValueType> values1( n1, values1_values, testContext );
+    HArray<ValueType> values2( n2, values2_values, testContext );
+
+    HArray<IndexType> indexes;
+    HArray<ValueType> values;
+
+    common::binary::BinaryOp op = common::binary::COPY;    // replace enries at same place
+
+    HArrayUtils::mergeSparse( indexes, values, indexes1, values1, indexes2, values2, op );
+
+    BOOST_REQUIRE_EQUAL( n, indexes.size() );
+    BOOST_REQUIRE_EQUAL( n, values.size() );
+
+    LArray<IndexType> okayIndexes( n, indexes_values, testContext );
+    LArray<ValueType> okayValues( n, values_values, testContext );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
+
+    // just switch the arguments
+
+    HArrayUtils::mergeSparse( indexes, values, indexes1, values1, indexes2, values2, op );
+
+    BOOST_CHECK_EQUAL( IndexType( 0 ), okayIndexes.maxDiffNorm( indexes ) );
+    BOOST_CHECK_EQUAL( ValueType( 0 ), okayValues.maxDiffNorm( values ) );
 }
 
 /* --------------------------------------------------------------------- */

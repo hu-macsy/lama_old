@@ -221,7 +221,8 @@ SparseVector<ValueType>::SparseVector(
     _SparseVector( distribution )
 
 {
-    setSparseValues( indexes, values, zero );
+    assign( zero );
+    fillSparseData( indexes, values, common::binary::COPY );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -586,25 +587,64 @@ void SparseVector<ValueType>::swapSparseValues( HArray<IndexType>& nonZeroIndexe
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, const Scalar zeroValue )
+void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, common::binary::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "setSparseValues, nnz = " << nonZeroIndexes.size() << ", ZERO = " << zeroValue )
+    SCAI_LOG_INFO( logger, "fillSparseData, nnz = " << nonZeroIndexes.size() )
 
-    const IndexType size = getDistribution().getLocalSize();
+    SCAI_ASSERT_EQ_ERROR( nonZeroIndexes.size(), nonZeroValues.size(), "arrays for sparse indexes and values must have same size" )
 
-    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, size, getContextPtr() );
+    if ( nonZeroIndexes.size() == 0 )
+    {
+        return;
+    }
+   
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, localSize, getContextPtr() );
 
     if ( !isValid )
     {
-        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
+        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << localSize )
     }
 
-    HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
-    HArrayUtils::setArray( mNonZeroValues, nonZeroValues, common::binary::COPY, getContextPtr() );
+    if ( mNonZeroIndexes.size() !=  0 )
+    {
+        // sort the new sparse entries so merge is more efficient
 
-    HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
+        HArray<IndexType> newIndexes;
+        HArray<ValueType> newValues;
 
-    mZeroValue = zeroValue.getValue<ValueType>();
+        HArrayUtils::setArray( newIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
+        HArrayUtils::setArray( newValues, nonZeroValues, common::binary::COPY, getContextPtr() );
+
+        // then we have to merge zero indexes
+
+        HArrayUtils::sortSparseEntries( newIndexes, newValues, true, getContextPtr() );
+        // HArrayUtils::elimDoubles( newIndexes, newValues, op );
+
+        HArray<IndexType> resultIndexes;
+        HArray<ValueType> resultValues;
+
+        SCAI_LOG_ERROR( logger, "old sparse entries: " << mNonZeroIndexes )
+        SCAI_LOG_ERROR( logger, "new sparse entries: " << newIndexes )
+
+        HArrayUtils::mergeSparse( resultIndexes, resultValues,
+                                  mNonZeroIndexes, mNonZeroValues,
+                                  newIndexes, newValues, op );
+
+        SCAI_LOG_ERROR( logger, "final sparse entries: " << resultIndexes )
+                 
+        mNonZeroIndexes.swap( resultIndexes );
+        mNonZeroValues.swap( resultValues );
+    }
+    else
+    {
+        HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
+        HArrayUtils::setArray( mNonZeroValues, nonZeroValues, common::binary::COPY, getContextPtr() );
+
+        HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
+        HArrayUtils::elimDoubles( mNonZeroIndexes, mNonZeroValues, op );
+    }
 }
 
 /* ------------------------------------------------------------------------- */

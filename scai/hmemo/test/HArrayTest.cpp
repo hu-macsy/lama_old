@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( initTest )
     const IndexType N = sizeof( values ) / sizeof( double );
     SCAI_LOG_INFO( logger, "initTest ( " << N << " values ) on " << *testContext );
     HArray<double> array( testContext );
-    array.init( values, N );
+    array.setRawData( N, values );
     BOOST_CHECK_EQUAL( array.size(), N );
     // init values must be valid at chosen context
     BOOST_CHECK( array.isValid( testContext ) );
@@ -150,9 +150,7 @@ BOOST_AUTO_TEST_CASE( init1Test )
     const IndexType val = 1;
 
     HArray<IndexType> array;
-
-    array.init( val, 0 );
-    array.init( val, N );
+    array.setSameValue( N, val );
 
     BOOST_REQUIRE_EQUAL( array.size(), N );
 
@@ -168,7 +166,7 @@ BOOST_AUTO_TEST_CASE( init1Test )
     }
 
     IndexType N2 = N / 2;
-    array.init( val + 1, N2 );
+    array.setSameValue( N2, val + 1 );
 
     ReadAccess<IndexType>read( array, hostContext );
 

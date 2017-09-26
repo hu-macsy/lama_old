@@ -65,7 +65,7 @@ int main( int narg, const char* argv[] )
         // assume that procs argument is the number of processors
         np = atoi( argv[2] );
         float weight = static_cast<float>( 1 ) / static_cast<float>( np );
-        pWeights.init( weight, np );
+        pWeights.setSameValue( np, weight );
     }
     else
     {

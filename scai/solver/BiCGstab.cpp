@@ -125,9 +125,10 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), runtime.mRhs->getDistribution(), "distribution mismatch" )
     // Initialize
     this->getResidual();
+
     *runtime.mRes0 = *runtime.mResidual;
-    *runtime.mVecV = Scalar( 0.0 );
-    *runtime.mVecP = Scalar( 0.0 );
+    runtime.mVecV->setSameValue( rhs.getDistributionPtr(), 0 );
+    runtime.mVecP->setSameValue( rhs.getDistributionPtr(), 0 );
     runtime.mSolveInit = true;
 }
 
@@ -171,7 +172,7 @@ void BiCGstab::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecPT = Scalar( 0.0 );
+        vecPT.setSameValue( A.getRowDistributionPtr(), 0 );
         mPreconditioner->solve( vecPT, vecP );
     }
     else
@@ -196,10 +197,10 @@ void BiCGstab::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecST = Scalar( 0.0 );
+        vecST.setSameValue( A.getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecST, vecS );
         vecT = A * vecST;
-        vecTT = Scalar( 0.0 );
+        vecTT.setSameValue( A.getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecTT, vecT );
     }
     else

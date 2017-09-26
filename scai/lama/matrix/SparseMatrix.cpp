@@ -781,7 +781,7 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
         return;
     }
 
-    row.init( ValueType( 0 ), getNumColumns() );
+    row.setSameValue( getNumColumns(), ValueType( 0 ) );
 
     HArray<ValueType> tmpRow;  // used for row of local, halo data
 
@@ -1140,7 +1140,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
         }
         else
         {
-            column.init( ValueType( 0 ), localRowSize );
+            column.setSameValue( localRowSize, ValueType( 0 ) );
         }
     }
 }
@@ -1316,7 +1316,7 @@ void SparseMatrix<ValueType>::reduce(
         {
             const Communicator& comm = getColDistribution().getCommunicator();
             HArray<ValueType> haloData;
-            haloData.init( ValueType( 0 ), mHaloData->getNumColumns() );
+            haloData.setSameValue( mHaloData->getNumColumns(), ValueType( 0 ) );
             mHaloData->reduce( haloData, 1, reduceOp, elemOp );
             comm.exchangeByPlan( haloResult, mHalo.getProvidesPlan(), haloData, mHalo.getRequiredPlan() );
         }

@@ -63,12 +63,13 @@ void getMatrix_7_4 ( IndexType& numRows,
         0, 0, 0, 0,
         0, 1, 0, 2
     };
-    matrixRowSizes.init( ia, numRows );
-    matrixJA.init( ja, numValues );
-    matrixValues.init( values, numValues );
+
+    matrixRowSizes.setRawData( numRows, ia );
+    matrixJA.setRawData( numValues, ja );
+    matrixValues.setRawData( numValues, values );
     numColumns = matrixJA.max() + 1;
     BOOST_REQUIRE_EQUAL( static_cast<size_t>( numRows * numColumns ), sizeof( resultMatrix ) / sizeof( ValueType ) );
-    denseValues.init( resultMatrix, numRows * numColumns );
+    denseValues.setRawData( numRows * numColumns, resultMatrix );
 }
 
 /* ------------------------------------------------------------------------- */

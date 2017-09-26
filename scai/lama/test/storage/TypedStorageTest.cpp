@@ -1074,7 +1074,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
                                         };
 
         HArray<ValueType> denseArray( context );
-        denseArray.init( denseValues, numRows * numColumns );
+        denseArray.setRawData( numRows * numColumns, denseValues );
 
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
@@ -1108,9 +1108,9 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         BOOST_CHECK_EQUAL( n, totalNumValues );
 
         HArray<ValueType> valuesArray( context );
-        valuesArray.init( values, n );
+        valuesArray.setRawData( n, values );
         HArray<IndexType> offsetsArray( context );
-        offsetsArray.init( offsets, numDiagonals );
+        offsetsArray.setRawData( numDiagonals, offsets );
 
         storage.setDIAData( numRows, numColumns, numDiagonals, offsetsArray, valuesArray );
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
@@ -1151,9 +1151,9 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         BOOST_CHECK_EQUAL( n2, totalNumValues );
 
         HArray<ValueType> valuesArray2( context );
-        valuesArray2.init( values2, n2 );
+        valuesArray2.setRawData( n2, values2 );
         HArray<IndexType> offsetsArray2( context );
-        offsetsArray2.init( offsets2, numDiagonals );
+        offsetsArray2.setRawData( numDiagonals, offsets2 );
 
         storage.setDIAData( numRows, numColumns, numDiagonals, offsetsArray2, valuesArray2 );
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns

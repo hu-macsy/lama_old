@@ -443,7 +443,7 @@ void TextIO::readStorageImpl(
     if ( readPattern )
     {
         readData<ValueType>( ia, ja, NULL, nnz, fileName );
-        val.init( ValueType( 1 ), nnz );
+        val.setSameValue( nnz, ValueType( 1 ) );
     }
     else
     {

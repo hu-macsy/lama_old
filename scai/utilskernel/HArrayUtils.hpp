@@ -621,6 +621,29 @@ public:
         bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Eliminate duplicate elements in a sorted array 
+     *
+     *  @param[in,out] indexes is the sorted array of indexes that might contain double values
+     *  @param[in,out] values are values that will be combined
+     *  @param[in] op  specifies how to combine values with same index pos
+     *
+     *  /code
+     *    in:    indexes[] = { 0, 1, 5, 7, 7, 9, 9 };    
+     *    in:    values [] = { 0, 1, 2, 3, 4, 5, 6 };
+     *    elimDoubles ( indexes, values, binary::COPY )
+     *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
+     *    out:   values [] = { 0, 1, 2, 4, 6 };
+     *    elimDoubles ( indexes, values, binary::ADD )
+     *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
+     *    out:   values [] = { 0, 1, 2, 7, 11 };
+     *  /endcode
+     */
+    template<typename ValueType>
+    static void elimDoubles(
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<ValueType>& values,
+        const common::binary::BinaryOp op );
+
     /** Initialize an array with the sequence 0, .., n-1
      *
      *  @param[out] array   will contain the values 0, ..., n-1
@@ -820,6 +843,27 @@ public:
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
+        const common::binary::BinaryOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Merge non-zero entries of sparse array
+     *
+     *  @param[out] resultIndexes, resultValues for sparse result array
+     *  @param[in]  indexes1, values1, zero1 stand for first sparse array
+     *  @param[in]  indexes2, values2, zero2 stand for second sparse array
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     *
+     *  Example can be found in HArrayUtilsTest
+     */
+    template<typename ValueType>
+    static void mergeSparse(
+        hmemo::HArray<IndexType>& resultIndexes,
+        hmemo::HArray<ValueType>& resultValues,
+        const hmemo::HArray<IndexType>& indexes1,
+        const hmemo::HArray<ValueType>& values1,
+        const hmemo::HArray<IndexType>& indexes2,
+        const hmemo::HArray<ValueType>& values2,
         const common::binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 

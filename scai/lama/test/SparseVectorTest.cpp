@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     if ( dist->getLocalSize() > 0 )
     {
-        indexes.init( IndexType( 0 ), 1 );
-        values.init( ValueType( 3 ), 1 );
+        indexes.setSameValue( 1, IndexType( 0 ) );
+        values.setSameValue( 1, ValueType( 3 ) );
     }
     else
     {
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE( consistencyTest )
 
     if ( dist->getLocalSize() > 0 )
     {
-        indexes.init( 1, IndexType( dist->getLocalSize() ) );
+        indexes.setSameValue( dist->getLocalSize(), IndexType( 1 ) );
     }
 
     BOOST_CHECK( ! v.isConsistent() );

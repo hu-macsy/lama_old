@@ -1010,7 +1010,7 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
         wValuePos.resize( cnt );
     }
 
-    row.init( ValueType( 0 ), mNumColumns );
+    row.setSameValue( mNumColumns, ValueType( 0 ) );
 
     // row[ colIndexes ] = mValues[ pos ];
 

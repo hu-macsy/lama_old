@@ -118,7 +118,7 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecW = Scalar( 0.0 );
+        runtime.mVecW->setSameValue( runtime.mResidual->getDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecW , *runtime.mResidual );
     }
     else
@@ -128,7 +128,8 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
 
     *runtime.mVecZ = A * ( *runtime.mVecW );
     *runtime.mVecW = *runtime.mResidual;
-    *runtime.mVecD = Scalar( 0.0 );
+    // *runtime.mVecD = 0
+    runtime.mVecD->setSameValue( A.getRowDistributionPtr(), 0 );
     lama::L2Norm norm;
     runtime.mTau = norm.apply( *runtime.mInitialR );
     runtime.mRhoOld = runtime.mTau * runtime.mTau;
@@ -189,7 +190,7 @@ void TFQMR::iterationOdd()
 //  PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecVT = Scalar( 0.0 );
+        vecVT.setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecVT, vecVEven );
     }
     else

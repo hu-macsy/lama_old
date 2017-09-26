@@ -267,7 +267,7 @@ void GMRES::iterate()
         else
         {
             SCAI_REGION( "Solver.GMRES.start.solvePreconditioner" )
-            vCurrent = 0.0;
+            vCurrent.setSameValue( residual.getDistributionPtr(), 0 );
             double preconditionerTimeStart = common::Walltime::get();
             mPreconditioner->solve( vCurrent, residual );
             totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
@@ -293,7 +293,7 @@ void GMRES::iterate()
     {
         SCAI_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
-        w = 0.0;
+        w.setSameValue( A.getColDistributionPtr(), 0 );
         double preconditionerTimeStart = common::Walltime::get();
         mPreconditioner->solve( w, tmp );
         totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;

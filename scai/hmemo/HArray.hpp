@@ -90,14 +90,17 @@ public:
     HArray();
 
     /**
-     * @brief Initialize an array with values from host
+     * @brief Initialize an array with raw data values from host 
+     *
+     * @param[in] size is the number of elements to set
+     * @param[in] datais the value array with at least size values
      */
-    void init( const ValueType src[], const IndexType size );
+    void setRawData( const IndexType size, const ValueType data[] );
 
     /**
      * @brief Initialize an array with same value for each entry
      */
-    void init( const ValueType src, const IndexType size );
+    void setSameValue( const IndexType size, const ValueType value );
 
     /**
      * @brief Create a Heterogeneous array and give it a first touch on a context
@@ -385,7 +388,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType values[], ContextP
 
 {
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
-    init( values, n );
+    setRawData( n, values );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -444,7 +447,7 @@ common::scalar::ScalarType HArray<ValueType>::getValueType() const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::init( const ValueType src[], const IndexType size )
+void HArray<ValueType>::setRawData( const IndexType size, const ValueType src[] )
 {
     // context manager copies the data to the first touch location
     mContextDataManager.init( src, sizeof( ValueType ) * size );
@@ -454,7 +457,7 @@ void HArray<ValueType>::init( const ValueType src[], const IndexType size )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::init( const ValueType value, const IndexType size )
+void HArray<ValueType>::setSameValue( const IndexType size, const ValueType value )
 {
     common::scoped_array<ValueType> data( new ValueType[size] );
 
@@ -463,7 +466,7 @@ void HArray<ValueType>::init( const ValueType value, const IndexType size )
         data[i] = value;
     }
 
-    init( data.get(), size );
+    setRawData( size, data.get() );
 }
 
 /* ---------------------------------------------------------------------------------*/

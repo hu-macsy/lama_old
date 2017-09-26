@@ -397,12 +397,12 @@ public:
     virtual void setDenseValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of pure method Vector::setSparseValues.
+     * Implementation of pure method Vector::fillSparseData
      */
-    virtual void setSparseValues(
+    virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes,
         const hmemo::_HArray& nonZeroValues,
-        const Scalar zeroValue = Scalar( 0 ) );
+        const common::binary::BinaryOp op );
 
     /**
      * Implementation of Vector::copy with covariant return type.

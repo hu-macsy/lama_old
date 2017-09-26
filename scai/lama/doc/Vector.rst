@@ -71,7 +71,6 @@ undefined values.
 Furthermore, keep in mind that the size of a vector or a distributon is set or changed by most operations
 on vectors and so this attribute does not hold for the lifetime of a vector at all.
 
-
 Initializations
 ---------------
 
@@ -87,31 +86,38 @@ be some situations where this is not possible:
 
     DenseVector<ValueType> v1;
 
-    v1.setRawData( n, rawData );   // initialize a vector with any 'raw' data
+    v1.setData( array );          // initialize a vector with data from a heterogeneous array
+    v1.setRawData( n, rawData );  // initialize a vector with any 'raw' data ( size, pointer )
+    v1.setRange( n, 3, 2 );       // initializes the vector with the values 3, 5, 7, 9, ...
+    v1.setRandom( n, 10 );        // initialize the vector with n random numbers in the range 0..10
+    v1.setSameValue( n, 5 );      // initialize the vector with n elements of the value 5
+    v1.readFromFile( "v.mtx" );   // read the vector from a file, size can queried afterwards
 
-    v1.setRange( n, 0, 1 );  // initializes the vector with the values 0, 1, ..., n-1
-
-    v1.setRandom( n, 10 );   // initialize the vector with n random numbers in the range 0..10
-
-    v1.setScalar( 5 );
-
-    v1.allocate( n );
-    v1 = 5;                  // initialize the vector with n elements of the value 5
-
-Sparse vectors 
+Sometimes it might be useful to create a sparse vector, i.e. a vector where most entries have the same
+value, and only some values are different.
 
 .. code-block:: c++
 
-    v1.setSparseRandom( n, 0, 0.5f, 10 );   // initialize the vector with a certain ratio of random values
-   
-    // same as
+   v.setSparseData( n, zeroValues,  nonZeroIndexes, nonZeroValues );
 
-    v1.allocate( n );
-    v1 = 0;
-    v1.fillSparseRandom( 0.5f, 10 );  // replace values with a probibilty of 0.5 with a random value in range 0..10
+Also a sparse random vector might be created where here a fill specifies the number of entries.
 
-All initialization routines might be called with a distribution instead of a size n. The initializations
+.. code-block:: c++
+
+    v1.setSparseRandom( n, 0, 0.1f, 10 );   // initialize the vector with a certain ratio of random values
+
+Most initialization routines might be called with a distribution instead of a size n. The initializations
 of the local parts will be done independently.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v1;
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    v1.setRange( dist, 3, 2 );            // initializes the vector with the values 3, 5, 7, 9, ...
+    v1.setRandom( dist, 10 );             // initialize the vector with n random numbers in the range 0..10
+    v1.setSameValue( dist, 5 );           // initialize the vector with n elements of the value 5
+    v1.setLocalData( dist, localArray );  // each processor initializes its local part with its data
 
 In the first place it seems to be strange to use the initializon routines always with a size
 or a distribution argument even if the vector has already been allocated. There are usually 
@@ -119,17 +125,13 @@ counterparts of these routines that do not require this first argument.
 
 .. code-block:: c++
 
-    DenseVector<ValueType> v( n );   // define a vector of size n
+    DenseVector<ValueType> v( dist );   // define a distributed vector
 
     for ( int iter = 0; iter < MAX_ITER; ++iter )
     {
-        //  v.setRandom( n, maxval );
-
-        v.fillRandom( maxval ); 
-
-        ...  // do something useful with the generated random numbers
+        v = 0;   // instead of v.setSameValue( dist, 0 );
+        ...
     }
-
 
 Nevertheless the use of the set routines are recommended for the following reasons:
 
@@ -148,21 +150,60 @@ required at all.
     // Code 1                          
     DenseVector<ValueType> v( n, 0 );   
     ...
-    v.fillRandom( maxval ); 
+    v = scalarValue;
 
     // Code 2
     DenseVector<ValueType> v( n );   
     ...
-    v.fillRandom( maxval ); 
+    v = scalarValue;    
 
     // Code 3
     DenseVector<ValueType> v;
     ...
-    v.setRandom( n, maxval ); 
+    v.setSameValue( n, scalarValue ); 
 
 The code 3 has the same efficiency as code 2 but it is more safe. This is due to the fact
 that a zero vector causes less problems than an undefined allocated vector.
 
+Vectors should be reused wherever it is possible. In the following loop the vector
+is allocated and deallocated in each iteration of the loop even if the value n
+is always the same.
+
+.. code-block:: c++
+
+
+    for ( int iter = 0; iter < MAX_ITER; ++iter )
+    {
+        DenseVector<ValueType> v( n, myValue );
+        ....
+    }
+
+This code reuses the vector data in each iteration of the loop. Reallocation is
+only done, if the value n becomes larger than any value used before.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v;
+
+    for ( int iter = 0; iter < MAX_ITER; ++iter )
+    {
+        v.setSameValue( n, myValue );
+        ....
+    }
+
+This is also one reason why you will never find any routine in LAMA that returns
+a vector or a matrix. All supported vector operations in LAMA will never return a
+new created vector. In the following example the implementation of the operator+ does not return
+a vector but a syntactical construct that is resolved in the assignment and ends up in
+an element-wise addition in-place in the exisiting vector v1. 
+
+.. code-block:: c++
+
+     DenseVector<ValueType> v1, v2, v3;
+     ...
+     v2.setXXX( ... )
+     v3.setYYY( ... );
+     v1 = v2 + v3;
 
 Methods
 -------
@@ -226,10 +267,6 @@ In the following you see all possible constructor calls:
   // optional third parameter: cudaContextPtr (hmemo::ContextPtr)
   DenseVector<double> x ( size, 1.0 );
   DenseVector<double> x2( dist, 1.0 );
-
-  // creating a local (not distributed) vector from raw double pointer
-  const double inputData[] = { 1.0, 2.0, 3.0, 4.0 };
-  scai::lamaDenseVector<double> y( size, inputData ); // optional third parameter: cudaContextPtr (hmemo::ContextPtr)
 
   // reading from file (only on local vectors, can be redistributed afterwards)
   DenseVector<double> z( "z_vector.mtx" );

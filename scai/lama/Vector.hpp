@@ -391,7 +391,40 @@ public:
      *
      * Note: Implicit type conversion for the values is supported.
      */
+
     virtual void setDenseValues( const hmemo::_HArray& values ) = 0;
+
+    void setLocalData( dmemo::DistributionPtr dist, const hmemo::_HArray& values ) 
+    {
+        allocate( dist );
+        setDenseValues( values );
+    } 
+
+    void setData( const hmemo::_HArray& values ) 
+    {
+        allocate( values.size() );
+        setDenseValues( values );
+    } 
+
+    /** Set a replicated vector with sparse vector data
+     *
+     *  @param[in] n will be the size of the vector
+     *  @param[in] nonZeroIndexes positions with non-zero values
+     *  @param[in] nonZeroValues values for the non-zero value
+     *  @param[in] zeroValue is the 'zero' value, defaults to 0
+     *
+     *  nonZeroIndexes and nonZeroValues must have the same size. nonZeroIndexes must 
+     *  contain valid indexes. They do not have to be sorted.
+     */
+    void setSparseData( 
+        const IndexType n, 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
+        const hmemo::_HArray& nonZeroValues, 
+        const Scalar zeroValue = Scalar( 0 ) )
+    {
+        setSameValue( n, zeroValue );
+        fillSparseData( nonZeroIndexes, nonZeroValues, common::binary::COPY );
+    } 
 
     /**
      * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
@@ -404,10 +437,31 @@ public:
      *
      * Note: Implicit type conversion for the values is supported.
      */
-    virtual void setSparseValues( 
+    void setSparseValues( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const Scalar zeroValue = Scalar( 0 ) ) = 0;
+        const Scalar zeroValue = Scalar( 0 ) )
+    {
+        assign( zeroValue );
+        fillSparseData( nonZeroIndexes, nonZeroValues, common::binary::COPY );
+    }
+
+    /**
+     * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
+     *
+     * @param[in] nonZeroIndexes   array with all local indexes that have a non-zero entry
+     * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
+     * @param[in] op               specifies how to deal with available entries, COPY is replace, ADD is sum 
+     *
+     * The size of the both input arrays must be equal.
+     *
+     * Note: Implicit type conversion for the values is supported.
+     * ToDo: binaryOp that specifies how to combine with existing entries
+     */
+    virtual void fillSparseData( 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
+        const hmemo::_HArray& nonZeroValues,
+        const common::binary::BinaryOp op ) = 0;
 
     /**
      * @brief Sets the local size of the vector to zero. 
@@ -431,10 +485,10 @@ public:
      *
      * \code
      *     DistributionPtr dist ( ... );
-     *     DenseVector<ValueType> A( dist );
+     *     DenseVector<ValueType> v( dist );
      *     ValueType lb = -1.5, ub = 2.6;
-     *     A.fillRandom( 1 );
-     *     A = lb + A * ( ub - lb );   // random numbers in the range of lb .. ub
+     *     v.fillRandom( 1 );
+     *     A = lb + v * ( ub - lb );   // random numbers in the range of lb .. ub
      * \endcode
      */
     virtual void fillRandom( const IndexType bound ) = 0;
@@ -461,6 +515,46 @@ public:
     {
         allocate ( dist );
         fillRandom( bound );
+    }
+
+    /** 
+     *  This method gives the vector a size and initializes it with a value.
+     *
+     *  @param[in] n is the size of the replicated vector
+     *  @param[in] value is the value assigned to all elements
+     *
+     *  \code
+     *    DenseVector<double> v1; 
+     *    v1.setSameValue( n, value );
+     *    DenseVector<double> v2( n );
+     *    v2 = value;
+     *    DenseVector<double> v3( n, value );
+     *  \endcode
+     */
+    void setSameValue( const IndexType n, const Scalar value )
+    {
+        allocate( n );
+        assign( value );
+    }
+
+    /** 
+     *  This method gives the vector a distribution and initializes it with a value.
+     *
+     *  @param[in] dist specifies size of the vector and mapping to the processors
+     *  @param[in] value is the value assigned to all elements
+     *
+     *  \code
+     *    DenseVector<double> v1; 
+     *    v1.setSameValue( n, value );
+     *    DenseVector<double> v2( n );
+     *    v2 = value;
+     *    DenseVector<double> v3( n, value );
+     *  \endcode
+     */
+    void setSameValue( dmemo::DistributionPtr dist, const Scalar value )
+    {
+        allocate( dist );
+        assign( value );
     }
 
     /**
@@ -584,6 +678,15 @@ public:
      */
     virtual Scalar max() const = 0;
 
+    /**
+     * @brief Returns the sum of all vector elements.
+     *
+     * @return the sum of all vector elements.
+     *
+     * As the summation of the values depends on the mapping of the values to
+     * the processors, this routine might return slightly different results
+     * for different parallel environments.
+     */
     virtual Scalar sum() const = 0;
 
     /**

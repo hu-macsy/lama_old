@@ -117,7 +117,7 @@ void CGNE::solveInit( Vector& solution, const Vector& rhs )
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecZ = Scalar( 0.0 );
+        runtime.mVecZ->setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecZ, *runtime.mResidual );
     }
     else

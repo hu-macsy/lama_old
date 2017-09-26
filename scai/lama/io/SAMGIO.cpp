@@ -669,7 +669,7 @@ void SAMGIO::readStorageImpl(
 
     if ( mScalarTypeData == common::scalar::PATTERN )
     {
-        csrValues.init( ValueType( 1 ), numBlockValues );   // set values with default value
+        csrValues.setSameValue( numBlockValues, ValueType( 1 ) );   // set values with default value
     }
     else if ( binary )
     {

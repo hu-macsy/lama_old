@@ -274,7 +274,7 @@ void HArrayUtils::sparseGatherImpl(
 
     if ( op == binary::COPY )
     {
-        target.init( TargetValueType( 0 ), n );    // initialize with zero as default
+        target.setSameValue( n, TargetValueType( 0 ) );    // initialize with zero as default
     }
     else
     {
@@ -1483,7 +1483,7 @@ void HArrayUtils::bucketSort(
     {
         perm.clear();
         IndexType zero = 0;
-        offsets.init( zero, nb + 1 );  // offsets = { 0, 0, ..., 0 }
+        offsets.setSameValue( nb + 1, zero );  // offsets = { 0, 0, ..., 0 }
         return;
     }
 
@@ -1531,7 +1531,7 @@ void HArrayUtils::bucketCount(
     if ( n == 0 )
     {
         IndexType zeroVal = 0;
-        bucketSizes.init( zeroVal, nb );
+        bucketSizes.setSameValue( nb, zeroVal );
         return;
     }
 
@@ -1769,6 +1769,50 @@ void HArrayUtils::mergeSortOptional(
 }
 
 #endif
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::elimDoubles(
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<ValueType>& values,
+    const common::binary::BinaryOp op )
+{
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "serious size mismatch" )
+
+    IndexType n = indexes.size();
+
+    if ( n <= 1 )
+    {
+        return;
+    }
+
+    // mergeSparse elims also double values on sorted lists, just set one list empty
+
+    static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
+
+    // default location for merge
+
+    ContextPtr loc = indexes.getValidContext();
+
+    mergeSparse.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    {
+        WriteAccess<IndexType> wIndexes( indexes, loc );
+        WriteAccess<ValueType> wValues( values, loc );
+
+        IndexType nMerged = mergeSparse[loc]( wIndexes.get(), wValues.get(),
+                                              wIndexes.get(), wValues.get(), n,
+                                              NULL, NULL, 0, op );
+
+        // nMerged can be smaller than n if one index list contained multiple values
+
+        wIndexes.resize( nMerged );
+        wValues.resize( nMerged );
+    }
+}
 
 /* --------------------------------------------------------------------------- */
 
@@ -2110,6 +2154,63 @@ void HArrayUtils::binaryOpSparse(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+void HArrayUtils::mergeSparse(
+    hmemo::HArray<IndexType>& resultIndexes,
+    hmemo::HArray<ValueType>& resultValues,
+    const hmemo::HArray<IndexType>& indexes1,
+    const hmemo::HArray<ValueType>& values1,
+    const hmemo::HArray<IndexType>& indexes2,
+    const hmemo::HArray<ValueType>& values2,
+    const binary::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
+    static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes1.getValidContext();
+    }
+
+    mergeSparse.getSupportedContext( loc, countAddSparse );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIndexes1( indexes1, loc );
+    ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+    IndexType n1 = indexes1.size();
+    IndexType n2 = indexes2.size();
+
+    IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
+
+    SCAI_LOG_INFO( logger, "counted new sparse n = " << n << " from " << n1 << " + " << n2 )
+
+    {
+        WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
+        WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+
+        ReadAccess<ValueType> rValues1( values1, loc );
+        ReadAccess<ValueType> rValues2( values2, loc );
+
+        IndexType nMerged = mergeSparse[loc]( wIndexes.get(), wValues.get(),
+                                              rIndexes1.get(), rValues1.get(), n1, 
+                                              rIndexes2.get(), rValues2.get(), n2, op );
+
+        // nMerged can be smaller than n if one index list contained multiple values
+
+        resultIndexes.resize( nMerged );
+        resultValues.resize( nMerged );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 /** Makro for the instantiation of routines with two template arguments for source and target type. */
 
 #define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
@@ -2266,6 +2367,10 @@ void HArrayUtils::binaryOpSparse(
             const hmemo::HArray<IndexType>&,                                    \
             const bool,                                                         \
             hmemo::ContextPtr );                                                \
+    template void HArrayUtils::elimDoubles<ValueType>(                          \
+            hmemo::HArray<IndexType>&,                                          \
+            hmemo::HArray<ValueType>&,                                          \
+            const binary::BinaryOp );                                           \
     template void HArrayUtils::setSequence<ValueType>(                          \
             hmemo::HArray<ValueType>&,                                          \
             ValueType,                                                          \
@@ -2311,6 +2416,15 @@ void HArrayUtils::binaryOpSparse(
             const hmemo::HArray<IndexType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
             const ValueType,                                                    \
+            const binary::BinaryOp,                                             \
+            hmemo::ContextPtr );                                                \
+    template void HArrayUtils::mergeSparse(                                     \
+            hmemo::HArray<IndexType>&,                                          \
+            hmemo::HArray<ValueType>&,                                          \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
             const binary::BinaryOp,                                             \
             hmemo::ContextPtr );                                                \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )

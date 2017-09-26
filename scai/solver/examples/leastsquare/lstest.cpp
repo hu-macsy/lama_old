@@ -86,12 +86,14 @@ int main( int, char** )
 
     GramianMatrix mTm( m );
 
-    DenseVector<ValueType> b( numRows, rawB );
+    DenseVector<ValueType> b;
+    b.setRawData( numRows, rawB );
+
     DenseVector<ValueType> b1( b * m );
 
     DenseVector<ValueType> x0( colDist, 0 );
-    DenseVector<ValueType> bestX( numColumns, rawX );
-
+    DenseVector<ValueType> bestX;
+    bestX.setRawData( numColumns, rawX );
 
     // definie stopping criteria
 

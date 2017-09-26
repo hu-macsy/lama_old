@@ -58,6 +58,7 @@ scai_project (
         PartitionIOTest
         SparseVectorTest
         VectorTest
+        VectorAssemblyTest
         VersionTest
 
     )

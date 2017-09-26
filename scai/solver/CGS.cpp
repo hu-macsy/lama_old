@@ -115,7 +115,7 @@ void CGS::solveInit( Vector& solution, const Vector& rhs )
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecPT  = Scalar( 0.0 );
+        runtime.mVecPT->setSameValue( runtime.mVecP->getDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecPT, *runtime.mVecP );
     }
     else
@@ -169,7 +169,8 @@ void CGS::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecUT = Scalar( 0.0 );
+        // vecUT = 0;  here the more general approach
+        vecUT.setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         vecTemp = vecU + vecQ;
         mPreconditioner->solve( vecUT, vecTemp );
     }
@@ -202,7 +203,7 @@ void CGS::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecPT  = Scalar( 0.0 );
+        vecPT.setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecPT, vecP );
     }
     else

@@ -912,14 +912,14 @@ void DenseVector<ValueType>::setDenseValues( const _HArray& values )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, const Scalar zero )
+void DenseVector<ValueType>::fillSparseData( 
+    const HArray<IndexType>& nonZeroIndexes, 
+    const _HArray& nonZeroValues,
+    const common::binary::BinaryOp op )
 {
-    const IndexType localSize = getDistribution().getLocalSize();
+    // Note: scatter checks for legal indexes
 
-    // Note: scatter might check for legal indexes
-
-    mLocalValues.init( zero.getValue<ValueType>(), localSize );
-    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, true, nonZeroValues, common::binary::COPY, getContextPtr() );
+    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, false, nonZeroValues, op, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */

@@ -110,7 +110,8 @@ int main()
         plain_vec[ i ] = static_cast<ScalarType>( rand() ) / static_cast<ScalarType>( RAND_MAX );
     }
 
-    lama::DenseVector<ScalarType> lama_vec1( 10, plain_vec );
+    lama::DenseVector<ScalarType> lama_vec1;
+    lama_vec1.setRawData( 10, plain_vec );
     utilskernel::LArray<ScalarType> lama_array1 ( 10, plain_vec );
     lama::DenseVector<ScalarType> lama_vec2( 10, 0.0 );
     lama_vec2.setDenseValues( lama_array1 );

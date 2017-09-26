@@ -126,7 +126,7 @@ void CG::iterate()
     else
     {
         SCAI_REGION( "Solver.CG.solvePreconditioner" )
-        z = Scalar( 0.0 );
+        z.setSameValue( A.getRowDistributionPtr(), 0 );
         mPreconditioner->solve( z, residual );
     }
 

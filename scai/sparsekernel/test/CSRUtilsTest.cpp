@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( validOffsetsTest )
 
     BOOST_CHECK( !okay );
 
-    csrIA.init( ia_f, numRows + 1 );
+    csrIA.setRawData( numRows + 1, ia_f );
 
     {
         SCAI_CONTEXT_ACCESS( loc );
@@ -1380,7 +1380,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 
             IndexType resSize = dim == 0 ? numRows : numColumns;
 
-            computedRes.init( ValueType( 0 ), resSize );
+            computedRes.setSameValue( resSize, ValueType( 0 ) );
 
             ReadAccess<IndexType> rIA( csrIA, loc );
             ReadAccess<IndexType> rJA( csrJA, loc );
@@ -1613,12 +1613,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> rowIndexes( testContext );
 
     IndexType numRows;
-    IndexType numNonEmptyRows;
     IndexType numColumns;
     IndexType numValues;
 
     data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
@@ -1706,12 +1707,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> rowIndexes( testContext );
 
     IndexType numRows;
-    IndexType numNonEmptyRows;
     IndexType numColumns;
     IndexType numValues;
-
     data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( csrIA.size(), numRows + 1, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( csrJA.size(), numValues, "size mismatch" )
@@ -2005,10 +2006,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
     IndexType numRows;
     IndexType numColumns;
     IndexType numValues;
-    IndexType numNonEmptyRows;
 
     data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     const ValueType old_values[]   = { 3, -2, -2, 3, 1, 0, 2 };
     const ValueType diag_values[]  = { 9,  8,  7, 6, 7, 8, 9 };
@@ -2101,10 +2103,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloDiagTest, ValueType, scai_numeric_test_
     IndexType numRows;
     IndexType numColumns;
     IndexType numValues;
-    IndexType numNonEmptyRows;
-
     data1::getCSRTestData( numRows, numColumns, numValues, csrIA, csrJA, csrValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     const ValueType old_values[]   = { 3, -2, -2, 3, 1, 0, 2 };
     const ValueType diag_values[]  = { 9,  8,  7, 6, 7, 8, 9 };

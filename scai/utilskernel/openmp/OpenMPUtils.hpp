@@ -337,6 +337,20 @@ private:
         const IndexType n2,
         const common::binary::BinaryOp op );
 
+    /** OpenMP implementation of SparseKernelTrait::mergeSparse */
+
+    template<typename ValueType>
+    static IndexType mergeSparse(
+        IndexType indexes[],
+        ValueType values[],
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const IndexType n2,
+        const common::binary::BinaryOp op );
+
     template<typename ValueType>
     static void sortValues( ValueType outValues[], const ValueType inValues[], const IndexType n, const bool ascending );
 

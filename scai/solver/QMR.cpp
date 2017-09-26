@@ -169,7 +169,7 @@ void QMR::iterate()
         /*PRECONDITIONING*/
         if ( mPreconditioner != NULL )
         {
-            vecY = Scalar( 0.0 );
+            vecY.setSameValue( vecVT.getDistributionPtr(), 0 );
             mPreconditioner->solve( vecY, vecVT );
         }
         else
@@ -205,7 +205,8 @@ void QMR::iterate()
 
     if ( mPreconditioner != NULL )
     {
-        vecZT = Scalar( 0.0 );
+        // vecZT = 0, here we make it more safe to be sure about the size
+        vecZT.setSameValue( vecZ.getDistributionPtr(), 0 );
         mPreconditioner->solve( vecZT, vecZ );
     }
     else
@@ -258,7 +259,7 @@ void QMR::iterate()
     /*PRECONDITIONING*/
     if ( mPreconditioner != NULL )
     {
-        vecY = Scalar( 0.0 );
+        vecY.setSameValue( vecVT.getDistributionPtr(), 0 );
         mPreconditioner->solve( vecY, vecVT );
     }
     else

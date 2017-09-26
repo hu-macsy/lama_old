@@ -2092,6 +2092,78 @@ IndexType OpenMPUtils::binopSparse(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static inline
+void appendSparse( IndexType indexes[], ValueType values[], IndexType& n,
+                   const IndexType ia, const ValueType v, const binary::BinaryOp op )
+{
+    if ( n > 0 && ( indexes[n - 1] == ia ) )
+    {
+        values[n - 1]  = applyBinary( values[n - 1], op, v );
+    }
+    else
+    {
+        values[n]  = v;
+        indexes[n] = ia;
+        n++;
+    }
+}
+
+template<typename ValueType>
+IndexType OpenMPUtils::mergeSparse(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const IndexType n1,
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const IndexType n2,
+    const binary::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.mergeSparse" )
+
+    SCAI_LOG_DEBUG( logger, "mergeSparse: Sp( n1 = " << n1 << " ), "
+                             << " with Sp( n2 = " << n2 << " )" )
+
+    IndexType n = 0;
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] <= indexes2[i2] )
+        {
+            appendSparse( indexes, values, n, indexes1[i1], values1[i1], op );
+            ++i1;
+        }
+        else 
+        {
+            appendSparse( indexes, values, n, indexes2[i2], values2[i2], op );
+            ++i2;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        appendSparse( indexes, values, n, indexes1[i1], values1[i1], op );
+        ++i1;
+    }
+
+    while ( i2 < n2 )
+    {
+        appendSparse( indexes, values, n, indexes2[i2], values2[i2], op );
+        ++i2;
+    }
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -2132,6 +2204,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::binopSparse<ValueType> >( binopSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::mergeSparse<ValueType> >( mergeSparse, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );

@@ -499,9 +499,9 @@ void MatrixMarketIO::writeSparseImpl(
     const HArray<ValueType>& values,
     const std::string& fileName )
 {
-    IndexType numValues  = indexes.size();
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "size mismatch for indexes/values in sparse array" )
 
-    SCAI_ASSERT_EQ_ERROR( numValues, values.size(), "size mismatch for indexes/values in sparse array" )
+    IndexType numValues  = indexes.size();
 
     SCAI_LOG_INFO( logger, *this << ": write sparse to " << fileName );
 
@@ -1229,7 +1229,7 @@ void MatrixMarketIO::readStorageImpl(
         SCAI_ASSERT_EQ_ERROR( common::scalar::PATTERN, mScalarTypeData, "File " << fileName << " has only matrix pattern" )
 
         inFile.readFormatted( ia, ja, numValuesFile );
-        val.init( ValueType( 1 ), numValuesFile );
+        val.setSameValue( numValuesFile, ValueType( 1 ) );
     }
     else
     {

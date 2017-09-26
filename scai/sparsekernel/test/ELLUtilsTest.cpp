@@ -1936,12 +1936,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEMVTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> rowIndexes( testContext );
 
     IndexType numRows;
-    IndexType numNonEmptyRows;
     IndexType numColumns;
     IndexType numValuesPerRow;
-
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( numRows, ellIA.size(), "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( numRows * numValuesPerRow, ellJA.size(), "size mismatch" )
@@ -2030,12 +2030,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( spGEVMTest, ValueType, scai_numeric_test_types )
     HArray<IndexType> rowIndexes( testContext );
 
     IndexType numRows;
-    IndexType numNonEmptyRows;
     IndexType numColumns;
     IndexType numValuesPerRow;
-
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     SCAI_ASSERT_EQ_ERROR( ellIA.size(), numRows, "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( ellJA.size(), numRows * numValuesPerRow, "size mismatch" )
@@ -2210,10 +2210,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( jacobiHaloTest, ValueType, scai_numeric_test_type
     IndexType numRows;
     IndexType numColumns;
     IndexType numValuesPerRow;
-    IndexType numNonEmptyRows;
-
     data1::getELLTestData( numRows, numColumns, numValuesPerRow, ellIA, ellJA, ellValues );
-    data1::getRowIndexes( numNonEmptyRows, rowIndexes );
+
+    data1::getRowIndexes( rowIndexes );
+    IndexType numNonEmptyRows = rowIndexes.size();
 
     const ValueType old_values[]   = { 3, -2, -2, 3, 1, 0, 2 };
     const ValueType diag_values[]  = { 9,  8,  7, 6, 7, 8, 9 };

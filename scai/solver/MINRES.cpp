@@ -112,9 +112,9 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs )
     // Initialize
     this->getResidual();
     *runtime.mVecVNew = *runtime.mResidual;
-    *runtime.mVecV *= Scalar( 0.0 );
-    *runtime.mVecP *= Scalar( 0.0 );
-    *runtime.mVecPNew *= Scalar( 0.0 );
+    *runtime.mVecV *= Scalar( 0 );
+    *runtime.mVecP *= Scalar( 0 );
+    *runtime.mVecPNew *= Scalar( 0 );
     lama::L2Norm norm;
     runtime.mZeta = norm.apply( *runtime.mResidual );
     *runtime.mVecVNew /= runtime.mZeta;
@@ -143,7 +143,7 @@ void MINRES::Lanczos()
 
     if ( abs( betaNew ) < eps || 1.0 / abs( betaNew ) < eps )
     {
-        vecVNew = Scalar( 0.0 );
+        vecVNew *= 0;
     }
     else
     {

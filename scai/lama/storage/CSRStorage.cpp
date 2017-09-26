@@ -957,7 +957,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
-    row.init( OtherType( 0 ), mNumColumns );
+    row.setSameValue( mNumColumns, OtherType( 0 ) );
 
     IndexType n1    = mIa[i];
     IndexType nrow  = mIa[i + 1] - n1;
