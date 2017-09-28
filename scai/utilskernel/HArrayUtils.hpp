@@ -334,11 +334,33 @@ public:
         const common::binary::BinaryOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Functions that returns true if the element-wise comparison 
+     *  of array elements returns true for all entries. 
+     *
+     *  @param[in] array1, array2 input arrays must have same size
+     *  @param[in] compareOp specifies comparison operator to use
+     *  @param[in] prefLoc optional the context where operation should take place
+     */
     template<typename ValueType>
     static bool all(
         const hmemo::HArray<ValueType>& array1,
         const common::binary::CompareOp compareOp,
         const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Functions that returns true if the comparison of each array
+     *  element with a scalar returns true.
+     *
+     *  @param[in] array input array
+     *  @param[in] value is the scalar entry against which elements of array are compared
+     *  @param[in] compareOp specifies comparison operator to use
+     *  @param[in] prefLoc optional the context where operation should take place
+     */
+    template<typename ValueType>
+    static bool allScalar(
+        const hmemo::HArray<ValueType>& array,
+        const common::binary::CompareOp compareOp,
+        const ValueType value,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
@@ -844,6 +866,18 @@ public:
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
         const common::binary::BinaryOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static IndexType allSparse(
+        bool& allFlag,
+        const hmemo::HArray<IndexType>& indexes1,
+        const hmemo::HArray<ValueType>& values1,
+        const ValueType zero1,
+        const hmemo::HArray<IndexType>& indexes2,
+        const hmemo::HArray<ValueType>& values2,
+        const ValueType zero2,
+        const common::binary::CompareOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Merge non-zero entries of sparse array

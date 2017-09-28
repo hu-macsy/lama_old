@@ -85,6 +85,8 @@ struct binary
         LE,            //!< for less equal
         GE,            //!< for greater equal
         GT,            //!< for greater than
+        EQ,            //!< for equality
+        NE,            //!< for non equal
         MAX_COMPARE_OP //!< for internal use only
     } CompareOp;
 };
@@ -155,6 +157,10 @@ inline bool applyBinary( const ValueType& x1, const binary::CompareOp op, const 
             return v1 >= v2;
         case binary::GT:
             return v1 > v2;
+        case binary::EQ:
+            return v1 == v2;
+        case binary::NE:
+            return v1 != v2;
         default:
             return false;
     }
@@ -338,6 +344,14 @@ inline std::ostream& operator<<( std::ostream& stream, const binary::CompareOp& 
 
         case binary::GT:
             stream << "GT";
+            break;
+
+        case binary::EQ:
+            stream << "EQ";
+            break;
+
+        case binary::NE:
+            stream << "NE";
             break;
 
         default:

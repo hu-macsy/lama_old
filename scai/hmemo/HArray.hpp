@@ -93,7 +93,7 @@ public:
      * @brief Initialize an array with raw data values from host 
      *
      * @param[in] size is the number of elements to set
-     * @param[in] datais the value array with at least size values
+     * @param[in] data is the value array with at least size values
      */
     void setRawData( const IndexType size, const ValueType data[] );
 

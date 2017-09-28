@@ -280,6 +280,20 @@ void Distribution::getOwnedIndexes( hmemo::HArray<IndexType>& myGlobalIndexes ) 
 
 /* ---------------------------------------------------------------------- */
 
+void Distribution::global2local( hmemo::HArray<IndexType>& ia ) const
+{
+    IndexType nnz = ia.size();
+
+    WriteAccess<IndexType> wIA( ia );
+
+    for ( IndexType i = 0; i < nnz; ++i )
+    {
+        wIA[i] = global2local( wIA[i] );
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Distribution::getAnyLocal2Global( HArray<IndexType>& offsets, HArray<IndexType>& local2global ) const
 {
     HArray<PartitionId> owners;

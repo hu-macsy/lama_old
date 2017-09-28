@@ -64,7 +64,7 @@ using namespace scai;
 
 int main()
 {
-    srand( ( unsigned int )time( NULL ) );
+    common::Math::srandom( ( unsigned int )time( NULL ) );
     //
     // Define the ValueType used for the vector
     // Change this type definition to double if your gpu supports that

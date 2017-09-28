@@ -1090,9 +1090,15 @@ Scalar DenseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseVector<ValueType>::all( const common::binary::CompareOp, const Scalar ) const
+bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Scalar value ) const
 {
-    COMMON_THROWEXCEPTION( "not supported yet" )
+    ValueType typedValue = value.getValue<ValueType>();
+
+    bool localAll = HArrayUtils::allScalar( getLocalValues(), op, typedValue );
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1100,13 +1106,21 @@ bool DenseVector<ValueType>::all( const common::binary::CompareOp, const Scalar 
 template<typename ValueType>
 bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Vector& other ) const
 {
-    SCAI_ASSERT_EQ_ERROR( other.getValueType(), getValueType(), "all only with same type" )
-    SCAI_ASSERT_EQ_ERROR( other.getVectorKind(), Vector::DENSE, "only same kind" )
-    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch" )
+    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
 
-    const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+    bool localAll;
 
-    bool localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
+    if ( other.getValueType() == getValueType() && other.getVectorKind() == Vector::DENSE )
+    {
+        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+        localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
+    }
+    else
+    {
+        HArray<ValueType> otherLocalValues;
+        other.buildLocalValues( otherLocalValues );
+        localAll = HArrayUtils::all( getLocalValues(), op, otherLocalValues );
+    }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );
 

@@ -673,6 +673,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( allSparseTest, ValueType, scai_numeric_test_types )
+{
+    // check of all binary ops on sparse arrays with same pattern
+
+    ContextPtr ctx  = Context::getContextPtr();
+    ContextPtr host = Context::getHostPtr();
+
+    // SparseArray1 = { 1, 2, 3, 2 }
+
+    ValueType zero1 = 2;
+    const IndexType indexes1[] = { 0, 2 };
+    const ValueType values1[]  = { 1, 3 };
+
+    // SparseArray2 = { 1, 2, 3, 2 }
+
+    ValueType zero2 = 1;
+    const IndexType indexes2[] = { 1, 2, 3 };
+    const ValueType values2[]  = { 2, 3, 2 };
+
+    const IndexType nnz1 = sizeof( values1 ) / sizeof( ValueType );
+    const IndexType nnz2 = sizeof( values2 ) / sizeof( ValueType );
+
+    LArray<IndexType> ia1( ctx );
+    LArray<IndexType> ia2( ctx );
+
+    LArray<ValueType> array1( ctx );
+    LArray<ValueType> array2( ctx );
+
+    ia1.setRawData( nnz1, indexes1 );
+    array1.setRawData( nnz1, values1 );
+    ia2.setRawData( nnz2, indexes2 );
+    array2.setRawData( nnz2, values2 );
+
+    // zero values are not really needed if indexes are all same
+
+    bool allFlag;
+
+    IndexType n = HArrayUtils::allSparse( allFlag, ia1, array1, zero1, ia2, array2, zero2, binary::EQ, ctx );
+
+    BOOST_CHECK_EQUAL( n, 4 );  
+    BOOST_CHECK( allFlag );
+}
+
+/* --------------------------------------------------------------------- */
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types )
 {
     ContextPtr ctx  = Context::getContextPtr();

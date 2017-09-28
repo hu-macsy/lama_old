@@ -620,20 +620,16 @@ void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIn
         // then we have to merge zero indexes
 
         HArrayUtils::sortSparseEntries( newIndexes, newValues, true, getContextPtr() );
-        // HArrayUtils::elimDoubles( newIndexes, newValues, op );
 
         HArray<IndexType> resultIndexes;
         HArray<ValueType> resultValues;
 
-        SCAI_LOG_ERROR( logger, "old sparse entries: " << mNonZeroIndexes )
-        SCAI_LOG_ERROR( logger, "new sparse entries: " << newIndexes )
+        // Note: mergeSparse will also eleminate double values in one single input set
 
         HArrayUtils::mergeSparse( resultIndexes, resultValues,
                                   mNonZeroIndexes, mNonZeroValues,
                                   newIndexes, newValues, op );
 
-        SCAI_LOG_ERROR( logger, "final sparse entries: " << resultIndexes )
-                 
         mNonZeroIndexes.swap( resultIndexes );
         mNonZeroValues.swap( resultValues );
     }
@@ -967,17 +963,79 @@ Scalar SparseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool SparseVector<ValueType>::all( const common::binary::CompareOp, const Scalar ) const
+bool SparseVector<ValueType>::all( const common::binary::CompareOp op, const Scalar value ) const
 {
-    COMMON_THROWEXCEPTION( "not supported yet" ) 
+    ValueType typedValue = value.getValue<ValueType>();
+
+    // all non-zero values must fulfill the condition
+
+    bool localAll = HArrayUtils::allScalar( mNonZeroValues, op, typedValue );
+
+    if ( mNonZeroValues.size() != getDistribution().getLocalSize() )
+    {
+        // at least one entry has the ZERO value, so we compare it
+
+        localAll = localAll && common::applyBinary( mZeroValue, op, typedValue );
+    }
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool SparseVector<ValueType>::all( const common::binary::CompareOp, const Vector& ) const
+bool SparseVector<ValueType>::all( const common::binary::CompareOp op, const Vector& other ) const
 {
-    COMMON_THROWEXCEPTION( "not supported yet" ) 
+    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
+
+    if ( other.getVectorKind() == Vector::DENSE )
+    {
+        // dense vector can deal with sparse vector
+
+        return other.all( op, *this );
+    }
+
+    // both vectors are sparse but might have different value types
+
+    bool localAll;
+
+    const _SparseVector& otherSparse = reinterpret_cast<const _SparseVector& >( other );
+
+    common::unique_ptr<HArray<ValueType> > otherNonZeroValues;  // tmp array if different value types
+
+    const HArray<ValueType>* pOtherNonZeroValues;
+
+    if ( other.getValueType() != getValueType() )
+    {
+         // type conversion needed
+
+         otherNonZeroValues.reset( new HArray<ValueType>() );
+         HArrayUtils::assign( *otherNonZeroValues, otherSparse.getNonZeroValues() );
+         pOtherNonZeroValues = otherNonZeroValues.get();
+    }
+    else
+    {
+         pOtherNonZeroValues = reinterpret_cast<const HArray<ValueType>* >( &otherSparse.getNonZeroValues() );
+    }
+
+    ValueType otherZero = otherSparse.getZero().getValue<ValueType>();
+
+    IndexType n = HArrayUtils::allSparse( localAll,
+                                          mNonZeroIndexes, mNonZeroValues, mZeroValue,
+                                          otherSparse.getNonZeroIndexes(), *pOtherNonZeroValues, otherZero, op );
+
+    if ( n != getDistribution().getLocalSize() )
+    {
+        // at least at one position we use the zero values
+    
+        localAll = localAll && common::applyBinary( mZeroValue, op, otherZero );
+    }
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
 }
 
 /* ------------------------------------------------------------------------- */

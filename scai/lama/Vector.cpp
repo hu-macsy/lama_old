@@ -731,7 +731,8 @@ void Vector::assign( const Vector& other )
         case Vector::SPARSE:
         {
             const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
-            setSparseValues( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), sparseOther.getZero() );
+            assign( sparseOther.getZero() );
+            fillSparseData( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), common::binary::COPY );
             break;
         }
         default:

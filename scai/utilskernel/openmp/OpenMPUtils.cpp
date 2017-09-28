@@ -582,7 +582,8 @@ bool OpenMPUtils::allCompare(
     const common::binary::CompareOp op )
 {
     bool val = true;
-
+ 
+    #pragma omp parallel
     {
         bool threadVal = true;
 
@@ -591,6 +592,38 @@ bool OpenMPUtils::allCompare(
         for ( IndexType i = 0; i < n; ++i )
         {
             bool elem = applyBinary( array1[i], op, array2[i] );
+            threadVal = threadVal && elem;
+        }
+
+        #pragma omp critical
+        {
+            val = val && threadVal;
+        }
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template <typename ValueType>
+bool OpenMPUtils::allCompareScalar(
+    const ValueType array[],
+    const ValueType scalar,
+    const IndexType n,
+    const common::binary::CompareOp op )
+{
+    bool val = true;
+
+    #pragma omp parallel
+    {
+        bool threadVal = true;
+
+        #pragma omp for 
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            bool elem = applyBinary( array[i], op, scalar );
             threadVal = threadVal && elem;
         }
 
@@ -2094,6 +2127,80 @@ IndexType OpenMPUtils::binopSparse(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+IndexType OpenMPUtils::allCompareSparse(
+    bool& allFlag,
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const ValueType zero1,
+    const IndexType n1,
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const ValueType zero2,
+    const IndexType n2,
+    const binary::CompareOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.binopSparse" )
+
+    SCAI_LOG_DEBUG( logger, "binopSparse: Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
+                             << op << " Sp( n2 = " << n2 << ", zero2 = " << zero2 )
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+    IndexType n  = 0;
+
+    allFlag = true;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] == indexes2[i2] )
+        {
+            // entry at same position
+
+            allFlag = allFlag && applyBinary( values1[i1], op, values2[i2] );
+            ++i1;
+            ++i2;
+            ++n;
+        }
+        else if ( indexes1[i1] < indexes2[i2] )
+        {
+            // entry only in array1
+
+            allFlag = allFlag && applyBinary( values1[i1], op, zero2 );
+            ++i1;
+            ++n;
+        }
+        else
+        {
+            // entry only in array2
+
+            allFlag = allFlag && applyBinary( zero1, op, values2[i2] );
+            ++i2;
+            ++n;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        allFlag = allFlag && applyBinary( values1[i1], op, zero2 );
+        ++i1;
+        ++n;
+    }
+
+    while ( i2 < n2 )
+    {
+        allFlag = allFlag && applyBinary( zero1, op, values2[i2] );
+        ++i2;
+        ++n;
+    }
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 static inline
 void appendSparse( IndexType indexes[], ValueType values[], IndexType& n,
                    const IndexType ia, const ValueType v, const binary::BinaryOp op )
@@ -2191,6 +2298,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::allCompare<ValueType> >( allCompare, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::allCompareScalar<ValueType> >( allCompareScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
@@ -2204,6 +2312,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::binopSparse<ValueType> >( binopSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::allCompareSparse<ValueType> >( allCompareSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::mergeSparse<ValueType> >( mergeSparse, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );

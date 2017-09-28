@@ -92,6 +92,15 @@ public:
         const IndexType n,
         const common::binary::CompareOp op );
 
+    /** OpenMP implementation for UtilKernelTrait::allCompareScalar */
+
+    template<typename ValueType>
+    static bool allCompareScalar(
+        const ValueType array[],
+        const ValueType scalar,
+        const IndexType n,
+        const common::binary::CompareOp op );
+
     /** OpenMP implementation for UtilKernelTrait::setVal */
 
     template<typename ValueType>
@@ -336,6 +345,21 @@ private:
         const ValueType zero2,
         const IndexType n2,
         const common::binary::BinaryOp op );
+
+    /** OpenMP implementation of SparseKernelTrait::allCompareSparse */
+
+    template<typename ValueType>
+    static IndexType allCompareSparse(
+        bool& allFlag,
+        const IndexType indexes1[],
+        const ValueType values1[],
+        const ValueType zero1,
+        const IndexType n1,
+        const IndexType indexes2[],
+        const ValueType values2[],
+        const ValueType zero2,
+        const IndexType n2,
+        const common::binary::CompareOp op );
 
     /** OpenMP implementation of SparseKernelTrait::mergeSparse */
 

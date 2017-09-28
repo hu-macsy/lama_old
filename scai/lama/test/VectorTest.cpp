@@ -733,4 +733,44 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 
 /* --------------------------------------------------------------------- */
 
+BOOST_AUTO_TEST_CASE( allTest )
+{
+    using namespace hmemo;
+
+    const IndexType n = 5;
+
+    const double denseData[] = { 0, 3, 3, 5, 2 };
+
+    const double zero = 3;
+    const IndexType sparseIndexes[] = { 0, 3, 4 };
+    const double sparseData[] = { 0, 5, 2 };
+
+    // we want to compare all combination of sparse/dense vectors
+
+    TestVectors vectors1;
+    TestVectors vectors2;
+
+    for ( size_t i = 0; i < vectors1.size(); ++i )
+    {
+        VectorPtr v1 = vectors1[i];
+
+        v1->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+
+        BOOST_CHECK( v1->all( common::binary::GE, 0 ) );
+
+        v1->setRawData( 5, denseData );
+
+        BOOST_CHECK( v1->all( common::binary::GE, 0 ) );
+
+        for ( size_t j = 0; j < vectors2.size(); ++j )
+        {
+            VectorPtr v2 = vectors2[j];
+
+            v2->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+
+            BOOST_CHECK( v1->all( common::binary::EQ, *v2 ) );
+        }
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();

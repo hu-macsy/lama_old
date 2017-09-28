@@ -206,7 +206,6 @@ public:
      * a.setIdentity( a.getRowDistribution() );
      * \endcode
      */
-
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
@@ -215,9 +214,8 @@ public:
      *
      *  \code
      *    m.setIdentitiy( n ) ->  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
-     *  \code
+     *  \endcode
      */
-
     void setIdentity( const IndexType n );
 
     /**

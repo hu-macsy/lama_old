@@ -51,6 +51,9 @@
 namespace scai
 {
 
+/** The namespace partitioning holds a relevant classes that divide graph into smaller components
+ *  and their use for finding a good mapping of sparse matrices to multiple processsors.
+ */
 namespace partitioning
 {
 

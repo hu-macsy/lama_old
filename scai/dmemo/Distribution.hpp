@@ -229,7 +229,7 @@ public:
      */
     virtual IndexType local2global( const IndexType localIndex ) const = 0;
 
-    /** Abstract method that translates a global index into a local index.
+    /** This method translates a global index into a local index.
      *
      * @param[in] globalIndex with 0 <= globalIndex < getGlobalSize
      * @return    localIndex with 0 <= localIndex < getLocalSize() if local, nIndex otherwise
@@ -238,6 +238,19 @@ public:
      * an exception if the argument is not in the valid range.
      */
     virtual IndexType global2local( const IndexType globalIndex ) const = 0;
+
+    /** This method translates a whole array of global indexes to local indexes.
+     *
+     *  @param[in,out] ia is the array with the indexes that are translated
+     *
+     *  \code
+     *  for ( IndexType i = 0; i < ia.size(); ++i )
+     *  {
+     *      ia[i] = global2local( ia[i] );
+     *  }
+     *  \endcode
+     */
+    virtual void global2local( hmemo::HArray<IndexType>& ia ) const;
 
     /** Get the owners for a set of (global) indexes
      *

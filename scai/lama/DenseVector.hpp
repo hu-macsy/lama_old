@@ -302,25 +302,6 @@ public:
 
     virtual void allocate( const IndexType n );
 
-    /** Allocate and initialize this vector with raw values 
-     *
-     *  @tparam OtherValueType data type of the raw data
-     *  @param[in] size becomes the size of the vector and specifies number of entries in values
-     *  @param[in] values is the array with the raw data
-     *
-     *  \code
-     *    std::vector<float> values;
-     *    ....  // build the vector values 
-     *    DenseVector<double> v;
-     *    v.setRawData( values.size(), &values[0] );
-     *  \endcode
-     *
-     *  Note: the vector is not distributed, i.e. each processor might either set it 
-     *        with individual local values or with same values.
-     */
-    template<typename OtherValueType>
-    void setRawData( const IndexType size, const OtherValueType values[] );
-
     /** Override the default assignment operator.  */
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
@@ -658,17 +639,6 @@ utilskernel::LArray<ValueType>& DenseVector<ValueType>::getHaloValues() const
 }
 
 /* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-template<typename OtherValueType>
-void DenseVector<ValueType>::setRawData( const IndexType size, const OtherValueType values[] )
-{
-    allocate( size );
-    // use LAMA array reference to avoid copy of the raw data
-    hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
-    // use mContext instead of context to avoid NULL pointer
-    utilskernel::HArrayUtils::assign( mLocalValues, valuesArrayRef, mContext );
-}
 
 } /* end namespace lama */
 

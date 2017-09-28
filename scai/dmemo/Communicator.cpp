@@ -200,12 +200,12 @@ void Communicator::setSeed( int seed ) const
     if ( mSize == 1 )
     {
         // all processors must have the same random numbers
-        std::srand( mSeed );
+        common::Math::srandom( mSeed );
     }
     else
     {
         // processors must generate different numbers
-        std::srand( mSeed + mRank );
+        common::Math::srandom( mSeed + mRank );
     }
 }
 

@@ -65,27 +65,6 @@ VectorAssemblyAccess<ValueType>::VectorAssemblyAccess( Vector& vector, const com
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void VectorAssemblyAccess<ValueType>::global2local( 
-    hmemo::HArray<IndexType>& ia,
-    const dmemo::Distribution& dist )
-{
-    IndexType nLocalRows = dist.getLocalSize();
-    IndexType nnz = ia.size();
-
-    {
-        WriteAccess<IndexType> wIA( ia );
-
-        for ( IndexType i = 0; i < nnz; ++i )
-        {
-            wIA[i] = dist.global2local( wIA[i] );
-            SCAI_ASSERT_VALID_INDEX_DEBUG( wIA[i], nLocalRows, "illegal row index" )
-        }
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void VectorAssemblyAccess<ValueType>::exchangeCOO( 
     HArray<IndexType>& outIA,
     HArray<ValueType>& outValues,
@@ -165,7 +144,7 @@ void VectorAssemblyAccess<ValueType>::release()
 
     exchangeCOO( ownedIA, ownedValues, ia, values, dist );
 
-    global2local( ownedIA, dist );
+    dist.global2local( ownedIA );   // translate global indexes to local indexes
 
     // now we add the owned COO data to the local vector data
 

@@ -394,17 +394,70 @@ public:
 
     virtual void setDenseValues( const hmemo::_HArray& values ) = 0;
 
+    /** @brief Allocate and initialize this vector with data from an array
+     *
+     *  @param[in] values is the array copied to the vector.
+     *
+     *  Note: the vector is not distributed, i.e. each processor might either set it 
+     *        with individual local data or with same data.
+     *
+     *  \code
+     *     HArray<double> arr;
+     *     arr.setRandom( 100, 10 ); // fill it with 100 randoms between 0 and 10
+     *     Vector& x =
+     *     x.setData( arr );         
+     *  \endcode
+     *
+     *  If the vector is redistributed later, it must have been filled with the same values
+     *  by each processor.
+     */
+    void setData( const hmemo::_HArray& values ) 
+    {
+        allocate( values.size() );
+        setDenseValues( values );
+    } 
+
+    /** @brief Allocate and initialize this vector with data from an array
+     *
+     *  @param[in] dist is the distribution of 
+     *  @param[in] values become the local values of this vector.
+     *
+     *  Important: values.size() must be equal to dist->getLocalSize()
+     *
+     *  \code
+     *     IndexType n = 100;
+     *     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+     *     DistributionPtr dist( new BlockDistributon( n, comm ) );
+     *     HArray<double> arr;     
+     *     arr.setRandom( dist->getLocalSize(), 10 ); // every processor fills with random values
+     *     DenseVector<double> v;
+     *     v.setLocalData( dist, arr );
+     *  \endcode
+     */
     void setLocalData( dmemo::DistributionPtr dist, const hmemo::_HArray& values ) 
     {
         allocate( dist );
         setDenseValues( values );
     } 
 
-    void setData( const hmemo::_HArray& values ) 
-    {
-        allocate( values.size() );
-        setDenseValues( values );
-    } 
+    /** @brief Allocate and initialize this vector with raw values 
+     *
+     *  @tparam OtherValueType data type of the raw data
+     *  @param[in] size becomes the size of the vector and specifies number of entries in values
+     *  @param[in] values is pointer to a contiguous array with the raw data
+     *
+     *  \code
+     *    std::vector<float> values;
+     *    ....  // build the vector values 
+     *    DenseVector<double> v;
+     *    v.setRawData( values.size(), &values[0] );
+     *  \endcode
+     *
+     *  Note: the vector is not distributed, i.e. each processor might either set it 
+     *        with individual local values or with same values.
+     */
+    template<typename OtherValueType>
+    void setRawData( const IndexType size, const OtherValueType values[] );
 
     /** Set a replicated vector with sparse vector data
      *
@@ -426,25 +479,24 @@ public:
         fillSparseData( nonZeroIndexes, nonZeroValues, common::binary::COPY );
     } 
 
-    /**
-     * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
+    /** Same as setSparseData but here with raw data for non-zero indexes and values. 
      *
-     * @param[in] nonZeroIndexes   array with all local indexes that have a non-zero entry
-     * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
-     * @param[in] zeroValue        value for all indexes that do not appear in nonZeroIndexes
+     *  @tparam OtherValueType is the type of the raw data 
+     *  @param[in] n will be the size of the vector
+     *  @param[in] nnz stands for the number of the non-zero values
+     *  @param[in] nonZeroIndexes pointer to array with positions of non-zero values
+     *  @param[in] nonZeroValues pointer to array with values
+     *  @param[in] zeroValue is the value for all positions that do not appear in nonZeroIndexes
      *
-     * The size of the both input arrays must be equal.
-     *
-     * Note: Implicit type conversion for the values is supported.
+     *  Note: The value type of the raw data might be different to the value type of the vector.
      */
-    void setSparseValues( 
-        const hmemo::HArray<IndexType>& nonZeroIndexes, 
-        const hmemo::_HArray& nonZeroValues,
-        const Scalar zeroValue = Scalar( 0 ) )
-    {
-        assign( zeroValue );
-        fillSparseData( nonZeroIndexes, nonZeroValues, common::binary::COPY );
-    }
+    template<typename OtherValueType>
+    void setSparseRawData( 
+        const IndexType n, 
+        const IndexType nnz,
+        const IndexType nonZeroIndexes[],
+        const OtherValueType nonZeroValues[],
+        const Scalar zeroValue = Scalar( 0 ) );
 
     /**
      * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
@@ -453,10 +505,10 @@ public:
      * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
      * @param[in] op               specifies how to deal with available entries, COPY is replace, ADD is sum 
      *
-     * The size of the both input arrays must be equal.
+     * Number of non zero indexes and values must be equal, i.e. nonZeroIndexes.size() == nonZeroValues.size()
      *
-     * Note: Implicit type conversion for the values is supported.
-     * ToDo: binaryOp that specifies how to combine with existing entries
+     * Note: Implicit type conversion for the values is supported. The indexes are local indexes.
+     *
      */
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
@@ -464,7 +516,7 @@ public:
         const common::binary::BinaryOp op ) = 0;
 
     /**
-     * @brief Sets the local size of the vector to zero. 
+     * @brief Sets the local data of the vector to zero. 
      *
      * This routine has the same semantic as setValues with an empty array of any type. It is
      * a private routine as it allows a temporary inconsistency between the local part and 
@@ -1231,6 +1283,31 @@ hmemo::ContextPtr Vector::getContextPtr() const
     return mContext;
 }
 
+template<typename OtherValueType>
+void Vector::setRawData( const IndexType size, const OtherValueType values[] )
+{
+    allocate( size );
+
+    // use heterogeneous array reference to avoid copy of the raw data
+
+    hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
+    setDenseValues( valuesArrayRef );
+}
+
+template<typename OtherValueType>
+void Vector::setSparseRawData( 
+    const IndexType n, 
+    const IndexType nnz,
+    const IndexType nonZeroIndexes[],
+    const OtherValueType nonZeroValues[],
+    const Scalar zeroValue )
+{
+    setSameValue( n, zeroValue );
+    hmemo::HArrayRef<IndexType> aNonZeroIndexes( nnz, nonZeroIndexes );
+    hmemo::HArrayRef<OtherValueType> aNonZeroValues( nnz, nonZeroValues );
+    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::binary::COPY );
+} 
+  
 } /* end namespace lama */
 
 } /* end namespace scai */

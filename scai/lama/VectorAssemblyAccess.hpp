@@ -98,11 +98,6 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Translate global indexes to local indexes */
-
-    void global2local( hmemo::HArray<IndexType>& ia,
-                       const dmemo::Distribution& dist );
-
     /** Resort sparse vector data according to the ownership of the indexes */
 
     void exchangeCOO(                      
@@ -117,7 +112,6 @@ private:
     // for pushing the assembled data we use the C++ vector class
 
     std::vector<IndexType> mIA;
-    std::vector<IndexType> mJA;
     std::vector<ValueType> mValues;
 
     bool mIsReleased;

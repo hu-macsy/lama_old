@@ -102,11 +102,6 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Translate global indexes to local indexes */
-
-    void global2local( hmemo::HArray<IndexType>& ia,
-                       const dmemo::Distribution& dist );
-
     /** Resort COO data according to the ownership of the row indexes */
 
     void exchangeCOO(                      

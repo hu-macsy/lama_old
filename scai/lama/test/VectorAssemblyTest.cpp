@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
         }
     }
 
-    SCAI_LOG_ERROR( logger, *comm << ": assembled this vector with REPLACE: " << vector1 )
+    SCAI_LOG_INFO( logger, *comm << ": assembled this vector with REPLACE: " << vector1 )
 
     // Assemble vector data by arbitrary processors, entries at same location are summed up
 
@@ -136,15 +136,9 @@ BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
 
     vector2.setSparseData( n, nonZeroIndexes, nonZeroValues, 0 );
 
-    SCAI_LOG_ERROR( logger, *comm << ": replicated sparse vector: " << vector2 )
-
-    vector2.writeToFile( "v2.mtx" );
-
     vector2.redistribute( dist );
 
     vector2 *= 3;
-
-    SCAI_LOG_ERROR( logger, *comm << ": distributed sparse vector: " << vector2 )
 
     // both vectors must be exaclty the same
 

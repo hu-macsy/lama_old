@@ -714,6 +714,41 @@ bool HArrayUtils::all(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+bool HArrayUtils::allScalar(
+    const HArray<ValueType>& array,
+    const binary::CompareOp op,
+    const ValueType val,
+    ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::allCompareScalar<ValueType> > allCompare;
+
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    allCompare.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray( array, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    bool allVal = allCompare[loc]( readArray.get(),
+                                   val,
+                                   n,
+                                   op );
+    return allVal;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 ValueType HArrayUtils::dotProduct(
     const HArray<ValueType>& array1,
     const HArray<ValueType>& array2,
@@ -2155,6 +2190,50 @@ void HArrayUtils::binaryOpSparse(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
+IndexType HArrayUtils::allSparse(
+    bool& allFlag,
+    const hmemo::HArray<IndexType>& indexes1,
+    const hmemo::HArray<ValueType>& values1,
+    const ValueType zero1,
+    const hmemo::HArray<IndexType>& indexes2,
+    const hmemo::HArray<ValueType>& values2,
+    const ValueType zero2,
+    const binary::CompareOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<SparseKernelTrait::allCompareSparse<ValueType> > allCompareSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes1.getValidContext();
+    }
+
+    allCompareSparse.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIndexes1( indexes1, loc );
+    ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+    IndexType n1 = indexes1.size();
+    IndexType n2 = indexes2.size();
+
+    ReadAccess<ValueType> rValues1( values1, loc );
+    ReadAccess<ValueType> rValues2( values2, loc );
+
+    return allCompareSparse[loc]( allFlag,
+                                  rIndexes1.get(), rValues1.get(), zero1, n1, 
+                                  rIndexes2.get(), rValues2.get(), zero2, n2, op );
+
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void HArrayUtils::mergeSparse(
     hmemo::HArray<IndexType>& resultIndexes,
     hmemo::HArray<ValueType>& resultValues,
@@ -2294,6 +2373,11 @@ void HArrayUtils::mergeSparse(
             const binary::CompareOp,                                            \
             const hmemo::HArray<ValueType>&,                                    \
             hmemo::ContextPtr );                                                \
+    template bool HArrayUtils::allScalar<ValueType>(                            \
+            const hmemo::HArray<ValueType>&,                                    \
+            const binary::CompareOp,                                            \
+            const ValueType,                                                    \
+            hmemo::ContextPtr );                                                \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>(                   \
             const hmemo::HArray<ValueType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
@@ -2417,6 +2501,16 @@ void HArrayUtils::mergeSparse(
             const hmemo::HArray<ValueType>&,                                    \
             const ValueType,                                                    \
             const binary::BinaryOp,                                             \
+            hmemo::ContextPtr );                                                \
+    template IndexType HArrayUtils::allSparse(                                  \
+            bool&,                                                              \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
+            const binary::CompareOp,                                            \
             hmemo::ContextPtr );                                                \
     template void HArrayUtils::mergeSparse(                                     \
             hmemo::HArray<IndexType>&,                                          \

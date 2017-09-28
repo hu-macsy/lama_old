@@ -68,26 +68,6 @@ MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix, const com
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void MatrixAssemblyAccess<ValueType>::global2local( 
-    hmemo::HArray<IndexType>& ia,
-    const dmemo::Distribution& dist )
-{
-    IndexType nLocalRows = dist.getLocalSize();
-    IndexType nnz = ia.size();
-
-    {
-        WriteAccess<IndexType> wIA( ia );
-        for ( IndexType i = 0; i < nnz; ++i )
-        {
-            wIA[i] = dist.global2local( wIA[i] );
-            SCAI_ASSERT_VALID_INDEX_DEBUG( wIA[i], nLocalRows, "illegal row index" )
-        }
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-
-template<typename ValueType>
 void MatrixAssemblyAccess<ValueType>::exchangeCOO( 
     HArray<IndexType>& outIA,
     HArray<IndexType>& outJA,
@@ -175,7 +155,7 @@ void MatrixAssemblyAccess<ValueType>::release()
 
     exchangeCOO( ownedIA, ownedJA, ownedValues, ia, ja, values, rowDist );
 
-    global2local( ownedIA, rowDist );
+    rowDist.global2local( ownedIA );
 
     dmemo::DistributionPtr saveColDist = mMatrix.getColDistributionPtr();
 

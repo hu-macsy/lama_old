@@ -337,10 +337,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
 
     float fillRate = 0.2;
 
-
     hmemo::HArray<ValueType> denseData( n, ValueType( 0 ), ctx );
 
-    std::srand( 31991 );                   // makes sure that all processors generate same data
+    common::Math::srandom( 31991 );   // makes sure that all processors generate same data
 
     utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
@@ -521,7 +520,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
     // generate random input data, same on all processors
 
-    std::srand( 51413 );
+    common::Math::srandom( 51413 );
 
     DenseMatrix<ValueType> A;
     A.setContextPtr( ctx );
@@ -589,7 +588,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
     // generate random input data, same on all processors
 
-    std::srand( 51413 );
+    common::Math::srandom( 51413 );
     const IndexType bound = 1;
 
     // Do vector = scalar * vector * matrix + scalar * vector with replicated storage data
