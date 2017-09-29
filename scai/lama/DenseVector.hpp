@@ -328,6 +328,10 @@ public:
 
     virtual void fillRange( const Scalar startValue, const Scalar inc );
 
+    /** Implemenation of pure method Vector::cat */
+
+    virtual void concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n );
+
     /** Sort all elements of this vector.
      *
      *  Currently, sorting is only possible on block distributed vectors.

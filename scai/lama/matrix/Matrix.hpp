@@ -221,7 +221,7 @@ public:
     /**
      * This method sets a matrix by reading its values from one or multiple files.
      *
-     * @param[in] filename      the filename to read from
+     * @param[in] fileName      the filename to read from
      * @param[in] rowDist       optional, if set it is the distribution of the matrix
      *
      *   \code

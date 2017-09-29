@@ -35,6 +35,7 @@
 // hpp
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/VectorAssemblyAccess.hpp>
 
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
@@ -763,6 +764,36 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
             pos = HArrayUtils::insertSorted( mNonZeroIndexes, localIndex );
             SCAI_LOG_TRACE( logger, "setValue, local index = " << localIndex << " at pos = " << pos )
             HArrayUtils::insertAtPos( mNonZeroValues, pos, typedValue );
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n ) 
+{
+    SparseVector<ValueType> newVector( dist, 0 );
+
+    {
+        VectorAssemblyAccess<ValueType> assembly( newVector );
+
+        IndexType offset = 0;
+
+        for ( IndexType k = 0; k < n; ++k )
+        {
+            const Vector& v = *vPointers[k];
+
+            HArray<ValueType> localData;
+
+            v.buildLocalValues( localData );
+
+            ReadAccess<ValueType> rData( localData );
+
+            for ( IndexType i = 0; i < n; ++i )
+            {
+                assembly.push( offset++, rData[i] );
+            }
         }
     }
 }

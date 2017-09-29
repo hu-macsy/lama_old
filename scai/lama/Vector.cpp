@@ -796,6 +796,19 @@ void Vector::writeToSingleFile(
 
 /* ---------------------------------------------------------------------------------------*/
 
+void Vector::cat( const Vector& v1, const Vector& v2 )
+{
+    const Vector* vPointers[] = { &v1, &v2 };
+
+    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
+
+    concatenate( dist, vPointers, 2 );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
 void Vector::replicate()
 {
     if ( getDistribution().isReplicated() )

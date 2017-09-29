@@ -717,6 +717,25 @@ public:
     virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
 
     /**
+     * @brief Concatenate multiple vectors to a new vector.
+     *
+     * @param[in] dist specifies the distribution of the concatenated vector.
+     * @param[in] vPointers pointers to the vectors to be concatenated
+     * @param[in] n number of vector pointers
+     *
+     * Note: dist.getGlobalSize() == v[0]->getGlobalSize() + ... v[n-1]->getGlobalSize() 
+     */
+    virtual void concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], const IndexType n ) = 0;
+
+    /**
+     * @brief Concatenate two vectors to a new vector.
+     *
+     * @param[in] v1 first part of the new vector
+     * @param[in] v2 second part of the new vector
+     */
+    virtual void cat( const Vector& v1, const Vector& v2 );
+
+    /**
      * @brief Returns the global minimum value of this.
      *
      * @return   the global minimum value of this vector.

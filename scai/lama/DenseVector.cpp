@@ -35,6 +35,7 @@
 // hpp
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
+#include <scai/lama/VectorAssemblyAccess.hpp>
 
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
@@ -939,6 +940,43 @@ DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
     common::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() );
     vector->setContextPtr( this->getContextPtr() );
     return vector.release();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n ) 
+{
+    DenseVector<ValueType> newVector( dist );
+    {
+        VectorAssemblyAccess<ValueType> assembly( newVector );
+
+        IndexType offset = 0;
+
+        for ( IndexType k = 0; k < n; ++k )
+        {
+            const Vector& v = *vPointers[k];
+
+            HArray<ValueType> localData;
+  
+            v.buildLocalValues( localData );
+
+            ReadAccess<ValueType> rData( localData );
+
+            for ( IndexType i = 0; i < rData.size(); ++i )
+            {
+                IndexType globalI = v.getDistribution().local2global( i );
+
+                SCAI_LOG_ERROR( logger, "push " << offset + globalI << ", " << rData[i] )
+
+                assembly.push( offset + globalI, rData[i] );
+            }
+ 
+            offset += v.size();
+        }
+    }
+
+    swap( newVector );
 }
 
 /* ------------------------------------------------------------------------- */

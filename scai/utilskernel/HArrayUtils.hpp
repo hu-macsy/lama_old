@@ -883,8 +883,8 @@ public:
     /** Merge non-zero entries of sparse array
      *
      *  @param[out] resultIndexes, resultValues for sparse result array
-     *  @param[in]  indexes1, values1, zero1 stand for first sparse array
-     *  @param[in]  indexes2, values2, zero2 stand for second sparse array
+     *  @param[in]  indexes1, values1 stand for first sparse array
+     *  @param[in]  indexes2, values2  stand for second sparse array
      *  @param[in]  op      specifies operation to apply on input values
      *  @param[in]  prefLoc location where operation should be done if possible
      *

@@ -158,7 +158,7 @@ void VectorAssemblyAccess<ValueType>::release()
     mIsReleased = true;
 }
 
-SCAI_COMMON_INST_CLASS( VectorAssemblyAccess, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_INST_CLASS( VectorAssemblyAccess, SCAI_ARRAY_TYPES_HOST )
 
 }
 

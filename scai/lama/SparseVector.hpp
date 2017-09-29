@@ -405,6 +405,10 @@ public:
     using Vector::operator=;
     using Vector::assign;
 
+    /** Implemenation of pure method Vector::concatenate */
+
+    virtual void concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n );
+
     /**
      * Implementation of Vector::fillRandom for sparse vectors.
      *
