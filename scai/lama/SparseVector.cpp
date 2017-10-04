@@ -771,7 +771,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n ) 
+void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors )
 {
     SparseVector<ValueType> newVector( dist, 0 );
 
@@ -780,9 +780,14 @@ void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Ve
 
         IndexType offset = 0;
 
-        for ( IndexType k = 0; k < n; ++k )
+        for ( size_t k = 0; k < vectors.size(); ++k )
         {
-            const Vector& v = *vPointers[k];
+            const Vector& v = *vectors[k];
+
+            if ( offset + v.size() > dist->getGlobalSize() )
+            {
+                COMMON_THROWEXCEPTION( "concatenate fails, exceeds global size of target vector" )
+            }
 
             HArray<ValueType> localData;
 
@@ -790,7 +795,7 @@ void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Ve
 
             ReadAccess<ValueType> rData( localData );
 
-            for ( IndexType i = 0; i < n; ++i )
+            for ( IndexType i = 0; i < rData.size(); ++i )
             {
                 assembly.push( offset++, rData[i] );
             }

@@ -631,6 +631,8 @@ BOOST_AUTO_TEST_CASE( getRowTest )
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
                     matrix.getRow( *row, iRow );
+                    // BOOST_REQUIRE_EQUAL( nCols, row->size() );
+                    // BOOST_REQUIRE( row->isConsistent() );
                     matrix.setRow( *row, iRow, common::binary::SUB );
                 }
 
@@ -1055,6 +1057,61 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
                 BOOST_CHECK( matrix.maxNorm() < 0.001 );
             }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE( hcatTest )
+{
+    return;
+
+    const IndexType n = 15; 
+    const IndexType m =  8;  
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    common::Math::srandom( 1711 );  // all processors draw same replicated matrix
+
+    CSRSparseMatrix<RealType> csr( n, m );
+    MatrixCreator::fillRandom( csr, 0.1f );
+
+    CSRSparseMatrix<RealType> csr2;
+    csr2.hcat( csr, csr );           
+
+    TestDistributions distributions( n );
+
+    DistributionPtr rowDist( new NoDistribution( n ) );
+    DistributionPtr colDist( new NoDistribution( m ) );
+
+    for ( size_t d1 = 0; d1 < distributions.size(); ++d1 )
+    {
+        DistributionPtr dist = distributions[d1];
+
+        Matrices allMatrices( context );    // is created by factory
+
+        for ( size_t s = 0; s < allMatrices.size(); ++s )
+        {
+            Matrix& matrix = *allMatrices[s];
+
+            if ( matrix.getMatrixKind() == Matrix::DENSE )
+            {
+                continue;
+            }
+
+            matrix = csr;
+
+            matrix.redistribute( dist, colDist);
+
+            matrix.hcat( matrix, matrix );
+
+            BOOST_REQUIRE_EQUAL( 2 * n, matrix.getNumRows() );
+            BOOST_REQUIRE_EQUAL( m, matrix.getNumColumns() );
+
+            csr2.redistribute( matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
+
+            BOOST_CHECK( matrix.maxDiffNorm( csr2 ) < 0.001 );
         }
     }
 }

@@ -720,12 +720,14 @@ public:
      * @brief Concatenate multiple vectors to a new vector.
      *
      * @param[in] dist specifies the distribution of the concatenated vector.
-     * @param[in] vPointers pointers to the vectors to be concatenated
-     * @param[in] n number of vector pointers
+     * @param[in] vectors is a vector with const pointers/references to the concatenated vectors
      *
-     * Note: dist.getGlobalSize() == v[0]->getGlobalSize() + ... v[n-1]->getGlobalSize() 
+     * Note: dist.getGlobalSize() == v[0]->size() + ... v[n-1]->size() 
+     *
+     * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
+     * this vector itself.
      */
-    virtual void concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], const IndexType n ) = 0;
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors ) = 0;
 
     /**
      * @brief Concatenate two vectors to a new vector.

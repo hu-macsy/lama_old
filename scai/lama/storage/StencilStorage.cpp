@@ -461,7 +461,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     values.resize( mNumColumns );
 
-    HArrayUtils::assignScalar( values, 0, common::binary::COPY );
+    HArrayUtils::assignScalar( values, ValueType( 0 ), common::binary::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;

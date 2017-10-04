@@ -945,7 +945,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n ) 
+void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors ) 
 {
     DenseVector<ValueType> newVector( dist );
     {
@@ -953,9 +953,14 @@ void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const Vec
 
         IndexType offset = 0;
 
-        for ( IndexType k = 0; k < n; ++k )
+        for ( size_t k = 0; k < vectors.size(); ++k )
         {
-            const Vector& v = *vPointers[k];
+            const Vector& v = *vectors[k];
+
+            if ( offset + v.size() > dist->getGlobalSize() )
+            {
+                COMMON_THROWEXCEPTION( "concatenate fails, exceeds global size of target vector" )
+            }
 
             HArray<ValueType> localData;
   

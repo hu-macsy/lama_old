@@ -407,7 +407,7 @@ public:
 
     /** Implemenation of pure method Vector::concatenate */
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors );
 
     /**
      * Implementation of Vector::fillRandom for sparse vectors.

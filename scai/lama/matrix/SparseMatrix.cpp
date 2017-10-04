@@ -38,6 +38,7 @@
 // local library
 
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/matrix/MatrixAssemblyAccess.hpp>
 #include <scai/lama/SparseVector.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
@@ -1380,6 +1381,97 @@ void SparseMatrix<ValueType>::conj()
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseMatrix<ValueType>::concatenate( 
+    dmemo::DistributionPtr rowDist,
+    dmemo::DistributionPtr colDist,
+    const std::vector<const Matrix*>& matrices )
+{
+    common::unique_ptr<Matrix> mPtr( this->newMatrix() );
+
+    SparseMatrix<ValueType>& newMatrix = static_cast<SparseMatrix<ValueType>& >( *mPtr );
+ 
+    DistributionPtr repColDist = colDist;
+
+    if ( !colDist->isReplicated() )
+    {
+        repColDist.reset( new NoDistribution( colDist->getGlobalSize() ) );
+    }
+
+    newMatrix.allocate( rowDist, repColDist );
+
+    SCAI_LOG_ERROR( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
+
+    CSRStorage<ValueType> storage;  // reuse in loop
+
+    // Each processor assembles the local part of each input matrix for the result matrix
+
+    {
+        MatrixAssemblyAccess<ValueType> assembly( newMatrix );
+
+        IndexType offsetRow = 0;    // row offset where input matrix is set in result matrix
+        IndexType offsetCol = 0;    // col offset where input matrix is set in result matrix
+
+        for ( size_t k = 0; k < matrices.size(); ++k )
+        {
+            const Matrix& m = *matrices[k];
+
+            if ( offsetRow + m.getNumRows() > rowDist->getGlobalSize() )
+            {
+                COMMON_THROWEXCEPTION( "concatenation fails, this arg fails: " << m )
+            }
+
+            if ( offsetCol + m.getNumColumns() > colDist->getGlobalSize() )
+            {
+                COMMON_THROWEXCEPTION( "concatenation fails, arg " << k << " fails: " << m )
+            }
+
+            // Build my local part of the current input matrix
+
+            m.buildLocalStorage( storage );
+
+            SCAI_LOG_ERROR( logger, "Add this storage from matrix " << k << " : " << storage << ", matrix is : " << m )
+
+            ReadAccess<IndexType> rIA( storage.getIA() );
+            ReadAccess<IndexType> rJA( storage.getJA() );
+            ReadAccess<ValueType> rValues( storage.getValues() );
+
+            // traverse the CSR storage and assemble the entries with the new offsets
+
+            for ( IndexType i = 0; i < storage.getNumRows(); ++i )
+            {
+                IndexType globalI = rowDist->local2global( i );
+
+                for ( IndexType jj = rIA[i]; jj < rIA[i+1]; ++jj )
+                {
+                    IndexType j = rJA[jj];
+                    ValueType v = rValues[jj];
+
+                    SCAI_LOG_ERROR( logger, "push " << offsetRow + globalI << ", " << offsetCol + j << ", " << v )
+
+                    assembly.push( offsetRow + globalI, offsetCol + j, v );
+                }
+            }
+
+            offsetCol += m.getNumColumns();
+
+            // decide by the sizes whether we concatenate the next 
+
+            if ( offsetCol == colDist->getGlobalSize() )
+            {
+                offsetCol = 0;
+                offsetRow = offsetRow + m.getNumRows();
+            }
+        }
+    }
+
+    swap( newMatrix );
+
+    redistribute( rowDist, colDist );  // apply column distribution for halo computation
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesMatrix(
     Matrix& result,
     const Scalar alpha,
@@ -1480,7 +1572,7 @@ void SparseMatrix<ValueType>::cat( const IndexType dim, const Matrix* other[], c
 {
     SCAI_ASSERT_GT_ERROR( n, 0, "concatenation of 0 matrices" )
 
-    SCAI_ASSERT_VALID_INDEX_ERROR( dim, 2, "Illegal dimension for matrix concatentation, must be 0 or 1" )
+    SCAI_ASSERT_VALID_INDEX_ERROR( dim, IndexType( 2 ), "Illegal dimension for matrix concatentation, must be 0 or 1" )
 
     if ( n == 1 )
     {

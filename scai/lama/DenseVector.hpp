@@ -330,7 +330,7 @@ public:
 
     /** Implemenation of pure method Vector::cat */
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const Vector* vPointers[], IndexType n );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors );
 
     /** Sort all elements of this vector.
      *

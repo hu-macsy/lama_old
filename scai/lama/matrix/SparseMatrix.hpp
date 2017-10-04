@@ -482,6 +482,11 @@ public:
      */
     virtual void cat( const IndexType dim, const Matrix* other[], const IndexType n );
 
+    /**
+     * Implementation of pure method Matrix::concatenate
+     */
+    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices );
+
     /* Implemenation of pure method of class Matrix */
 
     virtual void matrixTimesMatrix(

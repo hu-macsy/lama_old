@@ -738,15 +738,19 @@ public:
         const Matrix& C ) const = 0;
 
     /**
-     * @brief Concatenate a certain number of matrices and store the result in this matrix
+     * @brief Concatenate multiple matrices horizontally/vertically to a new matrix.
      *
-     * @param[in]   dim     dimension used for concatenation, either 0 or 1
-     * @param[in]   other   array with n const pointer to the matrices that will be concatenated
-     * @param[in]   n       the number of matrices to concatenate 
+     * @param[in] rowDist   specifies the distribution of the rows for the concatenated matrix
+     * @param[in] colDist   specifies the distribution of the columns for the concatenated matrix
+     * @param[in] matrices  variable number of const references/pointers to the matrices
      *
-     * Current restriction: the distribution must be replicated for all involved matrices.
+     * The routine decides by its arguments how the matrices will be concatenated. As the size of 
+     * the result matrix is explicitly specified, the input matrices are row-wise filled up.
+     *
+     * This routine should also be able to deal with aliases, i.e. one ore more of the input matrices  might be
+     * the pointer to the result matrix.
      */
-    virtual void cat( const IndexType dim, const Matrix* other[], const IndexType n );
+    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices );
 
     /**
      *   shorthand for cat( 0, { &m1, &m2 }, 2 )

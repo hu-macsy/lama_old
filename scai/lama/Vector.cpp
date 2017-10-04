@@ -718,7 +718,12 @@ void Vector::assign( const Vector& other )
 {
     SCAI_LOG_INFO( logger, "assign other = " << other )
 
-    setDistributionPtr( other.getDistributionPtr() );
+    if ( &other == this )
+    {
+        return;
+    }
+
+    allocate( other.getDistributionPtr() );
 
     switch ( other.getVectorKind() )
     {
@@ -798,13 +803,16 @@ void Vector::writeToSingleFile(
 
 void Vector::cat( const Vector& v1, const Vector& v2 )
 {
-    const Vector* vPointers[] = { &v1, &v2 };
+    std::vector<const Vector*> vectors;
+
+    vectors.push_back( &v1 );
+    vectors.push_back( &v2 );
 
     dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
 
-    concatenate( dist, vPointers, 2 );
+    concatenate( dist, vectors );
 }
 
 /* ---------------------------------------------------------------------------------------*/
