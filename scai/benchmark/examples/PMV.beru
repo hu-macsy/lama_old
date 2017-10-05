@@ -1,0 +1,52 @@
+#
+# bench
+#
+# Created on 2017-10-05 14:00:42
+#         by brandes
+#
+
+# Comment in, to add an description of your file, which will be printed out, when using it.
+# DESCRIPTION: |
+#     description of bench by brandes
+
+# Comment in, to add definitions, for not typing benchmark or inputset twice.
+# DEFINITIONS: |
+#     &alias Name
+
+# The minimal number of repetition of execute( ) within the benchmark.
+REP_MIN: 20
+
+# The minimal time of repetition of execute( ) within the benchmark in seconds.
+TIME_MIN: 1
+
+# The minimal number of repetition of the benchmark, to avoid aberrations.
+REP_CTRL: 5
+
+# Registered Benchmarks.
+# Benchmarks needing Arguments, are marked the following:
+#     Benchmark (<args>)
+BENCHMARKS:
+    - PMatTimesVector( CSR, double )
+#   - PMatTimesVector( ELL, float )
+
+# Registered InputSets.
+INPUT_SETS:
+#   - File ( "Emilia_923.mtx" )
+    - Poisson ( 3D27P_50_50_50 )
+#   - Random ( 1000000 1 )
+
+# Configuration of environment. Replace ID with the name of your configuration
+# launch and the empty spaces with the command you wish to have executed, right
+# before the execution of the benchmark.
+LAUNCH_CONF:
+#   GPU  : "SCAI_CONTEXT=CUDA"
+#   1Core: "SCAI_CONTEXT=HOST OMP_NUM_THREADS=1"
+    2Core: "SCAI_CONTEXT=HOST OMP_NUM_THREADS=2"
+#   4Core: "SCAI_CONTEXT=HOST OMP_NUM_THREADS=4"
+#   2MPI : "mpirun -np 2 -x OMP_NUM_THREADS=1"
+#   4MPI : "mpirun -np 4 -x OMP_NUM_THREADS=1"
+
+# Put commandline arguments, here.
+# CMD: <command-line-arguments>
+
+CMD: --maxrepetition=10 --itemlist=-E,MAX -C --columns=n,lc,em,eminm,b
