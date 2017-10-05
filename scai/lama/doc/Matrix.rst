@@ -267,7 +267,7 @@ Except from a constructor with a passed string, you can use ``readFromFile`` and
  
    csrMatrix.readFromFile( "matrix.mtx" );
    // writing a vector to file in matrix market format in single precision
-   csrMatrix.writeToFile( "output.mtx", File::MatrixMarket, File::FLOAT );
+   csrMatrix.writeToFile( "output.mtx" );
 
 Matrix Assembly
 ---------------
