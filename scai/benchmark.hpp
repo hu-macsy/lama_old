@@ -41,5 +41,3 @@
 #include <scai/benchmark/BenchmarkTypes.hpp>
 
 #include <scai/benchmark/InputSet.hpp>
-
-#include <scai/benchmark/Config.hpp>

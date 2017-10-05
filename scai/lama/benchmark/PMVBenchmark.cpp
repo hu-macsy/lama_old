@@ -138,9 +138,6 @@ void PMVBenchmark::initialize()
 
     map<string, string> tokens;
 
-    getConfig( tokens );
-
-    int noThreads = 1;
     int devNo = -1; // default device
 
     if ( tokens.count( "CUDA" ) > 0 )
@@ -152,63 +149,9 @@ void PMVBenchmark::initialize()
     std::ostringstream idStream;
     idStream << " (Proc " << mComm->getRank() << " LOCAL=";
 
-    if ( tokens["LOCAL"] == "CUDA" )
-    {
-        mContext = hmemo::Context::getContextPtr( hmemo::Context::CUDA, devNo );
-        idStream << "CUDA:";
-    }
-    else
-    {
-        mContext = hmemo::Context::getContextPtr( hmemo::Context::Host );
-        idStream << "HOST:";
-    }
-
-    if ( tokens.count( "THREADS" ) > 0 )
-    {
-        istringstream tokenStream( tokens["THREADS"] );
-        tokenStream >> noThreads;
-    }
-    else
-    {
-        noThreads = 1;
-    }
-
-    idStream << "THREADS=" << noThreads << ":";
-
-    if ( mContext->getType() == hmemo::Context::CUDA  )
-    {
-        idStream << "DEVICE=" << devNo << ":";
-    }
-
-    idStream << "COMM=";
-
-    if ( tokens["COMM"] == "SYNC" )
-    {
-        mCommunicationKind = Matrix::SYNCHRONOUS;
-        idStream << "SYNC:";
-    }
-    else
-    {
-        mCommunicationKind = Matrix::ASYNCHRONOUS;
-        idStream << "ASYNC:";
-    }
-
-    float weight = 1.0;
-
-    if ( tokens.count( "W" ) > 0 )
-    {
-        istringstream tokenStream( tokens["W"] );
-        tokenStream >> weight;
-    }
-
-    idStream << "W=" << weight;
-
-    //mName += idStream.str();
+    mContext = hmemo::Context::getContextPtr();
 
     //TODO: Aggregate Name at Proc 0 to print it in output
-    printf( " Name: %s )\n", idStream.str().c_str() );
-
-    omp_set_num_threads( noThreads );
 
     SCAI_LOG_INFO( logger, "get input set by this id " << mInputSetId );
 
@@ -227,14 +170,9 @@ void PMVBenchmark::initialize()
     const DenseVector<double>& inputX = mLAMAInputSet->getX();
     const CSRSparseMatrix<double>& inputA = mLAMAInputSet->getA();
 
-    // mDistribution = DistributionPtr ( new GenBlockDistribution( inputA.getNumRows(), weight, mComm ) );
-
     dmemo::DistributionPtr mDistribution;
 
     mDistribution = inputA.getRowDistributionPtr();
-
-    SCAI_LOG_INFO( logger,
-                   "General block distribution of matrix with weight " << weight << ", local size = " << mDistribution->getLocalSize() );
 
     *mVectorX = inputX;
     mVectorX->redistribute( mDistribution );
@@ -252,7 +190,7 @@ void PMVBenchmark::initialize()
     mMatrixA->setContextPtr( mContext );
     mMatrixA->setCommunicationKind( mCommunicationKind );
 
-    SCAI_LOG_INFO( logger,
+    SCAI_LOG_ERROR( logger,
                    "Matrix: context at " << *mContext << ", comm = " << mCommunicationKind );
 }
 

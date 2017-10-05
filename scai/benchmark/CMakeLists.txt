@@ -57,7 +57,6 @@ scai_project (
         BenchmarkPrinter
         BFError
         BFException
-        Config
         InputSet
     )
 

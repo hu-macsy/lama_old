@@ -43,6 +43,7 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/LibModule.hpp>
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/OpenMP.hpp>
 
 using namespace scai;
 using namespace benchmark;
@@ -51,10 +52,10 @@ int main( int argc, const char* argv[] )
 {
     // For testing manually.
 
-    if( argc != 7 )
+    if ( argc != 7 )
     {
         std::ostringstream message;
-        message << "Wrong number of parameters. <BenchmarkID> <InputSetID> <minTime> <numRepititions> <path> <tmp>"
+        message << "Wrong number of parameters. <BenchmarkID> <InputSetID> <minTime> <numRepititions>"
                 << std::endl;
         message << "Got:" << std::endl;
         for( int i = 0; i < argc; ++i )
@@ -70,19 +71,26 @@ int main( int argc, const char* argv[] )
     std::string inputSetId = argv[2];
     float minTime = static_cast<float>( atof( argv[3] ) );
     int numRep = atoi( argv[4] );
-    std::string path = argv[5];
-    std::string tmp = argv[6];
 
-    benchmark::Config& conf = benchmark::Config::getInstance();
-    conf.setValueFor( "path", path );
-    conf.setValueFor( "tmp", tmp );
+    // arg 5 is the input path used as prefix for input files with relative pathname
+
+    scai::common::Settings::putEnvironment( "SCAI_INPUT_PATH", argv[5], true );
 
     std::string benchLibPath;
 
     if ( !common::Settings::getEnvironment( benchLibPath, "BENCHMARK_LIBRARY_PATH" ) )
     {
-        throw BFError( "Set BENCHMARK_LIBRARY_PATH to the directory holding the "
-                       "shared libraries of your benchmarks." );
+        // try the official one if SCAI_ROOT has been set
+
+        if ( common::Settings::getEnvironment( benchLibPath, "SCAI_ROOT" ) )
+        {
+            benchLibPath += "/benchmark";
+        }
+        else
+        {
+            throw BFError( "Set BENCHMARK_LIBRARY_PATH to the directory holding the "
+                           "shared libraries of your benchmarks." );
+        }
     }
 
     common::LibModule::loadLibsInDir( benchLibPath.c_str() );

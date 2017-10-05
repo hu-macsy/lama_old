@@ -82,28 +82,28 @@ def getColumnMap( ):
 	columnMap['e']     = Column.ColumnExecutionTime( Column.ColumnTime.TimeUnit.SECONDS )
 	columnMap['em']    = Column.ColumnExecutionTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
 	columnMap['emax']  = Column.ColumnMaxExecutionTime( Column.ColumnTime.TimeUnit.SECONDS )
-        columnMap['emaxm'] = Column.ColumnMaxExecutionTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
-        columnMap['emin']  = Column.ColumnMinExecutionTime( Column.ColumnTime.TimeUnit.SECONDS )
-        columnMap['eminm'] = Column.ColumnMinExecutionTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
+	columnMap['emaxm'] = Column.ColumnMaxExecutionTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
+	columnMap['emin']  = Column.ColumnMinExecutionTime( Column.ColumnTime.TimeUnit.SECONDS )
+	columnMap['eminm'] = Column.ColumnMinExecutionTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
 	columnMap['s']     = Column.ColumnSetupTime( Column.ColumnTime.TimeUnit.SECONDS )
-        columnMap['sm']    = Column.ColumnSetupTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
+	columnMap['sm']    = Column.ColumnSetupTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
 	columnMap['t']     = Column.ColumnTearDownTime( Column.ColumnTime.TimeUnit.SECONDS )
-        columnMap['tm']    = Column.ColumnTearDownTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
+	columnMap['tm']    = Column.ColumnTearDownTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
 	columnMap['b']     = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.GIGA_BYTE )
-        columnMap['bm']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.MEGA_BYTE )
-        columnMap['bt']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.TERA_BYTE )
-        columnMap['bp']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.PETA_BYTE )
-        columnMap['be']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.EXA_BYTE )
+	columnMap['bm']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.MEGA_BYTE )
+	columnMap['bt']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.TERA_BYTE )
+	columnMap['bp']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.PETA_BYTE )
+	columnMap['be']    = Column.ColumnBandwidth( Column.ColumnBandwidth.ByteUnit.EXA_BYTE )
 	columnMap['f']     = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.GIGA_FLOP )
-        columnMap['fm']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.MEGA_FLOP )
-        columnMap['ft']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.TERA_FLOP )
-        columnMap['fp']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.PETA_FLOP )
-        columnMap['fe']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.EXA_FLOP )
+	columnMap['fm']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.MEGA_FLOP )
+	columnMap['ft']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.TERA_FLOP )
+	columnMap['fp']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.PETA_FLOP )
+	columnMap['fe']    = Column.ColumnFlops( Column.ColumnFlops.FlopUnit.EXA_FLOP )
 	columnMap['nt']    = Column.ColumnNumThreads( )
 	columnMap['nir']   = Column.ColumnInnerRepetition( )
 	columnMap['nor']   = Column.ColumnOuterRepetition( )
 	columnMap['ns']    = Column.ColumnExecutedTime( Column.ColumnTime.TimeUnit.SECONDS )
-        columnMap['nms']   = Column.ColumnExecutedTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
+	columnMap['nms']   = Column.ColumnExecutedTime( Column.ColumnTime.TimeUnit.MILLISECONDS )
 	columnMap['lc']    = Column.ColumnConfLaunch( )
 	return columnMap
 
@@ -134,8 +134,8 @@ def printBeru( benchmarkMap,isetList,stream,filename ):
 	print >> stream, '#     description of %s by %s\n' % ( filename,getpass.getuser( ) )
 
 	print >> stream, '# Comment in, to add definitions, for not typing benchmark or inputset twice.'
-        print >> stream, '# DEFINITIONS: |'
-        print >> stream, '#     &alias Name\n'
+	print >> stream, '# DEFINITIONS: |'
+	print >> stream, '#     &alias Name\n'
 
 	print >> stream, '# The minimal number of repetition of execute( ) within the benchmark.'
 	print >> stream, 'REP_MIN: 1\n'
@@ -163,8 +163,8 @@ def printBeru( benchmarkMap,isetList,stream,filename ):
 	print >> stream, ''
 
 	print >> stream, '# Configuration of environment. Replace ID with the name of your configuration'
-        print >> stream, '# launch and the empty spaces with the command you wish to have executed, right'
-        print >> stream, '# before the execution of the benchmark.'
+	print >> stream, '# launch and the empty spaces with the command you wish to have executed, right'
+	print >> stream, '# before the execution of the benchmark.'
 	print >> stream, 'LAUNCH_CONF:'
 	print >> stream, '    default: " "\n'
 
@@ -253,22 +253,22 @@ def _minimum_result( list ):
 	return map
 
 def __get_write_stream( filename ):
-        while os.path.exists( filename[0] ):
-                answered = False
+	while os.path.exists( filename[0] ):
+		answered = False
 
-	        while not answered:
-	                a = raw_input( '\n' + filename[0] + " already exists. Overwrite? (y|n) " )
-	                if a in ['y','n']:
-	                        answered = True
-	                else:
-	                        print "Please type y or n!"
+		while not answered:
+			a = raw_input( '\n' + filename[0] + " already exists. Overwrite? (y|n) " )
+			if a in ['y','n']:
+				answered = True
+			else:
+				print "Please type y or n!"
 
-	        if a == 'n':
-	                filename[0] = raw_input( "\nType new filename or q[uit] or b[reak]: " )
-	                if filename[0] in ['q','quit']:
-	                        sys.exit( 0 )
-	                elif filename[0] in ['b','break']:
-	                        return None
+		if a == 'n':
+			filename[0] = raw_input( "\nType new filename or q[uit] or b[reak]: " )
+			if filename[0] in ['q','quit']:
+				sys.exit( 0 )
+			elif filename[0] in ['b','break']:
+				return None
 		else:
 			break 
 	try:
@@ -280,42 +280,42 @@ def __get_write_stream( filename ):
 
 def __print_results( benchOut,cmdOpt,stream=sys.stdout,csv=False ):
 	if 'decimals' in cmdOpt:
-                benchOut.setPrecision( int( cmdOpt['decimals'] ) )
-        if 'language' in cmdOpt and not csv:
+		benchOut.setPrecision( int( cmdOpt['decimals'] ) )
+	if 'language' in cmdOpt and not csv:
 		try:
-	        	benchOut.setLanguage( cmdOpt['language'] )
+			benchOut.setLanguage( cmdOpt['language'] )
 		except ValueError,e:
 			print "%sERROR: %s%s" % ( colors.FAIL,e,colors.END )
 			sys.exit( 1 )
 	dir = os.path.realpath(os.getcwd( ))
-        data_stream = open( dir + '/.log/result_map.map','r' )
-        data_string = ''
-        line        = data_stream.readline( )
+	data_stream = open( dir + '/.log/result_map.map','r' )
+	data_string = ''
+	line        = data_stream.readline( )
 
-        while line:
-                data_string += line
-                line         = data_stream.readline( )
+	while line:
+		data_string += line
+		line         = data_stream.readline( )
 
-        try:
-                result_list  = pickle.loads( data_string )
-        except EOFError:
-                print colors.FAIL + "Benchmark results cannot be loaded." + colors.END
-        data_stream.close( )
+	try:
+		result_list  = pickle.loads( data_string )
+	except EOFError:
+		print colors.FAIL + "Benchmark results cannot be loaded." + colors.END
+	data_stream.close( )
 
-        minimum_list = []
-        for results in result_list:
-                minimum_map = _minimum_result( results )
-                if minimum_map:
-                        minimum_list.append( minimum_map )
-        benchOut.print_results( minimum_list,stream,csv )
+	minimum_list = []
+	for results in result_list:
+		minimum_map = _minimum_result( results )
+		if minimum_map:
+			minimum_list.append( minimum_map )
+	benchOut.print_results( minimum_list,stream,csv )
 
 def main( ):
 	c = colors( )
 	# parse arguments
 	cmdOpt = Options.get_opt( sys.argv[1:] )
 
-        if cmdOpt['verbose']:
-           print('cmdOpt = %s'%cmdOpt)
+	if cmdOpt['verbose']:
+		print('cmdOpt = %s'%cmdOpt)
 
 	# parsing file
 	if cmdOpt['file']:
@@ -335,7 +335,7 @@ def main( ):
 			fileOpt = Options.get_opt( fileMap['CMD'].split( ) )
 
 			output         = fileOpt['output']
-                        beruout        = fileOpt['beru-out']
+			beruout        = fileOpt['beru-out']
 			console        = fileOpt['console']
 			run            = fileOpt['run']
 			errorreport    = fileOpt['error-report']
@@ -349,9 +349,9 @@ def main( ):
 		else:
 			benchOut = BenchmarkOut.BenchmarkOut( )		
 		if cmdOpt['output']:
-                        output = cmdOpt['output']
+			output = cmdOpt['output']
 		if cmdOpt['beru-out']:
-                        beruout = cmdOpt['beru-out']
+			beruout = cmdOpt['beru-out']
 		if 'global-repetition' in cmdOpt:
 			globalrepetition = int( cmdOpt['global-repetition'] )
 		elif 'global-repetition' in fileOpt:
@@ -361,7 +361,7 @@ def main( ):
 		if 'avoid-aberration' in cmdOpt:
 			avoidaberration = int( cmdOpt['avoid-aberration'] )
 		elif 'avoid-aberration' in fileOpt:
-                        avoidaberration = int( fileOpt['avoid-aberration'] )
+			avoidaberration = int( fileOpt['avoid-aberration'] )
 		else:
 			avoidaberration = 'unset'
 		if 'maxrepetition' in cmdOpt:
@@ -372,10 +372,10 @@ def main( ):
 				sys.exit( 1 )
 		elif 'maxrepetition' in fileOpt:
 			maxrepetition = int( fileOpt['maxrepetition'] )
-                        if maxrepetition <= 0:
-                                print colors.FAIL + "The number of maximum iterations over benchmarks to avoid aberrations needs to be greater than zero.",
+			if maxrepetition <= 0:
+				print colors.FAIL + "The number of maximum iterations over benchmarks to avoid aberrations needs to be greater than zero.",
 				print colors.END
-                                sys.exit( 1 )
+				sys.exit( 1 )
 		else:
 			maxrepetition = -1
 		if 'itemlist' in cmdOpt:
@@ -445,16 +445,16 @@ def main( ):
 			try:
 				benchOut.setLanguage( cmdOpt['language'] )
 			except ValueError,e:
-                	        print "%sERROR: %s%s" % ( colors.FAIL,e,colors.END )
-                        	sys.exit( 1 )
+				print "%sERROR: %s%s" % ( colors.FAIL,e,colors.END )
+				sys.exit( 1 )
 	
 		elif 'language' in fileOpt:
 			language = True
 			try:
 				benchOut.setLanguage( fileOpt['language'] )
 			except ValueError,e:
-                        	print "%sERROR: %s%s" % ( colors.FAIL,e,colors.END )
-	                        sys.exit( 1 )
+				print "%sERROR: %s%s" % ( colors.FAIL,e,colors.END )
+				sys.exit( 1 )
 		else:
 			language = False
 		if 'decimals' in cmdOpt:
@@ -470,14 +470,14 @@ def main( ):
 		if cmdOpt['error-report']:
 			errorreport = cmdOpt['error-report']
 
-                console        = cmdOpt['console'] or console
-                run            = cmdOpt['run'] or run
-                listbenchmarks = cmdOpt['list-benchmarks'] or listbenchmarks
-                listinputsets  = cmdOpt['list-input-sets'] or listinputsets
+		console        = cmdOpt['console'] or console
+		run            = cmdOpt['run'] or run
+		listbenchmarks = cmdOpt['list-benchmarks'] or listbenchmarks
+		listinputsets  = cmdOpt['list-input-sets'] or listinputsets
 	# no file is set.
 	else:
 		listbenchmarks   = cmdOpt['list-benchmarks']
-                listinputsets    = cmdOpt['list-input-sets']
+		listinputsets    = cmdOpt['list-input-sets']
 		beruout          = cmdOpt['beru-out']
 		if 'columns' in cmdOpt:
 			columns  = cmdOpt['columns']
@@ -499,43 +499,43 @@ def main( ):
 				output = cmdOpt['output']
 				print colors.OKPINK + "Creating csv-file %s.%s" % ( output,colors.END )
 				output = [output]
-	                        stream = __get_write_stream( output )
+				stream = __get_write_stream( output )
 				output = output[0]
 				if stream:
-		                        if not language:
-		                                benchOut.setLanguage( 'de' )
-			                __print_results( benchOut,cmdOpt,stream,csv ) 
-			                print >> stream,"Created on;%s" % datetime.datetime.fromtimestamp( time.mktime( datetime.datetime.now( ).timetuple( ) ) )
-			                print >> stream,"By;Fraunhofer SCAI (c) 2017 Benchmark-Framework"
-			                print >> stream,"Author;Robin Rehrmann"
-			                stream.close( )
-			                print colors.OKGREEN + "Created %s.%s" % ( output,colors.END )
-		                if not console and not beruout:
-		                        sys.exit( 0 )
-		                elif not language:
-		                        benchOut.setLanguage( 'en' )
+					if not language:
+						benchOut.setLanguage( 'de' )
+					__print_results( benchOut,cmdOpt,stream,csv ) 
+					print >> stream,"Created on;%s" % datetime.datetime.fromtimestamp( time.mktime( datetime.datetime.now( ).timetuple( ) ) )
+					print >> stream,"By;Fraunhofer SCAI (c) 2017 Benchmark-Framework"
+					print >> stream,"Author;Robin Rehrmann"
+					stream.close( )
+					print colors.OKGREEN + "Created %s.%s" % ( output,colors.END )
+				if not console and not beruout:
+					sys.exit( 0 )
+				elif not language:
+					benchOut.setLanguage( 'en' )
 			__print_results( benchOut,cmdOpt )
 		elif 'decimals' in cmdOpt or language or csv:
 			benchOut    = BenchmarkOut.BenchmarkOut( )
 			if csv:
-                                output = cmdOpt['output']
-                                print colors.OKPINK + "Creating csv-file %s.%s" % ( output,colors.END )
+				output = cmdOpt['output']
+				print colors.OKPINK + "Creating csv-file %s.%s" % ( output,colors.END )
 				output = [output]
-                                stream = __get_write_stream( output )
+				stream = __get_write_stream( output )
 				output = output[0]
 				if stream:
-	                                if not language:
-	                                        benchOut.setLanguage( 'de' )
-	                                __print_results( benchOut,cmdOpt,stream,csv )
-	                                print >> stream,"Created on;%s" % datetime.datetime.fromtimestamp( time.mktime( datetime.datetime.now( ).timetuple( ) ) )
-	                                print >> stream,"By;Fraunhofer SCAI (c) 2017 Benchmark-Framework"
-	                                print >> stream,"Author;Robin Rehrmann"
-	                                stream.close( )
-	                                print colors.OKGREEN + "Created %s.%s" % ( output,colors.END )
-                                if not console and not beruout:
-                                        sys.exit( 0 )
-                                elif not language:
-                                        benchOut.setLanguage( 'en' )
+					if not language:
+						benchOut.setLanguage( 'de' )
+					__print_results( benchOut,cmdOpt,stream,csv )
+					print >> stream,"Created on;%s" % datetime.datetime.fromtimestamp( time.mktime( datetime.datetime.now( ).timetuple( ) ) )
+					print >> stream,"By;Fraunhofer SCAI (c) 2017 Benchmark-Framework"
+					print >> stream,"Author;Robin Rehrmann"
+					stream.close( )
+					print colors.OKGREEN + "Created %s.%s" % ( output,colors.END )
+				if not console and not beruout:
+					sys.exit( 0 )
+				elif not language:
+					benchOut.setLanguage( 'en' )
 			if console or not csv:
 				__print_results( benchOut,cmdOpt )
 			
@@ -544,16 +544,16 @@ def main( ):
 	# Print out list of benchmarks and/or inputsets, if required. #
 	#                                                             #
 	if listinputsets:
-                isetMap = Run.getInputSets( cmdOpt['verbose'] )
-                if isetMap['ERROR']:
-                        print colors.FAIL + isetMap['MESSAGE'] + colors.END
-                        sys.exit( 1 )
-                isetList = isetMap['ISETS']
+		isetMap = Run.getInputSets( cmdOpt['verbose'] )
+		if isetMap['ERROR']:
+			print colors.FAIL + isetMap['MESSAGE'] + colors.END
+			sys.exit( 1 )
+		isetList = isetMap['ISETS']
 	if listbenchmarks:
 		benchmarkMap = Run.getBenchmarks( cmdOpt['verbose'] )
 		if benchmarkMap['ERROR']:
 			print colors.FAIL + benchmarkMap['MESSAGE'] + colors.END
-                        sys.exit( 1 )
+			sys.exit( 1 )
 
 	if listbenchmarks and listinputsets:
 		table = texttable.Texttable( 0 )
@@ -576,16 +576,16 @@ def main( ):
 			sys.exit( 0 )
 	elif listbenchmarks:
 		table = texttable.Texttable( 0 )
-                table.set_deco( texttable.Texttable.BORDER | texttable.Texttable.HEADER | texttable.Texttable.VLINES )
+		table.set_deco( texttable.Texttable.BORDER | texttable.Texttable.HEADER | texttable.Texttable.VLINES )
 		table.header( ['Benchmark ID','Benchmark Arguments'] )
 		for key,value in benchmarkMap['BENCHMARKS'].iteritems( ):
-                        table.add_row( [ key,value, ] )
+			table.add_row( [ key,value, ] )
 		print table.draw( )
 		if not run or not beruout:
 			sys.exit( 0 )
 	elif listinputsets:
 		table = texttable.Texttable( 0 )
-                table.set_deco( texttable.Texttable.BORDER | texttable.Texttable.HEADER | texttable.Texttable.VLINES )
+		table.set_deco( texttable.Texttable.BORDER | texttable.Texttable.HEADER | texttable.Texttable.VLINES )
 		table.header( ['Registered InputSets'] )
 		for iset in isetList:
 			table.add_row( [iset] )
@@ -600,15 +600,15 @@ def main( ):
 	if beruout:
 		if not vars( ).has_key( 'isetList' ):
 			isetMap = Run.getInputSets( cmdOpt['verbose'] )
-	                if isetMap['ERROR']:
-	                        print colors.FAIL + isetMap['MESSAGE'] + colors.END
-	                        sys.exit( 1 )
-	                isetList = isetMap['ISETS']
+			if isetMap['ERROR']:
+				print colors.FAIL + isetMap['MESSAGE'] + colors.END
+				sys.exit( 1 )
+			isetList = isetMap['ISETS']
 		if not vars( ).has_key( 'benchmarkMap' ):
 			benchmarkMap = Run.getBenchmarks( 0 )
-	                if benchmarkMap['ERROR']:
-	                        print colors.FAIL + benchmarkMap['MESSAGE'] + colors.END
-	                        sys.exit( 1 )
+			if benchmarkMap['ERROR']:
+				print colors.FAIL + benchmarkMap['MESSAGE'] + colors.END
+				sys.exit( 1 )
 
 		beruout = [beruout]
 		stream = __get_write_stream( beruout )
@@ -666,7 +666,7 @@ def main( ):
 
 			try:
 				resultMap = Run.benchmark( set['CONF'].value, 
-                                             set['BENCH'] + ' "' + path + '" "' + tmp_dir + '"', cmdOpt['verbose'] )
+					     set['BENCH'] + ' "' + path + '" "' + tmp_dir + '"', cmdOpt['verbose'] )
 			except Interrupt:
 				print colors.WARNING + "Skipped" + colors.END
 				skipped = True
@@ -675,8 +675,8 @@ def main( ):
 				break
 			except KeyboardInterrupt:
 				keyInterrupt = True
-                                message = "KeyboardInterrupt at %s" % datetime.datetime.fromtimestamp(time.mktime(datetime.datetime.now( ).timetuple( )))
-                                warning_list.append( message )
+				message = "KeyboardInterrupt at %s" % datetime.datetime.fromtimestamp(time.mktime(datetime.datetime.now( ).timetuple( )))
+				warning_list.append( message )
 				break
 
 			if resultMap['ERROR']:
@@ -693,7 +693,7 @@ def main( ):
 
 			this_result.append( resultMap )
 			for map in this_result:
-                                map['ADISC'] = actrep + 1
+				map['ADISC'] = actrep + 1
 
 			maxrepetition = maxrepetition and maxrepetition - 1
 
@@ -702,36 +702,36 @@ def main( ):
 		while aberration and maxrepetition:
 			actrep += 1
 			maxrepetition = maxrepetition and maxrepetition - 1
-                        print "\n+ Avoiding Discordant Values %d of %d" % ( actrep+1,numrep )
+			print "\n+ Avoiding Discordant Values %d of %d" % ( actrep+1,numrep )
 
-                        try:
-	                        resultMap = Run.benchmark( set['CONF'].value, 
-                                            set['BENCH'] + ' "' + path + '" "' + tmp_dir + '"', cmdOpt['verbose'] )
-                        except Interrupt:
-                                print colors.WARNING + "Skipped" + colors.END
-                                skipped = True
-                                message = "Skipped Benchmark %d at iteration %d" % ( actbench,actrep+1 )
-                                warning_list.append( message )
-                                break
-                        except KeyboardInterrupt:
+			try:
+				resultMap = Run.benchmark( set['CONF'].value, 
+					    set['BENCH'] + ' "' + path + '" "' + tmp_dir + '"', cmdOpt['verbose'] )
+			except Interrupt:
+				print colors.WARNING + "Skipped" + colors.END
+				skipped = True
+				message = "Skipped Benchmark %d at iteration %d" % ( actbench,actrep+1 )
+				warning_list.append( message )
+				break
+			except KeyboardInterrupt:
 				keyInterrupt = True
 				message = "KeyboardInterrupt at %s" % datetime.datetime.fromtimestamp(time.mktime(datetime.datetime.now( ).timetuple( )))
 				warning_list.append( message )
 				break
 
-                        if resultMap['ERROR']:
-                                print colors.FAIL + "ERROR: " + resultMap['MESSAGE'] + colors.END
-                                sys.exit( 1 )
+			if resultMap['ERROR']:
+				print colors.FAIL + "ERROR: " + resultMap['MESSAGE'] + colors.END
+				sys.exit( 1 )
 
-                        if resultMap['WARNING']:
-                                warning_num += 1
-                                warning_list.append( resultMap['MESSAGE'] )
-                                print colors.WARNING + "WARNING: " + resultMap['MESSAGE'] + colors.END
-                                break
+			if resultMap['WARNING']:
+				warning_num += 1
+				warning_list.append( resultMap['MESSAGE'] )
+				print colors.WARNING + "WARNING: " + resultMap['MESSAGE'] + colors.END
+				break
 
 			resultMap['CONF'] = set['CONF']
 
-                        this_result.append( resultMap )
+			this_result.append( resultMap )
 			for map in this_result:
 				map['ADISC'] = actrep + 1
 			aberration = _aberration( this_result,numrep,threshold )

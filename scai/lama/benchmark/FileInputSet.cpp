@@ -36,6 +36,7 @@
 
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/common/Settings.hpp>
 
 namespace scai
 {
@@ -45,14 +46,19 @@ namespace lama
 
 FileInputSet::FileInputSet( const std::string filename ) : LAMAInputSet()
 {
+    std::string prefix;
+
     if ( filename.find( "/" ) == 0 )
     { 
         mFileName = filename;
     }
+    else if ( common::Settings::getEnvironment( prefix, "SCAI_INPUT_PATH" ) )
+    {
+        mFileName = prefix + "/" + filename;
+    }
     else
     {
-        std::string prefix = benchmark::Config::getInstance().getValueOf( "path" );
-        mFileName = prefix + filename;
+        mFileName = filename;
     }
 
     mAlpha = 1.0;
@@ -66,6 +72,8 @@ FileInputSet::FileInputSet( const std::string filename ) : LAMAInputSet()
     }
     else
     {
+        SCAI_LOG_ERROR( logger, "file " << mFileName << " does not exist" )
+
         // do not throw an error, as input set might be created to query arguments
 
         mFileName = "<valid filename>";
