@@ -35,6 +35,7 @@
 // hpp
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/VectorAssemblyAccess.hpp>
 
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
@@ -69,6 +70,7 @@ namespace scai
 {
 
 using common::scoped_array;
+using common::Math;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
 using utilskernel::LArray;
@@ -158,6 +160,15 @@ SparseVector<ValueType>::SparseVector( const IndexType size, const ValueType val
 }
 
 template<typename ValueType>
+SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const ValueType value, ContextPtr context ) :
+
+    _SparseVector( distribution, context ),
+    mZeroValue( value )
+{
+    SCAI_LOG_INFO( logger, "Construct sparse vector, dist = " << *distribution  << ", ZERO =" << value )
+}
+
+template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Vector& other ) : 
 
     _SparseVector( other )
@@ -211,7 +222,8 @@ SparseVector<ValueType>::SparseVector(
     _SparseVector( distribution )
 
 {
-    setSparseValues( indexes, values, zero );
+    assign( zero );
+    fillSparseData( indexes, values, common::binary::COPY );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -229,19 +241,29 @@ SparseVector<ValueType>::SparseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setRandom( dmemo::DistributionPtr distribution, const float fillRate )
+void SparseVector<ValueType>::fillRandom( const IndexType bound )
 {
-    allocate( distribution );
+    const IndexType localSize = getDistribution().getLocalSize();
 
-    // build dense random array and compress it
+    LArray<ValueType> localValues( localSize );
 
-    LArray<ValueType> localValues;
+    localValues.setRandom( bound, getContextPtr() );
+
+    setDenseValues( localValues );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void SparseVector<ValueType>::fillSparseRandom( const float fillRate, const IndexType bound )
+{
+    SCAI_ASSERT_EQ_ERROR( 0, mNonZeroIndexes.size(), "SparseRandom illegal, vector has already non-zero elements" )
 
     const IndexType localSize = getDistribution().getLocalSize();
 
-    localValues.setRandom( localSize, fillRate, getContextPtr() );
-
-    setDenseValues( localValues );
+    HArrayUtils::randomSparseIndexes( mNonZeroIndexes, localSize, fillRate );
+    mNonZeroValues.resize( mNonZeroIndexes.size() );
+    mNonZeroValues.setRandom( bound );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -566,25 +588,60 @@ void SparseVector<ValueType>::swapSparseValues( HArray<IndexType>& nonZeroIndexe
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, const Scalar zeroValue )
+void SparseVector<ValueType>::fillSparseData( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, common::binary::BinaryOp op )
 {
-    SCAI_LOG_INFO( logger, "setSparseValues, nnz = " << nonZeroIndexes.size() << ", ZERO = " << zeroValue )
+    SCAI_LOG_INFO( logger, "fillSparseData, nnz = " << nonZeroIndexes.size() )
 
-    const IndexType size = getDistribution().getLocalSize();
+    SCAI_ASSERT_EQ_ERROR( nonZeroIndexes.size(), nonZeroValues.size(), "arrays for sparse indexes and values must have same size" )
 
-    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, size, getContextPtr() );
+    if ( nonZeroIndexes.size() == 0 )
+    {
+        return;
+    }
+   
+    const IndexType localSize = getDistribution().getLocalSize();
+
+    bool isValid = HArrayUtils::validIndexes( nonZeroIndexes, localSize, getContextPtr() );
 
     if ( !isValid )
     {
-        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << size )
+        COMMON_THROWEXCEPTION( "at least one illegal index, local size = " << localSize )
     }
 
-    HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
-    HArrayUtils::setArray( mNonZeroValues, nonZeroValues, common::binary::COPY, getContextPtr() );
+    if ( mNonZeroIndexes.size() !=  0 )
+    {
+        // sort the new sparse entries so merge is more efficient
 
-    HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
+        HArray<IndexType> newIndexes;
+        HArray<ValueType> newValues;
 
-    mZeroValue = zeroValue.getValue<ValueType>();
+        HArrayUtils::setArray( newIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
+        HArrayUtils::setArray( newValues, nonZeroValues, common::binary::COPY, getContextPtr() );
+
+        // then we have to merge zero indexes
+
+        HArrayUtils::sortSparseEntries( newIndexes, newValues, true, getContextPtr() );
+
+        HArray<IndexType> resultIndexes;
+        HArray<ValueType> resultValues;
+
+        // Note: mergeSparse will also eleminate double values in one single input set
+
+        HArrayUtils::mergeSparse( resultIndexes, resultValues,
+                                  mNonZeroIndexes, mNonZeroValues,
+                                  newIndexes, newValues, op );
+
+        mNonZeroIndexes.swap( resultIndexes );
+        mNonZeroValues.swap( resultValues );
+    }
+    else
+    {
+        HArrayUtils::setArray( mNonZeroIndexes, nonZeroIndexes, common::binary::COPY, getContextPtr() );
+        HArrayUtils::setArray( mNonZeroValues, nonZeroValues, common::binary::COPY, getContextPtr() );
+
+        HArrayUtils::sortSparseEntries( mNonZeroIndexes, mNonZeroValues, true, getContextPtr() );
+        HArrayUtils::elimDoubles( mNonZeroIndexes, mNonZeroValues, op );
+    }
 }
 
 /* ------------------------------------------------------------------------- */
@@ -714,6 +771,41 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors )
+{
+    SparseVector<ValueType> newVector( dist, 0 );
+
+    {
+        VectorAssemblyAccess<ValueType> assembly( newVector );
+
+        IndexType offset = 0;
+
+        for ( size_t k = 0; k < vectors.size(); ++k )
+        {
+            const Vector& v = *vectors[k];
+
+            if ( offset + v.size() > dist->getGlobalSize() )
+            {
+                COMMON_THROWEXCEPTION( "concatenate fails, exceeds global size of target vector" )
+            }
+
+            HArray<ValueType> localData;
+
+            v.buildLocalValues( localData );
+
+            ReadAccess<ValueType> rData( localData );
+
+            for ( IndexType i = 0; i < rData.size(); ++i )
+            {
+                assembly.push( offset++, rData[i] );
+            }
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 Scalar SparseVector<ValueType>::min() const
 {
     // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
@@ -726,11 +818,31 @@ Scalar SparseVector<ValueType>::min() const
 
     if ( nZero > 0 )
     {
-         localMin = common::Math::min( localMin, mZeroValue );
+        localMin = Math::min( localMin, mZeroValue );
     }
 
     return Scalar( getDistribution().getCommunicator().min( localMin ) );
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+template<>
+Scalar SparseVector<ComplexFloat>::min() const
+{
+    COMMON_THROWEXCEPTION( "min unsupported on complex (float) (sparse) vector." )
+}
+
+template<>
+Scalar SparseVector<ComplexDouble>::min() const
+{
+    COMMON_THROWEXCEPTION( "min unsupported on complex (double) (sparse) vector." )
+}
+
+template<>
+Scalar SparseVector<ComplexLongDouble>::min() const
+{
+    COMMON_THROWEXCEPTION( "min unsupported on complex (long double) (sparse) vector." )
+}
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -745,13 +857,31 @@ Scalar SparseVector<ValueType>::max() const
 
     if ( nZero > 0 )
     {
-        // ToDo: replace ABS with ASUM, is different for complex numbers
-
-        localMax = common::Math::max( localMax, mZeroValue );
+        localMax = Math::max( localMax, mZeroValue );
     }
 
     return Scalar( getDistribution().getCommunicator().max( localMax ) );
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+template<>
+Scalar SparseVector<ComplexFloat>::max() const
+{
+    COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
+}
+
+template<>
+Scalar SparseVector<ComplexDouble>::max() const
+{
+    COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
+}
+
+template<>
+Scalar SparseVector<ComplexLongDouble>::max() const
+{
+    COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
+}
+#endif
 
 /* ------------------------------------------------------------------------- */
 
@@ -810,7 +940,7 @@ Scalar SparseVector<ValueType>::l2Norm() const
  
     ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    return Scalar( Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -824,7 +954,7 @@ Scalar SparseVector<IndexType>::l2Norm() const
 
     ScalarRepType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
     ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    return Scalar( Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -843,7 +973,7 @@ Scalar SparseVector<ValueType>::maxNorm() const
     if ( nZero > 0 )
     {
         SCAI_LOG_DEBUG( logger, "maxNorm, zero = " << mZeroValue << ", non-zero = " << localMaxNorm )
-        localMaxNorm = common::Math::max( common::Math::abs( localMaxNorm ), common::Math::abs( mZeroValue ) );
+        localMaxNorm = Math::max( Math::abs( localMaxNorm ), Math::abs( mZeroValue ) );
     }
 
     const Communicator& comm = getDistribution().getCommunicator();
@@ -869,17 +999,79 @@ Scalar SparseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool SparseVector<ValueType>::all( const common::binary::CompareOp, const Scalar ) const
+bool SparseVector<ValueType>::all( const common::binary::CompareOp op, const Scalar value ) const
 {
-    COMMON_THROWEXCEPTION( "not supported yet" ) 
+    ValueType typedValue = value.getValue<ValueType>();
+
+    // all non-zero values must fulfill the condition
+
+    bool localAll = HArrayUtils::allScalar( mNonZeroValues, op, typedValue );
+
+    if ( mNonZeroValues.size() != getDistribution().getLocalSize() )
+    {
+        // at least one entry has the ZERO value, so we compare it
+
+        localAll = localAll && common::applyBinary( mZeroValue, op, typedValue );
+    }
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool SparseVector<ValueType>::all( const common::binary::CompareOp, const Vector& ) const
+bool SparseVector<ValueType>::all( const common::binary::CompareOp op, const Vector& other ) const
 {
-    COMMON_THROWEXCEPTION( "not supported yet" ) 
+    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
+
+    if ( other.getVectorKind() == Vector::DENSE )
+    {
+        // dense vector can deal with sparse vector
+
+        return other.all( op, *this );
+    }
+
+    // both vectors are sparse but might have different value types
+
+    bool localAll;
+
+    const _SparseVector& otherSparse = reinterpret_cast<const _SparseVector& >( other );
+
+    common::unique_ptr<HArray<ValueType> > otherNonZeroValues;  // tmp array if different value types
+
+    const HArray<ValueType>* pOtherNonZeroValues;
+
+    if ( other.getValueType() != getValueType() )
+    {
+         // type conversion needed
+
+         otherNonZeroValues.reset( new HArray<ValueType>() );
+         HArrayUtils::assign( *otherNonZeroValues, otherSparse.getNonZeroValues() );
+         pOtherNonZeroValues = otherNonZeroValues.get();
+    }
+    else
+    {
+         pOtherNonZeroValues = reinterpret_cast<const HArray<ValueType>* >( &otherSparse.getNonZeroValues() );
+    }
+
+    ValueType otherZero = otherSparse.getZero().getValue<ValueType>();
+
+    IndexType n = HArrayUtils::allSparse( localAll,
+                                          mNonZeroIndexes, mNonZeroValues, mZeroValue,
+                                          otherSparse.getNonZeroIndexes(), *pOtherNonZeroValues, otherZero, op );
+
+    if ( n != getDistribution().getLocalSize() )
+    {
+        // at least at one position we use the zero values
+    
+        localAll = localAll && common::applyBinary( mZeroValue, op, otherZero );
+    }
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
 }
 
 /* ------------------------------------------------------------------------- */

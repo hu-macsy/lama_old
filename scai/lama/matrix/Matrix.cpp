@@ -933,22 +933,47 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::cat( const IndexType dim, const Matrix*[], const IndexType n )
+void Matrix::concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices )
 {
-    COMMON_THROWEXCEPTION( "concatenation of matrices not supported, dim = " << dim 
-                            << ", n = " << n << ", kind = " << getMatrixKind() )
+    COMMON_THROWEXCEPTION( "concatenation of matrices not supported, #matrices = " << matrices.size()
+                           << ", row dist = " << *rowDist << ", col dist = " << *colDist )
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
 {
-    const Matrix* mlist[2] = { &m1, &m2 };
-    cat ( 0, mlist, 2 );
+    SCAI_ASSERT_EQ_ERROR( m1.getRowDistribution(), m2.getRowDistribution(), "vcat: matrices must have same row distribution" )
+
+    DistributionPtr rowDist = m1.getRowDistributionPtr();
+
+    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() + m2.getNumColumns() ) );
+
+    std::vector<const Matrix*> matrices;
+
+    matrices.push_back( &m1 );
+    matrices.push_back( &m2 );
+    
+    concatenate( rowDist, colDist, matrices );
 }
+
+/* ---------------------------------------------------------------------------------*/
 
 void Matrix::hcat( const Matrix& m1, const Matrix& m2 )
 {
-    const Matrix* mlist[2] = { &m1, &m2 };
-    cat ( 1, mlist, 2 );
+    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
+ 
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) ); 
+    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
+    
+    std::vector<const Matrix*> matrices;
+
+    matrices.push_back( &m1 );
+    matrices.push_back( &m2 );
+
+    concatenate( rowDist, colDist, matrices );
 }
 
 /* ---------------------------------------------------------------------------------*/

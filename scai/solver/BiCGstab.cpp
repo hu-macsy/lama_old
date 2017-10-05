@@ -92,16 +92,16 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mResNorm = 1.0;
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     // get runtime vectors with same row distribution / context / type as cofficients matrix
-    runtime.mRes0.reset( coefficients.newDenseVector() );
-    runtime.mVecV.reset( coefficients.newDenseVector() );
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecS.reset( coefficients.newDenseVector() );
-    runtime.mVecT.reset( coefficients.newDenseVector() );
-    runtime.mVecPT.reset( coefficients.newDenseVector() );
-    runtime.mVecST.reset( coefficients.newDenseVector() );
-    runtime.mVecTT.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
+    runtime.mRes0.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecV.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecS.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecST.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecTT.reset( coefficients.newVector( rowDist ) );
 }
-
 
 void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 {
@@ -125,9 +125,10 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), runtime.mRhs->getDistribution(), "distribution mismatch" )
     // Initialize
     this->getResidual();
+
     *runtime.mRes0 = *runtime.mResidual;
-    *runtime.mVecV = Scalar( 0.0 );
-    *runtime.mVecP = Scalar( 0.0 );
+    runtime.mVecV->setSameValue( rhs.getDistributionPtr(), 0 );
+    runtime.mVecP->setSameValue( rhs.getDistributionPtr(), 0 );
     runtime.mSolveInit = true;
 }
 
@@ -171,7 +172,7 @@ void BiCGstab::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecPT = Scalar( 0.0 );
+        vecPT.setSameValue( A.getRowDistributionPtr(), 0 );
         mPreconditioner->solve( vecPT, vecP );
     }
     else
@@ -196,10 +197,10 @@ void BiCGstab::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecST = Scalar( 0.0 );
+        vecST.setSameValue( A.getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecST, vecS );
         vecT = A * vecST;
-        vecTT = Scalar( 0.0 );
+        vecTT.setSameValue( A.getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecTT, vecT );
     }
     else

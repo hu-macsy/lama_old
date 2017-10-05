@@ -86,10 +86,11 @@ void CGNR::initialize( const Matrix& coefficients )
     CGNRRuntime& runtime = getRuntime();
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     runtime.mTransposedMat.reset( coefficients.newMatrix() );
-    runtime.mVecD.reset( coefficients.newDenseVector() );
-    runtime.mVecW.reset( coefficients.newDenseVector() );
-    runtime.mVecZ.reset( coefficients.newDenseVector() );
-    runtime.mResidual2.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
+    runtime.mVecD.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecW.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecZ.reset( coefficients.newVector( rowDist ) );
+    runtime.mResidual2.reset( coefficients.newVector( rowDist ) );
     runtime.mTransposedMat->assignTranspose( coefficients );
     runtime.mTransposedMat->conj();
 }
@@ -109,7 +110,8 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
 
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecZ = Scalar( 0.0 );
+        // *runtime.mVecZ = 0;
+        runtime.mVecZ->setSameValue( runtime.mResidual2->getDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecZ, *runtime.mResidual2 );
     }
     else

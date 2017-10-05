@@ -217,9 +217,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         DenseVector<ValueType> vector;
 
-        float fillRate = 1;
-
-        vector.setRandom( dist, fillRate );
+        vector.setRandom( dist, 1 );
 
         // now write the distributed vector and its distribution, each to a single file
 
@@ -279,9 +277,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
 
         DenseVector<ValueType> vector;
 
-        float fillRate = 1;
-
-        vector.setRandom( dist, fillRate );
+        vector.setRandom( dist, 1 );
 
         bool withDist = dist->getBlockDistributionSize() == nIndex;
 
@@ -363,7 +359,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
         float fillRate = 0.2;
 
-        vector.setRandom( dist, fillRate );
+        vector.setSparseRandom( dist, 0, fillRate, 1 );
 
         bool withDist = dist->getBlockDistributionSize() == nIndex;
 

@@ -96,11 +96,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
 BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 5;
+    const IndexType randomRange = 100;
 
-    float fillRate = 1.0f;
-
-    LArray<ValueType> data;
-    HArrayUtils::setRandom( data, n, fillRate );
+    LArray<ValueType> data( n );
+    data.setRandom( randomRange );  // random value between 0 and 100
 
     // scalar::ScalarType type = TypeTraits<ValueType>::stype;
 
@@ -150,10 +149,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
 
     const IndexType n = 5;
 
-    float fillRate = 1.0f;
-
-    LArray<ValueType> data;
-    HArrayUtils::setRandom( data, n, fillRate );
+    LArray<ValueType> data( n );
+    data.setRandom( 1 );
 
     scalar::ScalarType stype = TypeTraits<ScalarRepType>::stype;
 

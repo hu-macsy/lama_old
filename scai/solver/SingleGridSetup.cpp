@@ -96,9 +96,10 @@ void SingleGridSetup::initialize( const Matrix& coefficients )
     mIdentity->setIdentity( coefficients.getRowDistributionPtr() );
     SCAI_LOG_DEBUG( logger, "after identity" )
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
-    mSolutionVector.reset( coefficients.newDenseVector() );
-    mRhsVector.reset( coefficients.newDenseVector() );
-    mTmpResVector.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    mSolutionVector.reset( coefficients.newVector( dist ) );
+    mRhsVector.reset( coefficients.newVector( dist ) );
+    mTmpResVector.reset( coefficients.newVector( dist ) );
 }
 
 Solver& SingleGridSetup::getCoarseLevelSolver()

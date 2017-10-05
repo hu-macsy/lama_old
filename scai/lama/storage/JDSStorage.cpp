@@ -1436,7 +1436,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-ValueType JDSStorage<ValueType>::maxNorm() const
+typename JDSStorage<ValueType>::StorageAbsType JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return mValues.maxNorm();

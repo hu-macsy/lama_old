@@ -59,13 +59,13 @@ static void bench( Matrix& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
-    DenseVectorPtr x( mat.newDenseVector() );
-    DenseVectorPtr y1( mat.newDenseVector() );
-    DenseVectorPtr y2( mat.newDenseVector() );
+    DenseVectorPtr x( mat.newVector( mat.getRowDistributionPtr() ) );
+    DenseVectorPtr y1( mat.newVector( mat.getRowDistributionPtr() ) );
+    DenseVectorPtr y2( mat.newVector( mat.getRowDistributionPtr() ) );
 
     const IndexType size = mat.getNumRows();
 
-    x->setSequence( Scalar( 0 ), Scalar( 0.1 ), size );
+    x->setRange( size, 0, 0.1 );
 
     mat.setCommunicationKind( Matrix::SYNCHRONOUS );
 
@@ -127,7 +127,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    COOSparseMatrix<double> C( 10000, 10000 );
+    COOSparseMatrix<RealType> C( 10000, 10000 );
 
     MatrixCreator::fillRandom( C, 0.1 );
 

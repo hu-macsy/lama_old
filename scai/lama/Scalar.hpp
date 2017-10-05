@@ -341,41 +341,63 @@ inline bool operator!=( const Scalar& a, const Scalar& b )
 
 inline bool operator<( const Scalar& a, const Scalar& b )
 {
-    if ( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO &&
-            common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+    // comparison only defined for real types, not for complex types
+
+    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
     {
-        // no complex number
-        return common::Math::real( a.getValue<ScalarRepType>() ) < common::Math::real( b.getValue<ScalarRepType>() );
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
     }
-    else
+
+    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
+
+    return a.getValue<RealType>() < b.getValue<RealType>();
+}
+
+inline bool operator<=( const Scalar& a, const Scalar& b )
+{
+    // comparison only defined for real types, not for complex types
+
+    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
     {
-        return a.getValue<ScalarRepType>() < b.getValue<ScalarRepType>();
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
     }
+
+    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
+
+    return a.getValue<RealType>() <= b.getValue<RealType>();
 }
 
 inline bool operator>( const Scalar& a, const Scalar& b )
 {
-    if ( common::Math::imag( a.getValue<ScalarRepType>() ) == common::constants::ZERO &&
-            common::Math::imag( b.getValue<ScalarRepType>() ) == common::constants::ZERO )
+    // comparison only defined for real types, not for complex types
+
+    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
     {
-        // no complex number
-        return common::Math::real( a.getValue<ScalarRepType>() ) > common::Math::real( b.getValue<ScalarRepType>() );
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
     }
-    else
-    {
-        return a.getValue<ScalarRepType>() > b.getValue<ScalarRepType>();
-    }
+
+    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
+
+    return a.getValue<RealType>() > b.getValue<RealType>();
 }
 
-//inline bool operator<=( const Scalar& a, const Scalar& b )
-//{
-//    return !( a > b );
-//}
-//
-//inline bool operator>=( const Scalar& a, const Scalar& b )
-//{
-//    return !( a < b );
-//}
+inline bool operator>=( const Scalar& a, const Scalar& b )
+{
+    // comparison only defined for real types, not for complex types
+
+    if ( common::isComplex( common::TypeTraits<ScalarRepType>::stype ) )
+    {
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( a.getValue<ScalarRepType>() ), 0, "complex value in a < b, a = " << a )
+        SCAI_ASSERT_EQ_ERROR( common::Math::imag( b.getValue<ScalarRepType>() ), 0, "complex value in a < b, b = " << a )
+    }
+
+    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
+
+    return a.getValue<RealType>() >= b.getValue<RealType>();
+}
 
 inline Scalar sqrt( const Scalar scalar )
 {
@@ -404,30 +426,26 @@ inline Scalar conj( const Scalar scalar )
 
 inline Scalar max( const Scalar a, const Scalar b )
 {
-    if ( a.hasComplexValue() || b.hasComplexValue() )
-    {
-        return Scalar( common::Math::max( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
-    }
-    else
-    {
-        return Scalar( common::Math::max(
-                           common::Math::real( a.getValue<ScalarRepType>() ),
-                           common::Math::real( b.getValue<ScalarRepType>() ) ) );
-    }
+    SCAI_ASSERT_ERROR( !a.hasComplexValue(), "complex value in max: " << a )
+    SCAI_ASSERT_ERROR( !b.hasComplexValue(), "complex value in max: " << b )
+
+    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
+
+    return Scalar( common::Math::max(
+                       common::Math::real( a.getValue<RealType>() ),
+                       common::Math::real( b.getValue<RealType>() ) ) );
 }
 
 inline Scalar min( const Scalar a, const Scalar b )
 {
-    if ( a.hasComplexValue() || b.hasComplexValue() )
-    {
-        return Scalar( common::Math::min( a.getValue<ScalarRepType>(), b.getValue<ScalarRepType>() ) );
-    }
-    else
-    {
-        return Scalar( common::Math::min(
-                           common::Math::real( a.getValue<ScalarRepType>() ),
-                           common::Math::real( b.getValue<ScalarRepType>() ) ) );
-    }
+    SCAI_ASSERT_ERROR( !a.hasComplexValue(), "complex value in min: " << a )
+    SCAI_ASSERT_ERROR( !b.hasComplexValue(), "complex value in min: " << b )
+
+    typedef common::TypeTraits<ScalarRepType>::AbsType RealType;
+
+    return Scalar( common::Math::min(
+                       common::Math::real( a.getValue<RealType>() ),
+                       common::Math::real( b.getValue<RealType>() ) ) );
 }
 
 template<typename TList>

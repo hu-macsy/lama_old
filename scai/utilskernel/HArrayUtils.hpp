@@ -334,11 +334,33 @@ public:
         const common::binary::BinaryOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Functions that returns true if the element-wise comparison 
+     *  of array elements returns true for all entries. 
+     *
+     *  @param[in] array1, array2 input arrays must have same size
+     *  @param[in] compareOp specifies comparison operator to use
+     *  @param[in] prefLoc optional the context where operation should take place
+     */
     template<typename ValueType>
     static bool all(
         const hmemo::HArray<ValueType>& array1,
         const common::binary::CompareOp compareOp,
         const hmemo::HArray<ValueType>& array2,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Functions that returns true if the comparison of each array
+     *  element with a scalar returns true.
+     *
+     *  @param[in] array input array
+     *  @param[in] value is the scalar entry against which elements of array are compared
+     *  @param[in] compareOp specifies comparison operator to use
+     *  @param[in] prefLoc optional the context where operation should take place
+     */
+    template<typename ValueType>
+    static bool allScalar(
+        const hmemo::HArray<ValueType>& array,
+        const common::binary::CompareOp compareOp,
+        const ValueType value,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
@@ -621,6 +643,29 @@ public:
         bool ascending,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
+    /** Eliminate duplicate elements in a sorted array 
+     *
+     *  @param[in,out] indexes is the sorted array of indexes that might contain double values
+     *  @param[in,out] values are values that will be combined
+     *  @param[in] op  specifies how to combine values with same index pos
+     *
+     *  /code
+     *    in:    indexes[] = { 0, 1, 5, 7, 7, 9, 9 };    
+     *    in:    values [] = { 0, 1, 2, 3, 4, 5, 6 };
+     *    elimDoubles ( indexes, values, binary::COPY )
+     *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
+     *    out:   values [] = { 0, 1, 2, 4, 6 };
+     *    elimDoubles ( indexes, values, binary::ADD )
+     *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
+     *    out:   values [] = { 0, 1, 2, 7, 11 };
+     *  /endcode
+     */
+    template<typename ValueType>
+    static void elimDoubles(
+        hmemo::HArray<IndexType>& indexes,
+        hmemo::HArray<ValueType>& values,
+        const common::binary::BinaryOp op );
+
     /** Initialize an array with the sequence 0, .., n-1
      *
      *  @param[out] array   will contain the values 0, ..., n-1
@@ -649,30 +694,46 @@ public:
 
     /** Set an array with random values, untyped version.
      *
-     *  @param[out] array    arbitray array, will contain random values of its type
-     *  @param[in]  n        number of values, becomes size of array
-     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[out] array    arbitray array, is filled with random values of its type
+     *  @param[in]  bound    random values between 0 and bound
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
-
     static void setRandom( hmemo::_HArray& array,
-                           IndexType n,
-                           float fillRate = 1.0f,
+                           IndexType bound,
                            hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Replace entries of an array with random values with a certain probability for each element
+     *
+     *  @param[out] array    arbitray array, is filled with random values of its type
+     *  @param[in]  fillRate probability whether one array element is filled or remains unchanged
+     *  @param[in]  bound    random values between 0 and bound
+     *  @param[in]  prefLoc  optional the context where random numbers should be drawn
+     */
+    static void setSparseRandom( hmemo::_HArray& array,
+                                 float fillRate,
+                                 IndexType bound,
+                                 hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Set an array with random values, typed version
      *
      *  @param[out] array    will contain random values of its type
-     *  @param[in]  n        number of values, becomes size of array
-     *  @param[in]  fillRate ratio of non-zero values
+     *  @param[in]  bound    random values between 0 and bound
+     *  @param[in]  fillRate probability whether one array element is filled or remains unchanged
      *  @param[in]  prefLoc  optional the context where random numbers should be drawn
      */
-
     template<typename ValueType>
-    static void setRandomImpl( hmemo::HArray<ValueType>& array,
-                               IndexType n,
-                               float fillRate = 1.0f,
-                               hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+    static void fillRandomImpl( hmemo::HArray<ValueType>& array,
+                                IndexType bound,
+                                float fillRate,
+                                hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Create an array of sparse indexes where an index value appears only with a certain probability.
+     *
+     *  @param[out] array       with sparse indexes, maximal size is n
+     *  @param[in]  n           is upper bound of range, i.e. indexes are 0 to n-1
+     *  @param[in]  probability whether an index appears or not, 0 for never, 1 for always.
+     */
+    static void randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability );
 
     /** Build sparse array from dense array, needed for conversion DenseVector -> SparseVector */
 
@@ -804,6 +865,39 @@ public:
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
+        const common::binary::BinaryOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    template<typename ValueType>
+    static IndexType allSparse(
+        bool& allFlag,
+        const hmemo::HArray<IndexType>& indexes1,
+        const hmemo::HArray<ValueType>& values1,
+        const ValueType zero1,
+        const hmemo::HArray<IndexType>& indexes2,
+        const hmemo::HArray<ValueType>& values2,
+        const ValueType zero2,
+        const common::binary::CompareOp op,
+        hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
+
+    /** Merge non-zero entries of sparse array
+     *
+     *  @param[out] resultIndexes, resultValues for sparse result array
+     *  @param[in]  indexes1, values1 stand for first sparse array
+     *  @param[in]  indexes2, values2  stand for second sparse array
+     *  @param[in]  op      specifies operation to apply on input values
+     *  @param[in]  prefLoc location where operation should be done if possible
+     *
+     *  Example can be found in HArrayUtilsTest
+     */
+    template<typename ValueType>
+    static void mergeSparse(
+        hmemo::HArray<IndexType>& resultIndexes,
+        hmemo::HArray<ValueType>& resultValues,
+        const hmemo::HArray<IndexType>& indexes1,
+        const hmemo::HArray<ValueType>& values1,
+        const hmemo::HArray<IndexType>& indexes2,
+        const hmemo::HArray<ValueType>& values2,
         const common::binary::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 

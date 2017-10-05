@@ -41,18 +41,8 @@ specific representation of a vector holding only non-zero entries.
     SparseVector<ValueType> vector9( "vector.mtx" );            // read vector from a file
     DenseVector<ValueType> vector10( vector1 + 2 * vector3 );   // any supported vector expression
 
-The following constructors are only available for a dense vector:
-
-.. code-block:: c++
-
-    DenseVector<ValueType> dVector1( n, ValueType(1), ValueType(0.1) [, ctx] );
-    DenseVector<ValueType> dVector2( blockDist , ValueType(1), ValueType(0.1) [, ctx] );
-
-    HArray<ValueType> localValues;
-    ...   // compute, set local values independently on each processor
-    DenseVector( localValues, blockDist );
-
-The following constructors are only available for a sparse vector:
+Sparse and dense vectors have syntactically nearly the same constructors.
+Only the following constructors are available only for a sparse vector:
 
 .. code-block:: c++
 
@@ -68,6 +58,222 @@ The following constructors are only available for a sparse vector:
 
 All index positions that do not appear in the array nonZeroIndexes are assumed to be zero. But keep
 in mind that the zero element of a sparse vector might be any value and not necessarily the value 0.
+
+
+The use of the following constructors is not really recommended as it results in vector that have
+undefined values.
+
+.. code-block:: c++
+
+    SparseVector<ValueType> vector3( n );
+    DenseVector<ValueType> vector4( blockDist );
+
+Furthermore, keep in mind that the size of a vector or a distributon is set or changed by most operations
+on vectors and so this attribute does not hold for the lifetime of a vector at all.
+
+Vector Initialization
+---------------------
+
+Usually a vector should be allocated and fully initialized by its constructor. There might
+be some situations where this is not possible:
+
+ * A corresponding constructor is not available, e.g. for setting random numbers or setting
+   a range of values like lb, lb + inc, lb + 2 * inc, ....
+ * The vector might have been created dynamically where these routines usually generate 
+   only a zero vector, i.e. not allocated and not initalized at all.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v1;
+
+    v1.setData( array );          // initialize a vector with data from a heterogeneous array
+    v1.setRawData( n, rawData );  // initialize a vector with any 'raw' data ( size, pointer )
+    v1.setRange( n, 3, 2 );       // initializes the vector with the values 3, 5, 7, 9, ...
+    v1.setRandom( n, 10 );        // initialize the vector with n random numbers in the range 0..10
+    v1.setSameValue( n, 5 );      // initialize the vector with n elements of the value 5
+    v1.readFromFile( "v.mtx" );   // read the vector from a file, size can queried afterwards
+
+Sometimes it might be useful to create a sparse vector, i.e. a vector where most entries have the same
+value, and only some values are different.
+
+.. code-block:: c++
+
+   v.setSparseData( n, zeroValues,  nonZeroIndexes, nonZeroValues );
+
+Also a sparse random vector might be created where here a fill specifies the number of entries.
+
+.. code-block:: c++
+
+    v1.setSparseRandom( n, 0, 0.1f, 10 );   // initialize the vector with a certain ratio of random values
+
+Most initialization routines might be called with a distribution instead of a size n. The initializations
+of the local parts will be done independently.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v1;
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    v1.setRange( dist, 3, 2 );            // initializes the vector with the values 3, 5, 7, 9, ...
+    v1.setRandom( dist, 10 );             // initialize the vector with n random numbers in the range 0..10
+    v1.setSameValue( dist, 5 );           // initialize the vector with n elements of the value 5
+    v1.setLocalData( dist, localArray );  // each processor initializes its local part with its data
+
+In the first place it seems to be strange to use the initializon routines always with a size
+or a distribution argument even if the vector has already been allocated. There are usually 
+counterparts of these routines that do not require this first argument.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v( dist );   // define a distributed vector
+
+    for ( int iter = 0; iter < MAX_ITER; ++iter )
+    {
+        v = 0;   // instead of v.setSameValue( dist, 0 );
+        ...
+    }
+
+Nevertheless the use of the set routines are recommended for the following reasons:
+
+* The size or distributon argument makes your code more stable and will even work
+  if the vector has not been allocated or initalized before.
+* There will be never any reallocation of memory as long as the size or distribution does not change.
+
+Please not that for safety it is always a good strategy to initialize vectors with their allocation.
+So in the following example code 1 might be more reliable than code 2 as in code 2 the allocated
+vectors has undefined values between constructor and the call of the fill routine. But it is less efficient
+as it does a complete write of the full vector data during the initializaton with 0 that is not 
+required at all.
+
+.. code-block:: c++
+
+    // Code 1                          
+    DenseVector<ValueType> v( n, 0 );   
+    ...
+    v = scalarValue;
+
+    // Code 2
+    DenseVector<ValueType> v( n );   
+    ...
+    v = scalarValue;    
+
+    // Code 3
+    DenseVector<ValueType> v;
+    ...
+    v.setSameValue( n, scalarValue ); 
+
+The code 3 has the same efficiency as code 2 but it is more safe. This is due to the fact
+that a zero vector causes less problems than an undefined allocated vector.
+
+Vectors should be reused wherever it is possible. In the following loop the vector
+is allocated and deallocated in each iteration of the loop even if the value n
+is always the same.
+
+.. code-block:: c++
+
+
+    for ( int iter = 0; iter < MAX_ITER; ++iter )
+    {
+        DenseVector<ValueType> v( n, myValue );
+        ....
+    }
+
+This code reuses the vector data in each iteration of the loop. Reallocation is
+only done, if the value n becomes larger than any value used before.
+
+.. code-block:: c++
+
+    DenseVector<ValueType> v;
+
+    for ( int iter = 0; iter < MAX_ITER; ++iter )
+    {
+        v.setSameValue( n, myValue );
+        ....
+    }
+
+This is also one reason why you will never find any routine in LAMA that returns
+a vector or a matrix. All supported vector operations in LAMA will never return a
+new created vector. In the following example the implementation of the operator+ does not return
+a vector but a syntactical construct that is resolved in the assignment and ends up in
+an element-wise addition in-place in the exisiting vector v1. 
+
+.. code-block:: c++
+
+     DenseVector<ValueType> v1, v2, v3;
+     ...
+     v2.setXXX( ... )
+     v3.setYYY( ... );
+     v1 = v2 + v3;
+
+Vector Assembly
+---------------
+
+The template class VectorAssemblyAccess allows to assemble vector entries by different processors
+independently.
+
+.. code-block:: c++
+
+    const IndexType n = ... ; // size of the vector
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    DenseVector<ValueType> vector( dist );
+
+    {
+        VectorAssemblyAccess<ValueType> assembly( vector, common::binary::ADD );
+
+        // each processor might push arbitrary matrix elements
+
+        assembly.push( i1, val1 );
+        ...
+        assembly.push( i2, val2 );
+
+        // destructor of access, implies release, that inserts the elements
+    }
+
+- During an assembly access the vector must not be changed or accessed otherwise.
+- All processors must access the vector by the corresponding constructor.
+- The end of assembling is indicated by either calling the destructor of the access or by an explicit release call.
+- Zero elements might be filled explicitly to reserve memory in a sparse vector.
+- Different modes are supported if entries are assembled twice, either by same or by different processors or for existing entries.
+  In the REPLACE mode (default, common::binary::COPY) values will be replaced; different assembled values for the same entry
+  might be undefined. In the SUM mode (common::binary::ADD) assembled values for the same position are added.
+- The distribution must be set before the assembling.
+- Future versions might support an asynchronous version of the release of the access.
+
+Even if the implementation of the assembling is highly optimized, it might involve a large amount of 
+communication as the assembled data must be communicated to their owners. Therefore it is always recommended
+to due the assembling as locally as possible, i.e. elements should be inserted preferably by their owners.
+
+The assembling might also be done replicated, i.e. each processor runs the whole assembling code. In this case elements
+should only be pushed by the owner. If elements are pushed by all processors, this would not be wrong in the replace mode
+but causes significant overhead.
+
+.. code-block:: c++
+
+    for ( all enries )
+    {
+        ....
+        if ( dist->isLocal( i ) ) 
+        {
+            assembly.push( i, val )
+        }
+        ....
+    }
+
+In replicated code it is a better approach to call the method pushReplicated. This call guarantees that the method is
+called by all processors with the same values (not necessarily at the same time). Furthermore it clearly
+indicates that it is used in a replicated control flow. The implementation of the method can use this assertion for 
+optimizations. The element is only inserted once.
+
+.. code-block:: c++
+
+    assembly.pushReplicated( i, val );  // guarantees that this is called by each processor
+
+Usually assembling is done for a distributed vector. For consistency reasons, assembling works also
+for replicated vectors. In this case all elements from all processors will be inserted in all instances.
+Replicated assembling for a replicated vector also works fine, here the benefits of the pushReplicated
+method are also very high.
 
 Methods
 -------
@@ -131,10 +337,6 @@ In the following you see all possible constructor calls:
   // optional third parameter: cudaContextPtr (hmemo::ContextPtr)
   DenseVector<double> x ( size, 1.0 );
   DenseVector<double> x2( dist, 1.0 );
-
-  // creating a local (not distributed) vector from raw double pointer
-  const double inputData[] = { 1.0, 2.0, 3.0, 4.0 };
-  scai::lamaDenseVector<double> y( size, inputData ); // optional third parameter: cudaContextPtr (hmemo::ContextPtr)
 
   // reading from file (only on local vectors, can be redistributed afterwards)
   DenseVector<double> z( "z_vector.mtx" );

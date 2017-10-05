@@ -242,19 +242,21 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
 {
     if ( !common::isComplex( array.getValueType() ) )
     {
-        // SCAI_LOG_WARN( logger, "imaginary values are ignored" )
         return;
     }
 
-#ifdef SCAI_COMPLEX_SUPPORTED
 
     // array = array + i * imagValues
 
+#ifdef SCAI_COMPLEX_SUPPORTED
     ValueType i = static_cast<ValueType>( ComplexDouble( 0, 1 ) );
+#else
+    ValueType i = -1;    // Note: will never be called here
+#endif
+
     utilskernel::HArrayUtils::compute( imagValues, imagValues, common::binary::MULT, i );
     utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::binary::ADD );
 
-#endif
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -395,7 +397,11 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
         wBytes += writeArrayData( outFile, real, dryRun );
 
         HArray<ValueType> tmp;
+#ifdef SCAI_COMPLEX_SUPPORTED
         ValueType minusi = ComplexDouble( 0, -1 );
+#else
+        ValueType minusi = -1;  // unreachable code at all here
+#endif
         utilskernel::HArrayUtils::compute( tmp, array, common::binary::MULT, minusi );
         utilskernel::HArrayUtils::setArray( real, tmp );
 
@@ -680,7 +686,7 @@ uint32_t MatlabIO::getSparseStorage( MatrixStorage<ValueType>& storage,
 
     if ( mScalarTypeData == common::scalar::PATTERN )
     {
-        values.init( ValueType( 1 ), nnz );   // set values with default value
+        values.setSameValue( nnz, ValueType( 1 ) );   // set values with default value
     }
     else
     {

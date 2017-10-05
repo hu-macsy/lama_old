@@ -63,7 +63,7 @@ using scai::dmemo::Distributed;
 using scai::common::Math;
 
 
-typedef double ValueType;
+typedef RealType ValueType;
 
 
 #define DIMx 900                // dimension of displayed window
@@ -95,10 +95,13 @@ DenseVector<ValueType> inversemass( nBodies, 0.0 );
 void randomBodies( )
 {
     // Random Positions (relative to the radius of the universe at the beginning)
-    x.setRandom( x.getDistributionPtr() );
+
+    x.setRandom( nBodies, 2 );
+    x -= 1;
     x *= radius * ( ValueType )Math::exp( -1.8 ) ;
 
-    y.setRandom( y.getDistributionPtr() );
+    y.setRandom( nBodies, 2 );
+    y -= 1;
     y *= radius * ( ValueType )Math::exp( -1.8 ) ;
 
 
@@ -120,11 +123,7 @@ void randomBodies( )
 
 
     // Random mass of Particles
-    mass.setRandom( mass.getDistributionPtr() );
-    // project random numbers between -1 and 1 to random numbers between 0 and 1
-    DenseVector<ValueType> eye( nBodies, 1.0 );
-    mass += eye;
-    mass *= 0.5;
+    mass.setRandom( mass.getDistributionPtr(), 1 );  // random numbers between 0 and 1
     mass *= maxMass ;
 
     // put a heavy body in the center

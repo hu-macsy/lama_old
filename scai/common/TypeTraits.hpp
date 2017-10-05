@@ -36,7 +36,6 @@
 
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/Math.hpp>
 
 #include <cmath>
 #include <cstdlib>

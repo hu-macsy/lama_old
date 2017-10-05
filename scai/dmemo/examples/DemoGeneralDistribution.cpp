@@ -57,14 +57,15 @@ int main()
 
     const IndexType np = comm->getSize();  // available processors
 
-    HArray<IndexType> owners; 
+    HArray<IndexType> owners( globalSize );
 
     if ( comm->getRank() == 0 )
     {
         // create random number owners, only host is relevant
 
-        HArrayUtils::setRandom( owners, globalSize );
-        HArrayUtils::setScalar( owners, np, binary::MODULO );
+        HArrayUtils::setRandom( owners, np - 1 );   // random values from 0 to np - 1
+
+        // HArrayUtils::setScalar( owners, np, binary::MODULO );
 
         std::cout << "owners = " << owners << std::endl;
 

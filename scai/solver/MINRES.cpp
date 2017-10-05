@@ -90,12 +90,13 @@ void MINRES::initialize( const Matrix& coefficients )
     runtime.mCNew = 1.0;
     runtime.mS = 0.0;
     runtime.mSNew = 0.0;
-    runtime.mVecV.reset( coefficients.newDenseVector() );
-    runtime.mVecVOld.reset( coefficients.newDenseVector() );
-    runtime.mVecVNew.reset( coefficients.newDenseVector() );
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecPOld.reset( coefficients.newDenseVector() );
-    runtime.mVecPNew.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    runtime.mVecV.reset( coefficients.newVector( dist ) );
+    runtime.mVecVOld.reset( coefficients.newVector( dist ) );
+    runtime.mVecVNew.reset( coefficients.newVector( dist ) );
+    runtime.mVecP.reset( coefficients.newVector( dist ) );
+    runtime.mVecPOld.reset( coefficients.newVector( dist ) );
+    runtime.mVecPNew.reset( coefficients.newVector( dist ) );
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
 }
 
@@ -111,9 +112,9 @@ void MINRES::solveInit( Vector& solution, const Vector& rhs )
     // Initialize
     this->getResidual();
     *runtime.mVecVNew = *runtime.mResidual;
-    *runtime.mVecV *= Scalar( 0.0 );
-    *runtime.mVecP *= Scalar( 0.0 );
-    *runtime.mVecPNew *= Scalar( 0.0 );
+    *runtime.mVecV *= Scalar( 0 );
+    *runtime.mVecP *= Scalar( 0 );
+    *runtime.mVecPNew *= Scalar( 0 );
     lama::L2Norm norm;
     runtime.mZeta = norm.apply( *runtime.mResidual );
     *runtime.mVecVNew /= runtime.mZeta;
@@ -142,7 +143,7 @@ void MINRES::Lanczos()
 
     if ( abs( betaNew ) < eps || 1.0 / abs( betaNew ) < eps )
     {
-        vecVNew = Scalar( 0.0 );
+        vecVNew *= 0;
     }
     else
     {

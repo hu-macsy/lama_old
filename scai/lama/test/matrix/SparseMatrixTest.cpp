@@ -219,9 +219,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CopyConstructorTest, MatrixType, SparseMatrixType
 
     float fillRate = 0.2;
 
-    hmemo::HArray<ValueType> denseData;
-    std::srand( 1317 );                   // makes sure that all processors generate same data
-    utilskernel::HArrayUtils::setRandom( denseData, numRows * numCols, fillRate );
+    hmemo::HArray<ValueType> denseData( numRows * numCols, ValueType( 0 ) );
+
+    common::Math::srandom( 1317 );    // makes sure that all processors generate same data
+
+    utilskernel::HArrayUtils::setSparseRandom( denseData, fillRate, 1 );
 
     StorageType globalStorage;
     globalStorage.setDenseData( numRows, numCols, denseData );

@@ -58,6 +58,7 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/execution_policy.h>
 #include <thrust/sequence.h>
+#include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
@@ -81,37 +82,41 @@ SCAI_LOG_DEF_LOGGER( CUDASortUtils::logger, "CUDA.Utils" )
 template<typename ValueType>
 void CUDASortUtils::sortBoth( ValueType array[], IndexType perm[], const IndexType n, bool ascending )
 {
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "CUDA.Utils.sortBoth" )
 
-    thrust::device_ptr<ValueType> array_d( array );
+    thrust::device_ptr<AbsType> array_d( reinterpret_cast<AbsType*>( array ) );
     thrust::device_ptr<IndexType> perm_d( perm );
 
     // stable sort, descending order, so override default comparison
 
     if ( ascending )
     {
-        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::less<ValueType>() );
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::less<AbsType>() );
     }
     else
     {
-        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<ValueType>() );
+        thrust::stable_sort_by_key( array_d, array_d + n, perm_d, thrust::greater<AbsType>() );
     }
 }
 
 template<typename ValueType>
 void CUDASortUtils::sortValues( ValueType array[], const IndexType n, bool ascending )
 {
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "CUDA.Utils.sortValues" )
 
-    thrust::device_ptr<ValueType> array_d( array );
+    thrust::device_ptr<AbsType> array_d( reinterpret_cast<AbsType*>( array ) );
 
     if ( ascending )
     {
-        thrust::sort( array_d, array_d + n, thrust::less<ValueType>() );
+        thrust::sort( array_d, array_d + n, thrust::less<AbsType>() );
     }
     else
     {
-        thrust::sort( array_d, array_d + n, thrust::greater<ValueType>() );
+        thrust::sort( array_d, array_d + n, thrust::greater<AbsType>() );
     }
 }
 
@@ -151,19 +156,30 @@ struct myGreater
 template<typename ValueType>
 void CUDASortUtils::sortPerm( IndexType perm[], const ValueType array[], const IndexType n, bool ascending )
 {
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "CUDA.Utils.sortValues" )
 
     thrust::device_ptr<IndexType> perm_d( perm );
 
-    // stable sort, descending order, so override default comparison
-
-    if ( ascending )
+    if ( TypeTraits<ValueType>::stype != TypeTraits<AbsType>::stype )
     {
-        thrust::stable_sort( perm_d, perm_d + n, myLess<ValueType>( array ) );
+        COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
     }
     else
     {
-        thrust::stable_sort( perm_d, perm_d + n, myGreater<ValueType>( array ) );
+        const AbsType* absArray = reinterpret_cast<const AbsType*>( array );
+
+        // stable sort, descending order, so override default comparison
+
+        if ( ascending )
+        {
+            thrust::stable_sort( perm_d, perm_d + n, myLess<AbsType>( absArray ) );
+        }
+        else
+        {
+            thrust::stable_sort( perm_d, perm_d + n, myGreater<AbsType>( absArray ) );
+        }
     }
 }
 

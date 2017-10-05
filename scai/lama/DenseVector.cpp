@@ -35,6 +35,7 @@
 // hpp
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
+#include <scai/lama/VectorAssemblyAccess.hpp>
 
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
@@ -161,62 +162,16 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
                    "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution << ", local size = " << distribution->getLocalSize() << ", value = " << value )
 }
 
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const IndexType size, const ValueType startValue, const ValueType inc, ContextPtr context ) :
-
-    _DenseVector( size, context ), 
-    mLocalValues( size, startValue, inc, context )
-
-{
-    SCAI_LOG_INFO( logger, "Construct dense vector, size = " << size << ", startValue =" << startValue << ", inc=" << inc )
-}
-
-template<typename ValueType>
-DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueType startValue, const ValueType inc, ContextPtr context ) :
-
-    _DenseVector( distribution, context ),
-    mLocalValues( distribution->getLocalSize(), context )
-
-{
-    allocate();    // correct allocation of mLocalValues
-
-    SCAI_LOG_INFO( logger,
-                   "Construct dense vector, size = " << distribution->getGlobalSize() << ", distribution = " << *distribution
-                   << ", local size = " << distribution->getLocalSize() << ", startValue = " << startValue << ", inc=" << inc )
-
-    // get my owned indexes
-
-    HArray<IndexType> myGlobalIndexes( context );
-
-    // mult with inc and add startValue
-
-    distribution->getOwnedIndexes( myGlobalIndexes );
-
-    // localValues[] =  indexes[] * inc + startValue
-
-    HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc, common::binary::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue, common::binary::ADD, context );
-}
-
 template <typename ValueType>
-void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, const IndexType n )
+void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar inc )
 {
-    setDistributionPtr( DistributionPtr( new NoDistribution( n ) ) );
+    const Distribution& dist = getDistribution();
 
-    HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), n, getContextPtr() );
-}
-
-template <typename ValueType>
-void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar inc, DistributionPtr distribution )
-{
-    setDistributionPtr( distribution );
-
-    if ( distribution->isReplicated() )
+    if (dist.isReplicated() )
     {
-        SCAI_ASSERT_EQ_DEBUG( distribution->getGlobalSize(), distribution->getLocalSize(), *distribution << " not replicated" );
+        SCAI_ASSERT_EQ_DEBUG( dist.getGlobalSize(), dist.getLocalSize(), dist << " not replicated" );
 
-        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), distribution->getGlobalSize() );
+        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), dist.getGlobalSize() );
         return;
     }
 
@@ -228,7 +183,7 @@ void DenseVector<ValueType>::setSequence( const Scalar startValue, const Scalar 
 
     // mult with inc and add startValue
 
-    distribution->getOwnedIndexes( myGlobalIndexes );
+    dist.getOwnedIndexes( myGlobalIndexes );
 
     // localValues[] =  indexes[] * inc + startValue
 
@@ -273,10 +228,17 @@ DenseVector<ValueType>::DenseVector( const std::string& filename ) :
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setRandom( DistributionPtr distribution, const float fillRate )
+void DenseVector<ValueType>::fillRandom( const IndexType bound )
 {
-    allocate( distribution );
-    mLocalValues.setRandom( mLocalValues.size(), fillRate, getContextPtr() );
+    mLocalValues.setRandom( bound, getContextPtr() );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::fillSparseRandom( const float fillRate, const IndexType bound )
+{
+    mLocalValues.setSparseRandom( fillRate, bound, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -633,6 +595,28 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
     return is;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+bool DenseVector<ComplexFloat>::isSorted( bool ) const
+{
+    COMMON_THROWEXCEPTION( "isSorted unsupported for complex vectors." )
+}
+
+template<>
+bool DenseVector<ComplexDouble>::isSorted( bool ) const
+{
+    COMMON_THROWEXCEPTION( "isSorted unsupported for complex vectors." )
+}
+
+template<>
+bool DenseVector<ComplexLongDouble>::isSorted( bool ) const
+{
+    COMMON_THROWEXCEPTION( "isSorted unsupported for complex vectors." )
+}
+
+#endif
+
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -826,6 +810,30 @@ void DenseVector<ValueType>::sortImpl(
 
 /* ------------------------------------------------------------------------- */
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void DenseVector<ComplexFloat>::sortImpl( DenseVector<IndexType>*, DenseVector<ComplexFloat>*, DenseVector<ComplexFloat>&, bool )
+{
+    COMMON_THROWEXCEPTION( "no sort on complex vector" )
+}
+
+template<>
+void DenseVector<ComplexDouble>::sortImpl( DenseVector<IndexType>*, DenseVector<ComplexDouble>*, DenseVector<ComplexDouble>&, bool )
+{
+    COMMON_THROWEXCEPTION( "no sort on complex vector" )
+}
+
+template<>
+void DenseVector<ComplexLongDouble>::sortImpl( DenseVector<IndexType>*, DenseVector<ComplexLongDouble>*, DenseVector<ComplexLongDouble>&, bool )
+{
+    COMMON_THROWEXCEPTION( "no sort on complex vector" )
+}
+
+#endif
+
+/* ------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void DenseVector<ValueType>::scan()
 {
@@ -905,14 +913,14 @@ void DenseVector<ValueType>::setDenseValues( const _HArray& values )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setSparseValues( const HArray<IndexType>& nonZeroIndexes, const _HArray& nonZeroValues, const Scalar zero )
+void DenseVector<ValueType>::fillSparseData( 
+    const HArray<IndexType>& nonZeroIndexes, 
+    const _HArray& nonZeroValues,
+    const common::binary::BinaryOp op )
 {
-    const IndexType localSize = getDistribution().getLocalSize();
+    // Note: scatter checks for legal indexes
 
-    // Note: scatter might check for legal indexes
-
-    mLocalValues.init( zero.getValue<ValueType>(), localSize );
-    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, true, nonZeroValues, common::binary::COPY, getContextPtr() );
+    HArrayUtils::scatter( mLocalValues, nonZeroIndexes, false, nonZeroValues, op, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -932,6 +940,48 @@ DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
     common::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() );
     vector->setContextPtr( this->getContextPtr() );
     return vector.release();
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors ) 
+{
+    DenseVector<ValueType> newVector( dist );
+    {
+        VectorAssemblyAccess<ValueType> assembly( newVector );
+
+        IndexType offset = 0;
+
+        for ( size_t k = 0; k < vectors.size(); ++k )
+        {
+            const Vector& v = *vectors[k];
+
+            if ( offset + v.size() > dist->getGlobalSize() )
+            {
+                COMMON_THROWEXCEPTION( "concatenate fails, exceeds global size of target vector" )
+            }
+
+            HArray<ValueType> localData;
+  
+            v.buildLocalValues( localData );
+
+            ReadAccess<ValueType> rData( localData );
+
+            for ( IndexType i = 0; i < rData.size(); ++i )
+            {
+                IndexType globalI = v.getDistribution().local2global( i );
+
+                SCAI_LOG_ERROR( logger, "push " << offset + globalI << ", " << rData[i] )
+
+                assembly.push( offset + globalI, rData[i] );
+            }
+ 
+            offset += v.size();
+        }
+    }
+
+    swap( newVector );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1083,9 +1133,15 @@ Scalar DenseVector<ValueType>::maxDiffNorm( const Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseVector<ValueType>::all( const common::binary::CompareOp, const Scalar ) const
+bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Scalar value ) const
 {
-    COMMON_THROWEXCEPTION( "not supported yet" )
+    ValueType typedValue = value.getValue<ValueType>();
+
+    bool localAll = HArrayUtils::allScalar( getLocalValues(), op, typedValue );
+
+    bool globalAll = getDistribution().getCommunicator().all( localAll );
+
+    return globalAll;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1093,13 +1149,21 @@ bool DenseVector<ValueType>::all( const common::binary::CompareOp, const Scalar 
 template<typename ValueType>
 bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Vector& other ) const
 {
-    SCAI_ASSERT_EQ_ERROR( other.getValueType(), getValueType(), "all only with same type" )
-    SCAI_ASSERT_EQ_ERROR( other.getVectorKind(), Vector::DENSE, "only same kind" )
-    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch" )
+    SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
 
-    const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+    bool localAll;
 
-    bool localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
+    if ( other.getValueType() == getValueType() && other.getVectorKind() == Vector::DENSE )
+    {
+        const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
+        localAll = HArrayUtils::all( getLocalValues(), op, denseOther.getLocalValues() );
+    }
+    else
+    {
+        HArray<ValueType> otherLocalValues;
+        other.buildLocalValues( otherLocalValues );
+        localAll = HArrayUtils::all( getLocalValues(), op, otherLocalValues );
+    }
 
     bool globalAll = getDistribution().getCommunicator().all( localAll );
 

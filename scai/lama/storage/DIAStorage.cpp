@@ -942,7 +942,7 @@ ValueType DIAStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType DIAStorage<ValueType>::maxNorm() const
+typename DIAStorage<ValueType>::StorageAbsType DIAStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     static LAMAKernel<DIAKernelTrait::absMaxVal<ValueType> > absMaxVal;
@@ -951,7 +951,7 @@ ValueType DIAStorage<ValueType>::maxNorm() const
     ReadAccess<IndexType> diaOffsets( mOffset, loc );
     ReadAccess<ValueType> diaValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    ValueType maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
+    StorageAbsType maxval = absMaxVal[loc]( mNumRows, mNumColumns, mNumDiagonals, diaOffsets.get(), diaValues.get() );
     return maxval;
 }
 

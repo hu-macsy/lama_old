@@ -100,18 +100,17 @@ template<typename ValueType>
 EquationHelper::EquationSystem<ValueType> EquationHelper::get3x3SystemA()
 {
     IndexType dim = 3;
-    ValueType coefficientValues[] =
-    { 9.0f, 1.0f, 2.0f, -2.0f, 7.0f, 1.0f, -1.0f, 1.0f, 8.0f };
-    ValueType rhsValues[] =
-    { 9.0f, 11.0f, -7.0f };
-    ValueType solutionValues[] =
-    { 1.0f, 2.0f, -1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setRawDenseData( dim, dim, coefficientValues );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    ValueType coefficientValues[] = { 9.0f, 1.0f, 2.0f, -2.0f, 7.0f, 1.0f, -1.0f, 1.0f, 8.0f };
+    ValueType rhsValues[]         = { 9.0f, 11.0f, -7.0f };
+    ValueType solutionValues[]    = { 1.0f, 2.0f, -1.0f };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, coefficientValues );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -119,18 +118,22 @@ template<typename ValueType>
 EquationHelper::EquationSystem<ValueType> EquationHelper::get4x4SystemA()
 {
     IndexType dim = 4;
-    ValueType coefficientValues[] =
+
+    ValueType values[] =
     { 1.0f, 2.0f, 3.0f, 2.0f, 2.0f, 4.0f, -1.0f, -1.0f, 3.0f, -1.0f, 2.0f, 7.0f, 2.0f, -1.0f, 7.0f, -4.0f };
     ValueType rhsValues[] =
     { 8.0f, 13.0f, 12.0f, -16.0f };
     ValueType solutionValues[] =
     { 1.0f, 3.0f, -1.0f, 2.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setRawDenseData( dim, dim, coefficientValues );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    SCAI_ASSERT_EQ_ERROR( dim * dim, sizeof( values ) / sizeof( ValueType ), "serious size mismatch" )
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -138,23 +141,26 @@ template<typename ValueType>
 EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemA()
 {
     IndexType dim = 8;
-    ValueType matrixValues[] =
+
+    ValueType values[] =
     {
         2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
         2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
         2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
         2.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 2.0f
     };
-    ValueType rhsValues[] =
-    { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
-    ValueType solutionValues[] =
-    { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients;
-    coefficients.setRawDenseData( dim, dim, matrixValues );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    SCAI_ASSERT_EQ_ERROR( dim * dim, sizeof( values ) / sizeof( ValueType ), "serious size mismatch" )
+
+    ValueType rhsValues[]      = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+    ValueType solutionValues[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -169,15 +175,18 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8EmptyDiagonal()
         2.0f, 3.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f, 1.0f, 2.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f, 1.0f, 7.0f,
         6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f
     };
-    ValueType rhsValues[] =
-    { 28.0f, 22.0f, 18.0f, 16.0f, 16.0f, 18.0f, 22.0f, 28.0f };
-    ValueType solutionValues[] =
-    { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    SCAI_ASSERT_EQ_ERROR( dim * dim, sizeof( values ) / sizeof( ValueType ), "serious size mismatch" )
+
+    ValueType rhsValues[] = { 28.0f, 22.0f, 18.0f, 16.0f, 16.0f, 18.0f, 22.0f, 28.0f };
+    ValueType solutionValues[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -191,11 +200,13 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get4x4SystemB()
     { 8.0f, 8.0f, 6.0f, 6.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -214,15 +225,20 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemB()
         2.0f, 1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, // 5
         1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f // 4
     };
+
+    SCAI_ASSERT_EQ_ERROR( dim * dim, sizeof( values ) / sizeof( ValueType ), "serious size mismatch" )
+
     ValueType rhsValues[] =
     { 28.0f, 22.0f, 18.0f, 28.0f, 16.0f, 16.0f, 18.0f, 22.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -242,11 +258,13 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemC()
     { 28.0f, 28.0f, 22.0f, 18.0f, 16.0f, 16.0f, 18.0f, 22.0f };
     ValueType solutionValues[] =
     { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 
@@ -254,6 +272,7 @@ template<typename ValueType>
 EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemD()
 {
     IndexType dim = 8;
+
     ValueType values[] =
     {
         7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f, // 0
@@ -265,16 +284,16 @@ EquationHelper::EquationSystem<ValueType> EquationHelper::get8x8SystemD()
         2.0f, 1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, // 3
         1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f // 2
     };
-    // (0, 1, 6, 7, 4, 5, 3, 2)
-    ValueType rhsValues[] =
-    { 28.0f, 22.0f, 18.0f, 28.0f, 16.0f, 16.0f, 18.0f, 22.0f };
-    ValueType solutionValues[] =
-    { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-    scai::lama::CSRSparseMatrix<ValueType> coefficients( dim, dim, values );
-    scai::lama::DenseVector<ValueType> rhs( dim, rhsValues );
-    scai::lama::DenseVector<ValueType> solution( dim, solutionValues );
-    EquationSystem<ValueType> equationSystem =
-    { coefficients, rhs, solution };
+
+    ValueType rhsValues[] =      { 28.0f, 22.0f, 18.0f, 28.0f, 16.0f, 16.0f, 18.0f, 22.0f };
+    ValueType solutionValues[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+    EquationSystem<ValueType> equationSystem;
+
+    equationSystem.coefficients.setRawDenseData( dim, dim, values );
+    equationSystem.rhs.setRawData( dim, rhsValues );
+    equationSystem.solution.setRawData( dim, solutionValues );
+
     return equationSystem;
 }
 

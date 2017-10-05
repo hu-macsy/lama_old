@@ -433,7 +433,7 @@ void PETScIO::readStorageImpl(
     }
     else
     {
-        csrValues.init( ValueType( 1 ), nnz );
+        csrValues.setSameValue( nnz, ValueType( 1 ) );
     }
 
     if ( firstRow == 0 && nRows == nIndex )

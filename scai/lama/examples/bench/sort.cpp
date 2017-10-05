@@ -82,11 +82,9 @@ static void bench( const IndexType N )
     DenseVector<ValueType> X;
     DenseVector<IndexType> perm;
 
-    float fillRate = 1.0f;
-
     srand( 131 + comm->getRank() );
 
-    X.setRandom( blockDist, fillRate );
+    X.setRandom( blockDist, 1 );
 
     DenseVector<ValueType> Xsave( X );  // save for comparison
 

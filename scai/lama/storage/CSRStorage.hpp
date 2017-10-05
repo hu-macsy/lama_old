@@ -89,6 +89,7 @@ class COMMON_DLL_IMPORTEXPORT CSRStorage:
 public:
 
     typedef ValueType StorageValueType;
+    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** get typename of the matrix storage format. */
 
@@ -605,15 +606,15 @@ public:
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual ValueType maxNorm() const;
+    virtual StorageAbsType maxNorm() const;
 
     /** Implementation for MatrixStorage::maxDiffNorm */
 
-    virtual ValueType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual StorageAbsType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /** Implementation of maxDiffNorm for CSR matrices */
 
-    virtual ValueType maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
+    virtual StorageAbsType maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
 
     /** Implemenation of pure method of class MatrixStorage. */
 

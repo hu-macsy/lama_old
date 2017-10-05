@@ -215,6 +215,78 @@ struct SparseKernelTrait
         }
     };
 
+    template<typename ValueType>
+    struct allCompareSparse
+    {
+        /** Binary comparison of two sparse vectors and all reduce
+         *
+         *  @param[out] allFlag    contains the result of all comparison
+         *  @param[in]  indexes1   non-zero indexes first array
+         *  @param[in]  values1    non-zero values first array
+         *  @param[in]  zero1      zero value first array
+         *  @param[in]  n1         number of non-zero indexes first arra1
+         *  @param[in]  indexes2   non-zero indexes first array
+         *  @param[in]  values2    non-zero values second array
+         *  @param[in]  zero2      zero value second array
+         *  @param[in]  n2         number of non-zero indexes second array
+         *  @param[in]  op         specifies the comparison operation
+         *  @return     number of sparse entries compared
+         */
+        typedef IndexType ( *FuncType ) (
+            bool& allFlag,
+            const IndexType indexes1[],
+            const ValueType values1[],
+            const ValueType zero1,
+            const IndexType n1,
+            const IndexType indexes2[],
+            const ValueType values2[],
+            const ValueType zero2,
+            const IndexType n2,
+            const common::binary::CompareOp op );
+
+        static const char* getId()
+        {
+            return "Utils.allCompareSparse";
+        }
+    };
+
+    template<typename ValueType>
+    struct mergeSparse
+    {
+        /** Merge non-zero entries of two sparse arrays
+         *
+         *  @param[out] indexes    non-zero indexes result array
+         *  @param[out] values     non-zero values result array
+         *  @param[in]  indexes1   non-zero indexes first array
+         *  @param[in]  values1    non-zero values first array
+         *  @param[in]  n1         number of non-zero indexes first arra1
+         *  @param[in]  indexes2   non-zero indexes first array
+         *  @param[in]  values2    non-zero values second array
+         *  @param[in]  n2         number of non-zero indexes second array
+         *  @param[in]  op         specifies the binary operation
+         *  @return     number of non-zero indexes in result array
+         *
+         *  The returned value must be exactly the same as countAddSparse( indexes1, n1, indexes2, n2 ).
+         *  The arrays indexes and values must have been allocated at least with this size.
+         */
+
+        typedef IndexType ( *FuncType ) (
+            IndexType indexes[],
+            ValueType values[],
+            const IndexType indexes1[],
+            const ValueType values1[],
+            const IndexType n1,
+            const IndexType indexes2[],
+            const ValueType values2[],
+            const IndexType n2,
+            const common::binary::BinaryOp op );
+
+        static const char* getId()
+        {
+            return "Utils.mergeSparse";
+        }
+    };
+
 };
 
 } /* end namespace utilskernel */

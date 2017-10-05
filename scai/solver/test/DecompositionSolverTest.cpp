@@ -133,7 +133,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types
     matrix.setRawCSRData( dist, dist, nnz, ia, ja, values );
     matrix.setContextPtr( context );
 
-    DenseVector<ValueType> rhs( numRows, rhsValues, context );
+    DenseVector<ValueType> rhs( context );
+    rhs.setRawData( numRows, rhsValues );
     DenseVector<ValueType> solution( numRows, 0.0, context );
     rhs.redistribute( dist );
     solution.redistribute( dist );

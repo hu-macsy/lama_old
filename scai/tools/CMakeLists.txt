@@ -65,7 +65,7 @@ foreach ( executable ${LAMA_TOOLS} )
 
     add_executable ( ${executable} ${executable}.cpp )
 
-    target_link_libraries ( ${executable} ${MODULE_LIBRARY} )
+    target_link_libraries ( ${executable} ${SCAI_START_LINK_LIBRARIES} ${MODULE_LIBRARY} )
 
     install( TARGETS ${executable} DESTINATION bin )
 

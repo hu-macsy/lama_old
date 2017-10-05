@@ -1,5 +1,5 @@
 /**
- * @file vectorConvert.cpp
+ * @file lamaVectorConvert.cpp
  *
  * @license
  * Copyright (c) 2009-2017

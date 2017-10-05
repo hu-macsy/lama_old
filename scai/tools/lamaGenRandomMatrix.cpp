@@ -1,5 +1,5 @@
 /**
- * @file matrixRandomGenerator.cpp
+ * @file lamaGenRandomMatrix.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -40,6 +40,7 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/matrix/MatrixAssemblyAccess.hpp>
 
 #include <scai/common/mepr/TypeListUtils.hpp>
 #include <scai/common/Settings.hpp>
@@ -163,18 +164,24 @@ int main( int argc, const char* argv[] )
 
     Matrix& m = *matrixPtr;
 
+    m.allocate( nrows, ncols );
+
     {
-        using hmemo::_HArray;
-        using utilskernel::HArrayUtils;
+        MatrixAssemblyAccess<double> access( m, common::binary::COPY );
 
-        DistributionPtr rowDist( new NoDistribution( nrows ) );
-        DistributionPtr colDist( new NoDistribution( ncols ) );
+        for ( IndexType i = 0; i < nrows; ++i )
+        {
+            for ( IndexType j = 0; j < ncols; ++j )
+            {
+                bool takeIt = common::Math::randomBool( fillRate );
 
-        common::unique_ptr<_HArray> denseValues( _HArray::create( stype ) );
-
-        HArrayUtils::setRandom( *denseValues, nrows * ncols, fillRate );
-
-        m.setDenseData( rowDist, colDist, *denseValues );
+                if ( takeIt )
+                {
+                    double val = common::Math::random<double>( 1 );
+                    access.push( i, j, val );
+                }
+            }
+        }
     }
 
     scai::common::unique_ptr<Vector> xPtr( Vector::getVector( Vector::DENSE, stype ) );
@@ -183,7 +190,7 @@ int main( int argc, const char* argv[] )
     Vector& x = *xPtr;
     Vector& b = *bPtr;
 
-    x.setRandom( m.getColDistributionPtr() );
+    x.setRandom( m.getColDistributionPtr(), 1 );
     b = m * x;
 
     cout << "m = " << m << endl;

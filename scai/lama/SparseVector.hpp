@@ -196,8 +196,18 @@ public:
     SparseVector( const IndexType size, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
+     * @brief creates a distributed SparseVector of the passed global size initialized to the passed value.
+     *
+     * @param[in] distribution  the distribution to use for the new vector.
+     * @param[in] value         the value to assign to all elements of the new DenseVector.
+     * @param[in] context   specifies optionally the context where dense vector should reside
+     */
+    SparseVector( dmemo::DistributionPtr distribution, const ValueType value, hmemo::ContextPtr context = hmemo::ContextPtr() );
+
+    /**
      * @brief Constrcutor of sparse vector with raw arrays.
      */
+
     template<typename OtherValueType>
     SparseVector(
         const IndexType size,
@@ -395,13 +405,26 @@ public:
     using Vector::operator=;
     using Vector::assign;
 
+    /** Implemenation of pure method Vector::concatenate */
+
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors );
+
     /**
-     * This method initializes a distributed vector with random numbers.
+     * Implementation of Vector::fillRandom for sparse vectors.
      *
-     * @param[in] distribution specifies the distribution of the vector
-     * @param[in] fillRate for the number of non-zeros
+     * This method is only available to keep consistency with the dense vector.
+     * If applied to a sparse vector it would not remain really sparse. 
+     * Please use  setSparseRandom to generate a sparse random vector.
      */
-    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 );
+    virtual void fillRandom( const IndexType bound );
+
+    /**
+     *  This method generates a random sparse vector with a certain fillRate.
+     * 
+     *  @param[in] bound     draw random non-zero values in range of $[0,bound]$.
+     *  @param[in] fillRate  probablity for a non-zero entry
+     */
+    virtual void fillSparseRandom( const float fillRate, const IndexType bound );
 
     /** Implementation of Vector::getValueType */
 
@@ -444,12 +467,12 @@ public:
     virtual void setDenseValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of pure method Vector::setSparseValues.
+     * Implementation of pure method Vector::fillSparseData
      */
-    virtual void setSparseValues(
-        const hmemo::HArray<IndexType>& nonZeroIndexes,
+    virtual void fillSparseData( 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const Scalar zeroValue = Scalar( 0 ) );
+        const common::binary::BinaryOp op );
 
     /**
      * Setting sparse values with raw data 
@@ -655,12 +678,16 @@ void SparseVector<ValueType>::setSparseValues(
     const OtherValueType nonZeroValues[],
     const OtherValueType zeroValue )
 {
+    assign( zeroValue );
+
     // use LAMA array reference to avoid copy of the raw data
 
     hmemo::HArrayRef<OtherValueType> values( nnz, nonZeroValues );
     hmemo::HArrayRef<IndexType> indexes( nnz, nonZeroIndexes );
 
-    setSparseValues( indexes, values, zeroValue );
+    // values at same index will be replaced
+
+    fillSparseData( indexes, values, common::binary::COPY );
 }
 
 Vector::VectorKind _SparseVector::getVectorKind() const

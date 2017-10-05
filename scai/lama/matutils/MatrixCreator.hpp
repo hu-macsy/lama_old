@@ -58,23 +58,24 @@ class COMMON_DLL_IMPORTEXPORT MatrixCreator
 {
 public:
 
-    /** Fill a matrix in CSR format with random values
+    /** Fill an allocated matrix in CSR format with random values
      *
      *  param[inout] matrix size and distribution of matrix remains unchanged
      *  param[in] density specifies the density of sparse entries (0.0 is empty, 1.0 is full )
      *
+     *  The non-zero values of the matrix will be in the range [0,1] and might be adapted by
+     *  the scale method of matrices.
      */
 
-    static void fillRandom( Matrix& matrix, double density );
+    static void fillRandom( Matrix& matrix, float density );
 
-    /** Builds a block distributed matrix with random values.
+    /** Builds a block distributed matrix with random values from scratch.
      *
      *  param[out] matrix will be new defined as required
      *  param[in] size is the size of the square matrix (number of rows and number of columns)
      *  param[in] density specifies the density of sparse entries (0.0 is empty, 1.0 is full )
      */
-
-    static void buildRandom( Matrix& matrix, const IndexType size, const double density );
+    static void buildRandom( Matrix& matrix, const IndexType size, const float density );
 
     /** Build a sparse matrix representing the discretization of the Laplacian operator
      *  on a one-dimensional structured grid.

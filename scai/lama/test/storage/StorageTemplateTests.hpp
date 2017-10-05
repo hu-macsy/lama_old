@@ -57,14 +57,15 @@ void storageSwapTest()
     setDenseData( csr1 );
     IndexType n = csr1.getNumRows();
     IndexType m = csr1.getNumColumns();
-    LArray<ValueType> x( context );
-    LArray<ValueType> y( context );
+    LArray<ValueType> x( m, context );
+    LArray<ValueType> y( n, context );
     LArray<ValueType> z1( context );
     LArray<ValueType> z2( context );
     ValueType alpha = 1.3;
     ValueType beta  = -0.5;
-    HArrayUtils::setRandom( x, m, 1.0f );
-    HArrayUtils::setRandom( y, n, 1.0f );
+    IndexType range = 1;
+    HArrayUtils::setRandom( x, range );
+    HArrayUtils::setRandom( y, range );
     csr1.matrixTimesVector( z1, alpha, x, beta, y );
     csr1.swap( csr2 );
     // now check sizes

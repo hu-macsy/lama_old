@@ -90,14 +90,17 @@ public:
     HArray();
 
     /**
-     * @brief Initialize an array with values from host
+     * @brief Initialize an array with raw data values from host 
+     *
+     * @param[in] size is the number of elements to set
+     * @param[in] data is the value array with at least size values
      */
-    void init( const ValueType src[], const IndexType size );
+    void setRawData( const IndexType size, const ValueType data[] );
 
     /**
      * @brief Initialize an array with same value for each entry
      */
-    void init( const ValueType src, const IndexType size );
+    void setSameValue( const IndexType size, const ValueType value );
 
     /**
      * @brief Create a Heterogeneous array and give it a first touch on a context
@@ -122,6 +125,15 @@ public:
      * HArray( const IndexType n ) creates a HArray of size n and allocates uninitialized Host memory.
      */
     explicit HArray( const IndexType n );
+
+    /**
+     * @brief Create an (unitialized) HArray of size n 
+     *
+     * @param[in] n       the size of the HArray to create
+     * @param[in] context the location the HArray should be located first
+     *
+     */
+    HArray( const IndexType n, ContextPtr context );
 
     /**
      * @brief Create a HArray of size n and initialize it with one value.
@@ -319,6 +331,17 @@ HArray<ValueType>::HArray( const IndexType n ) :
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
+HArray<ValueType>::HArray( const IndexType n, ContextPtr context ) :
+
+    _HArray( n, sizeof( ValueType ) )
+{
+    mContextDataManager.reserve( context, n * mValueSize, 0 );
+    SCAI_LOG_DEBUG( logger, "created new HArray: " << *this)
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
 HArray<ValueType>::HArray( const IndexType n, const ValueType& value, ContextPtr context ) :
 
     _HArray( n, sizeof( ValueType ) )
@@ -365,7 +388,7 @@ HArray<ValueType>::HArray( const IndexType n, const ValueType values[], ContextP
 
 {
     /* ContextDataIndex data = */  mContextDataManager.getContextData( context );
-    init( values, n );
+    setRawData( n, values );
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -424,7 +447,7 @@ common::scalar::ScalarType HArray<ValueType>::getValueType() const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::init( const ValueType src[], const IndexType size )
+void HArray<ValueType>::setRawData( const IndexType size, const ValueType src[] )
 {
     // context manager copies the data to the first touch location
     mContextDataManager.init( src, sizeof( ValueType ) * size );
@@ -434,7 +457,7 @@ void HArray<ValueType>::init( const ValueType src[], const IndexType size )
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-void HArray<ValueType>::init( const ValueType value, const IndexType size )
+void HArray<ValueType>::setSameValue( const IndexType size, const ValueType value )
 {
     common::scoped_array<ValueType> data( new ValueType[size] );
 
@@ -443,7 +466,7 @@ void HArray<ValueType>::init( const ValueType value, const IndexType size )
         data[i] = value;
     }
 
-    init( data.get(), size );
+    setRawData( size, data.get() );
 }
 
 /* ---------------------------------------------------------------------------------*/

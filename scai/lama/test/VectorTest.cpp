@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE( ConjTest )
 
         float fillRate = 0.1f;
 
-        v->setRandom( dist, fillRate );
+        v->setSparseRandom( dist, 0, fillRate, 1 );
         
         VectorPtr v1( v->copy() );
 
@@ -278,7 +278,9 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
         float fillRate = 0.1f;
 
-        v1.setRandom( dist, fillRate );
+        Scalar zero = 0;
+
+        v1.setSparseRandom( dist, zero, fillRate, 1 );
 
         v1 += 2;
 
@@ -321,7 +323,7 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
 
         float fillRate = 0.1f;
 
-        v1.setRandom( vectorDist, fillRate );
+        v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
         VectorPtr v2Ptr( v1.copy() );
         Vector& v2 = *v2Ptr;
@@ -367,9 +369,9 @@ BOOST_AUTO_TEST_CASE( PowTest )
 
         float fillRate = 0.1f;
 
-        v1.setRandom( vectorDist, fillRate );
+        v1.setSparseRandom( vectorDist, 0, fillRate, 2 );
 
-        v1 += 3.0;   // range 2 .. 4
+        v1 += 2.0;   // range 2 .. 4
 
         VectorPtr v2Ptr( v1.copy() );
         Vector& v2 = *v2Ptr;
@@ -470,7 +472,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
         {
             dmemo::DistributionPtr dist = dists[j];
 
-            dV1.setSequence( 3, 1, dist );   // only supported for dense vectors
+            dV1.setRange( dist, 3, 2 );   // only supported for dense vectors
 
             MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
@@ -634,8 +636,11 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
             common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
             common::shared_ptr<_HArray> data2( _HArray::create( v2->getValueType() ) );
 
-            utilskernel::HArrayUtils::setRandom( *data1, n );
-            utilskernel::HArrayUtils::setRandom( *data2, n );
+            data1->resize( n );
+            data2->resize( n );
+
+            utilskernel::HArrayUtils::setRandom( *data1, 1 );
+            utilskernel::HArrayUtils::setRandom( *data2, 1 );
 
             v1->assign( *data1 );
             v2->assign( *data2 );
@@ -687,7 +692,8 @@ BOOST_AUTO_TEST_CASE( scaleTest )
         }
 
         common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-        utilskernel::HArrayUtils::setRandom( *data1, n );
+        data1->resize( n );
+        utilskernel::HArrayUtils::setRandom( *data1, 1 );
 
         v1->assign( *data1 );
 
@@ -726,5 +732,45 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 }
 
 /* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( allTest )
+{
+    using namespace hmemo;
+
+    const IndexType n = 5;
+
+    const double denseData[] = { 0, 3, 3, 5, 2 };
+
+    const double zero = 3;
+    const IndexType sparseIndexes[] = { 0, 3, 4 };
+    const double sparseData[] = { 0, 5, 2 };
+
+    // we want to compare all combination of sparse/dense vectors
+
+    TestVectors vectors1;
+    TestVectors vectors2;
+
+    for ( size_t i = 0; i < vectors1.size(); ++i )
+    {
+        VectorPtr v1 = vectors1[i];
+
+        v1->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+
+        BOOST_CHECK( v1->all( common::binary::GE, 0 ) );
+
+        v1->setRawData( 5, denseData );
+
+        BOOST_CHECK( v1->all( common::binary::GE, 0 ) );
+
+        for ( size_t j = 0; j < vectors2.size(); ++j )
+        {
+            VectorPtr v2 = vectors2[j];
+
+            v2->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+
+            BOOST_CHECK( v1->all( common::binary::EQ, *v2 ) );
+        }
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END();

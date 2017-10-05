@@ -91,7 +91,7 @@ void Kaczmarz::initialize( const Matrix& coefficients )
     SCAI_REGION( "Solver.Kaczmarz.initialize" )
     IterativeSolver::initialize( coefficients );
     KaczmarzRuntime& runtime = getRuntime();
-    runtime.mRow.reset( coefficients.newDenseVector() );
+    runtime.mRow.reset( coefficients.newVector( coefficients.getRowDistributionPtr() ) );
 }
 
 void Kaczmarz::iterate()

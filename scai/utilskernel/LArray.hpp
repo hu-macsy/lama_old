@@ -67,6 +67,8 @@ class LArray : public hmemo::HArray<ValueType>
 {
 public:
 
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     /** Help class to observe the further use of operator[] in LArray */
     class IndexProxy
     {
@@ -323,9 +325,20 @@ public:
         return HArrayUtils::getVal<ValueType>( *this, i );
     }
 
-    void setRandom( IndexType n, float fillRate = 1.0f, hmemo::ContextPtr context = hmemo::ContextPtr() )
+    /** Fill the array with random values between 0 and bound 
+     *
+     *  @param bound    specifies range of random values
+     *  @param fillRate probability whether an existing element is replaced
+     *  @param context  optional argument for context where random data should be drawn
+     */
+    void setSparseRandom( float fillRate, IndexType bound, hmemo::ContextPtr context = hmemo::ContextPtr() )
     {
-        HArrayUtils::setRandomImpl( *this, n, fillRate, context );
+        HArrayUtils::fillRandomImpl( *this, bound, fillRate, context );
+    }
+
+    void setRandom( IndexType bound, hmemo::ContextPtr context = hmemo::ContextPtr() )
+    {
+        HArrayUtils::fillRandomImpl( *this, bound, 1.0f, context );
     }
 
     /** Get the minimal value of an array */
@@ -358,19 +371,19 @@ public:
 
     /** Compute the sum of magnitudes, for complex numbers it is the sum of real and imag part */
 
-    ValueType l1Norm() const
+    AbsType l1Norm() const
     {
         return HArrayUtils::asum( *this );
     }
 
-    ValueType l2Norm() const
+    AbsType l2Norm() const
     {
         return HArrayUtils::nrm2( *this );
     }
 
     /** Build the max diff norm with another LAMA array */
 
-    ValueType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
+    AbsType maxDiffNorm( const hmemo::HArray<ValueType>& other ) const
     {
         return HArrayUtils::absMaxDiffVal( *this, other );
     }

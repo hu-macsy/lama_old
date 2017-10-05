@@ -87,10 +87,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
 
     const std::string fileName = "tmpGrid.mat";
 
-    GridVector<double> gv1( common::Grid4D( n1, n2, n3, n4 ) );
+    GridVector<RealType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
 
     {
-        GridWriteAccess<double> wGV1( gv1 );
+        GridWriteAccess<RealType> wGV1( gv1 );
 
         for ( IndexType i1 = 0; i1 < n1; ++i1 )
         {
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
                     for ( IndexType i4 = 0; i4 < n4; ++i4 )
                     { 
                         wGV1( i1, i2, i3, i4 ) = 
-                            static_cast<double>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
+                            static_cast<RealType>( 1000 * ( i1 + 1 ) + 100 * ( i2 + 1 ) + 10 * ( i3 + 1 ) + i4 + 1 );
                     }
                 }
             }
@@ -110,13 +110,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
 
     gv1.writeToFile( fileName );
 
-    GridVector<double> gv2( fileName );
+    GridVector<RealType> gv2( fileName );
 
     BOOST_CHECK_EQUAL( gv1.globalGrid(), gv2.globalGrid() );
 
     {
-        GridReadAccess<double> rGV1( gv1 );
-        GridReadAccess<double> rGV2( gv2 );
+        GridReadAccess<RealType> rGV1( gv1 );
+        GridReadAccess<RealType> rGV2( gv2 );
 
         for ( IndexType i = 0; i < gv1.size(); ++i )
         {

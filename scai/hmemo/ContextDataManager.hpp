@@ -176,6 +176,11 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
+    bool isInitialized() const
+    {
+        return findValidData() < mContextData.size();
+    }
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

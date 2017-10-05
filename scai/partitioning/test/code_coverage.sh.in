@@ -1,5 +1,5 @@
 ###
- # @file make.inc
+ # @file code_coverage.sh
  #
  # @license
  # Copyright (c) 2009-2017
@@ -27,28 +27,33 @@
  # Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  # @endlicense
  #
- # @brief Definition of variables that will be included in each Makefile of examples
- # @author Thomas Brandes
- # @date 03.07.2017
+ # @brief This file is a shellscript, which contains all necessary steps to 
+ #        measure code coverage of LAMA subproject dmemo.
+ # @author Lauretta Schubert, Eric Schricker
+ # @date 15.08.2012
 ###
 
-SCAI_ROOT              = ${CMAKE_INSTALL_PREFIX}
-SCAI_BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}
-SCAI_CUDA_INCLUDE_DIR  = ${SCAI_CUDA_INCLUDE_DIR}
+source scai_code_coverage_functions.sh
 
-CXX      = ${CMAKE_CXX_COMPILER}
-CXX_CUDA = ${CUDA_NVCC_EXECUTABLE}
+# Check requirements for codecoverage
+requirements_coverage
 
-CXX_FLAGS      = ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}
-CXX_CUDA_FLAGS = ${CUDA_NVCC_FLAGS_CLEAN}
+dirname=$(create_dir)
+echo "Create coverage directory: ${dirname}"
 
-SCAI_DEFINES   = ${SCAI_DEFINES}
+prepare_coverage $dirname ../..
 
-ADDITIONAL_EXAMPLE_LINK_LIBRARIES = ${ADDITIONAL_EXAMPLE_LINK_LIBRARIES}
-SCAI_LD_FLAGS                     = ${CMAKE_EXE_LINKER_FLAGS} -L${CMAKE_INSTALL_PREFIX}/lib ${SCAI_EXAMPLE_LINK_LIBRARIES}
+export SCAI_LOG=TRACE
+export SCAI_TRACE=time
+	
+# Running dmemo tests
+echo "Running partitioning tests serial"
+count_error ./partitioningTest --SCAI_COMMUNICATOR=NO
 
-SCAI_CUDA_LIBRARY_PATH = ${SCAI_CUDA_LIBRARY_PATH}
+exit_on_failure ${error_count}
+    
+do_coverage $dirname ../.. "@CMAKE_SOURCE_DIR@"
 
-SCAI_EXECUTABLES = ${EXAMPLE_EXECUTABLES}
-SCAI_MODULES     = ${EXAMPLE_MODULES}
-SCAI_LIBS        = ${EXAMPLE_LIBS}
+exit_on_failure $?
+
+zip -qr ../dmemo_coverage.zip *

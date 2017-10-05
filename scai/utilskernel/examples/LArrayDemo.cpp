@@ -37,14 +37,16 @@
 using namespace scai;
 using utilskernel::LArray;
 
+typedef RealType ValueType;
+
 int main()
 {
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     const IndexType n = 10000;
 
-    LArray<double> x( n, 1.0, ctx );
-    LArray<double> y( n, 2.0, ctx );
+    LArray<ValueType> x( n, 1.0, ctx );
+    LArray<ValueType> y( n, 2.0, ctx );
  
     x[0] = 0.5;
     y[1] = x[0] * 1.0 - 0.5 * y[0];
@@ -78,7 +80,7 @@ int main()
     x.powBase( y );    // x[i] = y[i] ** x[i]
     y.powExp( x );     // y[i] = y[i] ** x[i]
 
-    double s;
+    ValueType s;
 
     s = x.sum();
     s = x.min();

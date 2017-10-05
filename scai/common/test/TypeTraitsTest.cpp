@@ -181,33 +181,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PrecisionTest, ValueType, scai_numeric_test_types
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( SmallTest, ValueType, scai_numeric_test_types )
 {
-    ValueType small  = TypeTraits<ValueType>::small();
-    ValueType eps0   = TypeTraits<ValueType>::eps0();
-    ValueType min    = TypeTraits<ValueType>::getMin();
-    ValueType max    = TypeTraits<ValueType>::getMax();
-    ValueType eps1   = TypeTraits<ValueType>::eps1();
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+    AbsType min    = TypeTraits<ValueType>::getMin();
+    AbsType max    = TypeTraits<ValueType>::getMax();
+    AbsType small  = TypeTraits<ValueType>::small();
+    AbsType eps0   = TypeTraits<ValueType>::eps0();
+    AbsType eps1   = TypeTraits<ValueType>::eps1();
 
     // neutral elements for min and max operations
 
     BOOST_CHECK( min < max );
 
-    ValueType one = 1;
-    ValueType one1 = one + eps1;
+    AbsType one = 1;
+    AbsType one1 = one + eps1;
 
     // Note: This test fails for LongDouble or ComplexLongDouble when using valgrind
 
     BOOST_CHECK( one < one1 );
-    BOOST_CHECK( one1 != ValueType( 0 ) );
+    BOOST_CHECK( one1 != AbsType( 0 ) );
 
     // there should be no value between one and one1
 
-    ValueType one2 = ( one + one1 ) * ValueType( 0.5 );
+    AbsType one2 = ( one + one1 ) * AbsType( 0.5 );
 
     BOOST_CHECK( one2 == one1 || one2 == one );
 
     // compare small, eps0 against eps1
 
-    BOOST_CHECK( ValueType( 0 ) < eps0 );
+    BOOST_CHECK( AbsType( 0 ) < eps0 );
     BOOST_CHECK( eps0 < eps1 );
     BOOST_CHECK( eps1 < small );
 }

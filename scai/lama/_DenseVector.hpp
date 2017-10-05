@@ -88,22 +88,40 @@ public:
     virtual const hmemo::_HArray& getLocalValues() const = 0;
 
     /**
-     * @brief This method initializes a (replicated) dense vector with a sequence of values.
+     * @brief This method fills/initializes an allocated vector 
      *
      * @param[in] startValue value for the first element
      * @param[in] inc increment between the elements
-     * @param[in] n will be the size of this replicated vector.
+     *
+     * This is a pure routine that is implemented individually by derived classes.
      */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, const IndexType n ) = 0;
+    virtual void fillRange( const Scalar startValue, const Scalar inc ) = 0;
+
+    /**
+     * @brief allocate a replicated vector and fill it with range values
+     *
+     * @param[in] n becomes the size of the vector
+     * @param[in] startValue value for the first element, $vector[0] = startValue$
+     * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
+     */
+    void setRange( const IndexType n, const Scalar startValue, const Scalar inc )
+    {
+        allocate( n );
+        fillRange( startValue, inc );
+    }
 
     /**
      * This method initializes a (distributed) dense vector with a sequence of values
      *
-     * @param[in] startValue value for the first element
-     * @param[in] inc increment between the element
      * @param[in] distribution determines global/local size of the vector
+     * @param[in] startValue value for the first elemen
+     * @param[in] inc increment between the element
      */
-    virtual void setSequence( const Scalar startValue, const Scalar inc, dmemo::DistributionPtr distribution ) = 0;
+    void setRange( dmemo::DistributionPtr distribution, const Scalar startValue, const Scalar inc )
+    {
+        allocate( distribution );
+        fillRange( startValue, inc );
+    }
 
     /**
      * @brief Create a new dense vector of a certain type 

@@ -54,7 +54,7 @@ using namespace dmemo;
 int main( int, char** ) 
 
 {
-    typedef double ValueType;
+    typedef RealType ValueType;
 
     // coefficients of the matrix A
 
@@ -77,7 +77,7 @@ int main( int, char** )
 
     CSRSparseMatrix<ValueType> m;
 
-    hmemo::HArrayRef<double> data( numRows * numColumns, rawA );
+    hmemo::HArrayRef<ValueType> data( numRows * numColumns, rawA );
 
     DistributionPtr rowDist( new NoDistribution( numRows ) );
     DistributionPtr colDist( new NoDistribution( numColumns ) );
@@ -86,16 +86,18 @@ int main( int, char** )
 
     GramianMatrix mTm( m );
 
-    DenseVector<ValueType> b( numRows, rawB );
+    DenseVector<ValueType> b;
+    b.setRawData( numRows, rawB );
+
     DenseVector<ValueType> b1( b * m );
 
     DenseVector<ValueType> x0( colDist, 0 );
-    DenseVector<ValueType> bestX( numColumns, rawX );
-
+    DenseVector<ValueType> bestX;
+    bestX.setRawData( numColumns, rawX );
 
     // definie stopping criteria
 
-    double eps = 1e-8;
+    ValueType eps = 1e-8;
     CriterionPtr criterion1( new IterationCount( 20 ) );
     NormPtr norm( Norm::create( "L2" ) );   // Norm from factory
     CriterionPtr criterion2( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );

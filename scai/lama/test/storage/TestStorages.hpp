@@ -63,12 +63,13 @@ void getMatrix_7_4 ( IndexType& numRows,
         0, 0, 0, 0,
         0, 1, 0, 2
     };
-    matrixRowSizes.init( ia, numRows );
-    matrixJA.init( ja, numValues );
-    matrixValues.init( values, numValues );
+
+    matrixRowSizes.setRawData( numRows, ia );
+    matrixJA.setRawData( numValues, ja );
+    matrixValues.setRawData( numValues, values );
     numColumns = matrixJA.max() + 1;
     BOOST_REQUIRE_EQUAL( static_cast<size_t>( numRows * numColumns ), sizeof( resultMatrix ) / sizeof( ValueType ) );
-    denseValues.init( resultMatrix, numRows * numColumns );
+    denseValues.setRawData( numRows * numColumns, resultMatrix );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -76,9 +77,9 @@ void getMatrix_7_4 ( IndexType& numRows,
 template<typename ValueType>
 void setRandomData( scai::lama::MatrixStorage<ValueType>& storage, const IndexType numRows, const IndexType numColumns )
 {
-    scai::hmemo::HArray<ValueType> values;
+    scai::hmemo::HArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
     float fillRate = 0.5f;
-    scai::utilskernel::HArrayUtils::setRandom( values, numRows * numColumns, fillRate );
+    scai::utilskernel::HArrayUtils::setSparseRandom( values, fillRate, 1 );
     storage.setDenseData( numRows, numColumns, values );
 }
 

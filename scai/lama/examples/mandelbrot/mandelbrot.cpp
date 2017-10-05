@@ -46,7 +46,6 @@
 #include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/Vector.hpp>
 
-#include <scai/common/Complex.hpp>
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
@@ -84,20 +83,21 @@ struct Type_rgb pixels[DIMy* DIMx];
 
 void Julia()
 {
-    DenseVector<ValueType> yreal( DIMy, 0.0 );
-    DenseVector<ValueType> xreal( DIMx, 0.0 );
     DenseVector<ValueType> ind( DIMy * DIMx, 0.0 );
     DenseVector<ValueType> cReal( DIMx * DIMy, 0.0 );
     DenseVector<ValueType> cImag( DIMx * DIMy, 0.0 );
-    DenseVector<ValueType> aReal( DIMx * DIMy, 0.0 );
-    DenseVector<ValueType> aImag( DIMx * DIMy, 0.0 );
     DenseVector<ValueType> mag( DIMy * DIMx, 0.0 );
     DenseVector<ValueType> help( DIMy * DIMx, 0.0 );
     DenseVector<ValueType> help2( DIMy * DIMx, 0.0 );
-    aReal = -0.8;
-    aImag = 0.156;
-    yreal.setSequence( 0.0, 1.0 , DIMy );
-    xreal.setSequence( 0.0, 1.0 , DIMx );
+
+    DenseVector<ValueType> aReal( DIMx * DIMy, -0.8 );
+    DenseVector<ValueType> aImag( DIMx * DIMy, 0.156 );
+
+    DenseVector<ValueType> yreal;
+    yreal.setRange( DIMy, 0.0, 1.0 );
+    DenseVector<ValueType> xreal;
+    xreal.setRange( DIMx, 0.0, 1.0 );
+
     DenseVector<ValueType> eye1( DIMx, 1.0 );
     DenseVector<ValueType> eye2( DIMy, 1.0 );
     ValueType w = 0.5 * DIMx;

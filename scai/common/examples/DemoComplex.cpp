@@ -52,17 +52,16 @@ int main()
     std::cout << "static_cast<double>( b ) = " << static_cast<double>( b ) << std::endl;
     std::cout << "abs( b ) = " << scai::common::Math::abs( b ) << std::endl;
 
-    if ( a < b )
-    {
-        std::cout << a << " < " << b << std::endl;
-    }
-    else if ( a == b )
+    if ( a == b )
     {
         std::cout << a << " == " << b << std::endl;
     }
-
-//    else if ( a >= b )
-//    {
-//        std::cout << a << " >= " << b << std::endl;
-//    }
+    else if ( a != b )
+    {
+        std::cout << a << " == " << b << std::endl;
+    }
+    else
+    {
+        std::cout << "a = " << a << " and b = " << b << " are neihter equal nor not equal" << std::endl;
+    }
 }

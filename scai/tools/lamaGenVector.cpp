@@ -1,5 +1,5 @@
 /**
- * @file solver/examples/solver/vectorGenerator.cpp
+ * @file lamaGenVector.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -262,39 +262,24 @@ int main( int argc, const char* argv[] )
 
     if ( options.size == 0 && matrix.get() )
     {
-        v->allocate( matrix->getColDistributionPtr() );
+        v->setSameValue( matrix->getColDistributionPtr(), options.value );
     }
     else
     {
-        DistributionPtr dist ( new NoDistribution( options.size ) );
-        v->allocate( dist );
+        v->setSameValue( options.size, options.value );
     }
 
-    cout << "Vector (uninitialized): " << *v << endl;
-
-    *v = options.value;
+    cout << "Vector (initialized): " << *v << endl;
 
     if ( options.random )
     {
-        using namespace hmemo;
+        // generate random number for the vector, in range (0, 1)
 
-        // we know what we do here, so const_cast is okay
+        v->fillRandom( 1 ); 
 
-        _HArray& vLocal = const_cast<_HArray&>( v->getLocalValues() );
+        // scale random numbers from 0 .. 1 with options.value
 
-        IndexType n = vLocal.size();
-
-        float fillRate = 1.0f;          // full fill, no zero entries
-
-        utilskernel::HArrayUtils::setRandom( vLocal, n, fillRate );
-
-        // scale random numbers from -1 .. 1 with options.value
-
-        utilskernel::HArrayUtils::assignScalar( vLocal, options.value.getValue<RealType>(), common::binary::MULT );
-    }
-    else
-    {
-        *v = options.value;
+        *v *= options.value;
     }
 
     cout << "Vector generated: " << *v << endl;

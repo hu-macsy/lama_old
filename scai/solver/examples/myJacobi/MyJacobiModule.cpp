@@ -88,7 +88,7 @@ void MyJacobi::initialize( const scai::lama::Matrix& coefficients )
 
     if ( !runtime.mDiagonalTimesRhs.get() )
     {
-        runtime.mDiagonalTimesRhs.reset( coefficients.newDenseVector() );
+        runtime.mDiagonalTimesRhs.reset( coefficients.newVector( coefficients.getRowDistributionPtr() ) );
     }
 
     coefficients.getDiagonal( *runtime.mDiagonalTimesRhs );

@@ -332,7 +332,7 @@ void SimpleAMG::cycle()
         SCAI_LOG_DEBUG( logger, "curCoarseRhs = curRestriction * curTmpRhs on level " << runtime.mCurrentLevel )
         double transferStartTime = common::Walltime::get();
         curCoarseRhs = curRestriction * curTmpRhs;
-        curCoarseSolution = 0.0;
+        curCoarseSolution.setSameValue( curInterpolation.getColDistributionPtr(), 0 );
         totalTransferTime += common::Walltime::get() - transferStartTime;
         ++runtime.mCurrentLevel;
         cycle();

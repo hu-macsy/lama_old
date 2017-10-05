@@ -398,6 +398,42 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 }
 
 /* ---------------------------------------------------------------------------------------*/
+/*   setRandom, setSparseRandom                                                           */
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( n );
+
+    if ( fillRate < 1.0f )
+    {
+        assign( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+void Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( dist );
+
+    if ( fillRate < 1.0f )
+    {
+        assign( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
 /*    Assignment operator                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
@@ -682,7 +718,12 @@ void Vector::assign( const Vector& other )
 {
     SCAI_LOG_INFO( logger, "assign other = " << other )
 
-    setDistributionPtr( other.getDistributionPtr() );
+    if ( &other == this )
+    {
+        return;
+    }
+
+    allocate( other.getDistributionPtr() );
 
     switch ( other.getVectorKind() )
     {
@@ -695,7 +736,8 @@ void Vector::assign( const Vector& other )
         case Vector::SPARSE:
         {
             const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
-            setSparseValues( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), sparseOther.getZero() );
+            assign( sparseOther.getZero() );
+            fillSparseData( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), common::binary::COPY );
             break;
         }
         default:
@@ -755,6 +797,22 @@ void Vector::writeToSingleFile(
         repV->replicate();
         repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
     }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+
+void Vector::cat( const Vector& v1, const Vector& v2 )
+{
+    std::vector<const Vector*> vectors;
+
+    vectors.push_back( &v1 );
+    vectors.push_back( &v2 );
+
+    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
+
+    concatenate( dist, vectors );
 }
 
 /* ---------------------------------------------------------------------------------------*/

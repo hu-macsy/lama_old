@@ -153,7 +153,7 @@ void NoDistribution::writeAt( std::ostream& stream ) const
 void NoDistribution::computeOwners( HArray<PartitionId>& owners, const HArray<IndexType>& indexes ) const
 {
     PartitionId root = 0;
-    owners.init( root, indexes.size() );
+    owners.setSameValue( indexes.size(), root );
 }
 
 /* ---------------------------------------------------------------------------------*

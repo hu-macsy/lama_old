@@ -59,6 +59,9 @@ using namespace hmemo;
 using namespace lama;
 using namespace dmemo;
 
+// RealType: double or float
+
+typedef RealType ValueType;
 
 int main( int argc, const char* argv[] )
 {
@@ -69,7 +72,7 @@ int main( int argc, const char* argv[] )
 
     common::Settings::parseArgs( argc, argv );
 
-    common::Stencil1D<double> stencilFD8;
+    common::Stencil1D<ValueType> stencilFD8;
 
     stencilFD8.reserve( 8 );   // just for convenience, not mandatory
 
@@ -82,11 +85,11 @@ int main( int argc, const char* argv[] )
     stencilFD8.addPoint( 3, -49.0/5120.0 );
     stencilFD8.addPoint( 4, 5.0/7168.0 );
 
-    common::Stencil1D<double> stencilDummy( 1 );
+    common::Stencil1D<ValueType> stencilDummy( 1 );
 
-    common::Stencil2D<double> stencilX( stencilFD8, stencilDummy );
+    common::Stencil2D<ValueType> stencilX( stencilFD8, stencilDummy );
 
-    common::Stencil3D<double> stencil( 7 );
+    common::Stencil3D<ValueType> stencil( 7 );
 
     const IndexType N = 4; 
 
@@ -96,26 +99,27 @@ int main( int argc, const char* argv[] )
 
     dmemo::DistributionPtr gridDistribution( new GridDistribution( grid, comm ) );
 
-    StencilMatrix<double> distStencilMatrix( gridDistribution, stencil );
-    CSRSparseMatrix<double> distCSRMatrix( distStencilMatrix );
+    StencilMatrix<ValueType> distStencilMatrix( gridDistribution, stencil );
+    CSRSparseMatrix<ValueType> distCSRMatrix( distStencilMatrix );
 
     std::cout << "distributed stencilMatrix " << distStencilMatrix << std::endl;
 
-    StencilMatrix<double> repStencilMatrix( grid, stencil );
+    StencilMatrix<ValueType> repStencilMatrix( grid, stencil );
 
     std::cout << "replicated stencilMatrix " << repStencilMatrix << std::endl;
 
-    DenseVector<double> repX;
-    repX.setRandom( repStencilMatrix.getColDistributionPtr(), 1.0f );
+    DenseVector<ValueType> repX;
 
-    DenseVector<double> distX( repX, distStencilMatrix.getColDistributionPtr() );
+    repX.setRandom( repStencilMatrix.getColDistributionPtr(), 1 );
+
+    DenseVector<ValueType> distX( repX, distStencilMatrix.getColDistributionPtr() );
 
     std::cout << "max diff X = " << repX.maxDiffNorm( distX ) << std::endl;
 
     // replicated and distributed matrix-vector multiplication
 
-    DenseVector<double> repY( repStencilMatrix * repX );
-    DenseVector<double> distY( distStencilMatrix * distX );
+    DenseVector<ValueType> repY( repStencilMatrix * repX );
+    DenseVector<ValueType> distY( distStencilMatrix * distX );
 
     std::cout << "max diff Y = " << repY.maxDiffNorm( distY ) << std::endl;
 }

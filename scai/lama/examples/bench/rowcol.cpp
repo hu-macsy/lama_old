@@ -57,7 +57,7 @@ int main( int argc, const char* argv[] )
 
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
-    DenseMatrix<double> mat( size, size );
+    DenseMatrix<RealType> mat( size, size );
 
     mat.setContextPtr( ctx );
 
@@ -71,7 +71,7 @@ int main( int argc, const char* argv[] )
 
     mat.redistribute( dist, dist );
 
-    DenseVector<double> row( ctx );
+    DenseVector<RealType> row( ctx );
 
     double tstart = common::Walltime::get();
 
@@ -94,7 +94,7 @@ int main( int argc, const char* argv[] )
         MatrixCreator::fillRandom( mat, 0.1f );
     }
 
-    DenseVector<double> col( ctx );
+    DenseVector<RealType> col( ctx );
 
     mat.redistribute( dist, dist );
 

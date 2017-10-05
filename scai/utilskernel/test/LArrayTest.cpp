@@ -135,28 +135,38 @@ typedef boost::mpl::list<SCAI_ARRAY_TYPES_CUDA> ArrayRedTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( reductionTest, ValueType, ArrayRedTypes )
 {
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;    // abs, <, <=, ..
+
     testContext = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "reductionTest on " << *testContext )
     // ToDo: example with complex numbers
     const ValueType myVals[] = { 9, 5, 1, 4, 6, 3, 7, 8, 2, 0 };
     const IndexType N = sizeof( myVals ) / sizeof( ValueType );
-    ValueType expectedMin = TypeTraits<ValueType>::getMax();
-    ValueType expectedMax = TypeTraits<ValueType>::getMin();;
+
+    AbsType expectedMin = TypeTraits<ValueType>::getMax();
+    AbsType expectedMax = TypeTraits<ValueType>::getMin();;
     ValueType expectedSum = 0;
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        expectedMin = Math::min( expectedMin, myVals[i] );
-        expectedMax = Math::max( expectedMax, myVals[i] );
+        expectedMin = Math::min( expectedMin, AbsType( myVals[i] ) );
+        expectedMax = Math::max( expectedMax, AbsType( myVals[i] ) );
         expectedSum += myVals[i];
     }
 
     LArray<ValueType> array( N, myVals, testContext );
+
     // Constructor should have provided a valid copy on testContext
     BOOST_CHECK( array.isValid( testContext ) );
-    // reduction ops will be executed on testContext
-    BOOST_CHECK_EQUAL( expectedMin, array.min() );
-    BOOST_CHECK_EQUAL( expectedMax, array.max() );
+
+    // reduction ops will be executed on testContext, min, max not possible for complex
+
+    if ( TypeTraits<ValueType>::stype == TypeTraits<AbsType>::stype )
+    {
+        BOOST_CHECK_EQUAL( expectedMin, AbsType( array.min() ) );
+        BOOST_CHECK_EQUAL( expectedMax, AbsType( array.max() ) );
+    }
+
     BOOST_CHECK_EQUAL( expectedSum, array.sum() );
 }
 
@@ -178,8 +188,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        // random numbers between -1.0 and 1.0, real and imag part for complex
-        Math::random( myVals[i] );
+        // random numbers between 0.0 and 1.0, real and imag part for complex
+        myVals[i] = Math::random<ValueType>( 1 );
     }
 
     typedef typename TypeTraits<ValueType>::AbsType AbsType;
@@ -209,6 +219,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
 {
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
     testContext = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "binReductionTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     // the LArray allows indexed access, but attention: can be very slow
@@ -216,12 +228,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binReductionTest, ValueType, ArithmeticRedTypes )
     const ValueType myVals2[] = { 9, 5, 1, 3, 6, 3, 7, 8, 2, 0 };
     const IndexType N = sizeof( myVals1 ) / sizeof( ValueType );
     ValueType expectedDotProduct = 0;
-    ValueType expectedMaxDiffNorm = 0;
+    AbsType expectedMaxDiffNorm = 0;
 
     for ( IndexType i = 0; i < N; ++i )
     {
         expectedDotProduct += myVals1[i] * Math::conj( myVals2[i] );
-        ValueType absDiff = Math::abs( myVals2[i] - myVals1[i] );
+        AbsType absDiff = Math::abs( myVals2[i] - myVals1[i] );
         expectedMaxDiffNorm = Math::max( expectedMaxDiffNorm, absDiff );
     }
 
@@ -273,8 +285,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, ArithmeticRedTypes )
     testContext = Context::getContextPtr();
     SCAI_LOG_INFO( logger, "conjTest<" << TypeTraits<ValueType>::id() << " on " << *testContext )
     const IndexType N = 16;
-    LArray<ValueType> array;
-    HArrayUtils::setRandom( array, N, 1.0f, testContext );
+    LArray<ValueType> array( N );
+    array.setRandom( 1, testContext );
     LArray<ValueType> conjArray( array );
     conjArray.conj();   // build in place
 
@@ -355,7 +367,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignOperatorTest, ValueType, ArithmeticRedTypes
 
     for ( IndexType i = 0; i < N; ++i )
     {
-        BOOST_CHECK_CLOSE( Math::real( myVals[i] ), Math::real( array[i] ), 0.01 );
+        ValueType ai = array[i];
+        BOOST_CHECK_CLOSE( Math::real( myVals[i] ), Math::real( ai ), 0.01 );
     }
 }
 

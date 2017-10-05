@@ -682,6 +682,7 @@ class COMMON_DLL_IMPORTEXPORT MatrixStorage: public _MatrixStorage
 public:
 
     typedef ValueType StorageValueType;
+    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** Constructor of matrix storage contains dimensions of the matrix. */
 
@@ -1120,7 +1121,7 @@ public:
      *  @return maximal absolute value of matrix elements
      */
 
-    virtual ValueType maxNorm() const = 0;
+    virtual StorageAbsType maxNorm() const = 0;
 
     /** Gets the maximal absolute element-wise difference between two matrices
      *
@@ -1131,7 +1132,7 @@ public:
      *        and computing maxNorm of it.
      */
 
-    virtual ValueType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual StorageAbsType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /******************************************************************
      *   Solver methods (e.g. Jacobi )                                 *

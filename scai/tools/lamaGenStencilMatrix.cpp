@@ -1,5 +1,5 @@
 /**
- * @file matrixStencilGenerator.cpp
+ * @file lamaGenStencilMatrix.cpp
  *
  * @license
  * Copyright (c) 2009-2017

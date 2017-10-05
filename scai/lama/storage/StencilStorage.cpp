@@ -148,7 +148,7 @@ ValueType StencilStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType StencilStorage<ValueType>::maxNorm() const
+typename StencilStorage<ValueType>::StorageAbsType StencilStorage<ValueType>::maxNorm() const
 {
     COMMON_THROWEXCEPTION( "maxNorm unsupported" )
     return 0;
@@ -461,7 +461,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     values.resize( mNumColumns );
 
-    HArrayUtils::assignScalar( values, 0, common::binary::COPY );
+    HArrayUtils::assignScalar( values, ValueType( 0 ), common::binary::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;

@@ -391,26 +391,132 @@ public:
      *
      * Note: Implicit type conversion for the values is supported.
      */
+
     virtual void setDenseValues( const hmemo::_HArray& values ) = 0;
+
+    /** @brief Allocate and initialize this vector with data from an array
+     *
+     *  @param[in] values is the array copied to the vector.
+     *
+     *  Note: the vector is not distributed, i.e. each processor might either set it 
+     *        with individual local data or with same data.
+     *
+     *  \code
+     *     HArray<double> arr;
+     *     arr.setRandom( 100, 10 ); // fill it with 100 randoms between 0 and 10
+     *     Vector& x =
+     *     x.setData( arr );         
+     *  \endcode
+     *
+     *  If the vector is redistributed later, it must have been filled with the same values
+     *  by each processor.
+     */
+    void setData( const hmemo::_HArray& values ) 
+    {
+        allocate( values.size() );
+        setDenseValues( values );
+    } 
+
+    /** @brief Allocate and initialize this vector with data from an array
+     *
+     *  @param[in] dist is the distribution of 
+     *  @param[in] values become the local values of this vector.
+     *
+     *  Important: values.size() must be equal to dist->getLocalSize()
+     *
+     *  \code
+     *     IndexType n = 100;
+     *     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+     *     DistributionPtr dist( new BlockDistributon( n, comm ) );
+     *     HArray<double> arr;     
+     *     arr.setRandom( dist->getLocalSize(), 10 ); // every processor fills with random values
+     *     DenseVector<double> v;
+     *     v.setLocalData( dist, arr );
+     *  \endcode
+     */
+    void setLocalData( dmemo::DistributionPtr dist, const hmemo::_HArray& values ) 
+    {
+        allocate( dist );
+        setDenseValues( values );
+    } 
+
+    /** @brief Allocate and initialize this vector with raw values 
+     *
+     *  @tparam OtherValueType data type of the raw data
+     *  @param[in] size becomes the size of the vector and specifies number of entries in values
+     *  @param[in] values is pointer to a contiguous array with the raw data
+     *
+     *  \code
+     *    std::vector<float> values;
+     *    ....  // build the vector values 
+     *    DenseVector<double> v;
+     *    v.setRawData( values.size(), &values[0] );
+     *  \endcode
+     *
+     *  Note: the vector is not distributed, i.e. each processor might either set it 
+     *        with individual local values or with same values.
+     */
+    template<typename OtherValueType>
+    void setRawData( const IndexType size, const OtherValueType values[] );
+
+    /** Set a replicated vector with sparse vector data
+     *
+     *  @param[in] n will be the size of the vector
+     *  @param[in] nonZeroIndexes positions with non-zero values
+     *  @param[in] nonZeroValues values for the non-zero value
+     *  @param[in] zeroValue is the 'zero' value, defaults to 0
+     *
+     *  nonZeroIndexes and nonZeroValues must have the same size. nonZeroIndexes must 
+     *  contain valid indexes. They do not have to be sorted.
+     */
+    void setSparseData( 
+        const IndexType n, 
+        const hmemo::HArray<IndexType>& nonZeroIndexes, 
+        const hmemo::_HArray& nonZeroValues, 
+        const Scalar zeroValue = Scalar( 0 ) )
+    {
+        setSameValue( n, zeroValue );
+        fillSparseData( nonZeroIndexes, nonZeroValues, common::binary::COPY );
+    } 
+
+    /** Same as setSparseData but here with raw data for non-zero indexes and values. 
+     *
+     *  @tparam OtherValueType is the type of the raw data 
+     *  @param[in] n will be the size of the vector
+     *  @param[in] nnz stands for the number of the non-zero values
+     *  @param[in] nonZeroIndexes pointer to array with positions of non-zero values
+     *  @param[in] nonZeroValues pointer to array with values
+     *  @param[in] zeroValue is the value for all positions that do not appear in nonZeroIndexes
+     *
+     *  Note: The value type of the raw data might be different to the value type of the vector.
+     */
+    template<typename OtherValueType>
+    void setSparseRawData( 
+        const IndexType n, 
+        const IndexType nnz,
+        const IndexType nonZeroIndexes[],
+        const OtherValueType nonZeroValues[],
+        const Scalar zeroValue = Scalar( 0 ) );
 
     /**
      * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
      *
      * @param[in] nonZeroIndexes   array with all local indexes that have a non-zero entry
      * @param[in] nonZeroValues    array with the values for the nonZeroIndexes
-     * @param[in] zeroValue        value for all indexes that do not appear in nonZeroIndexes
+     * @param[in] op               specifies how to deal with available entries, COPY is replace, ADD is sum 
      *
-     * The size of the both input arrays must be equal.
+     * Number of non zero indexes and values must be equal, i.e. nonZeroIndexes.size() == nonZeroValues.size()
      *
-     * Note: Implicit type conversion for the values is supported.
+     * Note: Implicit type conversion for the values is supported. The indexes are local indexes.
+     *
      */
-    virtual void setSparseValues( 
+    virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const Scalar zeroValue = Scalar( 0 ) ) = 0;
+        const common::binary::BinaryOp op ) = 0;
 
     /**
-     * @brief Sets the local size of the vector to zero. 
+     * @brief Sets the local data of the vector to zero. 
      *
      * This routine has the same semantic as setValues with an empty array of any type. It is
      * a private routine as it allows a temporary inconsistency between the local part and 
@@ -420,12 +526,125 @@ public:
     virtual void clearValues() = 0;
 
     /**
-     * This method initializes a (distributed) vector with random numbers.
+     * This method initilaizes all values of an allocated vector with random numbers.
      *
-     * @param[in] distribution specifies the distribution of the vector
-     * @param[in] fillRate for the number of non-zeros
+     * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
+     *
+     * For complex vectors a random value is drawn for each real and imaginary part.
+     *
+     * Keep in mind that bound is an integer value. If you need randonm numbers with other numerical
+     * boundaries you should scale them as follows:
+     *
+     * \code
+     *     DistributionPtr dist ( ... );
+     *     DenseVector<ValueType> v( dist );
+     *     ValueType lb = -1.5, ub = 2.6;
+     *     v.fillRandom( 1 );
+     *     A = lb + v * ( ub - lb );   // random numbers in the range of lb .. ub
+     * \endcode
      */
-    virtual void setRandom( dmemo::DistributionPtr distribution, const float fillRate = 1.0 ) = 0;
+    virtual void fillRandom( const IndexType bound ) = 0;
+
+    /**
+     * This method sets a replicated vector by its size and initializes it with random numbers.
+     *
+     * In contrary to fillRandom this routine does not require an allocated and maybe uninitialized vector.
+     *
+     * Be careful: in a parallel environment each processor might initialize the array with different
+     * values. By calling Math::srandom( seed ) with the same seed on each processor, it can be forced
+     * to have the same values.
+     */
+    void setRandom( const IndexType n, const IndexType bound )
+    {
+        allocate ( n );
+        fillRandom( bound );
+    }
+
+    /**
+     * This method sets a distributed vector by its distribution and initializes it with random numbers.
+     */
+    void setRandom( dmemo::DistributionPtr dist, const IndexType bound )
+    {
+        allocate ( dist );
+        fillRandom( bound );
+    }
+
+    /** 
+     *  This method gives the vector a size and initializes it with a value.
+     *
+     *  @param[in] n is the size of the replicated vector
+     *  @param[in] value is the value assigned to all elements
+     *
+     *  \code
+     *    DenseVector<double> v1; 
+     *    v1.setSameValue( n, value );
+     *    DenseVector<double> v2( n );
+     *    v2 = value;
+     *    DenseVector<double> v3( n, value );
+     *  \endcode
+     */
+    void setSameValue( const IndexType n, const Scalar value )
+    {
+        allocate( n );
+        assign( value );
+    }
+
+    /** 
+     *  This method gives the vector a distribution and initializes it with a value.
+     *
+     *  @param[in] dist specifies size of the vector and mapping to the processors
+     *  @param[in] value is the value assigned to all elements
+     *
+     *  \code
+     *    DenseVector<double> v1; 
+     *    v1.setSameValue( n, value );
+     *    DenseVector<double> v2( n );
+     *    v2 = value;
+     *    DenseVector<double> v3( n, value );
+     *  \endcode
+     */
+    void setSameValue( dmemo::DistributionPtr dist, const Scalar value )
+    {
+        allocate( dist );
+        assign( value );
+    }
+
+    /**
+     *  Similiar to fillRandom but only replaces the vector elements with a certain probability.
+     *
+     *  Keep in mind that posititions that are not filled keep their old values. Therefore, in
+     *  contrary to fillRandom, the vector must have been initialized before.
+     *
+     * \code
+     *     DistributionPtr dist ( ... );
+     *     DenseVector<ValueType> A( dist );
+     *     A = 0;
+     *     A.fillSparseRandom( 0.5f, 1 );
+     * \endcode
+     */
+    virtual void fillSparseRandom( const float fillRate, const IndexType bound ) = 0;
+
+    /**
+     *  Allocate a vector by its size, initialize it with a zero value and fill it sparsely.
+     *
+     * \code
+     *     A.allocate( n );
+     *     A = zeroValue;
+     *     A.fillSparseRandom( fill, bound );
+     * \endcode
+     */
+    void setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound );
+
+    /**
+     *  Allocate a vector by its distribution, initialize it with a zero value and fill it sparsely.
+     *
+     * \code
+     *     A.allocate( dist );
+     *     A = zeroValue;
+     *     A.fillSparseRandom( fill, bound );
+     * \endcode
+     */
+    void setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound );
 
     /**
      * This method sets a vector by reading its values from one or multiple files.
@@ -498,6 +717,27 @@ public:
     virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
 
     /**
+     * @brief Concatenate multiple vectors to a new vector.
+     *
+     * @param[in] dist specifies the distribution of the concatenated vector.
+     * @param[in] vectors is a vector with const pointers/references to the concatenated vectors
+     *
+     * Note: dist.getGlobalSize() == v[0]->size() + ... v[n-1]->size() 
+     *
+     * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
+     * this vector itself.
+     */
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors ) = 0;
+
+    /**
+     * @brief Concatenate two vectors to a new vector.
+     *
+     * @param[in] v1 first part of the new vector
+     * @param[in] v2 second part of the new vector
+     */
+    virtual void cat( const Vector& v1, const Vector& v2 );
+
+    /**
      * @brief Returns the global minimum value of this.
      *
      * @return   the global minimum value of this vector.
@@ -511,6 +751,15 @@ public:
      */
     virtual Scalar max() const = 0;
 
+    /**
+     * @brief Returns the sum of all vector elements.
+     *
+     * @return the sum of all vector elements.
+     *
+     * As the summation of the values depends on the mapping of the values to
+     * the processors, this routine might return slightly different results
+     * for different parallel environments.
+     */
     virtual Scalar sum() const = 0;
 
     /**
@@ -579,10 +828,10 @@ public:
      *    // is same as
      *
      *    Vector* new = Vector::create( old.getCreateValue() );
-     *    new->setContextPtr( new.getContextPtr() );
+     *    new->setContextPtr( old.getContextPtr() );
      *  /endcode
      *
-     *  The new vector is a zero vector, not allocated, not initialized.
+     *  The new vector is a zero vector, neither allocated, nor initialized.
      */
     virtual Vector* newVector() const = 0;
 
@@ -1055,6 +1304,31 @@ hmemo::ContextPtr Vector::getContextPtr() const
     return mContext;
 }
 
+template<typename OtherValueType>
+void Vector::setRawData( const IndexType size, const OtherValueType values[] )
+{
+    allocate( size );
+
+    // use heterogeneous array reference to avoid copy of the raw data
+
+    hmemo::HArrayRef<OtherValueType> valuesArrayRef( size, values );
+    setDenseValues( valuesArrayRef );
+}
+
+template<typename OtherValueType>
+void Vector::setSparseRawData( 
+    const IndexType n, 
+    const IndexType nnz,
+    const IndexType nonZeroIndexes[],
+    const OtherValueType nonZeroValues[],
+    const Scalar zeroValue )
+{
+    setSameValue( n, zeroValue );
+    hmemo::HArrayRef<IndexType> aNonZeroIndexes( nnz, nonZeroIndexes );
+    hmemo::HArrayRef<OtherValueType> aNonZeroValues( nnz, nonZeroValues );
+    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::binary::COPY );
+} 
+  
 } /* end namespace lama */
 
 } /* end namespace scai */

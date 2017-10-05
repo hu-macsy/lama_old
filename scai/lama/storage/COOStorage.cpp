@@ -565,7 +565,7 @@ ValueType COOStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType COOStorage<ValueType>::maxNorm() const
+typename COOStorage<ValueType>::StorageAbsType COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return HArrayUtils::reduce( mValues, common::binary::ABS_MAX, this->getContextPtr() );
@@ -1010,7 +1010,7 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
         wValuePos.resize( cnt );
     }
 
-    row.init( ValueType( 0 ), mNumColumns );
+    row.setSameValue( mNumColumns, ValueType( 0 ) );
 
     // row[ colIndexes ] = mValues[ pos ];
 

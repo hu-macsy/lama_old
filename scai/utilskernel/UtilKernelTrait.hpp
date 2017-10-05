@@ -145,6 +145,19 @@ struct UtilKernelTrait
     };
 
     template <typename ValueType>
+    struct allCompareScalar
+    {
+        typedef bool ( *FuncType ) ( const ValueType array[],
+                                     const ValueType scalar,
+                                     const IndexType n,
+                                     const common::binary::CompareOp op );
+        static const char* getId()
+        {
+            return "Util.allCompareScalar";
+        }
+    };
+
+    template <typename ValueType>
     struct isSorted
     {
         /** @brief Predicate that tests whether a sequene is sorted.

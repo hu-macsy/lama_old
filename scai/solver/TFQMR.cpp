@@ -90,13 +90,14 @@ void TFQMR::initialize( const Matrix& coefficients )
     runtime.mTheta = 0.0;
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
     // create dense runtime vectors with same row distribution, type, context as coefficients
-    runtime.mVecD.reset( coefficients.newDenseVector() );
-    runtime.mInitialR.reset( coefficients.newDenseVector() );
-    runtime.mVecVEven.reset( coefficients.newDenseVector() );
-    runtime.mVecVOdd.reset( coefficients.newDenseVector() );
-    runtime.mVecW.reset( coefficients.newDenseVector() );
-    runtime.mVecZ.reset( coefficients.newDenseVector() );
-    runtime.mVecVT.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    runtime.mVecD.reset( coefficients.newVector( dist ) );
+    runtime.mInitialR.reset( coefficients.newVector( dist ) );
+    runtime.mVecVEven.reset( coefficients.newVector( dist ) );
+    runtime.mVecVOdd.reset( coefficients.newVector( dist ) );
+    runtime.mVecW.reset( coefficients.newVector( dist ) );
+    runtime.mVecZ.reset( coefficients.newVector( dist ) );
+    runtime.mVecVT.reset( coefficients.newVector( dist ) );
 }
 
 void TFQMR::solveInit( Vector& solution, const Vector& rhs )
@@ -117,7 +118,7 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecW = Scalar( 0.0 );
+        runtime.mVecW->setSameValue( runtime.mResidual->getDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecW , *runtime.mResidual );
     }
     else
@@ -127,7 +128,8 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
 
     *runtime.mVecZ = A * ( *runtime.mVecW );
     *runtime.mVecW = *runtime.mResidual;
-    *runtime.mVecD = Scalar( 0.0 );
+    // *runtime.mVecD = 0
+    runtime.mVecD->setSameValue( A.getRowDistributionPtr(), 0 );
     lama::L2Norm norm;
     runtime.mTau = norm.apply( *runtime.mInitialR );
     runtime.mRhoOld = runtime.mTau * runtime.mTau;
@@ -188,7 +190,7 @@ void TFQMR::iterationOdd()
 //  PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecVT = Scalar( 0.0 );
+        vecVT.setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecVT, vecVEven );
     }
     else

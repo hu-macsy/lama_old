@@ -67,6 +67,7 @@ scai_project (
         SparseVector
 
         Vector
+        VectorAssemblyAccess
 
         GridVector
         GridSection

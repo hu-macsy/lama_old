@@ -206,7 +206,6 @@ public:
      * a.setIdentity( a.getRowDistribution() );
      * \endcode
      */
-
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution ) = 0;
@@ -215,15 +214,14 @@ public:
      *
      *  \code
      *    m.setIdentitiy( n ) ->  m.setIdentity( DistributionPtr( new NoDistribution( n ) ) );
-     *  \code
+     *  \endcode
      */
-
     void setIdentity( const IndexType n );
 
     /**
      * This method sets a matrix by reading its values from one or multiple files.
      *
-     * @param[in] filename      the filename to read from
+     * @param[in] fileName      the filename to read from
      * @param[in] rowDist       optional, if set it is the distribution of the matrix
      *
      *   \code
@@ -740,15 +738,19 @@ public:
         const Matrix& C ) const = 0;
 
     /**
-     * @brief Concatenate a certain number of matrices and store the result in this matrix
+     * @brief Concatenate multiple matrices horizontally/vertically to a new matrix.
      *
-     * @param[in]   dim     dimension used for concatenation, either 0 or 1
-     * @param[in]   other   array with n const pointer to the matrices that will be concatenated
-     * @param[in]   n       the number of matrices to concatenate 
+     * @param[in] rowDist   specifies the distribution of the rows for the concatenated matrix
+     * @param[in] colDist   specifies the distribution of the columns for the concatenated matrix
+     * @param[in] matrices  variable number of const references/pointers to the matrices
      *
-     * Current restriction: the distribution must be replicated for all involved matrices.
+     * The routine decides by its arguments how the matrices will be concatenated. As the size of 
+     * the result matrix is explicitly specified, the input matrices are row-wise filled up.
+     *
+     * This routine should also be able to deal with aliases, i.e. one ore more of the input matrices  might be
+     * the pointer to the result matrix.
      */
-    virtual void cat( const IndexType dim, const Matrix* other[], const IndexType n );
+    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices );
 
     /**
      *   shorthand for cat( 0, { &m1, &m2 }, 2 )
@@ -969,7 +971,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l1Norm() const = 0;
+    virtual Scalar l1Norm( void ) const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -978,14 +980,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l2Norm() const = 0;
+    virtual Scalar l2Norm( void ) const = 0;
 
     /**
      * @brief Getter routine of the max norm of this matrix.
      *
      * @return the maximal absolute value for elements of this matrix
      */
-    virtual Scalar maxNorm() const = 0;
+    virtual Scalar maxNorm( void ) const = 0;
 
     /**
      * @brief Returns the max norm of ( this - other ).
@@ -1025,36 +1027,36 @@ public:
      * This method is a workaround to call the constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual Matrix* newMatrix() const = 0;
+    virtual Matrix* newMatrix( void ) const = 0;
 
-    /*
-     *  @brief Create a dense vector with same type/context as matrix and same row distribution
+    /**
+     *  @brief Create a new dense vector with same value type and context as matrix
      *
-     *  Note: this method is for a more convenient use
+     *  Be careful: the new vector has size zero.
+     *
+     *  This routine might be very helpful for writing linear algebra code that works
+     *  for any value type of matrices.
      */
-
-    _DenseVector* newDenseVector() const
+    _DenseVector* newVector( void ) const
     {
         _DenseVector* v = _DenseVector::create( getValueType() );
-        v->allocate( getRowDistributionPtr() );
         v->setContextPtr( getContextPtr() );
         return v;
     }
 
-    virtual Vector* newVector( const IndexType dim ) const
+    /*
+     *  @brief Create a dense vector with same value type and context as matrix
+     *
+     *  @param dist specifies the distribution of the vector
+     *
+     *  Be careful: the vector remains uninitialized.
+     */
+
+    _DenseVector* newVector( dmemo::DistributionPtr dist ) const
     {
-        Vector* v = _DenseVector::create( getValueType() );
+        _DenseVector* v = _DenseVector::create( getValueType() );
         v->setContextPtr( getContextPtr() );
-
-        if ( dim == 0 )
-        {
-            v->allocate( getRowDistributionPtr() );
-        }
-        else if ( dim == 1 )
-        {
-            v->allocate( getColDistributionPtr() );
-        }
-
+        v->allocate( dist );
         return v;
     }
 

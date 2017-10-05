@@ -85,14 +85,15 @@ void CGS::initialize( const Matrix& coefficients )
     CGSRuntime& runtime = getRuntime();
     runtime.mNormRes = 1.0;
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
-    runtime.mRes0.reset( coefficients.newDenseVector() );
-    runtime.mVecT.reset( coefficients.newDenseVector() );
-    runtime.mVecP.reset( coefficients.newDenseVector() );
-    runtime.mVecQ.reset( coefficients.newDenseVector() );
-    runtime.mVecU.reset( coefficients.newDenseVector() );
-    runtime.mVecPT.reset( coefficients.newDenseVector() );
-    runtime.mVecUT.reset( coefficients.newDenseVector() );
-    runtime.mVecTemp.reset( coefficients.newDenseVector() );
+    dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
+    runtime.mRes0.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecP.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecQ.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecU.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecPT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecUT.reset( coefficients.newVector( rowDist ) );
+    runtime.mVecTemp.reset( coefficients.newVector( rowDist ) );
 }
 
 
@@ -114,7 +115,7 @@ void CGS::solveInit( Vector& solution, const Vector& rhs )
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        *runtime.mVecPT  = Scalar( 0.0 );
+        runtime.mVecPT->setSameValue( runtime.mVecP->getDistributionPtr(), 0 );
         mPreconditioner->solve( *runtime.mVecPT, *runtime.mVecP );
     }
     else
@@ -168,7 +169,8 @@ void CGS::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecUT = Scalar( 0.0 );
+        // vecUT = 0;  here the more general approach
+        vecUT.setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         vecTemp = vecU + vecQ;
         mPreconditioner->solve( vecUT, vecTemp );
     }
@@ -201,7 +203,7 @@ void CGS::iterate()
     // PRECONDITIONING
     if ( mPreconditioner != NULL )
     {
-        vecPT  = Scalar( 0.0 );
+        vecPT.setSameValue( mPreconditioner->getCoefficients().getColDistributionPtr(), 0 );
         mPreconditioner->solve( vecPT, vecP );
     }
     else

@@ -957,7 +957,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
 
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
 
-    row.init( OtherType( 0 ), mNumColumns );
+    row.setSameValue( mNumColumns, OtherType( 0 ) );
 
     IndexType n1    = mIa[i];
     IndexType nrow  = mIa[i + 1] - n1;
@@ -2444,14 +2444,14 @@ ValueType CSRStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CSRStorage<ValueType>::maxNorm() const
+typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxNorm() const
 {
     // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     if ( mNumValues == 0 )
     {
-        return static_cast<ValueType>( 0.0 );
+        return 0;
     }
 
     static LAMAKernel<UtilKernelTrait::reduce<ValueType> > reduce;
@@ -2467,7 +2467,7 @@ ValueType CSRStorage<ValueType>::maxNorm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_REGION( "Storage.CSR.maxDiffNorm" )
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
@@ -2494,7 +2494,7 @@ ValueType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& ot
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
+typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
 {
     // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxDiffNormImpl( " << other << " )" )

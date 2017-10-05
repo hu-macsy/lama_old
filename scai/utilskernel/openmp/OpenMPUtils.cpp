@@ -125,6 +125,28 @@ ValueType OpenMPUtils::reduceMaxVal( const ValueType array[], const IndexType n,
     return val;
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+ComplexFloat OpenMPUtils::reduceMaxVal( const ComplexFloat[], const IndexType, const ComplexFloat )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexDouble OpenMPUtils::reduceMaxVal( const ComplexDouble[], const IndexType, const ComplexDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexLongDouble OpenMPUtils::reduceMaxVal( const ComplexLongDouble[], const IndexType, const ComplexLongDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+#endif 
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -158,6 +180,28 @@ ValueType OpenMPUtils::reduceMinVal( const ValueType array[], const IndexType n,
     }
     return val;
 }
+
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+ComplexFloat OpenMPUtils::reduceMinVal( const ComplexFloat[], const IndexType, const ComplexFloat )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexDouble OpenMPUtils::reduceMinVal( const ComplexDouble[], const IndexType, const ComplexDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+template<>
+ComplexLongDouble OpenMPUtils::reduceMinVal( const ComplexLongDouble[], const IndexType, const ComplexLongDouble )
+{
+    COMMON_THROWEXCEPTION( "minval not supported for complex arrays." )
+}
+
+#endif 
 
 /* --------------------------------------------------------------------------- */
 
@@ -196,19 +240,21 @@ ValueType OpenMPUtils::reduceBinOp(
 template<typename ValueType>
 ValueType OpenMPUtils::reduceAbsMaxVal( const ValueType array[], const IndexType n, const ValueType zero )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.reduceAbsMaxVal" )
 
-    ValueType val = zero;
+    AbsType val = zero;
 
     #pragma omp parallel
     {
-        ValueType threadVal = zero;
+        AbsType threadVal = zero;
 
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = common::Math::abs( array[i] );
+            AbsType elem = common::Math::abs( array[i] );
 
             if ( elem > threadVal )
             {
@@ -448,17 +494,22 @@ ValueType OpenMPUtils::getValue( const ValueType* array, const IndexType i )
 template<typename ValueType>
 ValueType OpenMPUtils::absMaxDiffVal( const ValueType array1[], const ValueType array2[], const IndexType n )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.absMaxDiffVal" )
     SCAI_LOG_DEBUG( logger, "absMaxDiffVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "]" )
-    ValueType val = static_cast<ValueType>( 0.0 );
+
+    AbsType val = static_cast<AbsType>( 0 );
+
     #pragma omp parallel
     {
-        ValueType threadVal = static_cast<ValueType>( 0.0 );
+        AbsType threadVal = static_cast<AbsType>( 0 );
+
         #pragma omp for 
 
         for ( IndexType i = 0; i < n; ++i )
         {
-            ValueType elem = common::Math::abs( array1[i] - array2[i] );
+            AbsType elem = common::Math::abs( array1[i] - array2[i] );
 
             if ( elem > threadVal )
             {
@@ -531,7 +582,8 @@ bool OpenMPUtils::allCompare(
     const common::binary::CompareOp op )
 {
     bool val = true;
-
+ 
+    #pragma omp parallel
     {
         bool threadVal = true;
 
@@ -540,6 +592,38 @@ bool OpenMPUtils::allCompare(
         for ( IndexType i = 0; i < n; ++i )
         {
             bool elem = applyBinary( array1[i], op, array2[i] );
+            threadVal = threadVal && elem;
+        }
+
+        #pragma omp critical
+        {
+            val = val && threadVal;
+        }
+    }
+
+    return val;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template <typename ValueType>
+bool OpenMPUtils::allCompareScalar(
+    const ValueType array[],
+    const ValueType scalar,
+    const IndexType n,
+    const common::binary::CompareOp op )
+{
+    bool val = true;
+
+    #pragma omp parallel
+    {
+        bool threadVal = true;
+
+        #pragma omp for 
+
+        for ( IndexType i = 0; i < n; ++i )
+        {
+            bool elem = applyBinary( array[i], op, scalar );
             threadVal = threadVal && elem;
         }
 
@@ -969,31 +1053,6 @@ void OpenMPUtils::binaryOpScalar(
             }
             break;
         }
-
-        case binary::MIN :
-        {
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::min( value, in[i] );
-            }
-
-            break;
-        }
-
-        case binary::MAX :
-        {
-            #pragma omp parallel for 
-
-            for ( IndexType i = 0; i < n; i++ )
-            {
-                out[i] = common::Math::max( value, in[i] );
-            }
-
-            break;
-        }
-
         default:
         {
             if ( swapScalar )
@@ -1608,6 +1667,28 @@ void OpenMPUtils::sort(
     }
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void OpenMPUtils::sort( IndexType[], ComplexFloat[], const ComplexFloat[], const IndexType, const bool )
+{
+    COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
+}
+
+template<>
+void OpenMPUtils::sort( IndexType[], ComplexDouble[], const ComplexDouble[], const IndexType, const bool )
+{
+    COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
+}
+
+template<>
+void OpenMPUtils::sort( IndexType[], ComplexLongDouble[], const ComplexLongDouble[], const IndexType, const bool )
+{
+    COMMON_THROWEXCEPTION( "sort unsupported for complex values" )
+}
+
+#endif
+
 /* --------------------------------------------------------------------------- */
 
 template<typename KeyType, typename ValueType>
@@ -1679,6 +1760,8 @@ void OpenMPUtils::qsort( KeyType keys[], ValueType values[], IndexType left, Ind
     }
 }
 
+/* --------------------------------------------------------------------------- */
+
 template<typename ValueType>
 void OpenMPUtils::sortInPlace(
     IndexType indexes[],
@@ -1696,15 +1779,21 @@ void OpenMPUtils::sortInPlace(
 template<typename ValueType>
 IndexType OpenMPUtils::countNonZeros( const ValueType denseArray[], const IndexType n, const ValueType eps )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.countNZ" )
 
     IndexType nonZeros = 0;
+
+    AbsType absEps = eps;
 
     #pragma omp parallel for reduction( +:nonZeros )
 
     for ( IndexType i = 0; i < n; ++i )
     {
-        if ( common::Math::abs( denseArray[i] ) > eps )
+        AbsType absVal = common::Math::abs( denseArray[i] );
+
+        if ( absVal > absEps )
         {
             nonZeros++;
         }
@@ -1725,15 +1814,21 @@ IndexType OpenMPUtils::compress(
     const IndexType n,
     const SourceType eps )
 {
+    typedef typename common::TypeTraits<SourceType>::AbsType AbsType;
+
     SCAI_REGION( "OpenMP.Utils.compress" )
 
     IndexType nonZeros = 0;
 
     // use of parallel for + atomicInc might be possible but would give an arbitrary order of sparse indexes
 
+    AbsType absEps = eps;
+
     for ( IndexType i = 0; i < n; ++i )
     {
-        if ( common::Math::abs( denseArray[i] ) > eps )
+        AbsType sourceVal = common::Math::abs( denseArray[i] );
+
+        if ( sourceVal > absEps )
         {
             IndexType k = nonZeros++;  // parallel: atomicInc( nonZeros );
 
@@ -2030,6 +2125,152 @@ IndexType OpenMPUtils::binopSparse(
 }
 
 /* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+IndexType OpenMPUtils::allCompareSparse(
+    bool& allFlag,
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const ValueType zero1,
+    const IndexType n1,
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const ValueType zero2,
+    const IndexType n2,
+    const binary::CompareOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.binopSparse" )
+
+    SCAI_LOG_DEBUG( logger, "binopSparse: Sp( n1 = " << n1 << ", zero1 = " << zero1 << "), "
+                             << op << " Sp( n2 = " << n2 << ", zero2 = " << zero2 )
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+    IndexType n  = 0;
+
+    allFlag = true;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] == indexes2[i2] )
+        {
+            // entry at same position
+
+            allFlag = allFlag && applyBinary( values1[i1], op, values2[i2] );
+            ++i1;
+            ++i2;
+            ++n;
+        }
+        else if ( indexes1[i1] < indexes2[i2] )
+        {
+            // entry only in array1
+
+            allFlag = allFlag && applyBinary( values1[i1], op, zero2 );
+            ++i1;
+            ++n;
+        }
+        else
+        {
+            // entry only in array2
+
+            allFlag = allFlag && applyBinary( zero1, op, values2[i2] );
+            ++i2;
+            ++n;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        allFlag = allFlag && applyBinary( values1[i1], op, zero2 );
+        ++i1;
+        ++n;
+    }
+
+    while ( i2 < n2 )
+    {
+        allFlag = allFlag && applyBinary( zero1, op, values2[i2] );
+        ++i2;
+        ++n;
+    }
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+static inline
+void appendSparse( IndexType indexes[], ValueType values[], IndexType& n,
+                   const IndexType ia, const ValueType v, const binary::BinaryOp op )
+{
+    if ( n > 0 && ( indexes[n - 1] == ia ) )
+    {
+        values[n - 1]  = applyBinary( values[n - 1], op, v );
+    }
+    else
+    {
+        values[n]  = v;
+        indexes[n] = ia;
+        n++;
+    }
+}
+
+template<typename ValueType>
+IndexType OpenMPUtils::mergeSparse(
+    IndexType indexes[],
+    ValueType values[],
+    const IndexType indexes1[],
+    const ValueType values1[],
+    const IndexType n1,
+    const IndexType indexes2[],
+    const ValueType values2[],
+    const IndexType n2,
+    const binary::BinaryOp op )
+{
+    SCAI_REGION( "OpenMP.Utils.mergeSparse" )
+
+    SCAI_LOG_DEBUG( logger, "mergeSparse: Sp( n1 = " << n1 << " ), "
+                             << " with Sp( n2 = " << n2 << " )" )
+
+    IndexType n = 0;
+
+    IndexType i1 = 0;
+    IndexType i2 = 0;
+
+    // merge via the sorted indexes
+
+    while ( i1 < n1 && i2 < n2 )
+    {
+        if ( indexes1[i1] <= indexes2[i2] )
+        {
+            appendSparse( indexes, values, n, indexes1[i1], values1[i1], op );
+            ++i1;
+        }
+        else 
+        {
+            appendSparse( indexes, values, n, indexes2[i2], values2[i2], op );
+            ++i2;
+        }
+    }
+
+    while ( i1 < n1 )
+    {
+        appendSparse( indexes, values, n, indexes1[i1], values1[i1], op );
+        ++i1;
+    }
+
+    while ( i2 < n2 )
+    {
+        appendSparse( indexes, values, n, indexes2[i2], values2[i2], op );
+        ++i2;
+    }
+
+    return n;
+}
+
+/* --------------------------------------------------------------------------- */
 /*     Template instantiations via registration routine                        */
 /* --------------------------------------------------------------------------- */
 
@@ -2057,6 +2298,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<UtilKernelTrait::reduce<ValueType> >( reduce, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::reduce2<ValueType> >( reduce2, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::allCompare<ValueType> >( allCompare, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::allCompareScalar<ValueType> >( allCompareScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setOrder<ValueType> >( setOrder, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::setSequence<ValueType> >( setSequence, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::getValue<ValueType> >( getValue, ctx, flag );
@@ -2070,6 +2312,8 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<SparseKernelTrait::countNonZeros<ValueType> >( countNonZeros, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::addSparse<ValueType> >( addSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::binopSparse<ValueType> >( binopSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::allCompareSparse<ValueType> >( allCompareSparse, ctx, flag );
+    KernelRegistry::set<SparseKernelTrait::mergeSparse<ValueType> >( mergeSparse, ctx, flag );
 
     KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );

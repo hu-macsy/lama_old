@@ -53,7 +53,13 @@ int main()
     // Create a DenseVector out of a simple c array
     //
     const ValueType inputData[] = { 1.0, 2.0, 3.0, 4.0 };
-    DenseVector<ValueType> sequenceOfValues( 4, inputData );
+
+    DenseVector<ValueType> sequenceOfValues;
+
+    sequenceOfValues.setRawData( 4, inputData );
+
+    // same: sequenceOfValues.setRange( 4, 1, 1 );
+
     //
     // scale vector
     //

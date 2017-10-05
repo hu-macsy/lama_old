@@ -274,7 +274,7 @@ void HArrayUtils::sparseGatherImpl(
 
     if ( op == binary::COPY )
     {
-        target.init( TargetValueType( 0 ), n );    // initialize with zero as default
+        target.setSameValue( n, TargetValueType( 0 ) );    // initialize with zero as default
     }
     else
     {
@@ -706,6 +706,41 @@ bool HArrayUtils::all(
 
     bool allVal = allCompare[loc]( readArray1.get(),
                                    readArray2.get(),
+                                   n,
+                                   op );
+    return allVal;
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+bool HArrayUtils::allScalar(
+    const HArray<ValueType>& array,
+    const binary::CompareOp op,
+    const ValueType val,
+    ContextPtr prefLoc )
+{
+    const IndexType n = array.size();
+
+    static LAMAKernel<UtilKernelTrait::allCompareScalar<ValueType> > allCompare;
+
+    ContextPtr loc = prefLoc;
+
+    // Rule for default location: where array1 has valid values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = array.getValidContext();
+    }
+
+    allCompare.getSupportedContext( loc );
+
+    ReadAccess<ValueType> readArray( array, loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    bool allVal = allCompare[loc]( readArray.get(),
+                                   val,
                                    n,
                                    op );
     return allVal;
@@ -1175,46 +1210,63 @@ void HArrayUtils::setSequence( hmemo::HArray<ValueType>& array, ValueType startV
 /* --------------------------------------------------------------------------- */
 
 void HArrayUtils::setRandom( hmemo::_HArray& array,
-                             const IndexType n,
-                             const float fillRate,
+                             const IndexType bound,
                              const hmemo::ContextPtr prefLoc )
 {
-    // use meta-programming to call setRandomImpl<ValueType> with the type of array
+    // use meta-programming to call fillRandomImpl<ValueType> with the type of array
 
-    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::setRandom( array, n, fillRate, prefLoc );
+    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::fillRandom( array, bound, 1.0f, prefLoc );
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::setSparseRandom( hmemo::_HArray& array,
+                                   const float fillRate,
+                                   const IndexType bound,
+                                   const hmemo::ContextPtr prefLoc )
+{
+    // use meta-programming to call fillRandomImpl<ValueType> with the type of array
+
+    mepr::UtilsWrapper< SCAI_ARRAY_TYPES_HOST_LIST>::fillRandom( array, bound, fillRate, prefLoc );
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void HArrayUtils::setRandomImpl( hmemo::HArray<ValueType>& array,
-                                 const IndexType n,
-                                 const float fillRate,
-                                 const hmemo::ContextPtr prefLoc )
+void HArrayUtils::fillRandomImpl( hmemo::HArray<ValueType>& array,
+                                  const IndexType bound,
+                                  const float fillRate,
+                                  const hmemo::ContextPtr prefLoc )
 {
     ContextPtr loc = Context::getHostPtr();   // currently only available on host
-    WriteOnlyAccess<ValueType> wArray( array, loc, n );
+
+    const IndexType n = array.size();
 
     if ( fillRate >= 1.0f )
     {
+        WriteOnlyAccess<ValueType> wArray( array, loc, n );
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            common::Math::random( wArray[i] );
+            wArray[i] = common::Math::random<ValueType>( bound );
         }
     }
     else
     {
+        if ( n > 0 && !array.isInitialized() )
+        {
+            COMMON_THROWEXCEPTION( "filling of uninitialized array: " << array )
+        }
+
+        WriteAccess<ValueType> wArray( array, loc );
+
         for ( IndexType i = 0; i < n; ++i )
         {
-            float x = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-
-            if ( x < fillRate )
+            bool fillIt = common::Math::randomBool( fillRate );
+ 
+            if ( fillIt )
             {
-                common::Math::random( wArray[i] );
-            }
-            else
-            {
-                wArray[i] = ValueType( 0 );
+                wArray[i] = common::Math::random<ValueType>( bound );
             }
         }
     }
@@ -1223,6 +1275,27 @@ void HArrayUtils::setRandomImpl( hmemo::HArray<ValueType>& array,
     {
         array.prefetch( prefLoc );
     }
+}
+
+/* --------------------------------------------------------------------------- */
+
+void HArrayUtils::randomSparseIndexes( hmemo::HArray<IndexType>& array, const IndexType n, const float probability )
+{
+    IndexType cnt = 0;
+
+    WriteOnlyAccess<IndexType> wArray( array, n );
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        bool takeIt = common::Math::randomBool( probability );
+
+        if ( takeIt )
+        {
+            wArray[ cnt++ ] = i;
+        }
+    }
+
+    wArray.resize( cnt );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1445,7 +1518,7 @@ void HArrayUtils::bucketSort(
     {
         perm.clear();
         IndexType zero = 0;
-        offsets.init( zero, nb + 1 );  // offsets = { 0, 0, ..., 0 }
+        offsets.setSameValue( nb + 1, zero );  // offsets = { 0, 0, ..., 0 }
         return;
     }
 
@@ -1493,7 +1566,7 @@ void HArrayUtils::bucketCount(
     if ( n == 0 )
     {
         IndexType zeroVal = 0;
-        bucketSizes.init( zeroVal, nb );
+        bucketSizes.setSameValue( nb, zeroVal );
         return;
     }
 
@@ -1695,6 +1768,87 @@ void HArrayUtils::mergeSortOptional(
     }
 }
 
+#ifdef SCAI_COMPLEX_SUPPORTED
+
+template<>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ComplexFloat>& ,
+    hmemo::HArray<IndexType>*,
+    const hmemo::HArray<IndexType>&,
+    bool,
+    hmemo::ContextPtr )
+{
+    COMMON_THROWEXCEPTION( "unsupported" )
+}
+
+template<>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ComplexDouble>& ,
+    hmemo::HArray<IndexType>*,
+    const hmemo::HArray<IndexType>&,
+    bool,
+    hmemo::ContextPtr )
+{
+    COMMON_THROWEXCEPTION( "unsupported" )
+}
+
+template<>
+void HArrayUtils::mergeSortOptional(
+    hmemo::HArray<ComplexLongDouble>& ,
+    hmemo::HArray<IndexType>*,
+    const hmemo::HArray<IndexType>&,
+    bool,
+    hmemo::ContextPtr )
+{
+    COMMON_THROWEXCEPTION( "unsupported" )
+}
+
+#endif
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::elimDoubles(
+    hmemo::HArray<IndexType>& indexes,
+    hmemo::HArray<ValueType>& values,
+    const common::binary::BinaryOp op )
+{
+    SCAI_ASSERT_EQ_ERROR( indexes.size(), values.size(), "serious size mismatch" )
+
+    IndexType n = indexes.size();
+
+    if ( n <= 1 )
+    {
+        return;
+    }
+
+    // mergeSparse elims also double values on sorted lists, just set one list empty
+
+    static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
+
+    // default location for merge
+
+    ContextPtr loc = indexes.getValidContext();
+
+    mergeSparse.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    {
+        WriteAccess<IndexType> wIndexes( indexes, loc );
+        WriteAccess<ValueType> wValues( values, loc );
+
+        IndexType nMerged = mergeSparse[loc]( wIndexes.get(), wValues.get(),
+                                              wIndexes.get(), wValues.get(), n,
+                                              NULL, NULL, 0, op );
+
+        // nMerged can be smaller than n if one index list contained multiple values
+
+        wIndexes.resize( nMerged );
+        wValues.resize( nMerged );
+    }
+}
+
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -1772,37 +1926,51 @@ void HArrayUtils::buildSparseArrayImpl(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-IndexType HArrayUtils::insertSorted( 
+IndexType HArrayUtils::insertSorted(
     hmemo::HArray<ValueType>& array,
     const ValueType value, 
     hmemo::ContextPtr )
 {
-    IndexType n = array.size();
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
 
-    WriteAccess<ValueType> wArray( array );
-
-    wArray.resize( n + 1 );
-
-    IndexType pos = n;
-
-    // move up entries of index array until we have a smaller element
-
-    for ( IndexType i = n;  i-- > 0;  )
+    if ( common::TypeTraits<ValueType>::stype != common::TypeTraits<AbsType>::stype )
     {
-        if ( wArray[i] > value ) 
-        {
-            pos = i;
-            wArray[i+1] = wArray[i];
-        }
-        else
-        {
-            break;
-        }
+        COMMON_THROWEXCEPTION( "unsupported" )
+        return 0;
     }
- 
-    wArray[pos] = value;
+    else
+    {
+        AbsType value1 = value;
 
-    return pos;
+        IndexType n = array.size();
+ 
+        HArray<AbsType>& array1 = reinterpret_cast<HArray<AbsType>&>( array );
+
+        WriteAccess<AbsType> wArray( array1 );
+
+        wArray.resize( n + 1 );
+
+        IndexType pos = n;
+
+        // move up entries of index array until we have a smaller element
+
+        for ( IndexType i = n;  i-- > 0;  )
+        {
+            if ( wArray[i] > value1 ) 
+            {
+                pos = i;
+                wArray[i+1] = wArray[i];
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        wArray[pos] = value1;
+
+        return pos;
+    }
 }
 
 /* --------------------------------------------------------------------------- */
@@ -2021,6 +2189,107 @@ void HArrayUtils::binaryOpSparse(
 
 /* --------------------------------------------------------------------------- */
 
+template<typename ValueType>
+IndexType HArrayUtils::allSparse(
+    bool& allFlag,
+    const hmemo::HArray<IndexType>& indexes1,
+    const hmemo::HArray<ValueType>& values1,
+    const ValueType zero1,
+    const hmemo::HArray<IndexType>& indexes2,
+    const hmemo::HArray<ValueType>& values2,
+    const ValueType zero2,
+    const binary::CompareOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<SparseKernelTrait::allCompareSparse<ValueType> > allCompareSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes1.getValidContext();
+    }
+
+    allCompareSparse.getSupportedContext( loc );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIndexes1( indexes1, loc );
+    ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+    IndexType n1 = indexes1.size();
+    IndexType n2 = indexes2.size();
+
+    ReadAccess<ValueType> rValues1( values1, loc );
+    ReadAccess<ValueType> rValues2( values2, loc );
+
+    return allCompareSparse[loc]( allFlag,
+                                  rIndexes1.get(), rValues1.get(), zero1, n1, 
+                                  rIndexes2.get(), rValues2.get(), zero2, n2, op );
+
+}
+
+/* --------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void HArrayUtils::mergeSparse(
+    hmemo::HArray<IndexType>& resultIndexes,
+    hmemo::HArray<ValueType>& resultValues,
+    const hmemo::HArray<IndexType>& indexes1,
+    const hmemo::HArray<ValueType>& values1,
+    const hmemo::HArray<IndexType>& indexes2,
+    const hmemo::HArray<ValueType>& values2,
+    const binary::BinaryOp op,
+    hmemo::ContextPtr prefLoc )
+{
+    static LAMAKernel<SparseKernelTrait::countAddSparse> countAddSparse;
+    static LAMAKernel<SparseKernelTrait::mergeSparse<ValueType> > mergeSparse;
+
+    ContextPtr loc = prefLoc;
+
+    // default location for conversion: where we have the dense values
+
+    if ( loc == ContextPtr() )
+    {
+        loc = indexes1.getValidContext();
+    }
+
+    mergeSparse.getSupportedContext( loc, countAddSparse );
+
+    SCAI_CONTEXT_ACCESS( loc )
+
+    ReadAccess<IndexType> rIndexes1( indexes1, loc );
+    ReadAccess<IndexType> rIndexes2( indexes2, loc );
+
+    IndexType n1 = indexes1.size();
+    IndexType n2 = indexes2.size();
+
+    IndexType n = countAddSparse[loc]( rIndexes1.get(), n1, rIndexes2.get(), n2 );
+
+    SCAI_LOG_INFO( logger, "counted new sparse n = " << n << " from " << n1 << " + " << n2 )
+
+    {
+        WriteOnlyAccess<IndexType> wIndexes( resultIndexes, loc, n );
+        WriteOnlyAccess<ValueType> wValues( resultValues, loc, n );
+
+        ReadAccess<ValueType> rValues1( values1, loc );
+        ReadAccess<ValueType> rValues2( values2, loc );
+
+        IndexType nMerged = mergeSparse[loc]( wIndexes.get(), wValues.get(),
+                                              rIndexes1.get(), rValues1.get(), n1, 
+                                              rIndexes2.get(), rValues2.get(), n2, op );
+
+        // nMerged can be smaller than n if one index list contained multiple values
+
+        resultIndexes.resize( nMerged );
+        resultValues.resize( nMerged );
+    }
+}
+
+/* --------------------------------------------------------------------------- */
+
 /** Makro for the instantiation of routines with two template arguments for source and target type. */
 
 #define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
@@ -2104,6 +2373,11 @@ void HArrayUtils::binaryOpSparse(
             const binary::CompareOp,                                            \
             const hmemo::HArray<ValueType>&,                                    \
             hmemo::ContextPtr );                                                \
+    template bool HArrayUtils::allScalar<ValueType>(                            \
+            const hmemo::HArray<ValueType>&,                                    \
+            const binary::CompareOp,                                            \
+            const ValueType,                                                    \
+            hmemo::ContextPtr );                                                \
     template ValueType HArrayUtils::absMaxDiffVal<ValueType>(                   \
             const hmemo::HArray<ValueType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
@@ -2177,13 +2451,17 @@ void HArrayUtils::binaryOpSparse(
             const hmemo::HArray<IndexType>&,                                    \
             const bool,                                                         \
             hmemo::ContextPtr );                                                \
+    template void HArrayUtils::elimDoubles<ValueType>(                          \
+            hmemo::HArray<IndexType>&,                                          \
+            hmemo::HArray<ValueType>&,                                          \
+            const binary::BinaryOp );                                           \
     template void HArrayUtils::setSequence<ValueType>(                          \
             hmemo::HArray<ValueType>&,                                          \
             ValueType,                                                          \
             ValueType,                                                          \
             IndexType,                                                          \
             hmemo::ContextPtr );                                                \
-    template void HArrayUtils::setRandomImpl<ValueType>(                        \
+    template void HArrayUtils::fillRandomImpl<ValueType>(                       \
             hmemo::HArray<ValueType>&,                                          \
             IndexType,                                                          \
             float,                                                              \
@@ -2222,6 +2500,25 @@ void HArrayUtils::binaryOpSparse(
             const hmemo::HArray<IndexType>&,                                    \
             const hmemo::HArray<ValueType>&,                                    \
             const ValueType,                                                    \
+            const binary::BinaryOp,                                             \
+            hmemo::ContextPtr );                                                \
+    template IndexType HArrayUtils::allSparse(                                  \
+            bool&,                                                              \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const ValueType,                                                    \
+            const binary::CompareOp,                                            \
+            hmemo::ContextPtr );                                                \
+    template void HArrayUtils::mergeSparse(                                     \
+            hmemo::HArray<IndexType>&,                                          \
+            hmemo::HArray<ValueType>&,                                          \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
+            const hmemo::HArray<IndexType>&,                                    \
+            const hmemo::HArray<ValueType>&,                                    \
             const binary::BinaryOp,                                             \
             hmemo::ContextPtr );                                                \
     SCAI_COMMON_LOOP_LVL2( ValueType, HARRAUTILS_SPECIFIER_LVL2, SCAI_ARRAY_TYPES_HOST )

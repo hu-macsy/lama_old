@@ -526,16 +526,21 @@ void CUDASparseUtils::setScatter(
 template<typename ValueType>
 struct nonZero
 {
-    const ValueType mEps;
+    // AbsType is required otherwise operator > might be undefined 
 
-    nonZero( ValueType eps ) : mEps( eps )
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    const AbsType mEps;
+
+    nonZero( ValueType eps ) : mEps( Math::abs( eps ) )
     {
     }
 
     __host__ __device__
     bool operator()( ValueType x )
     {
-        return Math::abs( x ) > mEps;
+        AbsType absX = Math::abs( x );
+        return absX > mEps;
     }
 };
 
@@ -565,7 +570,9 @@ IndexType CUDASparseUtils::countNonZeros( const ValueType denseArray[], const In
 template<typename ValueType>
 struct changeIndexWithZeroSize
 {
-    const ValueType mEps;
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
+    const AbsType mEps;
     const IndexType mZeroIndex;
 
     changeIndexWithZeroSize( ValueType eps, IndexType zeroIndex ) :
@@ -578,7 +585,7 @@ struct changeIndexWithZeroSize
     __host__ __device__
     IndexType operator()( const ValueType& value, const IndexType& index )
     {
-        ValueType tmp = common::Math::abs( value );
+        AbsType tmp = common::Math::abs( value );
 
         if ( tmp > mEps )
         {

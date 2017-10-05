@@ -1,5 +1,5 @@
 /**
- * @file lamaSolver.cpp
+ * @file tools/lamaSolver.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -164,7 +164,7 @@ int main( int argc, const char* argv[] )
         // use auto pointer so that matrix will be deleted at program exit
 
         scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
+        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
         scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
 
         Matrix& matrix   = *matrixPtr;
@@ -234,8 +234,7 @@ int main( int argc, const char* argv[] )
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.allocate( inMatrix.getRowDistributionPtr() );
-                rhs = Scalar( val );
+                rhs.setSameValue( inMatrix.getRowDistributionPtr(), Scalar( val ) );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
@@ -251,8 +250,9 @@ int main( int argc, const char* argv[] )
 
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
-                x.allocate( inMatrix.getColDistributionPtr() );
-                x = Scalar( 1 );
+
+                x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
+
                 rhs = inMatrix * x;
 
                 HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
@@ -260,8 +260,7 @@ int main( int argc, const char* argv[] )
 
             if ( isNumeric( val, startSolutionFilename ) )
             {
-                solution.allocate( inMatrix.getRowDistributionPtr() );
-                solution = Scalar( val );
+                solution.setSameValue( inMatrix.getRowDistributionPtr(), val );
                 HOST_PRINT( myRank, "Set initial solution = " << val )
             }
             else if ( startSolutionFilename.size() )
@@ -271,8 +270,7 @@ int main( int argc, const char* argv[] )
             }
             else
             {
-                solution.allocate( inMatrix.getRowDistributionPtr() );
-                solution = Scalar( 0 );   // initialize of a vector
+                solution.setSameValue( inMatrix.getRowDistributionPtr(), 0 );
                 HOST_PRINT( myRank, "Set initial solution = 0" )
             }
 

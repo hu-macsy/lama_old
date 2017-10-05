@@ -159,13 +159,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( conjTest, ValueType, scai_numeric_test_types )
 {
     // Use random data for the matrix to have complex numbers
+
     const IndexType numRows    = 3;
     const IndexType numColumns = 3;
-    const float fillRate = 0.2f;
-    LArray<ValueType> denseValues;
-    LArray<ValueType> x;
-    utilskernel::HArrayUtils::setRandom( denseValues, numRows * numColumns, fillRate );
-    utilskernel::HArrayUtils::setRandom( x, numColumns, 1.0f );
+
+    // Initialize dense array, with sparse random values
+
+    LArray<ValueType> denseValues( numRows * numColumns, ValueType( 0) );
+
+    denseValues.setSparseRandom( 0.2f, 1 );   // ~ 20% of values will be replaced
+
+    LArray<ValueType> x( numColumns );  // initialization not necessray
+    x.setRandom( 1 );    // completely random values between 0 and 1
+
     LArray<ValueType> xconj( x );
     xconj.conj();
     const ValueType alpha = 1.0;
@@ -243,6 +249,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
     TypedStorages<ValueType> allMatrixStorages( context );
@@ -263,7 +271,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
             storage.setRow( row, i, common::binary::SUB );
         }
 
-        BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
+        BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
     }
 }
 
@@ -271,6 +279,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types )
 {
+    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
     TypedStorages<ValueType> allMatrixStorages( context );
@@ -291,7 +301,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
             storage.setColumn( column, j, common::binary::SUB );
         }
 
-        BOOST_CHECK( storage.maxNorm() < ValueType( 0.0001 ) );
+        BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
     }
 }
 
@@ -717,7 +727,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
         LArray<ValueType> x( context );
         LArray<ValueType> y( storage1.getNumRows(), 0 );
         LArray<ValueType> result1( context );
-        utilskernel::HArrayUtils::setRandom( x, storage1.getNumColumns(), 1.0f );
+        x.resize( storage1.getNumColumns() );
+        utilskernel::HArrayUtils::setRandom( x, 1 );
         ValueType alpha = 1;
         ValueType beta  = 0;
         storage1.matrixTimesVector( result1, alpha, x, beta, result1 );
@@ -1063,7 +1074,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
                                         };
 
         HArray<ValueType> denseArray( context );
-        denseArray.init( denseValues, numRows * numColumns );
+        denseArray.setRawData( numRows * numColumns, denseValues );
 
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
 
@@ -1097,9 +1108,9 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         BOOST_CHECK_EQUAL( n, totalNumValues );
 
         HArray<ValueType> valuesArray( context );
-        valuesArray.init( values, n );
+        valuesArray.setRawData( n, values );
         HArray<IndexType> offsetsArray( context );
-        offsetsArray.init( offsets, numDiagonals );
+        offsetsArray.setRawData( numDiagonals, offsets );
 
         storage.setDIAData( numRows, numColumns, numDiagonals, offsetsArray, valuesArray );
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns
@@ -1140,9 +1151,9 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         BOOST_CHECK_EQUAL( n2, totalNumValues );
 
         HArray<ValueType> valuesArray2( context );
-        valuesArray2.init( values2, n2 );
+        valuesArray2.setRawData( n2, values2 );
         HArray<IndexType> offsetsArray2( context );
-        offsetsArray2.init( offsets2, numDiagonals );
+        offsetsArray2.setRawData( numDiagonals, offsets2 );
 
         storage.setDIAData( numRows, numColumns, numDiagonals, offsetsArray2, valuesArray2 );
         SCAI_LOG_INFO( logger, "set CSR data (" << numRows << " x " << numColumns

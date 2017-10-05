@@ -190,10 +190,11 @@ void GMRES::initialize( const Matrix& coefficients )
     mHd.reset( new double[mKrylovDim] );
     runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
     // 'force' vector operations to be computed at the same location where coefficients reside
-    ( *runtime.mV )[0] = coefficients.newDenseVector();
-    runtime.mW = coefficients.newDenseVector();
-    runtime.mT = coefficients.newDenseVector();
-    runtime.mX0 = coefficients.newDenseVector();
+    dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
+    ( *runtime.mV )[0] = coefficients.newVector( dist );
+    runtime.mW = coefficients.newVector( dist );
+    runtime.mT = coefficients.newVector( dist );
+    runtime.mX0 = coefficients.newVector( dist );
     totalIterationTime = 0.0;
     totalPreconditionerTime = 0.0;
 }
@@ -243,7 +244,7 @@ void GMRES::iterate()
     if ( !( *runtime.mV )[krylovIndex + 1] )
     {
         SCAI_REGION( "Solver.GMRES.setMV" )
-        ( *runtime.mV )[krylovIndex + 1] = A.newDenseVector();
+        ( *runtime.mV )[krylovIndex + 1] = A.newVector( A.getRowDistributionPtr() );
     }
 
     // initialize in case of GMRES start/restart
@@ -266,7 +267,7 @@ void GMRES::iterate()
         else
         {
             SCAI_REGION( "Solver.GMRES.start.solvePreconditioner" )
-            vCurrent = 0.0;
+            vCurrent.setSameValue( residual.getDistributionPtr(), 0 );
             double preconditionerTimeStart = common::Walltime::get();
             mPreconditioner->solve( vCurrent, residual );
             totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
@@ -292,7 +293,7 @@ void GMRES::iterate()
     {
         SCAI_REGION( "Solver.GMRES.solvePreconditioner" )
         tmp = A * vCurrent;
-        w = 0.0;
+        w.setSameValue( A.getColDistributionPtr(), 0 );
         double preconditionerTimeStart = common::Walltime::get();
         mPreconditioner->solve( w, tmp );
         totalPreconditionerTime += common::Walltime::get() - preconditionerTimeStart;
