@@ -56,11 +56,15 @@ class VectorAssemblyAccess
 
 public:
 
-    /** Construct an access */
+    /** Construct an assembly access to a given vector
+     *
+     *  @param[in] vector is the vector for which data is assembled
+     *  @param[in] op specifies how to deal with entries at same positions
+     */
 
-    VectorAssemblyAccess( Vector& matrix, const common::binary::BinaryOp op = common::binary::COPY );
+    VectorAssemblyAccess( Vector& vector, const common::binary::BinaryOp op = common::binary::COPY );
 
-    /** Destructor of the access, also inserts the assembled entries into the matrix. */
+    /** Destructor of the access, also communicates and inserts the assembled entries into the vector. */
 
     ~VectorAssemblyAccess()
     {
@@ -78,7 +82,7 @@ public:
         mValues.reserve( n );
     }
 
-    /** Add a vector element with global coordinates */
+    /** Add a vector element with global coordinates, called by a single processor */
 
     void push( const IndexType i, const ValueType val )
     {
@@ -88,6 +92,25 @@ public:
         mValues.push_back( val );
 
         SCAI_LOG_TRACE( logger, mVector.getDistribution().getCommunicator() << ": pushed " << val << " @ ( " << i << " )" )
+    }
+
+    /** Add a vector element with global coordinates, called by all processors 
+     *  (only the owner process(es) will push it)
+     */
+
+    void pushReplicated( const IndexType i, const ValueType val )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( i, mVector.size(), "illegal index pushed" );
+
+        const IndexType localI = mVector.getDistribution().global2local( i );
+
+        if ( localI != nIndex )
+        {
+            mLocalIA.push_back( localI );
+            mLocalValues.push_back( val );
+        
+            SCAI_LOG_TRACE( logger, mVector.getDistribution().getCommunicator() << ": pushed " << val << " @ ( " << i << " )" )
+        }
     }
 
     /** Release the assembly access, all pushed entries are now transferred to owning processors and added. */
@@ -107,12 +130,23 @@ private:
         const hmemo::HArray<ValueType> inValues,
         const dmemo::Distribution& dist );
 
+    /** Shifts assembled data so that every processor sees it */
+
+    void shiftAssembledData( 
+        const hmemo::HArray<IndexType>& myIA, 
+        const hmemo::HArray<ValueType>& myValues );
+
     Vector& mVector;
 
-    // for pushing the assembled data we use the C++ vector class
+    // for pushing globally assembled data we use the C++ vector class
 
     std::vector<IndexType> mIA;
     std::vector<ValueType> mValues;
+
+    // locally assembled data in own structures, no more communication needed
+
+    std::vector<IndexType> mLocalIA;
+    std::vector<ValueType> mLocalValues;
 
     bool mIsReleased;
 

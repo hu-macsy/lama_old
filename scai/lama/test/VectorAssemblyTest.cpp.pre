@@ -38,7 +38,6 @@
 #include <scai/lama/VectorAssemblyAccess.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
-#include <scai/dmemo/test/TestDistributions.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -80,77 +79,77 @@ BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
     for ( size_t j = 0; j < dists.size(); ++j )
     {
 
-        dmemo::DistributionPtr dist = dists[j];
+                dmemo::DistributionPtr dist = dists[j];
 
-        SparseVector<ValueType> vector1;
+    SparseVector<ValueType> vector1;
 
-        vector1.setSameValue( dist, 0 );
+    vector1.setSameValue( dist, 0 );
 
-        // Assemble vector data by arbitrary processors, entries at same location are ignored
+    // Assemble vector data by arbitrary processors, entries at same location are ignored
 
+    {
+        VectorAssemblyAccess<ValueType> assembly( vector1 );
+
+        for ( IndexType i = 0; i < nnz; ++i )
         {
-            VectorAssemblyAccess<ValueType> assembly( vector1 );
+            // choose one 'arbitrary' processor that pushes the element
 
-            for ( IndexType i = 0; i < nnz; ++i )
+            PartitionId p1 = i % commSize;
+            PartitionId p2 = ( i * 5 - 2 ) % commSize;
+
+            if ( p1 == commRank )
             {
-                // choose one 'arbitrary' processor that pushes the element
-
-                PartitionId p1 = i % commSize;
-                PartitionId p2 = ( i * 5 - 2 ) % commSize;
-
-                if ( p1 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-
-                if ( p2 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
+                assembly.push( raw_ia[i], raw_val[i] );
+            }
+            if ( p2 == commRank )
+            {
+                assembly.push( raw_ia[i], raw_val[i] );
             }
         }
+    }
 
-        SCAI_LOG_INFO( logger, *comm << ": assembled this vector with REPLACE: " << vector1 )
+    SCAI_LOG_INFO( logger, *comm << ": assembled this vector with REPLACE: " << vector1 )
 
-        // Assemble vector data by arbitrary processors, entries at same location are summed up
+    // Assemble vector data by arbitrary processors, entries at same location are summed up
 
+    {
+        VectorAssemblyAccess<ValueType> assembly( vector1, common::binary::ADD );
+
+        for ( IndexType i = 0; i < nnz; ++i )
         {
-            VectorAssemblyAccess<ValueType> assembly( vector1, common::binary::ADD );
+            PartitionId p1 = ( i + 2 ) % commSize;
+            PartitionId p2 = ( i * 3 + 7 ) % commSize;
 
-            for ( IndexType i = 0; i < nnz; ++i )
+            if ( p1 == commRank )
             {
-                PartitionId p1 = ( i + 2 ) % commSize;
-                PartitionId p2 = ( i * 3 + 7 ) % commSize;
-
-                if ( p1 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-
-                if ( p2 == commRank )
-                {
-                    assembly.push( raw_ia[i], raw_val[i] );
-                }
-
-                // assembly called by each processor, but only inserted once by owner
-
-                assembly.pushReplicated( raw_ia[i], raw_val[i] );
+                assembly.push( raw_ia[i], raw_val[i] );
             }
+            if ( p2 == commRank )
+            {
+                assembly.push( raw_ia[i], raw_val[i] );
+            }
+
+            assembly.pushReplicated( raw_ia[i], raw_val[i] );
         }
+    }
 
-        SCAI_LOG_INFO( logger, *comm << ": assembled this vector with SUM: " << vector1 )
+    SCAI_LOG_INFO( logger, *comm << ": assembled this vector with SUM: " << vector1 )
 
-        SparseVector<ValueType> vector2;
+    vector1.writeToFile( "v1.mtx" );
+    SparseVector<ValueType> vector2;
 
-        vector2.setSparseRawData( n, nnz, raw_ia, raw_val, 0 );
+    hmemo::HArrayRef<IndexType> nonZeroIndexes( nnz, raw_ia );
+    hmemo::HArrayRef<ValueType> nonZeroValues( nnz, raw_val );
 
-        vector2.redistribute( dist );
+    vector2.setSparseData( n, nonZeroIndexes, nonZeroValues, 0 );
 
-        vector2 *= 4;
+    vector2.redistribute( dist );
 
-        // both vectors must be exaclty the same
+    vector2 *= 4;
 
-        BOOST_CHECK_EQUAL( vector1.maxDiffNorm( vector2 ), 0 );
+    // both vectors must be exaclty the same
+
+    BOOST_CHECK_EQUAL( vector1.maxDiffNorm( vector2 ), 0 );
     }
 }
 

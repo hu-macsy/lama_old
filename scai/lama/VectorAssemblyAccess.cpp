@@ -119,6 +119,68 @@ void VectorAssemblyAccess<ValueType>::exchangeCOO(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void VectorAssemblyAccess<ValueType>::shiftAssembledData(
+    const HArray<IndexType>& myIA, 
+    const HArray<ValueType>& myValues )
+{
+    // This method shifts all assembled data and each processor applies a routine on it
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    PartitionId np = comm->getSize();
+
+    mVector.fillSparseData( myIA, myValues, mOp );
+
+    if ( np == 1 )
+    {
+        return;
+    }
+
+    const int COMM_DIRECTION = 1;  // circular shifting from left to right
+
+    // determine the maximal size of assembled data for good allocation of buffers
+
+    IndexType maxSize = comm->max( myIA.size() );
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    HArray<IndexType> sendIA;
+    HArray<ValueType> sendValues;
+    HArray<IndexType> recvIA;
+    HArray<ValueType> recvValues;
+
+    sendIA.reserve( contextPtr, maxSize );
+    sendValues.reserve( contextPtr, maxSize );
+    recvIA.reserve( contextPtr, maxSize );
+    recvValues.reserve( contextPtr, maxSize );
+
+    // np - 1 shift steps are neeed
+
+    for ( PartitionId p = 0; p < np - 1; ++p )
+    {
+        if ( p == 0 )
+        {
+            comm->shiftArray( recvIA, myIA, COMM_DIRECTION );
+            comm->shiftArray( recvValues, myValues, COMM_DIRECTION );
+        }
+        else
+        {
+            comm->shiftArray( recvIA, sendIA, COMM_DIRECTION );
+            comm->shiftArray( recvValues, sendValues, COMM_DIRECTION );
+        }
+
+        mVector.fillSparseData( recvIA, recvValues, mOp );
+        
+        // prepare for next step, the received values from left will be sent to right
+
+        std::swap( sendValues, recvValues );
+        std::swap( sendIA, recvIA );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void VectorAssemblyAccess<ValueType>::release()
 {
     SCAI_ASSERT_EQ_DEBUG( mIA.size(), mValues.size(), "serious mismatch" );
@@ -137,23 +199,38 @@ void VectorAssemblyAccess<ValueType>::release()
 
     // These COO array will keep only the values owned by this processor
 
-    HArray<IndexType> ownedIA;
-    HArray<ValueType> ownedValues;
 
     const dmemo::Distribution& dist = mVector.getDistribution();
 
-    exchangeCOO( ownedIA, ownedValues, ia, values, dist );
+    if ( dist.isReplicated() )
+    {
+        shiftAssembledData( ia, values );
+    }
+    else
+    {
+        HArray<IndexType> ownedIA;
+        HArray<ValueType> ownedValues;
 
-    dist.global2local( ownedIA );   // translate global indexes to local indexes
+        exchangeCOO( ownedIA, ownedValues, ia, values, dist );
 
-    // now we add the owned COO data to the local vector data
+        dist.global2local( ownedIA );   // translate global indexes to local indexes
 
-    mVector.fillSparseData( ownedIA, ownedValues, mOp );
+        // now we add the owned COO data to the local vector data
+
+        mVector.fillSparseData( ownedIA, ownedValues, mOp );
+    }
 
     // reset the data vectors as they are emptied now
 
     mIA.clear();
     mValues.clear();
+
+    HArrayRef<IndexType> l_ia( mLocalIA );
+    HArrayRef<ValueType> l_values( mLocalValues );
+    mVector.fillSparseData( l_ia, l_values, mOp );
+
+    mLocalIA.clear();
+    mLocalValues.clear();
 
     mIsReleased = true;
 }
