@@ -273,7 +273,8 @@ Matrix Assembly
 ---------------
 
 The template class MatrixAssemblyAccess allows to assemble matrix entries by different processors
-independently. 
+independently. It is the counterpart to the VectorAssemblyAccess class and has exactly the
+same functionality.
 
 .. code-block:: c++
 

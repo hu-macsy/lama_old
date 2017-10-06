@@ -37,6 +37,7 @@
 
 #include <scai/lama/matrix/MatrixAssemblyAccess.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/test/TestDistributions.hpp>
 
 using namespace scai;
 using namespace lama;
@@ -76,75 +77,80 @@ BOOST_AUTO_TEST_CASE( simpleTest )
     SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_ja ) / sizeof( IndexType ), "" )
     SCAI_ASSERT_EQ_ERROR( nnz, sizeof( raw_val ) / sizeof( ValueType ), "" )
 
-    dmemo::DistributionPtr rowDist( new dmemo::BlockDistribution( numRows, comm ) );
     dmemo::DistributionPtr colDist( new dmemo::NoDistribution( numColumns ) );
 
-    CSRSparseMatrix<ValueType> matrix1( rowDist, colDist );
+    dmemo::TestDistributions rowDists( numRows );
 
-    // Assemble matrix data by arbitrary processors, entries at same location are ignored
-
+    for ( size_t j = 0; j < rowDists.size(); ++j )
     {
-        MatrixAssemblyAccess<ValueType> assembly( matrix1 );
+        dmemo::DistributionPtr rowDist = rowDists[j];
 
-        for ( IndexType i = 0; i < nnz; ++i )
+        CSRSparseMatrix<ValueType> matrix1( rowDist, colDist );
+
+        // Assemble matrix data by arbitrary processors, entries at same location are ignored
+
         {
-            // choose two processors that push the elements
+            MatrixAssemblyAccess<ValueType> assembly( matrix1 );
 
-            PartitionId p1 = i % commSize;
-            PartitionId p2 = ( i * 5 - 2 ) % commSize;
+            for ( IndexType i = 0; i < nnz; ++i )
+            {
+                // choose two processors that push the elements
 
-            if ( p1 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
-            }
-            if ( p2 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+                PartitionId p1 = i % commSize;
+                PartitionId p2 = ( i * 5 - 2 ) % commSize;
+
+                if ( p1 == commRank )
+                {
+                    assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+                }
+
+                if ( p2 == commRank )
+                {
+                    assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+                }
             }
         }
-    }
 
-    SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with REPLACE: " << matrix1 )
+        SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with REPLACE: " << matrix1 )
 
-    // Assemble matrix data by arbitrary processors, entries at same location are summed up
+        // Assemble matrix data by arbitrary processors, entries at same location are summed up
 
-    {
-        MatrixAssemblyAccess<ValueType> assembly( matrix1, common::binary::ADD );
-
-        for ( IndexType i = 0; i < nnz; ++i )
         {
-            PartitionId p1 = ( i + 2 ) % commSize;
-            PartitionId p2 = ( i * 3 + 7 ) % commSize;
+            MatrixAssemblyAccess<ValueType> assembly( matrix1, common::binary::ADD );
 
-            if ( p1 == commRank )
+            for ( IndexType i = 0; i < nnz; ++i )
             {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
-            }
-            if ( p2 == commRank )
-            {
-                assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+                PartitionId p2 = ( i * 3 + 7 ) % commSize;
+
+                if ( p2 == commRank )
+                {
+                    assembly.push( raw_ia[i], raw_ja[i], raw_val[i] );
+                }
+
+                assembly.pushReplicated( raw_ia[i], raw_ja[i], raw_val[i] );
             }
         }
+
+        SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with SUM: " << matrix1 )
+
+        hmemo::HArrayRef<IndexType> cooIA( nnz, raw_ia );
+        hmemo::HArrayRef<IndexType> cooJA( nnz, raw_ja );
+        hmemo::HArrayRef<ValueType> cooValues( nnz, raw_val );
+
+        COOStorage<ValueType> coo( numRows, numColumns, cooIA, cooJA, cooValues );
+
+        CSRSparseMatrix<ValueType> matrix2( coo, rowDist, colDist );
+
+        matrix2 *= 3;    // entries have been inserted once and added twice
+
+        // verify that both matrices are same
+
+        const CSRStorage<ValueType>& local1 = matrix1.getLocalStorage();
+        const CSRStorage<ValueType>& local2 = matrix2.getLocalStorage();
+
+        BOOST_CHECK_EQUAL( local1.maxDiffNorm( local2 ), 0 );
+
     }
-
-    SCAI_LOG_INFO( logger, *comm << ": assembled this matrix with SUM: " << matrix1 )
-
-    hmemo::HArrayRef<IndexType> cooIA( nnz, raw_ia );
-    hmemo::HArrayRef<IndexType> cooJA( nnz, raw_ja );
-    hmemo::HArrayRef<ValueType> cooValues( nnz, raw_val );
-
-    COOStorage<ValueType> coo( numRows, numColumns, cooIA, cooJA, cooValues );
-
-    CSRSparseMatrix<ValueType> matrix2( coo, rowDist, colDist );
-
-    matrix2 *= 3;    // entries have been inserted once and added twice
-
-    // verify that both matrices are same
-
-    const CSRStorage<ValueType>& local1 = matrix1.getLocalStorage();
-    const CSRStorage<ValueType>& local2 = matrix2.getLocalStorage();
-
-    BOOST_CHECK_EQUAL( local1.maxDiffNorm( local2 ), 0 );
 }
 
 /* ------------------------------------------------------------------------- */

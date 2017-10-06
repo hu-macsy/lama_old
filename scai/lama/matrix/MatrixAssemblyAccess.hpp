@@ -94,6 +94,25 @@ public:
         SCAI_LOG_TRACE( logger, mMatrix.getRowDistribution().getCommunicator() << ": pushed " << val << " @ ( " << i << ", " << j << " )" )
     }
 
+    /** Add a matrix element with global coordinates, called by all processors 
+     *  (only the owner process(es) will push it)
+     */
+
+    void pushReplicated( const IndexType i, const IndexType j, const ValueType val )
+    {
+        SCAI_ASSERT_VALID_INDEX_DEBUG( i, mMatrix.getNumRows(), "illegal row index pushed" );
+        SCAI_ASSERT_VALID_INDEX_DEBUG( j, mMatrix.getNumColumns(), "illegal column index pushed" );
+
+        const IndexType localI = mMatrix.getRowDistribution().global2local( i );
+
+        if ( localI != nIndex )
+        {
+            mLocalIA.push_back( localI );
+            mLocalJA.push_back( j );
+            mLocalValues.push_back( val );
+        }
+    }
+
     /** Release the assembly access, all pushed entries are now transferred to owning processors and added. */
 
     void release();
@@ -113,6 +132,20 @@ private:
         const hmemo::HArray<ValueType> inValues,
         const dmemo::Distribution& dist );
 
+    void shiftAssembledData(
+        CSRStorage<ValueType>& localStorage,
+        const hmemo::HArray<IndexType>& myIA,
+        const hmemo::HArray<IndexType>& myJA,
+        const hmemo::HArray<ValueType>& myValues );
+
+    /** Adds the local assembled data to CSR storage and releases it */
+
+    void addLocalCOO( CSRStorage<ValueType>& localStorage );
+
+    /** Adds the global assembled data to CSR storage and releases it */
+
+    void addCOO( CSRStorage<ValueType>& localStorage );
+
     Matrix& mMatrix;
 
     // for pushing the assembled data we use the C++ vector class
@@ -120,6 +153,10 @@ private:
     std::vector<IndexType> mIA;
     std::vector<IndexType> mJA;
     std::vector<ValueType> mValues;
+
+    std::vector<IndexType> mLocalIA;
+    std::vector<IndexType> mLocalJA;
+    std::vector<ValueType> mLocalValues;
 
     bool mIsReleased;
 

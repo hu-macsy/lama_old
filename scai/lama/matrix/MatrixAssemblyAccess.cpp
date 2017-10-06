@@ -127,6 +127,160 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
+void MatrixAssemblyAccess<ValueType>::shiftAssembledData(
+    CSRStorage<ValueType>& localStorage,
+    const HArray<IndexType>& myIA,
+    const HArray<IndexType>& myJA,
+    const HArray<ValueType>& myValues )
+{   
+    // This method shifts all assembled data and each processor applies a routine on it
+
+    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
+
+    PartitionId np = comm->getSize();
+
+    SCAI_LOG_INFO( logger, "shift assembled data circular through all processors, "
+                           << ", me = " << *comm << " have " << myIA.size() << " entries" )
+
+    COOStorage<ValueType> newCOO( localStorage.getNumRows(), localStorage.getNumColumns(), myIA, myJA, myValues );
+    CSRStorage<ValueType> newCSR( newCOO );
+
+    localStorage.binaryOpCSR( localStorage, newCSR, mOp );
+
+    if ( np == 1 )
+    {
+        return;
+    }
+
+    const int COMM_DIRECTION = 1;  // circular shifting from left to right
+
+    // determine the maximal size of assembled data for good allocation of buffers
+
+    IndexType maxSize = comm->max( myIA.size() );
+
+    ContextPtr contextPtr = Context::getHostPtr();
+
+    HArray<IndexType> sendIA;
+    HArray<IndexType> sendJA;
+    HArray<ValueType> sendValues;
+    HArray<IndexType> recvIA;
+    HArray<IndexType> recvJA;
+    HArray<ValueType> recvValues;
+
+    sendIA.reserve( contextPtr, maxSize );
+    sendJA.reserve( contextPtr, maxSize );
+    sendValues.reserve( contextPtr, maxSize );
+    recvIA.reserve( contextPtr, maxSize );
+    recvJA.reserve( contextPtr, maxSize );
+    recvValues.reserve( contextPtr, maxSize );
+
+    // np - 1 shift steps are neeed
+
+    for ( PartitionId p = 0; p < np - 1; ++p )
+    {
+        if ( p == 0 )
+        {
+            comm->shiftArray( recvIA, myIA, COMM_DIRECTION );
+            comm->shiftArray( recvJA, myJA, COMM_DIRECTION );
+            comm->shiftArray( recvValues, myValues, COMM_DIRECTION );
+        }
+        else
+        {
+            comm->shiftArray( recvIA, sendIA, COMM_DIRECTION );
+            comm->shiftArray( recvJA, sendJA, COMM_DIRECTION );
+            comm->shiftArray( recvValues, sendValues, COMM_DIRECTION );
+        }
+
+        newCOO.swap( recvIA, recvJA, recvValues );
+
+        newCSR = newCOO;
+        localStorage.binaryOpCSR( localStorage, newCSR, mOp );
+
+        newCOO.swap( recvIA, recvJA, recvValues );
+
+        // prepare for next step, the received values from left will be sent to right
+
+        sendIA.swap( recvIA );
+        sendJA.swap( recvJA );
+        sendValues.swap( recvValues );
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixAssemblyAccess<ValueType>::addLocalCOO( CSRStorage<ValueType>& localStorage )
+{
+    SCAI_LOG_INFO( logger, "add " << mLocalIA.size() << " locally assembled entries" )
+
+    // Build CSR storage from the local COO data
+
+    HArrayRef<IndexType> l_ia( mLocalIA );
+    HArrayRef<IndexType> l_ja( mLocalJA );
+    HArrayRef<ValueType> l_values( mLocalValues );
+
+    COOStorage<ValueType> newCOO( localStorage.getNumRows(), localStorage.getNumColumns(), l_ia, l_ja, l_values );
+    CSRStorage<ValueType> newCSR( newCOO );
+
+    localStorage.binaryOpCSR( localStorage, newCSR, mOp );
+
+    mLocalIA.clear();
+    mLocalJA.clear();
+    mLocalValues.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
+void MatrixAssemblyAccess<ValueType>::addCOO( CSRStorage<ValueType>& localStorage )
+{
+    SCAI_LOG_INFO( logger, "add " << mIA.size() << " assembled entries" )
+
+    // vector data only read, so we can use HArray references
+
+    HArrayRef<IndexType> ia( mIA );
+    HArrayRef<IndexType> ja( mJA );
+    HArrayRef<ValueType> values( mValues );
+
+    const dmemo::Distribution& rowDist = mMatrix.getRowDistribution();
+
+    if ( rowDist.isReplicated() )
+    {
+        shiftAssembledData( localStorage, ia, ja, values );
+    }
+    else
+    {
+        // These COO array will keep only the values owned by this processor
+
+        HArray<IndexType> ownedIA;
+        HArray<IndexType> ownedJA;
+        HArray<ValueType> ownedValues;
+
+        exchangeCOO( ownedIA, ownedJA, ownedValues, ia, ja, values, rowDist );
+
+        rowDist.global2local( ownedIA );
+
+        // now we add the owned COO data to the local storage
+
+        COOStorage<ValueType> cooLocal;
+        cooLocal.allocate( rowDist.getLocalSize(), mMatrix.getNumColumns() );
+        cooLocal.swap( ownedIA, ownedJA, ownedValues );
+
+        CSRStorage<ValueType> csrLocal( cooLocal );  // resorts also the entries corresponding to the rows
+
+        localStorage.binaryOpCSR( localStorage, csrLocal, mOp );
+    }
+
+    // reset the data vectors as they are emptied now
+
+    mIA.clear();
+    mJA.clear();
+    mValues.clear();
+}
+
+/* -------------------------------------------------------------------------- */
+
+template<typename ValueType>
 void MatrixAssemblyAccess<ValueType>::release()
 {
     SCAI_ASSERT_EQ_DEBUG( mIA.size(), mJA.size(), "serious mismatch" )
@@ -139,24 +293,6 @@ void MatrixAssemblyAccess<ValueType>::release()
         return;
     }
 
-    // vector data only read, so we can use HArray references
-
-    HArrayRef<IndexType> ia( mIA );
-    HArrayRef<IndexType> ja( mJA );
-    HArrayRef<ValueType> values( mValues );
-
-    // These COO array will keep only the values owned by this processor
-
-    HArray<IndexType> ownedIA;
-    HArray<IndexType> ownedJA;
-    HArray<ValueType> ownedValues;
-
-    const dmemo::Distribution& rowDist = mMatrix.getRowDistribution();
-
-    exchangeCOO( ownedIA, ownedJA, ownedValues, ia, ja, values, rowDist );
-
-    rowDist.global2local( ownedIA );
-
     dmemo::DistributionPtr saveColDist = mMatrix.getColDistributionPtr();
 
     // adding matrix data is only possible on replicated local storage as halo must be rebuilt
@@ -167,31 +303,15 @@ void MatrixAssemblyAccess<ValueType>::release()
         mMatrix.redistribute( mMatrix.getRowDistributionPtr(), repColDist );
     }
 
-    // now we add the owned COO data to the local storage
-
-    COOStorage<ValueType> cooLocal;
-    cooLocal.allocate( rowDist.getLocalSize(), mMatrix.getNumColumns() );
-    cooLocal.swap( ownedIA, ownedJA, ownedValues );
-
-    CSRStorage<ValueType> csrLocal( cooLocal );  // resorts also the entries corresponding to the rows
-
-    // we call the binary op routine in any case as cooLocal might also contain double values
-
     CSRStorage<ValueType> matrixCSR( mMatrix.getLocalStorage() );
 
-    SCAI_LOG_DEBUG( logger, "assembled CSR = " << csrLocal << ", is added to this CSR: " << matrixCSR )
+    addCOO( matrixCSR );
 
-    matrixCSR.binaryOpCSR( matrixCSR, csrLocal, mOp );
+    addLocalCOO( matrixCSR );
 
     SCAI_LOG_DEBUG( logger, "merged CSR = " << matrixCSR )
 
     mMatrix.assign( matrixCSR, mMatrix.getRowDistributionPtr(), saveColDist );
-
-    // reset the data vectors as they are emptied now
-
-    mIA.clear();
-    mJA.clear();
-    mValues.clear();
 
     mIsReleased = true;
 }

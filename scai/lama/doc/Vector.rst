@@ -232,7 +232,8 @@ independently.
     }
 
 - During an assembly access the vector must not be changed or accessed otherwise.
-- All processors must access the vector by the corresponding constructor.
+- All processors must access the vector by the corresponding constructor; even if not all processors might push
+  elements, they might be involved in redistribution of the assembled data to the owning processors.
 - The end of assembling is indicated by either calling the destructor of the access or by an explicit release call.
 - Zero elements might be filled explicitly to reserve memory in a sparse vector.
 - Different modes are supported if entries are assembled twice, either by same or by different processors or for existing entries.
@@ -247,7 +248,7 @@ to due the assembling as locally as possible, i.e. elements should be inserted p
 
 The assembling might also be done replicated, i.e. each processor runs the whole assembling code. In this case elements
 should only be pushed by the owner. If elements are pushed by all processors, this would not be wrong in the replace mode
-but causes significant overhead.
+but would cause significant overhead.
 
 .. code-block:: c++
 
@@ -272,8 +273,8 @@ optimizations. The element is only inserted once.
 
 Usually assembling is done for a distributed vector. For consistency reasons, assembling works also
 for replicated vectors. In this case all elements from all processors will be inserted in all instances.
-Replicated assembling for a replicated vector also works fine, here the benefits of the pushReplicated
-method are also very high.
+Replicated assembling for a replicated vector also works fine; here the use of the pushReplicated method
+is especially recommended.
 
 Methods
 -------
