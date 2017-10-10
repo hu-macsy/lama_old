@@ -773,7 +773,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 template<typename ValueType>
 void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors )
 {
-    SparseVector<ValueType> newVector( dist, 0 );
+    SparseVector<ValueType> newVector( dist, ValueType( 0 ) );
 
     {
         VectorAssemblyAccess<ValueType> assembly( newVector );
