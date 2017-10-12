@@ -13,6 +13,11 @@ variables:
   USE_METIS: 0
   USE_MIC: 0
 
+.before_every_job: &before_every_job
+    |
+      echo -e "Build directory: $BUILD_DIR"
+      echo -e "Install directory: $INSTALL_DIR"
+
 .build test install template: &build_test_install_template
   stage: build test install
   script:
@@ -34,6 +39,7 @@ variables:
 lama on draco (serial):
   <<: *build_test_install_template
   before_script:
+    - *before_every_job
     - module load tools/cmake/3.5.2
     - module load gcc/4.9.1
   variables:
