@@ -1,10 +1,5 @@
-before_script:
-  - echo "Running before_script. Current directory "
-  - pwd
-
 stages:
-  - build
-  - test
+  - build test install
   
 variables:
   BUILD_THREADS: 8
@@ -16,8 +11,8 @@ variables:
   USE_METIS: 0
   USE_MIC: 0
 
-.build_template: &build_template
-  stage: build
+.build test install template: &build_test_install_template
+  stage: build test install
   script:
     - mkdir scai/build
     - cd scai/build
@@ -29,13 +24,16 @@ variables:
         -DUSE_METIS=$USE_METIS
         -DUSE_MIC=$USE_MIC
     - make -j$BUILD_THREADS
+    - make -j$BUILD_THREADS examples tests
+    - make check
 
-build lama on draco:
-  <<: *build_template
+lama on draco (serial):
+  <<: *build_test_install_template
   before_script:
     - module load tools/cmake/3.5.2
     - module load gcc/4.9.1
   variables:
     USE_CUDA: 0
+    OMP_NUM_THREADS: 1
   tags:
     - draco
