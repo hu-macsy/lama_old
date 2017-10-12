@@ -1,0 +1,49 @@
+stages:
+  - build test install
+  
+variables:
+  BUILD_THREADS: 8
+  BUILD_DIR: $CI_PROJECT_DIR/build
+  INSTALL_DIR: $CI_PROJECT_DIR/installed
+
+  # Default configuration for LAMA build
+  USE_CUDA: 0
+  USE_JAVA: 0
+  USE_MPI: 0
+  USE_METIS: 0
+  USE_MIC: 0
+
+.before_every_job: &before_every_job
+    |
+      echo -e "Build directory: $BUILD_DIR"
+      echo -e "Install directory: $INSTALL_DIR"
+
+.build test install template: &build_test_install_template
+  stage: build test install
+  script:
+    - mkdir $BUILD_DIR
+    - cd $BUILD_DIR
+    - >
+        cmake ../scai
+        -DUSE_CUDA=$USE_CUDA
+        -DUSE_JAVA=$USE_JAVA
+        -DUSE_MPI=$USE_MPI
+        -DUSE_METIS=$USE_METIS
+        -DUSE_MIC=$USE_MIC
+        -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+    - make -j$BUILD_THREADS
+    - make -j$BUILD_THREADS examples tests
+    - make check
+    - make install
+
+lama on draco (serial):
+  <<: *build_test_install_template
+  before_script:
+    - *before_every_job
+    - module load tools/cmake/3.5.2
+    - module load gcc/4.9.1
+  variables:
+    USE_CUDA: 0
+    OMP_NUM_THREADS: 1
+  tags:
+    - draco
