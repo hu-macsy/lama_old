@@ -6,17 +6,36 @@ stages:
   - build
   - test
   
+variables:
+  BUILD_THREADS: 8
+
+  # Default configuration for LAMA build
+  USE_CUDA: 0
+  USE_JAVA: 0
+  USE_MPI: 0
+  USE_METIS: 0
+  USE_MIC: 0
+
+.build_template: &build_template
+  stage: build
+  script:
+    - mkdir scai/build
+    - cd scai/build
+    - >
+        cmake ..
+        -DUSE_CUDA=$USE_CUDA
+        -DUSE_JAVA=$USE_JAVA
+        -DUSE_MPI=$USE_MPI
+        -DUSE_METIS=$USE_METIS
+        -DUSE_MIC=$USE_MIC
+    - make -j$BUILD_THREADS
+
 build lama on draco:
-    stage: build
-    before_script:
-      - module load tools/cmake/3.5.2
-      - module load gcc/4.9.1
-    variables:
-      USE_CUDA: 0
-    script:
-      - mkdir scai/build
-      - cd scai/build
-      - cmake -DUSE_CUDA=0 ..
-      - make -j4
-    tags:
-      - draco
+  <<: *build_template
+  before_script:
+    - module load tools/cmake/3.5.2
+    - module load gcc/4.9.1
+  variables:
+    USE_CUDA: 0
+  tags:
+    - draco
