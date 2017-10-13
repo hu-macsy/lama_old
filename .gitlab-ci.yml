@@ -14,6 +14,9 @@ variables:
   USE_MIC: 0
   USE_BOOST_TEST: 1
 
+  # For Boost versions that are recent enough, make the output colored
+  BOOST_TEST_COLOR_OUTPUT: 1
+
 .before_every_job: &before_every_job
     |
       echo -e "Build directory: $BUILD_DIR"
@@ -36,7 +39,7 @@ variables:
         $EXTRA_CMAKE_OPTS
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
-    - make check
+    - ctest --output-on-failure
     - make install
 
 lama on draco (serial):
