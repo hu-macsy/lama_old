@@ -12,6 +12,7 @@ variables:
   USE_MPI: 0
   USE_METIS: 0
   USE_MIC: 0
+  USE_BOOST_TEST: 1
 
 .before_every_job: &before_every_job
     |
@@ -31,6 +32,8 @@ variables:
         -DUSE_METIS=$USE_METIS
         -DUSE_MIC=$USE_MIC
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+        -DUSE_BOOST_TEST=$USE_BOOST_TEST
+        $EXTRA_CMAKE_OPTS
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
     - make check
@@ -42,8 +45,14 @@ lama on draco (serial):
     - *before_every_job
     - module load tools/cmake/3.5.2
     - module load gcc/4.9.1
+    - module load libs/boost/1.56
   variables:
     USE_CUDA: 0
     OMP_NUM_THREADS: 1
+    # It seems to be necessary to specifically specify the Boost installation
+    BOOST_ROOT: /cluster/libs/boost/1.56
+    BOOST_INCLUDEDIR: /cluster/libs/boost/1.56/include
+    BOOST_LIBRARYDIR: /cluster/libs/boost/1.56/lib
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
   tags:
     - draco
