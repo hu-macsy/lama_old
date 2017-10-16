@@ -75,6 +75,7 @@ macro ( scai_test )
     add_dependencies( tests ${scai_test_EXECUTABLE} )
 
     target_link_libraries ( ${scai_test_EXECUTABLE} ${MODULE_LIBRARY} )
+    target_include_directories( ${scai_test_EXECUTABLE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
     if ( ${scai_test_UNIT_TEST} )
         if ( WIN32 )
