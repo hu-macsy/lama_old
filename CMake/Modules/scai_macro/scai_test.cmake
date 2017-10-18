@@ -60,10 +60,6 @@ macro ( scai_test )
         message ( FATAL_ERROR "scai_test: EXECUTABLE argument not specified" )
     endif ()
 
-    if ( ${scai_test_UNIT_TEST} )
-        include_directories ( ${BOOST_INCLUDE_DIR} )
-    endif ()
-
     # define test executable, will not be a default built target, but wiht make check
 
     if ( ${scai_test_CUDA} )
@@ -75,9 +71,10 @@ macro ( scai_test )
     add_dependencies( tests ${scai_test_EXECUTABLE} )
 
     target_link_libraries ( ${scai_test_EXECUTABLE} ${MODULE_LIBRARY} )
-    target_include_directories( ${scai_test_EXECUTABLE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
 
     if ( ${scai_test_UNIT_TEST} )
+        target_include_directories( ${scai_test_EXECUTABLE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS} )
+
         if ( WIN32 )
             link_directories ( ${Boost_LIBRARY_DIRS} )
         else ()
