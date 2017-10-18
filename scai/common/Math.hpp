@@ -781,6 +781,9 @@ bool Math::randomBool( const float trueRatio )
 
 // Workaround for template function: code for complex abs function as macro
 // Reason: template function causes compiler warnings with attribute CUDA_CALLABLE
+//
+// Note: Make sure to give the same result as real numbers when the
+// complex number is purely real or purely imaginary.
 
 #define ABS_FUNCTION_CODE                       \
     ValueType x = a.real();                     \
@@ -792,6 +795,14 @@ bool Math::randomBool( const float trueRatio )
     if ( s == ValueType( 0 ) )                  \
     {                                           \
         return s;                               \
+    }                                           \
+    else if ( ay == ValueType ( 0 ) )           \
+    {                                           \
+        return ax;                              \
+    }                                           \
+    else if ( ax == ValueType ( 0 ) )           \
+    {                                           \
+        return ay;                              \
     }                                           \
                                                 \
     x /= s;                                     \
