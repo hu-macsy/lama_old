@@ -1,4 +1,9 @@
 stages:
+  # Provides a basic sanity check for a small portion of the LAMA library.
+  # Is quick to build and run, and it might capture e.g. certain differences
+  # in environment
+  - basic build test
+  # Build, test and install the entire LAMA library. Most jobs run in this stage
   - build test install
   
 variables:
@@ -9,6 +14,7 @@ variables:
 
   # Default configuration for LAMA build
   LAMA_BUILD_TYPE: Release
+  USE_OPENMP: 1
   USE_CUDA: 0
   USE_JAVA: 0
   USE_MPI: 0
@@ -25,12 +31,12 @@ variables:
       echo -e "Install directory: $INSTALL_DIR"
 
 .build test install template: &build_test_install_template
-  stage: build test install
   script:
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
     - >
         cmake ../scai
+        -DUSE_OPENMP=$USE_OPENMP
         -DUSE_CUDA=$USE_CUDA
         -DUSE_JAVA=$USE_JAVA
         -DUSE_MPI=$USE_MPI
@@ -45,9 +51,38 @@ variables:
     - ctest --output-on-failure
     - make install
 
-lama build serial gcc 4.9.1 (release):
-  # This is the most basic build configuration
+###############################################################
+# CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
+###############################################################
+
+lama common basic build serial gcc 4.9.1 (debug):
+  # This is the most basic build configuration.
+  # It is only intended as a quick and basic sanity check,
+  # so that using compute resources for running the full
+  # configurations can be avoided if this one fails
   <<: *build_test_install_template
+  stage: basic build test
+  before_script:
+    - *before_every_job
+    - module load tools/cmake/3.5.2
+    - module load gcc/4.9.1
+    - module load libs/boost/1.56
+  variables:
+    LAMA_BUILD_TYPE: Debug
+    USE_OPENMP: 0
+    USE_CUDA: 0
+    OMP_NUM_THREADS: 1
+    BOOST_ROOT: /cluster/libs/boost/1.56
+    BOOST_INCLUDEDIR: /cluster/libs/boost/1.56/include
+    BOOST_LIBRARYDIR: /cluster/libs/boost/1.56/lib
+    # Note the SCAI_MODULES definition
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DSCAI_MODULES=common
+  tags:
+    - draco
+
+lama build serial gcc 4.9.1 (release):
+  <<: *build_test_install_template
+  stage: build test install
   before_script:
     - *before_every_job
     - module load tools/cmake/3.5.2
@@ -66,8 +101,8 @@ lama build serial gcc 4.9.1 (release):
     - draco
 
 lama build serial gcc 4.9.1 (debug):
-  # This is the most basic build configuration
   <<: *build_test_install_template
+  stage: build test install
   before_script:
     - *before_every_job
     - module load tools/cmake/3.5.2
@@ -87,6 +122,7 @@ lama build serial gcc 4.9.1 (debug):
 
 lama build parallel gcc 6.3.0 (release):
   <<: *build_test_install_template
+  stage: build test install
   before_script:
     - *before_every_job
     - module load tools/cmake/3.5.2
@@ -108,3 +144,8 @@ lama build parallel gcc 6.3.0 (release):
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
   tags:
     - draco
+
+
+##################################################################
+# CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO MASTER/DEVELOP
+##################################################################
