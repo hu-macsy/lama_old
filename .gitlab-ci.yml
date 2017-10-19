@@ -55,7 +55,7 @@ variables:
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
 ###############################################################
 
-lama common basic build serial gcc 4.9.1 (debug):
+common basic build serial gcc 4.9.1 (debug):
   # This is the most basic build configuration.
   # It is only intended as a quick and basic sanity check,
   # so that using compute resources for running the full
@@ -80,7 +80,7 @@ lama common basic build serial gcc 4.9.1 (debug):
   tags:
     - draco
 
-lama build serial gcc 4.9.1 (release):
+serial gcc 4.9.1 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
@@ -100,7 +100,7 @@ lama build serial gcc 4.9.1 (release):
   tags:
     - draco
 
-lama build serial gcc 4.9.1 (debug):
+serial gcc 4.9.1 (debug):
   <<: *build_test_install_template
   stage: build test install
   before_script:
@@ -120,7 +120,7 @@ lama build serial gcc 4.9.1 (debug):
   tags:
     - draco
 
-lama build parallel gcc 6.3.0 (release):
+parallel gcc 6.3.0 (release):
   <<: *build_test_install_template
   stage: build test install
   before_script:
