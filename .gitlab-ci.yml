@@ -5,6 +5,7 @@ variables:
   BUILD_THREADS: 8
   BUILD_DIR: $CI_PROJECT_DIR/build
   INSTALL_DIR: $CI_PROJECT_DIR/installed
+  OMP_NUM_THREADS: 8
 
   # Default configuration for LAMA build
   LAMA_BUILD_TYPE: Release
@@ -80,6 +81,30 @@ lama build serial gcc 4.9.1 (debug):
     BOOST_ROOT: /cluster/libs/boost/1.56
     BOOST_INCLUDEDIR: /cluster/libs/boost/1.56/include
     BOOST_LIBRARYDIR: /cluster/libs/boost/1.56/lib
+    EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
+  tags:
+    - draco
+
+lama build parallel gcc 6.3.0 (release):
+  <<: *build_test_install_template
+  before_script:
+    - *before_every_job
+    - module load tools/cmake/3.5.2
+    # Need to use more recent Boost version, because the precompiled 1.56 version
+    # is not compatible with GCC 6.3.0
+    - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    - module unload gcc
+    - module load gcc/6.3.0
+    # LIBRARY_PATH messes up which library gets linked, see issue #40
+    - unset LIBRARY_PATH
+  variables:
+    LAMA_BUILD_TYPE: Release
+    USE_CUDA: 0
+    OMP_NUM_THREADS: 4
+    # It seems to be necessary to specifically specify the Boost installation
+    BOOST_ROOT: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    BOOST_INCLUDEDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/include
+    BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1
   tags:
     - draco
