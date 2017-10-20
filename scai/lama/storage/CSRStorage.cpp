@@ -1231,6 +1231,11 @@ void CSRStorage<ValueType>::assign( const _MatrixStorage& other )
         return;
     }
 
+    // Ideally we'd try to determine if the other storage is also a CSRStorage, in which case
+    // we could use this information here. However, we might also consider simply always
+    // enforcing sorted rows for the CSR format. See issue #46.
+    mSortedRows = false;
+
     SCAI_LOG_INFO( logger, typeName() << ": assign " << other )
     // Nearly the same routine as MatrixStorage::assign but here we
     // do not need any temporary data for ia, ja, and values
