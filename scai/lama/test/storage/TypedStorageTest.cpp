@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, scai_numeric_test_types )
     SCAI_LOG_INFO( logger, "normTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     DenseStorage<ValueType> dense;
     setDenseData( dense );
-    const LArray<ValueType>& denseData = reinterpret_cast<const LArray<ValueType>&>( dense.getData() );
+    const LArray<ValueType> denseData = dense.getData();
     ValueType expectedL1Norm = denseData.l1Norm();
     ValueType expectedL2Norm = denseData.l2Norm();
     ValueType expectedMaxNorm = denseData.maxNorm();
