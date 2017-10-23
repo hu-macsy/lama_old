@@ -201,6 +201,11 @@ sanitized parallel gcc 6.3.0:
     BOOST_ROOT: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
     BOOST_INCLUDEDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/include
     BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
+    UBSAN_OPTIONS: print_stacktrace=1
+    # We currently have some tests which try to allocate too much memory,
+    # expecting to receive an exception. ASAN will by default not allow returning
+    # null from the allocator, so we have to instruct it to ignore it.
+    ASAN_OPTIONS: allocator_may_return_null=true
     EXTRA_CMAKE_OPTS: >
         -DBoost_NO_BOOST_CMAKE=1
         -DADDITIONAL_CXX_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
