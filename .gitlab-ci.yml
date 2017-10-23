@@ -34,6 +34,7 @@ variables:
   script:
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
+    - env
     - set -x
     - >
         cmake ../scai
