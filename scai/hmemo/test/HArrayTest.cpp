@@ -43,10 +43,12 @@
 #include <scai/hmemo/ReadAccess.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 using namespace boost;
 using namespace scai;
 using namespace scai::hmemo;
+using scai::common::unique_ptr;
 
 /* --------------------------------------------------------------------- */
 
@@ -325,11 +327,11 @@ BOOST_AUTO_TEST_CASE( createTest )
     BOOST_CHECK( _HArray::canCreate( ScalarType::FLOAT ) );
     BOOST_CHECK( _HArray::canCreate( ScalarType::DOUBLE ) );
     BOOST_CHECK( _HArray::canCreate( TypeTraits<IndexType>::stype ) );
-    BOOST_CHECK( !_HArray::canCreate( ScalarType::INTERNAL ) );
-    _HArray* ca1 = _HArray::create( ScalarType::FLOAT );
+    BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
+    unique_ptr<_HArray> ca1 ( _HArray::create( scalarType::FLOAT ) );
     BOOST_REQUIRE( ca1 );
-    HArray<double>* da1 = dynamic_cast<HArray<double>*>( ca1 );
-    HArray<float>* fa1 = dynamic_cast<HArray<float>*>( ca1 );
+    const HArray<double>* da1 = dynamic_cast<const HArray<double>*>( ca1.get() );
+    const HArray<float>* fa1 = dynamic_cast<const HArray<float>*>( ca1.get() );
     BOOST_CHECK( da1 == NULL );
     BOOST_CHECK( fa1 != NULL );
     BOOST_CHECK_THROW(
@@ -346,7 +348,7 @@ BOOST_AUTO_TEST_CASE( newArrayTest )
     using namespace common;
     HArray<float> A( 10, 1.0f );
   
-    std::unique_ptr<_HArray> tmpA( A.newArray() );
+    std::unique_ptr<_HArray> tmpA( A.copy() );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), tmpA->size() );
     BOOST_CHECK_EQUAL( tmpA->getValueType(), A.getValueType() );
