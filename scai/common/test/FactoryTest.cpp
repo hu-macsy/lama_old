@@ -36,6 +36,7 @@
 
 #include <scai/common/Factory.hpp>
 #include <scai/common/Printable.hpp>
+#include <scai/common/unique_ptr.hpp>
 
 using namespace scai::common;
 
@@ -114,14 +115,18 @@ BOOST_AUTO_TEST_CASE( FactoryTest )
     BOOST_CHECK( !Base::canCreate( "F" ) );
     BOOST_CHECK( Base::canCreate( typeid( int ).name() ) );
     BOOST_CHECK( !Base::canCreate( typeid( double ).name() ) );
-    BOOST_CHECK_THROW( { Base::create( "e" ); }, Exception );
-    Base* obj = Base::create( "D" );
-    Derived* derivedObj = dynamic_cast<Derived*>( obj );
-    BOOST_CHECK( derivedObj );
-    obj = Base::create( typeid( int ).name() );
-    TDerived<int>* intObj = dynamic_cast<TDerived<int>*>( obj );
-    TDerived<float>* floatObj = dynamic_cast<TDerived<float>*>( obj );
-    TDerived<double>* doubleObj = dynamic_cast<TDerived<double>*>( obj );
+    BOOST_CHECK_THROW( { unique_ptr<Base>(Base::create( "e" )); }, Exception );
+
+    unique_ptr<Base> obj ( Base::create( "D" ) );
+    {
+        const Derived* derivedObj = dynamic_cast<const Derived*>( obj.get() );
+        BOOST_CHECK( derivedObj );
+    }
+
+    unique_ptr<Base> intBase ( Base::create(typeid(int).name()) );
+    const TDerived<int>* intObj = dynamic_cast<const TDerived<int>*>( intBase.get() );
+    const TDerived<float>* floatObj = dynamic_cast<const TDerived<float>*>( intBase.get() );
+    const TDerived<double>* doubleObj = dynamic_cast<const TDerived<double>*>( obj.get() );
     BOOST_CHECK( intObj );
     BOOST_CHECK( floatObj == NULL );
     BOOST_CHECK( doubleObj == NULL );
