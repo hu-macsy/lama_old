@@ -33,10 +33,12 @@
  */
 
 #include <scai/lama/io/MATIOStream.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 #include <zlib.h>
 
 using namespace std;
+using scai::common::safer_memcpy;
 
 namespace scai
 {
@@ -355,7 +357,7 @@ uint32_t MATIOStream::readDataElement( common::scoped_array<char>& dataElement )
         SCAI_LOG_DEBUG( logger, "uncompressed elem, width = " << wBytes << ", #bytes = " << nBytes )
 
         dataElement.reset( new char[ wBytes ] );
-        memcpy( dataElement.get(), buffer, 8 );
+        safer_memcpy( dataElement.get(), buffer, 8 );
         fstream::read( dataElement.get() + 8, wBytes - 8 );
 
         return wBytes;

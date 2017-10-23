@@ -49,9 +49,12 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 // std
 #include <cstring>
+
+using scai::common::safer_memcpy;
 
 namespace scai
 {
@@ -126,7 +129,7 @@ void HostMemory::memcpy( void* dst, const void* src, const size_t size ) const
 {
     SCAI_REGION( "Memory.Host_memcpy" )
     SCAI_LOG_DEBUG( logger, "memcpy: " << dst << " <- " << src << ", size = " << size )
-    ::memcpy( dst, src, size );
+    safer_memcpy( dst, src, size );
 }
 
 void HostMemory::memset( void* dst, const int val, const size_t size ) const

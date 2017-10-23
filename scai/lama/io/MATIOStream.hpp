@@ -37,6 +37,7 @@
 #include <scai/lama/io/IOStream.hpp>
 
 #include <scai/common/unique_ptr.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 namespace scai
 {
@@ -223,7 +224,7 @@ uint32_t MATIOStream::getData( ValueType* data, uint32_t size, const char* buffe
     SCAI_ASSERT_EQ_ERROR( nBytes, size * sizeof( ValueType ), "size mismatch" )
     SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
 
-    ::memcpy( data, dataPtr, nBytes );
+    scai::common::safer_memcpy( data, dataPtr, nBytes );
 
     return wBytes;
 }
@@ -247,7 +248,7 @@ uint32_t MATIOStream::getDataN( ValueType* data, IndexType& nSize, IndexType max
     SCAI_ASSERT_GE_ERROR( maxSize, nSize, "Insuffient buffer for reading values" )
     SCAI_ASSERT_EQ_ERROR( dataType, scalarType2MatlabType( common::TypeTraits<ValueType>::stype ), "type mismatch" )
 
-    ::memcpy( data, dataPtr, nBytes );
+    scai::common::safer_memcpy( data, dataPtr, nBytes );
 
     return wBytes;
 }
@@ -274,7 +275,7 @@ uint32_t MATIOStream::getString( char* name, uint32_t nameSize, const char* buff
     SCAI_ASSERT_EQ_ERROR( dataType, MAT_INT8, "type mismatch" )
     SCAI_ASSERT_LT_ERROR( nBytes, nameSize - 1, "too long string" )
 
-    ::memcpy( name, dataPtr, nBytes );
+    scai::common::safer_memcpy( name, dataPtr, nBytes );
 
     name[nBytes] = '\0';   // finalize string
 

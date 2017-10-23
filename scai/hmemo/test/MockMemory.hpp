@@ -32,11 +32,14 @@
  * @date 05.07.2015
  */
 
+#pragma once
+
 #include <scai/hmemo/Memory.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/bind.hpp>
 #include <scai/common/weak_ptr.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 /** Exampes of a new memory class that implements all relevant routines. */
 
@@ -94,7 +97,7 @@ public:
 
     virtual void memcpy( void* target, const void* source, const size_t size ) const
     {
-        ::memcpy( target, source, size );
+        scai::common::safer_memcpy( target, source, size );
     }
 
     virtual void memset( void* target, const int val, const size_t size ) const
@@ -128,7 +131,7 @@ public:
     {
         if ( srcMemory.getType() == scai::hmemo::memtype::HostMemory )
         {
-            ::memcpy( dst, src, size );
+            scai::common::safer_memcpy( dst, src, size );
         }
         else
         {
@@ -140,7 +143,7 @@ public:
     {
         if ( dstMemory.getType() == scai::hmemo::memtype::HostMemory )
         {
-            ::memcpy( dst, src, size );
+            scai::common::safer_memcpy( dst, src, size );
         }
         else
         {
