@@ -203,8 +203,8 @@ sanitized parallel gcc 6.3.0:
     BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
     EXTRA_CMAKE_OPTS: >
         -DBoost_NO_BOOST_CMAKE=1
-        -DADDITIONAL_CXX_FLAGS=-fsanitize=undefined\ -fno-sanitize-recover=all\ -fno-omit-frame-pointer
-        -DADDITIONAL_LINKER_FLAGS=-fsanitize=undefined\ -fno-sanitize-recover=all
+        -DADDITIONAL_CXX_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+        -DADDITIONAL_LINKER_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all"
   tags:
     - draco
   only:
