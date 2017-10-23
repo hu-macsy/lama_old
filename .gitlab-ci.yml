@@ -176,3 +176,34 @@ parallel gcc 5.4.0 (release):
   only:
     - master
     - develop
+
+sanitized parallel gcc 6.3.0:
+  <<: *build_test_install_template
+  stage: build test install
+  before_script:
+    - *before_every_job
+    - module load tools/cmake/3.5.2
+    # Need to use more recent Boost version, because the precompiled 1.56 version
+    # is not compatible with GCC 6.3.0
+    - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    - module unload gcc
+    - module load gcc/6.3.0
+    # LIBRARY_PATH messes up which library gets linked, see issue #40
+    - unset LIBRARY_PATH
+  variables:
+    LAMA_BUILD_TYPE: Debug
+    USE_CUDA: 0
+    OMP_NUM_THREADS: 4
+    # It seems to be necessary to specifically specify the Boost installation
+    BOOST_ROOT: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
+    BOOST_INCLUDEDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/include
+    BOOST_LIBRARYDIR: /cluster/libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2/lib
+    EXTRA_CMAKE_OPTS: >
+        -DBoost_NO_BOOST_CMAKE=1
+        -DADDITIONAL_CXX_FLAGS=-fsanitize=undefined\ -fno-sanitize-recover=all\ -fno-omit-frame-pointer
+        -DADDITIONAL_LINKER_FLAGS=-fsanitize=undefined\ -fno-sanitize-recover=all
+  tags:
+    - draco
+  only:
+    - master
+    - develop
