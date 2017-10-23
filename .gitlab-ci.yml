@@ -34,6 +34,7 @@ variables:
   script:
     - mkdir $BUILD_DIR
     - cd $BUILD_DIR
+    - set -x
     - >
         cmake ../scai
         -DUSE_OPENMP=$USE_OPENMP
