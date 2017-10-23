@@ -143,14 +143,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
 
     // check with n <= 0
     {
-        int x_int[] = { 1, 2, -3, 4, 5, -6 };
-        int y_int[] = { 1, 2, -3, 4, 5, -6, 7, 8, -9 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = { 1, 2, -3, 4, 5, -6 };
+        const ValueType y[] = { 1, 2, -3, 4, 5, -6, 7, 8, -9 };
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -173,14 +167,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
     }
     // check with incX <= 0 and incY <= 0
     {
-        int x_int[] = { 1, 2, -3, 4, 5, -6 };
-        int y_int[] = { 1, 2, -3, 4, 5, -6, 7, 8, -9 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = { 1, 2, -3, 4, 5, -6 };
+        const ValueType y[] = { 1, 2, -3, 4, 5, -6, 7, 8, -9 };
 
         HArray<ValueType> Ax( lenx, x, testContext );
         HArray<ValueType> Ay( leny, y, testContext );
@@ -201,17 +189,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( axpyTest, ValueType, scai_array_test_types )
     }
     // check with n > 0 and incX > 0 and incY > 0
     {
-        int x_int[] = { 1, 2, -3, 4, 5, -6 };
-        int y_int[] = { 1, 2, -3, 4, 5, -6, 7, 8, -9 };
-        int yResult_int[] = { 6, 2, -3, -11, 5, -6, 32, 8, -9 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-        ValueType* yResult = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
-        std::copy( yResult_int, yResult_int + leny, yResult );
+        const ValueType x[] = { 1, 2, -3, 4, 5, -6 };
+        const ValueType y[] = { 1, 2, -3, 4, 5, -6, 7, 8, -9 };
+        const ValueType yResult[] = { 6, 2, -3, -11, 5, -6, 32, 8, -9 };
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -246,19 +226,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "copy< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
 
-    int lenx = 6;
-    int leny = 9;
-
     // check with n <= 0
     {
-        int x_int[] = { 1, 2, -3, 4, 5, -6 };
-        int y_int[] = { -9, 8, -7, 6, 5, -4, 3, 2, -1 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = { 1, 2, -3, 4, 5, -6 };
+        const ValueType y[] = { -9, 8, -7, 6, 5, -4, 3, 2, -1 };
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -283,14 +254,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
     }
     // check with incX <= 0 and incY <= 0
     {
-        int x_int[] = { 1, 2, -3, 4, 5, -6 };
-        int y_int[] = { -9, 8, -7, 6, 5, -4, 3, 2, -1 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = { 1, 2, -3, 4, 5, -6 };
+        const ValueType y[] = { -9, 8, -7, 6, 5, -4, 3, 2, -1 };
 
         const IndexType incX = 0;
         const IndexType incY = 0;
@@ -314,17 +279,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_array_test_types )
     }
     // check with n > 0 and incX > 0 and incY > 0
     {
-        int x_int[] = { 1, 2, -3, 4, 5, -6 };
-        int y_int[] = { -9, 8, -7, 6, 5, -4, 3, 2, -1 };
-        int yResult_int[] = { 1, 8, -7, -3, 5, -4, 5, 2, -1 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-        ValueType* yResult = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
-        std::copy( yResult_int, yResult_int + leny, yResult );
+        const ValueType x[] = { 1, 2, -3, 4, 5, -6 };
+        const ValueType y[] = { -9, 8, -7, 6, 5, -4, 3, 2, -1 };
+        const ValueType yResult[] = { 1, 8, -7, -3, 5, -4, 5, 2, -1 };
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -357,8 +314,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dotTest, ValueType, blas_test_types )
     BOOST_WARN_EQUAL( loc->getType(), testContext->getType() );
     SCAI_LOG_INFO( logger, "dot< " << TypeTraits<ValueType>::id() << "> test for " << *testContext << " on " << *loc )
     {
-        ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
-        ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
+        const ValueType x[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0 };
+        const ValueType y[] = { 1.0, 2.0, -3.0, 4.0, 5.0, -6.0, 7.0, 8.0, -9.0 };
         const IndexType incX = 2;
         const IndexType incY = 3;
         HArray<ValueType> Ax( 6, x, testContext );
@@ -530,17 +487,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
     // check with n == 0
     {
 
-        int x_int[] = { 1, 2, 3, 4, 5 };
-        int y_int[] = { 7, 6, 5, 4, 3 };
-        int z_int[] = { 4, 3, -2, 0, -17 };
-
-        ValueType* x = new ValueType[len];
-        ValueType* y = new ValueType[len];
-        ValueType* z = new ValueType[len];
-
-        std::copy( x_int, x_int + len, x );
-        std::copy( y_int, y_int + len, y );
-        std::copy( z_int, z_int + len, z );
+        const ValueType x[] = { 1, 2, 3, 4, 5 };
+        const ValueType y[] = { 7, 6, 5, 4, 3 };
+        const ValueType z[] = { 4, 3, -2, 0, -17 };
 
         HArray<ValueType> Ax( len, x, testContext );
         HArray<ValueType> Ay( len, y, testContext );
@@ -563,14 +512,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
     }
     // check with n > 0 and incX > 0
     {
-        ValueType x_int[] = { 1, 2, 3, 4, 5 };
-        ValueType y_int[] = { 7, 6, 5, 4, 3 };
-
-        ValueType* x = new ValueType[len];
-        ValueType* y = new ValueType[len];
-
-        std::copy( x_int, x_int + len, x );
-        std::copy( y_int, y_int + len, y );
+        const ValueType x[] = { 1, 2, 3, 4, 5 };
+        const ValueType y[] = { 7, 6, 5, 4, 3 };
 
         HArray<ValueType> Ax( len, x, testContext );
         HArray<ValueType> Ay( len, y, testContext );
@@ -608,14 +551,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
 
     // check with n <= 0
     {
-        ValueType x_int[] = {   1, 2, 3, 4, 5 };
-        ValueType y_int[] = {   7, 6, 5, 4, 3, 2, 1 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = {   1, 2, 3, 4, 5 };
+        const ValueType y[] = {   7, 6, 5, 4, 3, 2, 1 };
 
         const IndexType incX = 2;
         const IndexType incY = 3;
@@ -640,14 +577,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
     }
     // check with incX == 0 and inc == 0
     {
-        ValueType x_int[] = {   1, 2, 3, 4, 5 };
-        ValueType y_int[] = {   7, 6, 5, 4, 3, 2, 1 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = {   1, 2, 3, 4, 5 };
+        const ValueType y[] = {   7, 6, 5, 4, 3, 2, 1 };
 
         const IndexType nValues = 3;
         HArray<ValueType> Ax( lenx, x, testContext );
@@ -673,14 +604,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_array_test_types )
     }
     // check with n > 0, incX > 0 and incY > 0
     {
-        ValueType x_int[] = {   1, 2, 3, 4, 5 };
-        ValueType y_int[] = {   7, 6, 5, 4, 3, 2, 1 };
-
-        ValueType* x = new ValueType[lenx];
-        ValueType* y = new ValueType[leny];
-
-        std::copy( x_int, x_int + lenx, x );
-        std::copy( y_int, y_int + leny, y );
+        const ValueType x[] = {   1, 2, 3, 4, 5 };
+        const ValueType y[] = {   7, 6, 5, 4, 3, 2, 1 };
 
         const IndexType nValues = 3;
         const IndexType incX = 2;
