@@ -503,21 +503,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
 
-    // be careful about values
-
     const ValueType values1[]  = { 1.0, 1.2, 2.0, 1.3 };
     const IndexType indexes1[] = { 2, 4, 6, 7 };
     const ValueType values2[]  = { 0.5, 0.7, 0.3, 1.3 };
     const IndexType indexes2[] = { 2, 3, 6, 8 };
 
-    const IndexType n = 10;
+    // Result has index set equal to the union of the two index sets
+    const IndexType resultIndices[] = { 2, 3, 4, 6, 7, 8 };
 
     const IndexType nnz1 = sizeof( values1 ) / sizeof( ValueType );
     const IndexType nnz2 = sizeof( values2 ) / sizeof( ValueType );
+    const IndexType nnz3 = 6;
+
+    typedef typename TypeTraits<ValueType>::AbsType AbsType;
+
+    const AbsType tol = TypeTraits<AbsType>::small();
 
     for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
-        BinaryOp op = BinaryOp( i );
+        const BinaryOp op = BinaryOp( i );
 
         HArray<IndexType> ia1( ctx );
         HArray<IndexType> ia2( ctx );
@@ -532,18 +536,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
         ia2.setRawData( nnz1, indexes2 );
         array2.setRawData( nnz2, values2 );
 
-        ValueType zero1 = 1;
-        ValueType zero2 = 2;
+        // Use different values for "zero" in each sparse representation
+        const ValueType zero1 = 1;
+        const ValueType zero2 = 2;
 
         HArrayUtils::binaryOpSparse( ia3, array3, ia1, array1, zero1, ia2, array2, zero2, op, ctx );
 
-        BOOST_REQUIRE_EQUAL( ia3.size(), array3.size() ); 
-        BOOST_REQUIRE( ia3.size() >= ia2.size() ); 
-        BOOST_REQUIRE( ia3.size() >= ia1.size() ); 
-
-        IndexType pos1 = 0;
-        IndexType pos2 = 0;
-        IndexType pos3 = 0;
+        BOOST_REQUIRE_EQUAL( array3.size(), nnz3 );
+        BOOST_REQUIRE_EQUAL( ia3.size(), nnz3 );
 
         ReadAccess<IndexType> rIA1( ia1, host );  // read result array
         ReadAccess<IndexType> rIA2( ia2, host );  // read result array
@@ -553,50 +553,26 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
         ReadAccess<ValueType> rValues2( array2, host );  // read result array
         ReadAccess<ValueType> rValues3( array3, host );  // read result array
 
-        for ( IndexType i = 0; i < n; ++i )
-        {
-            ValueType res = 0;
+        BOOST_CHECK_EQUAL( rIA3[0], resultIndices[0] );
+        BOOST_CHECK_EQUAL( rIA3[1], resultIndices[1] );
+        BOOST_CHECK_EQUAL( rIA3[2], resultIndices[2] );
+        BOOST_CHECK_EQUAL( rIA3[3], resultIndices[3] );
+        BOOST_CHECK_EQUAL( rIA3[4], resultIndices[4] );
+        BOOST_CHECK_EQUAL( rIA3[5], resultIndices[5] );
 
-            if ( rIA3[pos3] != i )
-            {
-                continue;
-            }
+        BOOST_CHECK_CLOSE( Math::real( rValues3[0] ), Math::real( applyBinary( rValues1[0], op, rValues2[0] ) ), tol );
+        BOOST_CHECK_CLOSE( Math::real( rValues3[1] ), Math::real( applyBinary( zero1, op, rValues2[1] ) ), tol );
+        BOOST_CHECK_CLOSE( Math::real( rValues3[2] ), Math::real( applyBinary( rValues1[1], op, zero2 ) ), tol );
+        BOOST_CHECK_CLOSE( Math::real( rValues3[3] ), Math::real( applyBinary( rValues1[2], op, rValues2[2]) ), tol );
+        BOOST_CHECK_CLOSE( Math::real( rValues3[4] ), Math::real( applyBinary( rValues1[3], op, zero2 ) ), tol );
+        BOOST_CHECK_CLOSE( Math::real( rValues3[5] ), Math::real( applyBinary( zero1, op, rValues2[3] ) ), tol );
 
-            if ( rIA2[pos2] == i && rIA1[pos1] == i )
-            {
-                res = applyBinary( rValues1[pos1], op, rValues2[pos2] );
-                pos1++;
-                pos2++;
-            }
-            else if ( rIA1[pos1] == i )
-            {
-                res = applyBinary( rValues1[pos1], op, zero2 );
-                pos1++;
-            }
-            else if ( rIA2[pos2] == i )
-            {
-                res = applyBinary( zero1, op, rValues2[pos2] );
-                pos2++;
-            }
-            else
-            {
-                BOOST_CHECK( false );  // fail here
-            }
-
-            typedef typename TypeTraits<ValueType>::AbsType AbsType;
-
-            AbsType diff = common::Math::abs( rValues3[pos3] - res  );
-
-            SCAI_LOG_TRACE( logger, "res = " << res << ", computed " << rValues3[pos3] )
-
-            BOOST_CHECK( diff <= TypeTraits<AbsType>::small() );
- 
-            pos3++;
-        }
-
-        BOOST_CHECK_EQUAL( pos1, array1.size() );
-        BOOST_CHECK_EQUAL( pos2, array2.size() );
-        BOOST_CHECK_EQUAL( pos3, array3.size() );
+        BOOST_CHECK_CLOSE( Math::imag( rValues3[0] ), Math::imag( applyBinary( rValues1[0], op, rValues2[0] ) ), tol );
+        BOOST_CHECK_CLOSE( Math::imag( rValues3[1] ), Math::imag( applyBinary( zero1, op, rValues2[1] ) ), tol );
+        BOOST_CHECK_CLOSE( Math::imag( rValues3[2] ), Math::imag( applyBinary( rValues1[1], op, zero2 ) ), tol );
+        BOOST_CHECK_CLOSE( Math::imag( rValues3[3] ), Math::imag( applyBinary( rValues1[2], op, rValues2[2]) ), tol );
+        BOOST_CHECK_CLOSE( Math::imag( rValues3[4] ), Math::imag( applyBinary( rValues1[3], op, zero2 ) ), tol );
+        BOOST_CHECK_CLOSE( Math::imag( rValues3[5] ), Math::imag( applyBinary( zero1, op, rValues2[3] ) ), tol );
     }
 }
 
