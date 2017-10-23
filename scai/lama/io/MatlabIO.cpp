@@ -51,10 +51,13 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/IOException.hpp>
+#include <scai/common/safer_memcpy.hpp>
 
 #include <sstream>
 
 #define MAT_SUFFIX ".mat"
+
+using scai::common::safer_memcpy;
 
 using namespace std;
 
@@ -126,7 +129,7 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
         // no temporary array required
 
         hmemo::WriteOnlyAccess<ArrayType> wData( array, arraySize );
-        ::memcpy( wData.get(), data, nBytes );
+        safer_memcpy( wData.get(), data, nBytes );
 
     }
     else
@@ -140,7 +143,7 @@ void MatlabIO::readMATArrayImpl( hmemo::HArray<ArrayType>& array, const void* da
 
         {
             hmemo::WriteOnlyAccess<DataType> wData( tmp, arraySize );
-            ::memcpy( wData.get(), data, nBytes );
+            safer_memcpy( wData.get(), data, nBytes );
         }
 
         HArrayUtils::assign( array, tmp );

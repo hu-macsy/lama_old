@@ -204,6 +204,7 @@ set ( COMMON_HEADERS
         Stencil
         UnaryOp
         Utils
+        safer_memcpy
 )
 
 if ( ${USE_COMPLEX} )
