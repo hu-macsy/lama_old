@@ -481,15 +481,15 @@ struct UtilKernelTrait
         /** This method computes differences of values, array[i] = array[i+1] - array[i]
          *
          *  @param[in,out] array contains  values and later the differences
-         *  @param[in]     n is the number of values, array must contain at least this number of vales
-         *  @returns       0
+         *  @param[in]     n is the number of values, array must contain at least n + 1 entries
          *
          *  \code
-         *    array  :    0   3  10  18  22  24
-         *    array  :    3   7   8   4   2  x   -> returns 0
+         *  n = 5
+         *    array (before)  :    0   3  10  18  22  24
+         *    array (after)   :    3   7   8   4   2  24
          *  \endcode
          *
-         *  Important: sizes must have numRows + 1 allocated entries.
+         *  Important: array must have n + 1 allocated entries.
          *
          */
 

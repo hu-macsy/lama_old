@@ -907,25 +907,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
 {
     ContextPtr loc = Context::getContextPtr();
-    ValueType vals[]     = { 0, 4, 7, 11, 15 };
-    const IndexType n = sizeof( vals ) / sizeof( ValueType );
-    unique_ptr<ValueType[]> unscans( new ValueType[n - 1] );
-    unscans[0] = 0;
+    const ValueType vals[] = { 0, 4, 7, 11, 15 };
+    const ValueType expected[] = { 4, 3, 4, 4 };
 
-    for ( IndexType i = 0; i < n - 1; ++i )
-    {
-        unscans[i] = vals[i + 1] - vals[i];
-    }
+    LArray<ValueType> array( 5, vals, loc );
 
-    LArray<ValueType> array( n, vals, loc );
-    LArray<ValueType> correct( n - 1, unscans.get(), loc );
+    const ValueType returnVal = HArrayUtils::unscan( array );
 
-    ValueType firstVal  = array[0];
-    ValueType returnVal = HArrayUtils::unscan( array );
+    BOOST_CHECK_EQUAL( returnVal, 0 );
+    BOOST_REQUIRE_EQUAL( array.size(), 4 );
+    ReadAccess<ValueType> read( array, Context::getHostPtr() );
 
-    BOOST_REQUIRE_EQUAL( array.size(), n - 1 );
-    BOOST_CHECK_EQUAL( array.maxDiffNorm( correct ), ValueType( 0 ) );
-    BOOST_CHECK_EQUAL( firstVal, returnVal );
+    BOOST_CHECK_EQUAL( read[0], expected[0] );
+    BOOST_CHECK_EQUAL( read[1], expected[1] );
+    BOOST_CHECK_EQUAL( read[2], expected[2] );
+    BOOST_CHECK_EQUAL( read[3], expected[3] );
 }
 
 /* --------------------------------------------------------------------- */

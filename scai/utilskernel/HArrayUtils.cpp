@@ -1378,18 +1378,13 @@ ValueType HArrayUtils::unscan(
     hmemo::HArray<ValueType>& array,
     hmemo::ContextPtr prefLoc )
 {
-    const IndexType n = array.size();
-
-    if ( n < 1 )
-    {
-        return ValueType( 0 );
-    }
+    SCAI_ASSERT(array.size() > 0, "Array must be non-empty");
+    const IndexType n = array.size() - 1;
 
     static LAMAKernel<UtilKernelTrait::unscan<ValueType> > unscan;
     ContextPtr loc = prefLoc;
 
     // default location for check: where we have valid entries
-
     if ( loc == ContextPtr() )
     {
         loc = array.getValidContext();
@@ -1401,7 +1396,7 @@ ValueType HArrayUtils::unscan(
     ValueType first = unscan[loc]( wValues.get(), n );
 
     // One additional element will be removed from end
-    wValues.resize( n - 1 );
+    wValues.resize( n );
 
     return first;
 }

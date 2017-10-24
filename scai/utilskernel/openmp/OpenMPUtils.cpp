@@ -1542,14 +1542,10 @@ template<typename ValueType>
 ValueType OpenMPUtils::unscan( ValueType array[], const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.unscan" )
+    SCAI_ASSERT( n > 0, "array must be non-empty");
     SCAI_LOG_INFO( logger, "unscan array[ " << n << " ]" )
 
-    if ( n == 0 )
-    {
-        return 0;
-    }
-
-    ValueType first = array[0];
+    const ValueType first = array[0];
 
     // due to anti-dependencies we do it serial, otherwise temporary required
 
