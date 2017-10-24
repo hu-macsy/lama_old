@@ -1235,21 +1235,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
     const IndexType ja3[]     = { 0,   1,   2,   0,   1,   3,   0,   2,   3 };
     const ValueType values3[] = { 2.0, 0.5, 2.0, 0.5, 0.3, 1.0, 2.0, 4.0, 0.5 };
 
-    const IndexType n1 = 3;
-    const IndexType n2 = 4;
+    const IndexType numRows = 3;
+    const IndexType numCols = 4;
 
     const IndexType nnz1 = sizeof( ja1 ) / sizeof( IndexType );
     const IndexType nnz2 = sizeof( ja2 ) / sizeof( IndexType );
 
     // csr arrays for matrix a
 
-    HArray<IndexType> aIA( n1 + 1, ia1, testContext );
+    HArray<IndexType> aIA( numRows + 1, ia1, testContext );
     HArray<IndexType> aJA( nnz1, ja1, testContext );
     HArray<ValueType> aValues( nnz1, values1, testContext );
 
     // csr arrays for matrix b
 
-    HArray<IndexType> bIA( n2 + 1, ia2, testContext );
+    HArray<IndexType> bIA( numRows + 1, ia2, testContext );
     HArray<IndexType> bJA( nnz2, ja2, testContext );
     HArray<ValueType> bValues( nnz2, values2, testContext );
 
@@ -1268,14 +1268,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
         SCAI_CONTEXT_ACCESS( loc );
 
-        WriteOnlyAccess<IndexType> wSizes( cSizes, loc, n1 + 1 );
+        WriteOnlyAccess<IndexType> wSizes( cSizes, loc, numRows + 1 );
 
-        nnz3 = matrixAddSizes[loc]( wSizes.get(), n1, n2, diagonalProperty,
+        nnz3 = matrixAddSizes[loc]( wSizes.get(), numRows, numCols, diagonalProperty,
                                     rAIA.get(), rAJA.get(), rBIA.get(), rBJA.get() );
 
     }
 
-    BOOST_CHECK_EQUAL( ia3[ n1 ], nnz3 );
+    BOOST_CHECK_EQUAL( ia3[ numRows ], nnz3 );
 
     // check sizes
     {
@@ -1283,7 +1283,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
 
         ReadAccess<IndexType> rSizes( cSizes, host );
 
-        for ( IndexType j = 0; j <= n1; ++j )
+        for ( IndexType j = 0; j <= numRows; ++j )
         {
             SCAI_LOG_TRACE( logger, "addSizes, size[" << j << "] = " << rSizes[j] )
             BOOST_CHECK_EQUAL( rSizes[j], ia3[j] );
@@ -1312,7 +1312,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
         SCAI_CONTEXT_ACCESS( loc );
 
         matrixAdd[loc]( wCJA.get(), wCValues.get(),
-                        rCIA.get(), n1, n2, diagonalProperty,
+                        rCIA.get(), numRows, numCols, diagonalProperty,
                         one, rAIA.get(), rAJA.get(), rAValues.get(),
                         one, rBIA.get(), rBJA.get(), rBValues.get() );
 
@@ -1331,7 +1331,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matAddTest, ValueType, scai_numeric_test_types )
             SCAI_LOG_TRACE( logger, "matrixAdd, values[" << k << "] = " << wCValues[k] )
         }
 
-        OpenMPCSRUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), n1, false );
+        OpenMPCSRUtils::sortRowElements( wCJA.get(), wCValues.get(), rCIA.get(), numRows, false );
     }
 
     {
