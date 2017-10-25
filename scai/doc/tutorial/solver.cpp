@@ -27,8 +27,8 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief solver.cpp
- * @author kbuschulte
+ * @brief Example program for using a solver
+ * @author Kai Buschulte
  * @date 12.09.2012
  */
 
@@ -40,15 +40,16 @@
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 // Solver related includes
-#include <scai/lama/solver/logger/CommonLogger.hpp>
-#include <scai/lama/solver/logger/Timer.hpp>
-#include <scai/lama/solver/criteria/IterationCount.hpp>
-#include <scai/lama/solver/CG.hpp>
+#include <scai/solver/logger/CommonLogger.hpp>
+#include <scai/solver/logger/Timer.hpp>
+#include <scai/solver/criteria/IterationCount.hpp>
+#include <scai/solver/CG.hpp>
 
 #include <iostream>
 #include <stdlib.h>
 
 using namespace scai::lama;
+using namespace scai::solver;
 
 int main()
 {
@@ -85,7 +86,7 @@ int main()
     solver.initialize( matrix );
     // solution phase
     solver.solve( solution, rhs );
-    solution.writeToFile( "solution", File::FORMATTED );
+    solution.writeToFile( "solution.frm" );
     std::cout << "Solution vector is written to 'solution.frm/.vec'" << std::endl;
     //
     //  That's it.
