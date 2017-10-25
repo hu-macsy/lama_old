@@ -206,8 +206,8 @@ sanitized parallel gcc 6.3.0:
     ASAN_OPTIONS: allocator_may_return_null=true
     EXTRA_CMAKE_OPTS: >
         -DBoost_NO_BOOST_CMAKE=1
-        -DADDITIONAL_CXX_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
-        -DADDITIONAL_LINKER_FLAGS="-fsanitize=undefined -fno-sanitize-recover=all"
+        -DADDITIONAL_CXX_FLAGS="-fsanitize=undefined,address -fno-sanitize-recover=all -fno-omit-frame-pointer"
+        -DADDITIONAL_LINKER_FLAGS="-fsanitize=undefined,address -fno-sanitize-recover=all"
   tags:
     - draco
   only:
