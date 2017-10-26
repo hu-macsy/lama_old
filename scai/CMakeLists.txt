@@ -98,16 +98,7 @@ if ( CXX_SUPPORTS_C11 )
                           )
 else ()
 
-    include( Package/Boost )
-
-    scai_summary_external ( NAME      "C++11 Support"
-                            ENABLED   True
-                            FOUND     True
-                            VERSION   "via Boost ${BOOST_VERSION}"
-                            INCLUDE   "${BOOST_INCLUDE_DIR}"
-                          )
-
-    include_directories( ${BOOST_INCLUDE_DIR} )
+    message ( FATAL_ERROR "Compiler does not support C++11, which is a necessary requirement." )
 
 endif ()
 
