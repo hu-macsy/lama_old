@@ -1399,7 +1399,7 @@ void SparseMatrix<ValueType>::concatenate(
 
     newMatrix.allocate( rowDist, repColDist );
 
-    SCAI_LOG_ERROR( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
+    SCAI_LOG_DEBUG( logger, "Concatenate " << matrices.size() << " matrices into this matrix: " << newMatrix );
 
     CSRStorage<ValueType> storage;  // reuse in loop
 
@@ -1429,7 +1429,7 @@ void SparseMatrix<ValueType>::concatenate(
 
             m.buildLocalStorage( storage );
 
-            SCAI_LOG_ERROR( logger, "Add this storage from matrix " << k << " : " << storage << ", matrix is : " << m )
+            SCAI_LOG_DEBUG( logger, "Add this storage from matrix " << k << " : " << storage << ", matrix is : " << m )
 
             ReadAccess<IndexType> rIA( storage.getIA() );
             ReadAccess<IndexType> rJA( storage.getJA() );
@@ -1446,7 +1446,7 @@ void SparseMatrix<ValueType>::concatenate(
                     IndexType j = rJA[jj];
                     ValueType v = rValues[jj];
 
-                    SCAI_LOG_ERROR( logger, "push " << offsetRow + globalI << ", " << offsetCol + j << ", " << v )
+                    SCAI_LOG_DEBUG( logger, "push " << offsetRow + globalI << ", " << offsetCol + j << ", " << v )
 
                     assembly.push( offsetRow + globalI, offsetCol + j, v );
                 }
