@@ -46,9 +46,12 @@
 #include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
+#include <scai/common/unique_ptr.hpp>
+
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -57,18 +60,16 @@ struct ResidualStagnationTestConfig
     ResidualStagnationTestConfig()
     {
         NormPtr norm( new MaxNorm() );
-        mCriterionDouble = new ResidualStagnation( norm, 6, Scalar( 10.0 ) );
-        mCriterionFloat = new ResidualStagnation( norm, 4, Scalar( 10.0 ) );
+        mCriterionDouble.reset( new ResidualStagnation( norm, 6, Scalar( 10.0 ) ) );
+        mCriterionFloat.reset( new ResidualStagnation( norm, 4, Scalar( 10.0 ) ) );
     }
 
     ~ResidualStagnationTestConfig()
     {
-        delete mCriterionDouble;
-        delete mCriterionFloat;
     }
 
-    ResidualStagnation* mCriterionDouble;
-    ResidualStagnation* mCriterionFloat;
+    common::unique_ptr<ResidualStagnation> mCriterionDouble;
+    common::unique_ptr<ResidualStagnation> mCriterionFloat;
 };
 
 BOOST_FIXTURE_TEST_SUITE( ResidualStagnationTest, ResidualStagnationTestConfig )
@@ -82,10 +83,10 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     BOOST_CHECK_EQUAL( mCriterionDouble->getLookback(), IndexType( 6 ) );
     BOOST_CHECK_EQUAL( mCriterionFloat->getLookback(), IndexType( 4 ) );
     NormPtr norm( new MaxNorm() );
-    ResidualStagnation* testcriterion = new ResidualStagnation( norm );
+    common::unique_ptr<ResidualStagnation> testcriterion( new ResidualStagnation( norm ) );
     BOOST_CHECK_EQUAL( testcriterion->getLookback(), IndexType( 1 ) );
     BOOST_CHECK_EQUAL( testcriterion->getPrecision(), 0.1 );
-    ResidualStagnation* testcriterion2 = new ResidualStagnation( *testcriterion );
+    common::unique_ptr<ResidualStagnation> testcriterion2( new ResidualStagnation( *testcriterion ) );
     BOOST_CHECK_EQUAL( testcriterion2->getLookback(), IndexType( 1 ) );
     BOOST_CHECK_EQUAL( testcriterion2->getPrecision(), 0.1 );
 }
@@ -94,8 +95,8 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    ResidualStagnation* testcriterion;
-    testcriterion = ( ResidualStagnation* ) mCriterionFloat->copy();
+    common::unique_ptr<ResidualStagnation> testcriterion;
+    testcriterion.reset( reinterpret_cast<ResidualStagnation*>( mCriterionFloat->copy() ) );
     BOOST_CHECK_EQUAL( testcriterion->getLookback(), IndexType( 4 ) );
     BOOST_CHECK_EQUAL( testcriterion->getPrecision(), 10.0 );
 }
@@ -114,7 +115,7 @@ BOOST_AUTO_TEST_CASE( SetAndGetPrecisionTest )
 {
     Scalar s = 6.0;
     NormPtr maxNorm( new MaxNorm() );
-    ResidualStagnation* testcriterion = new ResidualStagnation( maxNorm );
+    common::unique_ptr<ResidualStagnation> testcriterion( new ResidualStagnation( maxNorm ) );
     BOOST_CHECK_EQUAL( testcriterion->getPrecision(), 0.1 );
     testcriterion->setPrecision( s );
     BOOST_CHECK_EQUAL( testcriterion->getPrecision(), 6.0 );
@@ -154,7 +155,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsSatisfiedTest, ValueType, scai_numeric_test_typ
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     NormPtr maxNorm( new MaxNorm() );
-    ResidualStagnation* testcriterion = new ResidualStagnation( maxNorm );
+    common::unique_ptr<ResidualStagnation> testcriterion( new ResidualStagnation( maxNorm ) );
     SCAI_COMMON_WRITEAT_TEST( *testcriterion );
 }
 /* --------------------------------------------------------------------- */

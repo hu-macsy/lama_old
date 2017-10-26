@@ -44,9 +44,12 @@
 #include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
+#include <scai/common/unique_ptr.hpp>
+
+using namespace scai;
+using namespace solver;
+using namespace lama;
+using namespace hmemo;
 
 /* --------------------------------------------------------------------- */
 
@@ -54,18 +57,16 @@ struct IterationCountTestConfig
 {
     IterationCountTestConfig()
     {
-        mCriterionDouble = new IterationCount( 5 );
-        mCriterionFloat = new IterationCount( 10 );
+        mCriterionDouble.reset( new IterationCount( 5 ) );
+        mCriterionFloat.reset( new IterationCount( 10 ) );
     }
 
     ~IterationCountTestConfig()
     {
-        delete mCriterionDouble;
-        delete mCriterionFloat;
     }
 
-    IterationCount* mCriterionDouble;
-    IterationCount* mCriterionFloat;
+    common::unique_ptr<IterationCount> mCriterionDouble;
+    common::unique_ptr<IterationCount> mCriterionFloat;
 };
 
 BOOST_FIXTURE_TEST_SUITE( IterationCountTest, IterationCountTestConfig )
@@ -78,9 +79,9 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     BOOST_CHECK_EQUAL( mCriterionDouble->getIterationExtrema(), IndexType( 5 ) );
     BOOST_CHECK_EQUAL( mCriterionFloat->getIterationExtrema(), IndexType( 10 ) );
-    IterationCount* testcriterion = new IterationCount();
+    common::unique_ptr<IterationCount> testcriterion( new IterationCount() );
     BOOST_CHECK_EQUAL( testcriterion->getIterationExtrema(), IndexType( 1 ) );
-    IterationCount* testcriterion2 = new IterationCount( *testcriterion );
+    common::unique_ptr<IterationCount> testcriterion2( new IterationCount( *testcriterion ) );
     BOOST_CHECK_EQUAL( testcriterion2->getIterationExtrema(), IndexType( 1 ) );
 }
 
@@ -126,11 +127,11 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
     SCAI_COMMON_WRITEAT_TEST( *mCriterionDouble );
     SCAI_COMMON_WRITEAT_TEST( *mCriterionFloat );
     std::stringstream mStream;
-    mStream << mCriterionDouble;
+    mStream << *mCriterionDouble;
     std::string mString = mStream.str();
     BOOST_CHECK( mString.compare( "Maximal" ) );
     mStream.clear();
-    mStream << mCriterionFloat;
+    mStream << *mCriterionFloat;
     mString = mStream.str();
     BOOST_CHECK( mString.compare( "Minimal" ) );
 }

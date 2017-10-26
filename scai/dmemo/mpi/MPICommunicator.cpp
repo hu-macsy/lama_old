@@ -337,20 +337,25 @@ size_t MPICommunicator::maxProcessorName() const
 MPICommunicator::~MPICommunicator()
 {
     SCAI_LOG_INFO( logger, *this << ": ~MPICommunicator" )
+
     int finalized = 0;
-    SCAI_MPICALL( logger, MPI_Finalized( &finalized ), "MPI_Finalized" )
+    MPI_Finalized( &finalized );   // return code ignored here
 
     if ( !finalized )
     {
         if ( !mExternInitialization )
         {
 #ifdef SCAI_COMPLEX_SUPPORTED
-            SCAI_MPICALL( logger, MPI_Type_free( &mComplexLongDoubleType ), "free MPI_Datatype for ComplexLongDouble" )
+            MPI_Type_free( &mComplexLongDoubleType );
             mComplexLongDoubleType = 0;
 #endif
 
             SCAI_LOG_INFO( logger, "call MPI_Finalize" )
-            SCAI_MPICALL( logger, MPI_Finalize(), "MPI_Finalize" )
+            int rc = MPI_Finalize();
+            if ( rc != 0 )
+            {
+                SCAI_LOG_ERROR( logger, "MPI_Finalize failed, rc = " << rc )
+            }
         }
         else
         {

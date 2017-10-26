@@ -262,11 +262,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getValuePosColTest, ValueType, scai_numeric_test_
 
             SCAI_CONTEXT_ACCESS( loc );
 
-            WriteOnlyAccess<IndexType> wRow( row, loc, numColumns );
-            WriteOnlyAccess<IndexType> wPos( pos, loc, numColumns );
+            // the maximal possible size of the arrays row, pos is the number of rows
+
+            WriteOnlyAccess<IndexType> wRow( row, loc, numRows );
+            WriteOnlyAccess<IndexType> wPos( pos, loc, numRows );
 
             n = getValuePosCol[loc]( wRow.get(), wPos.get(), j, numRows, rIlg.get(), rDlg.get(), rPerm.get(), rJa.get() );
 
+            BOOST_CHECK( n <= numRows );
         }
 
         nTotal += n;

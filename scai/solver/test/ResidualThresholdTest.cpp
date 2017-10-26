@@ -66,16 +66,16 @@ struct ResidualThresholdTestConfig
     ResidualThresholdTestConfig()
     {
         NormPtr mNorm = NormPtr( new MaxNorm() );
-        mCriterionDouble = new ResidualThreshold( mNorm, Scalar( 1.0e-6 ), ResidualThreshold::Absolute );
-        mCriterionFloat = new ResidualThreshold( mNorm, Scalar( 1.0e-4f ), ResidualThreshold::Relative );
+        mCriterionDouble.reset( new ResidualThreshold( mNorm, Scalar( 1.0e-6 ), ResidualThreshold::Absolute ) );
+        mCriterionFloat.reset( new ResidualThreshold( mNorm, Scalar( 1.0e-4f ), ResidualThreshold::Relative ) );
     }
 
     ~ResidualThresholdTestConfig()
     {
     }
 
-    ResidualThreshold* mCriterionDouble;
-    ResidualThreshold* mCriterionFloat;
+    common::unique_ptr<ResidualThreshold> mCriterionDouble;
+    common::unique_ptr<ResidualThreshold> mCriterionFloat;
 };
 
 BOOST_FIXTURE_TEST_SUITE( ResidualThresholdTest, ResidualThresholdTestConfig )
@@ -90,16 +90,16 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
     BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualThreshold::Absolute );
     BOOST_CHECK_EQUAL( mCriterionFloat->getPrecision().getValue<float>(), 1.0e-4f );
     BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualThreshold::Relative );
-    const ResidualThreshold* testcriterion1 = new ResidualThreshold();
+    const common::unique_ptr<ResidualThreshold> testcriterion1( new ResidualThreshold() );
     BOOST_CHECK_EQUAL( testcriterion1->getPrecision().getValue<float>(), 1.0e-5f );
     BOOST_CHECK_EQUAL( testcriterion1->getCheckMode(), ResidualThreshold::Relative );
     BOOST_CHECK_EQUAL( testcriterion1->getFirstNormResult(), -1.0 );
     NormPtr testnorm = NormPtr( new MaxNorm() );
-    ResidualThreshold* testcriterion2 = new ResidualThreshold( testnorm );
+    common::unique_ptr<ResidualThreshold> testcriterion2( new ResidualThreshold( testnorm ) );
     BOOST_CHECK_EQUAL( testcriterion2->getFirstNormResult(), -1.0 );
     BOOST_CHECK_EQUAL( testcriterion2->getPrecision().getValue<float>(), 1.0e-5f );
     BOOST_CHECK_EQUAL( testcriterion2->getCheckMode(), ResidualThreshold::Relative );
-    ResidualThreshold* testcriterion3 = new ResidualThreshold( *testcriterion1 );
+    common::unique_ptr<ResidualThreshold> testcriterion3( new ResidualThreshold( *testcriterion1 ) );
     BOOST_CHECK_EQUAL( testcriterion3->getFirstNormResult(), -1.0 );
     BOOST_CHECK_CLOSE( testcriterion3->getPrecision().getValue<float>(), 1.0e-5f, 1 );
     BOOST_CHECK_EQUAL( testcriterion3->getCheckMode(), ResidualThreshold::Relative );
@@ -133,8 +133,8 @@ BOOST_AUTO_TEST_CASE( SetAndGetPrecisionTest )
 
 BOOST_AUTO_TEST_CASE( copyTest )
 {
-    ResidualThreshold* testcriterion1;
-    testcriterion1 = ( ResidualThreshold* ) mCriterionFloat->copy();
+    common::unique_ptr<ResidualThreshold> testcriterion1;
+    testcriterion1.reset( reinterpret_cast<ResidualThreshold*>( mCriterionFloat->copy() ) );
     BOOST_CHECK_EQUAL( testcriterion1->getFirstNormResult(), -1.0 );
     BOOST_CHECK_CLOSE( testcriterion1->getPrecision().getValue<float>(), 1.0e-4f, 2 );
     BOOST_CHECK_EQUAL( testcriterion1->getCheckMode(), ResidualThreshold::Relative );
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 BOOST_AUTO_TEST_CASE( SetAndGetFirstNormResultTest )
 {
     Scalar s = 1.0;
-    ResidualThreshold* testcriterion = new ResidualThreshold();
+    common::unique_ptr<ResidualThreshold> testcriterion( new ResidualThreshold() );
     BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), -1.0 );
     testcriterion->setFirstNormResult( s );
     BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), 1.0 );

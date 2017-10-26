@@ -344,14 +344,14 @@ struct JDSKernelTrait
          *  in the jdsJA/jdsValues array
          *
          *  @param[out] row indexes of rows that have an entry for column j
-         *  @param[out] pos positions of entries with col = j in csrJA,
+         *  @param[out] pos positions of entries with col == j in jdsJA, jdsValues
          *  @param[in] j is the column of which positions are required
          *  @param[in] numRows is the number of rows
-         *  @param[in] ilg
-         *  @param[in] dlg
-         *  @param[in] perm
-         *  @param[in] ja
-         *  @returns  number of entries with col index = j
+         *  @param[in] ilg is the array with number of entries in each row
+         *  @param[in] dlg number of entries in the diagonals
+         *  @param[in] perm original positions of row i
+         *  @param[in] ja jds array with column indexes
+         *  @returns  number of entries with col index == j
          */
         typedef IndexType ( *FuncType ) (
             IndexType row[],
