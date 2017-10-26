@@ -71,10 +71,6 @@ std::ostream& operator<<( std::ostream& stream, const _Communicator::Communicato
             stream << "MPI";
             break;
 
-        case _Communicator::GPI :
-            stream << "GPI";
-            break;
-
         default:
             stream << "CommunicatorKind_" << ( int ) type;
     }
@@ -99,13 +95,6 @@ CommunicatorPtr Communicator::getDefaultCommunicatorPtr()
         return create( MPI );
     }
 
-    // no MPI, try GPI communicator for default
-
-    if ( canCreate( GPI ) )
-    {
-        return create( GPI );
-    }
-
     // if even NO is not availabe an exception is thrown
     return create( NO );
 }
@@ -126,11 +115,6 @@ CommunicatorPtr Communicator::getCommunicatorPtr()
         if ( comm == "MPI" )
         {
             return getCommunicatorPtr( MPI );
-        }
-
-        if ( comm == "GPI" )
-        {
-            return getCommunicatorPtr( GPI );
         }
 
         if ( comm == "NO" )

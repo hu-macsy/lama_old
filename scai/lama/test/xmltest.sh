@@ -108,6 +108,4 @@ do
     mpirun -np $i --output-filename ${dirname}/lamaMatrixMPITest.xml ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1 ${BOOST_TEST_ARGS}
 done
 
-#ToDo: insert GPI run here
-
 echo "Tests finished, results in directory: ${dirname}"
