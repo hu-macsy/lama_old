@@ -135,7 +135,7 @@ Name                       Type    Description
 ========================   ======  ========================================================================
 SCAI_LOG                   path    path to configuration file for logging
 SCAI_UNSUPPORTED           string  IGNORE, WARN, or ERROR
-SCAI_CONTEXT               string  specifies default context, e.g. Host, CUDA, MIC  
+SCAI_CONTEXT               string  specifies default context, e.g. Host, CUDA
 SCAI_DEVICE                int     default device when getting a context
 SCAI_THREADPOOL_SIZE       int     number of threads for asynchronous execuctions on CPU, default is 1
 SCAI_CUDA_USE_CUSPARSE     bool    default true, uses cuSparse library instead of own kernels

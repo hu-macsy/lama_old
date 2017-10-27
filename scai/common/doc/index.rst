@@ -129,7 +129,7 @@ Class                   Description
 :ref:`SCAITypes`        Supported arithmetic types for template instantiations
 :ref:`TypeTrait`        Struct with all specific stuff for any supported arithmetic value type in matrix/vector operations
 :ref:`Math`             Wrapper for mathematical operations (like those in cmath) to use them in templated code
-:ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA and MIC devices.
+:ref:`Complex`          Complex numbers which cannot only be used on host, but also on CUDA.
 :ref:`Constants`        Operations to compare value to a machine specific eps
 :ref:`BinaryOp`         Enumeration type for binary operations
 ====================    ==========================================

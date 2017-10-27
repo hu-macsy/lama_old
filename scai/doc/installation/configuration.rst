@@ -77,7 +77,6 @@ CMake variable                 Signification
 ``USE_CUDA``                   ON or OFF, explicitly enable/disable use of CUDA
 ``USE_METIS``                  ON or OFF, explicitly enable/disable use redistributions with Metis
 ``USE_JAVA``                   ON or OFF, explicitly enable/disable use of Java for tracing GUI
-``USE_MIC``                    ON or OFF, explicitly enable/disable use of MIC
 ``USE_MPI``                    ON or OFF, explicitly enable/disable use of MPI
 ``USE_OPENMP``                 ON or OFF, explicitly enable/disable use of OpenMP
 =========================      ======================================================================================
@@ -101,7 +100,6 @@ Optional dependencies:
 
 * :ref:`BLAS`
 * :ref:`CUDA <scaicommon:CUDA>`
-* :ref:`MIC`
 * :ref:`MPI <scaidmemo:MPI>`
 * :ref:`(Par)Metis <scaidmemo:Metis>`
 
@@ -114,7 +112,6 @@ Boost      BOOST_ROOT                                                        pat
 MKL        MKL_ROOT or MKL_INCLUDE_DIR and MKL_LIBRARY_PATH                  path to the mkl root dir or include and library dir
 BLAS       BLAS_blas_LIBRARY and LAPACK_lapack_LIBRARY                       path to the blas and lapack library
 CUDA       CUDA_TOOLKIT_ROOT                                                 path to CUDA toolkit
-MIC        -                                                                 -
 DOXYGEN    DOXYGEN_EXECUTABLE                                                path to doxygen binary dir
 MPI        MPI_ROOT                                                          path to MPI root dir
 JAVA       JAVA_HOME                                                         path to JAVA installation directory, must be set as environment variable
@@ -169,9 +166,6 @@ If no fatal cmake errors occured during the configuration in the end we print a 
    --          Executable : /usr/local/cuda/bin/nvcc
    --          Include(1) : /usr/local/cuda/include
    --          Libs(5)    : /usr/lib/x86_64-linux-gnu/libcuda.so, ...
-   --  
-   --      MIC DISABLED
-   --          NOT FOUND
    --  
    --      Thread ENABLED
    --          FOUND      : Version 2.23

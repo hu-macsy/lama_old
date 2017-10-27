@@ -38,7 +38,6 @@ Class                        Description
 :ref:`NoSyncToken`           Pseudo class for synchronous execution
 :ref:`TaskSyncToken`         Asynchronous execution of a task by a Host thread
 :ref:`CUDAStreamSyncToken`   Asynchronous execution of a CUDA kernel on a GPU device
-:ref:`MICSyncToken`          Asynchronous execution of a kernel on the Intel Xeon Phi
 MPISyncToken                 Asynchronous execution of a MPI communication.
 ===========================  =========================================================
 
@@ -64,7 +63,6 @@ Class                        Description
    NoSyncToken
    TaskSyncToken
    CUDAStreamSyncToken
-   MICSyncToken
 
    ThreadPool
    Task

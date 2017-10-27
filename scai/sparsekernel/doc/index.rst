@@ -68,7 +68,7 @@ Environment-Variables
 - ``SCAI_USE_MKL [:bool, default = 1]``
 
   - if enabled, wrapped routines of the MKL library are taken for CSR kernel routines
-    on the Host or MIC device wherever possible
+    on the Host wherever possible
   - if disabled, own OpenMP implementations are taken for CSR kernel routines
 
 The environment variable ``SCAI_USE_MKL`` has no effect for the selection of BLAS or LAPACK kernels.
@@ -105,7 +105,7 @@ External dependencies:
 
 - The :ref:`Intel MKL <scaiblaskernel:BLAS>` does not only provide implementations for BLAS and LAPACK
   routines but also routines for the CSR storage format. If the MKL is not available, own OpenMP implementations
-  are used. The MKL can be used on Host and MIC devices.
+  are used. The MKL can be used on the Host device.
 
 - :ref:`cuSPARSE library of the CUDA toolkit <scaicommon:CUDA>` is used for the implementation of CSR kernel
   routines on NVidia GPU devices.

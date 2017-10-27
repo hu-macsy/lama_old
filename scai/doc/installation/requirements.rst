@@ -61,7 +61,7 @@ All you need for the LAMA installation are the following software packages:
 Recommended Software
 ^^^^^^^^^^^^^^^^^^^^
 
-The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (CUDA, MIC) as well as distributed memory support:
+The following software packages are not mandatory, but will give you a performance boost through optimized routines from BLAS and accelerator backends (currently LAMA supports CUDA) as well as distributed memory support:
 
 - :ref:`scaiblaskernel:BLAS`
 
@@ -70,10 +70,6 @@ The following software packages are not mandatory, but will give you a performan
 - :ref:`CUDA <scaicommon:CUDA>` (version 4.0 or later)
 
   - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability since cc 1.3).
-  
-- :doc:`Intel MIC <configuration/mic>`
-
-  - Needed to utilize Intel Xeon Phi
 
 - :ref:`MPI <scaidmemo:MPI>`
 
@@ -81,8 +77,6 @@ The following software packages are not mandatory, but will give you a performan
 
 .. toctree::
    :hidden:
-
-   MIC <configuration/mic>
 
 .. _optional:
 
