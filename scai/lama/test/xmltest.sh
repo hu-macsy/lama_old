@@ -46,7 +46,7 @@ set +e
 # Test for Host context is mandatory, other contexts are optional and tested if supported
 
 SCAI_CONTEXT_LIST="Host"
-SCAI_OTHER_CONTEXTS="CUDA MIC"
+SCAI_OTHER_CONTEXTS="CUDA"
 
 # check which of the optional contexts are supported in the current configuration
 

@@ -45,7 +45,7 @@ include ( scai_function/relative_install )
 scai_module(
 
     MODULE_NAME   common
-    EXTERNAL_DEPS OpenMP CUDA MIC dl Thread 
+    EXTERNAL_DEPS OpenMP CUDA dl Thread
 )
 
 ## Common now configures some include files
@@ -76,10 +76,9 @@ checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
 
-## CUDA and MIC do not support 'long' types
+## CUDA does not support 'long' types
 
 set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
-set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) 
 
 ## USE_COMPLEX : set it true if at least one complex type is instantiated
 
@@ -97,7 +96,6 @@ endforeach ()
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
-listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
 
 ###################################################################
 ## Define index type that is used for addressing 32 or 64 bit    ##
@@ -114,7 +112,6 @@ scai_build_variable ( NAME      SCAI_INDEX_TYPE
 concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
 concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
 concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
-concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
 
 # SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
@@ -261,9 +258,9 @@ scai_project(
     HEADERS ${COMMON_HEADERS}
 )
 
-## add subdirectories, add cuda and mic even if CUDA or MIC disabled for include file
+## add subdirectories, add cuda even if CUDA is disabled for include file
 
-scai_subdirectories( cuda EXAMPLES exception macros mepr mic TEST )
+scai_subdirectories( cuda EXAMPLES exception macros mepr TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )

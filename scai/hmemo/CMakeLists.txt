@@ -46,7 +46,7 @@ scai_module(
 
     MODULE_NAME   hmemo
     INTERNAL_DEPS common logging tracing tasking
-    EXTERNAL_DEPS OpenMP CUDA MIC
+    EXTERNAL_DEPS OpenMP CUDA
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -76,7 +76,7 @@ scai_project (
 
 ## add subdirectories
 
-scai_subdirectories( CUDA EXAMPLES MIC TEST exception )
+scai_subdirectories( CUDA EXAMPLES TEST exception )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )

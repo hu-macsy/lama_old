@@ -19,7 +19,6 @@ variables:
   USE_JAVA: 0
   USE_MPI: 0
   USE_METIS: 0
-  USE_MIC: 0
   USE_BOOST_TEST: 1
 
   # For Boost versions that are recent enough, make the output colored
@@ -44,7 +43,6 @@ variables:
         -DUSE_JAVA=$USE_JAVA
         -DUSE_MPI=$USE_MPI
         -DUSE_METIS=$USE_METIS
-        -DUSE_MIC=$USE_MIC
         -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
         -DUSE_BOOST_TEST=$USE_BOOST_TEST
         -DCMAKE_BUILD_TYPE=$LAMA_BUILD_TYPE

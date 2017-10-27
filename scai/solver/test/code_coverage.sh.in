@@ -53,7 +53,6 @@ export SCAI_TRACE=time
 check_feature LAMA_SUPPORTS_MPI ./solverTest --SCAI_COMMUNICATOR=MPI --run_test=VersionTest 
 
 check_feature LAMA_SUPPORTS_CUDA ./solverTest --SCAI_CONTEXT=CUDA --run_test=VersionTest
-check_feature LAMA_SUPPORTS_MIC ./solverTest --SCAI_CONTEXT=MIC --run_test=VersionTest
 
 # Running tests serial
 echo "Running solver tests on Host"
@@ -69,12 +68,6 @@ if [ "${LAMA_SUPPORTS_CUDA}" -eq 1 ]
 then
 	echo "Running solver tests on CUDA"
 	count_error ./solverTest --SCAI_CONTEXT=CUDA
-fi
-
-if [ "${LAMA_SUPPORTS_MIC}" -eq 1 ]
-then
-	echo "Running solver tests on MIC"
-	count_error ./solverTest --SCAI_CONTEXT=MIC
 fi
 
 exit_on_failure ${error_count}

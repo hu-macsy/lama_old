@@ -38,7 +38,6 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/macros/throw.hpp>
 
 // std
@@ -117,9 +116,9 @@ COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const sc
  *
  */
 
-COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER const char* scalarType2str( const scalar::ScalarType stype );
+COMMON_DLL_IMPORTEXPORT const char* scalarType2str( const scalar::ScalarType stype );
 
-COMMON_DLL_IMPORTEXPORT MIC_CALLABLE_MEMBER scalar::ScalarType str2ScalarType( const char* str );
+COMMON_DLL_IMPORTEXPORT scalar::ScalarType str2ScalarType( const char* str );
 
 } /* end namespace common */
 

@@ -53,9 +53,6 @@ const char* contextType2str( const context::ContextType type )
         case context::CUDA :
             return "CUDA";
 
-        case context::MIC :
-            return "MIC";
-
         case context::OpenCL :
             return "OpenCL";
 

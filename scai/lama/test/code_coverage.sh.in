@@ -51,7 +51,6 @@ export SCAI_UNSUPPORTED=IGNORE
 check_feature LAMA_SUPPORTS_MPI ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --run_test=SparseMatrixTest/localConstructorTest
 
 check_feature LAMA_SUPPORTS_CUDA ./lamaTest --SCAI_CONTEXT=CUDA --run_test=VersionTest
-check_feature LAMA_SUPPORTS_MIC ./lamaTest --SCAI_CONTEXT=MIC --run_test=VersionTest
 
 # Running lama tests
 echo "Running serial lama tests on Host"
@@ -78,21 +77,6 @@ then
 	#Running lama matrix tests
 	echo "Running serial lama matrix tests on CUDA"
 	count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=CUDA
-fi
-
-if [ ${LAMA_SUPPORTS_MIC} -eq 1 ]
-then
-	# Running lama tests
-	echo "Running serial lama tests on MIC"
-	count_error ./lamaTest --SCAI_CONTEXT=MIC
-	
-	#Running lama storage tests
-	echo "Running serial lama storage tests on MIC"
-	count_error ./storage/lamaStorageTest --SCAI_CONTEXT=MIC
-	
-	#Running lama matrix tests
-	echo "Running serial lama matrix tests on MIC"
-	count_error ./matrix/lamaMatrixTest --SCAI_CONTEXT=MIC
 fi
 
 if [ ${LAMA_SUPPORTS_MPI} -eq 1 ];

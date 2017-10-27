@@ -582,7 +582,7 @@ void LamaConfig::printHelp( const char* progName )
     cout << "         --SCAI_ASYNCHRONOUS=<flag>" << endl;
     cout << "         or general options:" << endl;
     cout << "         --SCAI_COMMUNICATOR=[MPI|NO]" << endl;
-    cout << "         --SCAI_CONTEXT=[Host|CUDA|MIC]" << endl;
+    cout << "         --SCAI_CONTEXT=[Host|CUDA]" << endl;
     cout << "         --SCAI_DEVICE=[0|1|...]" << endl;
     cout << "         --SCAI_CUDA_USE_TEXTURE=[0|1]" << endl;
     cout << "         --SCAI_CUDA_USE_SHARED_MEM=[0|1]" << endl;

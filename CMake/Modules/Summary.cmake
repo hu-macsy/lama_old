@@ -41,8 +41,6 @@ message ( STATUS "Summary of SCAI Configuration:" )
 message ( STATUS "==============================" )
 emptyline()
 
-# LAMA MIC
-
 heading ( "External Software/Packages:" )
 
 ## SCAI_SUMMARY has been defined by the module projects via scai_summary

@@ -72,7 +72,6 @@ enum MemoryType
     HostMemory,       //!< memory for CPU as host, is main memory
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
-    MICMemory,        //!< Memory on Intel MIC
     UserMemory        //!< can be used for a new derived Context class
 };
 
