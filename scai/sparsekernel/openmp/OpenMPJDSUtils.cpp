@@ -45,17 +45,17 @@
 
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/bind.hpp>
 
+#include <memory>
+
 namespace scai
 {
 
-using common::scoped_array;
 using common::TypeTraits;
 using tasking::TaskSyncToken;
 

@@ -44,7 +44,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -52,6 +51,7 @@
 
 // std
 #include <cmath>
+#include <memory>
 
 namespace scai
 {
@@ -173,7 +173,7 @@ void OpenMPLAPACK::getinv( const IndexType n, ValueType* a, const IndexType lda 
     SCAI_LOG_INFO( logger,
                    "getinv<" << TypeTraits<ValueType>::id() << "> for " << n << " x " << n << " matrix, uses openmp" )
     // temporary array for pivot indexes needed, deleted by destructor
-    common::scoped_array<IndexType> ipiv( new IndexType[n] );
+    std::unique_ptr<IndexType[]> ipiv( new IndexType[n] );
     getrf( CblasRowMajor, n, n, a, lda, ipiv.get() );
     getri( CblasRowMajor, n, a, lda, ipiv.get() );
 }
@@ -193,7 +193,7 @@ void OpenMPLAPACK::getri( const CBLAS_ORDER order, const IndexType n, ValueType*
 
     SCAI_ASSERT_GE_ERROR( lda, n, "lda too small" )
 
-    common::scoped_array<ValueType> A_inv( new ValueType[n * n] );
+    std::unique_ptr<ValueType[]> A_inv( new ValueType[n * n] );
 
     for ( IndexType i = 0; i < n * n; i++ )
     {

@@ -46,6 +46,10 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
+#include <memory>
+
+using std::unique_ptr;
+
 using namespace scai;
 using namespace common;
 using namespace lama;

@@ -40,9 +40,6 @@
 // local library
 #include <scai/lama/Vector.hpp>
 
-// internal scai libraries
-#include <scai/common/unique_ptr.hpp>
-
 namespace scai
 {
 

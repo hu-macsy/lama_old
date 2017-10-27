@@ -308,7 +308,7 @@ void CSRSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<CSRSparseMatrix<ValueType> > newSparseMatrix( new CSRSparseMatrix<ValueType>() );
+    std::unique_ptr<CSRSparseMatrix<ValueType> > newSparseMatrix( new CSRSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

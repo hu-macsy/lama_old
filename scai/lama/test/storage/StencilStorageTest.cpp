@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 
     StencilStorage<ValueType> storage1( grid, stencil );
     StencilStorage<ValueType> storage2( storage1 );
-    common::unique_ptr<StencilStorage<ValueType> > storage3( storage1.copy() );
+    std::unique_ptr<StencilStorage<ValueType> > storage3( storage1.copy() );
 
     BOOST_CHECK_EQUAL( storage1.getNumRows(), storage2.getNumRows() );
     BOOST_CHECK_EQUAL( storage1.getNumRows(), storage3->getNumRows() );

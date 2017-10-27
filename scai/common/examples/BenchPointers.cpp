@@ -33,9 +33,10 @@
  */
 
 #include <scai/common/Walltime.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
+
+#include <memory>
 
 class Data
 {
@@ -54,7 +55,7 @@ public:
 
 using scai::common::Walltime;
 using scai::common::shared_ptr;
-using scai::common::unique_ptr;
+using std::unique_ptr;
 
 void usualPointer( int& dummy )
 {

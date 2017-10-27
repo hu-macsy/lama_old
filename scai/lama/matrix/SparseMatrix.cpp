@@ -1386,7 +1386,7 @@ void SparseMatrix<ValueType>::concatenate(
     dmemo::DistributionPtr colDist,
     const std::vector<const Matrix*>& matrices )
 {
-    common::unique_ptr<Matrix> mPtr( this->newMatrix() );
+    std::unique_ptr<Matrix> mPtr( this->newMatrix() );
 
     SparseMatrix<ValueType>& newMatrix = static_cast<SparseMatrix<ValueType>& >( *mPtr );
  
@@ -1604,7 +1604,7 @@ void SparseMatrix<ValueType>::cat( const IndexType dim, const Matrix* other[], c
 
     if ( dim == 0  )
     {
-        common::scoped_array<const _MatrixStorage*> storages( new const _MatrixStorage*[ n ] );
+        std::unique_ptr<const _MatrixStorage*[]> storages( new const _MatrixStorage*[ n ] );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -1843,7 +1843,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
 
-    common::unique_ptr<tasking::SyncToken> localComputation;
+    std::unique_ptr<tasking::SyncToken> localComputation;
     {
         SCAI_REGION( "Mat.Sp.asyncLocal" )
         SCAI_LOG_INFO( logger,

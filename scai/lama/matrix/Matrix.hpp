@@ -1012,12 +1012,12 @@ public:
      *     ...
      *     // Create a copy of the input matrix
      *
-     *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+     *     std::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
      *     *newmatrix = matrix;
      *
      *     // Create a unity matrix of same type and same row distribution as matrix
      *
-     *     common::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
+     *     std::unique_ptr<Matrix> newmatrix ( matrix.newMatrix() );
      *     newmatrix->allocate( matrix.getRowDistributionPtr(), matrix.getRowDistributionPtr() );
      *     newmatrix->setIdentity();
      *     ...
@@ -1064,9 +1064,9 @@ public:
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
-     * common::unique_ptr<Matrix> newmatrix = matrix.copy();
+     * std::unique_ptr<Matrix> newmatrix = matrix.copy();
      * // More convenient to use, but exactly same as follows:
-     * common::unique_ptr<Matrix> newmatrix = Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
+     * std::unique_ptr<Matrix> newmatrix = Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
      * \endcode
      *
      * This method is a workaround to call the copy constructor of a derived matrix class

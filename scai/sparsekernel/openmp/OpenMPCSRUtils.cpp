@@ -52,7 +52,6 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/bind.hpp>
 #include <scai/common/function.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -60,11 +59,13 @@
 
 // std
 #include <vector>
+#include <memory>
+
+using std::unique_ptr;
 
 namespace scai
 {
 
-using common::scoped_array;
 using common::TypeTraits;
 
 using tasking::TaskSyncToken;
@@ -103,7 +104,7 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
 {
     // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
     // For more threads, we do it in parallel
-    scoped_array<IndexType> threadCounter( new IndexType[numThreads] );
+    unique_ptr<IndexType[]> threadCounter( new IndexType[numThreads] );
     SCAI_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
     #pragma omp parallel
     {
@@ -1233,7 +1234,7 @@ void OpenMPCSRUtils::decomposition(
 {
     // current workaround without MKL: inverse solver of dense matrix
 
-    common::scoped_array<ValueType> denseA( new ValueType[ numRows * numRows ] );
+    std::unique_ptr<ValueType[]> denseA( new ValueType[ numRows * numRows ] );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

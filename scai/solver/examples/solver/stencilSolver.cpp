@@ -53,7 +53,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -169,7 +169,7 @@ int main( int argc, const char* argv[] )
 
         stencilSpecification >> nDims >> nPoints >> n1;
 
-        scai::common::unique_ptr<Matrix> matrixPtr;
+        std::unique_ptr<Matrix> matrixPtr;
 
         switch ( nDims )
         {
@@ -206,8 +206,8 @@ int main( int argc, const char* argv[] )
 
         std::cout << "Stencil matrix = " << *matrixPtr << std::endl;
 
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector() );
-        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        std::unique_ptr<Vector> rhsPtr( matrixPtr->newVector() );
+        std::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
 
         Matrix& matrix   = *matrixPtr;
         Vector& rhs      = *rhsPtr;
@@ -237,7 +237,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
+                std::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
                 x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
@@ -311,7 +311,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
+        std::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
 
         // setting up a common logger, prints also rank of communicator
 
@@ -447,7 +447,7 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
+                std::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
                 Vector& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );

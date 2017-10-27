@@ -50,15 +50,16 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <memory>
+
 namespace scai
 {
 
-using common::unique_ptr;
+using std::unique_ptr;
 
 namespace blaskernel
 {
@@ -150,7 +151,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, ValueType* a,
     typedef LAPACKTrait::LAPACKIndexType LAPACKIndexType;
     LAPACKIndexType info = 0;
     // unique_ptr, delete by destructor, also done in case of exception
-    common::scoped_array<IndexType> ipiv( new IndexType[n] );
+    std::unique_ptr<IndexType[]> ipiv( new IndexType[n] );
     SCAI_LOG_INFO( logger,
                    "getinv<float> for " << n << " x " << n << " matrix, uses Fortran interface" )
     info = LAPACKWrapper<ValueType>::getrf( static_cast<LAPACKIndexType>( n ),
@@ -162,7 +163,7 @@ void LAPACK_LAPACK::getinv( const IndexType n, ValueType* a,
         COMMON_THROWEXCEPTION( "LAPACK sgetrf failed, info = " << info )
     }
 
-    common::scoped_array<ValueType> work( new ValueType[n] );
+    std::unique_ptr<ValueType[]> work( new ValueType[n] );
     info = LAPACKWrapper<ValueType>::getri( static_cast<LAPACKIndexType>( n ), a,
                                             static_cast<LAPACKIndexType>( lda ), ipiv.get(), work.get(),
                                             static_cast<LAPACKIndexType>( n ) );
@@ -215,7 +216,7 @@ void LAPACK_LAPACK::getri( const CBLAS_ORDER order, const IndexType n,
         }
     }
 
-    common::scoped_array<ValueType> work( new ValueType[n] );
+    std::unique_ptr<ValueType[]> work( new ValueType[n] );
     info = LAPACKWrapper<ValueType>::getri( static_cast<LAPACKIndexType>( n ), a,
                                             static_cast<LAPACKIndexType>( lda ), ipiv, work.get(),
                                             static_cast<LAPACKIndexType>( n ) );

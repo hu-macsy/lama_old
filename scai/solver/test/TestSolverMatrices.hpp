@@ -34,11 +34,9 @@
 
 #pragma once
 
-#include <memory>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 /**
  * @brief The class TestSolverMatrices provides test matrices that

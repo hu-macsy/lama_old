@@ -36,10 +36,11 @@
 
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Thread.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/throw.hpp>
 
 #include <scai/common/bind.hpp>
+
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -76,8 +77,8 @@ void work( int& out )
 
 void doTasking( int N )
 {
-    common::scoped_array<int> arg( new int[N] );
-    common::scoped_array<Task*> tasks( new Task*[N] );
+    std::unique_ptr<int[]> arg( new int[N] );
+    std::unique_ptr<Task*[]> tasks( new Task*[N] );
 
     for ( int i = 0; i < N; ++i )
     {
@@ -98,8 +99,8 @@ void doThreading( int N )
 {
     static int MAX_THREADS = 256;
     using common::Thread;
-    common::scoped_array<int> arg( new int[N] );
-    common::scoped_array<Thread*> threads( new Thread*[N] );
+    std::unique_ptr<int[]> arg( new int[N] );
+    std::unique_ptr<Thread*[]> threads( new Thread*[N] );
 
     for ( int i = 0; i < N; ++i )
     {
@@ -122,7 +123,7 @@ void doThreading( int N )
 
 void doSelf( int N )
 {
-    common::scoped_array<int> arg( new int[N] );
+    std::unique_ptr<int[]> arg( new int[N] );
 
     for ( int i = 0; i < N; ++i )
     {

@@ -53,7 +53,6 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
@@ -61,11 +60,14 @@
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
+using std::unique_ptr;
+
 namespace scai
 {
 
 using common::shared_ptr;
-using common::unique_ptr;
 using tasking::SyncToken;
 
 using utilskernel::LAMAKernel;
@@ -369,7 +371,7 @@ void ELLStorage<ValueType>::setCSRDataImpl(
 
     _MatrixStorage::setDimension( numRows, numColumns );
     // build array with non-zero values per row
-    common::unique_ptr<HArray<IndexType> > tmpOffsets;
+    std::unique_ptr<HArray<IndexType> > tmpOffsets;
     const HArray<IndexType>* offsets = &ia;
 
     if ( ia.size() == numRows + 1 )
@@ -1612,7 +1614,7 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
     // matrix must be square, solution vectors must have right size
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    std::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
     SCAI_ASYNCHRONOUS( *syncToken )
     // make all needed data available at loc
     ReadAccess<IndexType> ellSizes( mIA, loc );
@@ -2033,7 +2035,7 @@ ELLStorage<ValueType>* ELLStorage<ValueType>::copy() const
 template<typename ValueType>
 ELLStorage<ValueType>* ELLStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() );
+    std::unique_ptr<ELLStorage<ValueType> > storage( new ELLStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

@@ -40,6 +40,10 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <memory>
+
+using std::unique_ptr;
+
 using namespace scai;
 using namespace utilskernel;
 using namespace hmemo;
@@ -184,7 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( normTest, ValueType, ArithmeticRedTypes )
     SCAI_LOG_INFO( logger, "normTest on " << *testContext )
     // ToDo: example with complex numbers
     const IndexType N = 13;
-    scoped_array<ValueType> myVals( new ValueType[N] );
+    unique_ptr<ValueType[]> myVals( new ValueType[N] );
 
     for ( IndexType i = 0; i < N; ++i )
     {

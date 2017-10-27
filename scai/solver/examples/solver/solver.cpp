@@ -52,7 +52,7 @@
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -114,15 +114,15 @@ int main( int argc, const char* argv[] )
 
     // use auto pointer so that matrix will be deleted at program exit
 
-    scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-    scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
+    std::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
+    std::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
 
     Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
 
     // input matrix will be CSR format
 
-    scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
+    std::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
     Matrix& inMatrix = *inMatrixPtr;
 
     // Each processor should print its configuration
@@ -146,7 +146,7 @@ int main( int argc, const char* argv[] )
         {
             cout << "reading vector from file " << rhs_filename << " failed, take sum( Matrix, 2 ) " << endl;
             {
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
+                std::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
                 x.allocate( inMatrix.getColDistributionPtr() );
                 x = Scalar( 1 );
@@ -161,7 +161,7 @@ int main( int argc, const char* argv[] )
 
     // for solution create vector with same format/type as rhs, size = numRows, init = 0.0
 
-    scai::common::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
+    std::unique_ptr<Vector> solutionPtr( Vector::create( rhs.getCreateValue() ) );
     Vector& solution = *solutionPtr;
     int numRows = inMatrix.getNumRows();
     solution.allocate( inMatrix.getColDistributionPtr() );
@@ -237,7 +237,7 @@ int main( int argc, const char* argv[] )
     LoggerPtr logger( new CommonLogger ( loggerName.str(),
                                          lamaconf.getLogLevel(),
                                          LoggerWriteBehaviour::toConsoleOnly ) );
-    scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName.str() ) );
+    std::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName.str() ) );
     IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
     SCAI_ASSERT( itSolver, "Not an iterative solver: " << *mySolver )
 
@@ -345,7 +345,7 @@ int main( int argc, const char* argv[] )
         {
             cout << "Compare solution with vector in " << sol_filename << endl;
             LamaTiming timer( comm, "Comparing solution" );
-            scai::common::unique_ptr<Vector> compSolutionPtr( Vector::create( rhs.getCreateValue() ) );
+            std::unique_ptr<Vector> compSolutionPtr( Vector::create( rhs.getCreateValue() ) );
             Vector& compSolution = *compSolutionPtr;
             compSolution.readFromFile( sol_filename );
             compSolution.redistribute( solution.getDistributionPtr() );

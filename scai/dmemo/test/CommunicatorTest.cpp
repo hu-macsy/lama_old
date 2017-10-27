@@ -45,11 +45,12 @@
 #include <scai/hmemo.hpp>
 #include <scai/utilskernel/LArray.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Settings.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/test/TestMacros.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace hmemo;
@@ -58,8 +59,7 @@ using namespace tasking;
 using namespace utilskernel;
 
 using common::Exception;
-using common::unique_ptr;
-using common::scoped_array;
+using std::unique_ptr;
 
 /* --------------------------------------------------------------------- */
 
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bcastTest, ValueType, scai_numeric_test_types )
     SCAI_LOG_INFO( logger, "bcastTest<" << common::getScalarType<ValueType>() << ">" )
     IndexType N = 5;
     ValueType dummyVal = 13;
-    scoped_array<ValueType> vector( new ValueType[N + 1] );
+    unique_ptr<ValueType[]> vector( new ValueType[N + 1] );
     vector[N] = dummyVal;
 
     for ( PartitionId p = 0; p < size; p++ )
@@ -410,8 +410,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterTest, ValueType, scai_numeric_test_types )
     }
 
     ValueType dummyVal = 13;
-    scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
     myvals[0] = 0;
     myvals[1] = 1;
     myvals[2] = static_cast<ValueType>( size ) + dummyVal;
@@ -451,9 +451,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scatterVTest, ValueType, scai_numeric_test_types 
     }
 
     ValueType dummyVal = 13;
-    scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<IndexType> sizes( new IndexType[size] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    unique_ptr<IndexType[]> sizes( new IndexType[size] );
 
     for ( IndexType i = 0; i <= n; i++ )
     {
@@ -505,8 +505,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherTest, ValueType, scai_numeric_test_types )
     }
 
     ValueType dummyVal = -1;
-    scoped_array<ValueType> myvals( new ValueType[2] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
+    unique_ptr<ValueType[]> myvals( new ValueType[2] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
 
     if ( rank == root )
     {
@@ -768,9 +768,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gatherVTest, ValueType, scai_numeric_test_types )
     }
 
     ValueType dummyVal = 13;
-    scoped_array<ValueType> myvals( new ValueType[n + 1] );
-    scoped_array<ValueType> allvals( new ValueType[allN] );
-    scoped_array<IndexType> sizes( new IndexType[size] );
+    unique_ptr<ValueType[]> myvals( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> allvals( new ValueType[allN] );
+    unique_ptr<IndexType[]> sizes( new IndexType[size] );
 
     for ( IndexType i = 0; i < n; i++ )
     {
@@ -822,7 +822,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( swapTest, ValueType, scai_numeric_test_types )
     PartitionId rank = comm->getRank();
     PartitionId size = comm->getSize();
     IndexType n = 10;
-    scoped_array<ValueType> vector( new ValueType[n] );
+    unique_ptr<ValueType[]> vector( new ValueType[n] );
 
     // initialize vector individually for each processor
 

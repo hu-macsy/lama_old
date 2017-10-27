@@ -308,7 +308,7 @@ void COOSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 COOSparseMatrix<ValueType>* COOSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<COOSparseMatrix<ValueType> > newSparseMatrix( new COOSparseMatrix<ValueType>() );
+    std::unique_ptr<COOSparseMatrix<ValueType> > newSparseMatrix( new COOSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

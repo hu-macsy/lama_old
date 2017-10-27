@@ -42,8 +42,6 @@
 #include <scai/lama/norm/L2Norm.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/common/unique_ptr.hpp>
-
 namespace scai
 {
 

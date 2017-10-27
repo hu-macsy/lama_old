@@ -205,7 +205,6 @@ set ( COMMON_HEADERS
         bind
         function
         shared_ptr
-        unique_ptr
         weak_ptr
 )
 

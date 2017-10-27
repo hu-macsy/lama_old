@@ -74,7 +74,7 @@ using namespace hmemo;
 using namespace dmemo;
 using namespace utilskernel;
 
-using common::unique_ptr;
+using std::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
 using common::binary;
@@ -1339,7 +1339,7 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
 template<typename ValueType>
 CSRStorage<ValueType>* CSRStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() );
+    std::unique_ptr<CSRStorage<ValueType> > storage( new CSRStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

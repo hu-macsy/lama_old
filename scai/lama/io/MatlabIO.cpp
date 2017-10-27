@@ -49,11 +49,11 @@
 
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/exception/IOException.hpp>
 #include <scai/common/safer_memcpy.hpp>
 
 #include <sstream>
+#include <memory>
 
 #define MAT_SUFFIX ".mat"
 
@@ -207,7 +207,7 @@ void MatlabIO::readArrayInfo( IndexType& n, const string& arrayFileName )
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     inFile.readDataElement( dataElement );
 
@@ -329,7 +329,7 @@ void MatlabIO::readArrayImpl(
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
@@ -615,7 +615,7 @@ void MatlabIO::readStorageInfo( IndexType& numRows, IndexType& numColumns, Index
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     inFile.readDataElement( dataElement );
 
@@ -859,7 +859,7 @@ void MatlabIO::readStorageImpl(
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 
@@ -901,7 +901,7 @@ void MatlabIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
     inFile.readMATFileHeader( version, endian );
 
-    common::scoped_array<char> dataElement;
+    std::unique_ptr<char[]> dataElement;
 
     uint32_t nBytes = inFile.readDataElement( dataElement );
 

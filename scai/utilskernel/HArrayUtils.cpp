@@ -1695,8 +1695,8 @@ void HArrayUtils::mergeSortOptional(
         WriteOnlyAccess<ValueType> wSorted( sorted, n );
         ReadAccess<ValueType> rValues( values );
 
-        common::unique_ptr<WriteOnlyAccess<IndexType> > wPerm;
-        common::unique_ptr<ReadAccess<IndexType> > rPerm;
+        std::unique_ptr<WriteOnlyAccess<IndexType> > wPerm;
+        std::unique_ptr<ReadAccess<IndexType> > rPerm;
 
         if ( perm )
         {

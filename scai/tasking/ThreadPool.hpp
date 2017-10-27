@@ -42,11 +42,11 @@
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/shared_ptr.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <climits>
 #include <queue>
+#include <memory>
 
 namespace scai
 {
@@ -161,8 +161,8 @@ private:
 
     // use scoped array instead of vector as no copy constructor is available
 
-    common::scoped_array<common::Thread> mThreads;    // worker threads of this pool
-    common::scoped_array<ThreadData> mThreadArgs;     // arguments for each worker thread
+    std::unique_ptr<common::Thread[]> mThreads;    // worker threads of this pool
+    std::unique_ptr<ThreadData[]> mThreadArgs;     // arguments for each worker thread
 
     std::queue<common::shared_ptr<ThreadPoolTask> > mTaskQueue;
 

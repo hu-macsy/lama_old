@@ -160,7 +160,7 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType stype = getType();
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
+    std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
 
     Matrix& m = *matrixPtr;
 
@@ -184,8 +184,8 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    scai::common::unique_ptr<Vector> xPtr( Vector::getVector( Vector::DENSE, stype ) );
-    scai::common::unique_ptr<Vector> bPtr( Vector::getVector( Vector::DENSE, stype ) );
+    std::unique_ptr<Vector> xPtr( Vector::getVector( Vector::DENSE, stype ) );
+    std::unique_ptr<Vector> bPtr( Vector::getVector( Vector::DENSE, stype ) );
 
     Vector& x = *xPtr;
     Vector& b = *bPtr;

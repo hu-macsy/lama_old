@@ -40,7 +40,8 @@
 
 // common library
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -459,7 +460,7 @@ void HArray<ValueType>::setRawData( const IndexType size, const ValueType src[] 
 template<typename ValueType>
 void HArray<ValueType>::setSameValue( const IndexType size, const ValueType value )
 {
-    common::scoped_array<ValueType> data( new ValueType[size] );
+    std::unique_ptr<ValueType[]> data( new ValueType[size] );
 
     for ( IndexType i = 0; i < size; ++i )
     {

@@ -39,7 +39,7 @@
 #include <scai/tracing/CallStack.hpp>
 #include <scai/tracing/CallTreeTable.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -125,7 +125,7 @@ private:
 
     RegionTable   mRegionTable;     // counts timing of regions
 
-    common::unique_ptr<CallTreeTable> mCallTreeTable;   // generates call tree trace file
+    std::unique_ptr<CallTreeTable> mCallTreeTable;   // generates call tree trace file
 
 protected:
 

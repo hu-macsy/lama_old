@@ -48,10 +48,10 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <cstring> // import ::memcpy
+#include <memory>
 
 namespace scai
 {
@@ -124,7 +124,7 @@ void CUDAHostMemory::memset( void* dst, const int val, const size_t size ) const
 SyncToken* CUDAHostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
     SCAI_CONTEXT_ACCESS( mCUDAContext )
-    common::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
+    std::unique_ptr<CUDAStreamSyncToken> syncToken( mCUDAContext->getTransferSyncToken() );
     SCAI_LOG_INFO( logger, "copy async " << size << " bytes from " << src << " (host) to " << dst << " (host) " )
     SCAI_CUDA_RT_CALL(
         cudaMemcpyAsync( dst, src, size, cudaMemcpyHostToHost, syncToken->getCUDAStream() ),

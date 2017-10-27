@@ -136,7 +136,7 @@ void StencilMatrix<ValueType>::buildStencilHaloStorage(
 
     // get the offsets of the stencil points in the global grid 
 
-    common::scoped_array<int> stencilOffsets( new int[ stencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ stencil.nPoints() ] );
     stencil.getLinearOffsets( stencilOffsets.get(), globalGridDistances );
 
     {

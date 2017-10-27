@@ -48,9 +48,9 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/Walltime.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <iostream>
+#include <memory>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -92,7 +92,7 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
     //   2: duplicate MatrixStorage along Diagonal till full Matrix size is reached
 
     // for creating CSR MatrixStorage
-    common::unique_ptr<lama::MatrixStorage<ValueType> > storageHelp( new lama::CSRStorage<ValueType>() );
+    std::unique_ptr<lama::MatrixStorage<ValueType> > storageHelp( new lama::CSRStorage<ValueType>() );
     IndexType numValues;
     std::vector<IndexType> csrIA;
     std::vector<IndexType> csrJA;
@@ -320,7 +320,7 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         lama::Scalar ynorm = vY.l2Norm();
 
         // create new Vector(Pointer) with same configuration as vZ
-        common::unique_ptr<lama::Vector> helpPtr( vZ.newVector() );
+        std::unique_ptr<lama::Vector> helpPtr( vZ.newVector() );
         // get Reference of VectorPointer
         lama::Vector& help = *helpPtr;
 

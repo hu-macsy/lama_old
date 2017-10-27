@@ -472,7 +472,7 @@ void MatrixCreator::fillRandom( Matrix& matrix, float density )
 
     // now we draw the non-zero values
 
-    common::unique_ptr<hmemo::_HArray> csrValues( hmemo::_HArray::create( matrix.getValueType() ) );
+    std::unique_ptr<hmemo::_HArray> csrValues( hmemo::_HArray::create( matrix.getValueType() ) );
 
     hmemo::_HArray& values = *csrValues;
 

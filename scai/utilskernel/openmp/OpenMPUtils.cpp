@@ -47,10 +47,10 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/Utils.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/OpenMP.hpp>
 
 #include <algorithm>
+#include <memory>
 
 //#include <parallel/sort.h>
 
@@ -1446,7 +1446,7 @@ ValueType OpenMPUtils::scanSerial( ValueType array[], const IndexType n, ValueTy
 template<typename ValueType>
 ValueType OpenMPUtils::scanParallel( PartitionId numThreads, ValueType array[], const IndexType n, const ValueType zero, const bool exclusive )
 {
-    common::scoped_array<ValueType> threadValues( new ValueType[numThreads] );
+    std::unique_ptr<ValueType[]> threadValues( new ValueType[numThreads] );
 
     SCAI_LOG_DEBUG( logger, "scanParallel: " << n << " entries for " << numThreads << " threads" )
 
@@ -1657,7 +1657,7 @@ void OpenMPUtils::sort(
 
     if ( outValues == inValues )
     {
-        common::scoped_array<ValueType> tmp( new ValueType[n] );
+        std::unique_ptr<ValueType[]> tmp( new ValueType[n] );
         set( tmp.get(), inValues, n, binary::COPY );
         setGather( outValues, tmp.get(), perm, binary::COPY, n );
     }

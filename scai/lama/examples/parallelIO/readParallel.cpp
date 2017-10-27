@@ -43,9 +43,10 @@
 #include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include "utility.hpp"
+
+#include <memory>
 
 using namespace std;
 
@@ -84,7 +85,7 @@ int main( int argc, const char* argv[] )
 
     // oops, no factory for storage, only for matrix
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
+    std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 

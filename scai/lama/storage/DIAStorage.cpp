@@ -54,18 +54,20 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
 using namespace scai::hmemo;
+
+using std::unique_ptr;
 
 namespace scai
 {
 
-using common::scoped_array;
 using common::shared_ptr;
 
 using tasking::SyncToken;
@@ -728,8 +730,8 @@ void DIAStorage<ValueType>::setCSRDataImpl(
     SCAI_LOG_DEBUG( logger, "fill DIA sparse matrix " << mNumRows << " x " << mNumColumns << " from csr data" )
     // build a set of all used lower and upper diagonals
     IndexType maxNumDiagonals = common::Math::max( mNumRows, mNumColumns );
-    scoped_array<bool> upperDiagonalUsed( new bool[maxNumDiagonals] );
-    scoped_array<bool> lowerDiagonalUsed( new bool[maxNumDiagonals] );
+    unique_ptr<bool[]> upperDiagonalUsed( new bool[maxNumDiagonals] );
+    unique_ptr<bool[]> lowerDiagonalUsed( new bool[maxNumDiagonals] );
 
     for ( IndexType i = 0; i < maxNumDiagonals; i++ )
     {
@@ -1213,7 +1215,7 @@ SyncToken* DIAStorage<ValueType>::matrixTimesVectorAsync(
                    << ", x = " << x << ", y = " << y << ", z = " << result << " on " << *loc )
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
-    common::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
+    std::unique_ptr<SyncToken> syncToken( loc->getSyncToken() );
     SCAI_ASYNCHRONOUS( *syncToken )
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1281,7 +1283,7 @@ SyncToken* DIAStorage<ValueType>::incGEVM(
     static LAMAKernel<DIAKernelTrait::normalGEVM<ValueType> > normalGEVM;
     ContextPtr loc = this->getContextPtr();
     normalGEVM.getSupportedContext( loc );
-    common::unique_ptr<SyncToken> syncToken;
+    std::unique_ptr<SyncToken> syncToken;
 
     if ( async )
     {
@@ -1358,7 +1360,7 @@ DIAStorage<ValueType>* DIAStorage<ValueType>::copy() const
 template<typename ValueType>
 DIAStorage<ValueType>* DIAStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() );
+    std::unique_ptr<DIAStorage<ValueType> > storage( new DIAStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

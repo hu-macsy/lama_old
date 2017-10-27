@@ -43,7 +43,6 @@
 
 //Intel MPI need mpi.h to be included before stdio.h so this header comes first
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
@@ -89,8 +88,8 @@ private:
     PartitionId mNRequests; // allocated size
     PartitionId mUsedRequests; // used size
 
-    common::scoped_array<MPI_Request> mRequests;
-    common::scoped_array<MPI_Status> mStatuses;
+    std::unique_ptr<MPI_Request[]> mRequests;
+    std::unique_ptr<MPI_Status[]> mStatuses;
 };
 
 } /* end namespace dmemo */

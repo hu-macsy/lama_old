@@ -48,7 +48,8 @@
 #include <scai/tasking/SyncToken.hpp>
 
 #include <scai/hmemo/test/ContextFix.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 /*--------------------------------------------------------------------- */
 
@@ -750,7 +751,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
                        << ", with x = " << x << ", y = " << y
                        << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
-            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
 
             SCAI_ASYNCHRONOUS( syncToken.get() );
 
@@ -927,7 +928,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
                        << ", with x = " << x << ", y = " << y
                        << ", JDS: ilg = " << jdsILG << ", ja = " << jdsJA << ", values = " << jdsValues )
         {
-            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
             SCAI_ASYNCHRONOUS( syncToken.get() );
 
             SCAI_CONTEXT_ACCESS( loc );

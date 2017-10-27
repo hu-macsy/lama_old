@@ -256,7 +256,7 @@ void fileIOInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
-        scai::common::unique_ptr<FileIO> fileIO( FileIO::create( values[i] ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( values[i] ) );
         cout << "    FileIO: " << *fileIO << endl;
     }
 

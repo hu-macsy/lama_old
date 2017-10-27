@@ -38,11 +38,14 @@
 #include <scai/common/SCAITypes.hpp>
 
 #include <scai/common/shared_ptr.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/weak_ptr.hpp>
+
+
 
 using namespace scai;
 using namespace common;
+
+using std::unique_ptr;
 
 /* -------------------------------------------------------------------------------- */
 

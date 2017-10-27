@@ -308,7 +308,7 @@ void ELLSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 ELLSparseMatrix<ValueType>* ELLSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<ELLSparseMatrix<ValueType> > newSparseMatrix( new ELLSparseMatrix<ValueType>() );
+    std::unique_ptr<ELLSparseMatrix<ValueType> > newSparseMatrix( new ELLSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

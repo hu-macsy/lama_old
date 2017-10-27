@@ -43,11 +43,11 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <locale>
 #include <string>
+#include <memory>
 
 using namespace std;
 using namespace scai::hmemo;
@@ -595,7 +595,7 @@ SyncToken* Communicator::shiftAsync(
     recvData.resize( numElems ); // size should fit at least to keep own data
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
-    common::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
+    std::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
     SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
     // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
     syncToken->pushRoutine( sendData.releaseDelayed() );
@@ -894,7 +894,7 @@ ValueType Communicator::scanDefault( ValueType localValue ) const
     PartitionId rank = getRank();
     PartitionId root = 0;
 
-    common::scoped_array<ValueType> allValues( new ValueType[ size ] );
+    std::unique_ptr<ValueType[]> allValues( new ValueType[ size ] );
 
     gather( allValues.get(), 1, root, &localValue );
     bcast ( allValues.get(), size, root );
@@ -967,7 +967,7 @@ void Communicator::maxlocDefault( ValueType& val, IndexType& location, const Par
         myMaxLocation = location;
     }
 
-    common::scoped_array<IndexType> allMaxLocations( new IndexType[ getSize() ] );
+    std::unique_ptr<IndexType[]> allMaxLocations( new IndexType[ getSize() ] );
 
     gather( allMaxLocations.get(), 1, root, &myMaxLocation );
 
@@ -1005,7 +1005,7 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
         myMinLocation = location;
     }
 
-    common::scoped_array<IndexType> allMinLocations( new IndexType[ getSize() ] );
+    std::unique_ptr<IndexType[]> allMinLocations( new IndexType[ getSize() ] );
 
     gather( allMinLocations.get(), 1, root, &myMinLocation );
 
@@ -1171,9 +1171,9 @@ void Communicator::setNodeData()
 
     int maxNameLength = maxProcessorName();
 
-    common::scoped_array<char> myNodeName( new char[ maxNameLength ] );
+    std::unique_ptr<char[]> myNodeName( new char[ maxNameLength ] );
 
-    common::scoped_array<char> allNodeNames( new char[ maxNameLength * getSize() ] );
+    std::unique_ptr<char[]> allNodeNames( new char[ maxNameLength * getSize() ] );
 
     getProcessorName( myNodeName.get() );
 

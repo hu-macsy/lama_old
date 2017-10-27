@@ -400,7 +400,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gemvTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_INFO( logger, "compute res = " << alpha << " * x + " << beta << " * y "
                        << ", with x = " << x << ", y = " << y )
         {
-            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
             SCAI_ASYNCHRONOUS( syncToken.get() );
 
             SCAI_CONTEXT_ACCESS( loc );
@@ -489,7 +489,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( gevmTest, ValueType, scai_numeric_test_types )
                        << ", with x = " << x << ", y = " << y
                        << ", DIA: offsets = " << diaOffsets << ", values = " << diaValues )
         {
-            common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+            std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
             SCAI_ASYNCHRONOUS( syncToken.get() );
 
             SCAI_CONTEXT_ACCESS( loc );

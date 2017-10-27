@@ -308,7 +308,7 @@ void JDSSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 JDSSparseMatrix<ValueType>* JDSSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<JDSSparseMatrix<ValueType> > newSparseMatrix( new JDSSparseMatrix<ValueType>() );
+    std::unique_ptr<JDSSparseMatrix<ValueType> > newSparseMatrix( new JDSSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

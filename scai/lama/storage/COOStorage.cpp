@@ -67,7 +67,7 @@ using namespace scai::hmemo;
 namespace scai
 {
 
-using common::unique_ptr;
+using std::unique_ptr;
 using common::shared_ptr;
 
 using tasking::SyncToken;
@@ -597,7 +597,7 @@ SyncToken* COOStorage<ValueType>::incGEMV(
     static LAMAKernel<COOKernelTrait::normalGEMV<ValueType> > normalGEMV;
     ContextPtr loc = this->getContextPtr();
     normalGEMV.getSupportedContext( loc );
-    common::unique_ptr<SyncToken> syncToken;
+    std::unique_ptr<SyncToken> syncToken;
 
     if ( async )
     {
@@ -689,7 +689,7 @@ SyncToken* COOStorage<ValueType>::incGEVM(
     static LAMAKernel<COOKernelTrait::normalGEVM<ValueType> > normalGEVM;
     ContextPtr loc = this->getContextPtr();
     normalGEVM.getSupportedContext( loc );
-    common::unique_ptr<SyncToken> syncToken;
+    std::unique_ptr<SyncToken> syncToken;
 
     if ( async )
     {
@@ -1296,7 +1296,7 @@ COOStorage<ValueType>* COOStorage<ValueType>::copy() const
 template<typename ValueType>
 COOStorage<ValueType>* COOStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>() );
+    std::unique_ptr<COOStorage<ValueType> > storage( new COOStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

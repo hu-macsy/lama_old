@@ -59,7 +59,6 @@
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/Thread.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/weak_ptr.hpp>
 

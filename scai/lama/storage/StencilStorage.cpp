@@ -74,7 +74,7 @@ using namespace dmemo;
 using namespace utilskernel;
 using namespace tasking;
 
-using common::unique_ptr;
+using std::unique_ptr;
 using common::shared_ptr;
 using common::TypeTraits;
 using common::binary;
@@ -275,7 +275,7 @@ void StencilStorage<ValueType>::buildCSRSizes( HArray<IndexType>& sizeIA ) const
 
     IndexType n = this->getNumRows();
 
-    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
@@ -301,7 +301,7 @@ void StencilStorage<ValueType>::buildCSRData( HArray<IndexType>& csrIA, HArray<I
 
     IndexType n = this->getNumRows();
 
-    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     IndexType gridDistances[SCAI_GRID_MAX_DIMENSION];
 
@@ -540,7 +540,7 @@ SyncToken* StencilStorage<ValueType>::incGEMV(
 
     mStencil.getWidth( width );
 
-    common::scoped_array<int> stencilOffsets( new int[ mStencil.nPoints() ] );
+    std::unique_ptr<int[]> stencilOffsets( new int[ mStencil.nPoints() ] );
 
     mStencil.getLinearOffsets( stencilOffsets.get(), gridDistances );
 

@@ -308,7 +308,7 @@ void DIASparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
+    std::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

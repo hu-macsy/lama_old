@@ -1593,7 +1593,7 @@ void MatrixStorage<ValueType>::writeToFile(
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         if ( dataType != common::scalar::UNKNOWN )
         {
@@ -1638,7 +1638,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
         // fileIO->setDataType( common::scalar::INTERNAL );

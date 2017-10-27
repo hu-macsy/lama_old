@@ -308,7 +308,7 @@ void XXXSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 XXXSparseMatrix<ValueType>* XXXSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<XXXSparseMatrix<ValueType> > newSparseMatrix( new XXXSparseMatrix<ValueType>() );
+    std::unique_ptr<XXXSparseMatrix<ValueType> > newSparseMatrix( new XXXSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

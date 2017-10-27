@@ -532,7 +532,7 @@ void DenseStorage<ValueType>::setCSRDataImpl(
                    "setCRSData for dense storage " << numRows << " x " << numColumns << ", nnz = " << numValues )
     mNumRows = numRows;
     mNumColumns = numColumns;
-    common::unique_ptr<HArray<IndexType> > tmpOffsets;
+    std::unique_ptr<HArray<IndexType> > tmpOffsets;
 
     const HArray<IndexType>* offsets = &ia;
 
@@ -1392,7 +1392,7 @@ _MatrixStorage* DenseStorage<ValueType>::create()
 template<typename ValueType>
 DenseStorage<ValueType>* DenseStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() );
+    std::unique_ptr<DenseStorage<ValueType> > storage( new DenseStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

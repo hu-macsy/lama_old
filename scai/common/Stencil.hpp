@@ -37,10 +37,11 @@
 #include <scai/common/config.hpp>
 #include <scai/common/Utils.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -319,7 +320,7 @@ void Stencil<ValueType>::getWidth( IndexType width[] ) const
 template<typename ValueType>
 IndexType Stencil<ValueType>::getMatrixSize() const
 {
-    common::scoped_array<IndexType> width( new IndexType[ 2 * mNDims ] );
+    std::unique_ptr<IndexType[]> width( new IndexType[ 2 * mNDims ] );
   
     getWidth( width.get() );
  
@@ -338,7 +339,7 @@ IndexType Stencil<ValueType>::getMatrixSize() const
 template<typename ValueType>
 void Stencil<ValueType>::getMatrix( ValueType matrix[] ) const
 {
-    common::scoped_array<IndexType> width( new IndexType[ 2 * mNDims ] );
+    std::unique_ptr<IndexType[]> width( new IndexType[ 2 * mNDims ] );
   
     getWidth( width.get() );
  
@@ -403,7 +404,7 @@ bool Stencil<ValueType>::operator==( const Stencil<ValueType>& other ) const
 
     // now check for equal width in all directions
 
-    common::scoped_array<IndexType> width( new IndexType[ 4 * mNDims ] );
+    std::unique_ptr<IndexType[]> width( new IndexType[ 4 * mNDims ] );
 
     IndexType* width1 = &width[0];
     IndexType* width2 = &width[2 * mNDims];
@@ -421,7 +422,7 @@ bool Stencil<ValueType>::operator==( const Stencil<ValueType>& other ) const
         size *= width1[2 * i] + width1[2 * i + 1] + 1;
     }
 
-    common::scoped_array<ValueType> matrix( new ValueType[ 2 * size ] );
+    std::unique_ptr<ValueType[]> matrix( new ValueType[ 2 * size ] );
 
     ValueType* matrix1 = &matrix[0];
     ValueType* matrix2 = &matrix[size];

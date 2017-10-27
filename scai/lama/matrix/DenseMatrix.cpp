@@ -50,7 +50,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
@@ -59,15 +58,17 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
 using namespace scai::hmemo;
 using namespace scai::dmemo;
+
+using std::unique_ptr;
 
 namespace scai
 {
 
-using common::unique_ptr;
 using common::TypeTraits;
-using common::scoped_array;
 using utilskernel::LAMAKernel;
 
 namespace lama
@@ -690,7 +691,7 @@ void DenseMatrix<ValueType>::assignSparse( const Matrix& other )
     {
         DistributionPtr repColDist( new NoDistribution( other.getNumColumns() ) );
 
-        // common::unique_ptr<Matrix> tmpOther( other.copy() );
+        // std::unique_ptr<Matrix> tmpOther( other.copy() );
         // tmpOther->redistribute( other.getRowDistributionPtr(), repColDist );
         // SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
         // assignSparse( *tmpOther );
@@ -1858,7 +1859,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     {
         SCAI_LOG_INFO( logger, comm << ": asynchronous communication" )
 // asynchronous communication always requires same sizes of arrays, might shift some more data
-        common::unique_ptr<tasking::SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
+        std::unique_ptr<tasking::SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
         SCAI_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )
 // overlap communication with local computation
@@ -2416,7 +2417,7 @@ DenseMatrix<ValueType>* DenseMatrix<ValueType>::newMatrix() const
 {
     SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::newMatrix" )
     // use auto pointer for new sparse matrix to get data freed in case of Exception
-    common::unique_ptr<DenseMatrix<ValueType> > newDenseMatrix( new DenseMatrix<ValueType>() );
+    std::unique_ptr<DenseMatrix<ValueType> > newDenseMatrix( new DenseMatrix<ValueType>() );
     // inherit the context for local and halo storage
     newDenseMatrix->setContextPtr( this->getContextPtr() );
     newDenseMatrix->setCommunicationKind( this->getCommunicationKind() );

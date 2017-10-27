@@ -274,9 +274,9 @@ void MetisPartitioning::rectangularPartitioning(
     IndexType nNodes = numRows + numColumns;
     IndexType nEdges = 2 * numValues;
 
-    common::scoped_array<int> adjIA( new int[ nNodes + 1 ] );
-    common::scoped_array<int> adjJA( new int[ nEdges ] );
-    common::scoped_array<int> vwgt( new int[ nNodes ] );
+    std::unique_ptr<int[]> adjIA( new int[ nNodes + 1 ] );
+    std::unique_ptr<int[]> adjJA( new int[ nEdges ] );
+    std::unique_ptr<int[]> vwgt( new int[ nNodes ] );
 
     ReadAccess<IndexType> csrIA( storage.getIA() );
     ReadAccess<IndexType> csrJA( storage.getJA() );
@@ -330,7 +330,7 @@ void MetisPartitioning::rectangularPartitioning(
 
     IndexType minConstraint = 0;
 
-    common::scoped_array<int> partition( new int [nNodes] );
+    std::unique_ptr<int[]> partition( new int [nNodes] );
 
     for ( IndexType i = 0; i < nNodes; ++i )
     {
