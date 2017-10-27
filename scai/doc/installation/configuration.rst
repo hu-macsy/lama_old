@@ -75,7 +75,6 @@ CMake variable                 Signification
 ``SCAI_TRACE``                 ON or OFF, enable/disable region tracing
 ``USE_CODE_COVERAGE``          ON or OFF, explicitly enable/disable use of Code Coverage
 ``USE_CUDA``                   ON or OFF, explicitly enable/disable use of CUDA
-``USE_GPI``                    ON or OFF, explicitly enable/disable use of GPI
 ``USE_METIS``                  ON or OFF, explicitly enable/disable use redistributions with Metis
 ``USE_JAVA``                   ON or OFF, explicitly enable/disable use of Java for tracing GUI
 ``USE_MIC``                    ON or OFF, explicitly enable/disable use of MIC
@@ -104,7 +103,6 @@ Optional dependencies:
 * :ref:`CUDA <scaicommon:CUDA>`
 * :ref:`MIC`
 * :ref:`MPI <scaidmemo:MPI>`
-* :ref:`GPI-2 <scaidmemo:GPI>`
 * :ref:`(Par)Metis <scaidmemo:Metis>`
 
 A summary of possible hint-variables for the packages are given in the following table. For advanced help refer to the separate section.
@@ -119,7 +117,6 @@ CUDA       CUDA_TOOLKIT_ROOT                                                 pat
 MIC        -                                                                 -
 DOXYGEN    DOXYGEN_EXECUTABLE                                                path to doxygen binary dir
 MPI        MPI_ROOT                                                          path to MPI root dir
-GPI-2      GPI2_ROOT                                                         path to GPI root dir
 JAVA       JAVA_HOME                                                         path to JAVA installation directory, must be set as environment variable
 Metis      METIS_ROOT or METIS_INCLUDE_DIR and METIS_LIBRARY_PATH            path to Metis root dir or paths to Metis include and library dir
 ParMetis   PARMETIS_ROOT or PARMETIS_INCLUDE_DIR and PARMETIS_LIBRARY_PATH   path to ParMetis root dir or paths to ParMetis include and library dir
@@ -192,9 +189,6 @@ If no fatal cmake errors occured during the configuration in the end we print a 
    --          FOUND      : Version 1.10.2
    --          Include(4) : .., /usr/lib/openmpi/include, /usr/lib/openmpi/include/openmpi
    --          Libs(2)    : /usr/lib/openmpi/lib/libmpi_cxx.so, /usr/lib/openmpi/lib/libmpi.so
-   --  
-   --      GASPI DISABLED
-   --          NOT FOUND
    --  
    --      Metis DISABLED
    --          NOT FOUND

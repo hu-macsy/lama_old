@@ -47,7 +47,7 @@ These are the supported options:
          --SCAI_USE_METIS=<flag>
          --SCAI_ASYNCHRONOUS=<flag>
          or general options:
-         --SCAI_COMMUNICATOR=[MPI|GPI|NO]
+         --SCAI_COMMUNICATOR=[MPI|NO]
          --SCAI_CONTEXT=[Host|CUDA|MIC]
          --SCAI_DEVICE=[0|1|...]
          --SCAI_CUDA_USE_TEXTURE=[0|1]

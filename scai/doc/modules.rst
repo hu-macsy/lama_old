@@ -57,7 +57,7 @@ The Math Kernel Extension contains the subprojects:
 Distributed Extension
 ---------------------
 
-The Distributed Extension realises strategies for the distribution of data among processes and handles the communication between those. LAMA is compliant to MPI or GPI, giving the developer both options.
+The Distributed Extension realises strategies for the distribution of data among processes and handles the communication between those. LAMA currently supports the MPI standard for distributed communication.
 
 The Distributed Extension contains the subproject:
 

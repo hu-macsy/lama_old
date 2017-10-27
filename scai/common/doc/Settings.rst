@@ -142,7 +142,7 @@ SCAI_CUDA_USE_CUSPARSE     bool    default true, uses cuSparse library instead o
 SCAI_CUDA_USE_SHARED_MEM   bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_USE_TEXTURE      bool    default true, uses cuSparse library instead of own kernels
 SCAI_CUDA_BLOCK_SIZE       int     number of thread within one cude block, default is 128
-SCAI_COMMUNICATOR          string  specifies default communicator, e.g. NO, MPI, or GPI
+SCAI_COMMUNICATOR          string  specifies default communicator, e.g. NO, MPI
 SCAI_MPI_CUDA              bool    false, set true if MPI is CUDAaware
 SCAI_USE_MKL               bool    false, use MKL library for BLAS routines
 SCAI_AMG_SETUP_LIBRARY     path    library with dynamic module that that register at factory for AMG Setup

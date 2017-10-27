@@ -79,10 +79,6 @@ The following software packages are not mandatory, but will give you a performan
 
   - Needed for distributed memory parallelism through the Message Passing Interface.
 
-- :ref:`GPI-2 <scaidmemo:GPI>`
-
-  - Needed for distributed memory parallelism through the Global Address Space Programming Interface.
-
 .. toctree::
    :hidden:
 
