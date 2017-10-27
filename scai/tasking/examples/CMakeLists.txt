@@ -45,7 +45,7 @@ foreach    ( executable DemoThreadPool DemoTask BenchTasking Token )
 
 endforeach ( executable )
 
-scai_subdirectories( CUDA MIC )
+scai_subdirectories( CUDA )
 
 # use the recommended installation directory for this example directory
 scai_example_directory ( INSTALL_EXAMPLE_DIR )

@@ -96,7 +96,6 @@ struct _Communicator
     {
         NO,                  //!< No communicator
         MPI,                 //!< MPI communicator
-        GPI,                 //!< GPI communicator
         MAX_COMMUNICATOR     //!< dummy value for number of communicators
     } CommunicatorKind;
 
@@ -158,7 +157,8 @@ public:
      *  @returns shared pointer to the default communicator.
      *
      *  The rules for choosing the default communicator are as follows:
-     *   - take if available in this order: MPI, GPI, NO
+     *   - If MPI is available, use the MPI communicator.
+     *   - Otherwise, use no communicator.
      */
 
     static CommunicatorPtr getDefaultCommunicatorPtr();

@@ -67,7 +67,6 @@ struct context
         Host,          //!< context for cpu + main memory
         CUDA,          //!< CUDA GPU device
         OpenCL,        //!< OpenCL GPU device, currently not supported
-        MIC,           //!< Intel MIC
         UserContext,   //!< can be used for a new derived Context class
         MaxContext     //!< used for dimension of ContextType arrays
     } ContextType;

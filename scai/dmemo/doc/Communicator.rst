@@ -29,7 +29,6 @@ Derived Classes
 
 * NoCommunicator is a dummy class for a single processor.
 * MPICommunicator uses MPI for the implementation of the communication routines.
-* GPICommunicator uses GPI-2 for the implementation of the communication routines.
 
 Communicator Factory
 ^^^^^^^^^^^^^^^^^^^^
@@ -37,5 +36,4 @@ Communicator Factory
 .. code-block:: c++
 
    CommunicatorPtr mpiComm = Communicator::getCommunicatorPtr( Communicator::MPI );
-   CommunicatorPtr gpiComm = Communicator::getCommunicatorPtr( Communicator::GPI );
 

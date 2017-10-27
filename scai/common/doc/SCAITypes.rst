@@ -24,7 +24,6 @@ E.g. the list of value types that are used in the current release:
 
    #define SCAI_ARITHMETIC_HOST     float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble
    #define SCAI_ARITHMETIC_CUDA     float, double, ComplexFloat, ComplexDouble
-   #define SCAI_ARITHMETIC_MIC      float, double, ComplexFloat, ComplexDouble
 
 For each type in this list, the templatized kernel routines will be instantiated to support
 operations for vectors or matrices of the corresponding type.

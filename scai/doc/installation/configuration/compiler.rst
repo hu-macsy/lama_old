@@ -70,9 +70,6 @@ The C++ compiler interacts with nearly all other packages needed for LAMA, eithe
        error -- unsupported GNU version! gcc 4.9 and up are not supported!
        error -- unsupported ICC configuration! Only ICC 14.0 on Linux x86_64 is supported!
 
-* If Intel MIC support is enabled, an Intel compiler supporting the offload programming model is required. A GNU C++
-  compiler cannot be used.
-
 * Other software packages like Boost, MPI, BLAS, or MKL should be available as developer versions that can be used   with the chosen C++ compiler. Even if this is usually the case, it happens very often that the header files of these   packages give compiler warnings that cause troubles for the compilation of LAMA. In such a case, compiler warnings   should be disabled (run ccmake and delete -Werror in ADDITIONAL_WARNING_FLAGS).
 
 C Compiler

@@ -123,16 +123,5 @@ int main()
     {
         std::cout << "No CUDA bench test, CUDA context not available" << std::endl;
     }
-
-    if ( Context::canCreate( Context::MIC ) )
-    {
-        ContextPtr mic = Context::getContextPtr( Context::MIC );
-        std::cout << "MIC bench test, context = " << *mic << std::endl;
-        bench( host, mic );
-    }
-    else
-    {
-        std::cout << "No CUDA bench test, CUDA context not available" << std::endl;
-    }
 }
 

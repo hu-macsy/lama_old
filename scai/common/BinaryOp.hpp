@@ -100,7 +100,7 @@ struct binary
  *  Note: keep in mind that there is no exception handling in device code
  */
 template <typename ValueType>
-MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
+CUDA_CALLABLE_MEMBER
 inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, const ValueType& x2 )
 {
     typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
@@ -137,7 +137,7 @@ inline ValueType applyBinary( const ValueType& x1, const binary::BinaryOp op, co
 }
 
 template <typename ValueType>
-MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
+CUDA_CALLABLE_MEMBER
 inline bool applyBinary( const ValueType& x1, const binary::CompareOp op, const ValueType& x2 )
 {
     // ToDo: throw exception if called with complex values

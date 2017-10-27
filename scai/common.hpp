@@ -81,6 +81,3 @@
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/macros/unique_name.hpp>
 #include <scai/common/macros/unused.hpp>
-
-// MIC
-#include <scai/common/mic/MICCallable.hpp>

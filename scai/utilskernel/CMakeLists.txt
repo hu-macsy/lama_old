@@ -46,7 +46,7 @@ scai_module(
 
     MODULE_NAME   utilskernel
     INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel
-    EXTERNAL_DEPS OpenMP CUDA MIC
+    EXTERNAL_DEPS OpenMP CUDA
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -68,7 +68,7 @@ scai_project (
 
 ## add subdirectories, uppercase for OPTIONAL stuff
 
-scai_subdirectories( CUDA EXAMPLES mepr MIC openmp TEST )
+scai_subdirectories( CUDA EXAMPLES mepr openmp TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )

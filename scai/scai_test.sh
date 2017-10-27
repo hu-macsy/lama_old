@@ -56,12 +56,6 @@ then
     CONTEXTS+=(CUDA)
 fi
 
-# Use MIC
-if [ -d hmemo/mic ]
-then
-    CONTEXTS+=(MIC)
-fi
-
 echo "## Used Contexts: ${CONTEXTS[*]}, MPI_PROCS=${MPI_PROCS}"
 
 # Common tests

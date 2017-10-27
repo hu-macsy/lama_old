@@ -34,7 +34,6 @@
 
 #pragma once
 
-#include <scai/common/mic/MICCallable.hpp>
 #include <scai/common/cuda/CUDACallable.hpp>
 
 namespace scai
@@ -54,12 +53,12 @@ struct Utils
      *
      * Reasoning: common code causes compiler warnings as comparison >= 0 is useless for unsigned types
      */
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER bool validIndex( const short& index, const short& size );
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER bool validIndex( const unsigned short& index, const unsigned short& size );
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER bool validIndex( const int& index, const int& size );
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER bool validIndex( const unsigned int& index, const unsigned int& size );
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER bool validIndex( const long& index, const long& size );
-    static inline MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER bool validIndex( const unsigned long& index, const unsigned long& size );
+    static inline CUDA_CALLABLE_MEMBER bool validIndex( const short& index, const short& size );
+    static inline CUDA_CALLABLE_MEMBER bool validIndex( const unsigned short& index, const unsigned short& size );
+    static inline CUDA_CALLABLE_MEMBER bool validIndex( const int& index, const int& size );
+    static inline CUDA_CALLABLE_MEMBER bool validIndex( const unsigned int& index, const unsigned int& size );
+    static inline CUDA_CALLABLE_MEMBER bool validIndex( const long& index, const long& size );
+    static inline CUDA_CALLABLE_MEMBER bool validIndex( const unsigned long& index, const unsigned long& size );
 };
 
 // -------------------------------- validIndex -----------------------

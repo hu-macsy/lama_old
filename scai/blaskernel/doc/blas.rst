@@ -87,7 +87,7 @@ which is called OpenMP-BLAS.
 BLAS-library      Backend            Supported ValueTypes                                                          Status 
 ==============    ================   ===========================================================================   ======================================
 Fortran-BLAS      Host               float, double, ComplexFloat, ComplexDouble                                    successfully tested
-MKL               Host/MIC           float, double, ComplexFloat, ComplexDouble                                    successfully tested
+MKL               Host               float, double, ComplexFloat, ComplexDouble                                    successfully tested
 OpenMP-BLAS       Host               float, double, long double, ComplexFloat, ComplexDouble, ComplexLongDouble    successfully tested
 cuBLAS            CUDA               float, double, ComplexFloat, ComplexDouble                                    successfully tested
 ==============    ================   ===========================================================================   ======================================

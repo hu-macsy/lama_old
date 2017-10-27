@@ -13,7 +13,7 @@ HArray (**Heterogeneous Array**) that manages multiple incarnations of the data 
 
 Beside this container class some other classes are provided:
 
- * Context class to deal with different devices (Host for CPU, CUDA for GPU devices, MIC for Intel Xeon Phi, …)
+ * Context class to deal with different devices (Host for CPU, CUDA for GPU devices, …)
  * Memory class to deal with different memory locations (device memory, CPU memory, pinned memory, …)
  * ReadAccess and Write Acess on a HArray in order to keep track at which locations valid memory data is available
 
@@ -104,7 +104,6 @@ Internal dependencies:
 External dependencies:
 
 * :ref:`CUDA<scaicommon:CUDA>`
-* Compiler supporting Intel MIC Architecture for using the Xeon Phi Coprocessor
 
 ************
 Related Work
