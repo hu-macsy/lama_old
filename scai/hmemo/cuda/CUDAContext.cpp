@@ -226,7 +226,7 @@ static int getDefaultDeviceNr()
 /*      Factory::Register - create( int )                                        */
 /* ----------------------------------------------------------------------------- */
 
-static common::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
+static std::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
 
 ContextPtr CUDAContext::create( int deviceNr )
 {

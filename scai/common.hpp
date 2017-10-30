@@ -59,7 +59,6 @@
 #include <scai/common/Thread.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/weak_ptr.hpp>
 
 // CUDA
 #include <scai/common/cuda/CUDACallable.hpp>

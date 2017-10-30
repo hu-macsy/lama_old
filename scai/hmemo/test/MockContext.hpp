@@ -40,8 +40,9 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/weak_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
+
+#include <memory>
 
 /** Exampes of a new context class that implements all relevant routines. */
 
@@ -54,7 +55,7 @@ private:
 
     int mDeviceNr;     // MockContext with different device numbers are not equal
 
-    mutable scai::common::weak_ptr<scai::hmemo::Memory> mMemory;
+    mutable std::weak_ptr<scai::hmemo::Memory> mMemory;
 
 public:
 
@@ -134,7 +135,7 @@ private:
 
 /* --------------------------------------------------------------------- */
 
-static std::vector<scai::common::weak_ptr<class MockContext> > contextInstances( 6 );
+static std::vector<std::weak_ptr<class MockContext> > contextInstances( 6 );
 
 /* --------------------------------------------------------------------- */
 

@@ -204,7 +204,6 @@ set ( COMMON_HEADERS
         safer_memcpy
         bind
         function
-        weak_ptr
 )
 
 if ( ${USE_COMPLEX} )

@@ -42,10 +42,10 @@
 #include <scai/tasking/NoSyncToken.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/weak_ptr.hpp>
 #include <scai/common/safer_memcpy.hpp>
 
 #include <cstring>
+#include <memory>
 #include <unistd.h>
 
 using namespace std;
@@ -323,7 +323,7 @@ void NoCommunicator::writeAt( std::ostream& stream ) const
 
 /* --------------------------------------------------------------- */
 
-static common::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
+static std::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
 
 CommunicatorPtr NoCommunicator::create()
 {

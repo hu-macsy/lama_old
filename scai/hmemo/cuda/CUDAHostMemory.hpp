@@ -47,7 +47,7 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/weak_ptr.hpp>
+#include <memory>
 
 namespace scai
 {

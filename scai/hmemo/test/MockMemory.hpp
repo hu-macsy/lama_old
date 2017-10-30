@@ -38,8 +38,9 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/weak_ptr.hpp>
 #include <scai/common/safer_memcpy.hpp>
+
+#include <memory>
 
 /** Exampes of a new memory class that implements all relevant routines. */
 
