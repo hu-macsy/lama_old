@@ -52,7 +52,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
@@ -61,6 +60,7 @@
 #include <scai/common/macros/instantiate.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::unique_ptr;
 using std::shared_ptr;
@@ -1596,9 +1596,9 @@ SyncToken* ELLStorage<ValueType>::jacobiIterateAsync(
             const HArray<ValueType>&,
             const ValueType omega ) const
         = &ELLStorage<ValueType>::jacobiIterate;
-        using scai::common::bind;
-        using scai::common::cref;
-        using scai::common::ref;
+        using std::bind;
+        using std::cref;
+        using std::ref;
         return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 

@@ -49,13 +49,13 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 
 // CUDA
 #include <cuda.h>
 
 // std
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -257,7 +257,7 @@ SyncToken* CUDAMemory::memcpyAsyncFromHost( void* dst, const void* src, const si
 
     if ( size > THRESHOLD_SIZE )
     {
-        return new tasking::TaskSyncToken( common::bind( &CUDAMemory::memcpyFromHost, this, dst, src, size ) );
+        return new tasking::TaskSyncToken( std::bind( &CUDAMemory::memcpyFromHost, this, dst, src, size ) );
     }
     else
     {
@@ -287,7 +287,7 @@ SyncToken* CUDAMemory::memcpyAsyncToHost( void* dst, const void* src, const size
 
     if ( size > THRESHOLD_SIZE )
     {
-        return new tasking::TaskSyncToken( common::bind( &CUDAMemory::memcpyToHost, this, dst, src, size ) );
+        return new tasking::TaskSyncToken( std::bind( &CUDAMemory::memcpyToHost, this, dst, src, size ) );
     }
     else
     {

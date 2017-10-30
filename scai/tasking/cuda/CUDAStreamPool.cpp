@@ -37,9 +37,9 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 
 #include <map>
+#include <functional>
 
 namespace scai
 {
@@ -151,7 +151,7 @@ CUDAStreamPool& CUDAStreamPool::getPool( const common::CUDACtx& cuda )
         // Pool must be freed before cuda is destroyed
         // solution: Add shutdown routine to the CUDA device
         common::CUDACtx& cuda1 = const_cast< common::CUDACtx& >( cuda );
-        cuda1.addShutdown( common::bind( &CUDAStreamPool::freePool, common::cref( cuda ) ) );
+        cuda1.addShutdown( std::bind( &CUDAStreamPool::freePool, std::cref( cuda ) ) );
         return *pool;
     }
     else

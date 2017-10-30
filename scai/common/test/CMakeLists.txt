@@ -35,7 +35,6 @@
 set ( CXX_SOURCES
 
           atomicOpenMPTest
-          bindFunctionTest
           commonTest
           BinaryOpTest
           ConstantsTest

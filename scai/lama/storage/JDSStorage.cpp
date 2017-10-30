@@ -49,7 +49,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
@@ -57,6 +56,7 @@
 #include <scai/common/macros/instantiate.hpp>
 
 #include <memory>
+#include <functional>
 
 using namespace scai::hmemo;
 
@@ -1296,9 +1296,9 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
             const HArray<ValueType>&,
             const ValueType omega ) const
         = &JDSStorage<ValueType>::jacobiIterate;
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
+        using std::bind;
+        using std::ref;
+        using std::cref;
         return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 

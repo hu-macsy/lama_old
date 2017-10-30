@@ -37,9 +37,8 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/logging.hpp>
 
-#include <scai/common/bind.hpp>
-
 #include <memory>
+#include <functional>
 
 using std::shared_ptr;
 
@@ -79,7 +78,7 @@ void simple()
     }
 
     // using shared pointer will delete token automatically
-    shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, a, b, c , N ) ) );
+    shared_ptr<SyncToken> t ( new TaskSyncToken( std::bind( task, a, b, c , N ) ) );
     t->wait();
 
     for ( int i = 0; i < N; ++i )
@@ -128,7 +127,7 @@ shared_ptr<SyncToken> run( int N )
     // call task synchronously
     task( data->mA, data->mB, data->mC, N );
     // call task asynchronously
-    shared_ptr<SyncToken> t ( new TaskSyncToken( scai::common::bind( task, data->mA, data->mB, data->mC , N ) ) );
+    shared_ptr<SyncToken> t ( new TaskSyncToken( std::bind( task, data->mA, data->mB, data->mC , N ) ) );
     // give ownership of data to the sync token
     t->pushToken( data );
     return t;

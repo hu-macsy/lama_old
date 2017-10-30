@@ -34,13 +34,14 @@
 
 #include <scai/tasking/ThreadPool.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::shared_ptr;
+using std::bind;
 
 using namespace scai::common;
 using namespace scai::tasking;

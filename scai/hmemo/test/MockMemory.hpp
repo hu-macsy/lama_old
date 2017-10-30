@@ -37,10 +37,10 @@
 #include <scai/hmemo/Memory.hpp>
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/safer_memcpy.hpp>
 
 #include <memory>
+#include <functional>
 
 /** Exampes of a new memory class that implements all relevant routines. */
 
@@ -108,12 +108,12 @@ public:
 
     static scai::tasking::SyncToken* theMemcpyAsync( void* dst, const void* src, const size_t size )
     {
-        return new scai::tasking::TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );
+        return new scai::tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual scai::tasking::SyncToken* memcpyAsync( void* dst, const void* src, const size_t size ) const
     {
-        return new scai::tasking::TaskSyncToken( scai::common::bind( &::memcpy, dst, src, size ) );
+        return new scai::tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
     }
 
     virtual bool canCopyFrom( const scai::hmemo::Memory& other ) const

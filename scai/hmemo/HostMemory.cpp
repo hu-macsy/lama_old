@@ -48,11 +48,11 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/safer_memcpy.hpp>
 
 // std
 #include <cstring>
+#include <functional>
 
 using scai::common::safer_memcpy;
 
@@ -140,7 +140,7 @@ void HostMemory::memset( void* dst, const int val, const size_t size ) const
 
 tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    return new tasking::TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
+    return new tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
 }
 
 ContextPtr HostMemory::getContextPtr() const

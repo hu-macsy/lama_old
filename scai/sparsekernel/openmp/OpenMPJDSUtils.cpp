@@ -49,9 +49,9 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/bind.hpp>
 
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -539,7 +539,7 @@ void OpenMPJDSUtils::normalGEMV(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEMV_a<ValueType>,
+        syncToken->run( std::bind( normalGEMV_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),
@@ -630,7 +630,7 @@ void OpenMPJDSUtils::normalGEVM(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEVM_a<ValueType>,
+        syncToken->run( std::bind( normalGEVM_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),

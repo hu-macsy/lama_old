@@ -44,7 +44,6 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/BinaryOp.hpp>
 

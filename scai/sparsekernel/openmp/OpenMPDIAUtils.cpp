@@ -47,10 +47,10 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/bind.hpp>
 
 // std
 #include <cmath>
+#include <functional>
 
 namespace scai
 {
@@ -349,7 +349,7 @@ void OpenMPDIAUtils::normalGEMV(
         // bind has limited number of arguments, so take help routine for call
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-        syncToken->run( common::bind( normalGEMV_a<ValueType>,
+        syncToken->run( std::bind( normalGEMV_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),
@@ -433,7 +433,7 @@ void OpenMPDIAUtils::normalGEVM(
         // bind has limited number of arguments, so take help routine for call
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-        syncToken->run( common::bind( normalGEVM_a<ValueType>,
+        syncToken->run( std::bind( normalGEVM_a<ValueType>,
                                       result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),

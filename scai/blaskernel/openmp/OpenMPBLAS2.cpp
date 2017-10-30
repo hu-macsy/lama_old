@@ -43,9 +43,10 @@
 #include <scai/kregistry/KernelRegistry.hpp>
 
 #include <scai/common/macros/unused.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
+
+#include <functional>
 
 namespace scai
 {

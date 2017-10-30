@@ -36,8 +36,6 @@
 
 #pragma message("It is not recommended to include whole common")
 
-#include <scai/common/bind.hpp>
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 #include <scai/common/Complex.hpp>
 #endif
