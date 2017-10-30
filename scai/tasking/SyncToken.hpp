@@ -42,7 +42,6 @@
 #include <scai/common/Printable.hpp>
 
 // internal scai library
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/Thread.hpp>
 
@@ -50,6 +49,7 @@
 
 // std
 #include <vector>
+#include <memory>
 
 namespace scai
 {
@@ -138,7 +138,7 @@ public:
      *  @param member shared pointer to an object that can be SyncTokenMember
      */
 
-    void pushToken( common::shared_ptr<SyncTokenMember> member );
+    void pushToken( std::shared_ptr<SyncTokenMember> member );
 
     /** Add a routine to be called after synchronization. */
 
@@ -212,7 +212,7 @@ private:
 
     /** Vector of shared pointers  that will be released after completion. */
 
-    std::vector< common::shared_ptr<SyncTokenMember > > mTokens;
+    std::vector< std::shared_ptr<SyncTokenMember > > mTokens;
 
     bool mSynchronized;  //!< if true the token has already been synchronized.
 

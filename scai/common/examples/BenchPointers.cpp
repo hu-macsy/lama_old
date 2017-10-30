@@ -33,7 +33,6 @@
  */
 
 #include <scai/common/Walltime.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 
 #include <memory>
@@ -54,7 +53,7 @@ public:
 #include <iostream>
 
 using scai::common::Walltime;
-using scai::common::shared_ptr;
+using std::shared_ptr;
 using std::unique_ptr;
 
 void usualPointer( int& dummy )

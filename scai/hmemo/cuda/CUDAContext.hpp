@@ -84,7 +84,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAContext:
 
     public Context,
     public Context::Register<CUDAContext>,
-    public common::enable_shared_from_this<CUDAContext>,
+    public std::enable_shared_from_this<CUDAContext>,
     public common::CUDACtx
 {
 

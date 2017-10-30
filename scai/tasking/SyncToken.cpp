@@ -41,10 +41,12 @@
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
-
-using common::shared_ptr;
 
 namespace tasking
 {

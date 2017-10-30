@@ -99,13 +99,13 @@ public:
         TFQMRRuntime();
         virtual ~TFQMRRuntime();
 
-        common::shared_ptr<lama::Vector> mVecD;
-        common::shared_ptr<lama::Vector> mInitialR;
-        common::shared_ptr<lama::Vector> mVecVEven;
-        common::shared_ptr<lama::Vector> mVecVOdd;
-        common::shared_ptr<lama::Vector> mVecVT;
-        common::shared_ptr<lama::Vector> mVecW;
-        common::shared_ptr<lama::Vector> mVecZ;
+        std::shared_ptr<lama::Vector> mVecD;
+        std::shared_ptr<lama::Vector> mInitialR;
+        std::shared_ptr<lama::Vector> mVecVEven;
+        std::shared_ptr<lama::Vector> mVecVOdd;
+        std::shared_ptr<lama::Vector> mVecVT;
+        std::shared_ptr<lama::Vector> mVecW;
+        std::shared_ptr<lama::Vector> mVecZ;
 
         lama::Scalar mEps;
         lama::Scalar mAlpha;

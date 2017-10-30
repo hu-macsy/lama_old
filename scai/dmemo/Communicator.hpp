@@ -54,7 +54,6 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/macros/count.hpp>
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/loop.hpp>
 
@@ -85,7 +84,7 @@ class Halo;
 
 class Communicator;
 
-typedef common::shared_ptr<const Communicator> CommunicatorPtr;
+typedef std::shared_ptr<const Communicator> CommunicatorPtr;
 
 /** @brief Own namespace for the enum type CommunicatorKind and its values */
 

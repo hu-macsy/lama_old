@@ -635,7 +635,7 @@ void Communicator::updateHalo(
 
 /* -------------------------------------------------------------------------- */
 
-static void releaseArray( common::shared_ptr<_HArray> array )
+static void releaseArray( std::shared_ptr<_HArray> array )
 {
     array->clear();
 }
@@ -664,7 +664,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    common::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
+    std::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 
@@ -1153,7 +1153,7 @@ SyncToken* Communicator::exchangeByPlanAsync(
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
     SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    // conversion std::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> std::shared_ptr<BaseAccess> supported
     token->pushRoutine( recvData.releaseDelayed() );
     token->pushRoutine( sendData.releaseDelayed() );
     // return ownership of new created object

@@ -39,11 +39,14 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/macros/throw.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
 using tasking::Task;
-using common::shared_ptr;
 
 namespace tasking
 {

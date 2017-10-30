@@ -106,9 +106,9 @@ public:
         CGNERuntime();
         virtual ~CGNERuntime();
 
-        common::shared_ptr<lama::Matrix> mTransposedMat;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecZ;
+        std::shared_ptr<lama::Matrix> mTransposedMat;
+        std::shared_ptr<lama::Vector> mVecP;
+        std::shared_ptr<lama::Vector> mVecZ;
 
         lama::Scalar mEps;
     };

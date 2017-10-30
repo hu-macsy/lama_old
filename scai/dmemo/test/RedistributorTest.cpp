@@ -42,6 +42,10 @@
 
 #include <scai/common/test/TestMacros.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 using namespace scai::common;

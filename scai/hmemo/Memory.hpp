@@ -42,7 +42,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
 

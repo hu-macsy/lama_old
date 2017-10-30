@@ -60,8 +60,6 @@ using std::unique_ptr;
 namespace scai
 {
 
-using common::shared_ptr;
-
 namespace dmemo
 {
 

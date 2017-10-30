@@ -45,10 +45,11 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/weak_ptr.hpp>
 
+using  std::shared_ptr;
+
 namespace scai
 {
 
-using  common::shared_ptr;
 using  common::weak_ptr;
 
 namespace hmemo

@@ -140,7 +140,7 @@ static std::vector<scai::common::weak_ptr<class MockContext> > contextInstances(
 
 inline scai::hmemo::ContextPtr MockContext::create( int deviceNr )
 {
-    scai::common::shared_ptr<MockContext> context;
+    std::shared_ptr<MockContext> context;
     SCAI_ASSERT( deviceNr < 6, "number of instances limited" )
 
     // use the last contextInstance if it is still valid
@@ -148,7 +148,7 @@ inline scai::hmemo::ContextPtr MockContext::create( int deviceNr )
     if ( contextInstances[deviceNr].expired() )
     {
         // create a new instance of MockContext and keep it for further uses
-        context = scai::common::shared_ptr<MockContext>( new MockContext( deviceNr ) );
+        context = std::shared_ptr<MockContext>( new MockContext( deviceNr ) );
         contextInstances[deviceNr] = context;
     }
     else

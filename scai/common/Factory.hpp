@@ -36,7 +36,6 @@
 
 // local library
 #include <scai/common/config.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/assert.hpp>

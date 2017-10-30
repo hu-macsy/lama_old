@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
     bool isPartitioned;
     PartitionIO::getPartitionFileName( pLoggerFileName, isPartitioned, comm );
 
-    common::shared_ptr<Timer> timer( new Timer() );
+    std::shared_ptr<Timer> timer( new Timer() );
 
     LoggerPtr slogger( new CommonLogger( "<SimpleAMG>: ", LogLevel::completeInformation, LoggerWriteBehaviour::toFileOnly, pLoggerFileName, timer ) );
     SimpleAMG simpleAMGSolver( "SimpleAMGSolver", slogger );

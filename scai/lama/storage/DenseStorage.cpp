@@ -57,14 +57,18 @@
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+#include <cmath>
+
 
 using std::abs;
 // so we can use abs for float and double and own abs for Complex
 
+using std::shared_ptr;
+
 namespace scai
 {
 
-using common::shared_ptr;
 using common::TypeTraits;
 
 using namespace hmemo;
@@ -902,15 +906,15 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
     // shape(a) = m x k,  shape(b) = k x n
     const DenseStorage<ValueType>* ptrA = &a;
     const DenseStorage<ValueType>* ptrB = &b;
-    common::shared_ptr<DenseStorage<ValueType> > tmpA;
-    common::shared_ptr<DenseStorage<ValueType> > tmpB;
+    std::shared_ptr<DenseStorage<ValueType> > tmpA;
+    std::shared_ptr<DenseStorage<ValueType> > tmpB;
     SCAI_LOG_INFO( logger,
                    "matrixTimesMatrixDense: " << alpha << " * a * b + " << beta << " * c, with a = " << a << ", b = " << b << ", c = " << c )
 
     if ( &a == this )
     {
         SCAI_LOG_INFO( logger, "temporary for A in A * B ( dense storages) needed" )
-        tmpA = common::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
+        tmpA = std::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( a ) );
         ptrA = tmpA.get();
     }
 
@@ -925,7 +929,7 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
         else
         {
             SCAI_LOG_INFO( logger, "temporary for B in A * B ( dense storages) needed" )
-            tmpB = common::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
+            tmpB = std::shared_ptr<DenseStorage<ValueType> >( new DenseStorage<ValueType>( b ) );
             ptrB = tmpB.get();
         }
     }
@@ -1070,7 +1074,7 @@ typename DenseStorage<ValueType>::StorageAbsType DenseStorage<ValueType>::maxDif
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
-    common::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
+    std::shared_ptr<DenseStorage<ValueType> > tmpOtherDense;
     const DenseStorage<ValueType>* otherDense;
 
     if ( other.getValueType() == getValueType() && ( other.getFormat() == Format::DENSE ) )

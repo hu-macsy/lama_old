@@ -327,14 +327,14 @@ static common::weak_ptr<class NoCommunicator> theNoCommunicatorInstance;
 
 CommunicatorPtr NoCommunicator::create()
 {
-    common::shared_ptr<NoCommunicator> communicator;
+    std::shared_ptr<NoCommunicator> communicator;
 
     // use the last communicatorInstance if it is still valid
 
     if ( theNoCommunicatorInstance.expired() )
     {
         // create a new instance of NoCommunicator and keep it for further uses
-        communicator = common::shared_ptr<NoCommunicator>( new NoCommunicator() );
+        communicator = std::shared_ptr<NoCommunicator>( new NoCommunicator() );
         theNoCommunicatorInstance = communicator;
     }
     else

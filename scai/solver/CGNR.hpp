@@ -107,11 +107,11 @@ public:
         CGNRRuntime();
         virtual ~CGNRRuntime();
 
-        common::shared_ptr<lama::Matrix> mTransposedMat;
-        common::shared_ptr<lama::Vector> mVecD;
-        common::shared_ptr<lama::Vector> mVecW;
-        common::shared_ptr<lama::Vector> mVecZ;
-        common::shared_ptr<lama::Vector> mResidual2;
+        std::shared_ptr<lama::Matrix> mTransposedMat;
+        std::shared_ptr<lama::Vector> mVecD;
+        std::shared_ptr<lama::Vector> mVecW;
+        std::shared_ptr<lama::Vector> mVecZ;
+        std::shared_ptr<lama::Vector> mResidual2;
 
         lama::Scalar mEps;
     };

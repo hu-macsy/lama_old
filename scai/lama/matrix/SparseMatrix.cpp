@@ -70,9 +70,12 @@
 
 // std
 #include <cmath>
+#include <memory>
 
 using namespace scai::hmemo;
 using namespace scai::dmemo;
+
+using std::shared_ptr;
 
 namespace scai
 {
@@ -80,7 +83,6 @@ namespace scai
 namespace lama
 {
 
-using common::shared_ptr;
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 using sparsekernel::CSRKernelTrait;
@@ -90,7 +92,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage ) :
+SparseMatrix<ValueType>::SparseMatrix( std::shared_ptr<MatrixStorage<ValueType> > storage ) :
 
     Matrix( storage->getNumRows(), storage->getNumColumns() )
 {
@@ -105,7 +107,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
+SparseMatrix<ValueType>::SparseMatrix( std::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
 
     Matrix(
         rowDist,
@@ -136,7 +138,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
-    common::shared_ptr<MatrixStorage<ValueType> > localData,
+    std::shared_ptr<MatrixStorage<ValueType> > localData,
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
 
@@ -167,8 +169,8 @@ SparseMatrix<ValueType>::SparseMatrix(
 
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
-    common::shared_ptr<MatrixStorage<ValueType> > localData,
-    common::shared_ptr<MatrixStorage<ValueType> > haloData,
+    std::shared_ptr<MatrixStorage<ValueType> > localData,
+    std::shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
@@ -196,8 +198,8 @@ SparseMatrix<ValueType>::SparseMatrix() : Matrix( 0, 0 )
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::set(
-    common::shared_ptr<MatrixStorage<ValueType> > localData,
-    common::shared_ptr<MatrixStorage<ValueType> > haloData,
+    std::shared_ptr<MatrixStorage<ValueType> > localData,
+    std::shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
     DistributionPtr colDist ) 
@@ -594,7 +596,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
     {
         // temporary local storage with joined columns needed before
         bool keepDiagonalProperty = true;
-        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
+        std::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -690,7 +692,7 @@ void SparseMatrix<ValueType>::redistribute( const Redistributor& redistributor, 
         redistribute( getRowDistributionPtr(), repColDistributionPtr );
     }
 
-    common::shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );
+    std::shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );
     newData->redistribute( *mLocalData, redistributor );
     mLocalData = newData;
 
@@ -2135,7 +2137,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const Matrix& other ) const
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        common::shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
+        std::shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
         SparseMatrix<ValueType> typedOther( tmpPtr );
         typedOther.assign( other );
         typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );

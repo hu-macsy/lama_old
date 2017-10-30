@@ -43,8 +43,7 @@
 // local library
 #include <scai/tasking/Task.hpp>
 
-// internal scai libraries
-#include <scai/common/shared_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -88,7 +87,7 @@ public:
 
 private:
 
-    common::shared_ptr<tasking::Task> mTask;
+    std::shared_ptr<tasking::Task> mTask;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };

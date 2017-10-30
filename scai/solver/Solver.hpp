@@ -65,7 +65,7 @@ namespace solver
 {
 
 class Solver;
-typedef common::shared_ptr<Solver> SolverPtr;
+typedef std::shared_ptr<Solver> SolverPtr;
 
 /**
  * @brief Superclass for all solvers.
@@ -235,7 +235,7 @@ public:
         /**
          * @brief The residual.
          */
-        mutable common::shared_ptr<lama::Vector> mResidual;
+        mutable std::shared_ptr<lama::Vector> mResidual;
 
         /**
          * @brief Flag for initialization status of solver.

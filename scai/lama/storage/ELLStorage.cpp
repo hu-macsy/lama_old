@@ -63,11 +63,11 @@
 #include <memory>
 
 using std::unique_ptr;
+using std::shared_ptr;
 
 namespace scai
 {
 
-using common::shared_ptr;
 using tasking::SyncToken;
 
 using utilskernel::LAMAKernel;
@@ -1653,7 +1653,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     SCAI_ASSERT_EQUAL_DEBUG( mNumColumns, haloOldSolution.size() )
     const HArray<ValueType>* localDiagonal;
     // might be we need a temporary LAMA array for the local diagonal
-    common::shared_ptr<HArray<ValueType> > tmpLocalDiagonal;
+    std::shared_ptr<HArray<ValueType> > tmpLocalDiagonal;
 
     if ( localStorage.getFormat() == Format::ELL )
     {
@@ -1666,7 +1666,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
     {
         // make a temporary for the diagonal and get it from local storage
         SCAI_LOG_WARN( logger, "local stroage is not ELL, temorary needed for diagonal" )
-        tmpLocalDiagonal = common::shared_ptr<HArray<ValueType> >( new HArray<ValueType>() );
+        tmpLocalDiagonal = std::shared_ptr<HArray<ValueType> >( new HArray<ValueType>() );
         localStorage.getDiagonal( *tmpLocalDiagonal );
         localDiagonal = tmpLocalDiagonal.get();
         // Note: tmpLocalDiagonal will be freed at end of routine
@@ -1794,8 +1794,8 @@ void ELLStorage<ValueType>::matrixPlusMatrix(
     const ELLStorage<ValueType>* ellA = NULL;
     const ELLStorage<ValueType>* ellB = NULL;
     // Define shared pointers in case we need temporaries
-    common::shared_ptr<ELLStorage<ValueType> > tmpA;
-    common::shared_ptr<ELLStorage<ValueType> > tmpB;
+    std::shared_ptr<ELLStorage<ValueType> > tmpA;
+    std::shared_ptr<ELLStorage<ValueType> > tmpB;
 
     if ( a.getFormat() == Format::ELL )
     {
@@ -1805,7 +1805,7 @@ void ELLStorage<ValueType>::matrixPlusMatrix(
     else
     {
         SCAI_UNSUPPORTED( a << ": will be converted to ELL for matrix add" )
-        tmpA = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( a ) );
+        tmpA = std::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( a ) );
         ellA = tmpA.get();
     }
 
@@ -1817,7 +1817,7 @@ void ELLStorage<ValueType>::matrixPlusMatrix(
     else
     {
         SCAI_UNSUPPORTED( b << ": will be converted to ELL for matrix add" )
-        tmpB = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( b ) );
+        tmpB = std::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( b ) );
         ellB = tmpB.get();
     }
 
@@ -1843,9 +1843,9 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     const ELLStorage<ValueType>* ellA = NULL;
     const ELLStorage<ValueType>* ellB = NULL;
     const ELLStorage<ValueType>* ellC = NULL;
-    //    common::shared_ptr<ELLStorage<ValueType> > tmpA;
-    //    common::shared_ptr<ELLStorage<ValueType> > tmpB;
-    common::shared_ptr<ELLStorage<ValueType> > tmpC;
+    //    std::shared_ptr<ELLStorage<ValueType> > tmpA;
+    //    std::shared_ptr<ELLStorage<ValueType> > tmpB;
+    std::shared_ptr<ELLStorage<ValueType> > tmpC;
 
     if ( a.getFormat() == Format::ELL )
     {
@@ -1884,7 +1884,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         else
         {
             SCAI_UNSUPPORTED( c << ": ELL temporary required for matrix add" )
-            tmpC = common::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( c ) );
+            tmpC = std::shared_ptr<ELLStorage<ValueType> >( new ELLStorage<ValueType>( c ) );
             ellC = tmpC.get();
         }
     }

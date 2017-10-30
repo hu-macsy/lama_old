@@ -47,7 +47,6 @@
 
 // internal scai libraries
 #include <scai/lama/norm/Norm.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <string>
@@ -63,7 +62,7 @@ namespace solver
 class Solver;
 class SolverLogger;
 
-typedef common::shared_ptr<SolverLogger> LoggerPtr;
+typedef std::shared_ptr<SolverLogger> LoggerPtr;
 
 /**
  * @brief A logger abstraction.
@@ -129,7 +128,7 @@ public:
         const std::string& id,
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
-        common::shared_ptr<Timer> timer,
+        std::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -162,7 +161,7 @@ public:
         LogLevel::LogLevel level,
         LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
         const std::string& logFileName,
-        common::shared_ptr<Timer> timer,
+        std::shared_ptr<Timer> timer,
         bool ignoreRank = false );
 
     /**
@@ -298,7 +297,7 @@ protected:
     /**
      * @brief Timer used for timings.
      */
-    common::shared_ptr<Timer> mTimer;
+    std::shared_ptr<Timer> mTimer;
 
     std::string mId;
 

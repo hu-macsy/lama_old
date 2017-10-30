@@ -42,10 +42,13 @@
 
 #include <scai/common/test/Configuration.hpp>
 
+#include <memory>
+
 using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
-using scai::common::shared_ptr;
+
+using std::shared_ptr;
 
 /* --------------------------------------------------------------------- */
 

@@ -45,7 +45,6 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>

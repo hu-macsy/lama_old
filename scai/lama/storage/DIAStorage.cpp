@@ -68,8 +68,6 @@ using std::unique_ptr;
 namespace scai
 {
 
-using common::shared_ptr;
-
 using tasking::SyncToken;
 
 using utilskernel::LAMAKernel;

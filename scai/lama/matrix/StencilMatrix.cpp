@@ -41,12 +41,14 @@
 #include <scai/sparsekernel/openmp/OpenMPStencilKernel.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
-#include <scai/common/shared_ptr.hpp>
+
+#include <memory>
+
+using std::shared_ptr;
 
 namespace scai
 {
 
-using common::shared_ptr;
 using common::Stencil;
 using namespace dmemo;
 
@@ -68,8 +70,8 @@ StencilMatrix<ValueType>::StencilMatrix()
 {
     SCAI_LOG_INFO( logger, "create default stencil matrix" )
 
-    common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>() );
-    common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
+    std::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>() );
+    std::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
 
     haloData->allocate( localData->getNumRows(), 0 );
 
@@ -87,8 +89,8 @@ void StencilMatrix<ValueType>::define( const common::Grid& grid, const Stencil<V
 {
     SCAI_LOG_INFO( logger, "create stencil matrix, grid = " << grid << ", stencil = " << stencil )
 
-    common::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>( grid, stencil ) );
-    common::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
+    std::shared_ptr<MatrixStorage<ValueType> > localData( new StencilStorage<ValueType>( grid, stencil ) );
+    std::shared_ptr<MatrixStorage<ValueType> > haloData( new CSRStorage<ValueType>() );
 
     haloData->allocate( localData->getNumRows(), 0 );
 

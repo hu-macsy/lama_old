@@ -53,7 +53,7 @@ using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
-typedef common::shared_ptr<_DenseVector> DenseVectorPtr;
+typedef std::shared_ptr<_DenseVector> DenseVectorPtr;
 
 static void bench( Matrix& mat )
 {

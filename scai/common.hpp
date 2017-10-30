@@ -56,7 +56,6 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Thread.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Walltime.hpp>

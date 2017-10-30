@@ -64,7 +64,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( CUDAHostMemory::logger, "Memory.CUDAHostMemory" );
 
-CUDAHostMemory::CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext ) :
+CUDAHostMemory::CUDAHostMemory( std::shared_ptr<const CUDAContext> cudaContext ) :
 
     Memory( memtype::CUDAHostMemory ),
     mCUDAContext( cudaContext )

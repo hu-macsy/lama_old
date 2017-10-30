@@ -248,9 +248,9 @@ private:
 
     /** This private routine provides empty XXX storage for a XXXSparseMatrix. */
 
-    common::shared_ptr<MatrixStorage<ValueType> > createStorage();
+    std::shared_ptr<MatrixStorage<ValueType> > createStorage();
 
-    common::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
+    std::shared_ptr<MatrixStorage<ValueType> > createStorage( const IndexType numRows, const IndexType numColumns );
 
     static std::string initTypeName();
 

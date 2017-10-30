@@ -60,10 +60,10 @@
 
 using namespace scai::hmemo;
 
+using std::shared_ptr;
+
 namespace scai
 {
-
-using common::shared_ptr;
 
 using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
@@ -74,7 +74,7 @@ using sparsekernel::JDSKernelTrait;
 
 namespace lama
 {
-// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
+// Allow for shared_ptr<ValueType> instead of std::shared_ptr<ValueType>
 
 
 /* ------------------------------------------------------------------------------------------------------------------ */

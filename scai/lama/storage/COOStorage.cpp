@@ -61,14 +61,14 @@
 
 // sqrt for all value types
 #include <cmath>
+#include <memory>
+
+using std::unique_ptr;
 
 using namespace scai::hmemo;
 
 namespace scai
 {
-
-using std::unique_ptr;
-using common::shared_ptr;
 
 using tasking::SyncToken;
 

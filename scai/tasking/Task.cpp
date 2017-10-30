@@ -51,7 +51,7 @@ namespace tasking
 
 /* ------------------------------------------------------------------------- */
 
-common::shared_ptr<ThreadPool> Task::theThreadPool;
+std::shared_ptr<ThreadPool> Task::theThreadPool;
 
 /* ------------------------------------------------------------------------- */
 

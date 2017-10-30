@@ -44,7 +44,8 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/Thread.hpp>
-#include <scai/common/shared_ptr.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -65,7 +66,7 @@ class COMMON_DLL_IMPORTEXPORT HostMemory: public Memory
 
 public:
 
-    HostMemory( common::shared_ptr<const class HostContext> hostContext );
+    HostMemory( std::shared_ptr<const class HostContext> hostContext );
 
     virtual ~HostMemory();
 
@@ -91,7 +92,7 @@ public:
 
 private:
 
-    common::shared_ptr<const HostContext> mHostContextPtr;
+    std::shared_ptr<const HostContext> mHostContextPtr;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 

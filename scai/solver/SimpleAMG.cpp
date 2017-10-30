@@ -287,7 +287,7 @@ void SimpleAMG::cycle()
     SimpleAMGRuntime& runtime = getRuntime();
     SCAI_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
     // dereferences to current level solution + rhs
-    common::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
+    std::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
     const Vector* curRhsPtr = runtime.mRhs;
     Vector* curSolutionPtr = 0;
 

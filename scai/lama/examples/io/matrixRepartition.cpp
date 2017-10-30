@@ -39,12 +39,13 @@
 #include <scai/lama/io/PartitionIO.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Communicator.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
+
+#include <memory>
 
 using namespace std;
 
@@ -55,7 +56,7 @@ using namespace lama;
 
 /** Define StoragePtr as shared pointer to any storage */
 
-typedef common::shared_ptr<_MatrixStorage> StoragePtr;
+typedef std::shared_ptr<_MatrixStorage> StoragePtr;
 
 static common::scalar::ScalarType getType()
 {

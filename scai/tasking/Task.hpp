@@ -47,7 +47,8 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/function.hpp>
-#include <scai/common/shared_ptr.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -133,11 +134,11 @@ private:
 
     /** Thread pool will be allocated on need, shared pointer guarantees deallocation. */
 
-    static common::shared_ptr<ThreadPool> theThreadPool;
+    static std::shared_ptr<ThreadPool> theThreadPool;
 
     static ThreadPool& getThreadPool();
 
-    common::shared_ptr<ThreadPoolTask> mTask;
+    std::shared_ptr<ThreadPoolTask> mTask;
 };
 
 } /* end namespace tasking */

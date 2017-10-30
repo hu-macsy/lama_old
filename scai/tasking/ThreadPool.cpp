@@ -42,11 +42,14 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
 using common::Thread;
-using common::shared_ptr;
 using common::function;
 
 namespace tasking

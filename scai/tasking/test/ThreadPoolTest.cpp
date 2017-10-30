@@ -43,6 +43,8 @@
 using namespace scai::common;
 using namespace scai::tasking;
 
+using std::shared_ptr;
+
 /** Maximal number of threads in the pool. */
 
 #define POOL_SIZES { 1, 2, 3 }

@@ -73,7 +73,7 @@ SolverLogger::SolverLogger(
     const std::string& id,
     LogLevel::LogLevel level,
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
-    common::shared_ptr<Timer> timer,
+    std::shared_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
         ignoreRank )
@@ -87,7 +87,7 @@ SolverLogger::SolverLogger(
     LogLevel::LogLevel level,
     LoggerWriteBehaviour::LoggerWriteBehaviour writeBehaviour,
     const std::string& logFileName,
-    common::shared_ptr<Timer> timer,
+    std::shared_ptr<Timer> timer,
     bool ignoreRank )
     : mTimer( timer ), mId( id ), mLogLevel( level ), mWriteBehaviour( writeBehaviour ), mIgnoreRank(
         ignoreRank )

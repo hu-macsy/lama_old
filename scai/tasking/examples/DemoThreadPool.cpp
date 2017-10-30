@@ -38,6 +38,10 @@
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 using namespace scai::common;
 using namespace scai::tasking;
 

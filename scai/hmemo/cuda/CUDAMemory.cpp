@@ -72,7 +72,7 @@ SCAI_LOG_DEF_LOGGER( CUDAMemory::logger, "Memory.CUDAMemory" )
 
 /**  constructor  *********************************************************/
 
-CUDAMemory::CUDAMemory( common::shared_ptr<const CUDAContext> cudaContext )
+CUDAMemory::CUDAMemory( std::shared_ptr<const CUDAContext> cudaContext )
 
     : Memory( memtype::CUDAMemory ),
       mCUDAContext( cudaContext )

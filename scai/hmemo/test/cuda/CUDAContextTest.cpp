@@ -44,9 +44,10 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
+
+#include <memory>
 
 using namespace scai;
 
@@ -174,8 +175,8 @@ BOOST_AUTO_TEST_CASE( asyncTest )
     const float value = 1.4;
     const float alpha = 0.5;
     HArray<float> vector( n, value );
-    common::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
-    common::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
+    std::shared_ptr<WriteAccess<float> > cudaV( new WriteAccess<float>( vector, cudaContext ) );
+    std::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
     {
         SCAI_CONTEXT_ACCESS( cudaContext )
         scal( n, alpha, cudaV->get(), 1, token.get() );
@@ -204,7 +205,7 @@ BOOST_AUTO_TEST_CASE( syncTest )
     {
         WriteAccess<float> cudaV( vector, cudaContext );
         SCAI_CONTEXT_ACCESS( cudaContext );
-        common::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
+        std::shared_ptr<SyncToken> token( cudaContext->getSyncToken() );
         scal( n, alpha, cudaV.get(), 1, token.get() );
         // synchronize on token at end of this scope
     }

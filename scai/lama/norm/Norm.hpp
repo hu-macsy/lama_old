@@ -52,7 +52,7 @@ namespace lama
 
 class Norm;
 
-typedef common::shared_ptr<Norm> NormPtr;
+typedef std::shared_ptr<Norm> NormPtr;
 
 /**
  * @brief Norm is a abstract functor to calculate the norms for the passed values.

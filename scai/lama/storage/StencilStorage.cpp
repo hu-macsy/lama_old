@@ -66,6 +66,8 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
 namespace scai
 {
 
@@ -75,7 +77,7 @@ using namespace utilskernel;
 using namespace tasking;
 
 using std::unique_ptr;
-using common::shared_ptr;
+using std::shared_ptr;
 using common::TypeTraits;
 using common::binary;
 using common::Grid;

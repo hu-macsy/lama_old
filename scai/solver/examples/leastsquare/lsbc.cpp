@@ -317,7 +317,7 @@ void computeSearchDirection(
     diagonalMatrix.setIdentity( diagonal.getDistributionPtr() );
     diagonalMatrix.setDiagonal( diagonal );
 
-    common::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
+    std::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
     preconditioner->initialize( diagonalMatrix );
 
     // Do it with CG

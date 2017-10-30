@@ -64,7 +64,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
-HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) :
+HostMemory::HostMemory( std::shared_ptr<const HostContext> hostContextPtr ) :
 
     Memory( memtype::HostMemory ),
     mHostContextPtr( hostContextPtr )
@@ -150,13 +150,13 @@ ContextPtr HostMemory::getContextPtr() const
 
 MemoryPtr HostMemory::getIt()
 {
-    static common::shared_ptr<HostMemory> instancePtr;
+    static std::shared_ptr<HostMemory> instancePtr;
 
     if ( !instancePtr.get() )
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" )
         ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
-        common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
+        std::shared_ptr<const HostContext> hostContextPtr = std::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );
     }

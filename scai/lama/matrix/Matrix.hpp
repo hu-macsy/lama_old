@@ -69,7 +69,7 @@ namespace lama
 
 /** Pointer class for a matrix, always use of a shared pointer. */
 
-typedef common::shared_ptr<class Matrix> MatrixPtr;
+typedef std::shared_ptr<class Matrix> MatrixPtr;
 
 
 /** Key type used for the Matrix factory.

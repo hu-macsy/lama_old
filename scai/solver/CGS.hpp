@@ -100,14 +100,14 @@ public:
         CGSRuntime();
         virtual ~CGSRuntime();
 
-        common::shared_ptr<lama::Vector> mRes0;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecQ;
-        common::shared_ptr<lama::Vector> mVecU;
-        common::shared_ptr<lama::Vector> mVecT;
-        common::shared_ptr<lama::Vector> mVecPT;
-        common::shared_ptr<lama::Vector> mVecUT;
-        common::shared_ptr<lama::Vector> mVecTemp;
+        std::shared_ptr<lama::Vector> mRes0;
+        std::shared_ptr<lama::Vector> mVecP;
+        std::shared_ptr<lama::Vector> mVecQ;
+        std::shared_ptr<lama::Vector> mVecU;
+        std::shared_ptr<lama::Vector> mVecT;
+        std::shared_ptr<lama::Vector> mVecPT;
+        std::shared_ptr<lama::Vector> mVecUT;
+        std::shared_ptr<lama::Vector> mVecTemp;
 
         lama::Scalar mEps;
         lama::Scalar mNormRes;

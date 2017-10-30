@@ -249,8 +249,8 @@ int main( int argc, const char* argv[] )
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
 
     // use vector of outDataType so no information is lost
-    common::shared_ptr<Matrix> matrix;
-    common::shared_ptr<_DenseVector> v ( _DenseVector::create( options.outDataType ) );
+    std::shared_ptr<Matrix> matrix;
+    std::shared_ptr<_DenseVector> v ( _DenseVector::create( options.outDataType ) );
 
     if ( options.matFileName != "" )
     {
@@ -286,7 +286,7 @@ int main( int argc, const char* argv[] )
 
     if ( matrix.get() )
     {
-        common::shared_ptr<_DenseVector> rhs ( _DenseVector::create( options.outDataType ) );
+        std::shared_ptr<_DenseVector> rhs ( _DenseVector::create( options.outDataType ) );
         *rhs = *matrix * *v;
         v = rhs;
         cout << "Vector now rhs of multiplication with matrix: " << *v << endl;

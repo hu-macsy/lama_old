@@ -78,7 +78,7 @@ public:
     /**
      * @brief Constructor for the CUDA memory management.
      */
-    CUDAMemory( common::shared_ptr<const class CUDAContext> cudaContext );
+    CUDAMemory( std::shared_ptr<const class CUDAContext> cudaContext );
 
     /**
      * @brief The destructor destroys this CUDA device, and frees the initialized
@@ -122,7 +122,7 @@ private:
 
     bool canCopyCUDA( const CUDAMemory& other ) const;
 
-    common::shared_ptr<const CUDAContext> mCUDAContext;
+    std::shared_ptr<const CUDAContext> mCUDAContext;
 
     void memcpyFromHost( void* dst, const void* src, const size_t size ) const;
     void memcpyToHost( void* dst, const void* src, const size_t size ) const;

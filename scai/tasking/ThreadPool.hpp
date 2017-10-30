@@ -41,7 +41,6 @@
 #include <scai/common/Thread.hpp>
 #include <scai/common/NonCopyable.hpp>
 #include <scai/common/function.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <climits>
@@ -87,7 +86,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadPoolTask
 
     /** Create a new task as a shared pointer */
 
-    static common::shared_ptr<ThreadPoolTask> create(
+    static std::shared_ptr<ThreadPoolTask> create(
         common::function<void()> work,
         unsigned int taskId,
         int numOmpThreads = 0 );
@@ -125,11 +124,11 @@ public:
      *  @return shared pointer for the task
      */
 
-    common::shared_ptr<ThreadPoolTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
+    std::shared_ptr<ThreadPoolTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
 
     /** Wait on completion of a task. */
 
-    void wait( common::shared_ptr<ThreadPoolTask> task );
+    void wait( std::shared_ptr<ThreadPoolTask> task );
 
     /** Wait on completion of all scheduled tasks */
 
@@ -164,7 +163,7 @@ private:
     std::unique_ptr<common::Thread[]> mThreads;    // worker threads of this pool
     std::unique_ptr<ThreadData[]> mThreadArgs;     // arguments for each worker thread
 
-    std::queue<common::shared_ptr<ThreadPoolTask> > mTaskQueue;
+    std::queue<std::shared_ptr<ThreadPoolTask> > mTaskQueue;
 
     common::Thread::Condition mNotifyFinished;// notify about finished tasks
     common::Thread::Condition mNotifyTask;// notify about new task

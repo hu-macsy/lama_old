@@ -37,10 +37,11 @@
 
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/weak_ptr.hpp>
 
+#include <memory>
 
+using std::shared_ptr;
 
 using namespace scai;
 using namespace common;

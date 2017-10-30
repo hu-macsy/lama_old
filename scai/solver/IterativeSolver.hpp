@@ -53,7 +53,7 @@ namespace solver
 {
 
 class IterativeSolver;
-typedef common::shared_ptr<IterativeSolver> IterativeSolverPtr;
+typedef std::shared_ptr<IterativeSolver> IterativeSolverPtr;
 
 /**
  * @brief Uses iterative methods to solve the equation system.

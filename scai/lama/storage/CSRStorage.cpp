@@ -67,6 +67,10 @@
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
@@ -75,7 +79,6 @@ using namespace dmemo;
 using namespace utilskernel;
 
 using std::unique_ptr;
-using common::shared_ptr;
 using common::TypeTraits;
 using common::binary;
 
@@ -2138,8 +2141,8 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     const CSRStorage<ValueType>* csrA = NULL;
     const CSRStorage<ValueType>* csrB = NULL;
     // Define shared pointers in case we need temporaries
-    common::shared_ptr<CSRStorage<ValueType> > tmpA;
-    common::shared_ptr<CSRStorage<ValueType> > tmpB;
+    std::shared_ptr<CSRStorage<ValueType> > tmpA;
+    std::shared_ptr<CSRStorage<ValueType> > tmpB;
 
     if ( a.getFormat() == Format::CSR )
     {
@@ -2149,7 +2152,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     else
     {
         SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix add" )
-        tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
+        tmpA = std::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
 
@@ -2161,7 +2164,7 @@ void CSRStorage<ValueType>::matrixPlusMatrix(
     else
     {
         SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix add" )
-        tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
+        tmpB = std::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
 
@@ -2188,9 +2191,9 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     const CSRStorage<ValueType>* csrB = NULL;
     const CSRStorage<ValueType>* csrC = NULL;
     // Define two shared pointers in case we need temporaries
-    common::shared_ptr<CSRStorage<ValueType> > tmpA;
-    common::shared_ptr<CSRStorage<ValueType> > tmpB;
-    common::shared_ptr<CSRStorage<ValueType> > tmpC;
+    std::shared_ptr<CSRStorage<ValueType> > tmpA;
+    std::shared_ptr<CSRStorage<ValueType> > tmpB;
+    std::shared_ptr<CSRStorage<ValueType> > tmpC;
 
     if ( a.getFormat() == Format::CSR )
     {
@@ -2200,7 +2203,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     else
     {
         SCAI_UNSUPPORTED( a << ": will be converted to CSR for matrix multiply" )
-        tmpA = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
+        tmpA = std::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( a ) );
         csrA = tmpA.get();
     }
 
@@ -2212,7 +2215,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     else
     {
         SCAI_UNSUPPORTED( b << ": will be converted to CSR for matrix multiply" )
-        tmpB = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
+        tmpB = std::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( b ) );
         csrB = tmpB.get();
     }
 
@@ -2227,7 +2230,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         else
         {
             SCAI_UNSUPPORTED( c << ": CSR temporary required for matrix add" )
-            tmpC = common::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( c ) );
+            tmpC = std::shared_ptr<CSRStorage<ValueType> >( new CSRStorage<ValueType>( c ) );
             csrC = tmpC.get();
         }
     }
@@ -2478,7 +2481,7 @@ typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxDiffNor
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
     SCAI_LOG_INFO( logger, *this << ": maxDiffNorm( " << other << " )" )
-    common::shared_ptr<CSRStorage<ValueType> > tmpOtherCSR;
+    std::shared_ptr<CSRStorage<ValueType> > tmpOtherCSR;
     const CSRStorage<ValueType>* otherCSR;
 
     if ( other.getValueType() == this->getValueType() && ( other.getFormat() == Format::CSR ) )

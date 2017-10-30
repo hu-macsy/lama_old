@@ -57,7 +57,7 @@ namespace scai
 namespace partitioning
 {
 
-typedef common::shared_ptr<const class Partitioning> PartitioningPtr;
+typedef std::shared_ptr<const class Partitioning> PartitioningPtr;
 
 /** Abstract base class for partititioners
  *

@@ -38,7 +38,10 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/shared_ptr.hpp>
+
+#include <memory>
+
+using std::shared_ptr;
 
 SCAI_LOG_DEF_LOGGER( logger, "Token" )
 
@@ -61,8 +64,6 @@ void task( int a[], const int b[], const int c[], int N )
 /* --------------------------------------------------------------------- */
 
 using namespace scai::tasking;
-
-using scai::common::shared_ptr;
 
 void simple()
 {
