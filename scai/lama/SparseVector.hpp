@@ -59,80 +59,9 @@ namespace scai
 namespace lama
 {
 
-/**
-* @brief Common base class for all sparse vectors to deal with untyped sparse vectors.
-*
-* A sparse vector is a distributed one-dimensional array where only non-zero values are explicitly stored.
-* This base class provides common methods for typed sparse vectors and allows access to the
-* data via untyped heterogeneous arrays.
-*/
+// forward declaration required as we do not include DenseVector.hpp here
 
-class COMMON_DLL_IMPORTEXPORT _SparseVector :
-
-public Vector
-
-{
-
-public:
-
-/** Implementation of pure method Vector::getVectorKind() */
-
-inline virtual VectorKind getVectorKind() const;
-
-/**
-* @brief get a constant reference to local non-zero values of this Sparse Vector.
-*
-* @return  a constant reference to the local non-zero values of this dense vector.
-*/
-virtual const hmemo::_HArray& getNonZeroValues() const = 0;
-
-virtual const hmemo::HArray<IndexType>& getNonZeroIndexes() const = 0;
-
-/** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
-
-virtual Scalar getZero() const = 0;
-
-/**
-* @brief Implementation of pure method Vector::isConsistent 
-*/
-virtual bool isConsistent() const;
-
-/**
-     * @brief Create a new sparse vector of a certain type 
-     *
-     * @param type is the value type of the vector
-     * @return new allocated SparseVector of the given type 
-     * @throw  common::Exception if no dense vector of this type is registered in factory.
-     */
-
-    static _SparseVector* create( common::scalar::ScalarType type );
-
-    // make operators and methods of Vector visible for _SparseVector
-
-    // make operators and methods of Vector visible for _SparseVector
-
-    using Vector::operator=;
-
-protected:
-
-    // All constructors here just call the corresponing constructors of Vector 
-
-    _SparseVector( const IndexType n );
-
-    _SparseVector( const IndexType n, hmemo::ContextPtr context );
-
-    _SparseVector( const dmemo::DistributionPtr dist );
-
-    _SparseVector( const dmemo::DistributionPtr dist, hmemo::ContextPtr context );
-
-    _SparseVector( const _SparseVector& other );
-
-    _SparseVector( const Vector& other );
-
-    /** Common logger for all types of sparse vectors. */
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-};
+template<typename ValueType> class DenseVector;
 
 /**
  * @brief SparseVector represents a distributed 1D Vector with elements of type ValueType.
@@ -144,8 +73,7 @@ protected:
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseVector:
 
-    public _SparseVector,
-
+    public Vector,
     public Vector::Register<SparseVector<ValueType> >    // register at factory
 
 {
@@ -319,7 +247,6 @@ public:
 
     explicit SparseVector( const Expression_VV& expression );
 
-
     /**
      *  @brief creates a SparseVector with the Expression alpha * x * Y.
      *
@@ -384,6 +311,15 @@ public:
      */
     virtual ~SparseVector();
 
+    /** Implementation of pure method Vector::getVectorKind() */
+
+    inline virtual VectorKind getVectorKind() const;
+
+    /**
+     * @brief Implementation of pure method Vector::isConsistent 
+     */
+    virtual bool isConsistent() const;
+
     /** Implememenation of pure routine Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
@@ -392,13 +328,25 @@ public:
 
     virtual void allocate( const IndexType n );
 
-    /** Implementation of pure method _SparseVector::getZero */
-
+    /** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
+    
     inline Scalar getZero() const;
 
     /** Override the default assignment operator.  */
 
     SparseVector& operator=( const SparseVector<ValueType>& other );
+
+    /** Implementation of pure method Vector::asign 
+     *
+     *  uses metaprogramming to call assignImpl with actual type and kind
+     */
+    virtual void assign( const Vector& other );
+
+    template<typename OtherValueType>
+    void assignImpl( const SparseVector<OtherValueType>& other );
+
+    template<typename OtherValueType>
+    void assignImpl( const DenseVector<OtherValueType>& other );
 
     // All other assignment operators are inherited from class Vector, but using is required
 
@@ -598,15 +546,13 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
-protected:
+private:
 
     using Vector::mContext;
 
     /** Help routine for binary operation of two sparse vectors */
 
-    void binOpSparse( const _SparseVector& other, const common::binary::BinaryOp op, bool swapArgs );
-
-private:
+    void binOpSparse( const SparseVector<ValueType>& other, const common::binary::BinaryOp op, bool swapArgs );
 
     utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
     utilskernel::LArray<ValueType> mNonZeroValues;   //!< my local non-zero values
@@ -660,7 +606,7 @@ SparseVector<ValueType>::SparseVector(
     const OtherValueType zeroValue,
     hmemo::ContextPtr context ) :
 
-    _SparseVector( size, context )
+    Vector( size, context )
 
 {
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
@@ -690,7 +636,8 @@ void SparseVector<ValueType>::setSparseValues(
     fillSparseData( indexes, values, common::binary::COPY );
 }
 
-Vector::VectorKind _SparseVector::getVectorKind() const
+template<typename ValueType>
+Vector::VectorKind SparseVector<ValueType>::getVectorKind() const
 {
     return Vector::SPARSE;
 }

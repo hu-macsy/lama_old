@@ -874,9 +874,15 @@ public:
     /**
      *  @brief Assigns an arbitrary vector to this vector.
      *
-     *  Common implementation for all vectors using virtual methods.
+     *  @param[in] other is any vector
+     *
+     *  This vector inherits the size / distribution from the other vector, but not the context.
+     *  This operation will support all kind of conversions, i.e. type (float, double, .. )
+     *  and kind ( SPARSE, DENSE ) conversions.
+     *
+     *  Each vector class has to implement this pure method.
      */
-    void assign( const Vector& other );
+    virtual void assign( const Vector& other ) = 0;
 
     /**
      *  Assignment to vector by local values and distribution.

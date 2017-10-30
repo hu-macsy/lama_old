@@ -1037,9 +1037,9 @@ public:
      *  This routine might be very helpful for writing linear algebra code that works
      *  for any value type of matrices.
      */
-    _DenseVector* newVector( void ) const
+    Vector* newVector( void ) const
     {
-        _DenseVector* v = _DenseVector::create( getValueType() );
+        Vector* v = Vector::getVector( Vector::DENSE, getValueType() );
         v->setContextPtr( getContextPtr() );
         return v;
     }
@@ -1052,9 +1052,9 @@ public:
      *  Be careful: the vector remains uninitialized.
      */
 
-    _DenseVector* newVector( dmemo::DistributionPtr dist ) const
+    Vector* newVector( dmemo::DistributionPtr dist ) const
     {
-        _DenseVector* v = _DenseVector::create( getValueType() );
+        Vector* v = Vector::getVector( Vector::DENSE, getValueType() );
         v->setContextPtr( getContextPtr() );
         v->allocate( dist );
         return v;

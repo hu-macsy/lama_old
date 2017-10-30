@@ -976,26 +976,26 @@ void SparseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColI
 
     // if col is not a sparse vector use a temporary sparse vector
 
-    if ( col.getVectorKind() != Vector:: SPARSE )
+    if ( col.getVectorKind() != Vector:: SPARSE || col.getValueType() != getValueType() )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex 
                                << ") requires temporary vector for col, kind = " << col.getVectorKind() )
         SparseVector<ValueType> spCol;
         getColumn( spCol, globalColIndex );
-        col.assign( spCol );           // type conversion or sparse/dense conversion
+        col.assign( spCol );                 // does the required conversion or sparse/dense conversion
         return;
     }
 
-    SCAI_ASSERT_DEBUG( dynamic_cast<_SparseVector*>( &col ), "col not _SparseVector" )
+    SCAI_ASSERT_DEBUG( dynamic_cast<SparseVector<ValueType>*>( &col ), "col not SparseVector<" << getValueType() << ">" )
 
-    _SparseVector& spCol = reinterpret_cast<_SparseVector&>( col );
+    SparseVector<ValueType>& spCol = reinterpret_cast<SparseVector<ValueType>&>( col );
 
     spCol.allocate( getRowDistributionPtr() );   // resizes local arrays to 0
 
     // const_cast is safe here as we guarantee consistency with size/distriubiton of spCol
 
     HArray<IndexType>& rowIndexes = const_cast<HArray<IndexType>&>( spCol.getNonZeroIndexes() );
-    _HArray&           rowValues  = const_cast<_HArray&>( spCol.getNonZeroValues() );
+    HArray<ValueType>& rowValues  = const_cast<HArray<ValueType>&>( spCol.getNonZeroValues() );
 
     SCAI_ASSERT_EQ_DEBUG( 0, rowIndexes.size(), "allocate of spCol did not clear" );
     SCAI_ASSERT_EQ_DEBUG( 0, rowValues.size(), "allocate of spCol did not clear" );
@@ -1185,24 +1185,23 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
-        COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
+        COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
     }
 
-    diagonal.allocate( getRowDistributionPtr() );
-
-    if ( diagonal.getVectorKind() == Vector::DENSE )
+    if ( diagonal.getVectorKind() != Vector::DENSE || diagonal.getValueType() != getValueType() )
     {
-        // avoid temporary array by setting dense values directly
+        DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
+        getDiagonal( tmpDiagonal );
+        diagonal.assign( tmpDiagonal );   // does the correct type / kind conversion
+        return;
+    }
 
-        _DenseVector& denseDiagonal = reinterpret_cast<_DenseVector&>( diagonal );
-        mLocalData->getDiagonal( denseDiagonal.getLocalValues() );
-    }
-    else
-    {
-        HArray<ValueType> localDiagonal;
-        mLocalData->getDiagonal( localDiagonal );
-        diagonal.setDenseValues( localDiagonal );
-    }
+    // we can recast it now to dense vector, so we have access to its local values
+
+    DenseVector<ValueType>& denseDiagonal = reinterpret_cast<DenseVector<ValueType>&>( diagonal );
+
+    denseDiagonal.allocate( getRowDistributionPtr() );
+    mLocalData->getDiagonal( denseDiagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1212,30 +1211,25 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
-        COMMON_THROWEXCEPTION( *this << ": set diagonal only supported for row = col distribution." )
+        COMMON_THROWEXCEPTION( "setDiagonal only for square matrices with same row/col distribution" )
     }
 
     if ( getRowDistribution() != diagonal.getDistribution() )
     {
-        COMMON_THROWEXCEPTION( diagonal << ": distribution does not fit row distribution of matrix" )
+        COMMON_THROWEXCEPTION( "diagonal must have same distribution as matrix" )
     }
 
-    switch ( diagonal.getVectorKind() )
+    if ( diagonal.getVectorKind() != Vector::DENSE || diagonal.getValueType() != getValueType() )
     {
-        case Vector::DENSE :
-        {
-            const _DenseVector& denseDiagonal = reinterpret_cast<const _DenseVector&>( diagonal );
-            mLocalData->setDiagonalV( denseDiagonal.getLocalValues() );
-        }
-
-        default:
-        {
-            HArray<ValueType> localDiagonal;
-            diagonal.buildLocalValues( localDiagonal );
-            // localDiagonal has the same value type as LocalData, no virtual call needed.
-            mLocalData->setDiagonalV( localDiagonal );
-        }
+        SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
+        DenseVector<ValueType> tmpDiagonal( diagonal );
+        setDiagonal( tmpDiagonal );
+        return;
     }
+
+    const DenseVector<ValueType>& denseDiagonal = reinterpret_cast<const DenseVector<ValueType>&>( diagonal );
+
+    mLocalData->setDiagonalV( denseDiagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */

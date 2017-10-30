@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/_DenseVector.hpp>
+#include <scai/lama/Vector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -63,6 +63,12 @@ class Redistributor;
 namespace lama
 {
 
+
+// forward declaration required as we do not include DenseVector.hpp here
+
+template<typename ValueType>
+class SparseVector;
+
 /**
  * @brief The template DenseVector represents a distributed 1D Vector with elements of type ValueType.
  *
@@ -71,8 +77,7 @@ namespace lama
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseVector:
 
-    public _DenseVector,
-
+    public Vector,
     public Vector::Register<DenseVector<ValueType> >    // register at factory
 
 {
@@ -294,6 +299,47 @@ public:
      */
     virtual ~DenseVector();
 
+    /* --------------------------------------------------------------------- */
+
+    /** 
+     * @brief Implementation of pure method Vector::getVectorKind() 
+     */
+
+    inline virtual VectorKind getVectorKind() const;
+
+    /**
+     * @brief Implementation of pure method Vector::isConsistent 
+     */
+    virtual bool isConsistent() const;
+
+    /* --------------------------------------------------------------------- */
+
+    /**
+     * @brief allocate a replicated vector and fill it with range values
+     *
+     * @param[in] n becomes the size of the vector
+     * @param[in] startValue value for the first element, $vector[0] = startValue$
+     * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
+     */
+    void setRange( const IndexType n, const Scalar startValue, const Scalar inc )
+    {
+        allocate( n );
+        fillRange( startValue, inc );
+    }
+
+    /**
+     * This method initializes a (distributed) dense vector with a sequence of values
+     *
+     * @param[in] distribution determines global/local size of the vector
+     * @param[in] startValue value for the first elemen
+     * @param[in] inc increment between the element
+     */
+    void setRange( dmemo::DistributionPtr distribution, const Scalar startValue, const Scalar inc )
+    {
+        allocate( distribution );
+        fillRange( startValue, inc );
+    }
+
     /** Implememenation of pure routine Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
@@ -315,6 +361,18 @@ public:
     using Vector::operator=;
     using Vector::assign;
 
+    /** Implementation of pure method Vector::asign 
+     *
+     *  uses metaprogramming to call assignImpl with actual type and kind
+     */
+    virtual void assign( const Vector& other );
+
+    template<typename OtherValueType>
+    void assignImpl( const SparseVector<OtherValueType>& other );
+
+    template<typename OtherValueType>
+    void assignImpl( const DenseVector<OtherValueType>& other );
+
     /**
      * Implementation of pure method Vector::fillRandom 
      */
@@ -324,9 +382,14 @@ public:
 
     virtual void fillSparseRandom( const float fillRate, const IndexType bound );
 
-    /** Implementation of pure method _DenseVector::fillRange */
-
-    virtual void fillRange( const Scalar startValue, const Scalar inc );
+    /**
+     * @brief This method fills/initializes an allocated vector 
+     *
+     * @param[in] startValue value for the first element
+     * @param[in] inc increment between the elements
+     *
+     */
+    void fillRange( const Scalar startValue, const Scalar inc );
 
     /** Implemenation of pure method Vector::cat */
 
@@ -623,6 +686,14 @@ public:
 };
 
 /* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Vector::VectorKind DenseVector<ValueType>::getVectorKind() const
+{
+    return Vector::DENSE;
+}
 
 template<typename ValueType>
 utilskernel::LArray<ValueType>& DenseVector<ValueType>::getLocalValues()

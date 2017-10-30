@@ -710,42 +710,6 @@ Vector& Vector::operator-=( const Expression_SMV& exp )
     return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*   assign operations                                                                    */
-/* ---------------------------------------------------------------------------------------*/
-
-void Vector::assign( const Vector& other )
-{
-    SCAI_LOG_INFO( logger, "assign other = " << other )
-
-    if ( &other == this )
-    {
-        return;
-    }
-
-    allocate( other.getDistributionPtr() );
-
-    switch ( other.getVectorKind() )
-    {
-        case Vector::DENSE:
-        {
-            const _DenseVector& denseOther = reinterpret_cast<const _DenseVector&>( other );
-            setDenseValues( denseOther.getLocalValues() );
-            break;
-        }
-        case Vector::SPARSE:
-        {
-            const _SparseVector& sparseOther = reinterpret_cast<const _SparseVector&>( other );
-            assign( sparseOther.getZero() );
-            fillSparseData( sparseOther.getNonZeroIndexes(), sparseOther.getNonZeroValues(), common::binary::COPY );
-            break;
-        }
-        default:
-
-            COMMON_THROWEXCEPTION( "illegal vector kind, other = " << other.getVectorKind() )
-    }
-}
-
 void Vector::assign( const _HArray& localValues, DistributionPtr dist )
 {
     SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "Mismatch local size of vecotr" )

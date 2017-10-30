@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
             break;
         }
 
-        _DenseVector& dV1 = reinterpret_cast<_DenseVector&>( *v1 );
+        Vector& dV1 = *v1;
 
         if ( ! common::isNumeric( v1->getValueType() ) )
         {
@@ -472,7 +472,9 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
         {
             dmemo::DistributionPtr dist = dists[j];
 
-            dV1.setRange( dist, 3, 2 );   // only supported for dense vectors
+            IndexType bound = 5;   // random values between 0 and 5
+
+            dV1.setRandom( dist, bound );  
 
             MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
