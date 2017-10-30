@@ -46,6 +46,10 @@
 #include <scai/common/bind.hpp>
 #include <scai/common/macros/loop.hpp>
 
+#include <functional>
+
+using std::function;
+
 namespace scai
 {
 

@@ -44,6 +44,7 @@
 #include <scai/tasking/Task.hpp>
 
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -60,14 +61,14 @@ public:
     /** This constructor starts a routine as a Task and
      *  gives the SyncToken to wait on the completion.
      */
-    TaskSyncToken( common::function<void()> routine, int numOmpThreads = 0 );
+    TaskSyncToken( std::function<void()> routine, int numOmpThreads = 0 );
 
     /** This constructor starts a function as a Task and
      *  gives the SyncToken to wait on the completion.
      */
     TaskSyncToken();
 
-    virtual void run( common::function<void()> function, int numOmpThreads = 0 );
+    virtual void run( std::function<void()> function, int numOmpThreads = 0 );
 
     virtual ~TaskSyncToken();
 

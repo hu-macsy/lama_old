@@ -40,6 +40,7 @@
 #include <scai/common/macros/throw.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::shared_ptr;
 
@@ -53,7 +54,7 @@ namespace tasking
 
 SCAI_LOG_DEF_LOGGER( TaskSyncToken::logger, "SyncToken.TaskSyncToken" )
 
-TaskSyncToken::TaskSyncToken( common::function<void()> routine, int numOmpThreads ) :
+TaskSyncToken::TaskSyncToken( std::function<void()> routine, int numOmpThreads ) :
 
     mTask( new Task( routine, numOmpThreads ) )
 
@@ -67,7 +68,7 @@ TaskSyncToken::TaskSyncToken()
     // empty task token
 }
 
-void TaskSyncToken::run( common::function<void()> routine, int numOmpThreads /* = 0 */ )
+void TaskSyncToken::run( std::function<void()> routine, int numOmpThreads /* = 0 */ )
 {
     mTask = shared_ptr<Task>( new Task( routine, numOmpThreads ) );
     SCAI_LOG_DEBUG( logger, "Thread " << *mTask << " with routine started." )

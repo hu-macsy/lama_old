@@ -42,6 +42,8 @@
 #include <scai/hmemo/WriteOnlyAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>
 
+#include <functional>
+
 using namespace boost;
 using namespace scai;
 using namespace scai::hmemo;
@@ -222,7 +224,7 @@ BOOST_AUTO_TEST_CASE( delayedReleaseTest )
     {
         ReadAccess<double> read( X, hostContext );
     }
-    common::function<void()> delay;
+    std::function<void()> delay;
     // write access on test context, but delay the release
     {
         WriteAccess<double> write( X, testContext );

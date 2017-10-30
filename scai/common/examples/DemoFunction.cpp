@@ -32,10 +32,10 @@
  * @date 25.01.2016
  */
 
-#include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
 
 #include <iostream>
+#include <functional>
 
 int f ( double x, int p )
 {
@@ -50,6 +50,7 @@ int f ( double x, int p )
 }
 
 using namespace scai::common;
+using std::function;
 
 int main()
 {

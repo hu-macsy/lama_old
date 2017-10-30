@@ -42,7 +42,6 @@
 #include <scai/common/Printable.hpp>
 
 // internal scai library
-#include <scai/common/function.hpp>
 #include <scai/common/Thread.hpp>
 
 #include <scai/logging.hpp>
@@ -50,6 +49,7 @@
 // std
 #include <vector>
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -142,7 +142,7 @@ public:
 
     /** Add a routine to be called after synchronization. */
 
-    void pushRoutine( common::function<void()> routine );
+    void pushRoutine( std::function<void()> routine );
 
     /**
      *  Set this SyncToken as the current one of this thread.
@@ -216,7 +216,7 @@ private:
 
     bool mSynchronized;  //!< if true the token has already been synchronized.
 
-    std::vector< common::function<void()> > mSynchronizedFunctions;
+    std::vector< std::function<void()> > mSynchronizedFunctions;
 
 public:
 

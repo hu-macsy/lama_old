@@ -48,8 +48,9 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
+
+#include <functional>
 
 namespace scai
 {
@@ -195,7 +196,7 @@ public:
      * locked even if the ~WriteAccess has been called.
      */
 
-    common::function<void()> releaseDelayed();
+    std::function<void()> releaseDelayed();
 
     /**
      * @brief Override method of base class Printable
@@ -383,7 +384,7 @@ void WriteAccess<ValueType>::release()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::function<void()> WriteAccess<ValueType>::releaseDelayed()
+std::function<void()> WriteAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
     void ( _HArray::*releaseAccess ) ( ContextDataIndex ) = &_HArray::releaseWriteAccess;

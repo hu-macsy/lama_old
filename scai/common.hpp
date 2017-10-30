@@ -47,7 +47,6 @@
 #include <scai/common/ContextType.hpp>
 #include <scai/common/Factory1.hpp>
 #include <scai/common/Factory.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/LibModule.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/NonCopyable.hpp>

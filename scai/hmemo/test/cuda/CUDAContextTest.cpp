@@ -44,10 +44,12 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAAccess.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
 
 #include <memory>
+#include <functional>
+
+using std::function;
 
 using namespace scai;
 

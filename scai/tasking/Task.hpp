@@ -46,9 +46,8 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/function.hpp>
-
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -72,7 +71,7 @@ namespace tasking
  * void bar( Vector& y, const Matrix& A, const Scalar alpha, const Vector& x)
  * {
  *     //construct function pointer
- *     common::function<void()> function = common::bind( foo, common::ref(y), alpha, common::cref(A), common::cref(x) );
+ *     std::function<void()> function = common::bind( foo, common::ref(y), alpha, common::cref(A), common::cref(x) );
  *
  *     //start asynchronous tasks
  *     Task task( function );
@@ -100,9 +99,9 @@ public:
      *  @param[in] numOmpThreads number of openmp threads the task should use
      *                           (if numOmpThreads == 0 omp_get_max_threads() is used)
      *
-     *  By using common::function, it is possible to bind arguments via common::bind.
+     *  By using std::function, it is possible to bind arguments via common::bind.
      */
-    Task( common::function<void()> function, int numOmpThreads = 0 );
+    Task( std::function<void()> function, int numOmpThreads = 0 );
 
     /**
      *  Destructor. Implicitly synchronizes the Task.

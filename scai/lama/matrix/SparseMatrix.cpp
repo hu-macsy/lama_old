@@ -71,11 +71,13 @@
 // std
 #include <cmath>
 #include <memory>
+#include <functional>
 
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
 using std::shared_ptr;
+using std::function;
 
 namespace scai
 {
@@ -1678,12 +1680,12 @@ void SparseMatrix<ValueType>::haloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
-    common::function <
+    std::function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localF,
-    common::function <
+    std::function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
@@ -1751,12 +1753,12 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
-    common::function <
+    std::function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localF,
-    common::function <
+    std::function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
@@ -1818,12 +1820,12 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
-    common::function <
+    std::function <
     tasking::SyncToken * (
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localAsyncF,
-    common::function <
+    std::function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,

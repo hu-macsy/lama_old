@@ -40,12 +40,12 @@
 #include <scai/common/config.hpp>
 #include <scai/common/Thread.hpp>
 #include <scai/common/NonCopyable.hpp>
-#include <scai/common/function.hpp>
 
 // std
 #include <climits>
 #include <queue>
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -74,7 +74,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadPoolTask
         FINISHED    //!< Task is terminated, structure still exists
     };
 
-    common::function<void()> mWork;  //!< task function to be executed
+    std::function<void()> mWork;  //!< task function to be executed
 
     volatile TaskState mState; //!< current state of the task
 
@@ -87,7 +87,7 @@ struct COMMON_DLL_IMPORTEXPORT ThreadPoolTask
     /** Create a new task as a shared pointer */
 
     static std::shared_ptr<ThreadPoolTask> create(
-        common::function<void()> work,
+        std::function<void()> work,
         unsigned int taskId,
         int numOmpThreads = 0 );
 };
@@ -124,7 +124,7 @@ public:
      *  @return shared pointer for the task
      */
 
-    std::shared_ptr<ThreadPoolTask> schedule( common::function<void()> work, int numOmpThreads = 0 );
+    std::shared_ptr<ThreadPoolTask> schedule( std::function<void()> work, int numOmpThreads = 0 );
 
     /** Wait on completion of a task. */
 

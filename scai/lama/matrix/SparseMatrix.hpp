@@ -47,7 +47,7 @@
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/function.hpp>
+#include <functional>
 
 namespace scai
 {
@@ -412,12 +412,12 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX ) > localF,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
@@ -441,12 +441,12 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX ) > localF,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
@@ -462,12 +462,12 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function <
+        std::function <
         tasking::SyncToken * (
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX ) > localAsyncF,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,

@@ -44,8 +44,9 @@
 #include <scai/common/config.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/bind.hpp>
+
+#include <functional>
 
 namespace scai
 {
@@ -141,7 +142,7 @@ public:
      *  release done with the destructor.
      */
 
-    common::function<void()> releaseDelayed();
+    std::function<void()> releaseDelayed();
 
     /**
      * @brief Output of this object in a stream.
@@ -233,7 +234,7 @@ void ReadAccess<ValueType>::getValue( ValueType& val, const IndexType pos ) cons
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::function<void()> ReadAccess<ValueType>::releaseDelayed()
+std::function<void()> ReadAccess<ValueType>::releaseDelayed()
 {
     SCAI_ASSERT( mArray, "releaseDelay not possible on released access" )
     void ( _HArray::*releaseAccess ) ( ContextDataIndex ) const = &_HArray::releaseReadAccess;

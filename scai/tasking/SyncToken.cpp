@@ -42,6 +42,7 @@
 #include <scai/common/macros/assert.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::shared_ptr;
 
@@ -123,7 +124,7 @@ void SyncToken::pushToken( shared_ptr<SyncTokenMember> member )
 
 /* ----------------------------------------------------------------------- */
 
-void SyncToken::pushRoutine( common::function<void()> routine )
+void SyncToken::pushRoutine( std::function<void()> routine )
 {
     mSynchronizedFunctions.push_back( routine );
 }

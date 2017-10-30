@@ -47,8 +47,6 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/function.hpp>
-
 #include <stack>
 #include <memory>
 

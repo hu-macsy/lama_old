@@ -45,12 +45,12 @@
 #include <memory>
 
 using std::shared_ptr;
+using std::function;
 
 namespace scai
 {
 
 using common::Thread;
-using common::function;
 
 namespace tasking
 {

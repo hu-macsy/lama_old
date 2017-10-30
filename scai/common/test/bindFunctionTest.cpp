@@ -40,8 +40,11 @@
 #include <scai/common/SCAITypes.hpp>
 
 #include <scai/common/bind.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/test/TestMacros.hpp>
+
+#include <functional>
+
+using std::function;
 
 using namespace scai;
 using namespace common;

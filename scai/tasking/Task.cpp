@@ -42,6 +42,7 @@
 
 // std
 #include <limits>
+#include <functional>
 
 namespace scai
 {
@@ -74,7 +75,7 @@ SCAI_LOG_DEF_LOGGER( Task::logger, "Task" )
 
 /* ------------------------------------------------------------------------- */
 
-Task::Task( common::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
+Task::Task( std::function<void()> taskFunction, int numOmpThreads /* = 0 */ )
 
 {
     SCAI_LOG_DEBUG( logger, "Creating Task" )
