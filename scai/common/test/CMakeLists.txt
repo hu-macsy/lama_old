@@ -47,7 +47,6 @@ set ( CXX_SOURCES
           GridTest
           LibModuleTest
           MathTest
-          ptrTest
           PrintableTest
           ThreadTest  
           TypeListTest
