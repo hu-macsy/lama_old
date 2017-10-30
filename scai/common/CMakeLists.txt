@@ -204,7 +204,6 @@ set ( COMMON_HEADERS
         safer_memcpy
         bind
         function
-        shared_ptr
         weak_ptr
 )
 
@@ -229,9 +228,7 @@ endif ()
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
 #endif (  CXX_SUPPORTS_C11 )
 
-install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
-                ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
-                ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+install ( FILES ${CONFIGURE_DIR}/SCAITypes.hpp
                 ${CONFIGURE_DIR}/Thread.hpp 
           DESTINATION "include/scai/${MODULE_NAME}" )
 
