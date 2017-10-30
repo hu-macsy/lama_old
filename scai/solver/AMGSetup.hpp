@@ -41,7 +41,7 @@
 #include <scai/solver/Solver.hpp>
 
 // internal scai libraries
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/common/Factory.hpp>
 
 namespace scai

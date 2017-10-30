@@ -44,7 +44,7 @@
 // local library
 #include <scai/lama/_Vector.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <scai/solver/SolutionProxy.hpp>
 #include <scai/solver/logger/SolverLogger.hpp>

@@ -32,9 +32,8 @@
  * @date 31.08.2012
  */
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <vector>

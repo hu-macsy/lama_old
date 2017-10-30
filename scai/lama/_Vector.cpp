@@ -46,7 +46,7 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Distribution.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 
 // tracing

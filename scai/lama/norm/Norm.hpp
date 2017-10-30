@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 #include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 

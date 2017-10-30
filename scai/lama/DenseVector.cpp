@@ -38,8 +38,6 @@
 #include <scai/lama/VectorAssemblyAccess.hpp>
 
 // local library
-#include <scai/lama/matrix/Matrix.hpp>
-
 #include <scai/lama/expression/Expression.hpp>
 
 #include <scai/lama/io/FileIO.hpp>

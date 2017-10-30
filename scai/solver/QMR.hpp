@@ -42,7 +42,6 @@
 #include <scai/solver/IterativeSolver.hpp>
 
 // scai internal libraries
-#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 

@@ -38,13 +38,14 @@ scai_project (
 
     CLASSES
 
+        _Matrix
+
         COOSparseMatrix
         CSRSparseMatrix
         DenseMatrix
         DIASparseMatrix
         ELLSparseMatrix
         JDSSparseMatrix
-        Matrix
         SparseMatrix
         StencilMatrix
 

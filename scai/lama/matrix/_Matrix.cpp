@@ -1,5 +1,5 @@
 /**
- * @file Matrix.cpp
+ * @file _Matrix.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,13 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Matrix.cpp
+ * @brief Implementation of methods for all kind of matrices.
  * @author Jiri Kraus
  * @date 22.02.2011
  */
 
 // hpp
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 // local library
 #include <scai/lama/DenseVector.hpp>

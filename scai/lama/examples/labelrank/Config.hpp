@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <scai/hmemo/Context.hpp>
 #include <scai/dmemo/Communicator.hpp>

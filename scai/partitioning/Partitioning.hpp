@@ -44,7 +44,7 @@
 #include <scai/common/Factory.hpp>
 
 #include <scai/dmemo/Distribution.hpp>
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <vector>
 

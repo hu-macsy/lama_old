@@ -42,8 +42,6 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
-
 // std
 #include <limits>
 #include <cstddef>
