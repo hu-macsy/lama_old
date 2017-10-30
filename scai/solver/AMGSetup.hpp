@@ -84,11 +84,11 @@ public:
 
     virtual const lama::Matrix& getInterpolation( const unsigned int level ) = 0;
 
-    virtual lama::Vector& getSolutionVector( const unsigned int level ) = 0;
+    virtual lama::_Vector& getSolutionVector( const unsigned int level ) = 0;
 
-    virtual lama::Vector& getRhsVector( const unsigned int level ) = 0;
+    virtual lama::_Vector& getRhsVector( const unsigned int level ) = 0;
 
-    virtual lama::Vector& getTmpResVector( const unsigned int level ) = 0;
+    virtual lama::_Vector& getTmpResVector( const unsigned int level ) = 0;
 
     virtual std::string getCouplingPredicateInfo() const = 0;
 

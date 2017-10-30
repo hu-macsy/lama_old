@@ -292,7 +292,7 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
  */
 template <typename ValueType>
 void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<ValueType>& source, lama::DenseVector<ValueType>& p,
-                lama::Vector& vX, lama::Vector& vY, lama::Vector& vZ,
+                lama::_Vector& vX, lama::_Vector& vY, lama::_Vector& vZ,
                 lama::Matrix& A, lama::Matrix& B, lama::Matrix& C, lama::Matrix& D, lama::Matrix& E, lama::Matrix& F,
                 lama::Scalar v_factor, lama::Scalar p_factor,
                 IndexType NT, lama::Scalar DH_INV, IndexType source_index, IndexType seismogram_index,
@@ -320,9 +320,9 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         lama::Scalar ynorm = vY.l2Norm();
 
         // create new Vector(Pointer) with same configuration as vZ
-        common::unique_ptr<lama::Vector> helpPtr( vZ.newVector() );
+        common::unique_ptr<lama::_Vector> helpPtr( vZ.newVector() );
         // get Reference of VectorPointer
-        lama::Vector& help = *helpPtr;
+        lama::_Vector& help = *helpPtr;
 
         // pressure update
         help =  DH_INV * D * vZ;

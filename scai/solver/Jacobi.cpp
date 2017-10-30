@@ -53,7 +53,7 @@ using tasking::SyncToken;
 
 using utilskernel::HArrayUtils;
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::DenseVector;
 using lama::Scalar;
 
@@ -141,7 +141,7 @@ void Jacobi::initialize( const Matrix& coefficients )
 //    mPointerOldSolution = &mOldSolution; --> in every solve-call
 }
 
-void Jacobi::solveInit( Vector& solution, const Vector& rhs )
+void Jacobi::solveInit( _Vector& solution, const _Vector& rhs )
 {
     //Check if oldSolution already exists, if not create copy of solution
     if ( !getConstRuntime().mOldSolution.get() )
@@ -217,15 +217,15 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
     }
 
     SCAI_LOG_INFO( logger, "Swap old solution and solution pointer." )
-    Vector* ptr_OldSolution = &( *getRuntime().mProxyOldSolution );
-    Vector* ptr_solution = &( *getRuntime().mSolution );
+    _Vector* ptr_OldSolution = &( *getRuntime().mProxyOldSolution );
+    _Vector* ptr_solution = &( *getRuntime().mSolution );
     getRuntime().mProxyOldSolution = ptr_solution;
     getRuntime().mSolution = ptr_OldSolution;
     //swap end now m_proxOldSolution holds the solution of the last iteration
     //and m_solution will be the output of the current iteration
-    const Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
+    const _Vector& oldSolution = getRuntime().mProxyOldSolution.getConstReference();
 
-    //1. Check if all Vectors are DenseVectors
+    //1. Check if all vectors are dense
     if (  DenseVector<ValueType>::createValue() == oldSolution.getCreateValue()
             && ( *getRuntime().mSolution ).getCreateValue() == oldSolution.getCreateValue()
             && ( *getRuntime().mRhs ).getCreateValue() == oldSolution.getCreateValue() )

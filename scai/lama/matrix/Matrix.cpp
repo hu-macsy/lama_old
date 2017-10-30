@@ -984,10 +984,10 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
     IndexType nCols = getNumColumns();
     SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
     SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
-    VectorCreateKeyType vectorType1( Vector::DENSE, getValueType() );
-    VectorCreateKeyType vectorType2( Vector::DENSE, other.getValueType() );
-    common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
-    common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
+    VectorCreateKeyType vectorType1( _Vector::DENSE, getValueType() );
+    VectorCreateKeyType vectorType2( _Vector::DENSE, other.getValueType() );
+    common::unique_ptr<_Vector> ptrRow1( _Vector::create( vectorType1 ) );
+    common::unique_ptr<_Vector> ptrRow2( _Vector::create( vectorType2 ) );
     Scalar diff( 0 );
 
     // now traverse  all rows

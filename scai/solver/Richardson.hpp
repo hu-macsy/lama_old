@@ -86,7 +86,7 @@ public:
 
     virtual void initialize( const lama::Matrix& coefficients );
 
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -103,8 +103,8 @@ public:
         RichardsonRuntime();
         virtual ~RichardsonRuntime();
 
-        common::unique_ptr<lama::Vector> mOldSolution;
-        common::unique_ptr<lama::Vector> mX;
+        common::unique_ptr<lama::_Vector> mOldSolution;
+        common::unique_ptr<lama::_Vector> mX;
         SolutionProxy mProxyOldSolution;
     };
     /**

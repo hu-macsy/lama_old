@@ -1221,7 +1221,7 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRowLocal( Vector&, const IndexType ) const
+void DenseMatrix<ValueType>::getRowLocal( _Vector&, const IndexType ) const
 {
     COMMON_THROWEXCEPTION( "not available yet" )
 }
@@ -1229,11 +1229,11 @@ void DenseMatrix<ValueType>::getRowLocal( Vector&, const IndexType ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
+void DenseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowIndex ) const
 {
     // if v is not a dense vector or not of same type, use a temporary dense vector
 
-    if ( row.getVectorKind() != Vector:: DENSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != _Vector:: DENSE || row.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "getRow requires temporary" )
         DenseVector<ValueType> denseRow;
@@ -1355,11 +1355,11 @@ void DenseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColIndex ) const
+void DenseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalColIndex ) const
 {
     // if col is not a dense vector, use a temporary dense vector
 
-    if ( col.getVectorKind() != Vector:: DENSE || col.getValueType() != getValueType() )
+    if ( col.getVectorKind() != _Vector:: DENSE || col.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "getCol requires temporary, use DenseVector on DenseMatrix" )
         DenseVector<ValueType> denseColumn;
@@ -1497,14 +1497,14 @@ void DenseMatrix<ValueType>::setLocalColumn(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
+void DenseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
     {
         DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
         getDiagonal( tmpDiagonal );
@@ -1523,7 +1523,7 @@ void DenseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
+void DenseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
@@ -1535,7 +1535,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
         DenseVector<ValueType> tmpDiagonal( diagonal );
@@ -1563,7 +1563,7 @@ void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::reduce(
-    Vector& v, 
+    _Vector& v, 
     const IndexType dim, 
     const common::binary::BinaryOp reduceOp, 
     const common::unary::UnaryOp elemOp ) const
@@ -1655,14 +1655,14 @@ void DenseMatrix<ValueType>::reduce(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::scale( const Vector& vector )
+void DenseMatrix<ValueType>::scale( const _Vector& vector )
 {
     if ( getRowDistribution() != vector.getDistribution() )
     {
         COMMON_THROWEXCEPTION( "scale vector must have same distribution as matrix row distribution" )
     }
 
-    if ( vector.getVectorKind() != Vector::DENSE || vector.getValueType() != getValueType() )
+    if ( vector.getVectorKind() != _Vector::DENSE || vector.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "scale: vector requires temporary" )
         DenseVector<ValueType> tmpVector( vector );

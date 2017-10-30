@@ -99,13 +99,13 @@ public:
         TFQMRRuntime();
         virtual ~TFQMRRuntime();
 
-        common::shared_ptr<lama::Vector> mVecD;
-        common::shared_ptr<lama::Vector> mInitialR;
-        common::shared_ptr<lama::Vector> mVecVEven;
-        common::shared_ptr<lama::Vector> mVecVOdd;
-        common::shared_ptr<lama::Vector> mVecVT;
-        common::shared_ptr<lama::Vector> mVecW;
-        common::shared_ptr<lama::Vector> mVecZ;
+        lama::VectorPtr mVecD;
+        lama::VectorPtr mInitialR;
+        lama::VectorPtr mVecVEven;
+        lama::VectorPtr mVecVOdd;
+        lama::VectorPtr mVecVT;
+        lama::VectorPtr mVecW;
+        lama::VectorPtr mVecZ;
 
         lama::Scalar mEps;
         lama::Scalar mAlpha;
@@ -124,7 +124,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class

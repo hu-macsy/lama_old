@@ -1,5 +1,5 @@
 /**
- * @file Vector.cpp
+ * @file _Vector.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,13 +27,13 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Implementations of methods for class Vector.
+ * @brief Implementations of methods for class _Vector.
  * @author Jiri Kraus
  * @date 22.02.2011
  */
 
 // hpp
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
 // local library
 
@@ -66,11 +66,11 @@ namespace scai
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( Vector::logger, "Vector" )
+SCAI_LOG_DEF_LOGGER( _Vector::logger, "Vector" )
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* _Vector::kind2Str( const VectorKind vectorKind )
+const char* _VectorKind::kind2Str( const VectorKind vectorKind )
 {
     switch ( vectorKind )
     {
@@ -94,7 +94,7 @@ const char* _Vector::kind2Str( const VectorKind vectorKind )
     return "<illegal_vector_kind>";
 }
 
-_Vector::VectorKind _Vector::str2Kind( const char* str )
+_VectorKind::VectorKind _VectorKind::str2Kind( const char* str )
 
 {
     for ( int kind = DENSE; kind < UNDEFINED; ++kind )
@@ -112,7 +112,7 @@ _Vector::VectorKind _Vector::str2Kind( const char* str )
 /*    VectorKind opertor<<                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind )
+std::ostream& operator<<( std::ostream& stream, const _VectorKind::VectorKind& kind )
 {
     stream << _Vector::kind2Str( kind );
     return stream;
@@ -122,19 +122,19 @@ std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind 
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorKind kind, const common::scalar::ScalarType valueType )
+_Vector* _Vector::getVector( const VectorKind kind, const common::scalar::ScalarType valueType )
 {
     VectorCreateKeyType vectype( kind, valueType );
-    return Vector::create( vectype );
+    return _Vector::create( vectype );
 }
 
-Vector* Vector::getDenseVector(
+_Vector* _Vector::getDenseVector(
     const common::scalar::ScalarType valueType,
     DistributionPtr distribution,
     ContextPtr context )
 {
-    VectorCreateKeyType vectype( Vector::DENSE, valueType );
-    Vector* v = Vector::create( vectype );
+    VectorCreateKeyType vectype( _Vector::DENSE, valueType );
+    _Vector* v = _Vector::create( vectype );
     v->allocate( distribution );
 
     if ( context )
@@ -149,7 +149,7 @@ Vector* Vector::getDenseVector(
 /*    Constructor / Destructor                                                            */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
+_Vector::_Vector( const IndexType size, hmemo::ContextPtr context ) :
 
     Distributed( DistributionPtr( new NoDistribution( size ) ) ),
     mContext( context )
@@ -162,7 +162,7 @@ Vector::Vector( const IndexType size, hmemo::ContextPtr context ) :
     SCAI_LOG_INFO( logger, "Vector(" << size << "), replicated, on " << *mContext )
 }
 
-Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
+_Vector::_Vector( DistributionPtr distribution, hmemo::ContextPtr context )
     : Distributed( distribution ), mContext( context )
 {
     if ( !mContext )
@@ -171,26 +171,26 @@ Vector::Vector( DistributionPtr distribution, hmemo::ContextPtr context )
     }
 
     SCAI_LOG_INFO( logger,
-                   "Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" )
+                   "_Vector(" << distribution->getGlobalSize() << ") with " << getDistribution() << " constructed" )
 }
 
-Vector::Vector( const Vector& other )
+_Vector::_Vector( const _Vector& other )
     : Distributed( other ), mContext( other.getContextPtr() )
 {
     SCAI_ASSERT_ERROR( mContext, "NULL context not allowed" )
-    SCAI_LOG_INFO( logger, "Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
+    SCAI_LOG_INFO( logger, "_Vector(" << other.getDistribution().getGlobalSize() << "), distributed, copied" )
 }
 
-Vector::~Vector()
+_Vector::~_Vector()
 {
-    SCAI_LOG_DEBUG( logger, "~Vector(" << getDistribution().getGlobalSize() << ")" )
+    SCAI_LOG_DEBUG( logger, "~_Vector(" << getDistribution().getGlobalSize() << ")" )
 }
 
 /* ---------------------------------------------------------------------------------------*/
 /*    Reading vector from a file, only host reads                                         */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::readFromSingleFile( const std::string& fileName )
+void _Vector::readFromSingleFile( const std::string& fileName )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -226,7 +226,7 @@ void Vector::readFromSingleFile( const std::string& fileName )
 /*    Reading vector from a file, every processor reads its partition                     */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
+void _Vector::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
 {
     if ( distribution.get() == NULL )
     {
@@ -282,7 +282,7 @@ void Vector::readFromSingleFile( const std::string& fileName, const Distribution
 
 /* ---------------------------------------------------------------------------------*/
 
-void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
+void _Vector::readFromPartitionedFile( const std::string& myPartitionFileName, DistributionPtr dist )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -330,7 +330,7 @@ void Vector::readFromPartitionedFile( const std::string& myPartitionFileName, Di
 
 /* ---------------------------------------------------------------------------------*/
 
-void Vector::readFromFile( const std::string& vectorFileName, const std::string& distributionFileName )
+void _Vector::readFromFile( const std::string& vectorFileName, const std::string& distributionFileName )
 {
     // read the distribution
 
@@ -370,7 +370,7 @@ void Vector::readFromFile( const std::string& vectorFileName, const std::string&
 
 /* ---------------------------------------------------------------------------------*/
 
-void Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
+void _Vector::readFromFile( const std::string& fileName, DistributionPtr distribution )
 {
     SCAI_LOG_INFO( logger, *this << ": readFromFile( " << fileName << " )" )
 
@@ -401,7 +401,7 @@ void Vector::readFromFile( const std::string& fileName, DistributionPtr distribu
 /*   setRandom, setSparseRandom                                                           */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound )
+void _Vector::setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound )
 {
     allocate( n );
 
@@ -417,7 +417,7 @@ void Vector::setSparseRandom( const IndexType n, const Scalar& zeroValue, const 
     }
 }
 
-void Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound )
+void _Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound )
 {
     allocate( dist );
 
@@ -437,14 +437,14 @@ void Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroVal
 /*    Assignment operator                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector& Vector::operator=( const Expression_SV_SV& expression )
+_Vector& _Vector::operator=( const Expression_SV_SV& expression )
 {
     SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
 
     const Scalar& alpha = expression.getArg1().getArg1();
     const Scalar& beta  = expression.getArg2().getArg1();
-    const Vector& x = expression.getArg1().getArg2();
-    const Vector& y = expression.getArg2().getArg2();
+    const _Vector& x = expression.getArg1().getArg2();
+    const _Vector& y = expression.getArg2().getArg2();
 
     // Note: all checks are done the vector specific implementations
 
@@ -453,13 +453,13 @@ Vector& Vector::operator=( const Expression_SV_SV& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SMV& expression )
+_Vector& _Vector::operator=( const Expression_SMV& expression )
 {
     SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
     const Scalar beta( 0.0 );
     Expression_SV exp2( beta, *this );
     Expression_SMV_SV tmpExp( expression, exp2 );
-    const Vector& vectorX = expression.getArg2().getArg2();
+    const _Vector& vectorX = expression.getArg2().getArg2();
 
     if ( &vectorX != this )
     {
@@ -476,13 +476,13 @@ Vector& Vector::operator=( const Expression_SMV& expression )
     return operator=( tmpExp );
 }
 
-Vector& Vector::operator=( const Expression_SVM& expression )
+_Vector& _Vector::operator=( const Expression_SVM& expression )
 {
     SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
     const Scalar beta( 0.0 );
     Expression_SV exp2( beta, *this );
     Expression_SVM_SV tmpExp( expression, exp2 );
-    const Vector& vectorX = expression.getArg2().getArg1();
+    const _Vector& vectorX = expression.getArg2().getArg1();
 
     if ( &vectorX != this )
     {
@@ -499,24 +499,24 @@ Vector& Vector::operator=( const Expression_SVM& expression )
     return operator=( tmpExp );
 }
 
-Vector& Vector::operator=( const Expression_SMV_SV& expression )
+_Vector& _Vector::operator=( const Expression_SMV_SV& expression )
 {
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
     const Expression_SMV& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
-    const Expression<Matrix, Vector, Times>& matrixTimesVectorExp = exp1.getArg2();
+    const Expression<Matrix, _Vector, Times>& matrixTimesVectorExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
-    const Vector& vectorY = exp2.getArg2();
+    const _Vector& vectorY = exp2.getArg2();
     const Matrix& matrix = matrixTimesVectorExp.getArg1();
-    const Vector& vectorX = matrixTimesVectorExp.getArg2();
-    Vector* resultPtr = this;
+    const _Vector& vectorX = matrixTimesVectorExp.getArg2();
+    _Vector* resultPtr = this;
     VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( _Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -531,24 +531,24 @@ Vector& Vector::operator=( const Expression_SMV_SV& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SVM_SV& expression )
+_Vector& _Vector::operator=( const Expression_SVM_SV& expression )
 {
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
     const Expression_SVM& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
-    const Expression<Vector, Matrix, Times>& vectorTimesMatrixExp = exp1.getArg2();
+    const Expression<_Vector, Matrix, Times>& vectorTimesMatrixExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
-    const Vector& vectorY = exp2.getArg2();
-    const Vector& vectorX = vectorTimesMatrixExp.getArg1();
+    const _Vector& vectorY = exp2.getArg2();
+    const _Vector& vectorX = vectorTimesMatrixExp.getArg1();
     const Matrix& matrix = vectorTimesMatrixExp.getArg2();
-    Vector* resultPtr = this;
+    _Vector* resultPtr = this;
     VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( _Vector::create( this->getCreateValue() ) );
         resultPtr = tmpResult.get();
     }
 
@@ -563,22 +563,22 @@ Vector& Vector::operator=( const Expression_SVM_SV& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SV& expression )
+_Vector& _Vector::operator=( const Expression_SV& expression )
 {
     const Scalar& alpha = expression.getArg1();
-    const Vector& x = expression.getArg2();
+    const _Vector& x = expression.getArg2();
 
     vectorPlusVector( alpha, x, 0, x );
 
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_VV& expression )
+_Vector& _Vector::operator=( const Expression_VV& expression )
 {
     SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
 
-    const Vector& x = expression.getArg1();
-    const Vector& y = expression.getArg2();
+    const _Vector& x = expression.getArg1();
+    const _Vector& y = expression.getArg2();
 
     Scalar alpha( 1 );
 
@@ -587,31 +587,31 @@ Vector& Vector::operator=( const Expression_VV& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SVV& expression )
+_Vector& _Vector::operator=( const Expression_SVV& expression )
 {
     const Scalar& alpha = expression.getArg1();
 
     const Expression_VV& exp = expression.getArg2();
-    const Vector& x = exp.getArg1();
-    const Vector& y = exp.getArg2();
+    const _Vector& x = exp.getArg1();
+    const _Vector& y = exp.getArg2();
 
     vectorTimesVector( alpha, x, y );
 
     return *this;
 }
 
-Vector& Vector::operator=( const Vector& other )
+_Vector& _Vector::operator=( const _Vector& other )
 {
     assign( other );
 
     return *this;
 }
 
-Vector& Vector::operator=( const Expression_SV_S& expression )
+_Vector& _Vector::operator=( const Expression_SV_S& expression )
 {
     const Expression_SV& exp = expression.getArg1();
     const Scalar& alpha = exp.getArg1();
-    const Vector& x = exp.getArg2();
+    const _Vector& x = exp.getArg2();
     const Scalar& beta = expression.getArg2();
 
     vectorPlusScalar( alpha, x, beta );
@@ -619,7 +619,7 @@ Vector& Vector::operator=( const Expression_SV_S& expression )
     return *this;
 }
 
-Vector& Vector::operator=( const Scalar value )
+_Vector& _Vector::operator=( const Scalar value )
 {
     assign( value );
     return *this;
@@ -629,28 +629,28 @@ Vector& Vector::operator=( const Scalar value )
 /*   Compound assignments *=, /=                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector& Vector::operator*=( const Scalar value )
+_Vector& _Vector::operator*=( const Scalar value )
 {
     bool noSwapArgs = false;
     setScalar( value, common::binary::MULT, noSwapArgs );
     return *this;
 }
 
-Vector& Vector::operator*=( const Vector& other )
+_Vector& _Vector::operator*=( const _Vector& other )
 {
     bool noSwapArgs = false;
     setVector( other, common::binary::MULT, noSwapArgs );
     return *this;
 }
 
-Vector& Vector::operator/=( const Scalar value )
+_Vector& _Vector::operator/=( const Scalar value )
 {
     bool noSwapArgs = false;
     setScalar( value, common::binary::DIVIDE, noSwapArgs );
     return *this;
 }
 
-Vector& Vector::operator/=( const Vector& other )
+_Vector& _Vector::operator/=( const _Vector& other )
 {
     bool noSwapArgs = false;
     setVector( other, common::binary::DIVIDE, noSwapArgs );
@@ -659,58 +659,58 @@ Vector& Vector::operator/=( const Vector& other )
 
 /* ---------------------------------------------------------------------------------------*/
 
-Vector& Vector::operator+=( const Vector& other )
+_Vector& _Vector::operator+=( const _Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Vector& other )
+_Vector& _Vector::operator-=( const _Vector& other )
 {
     return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
 }
 
-Vector& Vector::operator+=( const Scalar value )
+_Vector& _Vector::operator+=( const Scalar value )
 {
     bool noSwapArgs = false;
     setScalar( value, common::binary::ADD, noSwapArgs );
     return *this;
 }
 
-Vector& Vector::operator-=( const Scalar value )
+_Vector& _Vector::operator-=( const Scalar value )
 {
     bool noSwapArgs = false;
     setScalar( value, common::binary::SUB, noSwapArgs );
     return *this;
 }
 
-Vector& Vector::operator+=( const Expression_SV& exp )
+_Vector& _Vector::operator+=( const Expression_SV& exp )
 {
     return operator=( Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Expression_SV& exp )
+_Vector& _Vector::operator-=( const Expression_SV& exp )
 {
     Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
     return operator=( Expression_SV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator+=( const Expression_SMV& expression )
+_Vector& _Vector::operator+=( const Expression_SMV& expression )
 {
     return operator=( Expression_SMV_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator+=( const Expression_SVM& expression )
+_Vector& _Vector::operator+=( const Expression_SVM& expression )
 {
     return operator=( Expression_SVM_SV( expression, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-Vector& Vector::operator-=( const Expression_SMV& exp )
+_Vector& _Vector::operator-=( const Expression_SMV& exp )
 {
     Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
     return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
 
-void Vector::assign( const _HArray& localValues, DistributionPtr dist )
+void _Vector::assign( const _HArray& localValues, DistributionPtr dist )
 {
     SCAI_ASSERT_EQ_ERROR( localValues.size(), dist->getLocalSize(), "Mismatch local size of vecotr" )
 
@@ -718,7 +718,7 @@ void Vector::assign( const _HArray& localValues, DistributionPtr dist )
     setDenseValues( localValues );
 }
 
-void Vector::assign( const _HArray& globalValues )
+void _Vector::assign( const _HArray& globalValues )
 {
     SCAI_LOG_INFO( logger, "assign vector with globalValues = " << globalValues )
 
@@ -730,7 +730,7 @@ void Vector::assign( const _HArray& globalValues )
 /*   writeToFile                                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::writeToSingleFile(
+void _Vector::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::scalar::ScalarType dataType,
@@ -757,7 +757,7 @@ void Vector::writeToSingleFile(
     {
         // writing a distributed vector into a single file requires redistributon
 
-        common::unique_ptr<Vector> repV( copy() );
+        common::unique_ptr<_Vector> repV( copy() );
         repV->replicate();
         repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
     }
@@ -765,9 +765,9 @@ void Vector::writeToSingleFile(
 
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::cat( const Vector& v1, const Vector& v2 )
+void _Vector::cat( const _Vector& v1, const _Vector& v2 )
 {
-    std::vector<const Vector*> vectors;
+    std::vector<const _Vector*> vectors;
 
     vectors.push_back( &v1 );
     vectors.push_back( &v2 );
@@ -781,7 +781,7 @@ void Vector::cat( const Vector& v1, const Vector& v2 )
 
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::replicate()
+void _Vector::replicate()
 {
     if ( getDistribution().isReplicated() )
     {
@@ -793,7 +793,7 @@ void Vector::replicate()
 
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::writeToPartitionedFile(
+void _Vector::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::scalar::ScalarType dataType,
@@ -822,7 +822,7 @@ void Vector::writeToPartitionedFile(
 
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::writeToFile(
+void _Vector::writeToFile(
     const std::string& fileName,
     const std::string& fileType,               /* = "", take IO type by suffix   */
     const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
@@ -855,87 +855,87 @@ void Vector::writeToFile(
 /*   unary operations                                                                     */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::invert()
+void _Vector::invert()
 {
     bool swapArgs = true;
     setScalar( Scalar( 1 ), binary::DIVIDE, swapArgs );
 }
 
-void Vector::powBase( const Vector& other )
+void _Vector::powBase( const _Vector& other )
 {
     bool swapArgs = true;
     setVector( other, common::binary::POW, swapArgs );
 }
 
-void Vector::powExp( const Vector& other )
+void _Vector::powExp( const _Vector& other )
 {
     bool swapArgs = false;
     setVector( other, common::binary::POW, swapArgs );
 }
 
-void Vector::powBase( const Scalar value )
+void _Vector::powBase( const Scalar value )
 {
     bool swapArgs = true;  // this[i] =  value ** this[i] 
     setScalar( value, common::binary::POW, swapArgs );
 }
 
-void Vector::powExp( const Scalar value )
+void _Vector::powExp( const Scalar value )
 {
     bool swapArgs = false;  // this[i] = this[i] ** value
     setScalar( value, common::binary::POW, swapArgs );
 }
 
-void Vector::conj()
+void _Vector::conj()
 {
     applyUnary( common::unary::CONJ );
 }
 
-void Vector::abs()
+void _Vector::abs()
 {
     applyUnary( common::unary::ABS );
 }
 
-void Vector::exp()
+void _Vector::exp()
 {
     applyUnary( common::unary::EXP );
 }
 
-void Vector::sqrt()
+void _Vector::sqrt()
 {
     applyUnary( common::unary::SQRT );
 }
 
-void Vector::sin()
+void _Vector::sin()
 {
     applyUnary( common::unary::SIN );
 }
 
-void Vector::cos()
+void _Vector::cos()
 {
     applyUnary( common::unary::COS );
 }
 
-void Vector::tan()
+void _Vector::tan()
 {
     applyUnary( common::unary::TAN );
 }
 
-void Vector::atan()
+void _Vector::atan()
 {
     applyUnary( common::unary::ATAN );
 }
 
-void Vector::log()
+void _Vector::log()
 {
     applyUnary( common::unary::LOG );
 }
 
-void Vector::floor()
+void _Vector::floor()
 {
     applyUnary( common::unary::FLOOR );
 }
 
-void Vector::ceil()
+void _Vector::ceil()
 {
     applyUnary( common::unary::CEIL );
 }
@@ -944,19 +944,19 @@ void Vector::ceil()
 /*   Miscellaneous                                                                        */
 /* ---------------------------------------------------------------------------------------*/
 
-void Vector::swapVector( Vector& other )
+void _Vector::swapVector( _Vector& other )
 {
     // swaps only on this base class, not whole vectors
     mContext.swap( other.mContext );
     Distributed::swap( other );
 }
 
-void Vector::writeAt( std::ostream& stream ) const
+void _Vector::writeAt( std::ostream& stream ) const
 {
     stream << "Vector(" << getDistributionPtr()->getGlobalSize() << ")";
 }
 
-void Vector::setContextPtr( ContextPtr context )
+void _Vector::setContextPtr( ContextPtr context )
 {
     SCAI_ASSERT_DEBUG( context, "NULL context invalid" )
 
@@ -968,7 +968,7 @@ void Vector::setContextPtr( ContextPtr context )
     mContext = context;
 }
 
-void Vector::prefetch() const
+void _Vector::prefetch() const
 {
     prefetch( mContext );
 }

@@ -164,12 +164,12 @@ int main( int argc, const char* argv[] )
         // use auto pointer so that matrix will be deleted at program exit
 
         scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        scai::common::unique_ptr<_Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
+        scai::common::unique_ptr<_Vector> solutionPtr( rhsPtr->newVector() );
 
         Matrix& matrix   = *matrixPtr;
-        Vector& rhs      = *rhsPtr;
-        Vector& solution = *solutionPtr;
+        _Vector& rhs      = *rhsPtr;
+        _Vector& solution = *solutionPtr;
 
         // input matrix will be CSR format
 
@@ -248,8 +248,8 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
-                Vector& x = *xPtr;
+                scai::common::unique_ptr<_Vector> xPtr( rhs.newVector() );
+                _Vector& x = *xPtr;
 
                 x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
 
@@ -499,8 +499,8 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
-                Vector& compSolution = *compSolutionPtr;
+                scai::common::unique_ptr<_Vector> compSolutionPtr( rhs.newVector() );
+                _Vector& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;

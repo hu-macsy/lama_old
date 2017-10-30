@@ -45,7 +45,7 @@ SolutionProxy::SolutionProxy()
 {
 }
 
-SolutionProxy::SolutionProxy( lama::Vector* const solution )
+SolutionProxy::SolutionProxy( lama::_Vector* const solution )
     : mSolution( solution ), mIsDirty( true )
 {
 }
@@ -54,17 +54,17 @@ SolutionProxy::~SolutionProxy()
 {
 }
 
-const lama::Vector& SolutionProxy::getConstReference() const
+const lama::_Vector& SolutionProxy::getConstReference() const
 {
     return ( *mSolution );
 }
 
-lama::Vector& SolutionProxy::operator*()
+lama::_Vector& SolutionProxy::operator*()
 {
     return getReference();
 }
 
-void SolutionProxy::operator=( lama::Vector* const newVector )
+void SolutionProxy::operator=( lama::_Vector* const newVector )
 {
     setDirty( true );
     mSolution = newVector;
@@ -80,7 +80,7 @@ void SolutionProxy::setDirty( bool isDirty )
     mIsDirty = isDirty;
 }
 
-lama::Vector& SolutionProxy::getReference()
+lama::_Vector& SolutionProxy::getReference()
 {
     setDirty( true );
     return *mSolution;

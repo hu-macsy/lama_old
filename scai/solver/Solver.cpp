@@ -53,7 +53,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( Solver::logger, "Solver" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 Solver::Solver( const std::string& id )
@@ -105,7 +105,7 @@ void Solver::initialize( const Matrix& coefficients )
     mLogger->logMessage( LogLevel::solverInformation, "Solver initialized\n" );
 }
 
-void Solver::solve( Vector& solution, const Vector& rhs )
+void Solver::solve( _Vector& solution, const _Vector& rhs )
 {
     SCAI_REGION( "Solver.solve" )
     SCAI_ASSERT( getConstRuntime().mInitialized, "Solver not initialized, solve cannot be called" )
@@ -120,7 +120,7 @@ void Solver::solve( Vector& solution, const Vector& rhs )
     solveFinalize();
 }
 
-void Solver::solveInit( Vector& solution, const Vector& rhs )
+void Solver::solveInit( _Vector& solution, const _Vector& rhs )
 {
     SolverRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -142,7 +142,7 @@ const std::string& Solver::getId() const
     return mId;
 }
 
-const Vector& Solver::getResidual() const
+const _Vector& Solver::getResidual() const
 {
     const SolverRuntime& runtime = getConstRuntime();
 

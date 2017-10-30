@@ -54,7 +54,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( Kaczmarz::logger, "Solver.IterativeSolver.Kaczmarz" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 Kaczmarz::Kaczmarz( const std::string& id )
@@ -109,11 +109,11 @@ void Kaczmarz::iterate()
 
     const Matrix& A = *runtime.mCoefficients;
 
-    const Vector& b = *runtime.mRhs;
+    const _Vector& b = *runtime.mRhs;
 
-    Vector& x = *runtime.mSolution;
+    _Vector& x = *runtime.mSolution;
 
-    Vector& z = *runtime.mRow;
+    _Vector& z = *runtime.mRow;
 
     SCAI_LOG_INFO( logger, "Iteration " << iter )
 

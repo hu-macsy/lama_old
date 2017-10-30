@@ -94,12 +94,12 @@ public:
         MINRESRuntime();
         virtual ~MINRESRuntime();
 
-        common::shared_ptr<lama::Vector> mVecV;
-        common::shared_ptr<lama::Vector> mVecVOld;
-        common::shared_ptr<lama::Vector> mVecVNew;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecPOld;
-        common::shared_ptr<lama::Vector> mVecPNew;
+        lama::VectorPtr mVecV;
+        lama::VectorPtr mVecVOld;
+        lama::VectorPtr mVecVNew;
+        lama::VectorPtr mVecP;
+        lama::VectorPtr mVecPOld;
+        lama::VectorPtr mVecPNew;
 
         lama::Scalar mAlpha;
         lama::Scalar mBetaNew;
@@ -121,7 +121,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class

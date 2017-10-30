@@ -54,7 +54,7 @@ Scalar Norm::operator()( const Scalar& scalar ) const
     return apply( scalar );
 }
 
-Scalar Norm::operator()( const Vector& vector ) const
+Scalar Norm::operator()( const _Vector& vector ) const
 {
     return apply( vector );
 }

@@ -60,7 +60,7 @@ public:
 
     virtual Scalar apply( const Scalar& scalar ) const;
 
-    virtual Scalar apply( const Vector& vector ) const;
+    virtual Scalar apply( const _Vector& vector ) const;
 
     virtual Scalar apply( const Matrix& matrix ) const;
 
@@ -81,7 +81,7 @@ public:
 
 COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );
 
-COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Vector& vector );
+COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const _Vector& vector );
 
 COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
 

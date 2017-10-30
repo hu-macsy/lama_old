@@ -79,11 +79,11 @@ class CRTPMatrix
 public:
 
     void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         const Derived& m = reinterpret_cast<const Derived&>( *this );
 
@@ -104,7 +104,7 @@ public:
             result.allocate( m.getRowDistributionPtr() );
         }
 
-        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != m.getValueType() || &result == &x || x.getDistribution() != m.getColDistribution() )
+        if ( x.getVectorKind() != _Vector::DENSE || x.getValueType() != m.getValueType() || &result == &x || x.getDistribution() != m.getColDistribution() )
         {
             SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << m.getValueType() << ">" )
 
@@ -117,7 +117,7 @@ public:
 
         // Note: in case of beta == 0, we might skip this test
 
-        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != m.getValueType() || y.getDistribution() != m.getRowDistribution() )
+        if ( y.getVectorKind() != _Vector::DENSE || y.getValueType() != m.getValueType() || y.getDistribution() != m.getRowDistribution() )
         {
             SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for y in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpY( y, m.getRowDistributionPtr() );
@@ -127,7 +127,7 @@ public:
 
         const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != m.getValueType() )
+        if ( result.getVectorKind() != _Vector::DENSE || result.getValueType() != m.getValueType() )
         {
             SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for result in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpResult( m.getRowDistributionPtr() );
@@ -145,11 +145,11 @@ public:
     }
 
     void vectorTimesMatrix(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         const Derived& m = reinterpret_cast<const Derived&>( *this );
 
@@ -157,7 +157,7 @@ public:
 
         SCAI_LOG_INFO( Derived::logger, result << " = " << alpha << " * " << m << " * " << x << " + " << beta << " * " << y )
 
-        if ( x.getVectorKind() != Vector::DENSE || x.getValueType() != m.getValueType() || &result == &x || x.getDistribution() != m.getRowDistribution() )
+        if ( x.getVectorKind() != _Vector::DENSE || x.getValueType() != m.getValueType() || &result == &x || x.getDistribution() != m.getRowDistribution() )
         {
             SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for x in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpX( x, m.getRowDistributionPtr() );
@@ -167,7 +167,7 @@ public:
 
         const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
 
-        if ( y.getVectorKind() != Vector::DENSE || y.getValueType() != m.getValueType() || y.getDistribution() != m.getColDistribution() )
+        if ( y.getVectorKind() != _Vector::DENSE || y.getValueType() != m.getValueType() || y.getDistribution() != m.getColDistribution() )
         {
             SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for y in alpha * x * M + beta * y" )
             DenseVector<ValueType> tmpY( y, m.getColDistributionPtr() );
@@ -177,7 +177,7 @@ public:
 
         const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-        if ( result.getVectorKind() != Vector::DENSE || result.getValueType() != m.getValueType() )
+        if ( result.getVectorKind() != _Vector::DENSE || result.getValueType() != m.getValueType() )
         {
             SCAI_UNSUPPORTED( "temporary DenseVector<" << m.getValueType() << "> required for result in alpha * M * x + beta * y" )
             DenseVector<ValueType> tmpResult( m.getColDistributionPtr() );
@@ -217,7 +217,7 @@ public:
      *
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
      */
-    void setRow( const Vector& row, const IndexType globalRowIndex,
+    void setRow( const _Vector& row, const IndexType globalRowIndex,
                  const common::binary::BinaryOp op )
     {
         Derived& m = reinterpret_cast<Derived&>( *this );
@@ -237,7 +237,7 @@ public:
             needsTmp = true;
             SCAI_UNSUPPORTED( "setRow, row is not replicated, use temporary" )
         }
-        if ( row.getVectorKind() != Vector::DENSE )
+        if ( row.getVectorKind() != _Vector::DENSE )
         {
             needsTmp = true;
             SCAI_UNSUPPORTED( "setRow, row is not DENSE vector" )
@@ -282,7 +282,7 @@ public:
      *  The method is implemented by setting the local part of the column on each partition.
      *  All derived classes must provide setLocalColum( colArray, colIndex, op )
      */
-    void setColumn( const Vector& column,
+    void setColumn( const _Vector& column,
                     const IndexType colIndex,
                     const common::binary::BinaryOp op )
     {

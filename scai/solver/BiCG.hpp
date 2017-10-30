@@ -97,14 +97,14 @@ public:
         virtual ~BiCGRuntime();
 
         common::shared_ptr<lama::Matrix> mTransposeA;
-        common::shared_ptr<lama::Vector> mP2;
-        common::shared_ptr<lama::Vector> mQ2;
-        common::shared_ptr<lama::Vector> mZ2;
+        common::shared_ptr<lama::_Vector> mP2;
+        common::shared_ptr<lama::_Vector> mQ2;
+        common::shared_ptr<lama::_Vector> mZ2;
         lama::Scalar mPScalar2;
-        mutable common::shared_ptr<lama::Vector> mResidual2;
+        mutable common::shared_ptr<lama::_Vector> mResidual2;
     };
 
-    const lama::Vector& getResidual2() const;
+    const lama::_Vector& getResidual2() const;
 
     /**
      * @brief Returns the complete configuration of the derived class
@@ -132,7 +132,7 @@ protected:
 
     virtual void iterate();
 
-    void print( lama::Vector& vec, size_t n );
+    void print( lama::_Vector& vec, size_t n );
 
     /**
      *  @brief own implementation of Printable::writeAt

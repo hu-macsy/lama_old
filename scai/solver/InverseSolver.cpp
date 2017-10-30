@@ -57,7 +57,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( InverseSolver::logger, "Solver.InverseSolver" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 InverseSolver::InverseSolver( const std::string& id )

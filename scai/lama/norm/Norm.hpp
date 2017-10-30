@@ -39,7 +39,7 @@
 
 // local library
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/common/Factory.hpp>
@@ -95,7 +95,7 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    Scalar operator()( const Vector& vector ) const;
+    Scalar operator()( const _Vector& vector ) const;
 
     /**
      * @brief Calculates the norm of the passed Matrix.
@@ -121,7 +121,7 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    virtual Scalar apply( const Vector& vector ) const = 0;
+    virtual Scalar apply( const _Vector& vector ) const = 0;
 
     /**
      * @brief Calculates the norm of the passed Matrix.

@@ -143,31 +143,31 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void getRow(Vector&, IndexType) const
+    virtual void getRow( _Vector&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void getRowLocal(Vector&, IndexType) const
+    virtual void getRowLocal( _Vector&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void getColumn(Vector&, IndexType) const
+    virtual void getColumn( _Vector&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setRow(const Vector&, IndexType, common::binary::BinaryOp)
+    virtual void setRow( const _Vector&, IndexType, common::binary::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setColumn(const Vector&, IndexType, common::binary::BinaryOp)
+    virtual void setColumn( const _Vector&, IndexType, common::binary::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void getDiagonal(Vector&) const
+    virtual void getDiagonal( _Vector& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setDiagonal(const Vector&)
+    virtual void setDiagonal( const _Vector& )
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -176,14 +176,15 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-    virtual void reduce( Vector& , const IndexType,
+    virtual void reduce( _Vector&, 
+                         const IndexType,
                          const common::binary::BinaryOp,
                          const common::unary::UnaryOp ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-    virtual void scale(const Vector&)
+    virtual void scale(const _Vector&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -208,12 +209,12 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-    virtual void matrixTimesVector( Vector&, const Scalar, const Vector&, const Scalar, const Vector& ) const
+    virtual void matrixTimesVector( _Vector&, const Scalar, const _Vector&, const Scalar, const _Vector& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-    virtual void vectorTimesMatrix( Vector&, Scalar, const Vector&, Scalar, const Vector& ) const
+    virtual void vectorTimesMatrix( _Vector&, Scalar, const _Vector&, Scalar, const _Vector& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

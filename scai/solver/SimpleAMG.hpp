@@ -81,8 +81,8 @@ public:
     const lama::Matrix& getRestriction( unsigned int level );
     const lama::Matrix& getInterpolation( unsigned int level );
 
-    lama::Vector& getSolutionVector( unsigned int level );
-    lama::Vector& getRhsVector( unsigned int level );
+    lama::_Vector& getSolutionVector( unsigned int level );
+    lama::_Vector& getRhsVector( unsigned int level );
 
     Solver& getSmoother( unsigned int level );
     Solver& getCoarseLevelSolver();

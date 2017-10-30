@@ -160,7 +160,7 @@ public:
 
     /** Make size() of Vector visible */
 
-    using Vector::size;
+    using _Vector::size;
 
     /** Swap available array with data into a grid vector. */
 
@@ -179,7 +179,7 @@ public:
         DenseVector<ValueType>::swap( other );
     }
 
-    using Vector::swap;
+    using _Vector::swap;
 
     /** Set this grid vector by another grid vector that is reduced in one dimension */
 
@@ -238,7 +238,7 @@ public:
         const common::scalar::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    /** Override of Vector::readLocalFromFile 
+    /** Override of _Vector::readLocalFromFile 
      *
      *  This method reads the local part of a grid vector and tries to read also the shape.
      */

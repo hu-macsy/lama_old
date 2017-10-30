@@ -72,7 +72,7 @@ Scalar L1Norm::apply( const Scalar& scalar ) const
     return l1Norm( scalar );
 }
 
-Scalar L1Norm::apply( const Vector& vector ) const
+Scalar L1Norm::apply( const _Vector& vector ) const
 {
     return l1Norm( vector );
 }
@@ -87,7 +87,7 @@ Scalar l1Norm( const Scalar& scalar )
     return abs( scalar );
 }
 
-Scalar l1Norm( const Vector& vector )
+Scalar l1Norm( const _Vector& vector )
 {
     return vector.l1Norm();
 }

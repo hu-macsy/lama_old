@@ -341,7 +341,7 @@ LamaConfig::LamaConfig()
         {
             CONFIG_ERROR( "SCAI_TYPE=" << val << " illegal, is not a scalar type" )
         }
-        else if ( scai::lama::Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::Vector::DENSE, type ) ) )
+        else if ( scai::lama::_Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::_Vector::DENSE, type ) ) )
         {
             mValueType = type;
         }

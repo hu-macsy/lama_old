@@ -107,8 +107,8 @@ public:
         virtual ~CGNERuntime();
 
         common::shared_ptr<lama::Matrix> mTransposedMat;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecZ;
+        lama::VectorPtr mVecP;
+        lama::VectorPtr mVecZ;
 
         lama::Scalar mEps;
     };
@@ -119,7 +119,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class

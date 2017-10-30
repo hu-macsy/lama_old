@@ -59,7 +59,7 @@ namespace solver
 using utilskernel::LAMAKernel;
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::DenseVector;
 using lama::Scalar;
 
@@ -188,7 +188,7 @@ void GMRES::initialize( const Matrix& coefficients )
     mY.reset( new double[mKrylovDim + 1] );
     mH.reset( new double[( mKrylovDim * ( mKrylovDim + 1 ) ) / 2] );
     mHd.reset( new double[mKrylovDim] );
-    runtime.mV = new std::vector<Vector*>( mKrylovDim + 1, 0 );
+    runtime.mV = new std::vector<_Vector*>( mKrylovDim + 1, 0 );
     // 'force' vector operations to be computed at the same location where coefficients reside
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
     ( *runtime.mV )[0] = coefficients.newVector( dist );
@@ -237,7 +237,7 @@ void GMRES::iterate()
     unsigned int hIdxStart = krylovIndex * ( krylovIndex + 1 ) / 2;
     unsigned int hIdxDiag = hIdxStart + krylovIndex;
     SCAI_LOG_INFO( logger, "GMRES(" << mKrylovDim << "): Inner Step " << krylovIndex << "." )
-    Vector& vCurrent = *( ( *runtime.mV )[krylovIndex] );
+    _Vector& vCurrent = *( ( *runtime.mV )[krylovIndex] );
     const Matrix& A = ( *runtime.mCoefficients );
 
     // lazy allocation structure mV
@@ -253,7 +253,7 @@ void GMRES::iterate()
         SCAI_REGION( "Solver.GMRES.restartInit" )
         // Compute r0=b-Ax0
         this->getResidual();
-        Vector& residual = ( *runtime.mResidual );
+        _Vector& residual = ( *runtime.mResidual );
         // store old solution
         *runtime.mX0 = runtime.mSolution.getConstReference();
         // set first search direction vCurrent
@@ -281,8 +281,8 @@ void GMRES::iterate()
     }
 
     // precondition next search direction
-    Vector& w = ( *runtime.mW );
-    Vector& tmp = ( *runtime.mT );
+    _Vector& w = ( *runtime.mW );
+    _Vector& tmp = ( *runtime.mT );
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     if ( !mPreconditioner )
@@ -305,7 +305,7 @@ void GMRES::iterate()
     for ( unsigned int k = 0; k <= krylovIndex; ++k )
     {
         SCAI_REGION( "Solver.GMRES.orthogonalization" )
-        const Vector& Vk = *( ( *runtime.mV )[k] );
+        const _Vector& Vk = *( ( *runtime.mV )[k] );
         runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
         w = w - runtime.mH[hIdxStart + k] * Vk;
     }
@@ -313,7 +313,7 @@ void GMRES::iterate()
     runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
     // normalize/store w in vNext (not needed in last step? Storage?)
     SCAI_LOG_DEBUG( logger, "Normalizing vNext." )
-    Vector& vNext = *( *runtime.mV )[krylovIndex + 1];
+    _Vector& vNext = *( *runtime.mV )[krylovIndex + 1];
     double scal = 1.0 / runtime.mHd[krylovIndex];
     vNext = scal * w;
     // apply Givens rotations to new column
@@ -381,7 +381,7 @@ void GMRES::updateX( unsigned int i )
 
     // Update of solution vector
 
-    Vector& x = runtime.mSolution.getReference();
+    _Vector& x = runtime.mSolution.getReference();
 
     // reset x to x0
     if ( i != 0 )
@@ -393,7 +393,7 @@ void GMRES::updateX( unsigned int i )
     // TODO: Add linar combination method
     for ( unsigned int k = 0; k <= i; ++k )
     {
-        const Vector& Vk = *( ( *runtime.mV )[k] );
+        const _Vector& Vk = *( ( *runtime.mV )[k] );
         x = x + runtime.mY[k] * Vk;
     }
 }

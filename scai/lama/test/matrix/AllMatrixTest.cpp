@@ -548,15 +548,15 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
             SCAI_LOG_DEBUG( logger, "diagonalTest for " << matrix )
 
-            VectorPtr xPtr ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
-            VectorPtr y1Ptr( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
-            VectorPtr y2Ptr( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
-            VectorPtr dPtr ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr xPtr ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr y1Ptr( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr y2Ptr( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr dPtr ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
 
-            Vector& x  = *xPtr;
-            Vector& y1 = *y1Ptr;
-            Vector& y2 = *y2Ptr;
-            Vector& d  = *dPtr;
+            _Vector& x  = *xPtr;
+            _Vector& y1 = *y1Ptr;
+            _Vector& y2 = *y2Ptr;
+            _Vector& d  = *dPtr;
 
             x.allocate( matrix.getColDistributionPtr() );
             x  = Scalar( 1 );
@@ -626,7 +626,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 // get each row and subtract it
 
-                VectorPtr row ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+                VectorPtr row ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
 
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
@@ -685,7 +685,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
                     matrix.redistribute( rowDist, colDist );
 
-                    VectorPtr row ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+                    VectorPtr row ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
 
                     // reduce on the parallel matrix
 
@@ -755,7 +755,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
                 // get each row and subtract it
 
-                VectorPtr col ( Vector::getVector( Vector::DENSE, matrix.getValueType() ) );
+                VectorPtr col ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
 
                 SCAI_LOG_INFO( logger, "getColTest for this matrix: " << matrix )
 

@@ -100,14 +100,14 @@ public:
         CGSRuntime();
         virtual ~CGSRuntime();
 
-        common::shared_ptr<lama::Vector> mRes0;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecQ;
-        common::shared_ptr<lama::Vector> mVecU;
-        common::shared_ptr<lama::Vector> mVecT;
-        common::shared_ptr<lama::Vector> mVecPT;
-        common::shared_ptr<lama::Vector> mVecUT;
-        common::shared_ptr<lama::Vector> mVecTemp;
+        lama::VectorPtr mRes0;
+        lama::VectorPtr mVecP;
+        lama::VectorPtr mVecQ;
+        lama::VectorPtr mVecU;
+        lama::VectorPtr mVecT;
+        lama::VectorPtr mVecPT;
+        lama::VectorPtr mVecUT;
+        lama::VectorPtr mVecTemp;
 
         lama::Scalar mEps;
         lama::Scalar mNormRes;
@@ -121,7 +121,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

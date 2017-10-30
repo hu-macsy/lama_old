@@ -65,7 +65,7 @@ public:
 
     virtual void initialize( const lama::Matrix& coefficients );
 
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -77,7 +77,7 @@ public:
         virtual ~JacobiRuntime();
 
         //TODO: HArray?
-        common::shared_ptr<lama::Vector> mOldSolution;
+        lama::VectorPtr mOldSolution;
         SolutionProxy mProxyOldSolution;
         common::shared_ptr<hmemo::_HArray> mDiagonal;
     };

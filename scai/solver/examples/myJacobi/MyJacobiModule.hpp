@@ -75,9 +75,9 @@ public:
      */
     virtual void initialize( const scai::lama::Matrix& coefficients );
 
-    virtual void solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
+    virtual void solve( scai::lama::_Vector& solution, const scai::lama::_Vector& rhs );
 
-    virtual void solveInit( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
+    virtual void solveInit( scai::lama::_Vector& solution, const scai::lama::_Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -96,8 +96,8 @@ public:
 
         scai::common::shared_ptr<scai::lama::Matrix> mDiagonalTimesLU;
         scai::common::shared_ptr<scai::lama::Matrix> mDiagonalInverted;
-        scai::common::shared_ptr<scai::lama::Vector> mDiagonalTimesRhs;
-        scai::common::shared_ptr<scai::lama::Vector> mOldSolution;
+        scai::common::shared_ptr<scai::lama::_Vector> mDiagonalTimesRhs;
+        scai::common::shared_ptr<scai::lama::_Vector> mOldSolution;
         scai::solver::SolutionProxy mProxyOldSolution;
     };
 

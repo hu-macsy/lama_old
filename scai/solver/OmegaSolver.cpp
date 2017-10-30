@@ -44,7 +44,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( OmegaSolver::logger, "Solver.IterativeSolver.OmegaSolver" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 
 OmegaSolver::OmegaSolver( const std::string& id )
     : IterativeSolver( id ), mOmega( 0.5 )

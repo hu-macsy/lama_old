@@ -100,12 +100,12 @@ void MyJacobi::initialize( const scai::lama::Matrix& coefficients )
     runtime.mDiagonalInverted->setIdentity( coefficients.getRowDistributionPtr() );
     runtime.mDiagonalInverted->inheritAttributes( coefficients );
     runtime.mDiagonalInverted->setDiagonal( *runtime.mDiagonalTimesRhs );
-    runtime.mOldSolution.reset( scai::lama::Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
+    runtime.mOldSolution.reset( scai::lama::_Vector::create( runtime.mDiagonalTimesRhs->getCreateValue() ) );
     runtime.mOldSolution->setContextPtr( runtime.mDiagonalTimesRhs->getContextPtr() );
     scai::solver::OmegaSolver::initialize( coefficients );
 }
 
-void MyJacobi::solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs )
+void MyJacobi::solve( scai::lama::_Vector& solution, const scai::lama::_Vector& rhs )
 {
     if ( getConstRuntime().mSolveInit )
     {
@@ -117,14 +117,14 @@ void MyJacobi::solve( scai::lama::Vector& solution, const scai::lama::Vector& rh
     solveFinalize();
 }
 
-void MyJacobi::solveInit( scai::lama::Vector& solution, const scai::lama::Vector& rhs )
+void MyJacobi::solveInit( scai::lama::_Vector& solution, const scai::lama::_Vector& rhs )
 {
     MyJacobiRuntime& runtime = getRuntime();
 
     //Check if oldSolution already exists, if not create copy of solution
     if ( !runtime.mOldSolution.get() )
     {
-        runtime.mOldSolution.reset( scai::lama::Vector::create( solution.getCreateValue() ) );
+        runtime.mOldSolution.reset( scai::lama::_Vector::create( solution.getCreateValue() ) );
     }
 
     runtime.mProxyOldSolution = runtime.mOldSolution.get();
@@ -154,13 +154,13 @@ void MyJacobi::iterate()
     ValueType omega = mOmega.getValue<ValueType>();
     MyJacobiRuntime& runtime = getRuntime();
     //swap old solution and solution pointer begin
-    scai::lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
-    scai::lama::Vector* ptr_solution = &( *runtime.mSolution );
+    scai::lama::_Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
+    scai::lama::_Vector* ptr_solution = &( *runtime.mSolution );
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
     //swap end now m_proxOldSolution holds the solution of the last iteration
     //and m_solution will be the output of the current iteration
-    const scai::lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
+    const scai::lama::_Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
     *runtime.mSolution = *runtime.mDiagonalTimesRhs - *runtime.mDiagonalTimesLU * oldSolution;
 
     if ( omega != 1.0 )

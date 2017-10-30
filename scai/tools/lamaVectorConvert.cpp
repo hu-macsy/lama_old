@@ -95,9 +95,9 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType type = getType();
 
-    common::unique_ptr<Vector> vectorPtr( Vector::getVector( Vector::DENSE, type ) );
+    VectorPtr vectorPtr( _Vector::getVector( _Vector::DENSE, type ) );
 
-    Vector& vector = *vectorPtr;
+    _Vector& vector = *vectorPtr;
 
     std::string inFileName = argv[1];
 

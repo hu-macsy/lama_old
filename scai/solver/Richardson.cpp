@@ -91,7 +91,7 @@ void Richardson::initialize( const lama::Matrix& coefficients )
     }
 }
 
-void Richardson::solveInit( lama::Vector& solution, const lama::Vector& rhs )
+void Richardson::solveInit( lama::_Vector& solution, const lama::_Vector& rhs )
 {
     RichardsonRuntime& runtime = getRuntime();
 
@@ -130,15 +130,15 @@ void Richardson::solveFinalize()
 void Richardson::iterate()
 {
     RichardsonRuntime& runtime = getRuntime();
-    const lama::Vector& rhs = *runtime.mRhs;
+    const lama::_Vector& rhs = *runtime.mRhs;
     const lama::Matrix& A = *runtime.mCoefficients;
     //swap old solution and solution pointer begin
-    lama::Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
-    lama::Vector* ptr_solution = &( *runtime.mSolution );
+    lama::_Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
+    lama::_Vector* ptr_solution = &( *runtime.mSolution );
     runtime.mProxyOldSolution = ptr_solution;
     runtime.mSolution = ptr_OldSolution;
-    const lama::Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
-    lama::Vector& xRef = *runtime.mX;
+    const lama::_Vector& oldSolution = runtime.mProxyOldSolution.getConstReference();
+    lama::_Vector& xRef = *runtime.mX;
     xRef = A * oldSolution;
     *runtime.mSolution = rhs - xRef;
 

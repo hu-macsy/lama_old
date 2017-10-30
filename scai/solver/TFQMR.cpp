@@ -51,7 +51,7 @@ namespace scai
 {
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 namespace solver
@@ -100,7 +100,7 @@ void TFQMR::initialize( const Matrix& coefficients )
     runtime.mVecVT.reset( coefficients.newVector( dist ) );
 }
 
-void TFQMR::solveInit( Vector& solution, const Vector& rhs )
+void TFQMR::solveInit( _Vector& solution, const _Vector& rhs )
 {
     TFQMRRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -139,10 +139,10 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
 void TFQMR::iterationEven()
 {
     TFQMRRuntime& runtime = getRuntime();
-    const Vector& vecZ = *runtime.mVecZ;
-    const Vector& initialR = *runtime.mInitialR;
-    const Vector& vecVEven = *runtime.mVecVEven;
-    Vector& vecVOdd = *runtime.mVecVOdd;
+    const _Vector& vecZ = *runtime.mVecZ;
+    const _Vector& initialR = *runtime.mInitialR;
+    const _Vector& vecVEven = *runtime.mVecVEven;
+    _Vector& vecVOdd = *runtime.mVecVOdd;
     const Scalar& rho = runtime.mRhoOld;
     const Scalar& eps = runtime.mEps;
     const Scalar dotProduct = initialR.dotProduct( vecZ );
@@ -164,15 +164,15 @@ void TFQMR::iterationOdd()
 {
     TFQMRRuntime& runtime = getRuntime();
     const Matrix& A = *runtime.mCoefficients;
-    const Vector& initialR = *runtime.mInitialR;
-    const Vector& vecW = *runtime.mVecW;
-    const Vector& vecVOdd = *runtime.mVecVOdd;
-    Vector& vecVEven = *runtime.mVecVEven;
+    const _Vector& initialR = *runtime.mInitialR;
+    const _Vector& vecW = *runtime.mVecW;
+    const _Vector& vecVOdd = *runtime.mVecVOdd;
+    _Vector& vecVEven = *runtime.mVecVEven;
     Scalar& rhoOld = runtime.mRhoOld;
     Scalar& rhoNew = runtime.mRhoNew;
     Scalar& beta = runtime.mBeta;
-    Vector& vecZ = *runtime.mVecZ;
-    Vector& vecVT = *runtime.mVecVT;
+    _Vector& vecZ = *runtime.mVecZ;
+    _Vector& vecVT = *runtime.mVecVT;
     const Scalar& eps = runtime.mEps;
     rhoNew  = initialR.dotProduct( vecW );
 
@@ -210,16 +210,16 @@ void TFQMR::iterate()
     const IndexType& iteration = runtime.mIterations;
     lama::L2Norm norm;
     const Matrix& A = *runtime.mCoefficients;
-    Vector& vecW = *runtime.mVecW;
-    Vector& vecD = *runtime.mVecD;
-    Vector& solution = *runtime.mSolution;
+    _Vector& vecW = *runtime.mVecW;
+    _Vector& vecD = *runtime.mVecD;
+    _Vector& solution = *runtime.mSolution;
     const Scalar& alpha = runtime.mAlpha;
     Scalar& c = runtime.mC;
     Scalar& eta = runtime.mEta;
     Scalar& theta = runtime.mTheta;
     Scalar& tau = runtime.mTau;
     Scalar& eps = runtime.mEps;
-    const Vector* vecVp;
+    const _Vector* vecVp;
 
     // if iteration = even -> need mVecVEven, else need mVecVOdd
     if ( ( iteration % 2 ) == 0 )
@@ -231,7 +231,7 @@ void TFQMR::iterate()
         vecVp = &( *runtime.mVecVOdd );
     }
 
-    const Vector& vecV = *vecVp;
+    const _Vector& vecV = *vecVp;
 
     if ( ( iteration % 2 ) == 0 )
     {

@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( WriteTest )
         BOOST_CHECK( out1.str().length() > 0 );
 
         std::ostringstream out2;
-        v->Vector::writeAt( out2 );
+        v->_Vector::writeAt( out2 );
         BOOST_CHECK( out1.str().length() > 0 );
 
         BOOST_CHECK( out2.str() != out1.str() );
@@ -105,13 +105,13 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         size_t size1 = v->getMemoryUsage();
 
-        if ( v->getVectorKind() == Vector::DENSE )
+        if ( v->getVectorKind() == _Vector::DENSE )
         {
             // a dense vector allocates really memory
 
             BOOST_CHECK( size1 >= size0 + n * common::typeSize( v->getValueType() ) );
         }
-        else if ( v->getVectorKind() == Vector::SPARSE )
+        else if ( v->getVectorKind() == _Vector::SPARSE )
         {
             // a sparse vector does not allocate here memory
 
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE( SetGetTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v = *vectors[i];
+        _Vector& v = *vectors[i];
 
         v.allocate( n );
 
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v1 = *vectors[i];
+        _Vector& v1 = *vectors[i];
 
         if ( ! common::isNumeric( v1.getValueType() ) )
         {
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
         v1 += 2;
 
         VectorPtr v2Ptr( v1.copy() );
-        const Vector& v2 = *v2Ptr;
+        const _Vector& v2 = *v2Ptr;
 
         v1.exp();
         v1.log();
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v1 = *vectors[i];
+        _Vector& v1 = *vectors[i];
 
         if ( ! common::isNumeric( v1.getValueType() ) )
         {
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
         v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
         VectorPtr v2Ptr( v1.copy() );
-        Vector& v2 = *v2Ptr;
+        _Vector& v2 = *v2Ptr;
 
         // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
 
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE( PowTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        Vector& v1 = *vectors[i];
+        _Vector& v1 = *vectors[i];
 
         if ( ! common::isNumeric( v1.getValueType() ) )
         {
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE( PowTest )
         v1 += 2.0;   // range 2 .. 4
 
         VectorPtr v2Ptr( v1.copy() );
-        Vector& v2 = *v2Ptr;
+        _Vector& v2 = *v2Ptr;
 
         v1.powExp( 2 );   // v[i] = v[i] ** 2.0
         v1.powExp( 0.5 ); 
@@ -456,12 +456,12 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
     {
         VectorPtr v1 = vectors[i];
 
-        if ( v1->getVectorKind() != Vector::DENSE )
+        if ( v1->getVectorKind() != _Vector::DENSE )
         {
             break;
         }
 
-        Vector& dV1 = *v1;
+        _Vector& dV1 = *v1;
 
         if ( ! common::isNumeric( v1->getValueType() ) )
         {
@@ -582,12 +582,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
     common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
-    VectorPtr v( Vector::getDenseVector( stype, dist, ctx ) );
+    VectorPtr v( _Vector::getDenseVector( stype, dist, ctx ) );
 
-    std::string format = Vector::kind2Str( v->getVectorKind() );
+    std::string format = _Vector::kind2Str( v->getVectorKind() );
 
     BOOST_CHECK_EQUAL( "DENSE", format );
-    BOOST_CHECK_EQUAL( Vector::str2Kind( "DENSE" ), v->getVectorKind() );
+    BOOST_CHECK_EQUAL( _Vector::str2Kind( "DENSE" ), v->getVectorKind() );
 
     DenseVector<ValueType>* denseV = dynamic_cast<DenseVector<ValueType>* >( v.get() );
 

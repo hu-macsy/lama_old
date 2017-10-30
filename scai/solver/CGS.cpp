@@ -56,7 +56,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 CGS::CGS( const std::string& id )
@@ -97,7 +97,7 @@ void CGS::initialize( const Matrix& coefficients )
 }
 
 
-void CGS::solveInit( Vector& solution, const Vector& rhs )
+void CGS::solveInit( _Vector& solution, const _Vector& rhs )
 {
     CGSRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -133,16 +133,16 @@ void CGS::iterate()
 {
     CGSRuntime& runtime = getRuntime();
     const Matrix& A = *runtime.mCoefficients;
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecQ = *runtime.mVecQ;
-    Vector& vecU = *runtime.mVecU;
-    Vector& vecT = *runtime.mVecT;
-    Vector& vecPT = *runtime.mVecPT;
-    Vector& vecUT = *runtime.mVecUT;
-    Vector& vecTemp = *runtime.mVecTemp;
-    Vector& solution = *runtime.mSolution;
+    const _Vector& res0 = *runtime.mRes0;
+    _Vector& res = *runtime.mResidual;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& vecQ = *runtime.mVecQ;
+    _Vector& vecU = *runtime.mVecU;
+    _Vector& vecT = *runtime.mVecT;
+    _Vector& vecPT = *runtime.mVecPT;
+    _Vector& vecUT = *runtime.mVecUT;
+    _Vector& vecTemp = *runtime.mVecTemp;
+    _Vector& solution = *runtime.mSolution;
     Scalar& innerProdRes = runtime.mInnerProdRes;
     Scalar alpha;
     Scalar beta;

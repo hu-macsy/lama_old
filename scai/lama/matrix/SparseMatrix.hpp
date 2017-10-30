@@ -57,7 +57,7 @@ namespace lama
 
 // forward declarations
 
-class Vector;
+class _Vector;
 template<typename > class DenseMatrix;
 
 /**
@@ -226,21 +226,21 @@ public:
     using Matrix::setIdentity;
 
     virtual void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         CRTPMatrix<SparseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
     }
 
     virtual void vectorTimesMatrix(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const 
+        const _Vector& y ) const 
     {
         CRTPMatrix<SparseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
     }
@@ -249,9 +249,9 @@ public:
      *
      *  It is recommended to call getColumn with a SparseVector for a sparse matrix.
      */
-    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const;
+    virtual void getColumn( _Vector& column, const IndexType globalColIndex ) const;
 
-    virtual void setRow( const Vector& row,
+    virtual void setRow( const _Vector& row,
                          const IndexType globalRowIndex,
                          const common::binary::BinaryOp op )
     {
@@ -259,7 +259,7 @@ public:
     }
 
     virtual void setColumn(
-        const Vector& column,
+        const _Vector& column,
         const IndexType globalColIndex,
         const common::binary::BinaryOp op )
     {
@@ -322,11 +322,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void getDiagonal( Vector& diagonal ) const;
+    virtual void getDiagonal( _Vector& diagonal ) const;
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setDiagonal( const Vector& diagonal );
+    virtual void setDiagonal( const _Vector& diagonal );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -335,14 +335,14 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual void reduce( 
-        Vector& v, 
+        _Vector& v, 
         const IndexType dim, 
         const common::binary::BinaryOp reduceOp, 
         const common::unary::UnaryOp elemOp ) const;
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void scale( const Vector& scaling );
+    virtual void scale( const _Vector& scaling );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -643,11 +643,11 @@ public:
 
     /** Implementation of pure method Matrix::getRow */
 
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
 
     /** Implementation of pure method Matrix::getRowLocal */
 
-    virtual void getRowLocal( Vector& row, const IndexType localRowIndex ) const;
+    virtual void getRowLocal( _Vector& row, const IndexType localRowIndex ) const;
 
     /** Set a complete row of this matrix in its local part. */
 

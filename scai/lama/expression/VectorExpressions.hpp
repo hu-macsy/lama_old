@@ -34,7 +34,7 @@
 #pragma once
 
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/expression/Expression.hpp>
 
 namespace scai
@@ -51,7 +51,7 @@ namespace lama
  * @return              Symbolic expression alpha * vectorX
  */
 
-inline Expression_SV operator*( const Scalar& alpha, const Vector& vectorX )
+inline Expression_SV operator*( const Scalar& alpha, const _Vector& vectorX )
 {
     return Expression_SV( alpha, vectorX );
 }
@@ -66,7 +66,7 @@ inline Expression_SV operator*( const Scalar& alpha, const Vector& vectorX )
  * Note: due to normalization the arguments are switched in the symbolic expression
  */
 
-inline Expression_SV operator*( const Vector& vectorX, const Scalar& alpha )
+inline Expression_SV operator*( const _Vector& vectorX, const Scalar& alpha )
 {
     return Expression_SV( alpha, vectorX );
 }
@@ -79,7 +79,7 @@ inline Expression_SV operator*( const Vector& vectorX, const Scalar& alpha )
  * @return             Symbolic expression [1.0/alpha] * x
  */
 
-inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
+inline Expression_SV operator/( const _Vector& vector, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
     return Expression_SV( Scalar( 1.0 ) / alpha, vector );
@@ -93,7 +93,7 @@ inline Expression_SV operator/( const Vector& vector, const Scalar& alpha )
  * @param[in] y     The second vector.
  * @return          The expression representing this sum.
  */
-inline Expression_VV operator*( const Vector& x, const Vector& y )
+inline Expression_VV operator*( const _Vector& x, const _Vector& y )
 {
     return Expression_VV( x, y );
 }
@@ -119,7 +119,7 @@ inline Expression_SVV operator*( const Scalar& alpha, const Expression_VV& exp )
  * @param[in] v     the second multiplicator
  * @return          The expression representing this SVV.
  */
-inline Expression_SVV operator*( const Expression_SV exp, const Vector& v )
+inline Expression_SVV operator*( const Expression_SV exp, const _Vector& v )
 {
     return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( exp.getArg2(), v ) );
 }
@@ -132,7 +132,7 @@ inline Expression_SVV operator*( const Expression_SV exp, const Vector& v )
  * @param[in] exp   an existing expression scalar * vector
  * @return          The expression representing this SVV.
  */
-inline Expression_SVV operator*( const Vector& v, const Expression_SV exp )
+inline Expression_SVV operator*( const _Vector& v, const Expression_SV exp )
 {
     return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( v, exp.getArg2() ) );
 }
@@ -150,7 +150,7 @@ inline Expression_SVV operator*( const Vector& v, const Expression_SV exp )
  * @return          The expression representing this sum.
  */
 
-inline Expression_SV_S operator+( const Scalar& alpha, const Vector& x )
+inline Expression_SV_S operator+( const Scalar& alpha, const _Vector& x )
 {
     // return Expression_S_V( alpha, vectorX );
     return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
@@ -165,7 +165,7 @@ inline Expression_SV_S operator+( const Scalar& alpha, const Vector& x )
  * @return          The expression representing this sum.
  */
 
-inline Expression_SV_S operator+( const Vector& x, const Scalar& alpha )
+inline Expression_SV_S operator+( const _Vector& x, const Scalar& alpha )
 {
     // return Expression_S_V( alpha, vectorX );
     return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
@@ -201,7 +201,7 @@ inline Expression_SV_S operator+( const Expression_SV& exp, const Scalar& beta )
  * @param[in] y     The second vector.
  * @return          The expression representing this sum.
  */
-inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
+inline Expression_SV_SV operator+( const _Vector& x, const _Vector& y )
 {
     return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), x ), Expression_SV( Scalar( 1.0 ), y ) );
 }
@@ -214,7 +214,7 @@ inline Expression_SV_SV operator+( const Vector& x, const Vector& y )
  * @return              The expression representing this difference.
  */
 
-inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& exp )
+inline Expression_SV_SV operator+( const _Vector& vector, const Expression_SV& exp )
 {
     return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), vector ), exp );
 }
@@ -227,13 +227,13 @@ inline Expression_SV_SV operator+( const Vector& vector, const Expression_SV& ex
  * @return              The expression representing this difference.
  */
 
-inline Expression_SV_SV operator+( const Expression_SV& exp, const Vector& vector )
+inline Expression_SV_SV operator+( const Expression_SV& exp, const _Vector& vector )
 {
     return Expression_SV_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
 
 /**
- * @brief The plus operator creates an expression that represents sum of Vector times Scalar and Vector times Scalar
+ * @brief The plus operator creates an expression that represents sum of vector times scalar plus vector times scalar
  *
  * @param[in] exp1      The vector times Scalar
  * @param[in] exp2      The vector times Scalar
@@ -258,7 +258,7 @@ inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_S
  * @return          Normalized symbolic expression ' 1 * x + (-1) * y'
  */
 
-inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
+inline Expression_SV_SV operator-( const _Vector& x, const _Vector& y )
 {
     return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), x ), Expression_SV( Scalar( -1.0 ), y ) );
 }
@@ -272,7 +272,7 @@ inline Expression_SV_SV operator-( const Vector& x, const Vector& y )
  *
  */
 
-inline Expression_SV_SV operator-( const Expression_SV& exp, const Vector& vector )
+inline Expression_SV_SV operator-( const Expression_SV& exp, const _Vector& vector )
 {
     return Expression_SV_SV( exp, Expression_SV( Scalar( -1.0 ), vector ) );
 }
@@ -285,7 +285,7 @@ inline Expression_SV_SV operator-( const Expression_SV& exp, const Vector& vecto
  * @return              The expression representing this difference.
  */
 
-inline Expression_SV_SV operator-( const Vector& vector, const Expression_SV& exp )
+inline Expression_SV_SV operator-( const _Vector& vector, const Expression_SV& exp )
 {
     Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
     return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), vector ), minusExp );

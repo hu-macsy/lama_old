@@ -100,14 +100,14 @@ public:
         BiCGstabRuntime();
         virtual ~BiCGstabRuntime();
 
-        common::shared_ptr<lama::Vector> mRes0;
-        common::shared_ptr<lama::Vector> mVecV;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecS;
-        common::shared_ptr<lama::Vector> mVecT;
-        common::shared_ptr<lama::Vector> mVecPT;
-        common::shared_ptr<lama::Vector> mVecST;
-        common::shared_ptr<lama::Vector> mVecTT;
+        common::shared_ptr<lama::_Vector> mRes0;
+        common::shared_ptr<lama::_Vector> mVecV;
+        common::shared_ptr<lama::_Vector> mVecP;
+        common::shared_ptr<lama::_Vector> mVecS;
+        common::shared_ptr<lama::_Vector> mVecT;
+        common::shared_ptr<lama::_Vector> mVecPT;
+        common::shared_ptr<lama::_Vector> mVecST;
+        common::shared_ptr<lama::_Vector> mVecTT;
 
         lama::Scalar mEps;
         lama::Scalar mResNorm;
@@ -125,7 +125,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

@@ -125,7 +125,7 @@ void vectorInfo()
 {
     using namespace scai::lama;
     vector<VectorCreateKeyType> keys;
-    Vector::getCreateValues( keys );
+    _Vector::getCreateValues( keys );
     cout << endl;
     cout << "Factory of Vector: " << keys.size() << " entries" << endl;
     cout << "=============================" << endl;
@@ -134,7 +134,7 @@ void vectorInfo()
     for ( size_t i = 0; i < keys.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
-        scai::common::shared_ptr<Vector> vector ( Vector::create( keys[i] ) );
+        VectorPtr vector ( _Vector::create( keys[i] ) );
         cout << "    Vector: " << *vector << endl;
     }
 

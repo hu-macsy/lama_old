@@ -54,7 +54,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, VectorAssemblyAccess
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-VectorAssemblyAccess<ValueType>::VectorAssemblyAccess( Vector& vector, const common::binary::BinaryOp op ) : 
+VectorAssemblyAccess<ValueType>::VectorAssemblyAccess( _Vector& vector, const common::binary::BinaryOp op ) : 
 
     mVector( vector ),
     mIsReleased( false ),

@@ -206,12 +206,12 @@ int main( int argc, const char* argv[] )
 
         std::cout << "Stencil matrix = " << *matrixPtr << std::endl;
 
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector() );
-        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        VectorPtr rhsPtr( matrixPtr->newVector() );
+        VectorPtr solutionPtr( rhsPtr->newVector() );
 
         Matrix& matrix   = *matrixPtr;
-        Vector& rhs      = *rhsPtr;
-        Vector& solution = *solutionPtr;
+        _Vector& rhs      = *rhsPtr;
+        _Vector& solution = *solutionPtr;
 
         HOST_PRINT( 0, "Setup matrix, rhs, initial solution" )
 
@@ -237,8 +237,8 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
-                Vector& x = *xPtr;
+                VectorPtr xPtr( rhs.newVector() );
+                _Vector& x = *xPtr;
                 x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
                 rhs = matrix * x;
@@ -447,8 +447,8 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
-                Vector& compSolution = *compSolutionPtr;
+                scai::common::unique_ptr<_Vector> compSolutionPtr( rhs.newVector() );
+                _Vector& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;

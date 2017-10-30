@@ -51,7 +51,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 std::string SingleGridSetup::createValue()
@@ -132,17 +132,17 @@ const Matrix& SingleGridSetup::getInterpolation( const unsigned int )
     return *mIdentity;
 }
 
-Vector& SingleGridSetup::getSolutionVector( const unsigned int )
+_Vector& SingleGridSetup::getSolutionVector( const unsigned int )
 {
     return *mSolutionVector;
 }
 
-Vector& SingleGridSetup::getRhsVector( const unsigned int )
+_Vector& SingleGridSetup::getRhsVector( const unsigned int )
 {
     return *mRhsVector;
 }
 
-Vector& SingleGridSetup::getTmpResVector( const unsigned int )
+_Vector& SingleGridSetup::getTmpResVector( const unsigned int )
 {
     return *mTmpResVector;
 }

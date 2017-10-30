@@ -54,7 +54,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( CGNE::logger, "Solver.CGNE" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 CGNE::CGNE( const std::string& id )
@@ -101,7 +101,7 @@ void CGNE::initialize( const Matrix& coefficients )
 }
 
 
-void CGNE::solveInit( Vector& solution, const Vector& rhs )
+void CGNE::solveInit( _Vector& solution, const _Vector& rhs )
 {
     CGNERuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -134,10 +134,10 @@ void CGNE::iterate()
     CGNERuntime& runtime = getRuntime();
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transposedA = *runtime.mTransposedMat;
-    Vector& vecP = *runtime.mVecP;
-    Vector& residual = *runtime.mResidual;
-    Vector& solution = *runtime.mSolution;
-    Vector& vecZ = *runtime.mVecZ;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& residual = *runtime.mResidual;
+    _Vector& solution = *runtime.mSolution;
+    _Vector& vecZ = *runtime.mVecZ;
     Scalar alpha;
     Scalar beta;
     Scalar eps = runtime.mEps;

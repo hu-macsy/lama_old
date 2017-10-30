@@ -55,7 +55,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( BiCG::logger, "Solver.IterativeSolver.BiCG" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 BiCG::BiCG( const std::string& id )
@@ -94,10 +94,10 @@ void BiCG::initialize( const Matrix& coefficients )
     runtime.mPScalar2 = 0.0;
     runtime.mTransposeA.reset( coefficients.newMatrix() );
     common::scalar::ScalarType type = coefficients.getValueType();
-    runtime.mP2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mQ2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mZ2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mResidual2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
+    runtime.mP2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
+    runtime.mQ2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
+    runtime.mZ2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
+    runtime.mResidual2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
     runtime.mTransposeA->assignTranspose( coefficients );
     runtime.mTransposeA->conj();
     // 'force' vector operations to be computed at the same location where coefficients reside
@@ -120,17 +120,17 @@ void BiCG::iterate()
         this->getResidual2();
     }
 
-    Vector& residual = *runtime.mResidual;
-    Vector& residual2 = *runtime.mResidual2;
+    _Vector& residual = *runtime.mResidual;
+    _Vector& residual2 = *runtime.mResidual2;
     const Matrix& A = *runtime.mCoefficients;
     const Matrix& transA = *runtime.mTransposeA;
-    Vector& x = *runtime.mSolution;
-    Vector& p = *runtime.mP;
-    Vector& p2 = *runtime.mP2;
-    Vector& q = *runtime.mQ;
-    Vector& q2 = *runtime.mQ2;
-    Vector& z = *runtime.mZ;
-    Vector& z2 = *runtime.mZ2;
+    _Vector& x = *runtime.mSolution;
+    _Vector& p = *runtime.mP;
+    _Vector& p2 = *runtime.mP2;
+    _Vector& q = *runtime.mQ;
+    _Vector& q2 = *runtime.mQ2;
+    _Vector& z = *runtime.mZ;
+    _Vector& z2 = *runtime.mZ2;
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //BiCG implementation start
@@ -216,7 +216,7 @@ void BiCG::iterate()
     mBiCGRuntime.mSolution.setDirty( false );
 }
 
-const Vector& BiCG::getResidual2() const
+const _Vector& BiCG::getResidual2() const
 {
     SCAI_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
     const BiCGRuntime& runtime = getConstRuntime();
@@ -234,7 +234,7 @@ const Vector& BiCG::getResidual2() const
     return ( *runtime.mResidual2 );
 }
 
-void BiCG::print( lama::Vector& vec, size_t n )
+void BiCG::print( lama::_Vector& vec, size_t n )
 {
     std::cout << "\n";
 

@@ -73,7 +73,7 @@ Scalar MaxNorm::apply( const Scalar& scalar ) const
     return maxNorm( scalar );
 }
 
-Scalar MaxNorm::apply( const Vector& vector ) const
+Scalar MaxNorm::apply( const _Vector& vector ) const
 {
     return maxNorm( vector );
 }
@@ -88,7 +88,7 @@ Scalar maxNorm( const Scalar& scalar )
     return abs( scalar );
 }
 
-Scalar maxNorm( const Vector& vector )
+Scalar maxNorm( const _Vector& vector )
 {
     return vector.maxNorm();
 }

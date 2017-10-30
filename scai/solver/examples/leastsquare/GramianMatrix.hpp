@@ -35,7 +35,7 @@
 #include <scai/lama.hpp>
 
 #include <scai/lama/matrix/AbstractMatrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
 namespace scai
 {
@@ -67,7 +67,7 @@ public:
     {
         SCAI_LOG_INFO( logger, "GramianMatrix( A = " << A << " )" )
 
-        mAx.reset( Vector::getVector( Vector::DENSE, A.getValueType() ) );
+        mAx.reset( _Vector::getVector( _Vector::DENSE, A.getValueType() ) );
     }
 
     /** Reimplement the matrix * vector operation
@@ -75,11 +75,11 @@ public:
      *  
      */
     virtual void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mA = " << mA )
 

@@ -108,10 +108,10 @@ public:
         virtual ~CGNRRuntime();
 
         common::shared_ptr<lama::Matrix> mTransposedMat;
-        common::shared_ptr<lama::Vector> mVecD;
-        common::shared_ptr<lama::Vector> mVecW;
-        common::shared_ptr<lama::Vector> mVecZ;
-        common::shared_ptr<lama::Vector> mResidual2;
+        lama::VectorPtr mVecD;
+        lama::VectorPtr mVecW;
+        lama::VectorPtr mVecZ;
+        lama::VectorPtr mResidual2;
 
         lama::Scalar mEps;
     };
@@ -122,7 +122,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class

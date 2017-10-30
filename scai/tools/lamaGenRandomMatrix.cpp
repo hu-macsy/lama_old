@@ -184,11 +184,11 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    scai::common::unique_ptr<Vector> xPtr( Vector::getVector( Vector::DENSE, stype ) );
-    scai::common::unique_ptr<Vector> bPtr( Vector::getVector( Vector::DENSE, stype ) );
+    scai::common::unique_ptr<_Vector> xPtr( _Vector::getVector( _Vector::DENSE, stype ) );
+    scai::common::unique_ptr<_Vector> bPtr( _Vector::getVector( _Vector::DENSE, stype ) );
 
-    Vector& x = *xPtr;
-    Vector& b = *bPtr;
+    _Vector& x = *xPtr;
+    _Vector& b = *bPtr;
 
     x.setRandom( m.getColDistributionPtr(), 1 );
     b = m * x;

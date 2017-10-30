@@ -106,7 +106,7 @@ class HessianMatrix : public AbstractMatrix
 
 public:
 
-    HessianMatrix ( const Matrix& A, const Vector& D, const Scalar& tau ) :
+    HessianMatrix ( const Matrix& A, const _Vector& D, const Scalar& tau ) :
 
         AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
 
@@ -117,11 +117,11 @@ public:
     }
 
     virtual void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mA = " << mA )
 
@@ -150,7 +150,7 @@ public:
 private:
 
     const Matrix& mA;
-    const Vector& mD;
+    const _Vector& mD;
     const Scalar mTau;
 };
 

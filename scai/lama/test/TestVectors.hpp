@@ -32,7 +32,7 @@
  * @date 27.07.2016
  */
 
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -68,11 +68,11 @@ public:
     {
         using namespace scai::lama;
         std::vector<VectorCreateKeyType> values;  //  all create values
-        Vector::getCreateValues( values );
+        _Vector::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::VectorPtr vectorPtr( scai::lama::Vector::create( values[i] ) );
+            scai::lama::VectorPtr vectorPtr( scai::lama::_Vector::create( values[i] ) );
 
             if ( ctx )
             {

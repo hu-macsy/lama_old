@@ -58,7 +58,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( MINRES::logger, "Solver.MINRES" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 MINRES::MINRES( const std::string& id )
@@ -100,7 +100,7 @@ void MINRES::initialize( const Matrix& coefficients )
     runtime.mEps = Scalar::eps1( coefficients.getValueType() ) * 3.0;
 }
 
-void MINRES::solveInit( Vector& solution, const Vector& rhs )
+void MINRES::solveInit( _Vector& solution, const _Vector& rhs )
 {
     MINRESRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -125,9 +125,9 @@ void MINRES::Lanczos()
 {
     MINRESRuntime& runtime = getRuntime();
     const Matrix& A = *runtime.mCoefficients;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecVOld = *runtime.mVecVOld;
-    Vector& vecVNew = *runtime.mVecVNew;
+    _Vector& vecV = *runtime.mVecV;
+    _Vector& vecVOld = *runtime.mVecVOld;
+    _Vector& vecVNew = *runtime.mVecVNew;
     Scalar& alpha = runtime.mAlpha;
     Scalar& betaNew = runtime.mBetaNew;
     Scalar& beta = runtime.mBeta;
@@ -192,10 +192,10 @@ void MINRES::applyGivensRotation()
         rho3 = nu;
     }
 
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecPOld = *runtime.mVecPOld;
-    Vector& vecPNew = *runtime.mVecPNew;
-    const Vector& vecV = *runtime.mVecV;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& vecPOld = *runtime.mVecPOld;
+    _Vector& vecPNew = *runtime.mVecPNew;
+    const _Vector& vecV = *runtime.mVecV;
     //Update P
     vecPOld.swap( vecP );
     vecP.swap( vecPNew );
@@ -207,8 +207,8 @@ void MINRES::applyGivensRotation()
 void MINRES::iterate()
 {
     MINRESRuntime& runtime = getRuntime();
-    const Vector& vecPNew = *runtime.mVecPNew;
-    Vector& solution = *runtime.mSolution;
+    const _Vector& vecPNew = *runtime.mVecPNew;
+    _Vector& solution = *runtime.mSolution;
     Scalar& cNew = runtime.mCNew;
     Scalar& sNew = runtime.mSNew;
     Scalar& zeta = runtime.mZeta;

@@ -59,7 +59,7 @@ public:
      *  @param[in] alpha is the scaling factor.
      */
 
-    HouseholderTransformedMatrix( const Matrix& L, const Vector& u, const Scalar alpha ) : 
+    HouseholderTransformedMatrix( const Matrix& L, const _Vector& u, const Scalar alpha ) : 
 
         AbstractMatrix( L ),
         mL( L )
@@ -90,11 +90,11 @@ public:
      *  H L H * x = L * x - s' * x * r - r' * x * s
      */
     virtual void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 

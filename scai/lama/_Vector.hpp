@@ -1,5 +1,5 @@
 /**
- * @file Vector.hpp
+ * @file _Vector.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Definition of an abstract class for distributed vectors.
+ * @brief Definition of an abstract class for distributed vectors of any kind and any type
  * @author Thomas Brandes, Jiri Kraus
  * @date 22.02.2011
  */
@@ -73,11 +73,11 @@ class Matrix;
 
 /** Pointer class for a vector, always use of a shared pointer. */
 
-typedef common::shared_ptr<class Vector> VectorPtr;
+typedef common::shared_ptr<class _Vector> VectorPtr;
 
 /** Help class as forward declaration of enum types belonging to class Vector. */
 
-struct _Vector
+struct _VectorKind
 {
     /**
      * @brief VectorKind describes if a vector is dense or sparse.
@@ -94,18 +94,18 @@ struct _Vector
 
     static COMMON_DLL_IMPORTEXPORT VectorKind str2Kind( const char* str );
 
-};  // struct _Vector
+};  // struct _VectorKind
 
 /** @brief Output operator<< for VectorKind prints meaningful names instead of int values */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _VectorKind::VectorKind& kind );
 
 /** Type definition for the key type used for the Vector factory.
  *
  *  The key for vector create is a pair of vector format and the value type.
  */
 
-typedef std::pair<_Vector::VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
+typedef std::pair<_VectorKind::VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -122,16 +122,16 @@ typedef std::pair<_Vector::VectorKind, common::scalar::ScalarType> VectorCreateK
  * This base class can be used to define dense and sparse vectors of
  * any type.
  */
-class COMMON_DLL_IMPORTEXPORT Vector:
+class COMMON_DLL_IMPORTEXPORT _Vector:
 
-    public common::Factory<VectorCreateKeyType, Vector*>,
+    public common::Factory<VectorCreateKeyType, _Vector*>,
     public dmemo::Distributed,
-    public _Vector
+    public _VectorKind
 
 {
 public:
 
-    /** Help class to observe the further use of operator[] for Vector */
+    /** Help class to observe the further use of operator[] for _Vector */
 
     class VectorElemProxy
     {
@@ -139,7 +139,7 @@ public:
 
         /** Proxy constructed by ref to the array and the index value. */
 
-        inline VectorElemProxy( Vector& vector, const IndexType i );
+        inline VectorElemProxy( _Vector& vector, const IndexType i );
 
         /** Proxy for a vector element can be used to get its value, type conversion to Scalar
          *
@@ -157,13 +157,13 @@ public:
 
     private:
 
-        Vector& mVector;
+        _Vector& mVector;
         IndexType mIndex;
     };
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static Vector* getVector( const VectorKind format, const common::scalar::ScalarType valueType );
+    static _Vector* getVector( const VectorKind format, const common::scalar::ScalarType valueType );
 
     /** @brief More convenient routine to create a dense vector with certain properties.
      *
@@ -171,7 +171,7 @@ public:
      *  @param[in] distribution becomes the distribution of the new vector
      *  @param[in] context optional, becomes the context of the new vector
      */
-    static Vector* getDenseVector(
+    static _Vector* getDenseVector(
         const common::scalar::ScalarType valueType,
         dmemo::DistributionPtr distribution,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
@@ -194,14 +194,14 @@ public:
     virtual bool isConsistent() const = 0;
 
     /**
-     * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
+     * @brief ExpressionMemberType is the type that is used the template Expression to store a _Vector.
      */
-    typedef const Vector& ExpressionMemberType;
+    typedef const _Vector& ExpressionMemberType;
 
     /**
      * @brief Releases all allocated resources.
      */
-    virtual ~Vector();
+    virtual ~_Vector();
 
     /** Each derived vector must give info about its kind (DENSE or SPARSE). */
 
@@ -223,61 +223,61 @@ public:
 
     /** this = alpha * A * x */
 
-    Vector& operator=( const Expression_SMV& expression );
+    _Vector& operator=( const Expression_SMV& expression );
 
     /** this = alpha * x * A */
 
-    Vector& operator=( const Expression_SVM& expression );
+    _Vector& operator=( const Expression_SVM& expression );
 
     /** this = alpha * x + beta * y */
 
-    Vector& operator=( const Expression_SV_SV& expression );
+    _Vector& operator=( const Expression_SV_SV& expression );
 
     /** this = alpha * A * x + beta * y */
 
-    Vector& operator=( const Expression_SMV_SV& expression );
+    _Vector& operator=( const Expression_SMV_SV& expression );
 
     /** this = alpha * x * A + beta * y */
 
-    Vector& operator=( const Expression_SVM_SV& expression );
+    _Vector& operator=( const Expression_SVM_SV& expression );
 
     /** this = alpha * x */
 
-    Vector& operator=( const Expression_SV& expression );
+    _Vector& operator=( const Expression_SV& expression );
 
     /** this = alpha * x + beta */
 
-    Vector& operator=( const Expression_SV_S& );
+    _Vector& operator=( const Expression_SV_S& );
 
     /** this = x * y */
 
-    Vector& operator=( const Expression_VV& );
+    _Vector& operator=( const Expression_VV& );
 
     /** this = alpha * x * y */
 
-    Vector& operator=( const Expression_SVV& );
+    _Vector& operator=( const Expression_SVV& );
 
     /** this +=  alpha * A * x */
 
-    Vector& operator+=( const Expression_SMV& expression );
+    _Vector& operator+=( const Expression_SMV& expression );
 
     /** this +=  alpha * x * A */
 
-    Vector& operator+=( const Expression_SVM& expression );
+    _Vector& operator+=( const Expression_SVM& expression );
 
     /** this +=  alpha * x */
 
-    Vector& operator+=( const Expression_SV& expression );
+    _Vector& operator+=( const Expression_SV& expression );
 
     /** this -=  alpha * A * x */
 
-    Vector& operator-=( const Expression_SMV& expression );
+    _Vector& operator-=( const Expression_SMV& expression );
 
-    Vector& operator-=( const Expression_SVM& expression );
+    _Vector& operator-=( const Expression_SVM& expression );
 
     /** this -=  alpha * x */
 
-    Vector& operator-=( const Expression_SV& expression );
+    _Vector& operator-=( const Expression_SV& expression );
 
     /**
      * @brief Assigns the values of other to the elements of this.
@@ -285,7 +285,7 @@ public:
      * @param[in] other   the vector to get values from.
      * @return            a reference to this.
      */
-    Vector& operator=( const Vector& other );
+    _Vector& operator=( const _Vector& other );
 
     /**
      * @brief Multiplies the passed value with all elements of this.
@@ -293,7 +293,7 @@ public:
      * @param[in] value   the value to multiply all elements of this with.
      * @return            a reference to this.
      */
-    Vector& operator*=( const Scalar value );
+    _Vector& operator*=( const Scalar value );
 
     /**
      * @brief Multiplies the passed value with all elements of this.
@@ -301,7 +301,7 @@ public:
      * @param[in] other   the vector to multiply to do the multiplication per element
      * @return            a reference to this.
      */
-    Vector& operator*=( const Vector& other );
+    _Vector& operator*=( const _Vector& other );
 
     /**
      * @brief Divides the passed value with all elements of this.
@@ -309,7 +309,7 @@ public:
      * @param[in] value   the value to divide all elements of this with.
      * @return            a reference to this.
      */
-    Vector& operator/=( const Scalar value );
+    _Vector& operator/=( const Scalar value );
 
     /**
      * @brief Divide this vector by another vector element-wise
@@ -317,7 +317,7 @@ public:
      * @param[in] other   the vector to multiply to do the multiplication per element
      * @return            a reference to this.
      */
-    Vector& operator/=( const Vector& other );
+    _Vector& operator/=( const _Vector& other );
 
     /**
      * @brief Returns the addition of this and other.
@@ -325,7 +325,7 @@ public:
      * @param[in] other the vector to do the addition with.
      * @return          a reference to this.
      */
-    Vector& operator+=( const Vector& other );
+    _Vector& operator+=( const _Vector& other );
 
     /**
      * @brief Returns the subtraction of this and other.
@@ -333,7 +333,7 @@ public:
      * @param[in] other the vector to do the subtraction with.
      * @return          a reference to this.
      */
-    Vector& operator-=( const Vector& other );
+    _Vector& operator-=( const _Vector& other );
 
     /**
      * @brief Add a scalar value to all elements of this vector.
@@ -341,7 +341,7 @@ public:
      * @param[in] value   the value to add all elements of this with.
      * @return            a reference to this.
      */
-    Vector& operator+=( const Scalar value );
+    _Vector& operator+=( const Scalar value );
 
     /**
      * @brief Sub a scalar value to all elements of this vector.
@@ -349,7 +349,7 @@ public:
      * @param[in] value   the value to add all elements of this with.
      * @return            a reference to this.
      */
-    Vector& operator-=( const Scalar value );
+    _Vector& operator-=( const Scalar value );
 
     /**
      * @brief Assigns the passed value to all elements of this.
@@ -357,7 +357,7 @@ public:
      * @param[in] value   the value to assign to all elements of this.
      * @return            a reference to this.
      */
-    Vector& operator=( const Scalar value );
+    _Vector& operator=( const Scalar value );
 
     /**
      * @brief Returns a copy of the value at the passed global index.
@@ -727,7 +727,7 @@ public:
      * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
      * this vector itself.
      */
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors ) = 0;
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors ) = 0;
 
     /**
      * @brief Concatenate two vectors to a new vector.
@@ -735,7 +735,7 @@ public:
      * @param[in] v1 first part of the new vector
      * @param[in] v2 second part of the new vector
      */
-    virtual void cat( const Vector& v1, const Vector& v2 );
+    virtual void cat( const _Vector& v1, const _Vector& v2 );
 
     /**
      * @brief Returns the global minimum value of this.
@@ -801,14 +801,14 @@ public:
      *
      *  But it avoids the temporary vector wherever possible
      */
-    virtual Scalar maxDiffNorm( const Vector& other ) const = 0;
+    virtual Scalar maxDiffNorm( const _Vector& other ) const = 0;
 
     /**
      *  Method to create a new vector of the same kind and same type
      *
      *  /code
-     *    const Vector& old = ...
-     *    Vector* new = Vector::create( old.getCreateValue() );
+     *    const _Vector& old = ...
+     *    _Vector* new = _Vector::create( old.getCreateValue() );
      *  /endcode
      *
      *  This routine is very important to write code that can deal with arbitrary types
@@ -833,7 +833,7 @@ public:
      *
      *  The new vector is a zero vector, neither allocated, nor initialized.
      */
-    virtual Vector* newVector() const = 0;
+    virtual _Vector* newVector() const = 0;
 
     /**
      *  @brief copy is a virtual call of the copy constructor of the derived classes
@@ -848,7 +848,7 @@ public:
      *    *new = old;
      *  /endcode
      */
-    virtual Vector* copy() const = 0;
+    virtual _Vector* copy() const = 0;
 
     /**
      * @brief Returns the size of the vector.
@@ -865,7 +865,7 @@ public:
      * Swap is only possible if both vectors are of the same format (DENSE) and
      * have the same value type.
      */
-    virtual void swap( Vector& other ) = 0;
+    virtual void swap( _Vector& other ) = 0;
 
     /** Override default implementation of Printable::writeAt */
 
@@ -882,7 +882,7 @@ public:
      *
      *  Each vector class has to implement this pure method.
      */
-    virtual void assign( const Vector& other ) = 0;
+    virtual void assign( const _Vector& other ) = 0;
 
     /**
      *  Assignment to vector by local values and distribution.
@@ -945,21 +945,21 @@ public:
      *
      * Each vector class has to implement its own version of this assignment. 
      */
-    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y ) = 0;
+    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y ) = 0;
 
     /**
      * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * vectorY
      *
      * Each vector class has to implement its own version of this assignment. 
      */
-    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y ) = 0;
+    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y ) = 0;
 
     /**
      * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * scalarBeta
      *
      * Each vector class has to implement its own version of this assignment. 
      */
-    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS ) = 0;
+    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS ) = 0;
 
     /**
      * @brief Returns the dot product of this and other.
@@ -967,7 +967,7 @@ public:
      * @param[in] other   the vector to calculate the dot product with.
      * @return            the dot product of this and other
      */
-    virtual Scalar dotProduct( const Vector& other ) const = 0;
+    virtual Scalar dotProduct( const _Vector& other ) const = 0;
 
     /**
      *  @brief Update this vector with another vector elementwise
@@ -989,7 +989,7 @@ public:
      *
      *  In contrary to the loop, it can be assumed that the vector operation is full parallel.
      */
-    virtual void setVector( const Vector& other, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
+    virtual void setVector( const _Vector& other, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
 
     /**
      *  @brief Update this vector with a scalar value elementswise
@@ -1030,7 +1030,7 @@ public:
     /**
      *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
      */
-    virtual bool all( common::binary::CompareOp op, const Vector& other ) const = 0;
+    virtual bool all( common::binary::CompareOp op, const _Vector& other ) const = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -1171,12 +1171,12 @@ public:
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    void powBase( const Vector& other );
+    void powBase( const _Vector& other );
 
     /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
-    void powExp( const Vector& other );
+    void powExp( const _Vector& other );
 
     /**
      *  Calculates the pow function for a base the vector elements as exponents.
@@ -1191,9 +1191,9 @@ public:
 protected:
 
     /**
-     *  Constructor of Vector for derived classes by size and/or context
+     *  Constructor of _Vector for derived classes by size and/or context
      */
-    explicit Vector( const IndexType size = 0, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    explicit _Vector( const IndexType size = 0, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
      * @brief Constructor of Vector for derived classes by distribution
@@ -1201,21 +1201,21 @@ protected:
      * @param[in] distribution  the distribution to use for the new Vector.
      * @param[in] context       is optional, will be Host context.
      */
-    explicit Vector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
+    explicit _Vector( dmemo::DistributionPtr distribution, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /**
-     * @brief Creates a copy of the passed Vector.
+     * @brief Creates a copy of the passed _Vector.
      *
      * @param[in] other   the Vector to take a copy from.
      *
-     * Inherits size/distribution, context and content of the passed vector.
+     * Inherits size/distribution, context and content of the passed vector
      */
-    Vector( const Vector& other );
+    _Vector( const _Vector& other );
 
     /**
      *  @brief Swaps member variables of Vector class.
      */
-    void swapVector( Vector& other );
+    void swapVector( _Vector& other );
 
     hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
@@ -1274,7 +1274,7 @@ private:
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */
 
-Vector::VectorElemProxy::VectorElemProxy( Vector& vector, const IndexType i ) :
+_Vector::VectorElemProxy::VectorElemProxy( _Vector& vector, const IndexType i ) :
 
     mVector( vector ),
     mIndex( i )
@@ -1282,36 +1282,36 @@ Vector::VectorElemProxy::VectorElemProxy( Vector& vector, const IndexType i ) :
 {
 }
 
-Vector::VectorElemProxy::operator Scalar() const
+_Vector::VectorElemProxy::operator Scalar() const
 {
     return mVector.getValue( mIndex );
 }
 
-Vector::VectorElemProxy& Vector::VectorElemProxy::operator= ( Scalar val )
+_Vector::VectorElemProxy& _Vector::VectorElemProxy::operator= ( Scalar val )
 {
     mVector.setValue( mIndex, val );
     return *this;
 }
 
-Vector::VectorElemProxy& Vector::VectorElemProxy::operator= ( const Vector::VectorElemProxy& other )
+_Vector::VectorElemProxy& _Vector::VectorElemProxy::operator= ( const _Vector::VectorElemProxy& other )
 {
     Scalar tmp = other.mVector.getValue( other.mIndex );
     mVector.setValue( mIndex, tmp );
     return *this;
 }
 
-IndexType Vector::size() const
+IndexType _Vector::size() const
 {
     return getDistribution().getGlobalSize();
 }
 
-hmemo::ContextPtr Vector::getContextPtr() const
+hmemo::ContextPtr _Vector::getContextPtr() const
 {
     return mContext;
 }
 
 template<typename OtherValueType>
-void Vector::setRawData( const IndexType size, const OtherValueType values[] )
+void _Vector::setRawData( const IndexType size, const OtherValueType values[] )
 {
     allocate( size );
 
@@ -1322,7 +1322,7 @@ void Vector::setRawData( const IndexType size, const OtherValueType values[] )
 }
 
 template<typename OtherValueType>
-void Vector::setSparseRawData( 
+void _Vector::setSparseRawData( 
     const IndexType n, 
     const IndexType nnz,
     const IndexType nonZeroIndexes[],

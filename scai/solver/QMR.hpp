@@ -43,7 +43,7 @@
 
 // scai internal libraries
 #include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // logging
@@ -139,7 +139,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

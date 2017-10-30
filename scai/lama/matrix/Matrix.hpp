@@ -476,7 +476,7 @@ public:
      * - This method implies communication as one row resides only on one processor but here the communication
      *   pattern for sparse or dense matrices are exploited.
      */
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const = 0;
+    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const = 0;
 
     /** @brief This method returns a row of this matrix locally for one processor.
      *
@@ -490,7 +490,7 @@ public:
      * - This method is completely local, no communication
      *   pattern for sparse or dense matrices are exploited.
      */
-    virtual void getRowLocal( Vector& row, const IndexType localRowIndex ) const = 0;
+    virtual void getRowLocal( _Vector& row, const IndexType localRowIndex ) const = 0;
 
     /** @brief This method returns one column of the matrix.
      *
@@ -501,7 +501,7 @@ public:
      *   (otherwise conversion)
      * - the distribution of col will be the same as the row distribution of the matrix
      */
-    virtual void getColumn( Vector& column, const IndexType globalColIndex ) const = 0;
+    virtual void getColumn( _Vector& column, const IndexType globalColIndex ) const = 0;
 
     /** @brief This method sets one row of the matrix.
      *
@@ -513,7 +513,7 @@ public:
      *   (otherwise conversion)
      * - this method throws an exception for a sparse matrix if the pattern must be changed
      */
-    virtual void setRow( const Vector& row,
+    virtual void setRow( const _Vector& row,
                          const IndexType globalRowIndex,
                          const common::binary::BinaryOp op ) = 0;
 
@@ -529,7 +529,7 @@ public:
      * - this method does not change the pattern of a sparse matrix, so throws an exception if it is insufficient
      */
     virtual void setColumn(
-        const Vector& column,
+        const _Vector& column,
         const IndexType globalColIndex,
         const common::binary::BinaryOp op ) = 0;
 
@@ -539,7 +539,7 @@ public:
      *
      * Calculations are dependent to the diagonal property.
      */
-    virtual void getDiagonal( Vector& diagonal ) const = 0;
+    virtual void getDiagonal( _Vector& diagonal ) const = 0;
 
     /** @brief This method replaces the diagonal.
      *
@@ -547,7 +547,7 @@ public:
      *
      * Calculations are dependent to the diagonal property.
      */
-    virtual void setDiagonal( const Vector& diagonal ) = 0;
+    virtual void setDiagonal( const _Vector& diagonal ) = 0;
 
     /** @brief This method replaces the diagonal by a diagonal value.
      *
@@ -566,14 +566,14 @@ public:
      *  @param[in]  elemOp specfies operatin applied to the elements before reduction
      *
      *  \code
-     *     const Matrix& m; Vector& v;
+     *     const Matrix& m; _Vector& v;
      *     m.reduce( v, dim = 0, common::binary::ADD, common::binary::SQR );  // builds row sums 
      *     m.reduce( v, dim = 1, common::binary::ADD, common::binary::SQR );  // builds diagonal of m' m 
      *  \endcode
      */
 
     virtual void reduce( 
-        Vector& v, 
+        _Vector& v, 
         const IndexType dim, 
         const common::binary::BinaryOp reduceOp, 
         const common::unary::UnaryOp elemOp ) const = 0;
@@ -584,7 +584,7 @@ public:
      *
      * row wise calculations.
      */
-    virtual void scale( const Vector& scaling ) = 0;
+    virtual void scale( const _Vector& scaling ) = 0;
 
     /** @brief This method scales all matrix values with a scalar.
      *
@@ -680,28 +680,28 @@ public:
     /**
      * @brief Computes result = alpha * this * x + beta * y.
      *
-     * @param[out]  result  the Vector to store the result to
+     * @param[out]  result  the vector to store the result to
      * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   x       the Vector x of the expression
+     * @param[in]   x       the vector x of the expression
      * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   y       the Vector y of the expression
+     * @param[in]   y       the vector y of the expression
      *
      * This method computes result = alpha * this * x + beta * y. If
      * result == x or result == y new storage is allocated to store the result.
      */
     virtual void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const = 0;
+        const _Vector& y ) const = 0;
 
     virtual void vectorTimesMatrix(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const = 0;
+        const _Vector& y ) const = 0;
 
     /**
      * @brief Computes this = alpha * other.
@@ -1037,9 +1037,9 @@ public:
      *  This routine might be very helpful for writing linear algebra code that works
      *  for any value type of matrices.
      */
-    Vector* newVector( void ) const
+    _Vector* newVector( void ) const
     {
-        Vector* v = Vector::getVector( Vector::DENSE, getValueType() );
+        _Vector* v = _Vector::getVector( _Vector::DENSE, getValueType() );
         v->setContextPtr( getContextPtr() );
         return v;
     }
@@ -1052,9 +1052,9 @@ public:
      *  Be careful: the vector remains uninitialized.
      */
 
-    Vector* newVector( dmemo::DistributionPtr dist ) const
+    _Vector* newVector( dmemo::DistributionPtr dist ) const
     {
-        Vector* v = Vector::getVector( Vector::DENSE, getValueType() );
+        _Vector* v = _Vector::getVector( _Vector::DENSE, getValueType() );
         v->setContextPtr( getContextPtr() );
         v->allocate( dist );
         return v;

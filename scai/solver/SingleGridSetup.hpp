@@ -73,11 +73,11 @@ public:
 
     virtual const lama::Matrix& getInterpolation( const unsigned int level );
 
-    virtual lama::Vector& getSolutionVector( const unsigned int level );
+    virtual lama::_Vector& getSolutionVector( const unsigned int level );
 
-    virtual lama::Vector& getRhsVector( const unsigned int level );
+    virtual lama::_Vector& getRhsVector( const unsigned int level );
 
-    virtual lama::Vector& getTmpResVector( const unsigned int level );
+    virtual lama::_Vector& getTmpResVector( const unsigned int level );
 
     virtual std::string getCouplingPredicateInfo() const;
 
@@ -125,9 +125,9 @@ private:
     SolverPtr    mSolver;
     common::unique_ptr<lama::Matrix> mIdentity;
 
-    common::unique_ptr<lama::Vector> mSolutionVector;
-    common::unique_ptr<lama::Vector> mRhsVector;
-    common::unique_ptr<lama::Vector> mTmpResVector;
+    common::unique_ptr<lama::_Vector> mSolutionVector;
+    common::unique_ptr<lama::_Vector> mRhsVector;
+    common::unique_ptr<lama::_Vector> mTmpResVector;
 
 };
 

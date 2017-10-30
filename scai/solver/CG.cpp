@@ -54,7 +54,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 CG::CG( const std::string& id )
@@ -109,12 +109,12 @@ void CG::iterate()
         this->getResidual();
     }
 
-    Vector& residual = *runtime.mResidual;
+    _Vector& residual = *runtime.mResidual;
     const Matrix& A = *runtime.mCoefficients;
-    Vector& x = *runtime.mSolution;
-    Vector& p = *runtime.mP;
-    Vector& q = *runtime.mQ;
-    Vector& z = *runtime.mZ;
+    _Vector& x = *runtime.mSolution;
+    _Vector& p = *runtime.mP;
+    _Vector& q = *runtime.mQ;
+    _Vector& z = *runtime.mZ;
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //CG implementation start

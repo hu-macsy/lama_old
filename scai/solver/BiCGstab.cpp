@@ -59,7 +59,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::_Vector;
 using lama::Scalar;
 
 BiCGstab::BiCGstab( const std::string& id )
@@ -103,7 +103,7 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mVecTT.reset( coefficients.newVector( rowDist ) );
 }
 
-void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
+void BiCGstab::solveInit( _Vector& solution, const _Vector& rhs )
 {
     BiCGstabRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -136,16 +136,16 @@ void BiCGstab::iterate()
 {
     BiCGstabRuntime& runtime    = getRuntime();
     const Matrix& A = *runtime.mCoefficients;
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecS = *runtime.mVecS;
-    Vector& vecT = *runtime.mVecT;
-    Vector& solution = *runtime.mSolution;
-    Vector& vecPT = *runtime.mVecPT;
-    Vector& vecST = *runtime.mVecST;
-    Vector& vecTT = *runtime.mVecTT;
+    const _Vector& res0 = *runtime.mRes0;
+    _Vector& res = *runtime.mResidual;
+    _Vector& vecV = *runtime.mVecV;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& vecS = *runtime.mVecS;
+    _Vector& vecT = *runtime.mVecT;
+    _Vector& solution = *runtime.mSolution;
+    _Vector& vecPT = *runtime.mVecPT;
+    _Vector& vecST = *runtime.mVecST;
+    _Vector& vecTT = *runtime.mVecTT;
     Scalar& alpha = runtime.mAlpha;
     Scalar& beta = runtime.mBeta;
     Scalar& omega = runtime.mOmega;

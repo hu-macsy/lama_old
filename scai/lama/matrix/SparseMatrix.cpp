@@ -803,11 +803,11 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getRowLocal( Vector& row, const IndexType localRowIndex ) const
+void SparseMatrix<ValueType>::getRowLocal( _Vector& row, const IndexType localRowIndex ) const
 {
     SCAI_ASSERT_EQ_ERROR( row.getValueType(), getValueType(), "type mismatch" )
 
-    if ( row.getVectorKind() == Vector::SPARSE )
+    if ( row.getVectorKind() == _Vector::SPARSE )
     {
         SparseVector<ValueType>& sparseRow = reinterpret_cast<SparseVector<ValueType>&>( row );
 
@@ -830,7 +830,7 @@ void SparseMatrix<ValueType>::getRowLocal( Vector& row, const IndexType localRow
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowIndex ) const
+void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getRow" )
 
@@ -839,7 +839,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 
     // if v is not a sparse vector, use a temporary sparse vector
 
-    if ( row.getVectorKind() != Vector:: SPARSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != _Vector:: SPARSE || row.getValueType() != getValueType() )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getRow( DenseVector, " << globalRowIndex << ") requires temporary" )
         SparseVector<ValueType> spRow;
@@ -968,7 +968,7 @@ void SparseMatrix<ValueType>::getRow( Vector& row, const IndexType globalRowInde
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColIndex ) const
+void SparseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalColIndex ) const
 {
     SCAI_REGION( "Mat.Sp.getCol" )
 
@@ -976,7 +976,7 @@ void SparseMatrix<ValueType>::getColumn( Vector& col, const IndexType globalColI
 
     // if col is not a sparse vector use a temporary sparse vector
 
-    if ( col.getVectorKind() != Vector:: SPARSE || col.getValueType() != getValueType() )
+    if ( col.getVectorKind() != _Vector:: SPARSE || col.getValueType() != getValueType() )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex 
                                << ") requires temporary vector for col, kind = " << col.getVectorKind() )
@@ -1181,14 +1181,14 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
+void SparseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
     }
 
-    if ( diagonal.getVectorKind() != Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
     {
         DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
         getDiagonal( tmpDiagonal );
@@ -1207,7 +1207,7 @@ void SparseMatrix<ValueType>::getDiagonal( Vector& diagonal ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
+void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
@@ -1219,7 +1219,7 @@ void SparseMatrix<ValueType>::setDiagonal( const Vector& diagonal )
         COMMON_THROWEXCEPTION( "diagonal must have same distribution as matrix" )
     }
 
-    if ( diagonal.getVectorKind() != Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
         DenseVector<ValueType> tmpDiagonal( diagonal );
@@ -1249,7 +1249,7 @@ void SparseMatrix<ValueType>::setDiagonal( Scalar value )
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::reduce(
-    Vector& v, 
+    _Vector& v, 
     const IndexType dim,
     const common::binary::BinaryOp reduceOp,
     const common::unary::UnaryOp elemOp ) const
@@ -1257,7 +1257,7 @@ void SparseMatrix<ValueType>::reduce(
     SCAI_REGION( "Mat.Sp.reduce" )
 
     SCAI_ASSERT_EQ_ERROR( v.getValueType(), getValueType(), "type mismatch" )
-    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), Vector::DENSE, "result vector in reduce must be DENSE" )
+    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), _Vector::DENSE, "result vector in reduce must be DENSE" )
 
     DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
 
@@ -1330,7 +1330,7 @@ void SparseMatrix<ValueType>::reduce(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::scale( const Vector& scaling )
+void SparseMatrix<ValueType>::scale( const _Vector& scaling )
 {
     SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )
     HArray<ValueType> localValues;

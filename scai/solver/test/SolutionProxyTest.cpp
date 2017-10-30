@@ -42,7 +42,7 @@ using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
-typedef Vector VectorType;
+typedef _Vector VectorType;
 typedef SolutionProxy ProxyType;
 
 /* --------------------------------------------------------------------- */

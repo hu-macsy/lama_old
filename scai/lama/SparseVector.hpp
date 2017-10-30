@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -73,8 +73,8 @@ template<typename ValueType> class DenseVector;
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseVector:
 
-    public Vector,
-    public Vector::Register<SparseVector<ValueType> >    // register at factory
+    public _Vector,
+    public _Vector::Register<SparseVector<ValueType> >    // register at factory
 
 {
 public:
@@ -168,7 +168,7 @@ public:
      *     sub( vd );               // compile error to avoid implicit conversions
      * \endcode
      */
-    explicit SparseVector( const Vector& other );
+    explicit SparseVector( const _Vector& other );
 
     /**
      * @brief creates a redistributed copy of the passed vector
@@ -178,7 +178,7 @@ public:
      *
      * Must be valid: other.size() == distribution.getGlobalSize()
      */
-    explicit SparseVector( const Vector& other, dmemo::DistributionPtr distribution );
+    explicit SparseVector( const _Vector& other, dmemo::DistributionPtr distribution );
 
     /**
      * @brief creates a distributed SparseVector with given local values.
@@ -311,12 +311,12 @@ public:
      */
     virtual ~SparseVector();
 
-    /** Implementation of pure method Vector::getVectorKind() */
+    /** Implementation of pure method _Vector::getVectorKind() */
 
     inline virtual VectorKind getVectorKind() const;
 
     /**
-     * @brief Implementation of pure method Vector::isConsistent 
+     * @brief Implementation of pure method _Vector::isConsistent 
      */
     virtual bool isConsistent() const;
 
@@ -324,7 +324,7 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr distribution );
 
-    /** Implememenation of pure routine Vector::allocate. */
+    /** Implememenation of pure routine _Vector::allocate. */
 
     virtual void allocate( const IndexType n );
 
@@ -336,11 +336,11 @@ public:
 
     SparseVector& operator=( const SparseVector<ValueType>& other );
 
-    /** Implementation of pure method Vector::asign 
+    /** Implementation of pure method _Vector::asign 
      *
      *  uses metaprogramming to call assignImpl with actual type and kind
      */
-    virtual void assign( const Vector& other );
+    virtual void assign( const _Vector& other );
 
     template<typename OtherValueType>
     void assignImpl( const SparseVector<OtherValueType>& other );
@@ -350,15 +350,15 @@ public:
 
     // All other assignment operators are inherited from class Vector, but using is required
 
-    using Vector::operator=;
-    using Vector::assign;
+    using _Vector::operator=;
+    using _Vector::assign;
 
-    /** Implemenation of pure method Vector::concatenate */
+    /** Implemenation of pure method _Vector::concatenate */
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector*>& vectors );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors );
 
     /**
-     * Implementation of Vector::fillRandom for sparse vectors.
+     * Implementation of _Vector::fillRandom for sparse vectors.
      *
      * This method is only available to keep consistency with the dense vector.
      * If applied to a sparse vector it would not remain really sparse. 
@@ -374,12 +374,12 @@ public:
      */
     virtual void fillSparseRandom( const float fillRate, const IndexType bound );
 
-    /** Implementation of Vector::getValueType */
+    /** Implementation of _Vector::getValueType */
 
     virtual common::scalar::ScalarType getValueType() const;
 
     /**
-     * @brief Implementation of pure method Vector::buildLocalValues.
+     * @brief Implementation of pure method _Vector::buildLocalValues.
      * 
      * For a sparse vector this routine builds a dense local part (COPY) or
      * it scatters its values in the localValues array corresponding to op.
@@ -390,7 +390,7 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
-     * @brief Implementation of pure method Vector::gatherLocalValues.
+     * @brief Implementation of pure method _Vector::gatherLocalValues.
      * 
      * For a sparse vector each of the required indexes must be searched in the
      * nonZeroIndexes. The corresponding position can be used to get the required value.
@@ -401,21 +401,21 @@ public:
         const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    /** Implementation of _SpaseVector::getNonZeroValues */
+    /** Get the array with the non-zero values. */
 
-    virtual const hmemo::HArray<ValueType>& getNonZeroValues() const;
+    const hmemo::HArray<ValueType>& getNonZeroValues() const;
 
-    /** Implementation of _SpaseVector::getNonZeroIndexes */
+    /** Get the array with the non-zero indexes. */
 
-    virtual const hmemo::HArray<IndexType>& getNonZeroIndexes() const;
+    const hmemo::HArray<IndexType>& getNonZeroIndexes() const;
 
     /**
-     * Implementation of pure method Vector::setDenseValues.
+     * Implementation of pure method _Vector::setDenseValues.
      */
     virtual void setDenseValues( const hmemo::_HArray& values );
 
     /**
-     * Implementation of pure method Vector::fillSparseData
+     * Implementation of pure method _Vector::fillSparseData
      */
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
@@ -450,12 +450,12 @@ public:
     void swapSparseValues( hmemo::HArray<IndexType>& nonZeroIndexes, hmemo::HArray<ValueType>& nonZeroValues );
 
     /**
-     * Implementation of Vector::copy with covariant return type.
+     * Implementation of _Vector::copy with covariant return type.
      */
     virtual SparseVector* copy() const;
 
     /**
-     * Implementation of Vector::newVector with covariant return type.
+     * Implementation of _Vector::newVector with covariant return type.
      */
     virtual SparseVector* newVector() const;
 
@@ -473,64 +473,64 @@ public:
 
     virtual Scalar l2Norm() const;
 
-    /** Implementation of pure method Vector::maxNorm */
+    /** Implementation of pure method _Vector::maxNorm */
 
     virtual Scalar maxNorm() const;
 
-    /** Implementation of pure method Vector::maxDiffNorm */
+    /** Implementation of pure method _Vector::maxDiffNorm */
 
-    virtual Scalar maxDiffNorm( const Vector& other ) const;
+    virtual Scalar maxDiffNorm( const _Vector& other ) const;
 
-    /** Implementation of pure method Vector::all */
+    /** Implementation of pure method _Vector::all */
 
     virtual bool all( common::binary::CompareOp op, const Scalar value ) const;
 
-    /** Implementation of pure method Vector::all */
+    /** Implementation of pure method _Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const Vector& other ) const;
+    virtual bool all( common::binary::CompareOp op, const _Vector& other ) const;
 
-    virtual void swap( Vector& other );
+    virtual void swap( _Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Implementation of pure method Vector::vectorPlusVector */
+    /** Implementation of pure method _Vector::vectorPlusVector */
 
-    virtual void vectorPlusVector( const Scalar& alphaS, const Vector& x, const Scalar& betaS, const Vector& y );
+    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y );
 
     /** Implmentation of vectorPlusVector for sparse vectors of same type */
 
     void vectorPlusVectorImpl( const ValueType alpha, const SparseVector<ValueType>& x, 
                                const ValueType beta, const SparseVector<ValueType>& y );
 
-    /** Implementation of pure method Vector::vectorTimesVector */
+    /** Implementation of pure method _Vector::vectorTimesVector */
 
-    virtual void vectorTimesVector( const Scalar& alphaS, const Vector& x, const Vector& y );
+    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y );
 
-    /** Implementation of pure method Vector::vectorPlusScalar */
+    /** Implementation of pure method _Vector::vectorPlusScalar */
 
-    virtual void vectorPlusScalar( const Scalar& alphaS, const Vector& x, const Scalar& betaS );
+    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS );
 
     /** Assign this vector with a scalar values, does not change size, distribution. */
 
     virtual void assign( const Scalar value );
 
-    /** Implementation of pure method Vector::dotProduct */
+    /** Implementation of pure method _Vector::dotProduct */
 
-    virtual Scalar dotProduct( const Vector& other ) const;
+    virtual Scalar dotProduct( const _Vector& other ) const;
 
-    /** Implementation of pure method Vector::setVector */
+    /** Implementation of pure method _Vector::setVector */
 
-    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setVector( const _Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
 
-    /** Implementation of pure method Vector::setScalar */
+    /** Implementation of pure method _Vector::setScalar */
 
     virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false );
 
-    /** Implementation of pure method Vector::applyUnary */
+    /** Implementation of pure method _Vector::applyUnary */
 
     virtual void applyUnary( common::unary::UnaryOp op );
 
-    using Vector::prefetch; // prefetch() with no arguments
+    using _Vector::prefetch; // prefetch() with no arguments
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
@@ -538,17 +538,17 @@ public:
 
     virtual size_t getMemoryUsage() const;
 
-    /** Implementation of pure method Vector::redistribute */
+    /** Implementation of pure method _Vector::redistribute */
 
     virtual void redistribute( dmemo::DistributionPtr distribution );
 
-    /** Implementation of pure method Vector::redistribute */
+    /** Implementation of pure method _Vector::redistribute */
 
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
 private:
 
-    using Vector::mContext;
+    using _Vector::mContext;
 
     /** Help routine for binary operation of two sparse vectors */
 
@@ -563,7 +563,7 @@ private:
 
     mutable utilskernel::LArray<ValueType> mHaloValues;
 
-    /** Implementation of Vector::writeLocalToFile */
+    /** Implementation of _Vector::writeLocalToFile */
 
     virtual void writeLocalToFile(
         const std::string& fileName,
@@ -571,11 +571,11 @@ private:
         const common::scalar::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
-    /** Implementation of Vector::readLocalFromFile */
+    /** Implementation of _Vector::readLocalFromFile */
 
     virtual IndexType readLocalFromFile( const std::string& fileName, const IndexType first = 0, const IndexType size = nIndex );
 
-    /** Implementation of Vector::clearValues */
+    /** Implementation of _Vector::clearValues */
 
     virtual void clearValues();
 
@@ -583,7 +583,7 @@ public:
 
     // static methods, variables to register create routine in Vector factory of base class.
 
-    static Vector* create();
+    static _Vector* create();
 
     // key for factory
 
@@ -606,7 +606,7 @@ SparseVector<ValueType>::SparseVector(
     const OtherValueType zeroValue,
     hmemo::ContextPtr context ) :
 
-    Vector( size, context )
+    _Vector( size, context )
 
 {
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );
@@ -637,9 +637,9 @@ void SparseVector<ValueType>::setSparseValues(
 }
 
 template<typename ValueType>
-Vector::VectorKind SparseVector<ValueType>::getVectorKind() const
+_Vector::VectorKind SparseVector<ValueType>::getVectorKind() const
 {
-    return Vector::SPARSE;
+    return SPARSE;
 }
 
 template<typename ValueType>

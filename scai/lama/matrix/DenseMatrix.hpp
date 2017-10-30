@@ -280,26 +280,26 @@ public:
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
     virtual void matrixTimesVector(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
     }
 
     virtual void vectorTimesMatrix(
-        Vector& result,
+        _Vector& result,
         const Scalar alpha,
-        const Vector& x,
+        const _Vector& x,
         const Scalar beta,
-        const Vector& y ) const
+        const _Vector& y ) const
     {
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
     }
 
-    virtual void setRow( const Vector& row,
+    virtual void setRow( const _Vector& row,
                          const IndexType globalRowIndex,
                          const common::binary::BinaryOp op )
     {
@@ -307,7 +307,7 @@ public:
     }
 
     virtual void setColumn(
-        const Vector& column,
+        const _Vector& column,
         const IndexType globalColIndex,
         const common::binary::BinaryOp op )
     {
@@ -429,11 +429,11 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void getDiagonal( Vector& diagonal ) const;
+    virtual void getDiagonal( _Vector& diagonal ) const;
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void setDiagonal( const Vector& diagonal );
+    virtual void setDiagonal( const _Vector& diagonal );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -442,14 +442,14 @@ public:
     /* Implementation of pure method of class Matrix. */
 
     virtual void reduce( 
-        Vector& v, 
+        _Vector& v, 
         const IndexType dim, 
         const common::binary::BinaryOp reduceOp, 
         const common::unary::UnaryOp elemOp ) const;
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual void scale( const Vector& values );
+    virtual void scale( const _Vector& values );
 
     /* Implementation of pure method of class Matrix. */
 
@@ -636,15 +636,15 @@ public:
 
     /** Implementation of pure methode Matrix::getRow */
 
-    virtual void getRow( Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
 
     /** Implementation of pure methode Matrix::getRowLocal */
 
-    virtual void getRowLocal( Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRowLocal( _Vector& row, const IndexType globalRowIndex ) const;
 
     /** Implementation of pure methode Matrix::getColumn */
 
-    virtual void getColumn( Vector& col, const IndexType globalColIndex ) const;
+    virtual void getColumn( _Vector& col, const IndexType globalColIndex ) const;
 
     /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
 
