@@ -58,7 +58,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -81,7 +81,7 @@ BiCGstab::~BiCGstab() {}
 
 BiCGstab::BiCGstabRuntime::~BiCGstabRuntime() {}
 
-void BiCGstab::initialize( const Matrix& coefficients )
+void BiCGstab::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -135,7 +135,7 @@ void BiCGstab::solveInit( _Vector& solution, const _Vector& rhs )
 void BiCGstab::iterate()
 {
     BiCGstabRuntime& runtime    = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     const _Vector& res0 = *runtime.mRes0;
     _Vector& res = *runtime.mResidual;
     _Vector& vecV = *runtime.mVecV;

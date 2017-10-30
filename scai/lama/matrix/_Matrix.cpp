@@ -60,21 +60,21 @@ using namespace dmemo;
 namespace lama
 {
 
-SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
+SCAI_LOG_DEF_LOGGER( _Matrix::logger, "Matrix" )
 
 /* ---------------------------------------------------------------------------------------*/
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Matrix* Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType valueType )
+_Matrix* _Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType valueType )
 {
     MatrixCreateKeyType mattype( format, valueType );
-    return Matrix::create( mattype );
+    return _Matrix::create( mattype );
 }
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( const Matrix& other ) :
+_Matrix::_Matrix( const _Matrix& other ) :
 
     Distributed( other ),
     mColDistribution( other.mColDistribution ),
@@ -85,7 +85,7 @@ Matrix::Matrix( const Matrix& other ) :
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist ) :
+_Matrix::_Matrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist ) :
 
     Distributed( rowDist ),
     mColDistribution( colDist ),
@@ -99,18 +99,18 @@ Matrix::Matrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr co
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( const IndexType numRows, const IndexType numColumns ) :
+_Matrix::_Matrix( const IndexType numRows, const IndexType numColumns ) :
 
     Distributed( DistributionPtr( new NoDistribution( numRows ) ) ),
     mColDistribution( DistributionPtr( new NoDistribution( numColumns ) ) )
 {
     setDefaultKind();
-    SCAI_LOG_INFO( logger, "Creating a replicated Matrix of size " << numRows << " x " << numColumns )
+    SCAI_LOG_INFO( logger, "Creating a replicated _Matrix of size " << numRows << " x " << numColumns )
 }
 
 /* ----------------------------------------------------------------------- */
 
-void Matrix::setIdentity( const IndexType n )
+void _Matrix::setIdentity( const IndexType n )
 {
     // take replicated distribution and use pure method
     setIdentity( DistributionPtr( new NoDistribution( n ) ) );
@@ -118,7 +118,7 @@ void Matrix::setIdentity( const IndexType n )
 
 /* ----------------------------------------------------------------------- */
 
-void Matrix::setDiagonalProperty()
+void _Matrix::setDiagonalProperty()
 {
     SCAI_ASSERT_EQ_ERROR( getRowDistribution(), getColDistribution(),
                           "col/row distribution must be equal to set diagonal property" );
@@ -149,7 +149,7 @@ void Matrix::setDiagonalProperty()
 
 /* ----------------------------------------------------------------------- */
 
-void Matrix::checkSettings() const
+void _Matrix::checkSettings() const
 {
     if ( !mColDistribution )
     {
@@ -159,26 +159,26 @@ void Matrix::checkSettings() const
 
 /* ----------------------------------------------------------------------- */
 
-Matrix::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
+_Matrix::_Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
     : Distributed( rowDistribution )
 {
     setDistributedMatrix( rowDistribution, colDistribution );
     setDefaultKind();
     SCAI_LOG_INFO( logger,
-                   "Construct a Matrix of size " << getNumRows() << " x " << getNumColumns() 
+                   "Construct a _Matrix of size " << getNumRows() << " x " << getNumColumns() 
                     << " with the distribution " << getDistribution() )
 }
 
-Matrix::Matrix( DistributionPtr distribution )
+_Matrix::_Matrix( DistributionPtr distribution )
     : Distributed( distribution )
 {
     setDistributedMatrix( distribution, distribution );
     SCAI_LOG_INFO( logger,
-                   "Construct a square Matrix of size " << getNumRows() << " x " << getNumColumns() 
+                   "Construct a square _Matrix of size " << getNumRows() << " x " << getNumColumns() 
                    << " with the row/col distribution " << getDistribution() )
 }
 
-Matrix::Matrix() : 
+_Matrix::_Matrix() : 
 
     Distributed( DistributionPtr( new NoDistribution( 0 ) ) ), 
     mColDistribution( DistributionPtr( new NoDistribution( 0 ) ) )
@@ -186,12 +186,12 @@ Matrix::Matrix() :
     setDefaultKind();
 }
 
-Matrix::~Matrix()
+_Matrix::~_Matrix()
 {
     SCAI_LOG_DEBUG( logger, "~Matrix" )
 }
 
-Matrix::SyncKind Matrix::getDefaultSyncKind()
+_Matrix::SyncKind _Matrix::getDefaultSyncKind()
 {
     static bool computed = false;
 
@@ -212,21 +212,21 @@ Matrix::SyncKind Matrix::getDefaultSyncKind()
     return syncKind;
 }
 
-void Matrix::setDefaultKind()
+void _Matrix::setDefaultKind()
 {
     mCommunicationKind = getDefaultSyncKind();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
+void _Matrix::buildCSRGraph( IndexType ia[], IndexType ja[], IndexType vwgt[], const IndexType* globalIndexes ) const
 {
     getLocalStorage().buildCSRGraph( ia, ja, vwgt, globalIndexes );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-IndexType Matrix::getCSRGraphSize() const
+IndexType _Matrix::getCSRGraphSize() const
 {
     // Currently only supported if column distribution is replicated
     SCAI_ASSERT_EQ_ERROR( getNumColumns(), getLocalStorage().getNumColumns(), "getCSRGraphSize only for replicated column distribution" )
@@ -236,7 +236,7 @@ IndexType Matrix::getCSRGraphSize() const
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
+void _Matrix::setDistributedMatrix( DistributionPtr rowDistribution, DistributionPtr colDistribution )
 {
     SCAI_ASSERT_ERROR( rowDistribution, "NULL row distribution for matrix not allowed" )
     SCAI_ASSERT_ERROR( colDistribution, "NULL column distribution for matrix not allowed" )
@@ -246,7 +246,7 @@ void Matrix::setDistributedMatrix( DistributionPtr rowDistribution, Distribution
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numColumns )
+void _Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numColumns )
 {
     DistributionPtr rowDist( new NoDistribution( numRows ) );
 
@@ -262,21 +262,21 @@ void Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numCo
 
 /* ---------------------------------------------------------------------------------*/
 
-Scalar Matrix::operator()( IndexType i, IndexType j ) const
+Scalar _Matrix::operator()( IndexType i, IndexType j ) const
 {
     return getValue( i, j );
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::setCommunicationKind( SyncKind communicationKind )
+void _Matrix::setCommunicationKind( SyncKind communicationKind )
 {
     mCommunicationKind = communicationKind;
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::inheritAttributes( const Matrix& other )
+void _Matrix::inheritAttributes( const _Matrix& other )
 {
     setCommunicationKind( other.getCommunicationKind() );
     setContextPtr( other.getContextPtr() );
@@ -284,14 +284,14 @@ void Matrix::inheritAttributes( const Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::writeAt( std::ostream& stream ) const
+void _Matrix::writeAt( std::ostream& stream ) const
 {
     stream << "Matrix(" << getNumRows() << "x" << getNumColumns() << ")";
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( const Matrix& other )
+_Matrix& _Matrix::operator=( const _Matrix& other )
 {
     // assignment operator is just implemented by the assign method
     SCAI_LOG_INFO( logger, *this << ": operator = " << other )
@@ -302,10 +302,10 @@ Matrix& Matrix::operator=( const Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( const Expression_SM& exp )
+_Matrix& _Matrix::operator=( const Expression_SM& exp )
 {
     // exp is Expression object that stands for s * A
-    const Matrix& A = exp.getArg2();
+    const _Matrix& A = exp.getArg2();
     const Scalar& s = exp.getArg1();
     this->matrixTimesScalar( A, s );
     return *this;
@@ -313,7 +313,7 @@ Matrix& Matrix::operator=( const Expression_SM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator*=( const Scalar exp )
+_Matrix& _Matrix::operator*=( const Scalar exp )
 {
     // this *= alpha  -> this->scale( exp )
     this->scale( exp );
@@ -322,7 +322,7 @@ Matrix& Matrix::operator*=( const Scalar exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator+=( const Expression_SM& exp )
+_Matrix& _Matrix::operator+=( const Expression_SM& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
     *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
@@ -331,7 +331,7 @@ Matrix& Matrix::operator+=( const Expression_SM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator-=( const Expression_SM& exp )
+_Matrix& _Matrix::operator-=( const Expression_SM& exp )
 {
     // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
     Expression_SM minusExp( -exp.getArg1(), exp.getArg2() );
@@ -341,7 +341,7 @@ Matrix& Matrix::operator-=( const Expression_SM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator+=( const Matrix& exp )
+_Matrix& _Matrix::operator+=( const _Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
@@ -350,7 +350,7 @@ Matrix& Matrix::operator+=( const Matrix& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator-=( const Matrix& exp )
+_Matrix& _Matrix::operator-=( const _Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
@@ -359,7 +359,7 @@ Matrix& Matrix::operator-=( const Matrix& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix& Matrix::operator=( const Expression_SMM& exp )
+_Matrix& _Matrix::operator=( const Expression_SMM& exp )
 {
     // exp is Expression object that stands for A * B with matrices A * B
     //   ->   1.0 * A * B + 0.0 * A
@@ -370,7 +370,7 @@ Matrix& Matrix::operator=( const Expression_SMM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::swapMatrix( Matrix& other )
+void _Matrix::swapMatrix( _Matrix& other )
 {
     Distributed::swap( other );
     std::swap( mColDistribution, other.mColDistribution );
@@ -378,14 +378,14 @@ void Matrix::swapMatrix( Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-double Matrix::getSparsityRate() const
+double _Matrix::getSparsityRate() const
 {
     return ( double ) getNumValues() / getNumRows() / getNumColumns();
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-bool Matrix::checkSymmetry() const
+bool _Matrix::checkSymmetry() const
 {
     // check symmetry of matrix
     IndexType n = getNumRows();
@@ -413,11 +413,11 @@ bool Matrix::checkSymmetry() const
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
+void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp )
 {
     // check sanity of matrix product exp = A * B
-    const Matrix& A = exp.getArg1();
-    const Matrix& B = exp.getArg2();
+    const _Matrix& A = exp.getArg1();
+    const _Matrix& B = exp.getArg2();
     const Distribution& colDistA = A.getColDistribution();
     const Distribution& rowDistB = B.getDistribution();
 
@@ -428,12 +428,12 @@ void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp )
     }
 }
 
-void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C )
+void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C )
 {
     sanityCheck( exp ); // verify the sanity of the matrix product
     // verify that result of matrix multiplication and C are conform
-    const Matrix& A = exp.getArg1();
-    const Matrix& B = exp.getArg2();
+    const _Matrix& A = exp.getArg1();
+    const _Matrix& B = exp.getArg2();
     const Distribution& rowDistA = A.getDistribution();
     const Distribution& colDistB = B.getColDistribution();
     const Distribution& rowDistC = C.getDistribution();
@@ -450,7 +450,7 @@ void Matrix::sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Ma
     }
 }
 
-void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
+void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
 {
     // verify that A and B are conform for addition
     const Distribution& rowDistA = A.getDistribution();
@@ -474,14 +474,14 @@ void Matrix::sanityCheck( const Matrix& A, const Matrix& B )
 /**
  * @brief the assignment operator for a GEMM expression.
  */
-Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
+_Matrix& _Matrix::operator=( const Expression_SMM_SM& exp )
 {
     const Expression_SMM& arg1 = exp.getArg1();
     const Expression_SM& arg11 = arg1.getArg1();
     const Expression_SM& arg2 = exp.getArg2();
-    const Matrix& A = arg11.getArg2();
-    const Matrix& B = arg1.getArg2();
-    const Matrix& C = arg2.getArg2();
+    const _Matrix& A = arg11.getArg2();
+    const _Matrix& B = arg1.getArg2();
+    const _Matrix& C = arg2.getArg2();
     const Scalar& alpha = arg11.getArg1();
     const Scalar& beta = arg2.getArg1();
     SCAI_LOG_INFO( logger,
@@ -490,11 +490,11 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
 
     if ( beta == zero )
     {
-        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ) );
+        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ) );
     }
     else
     {
-        sanityCheck( Expression<Matrix, Matrix, Times>( A, B ), C );
+        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ), C );
     }
 
     SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
@@ -509,11 +509,11 @@ Matrix& Matrix::operator=( const Expression_SMM_SM& exp )
 /**
  * @brief the assignment operator for a MM addition.
  */
-Matrix& Matrix::operator=( const Expression_SM_SM& exp )
+_Matrix& _Matrix::operator=( const Expression_SM_SM& exp )
 {
     SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
-    const Matrix& A = exp.getArg1().getArg2();
-    const Matrix& B = exp.getArg2().getArg2();
+    const _Matrix& A = exp.getArg1().getArg2();
+    const _Matrix& B = exp.getArg2().getArg2();
     const Scalar& alpha = exp.getArg1().getArg1();
     const Scalar& beta = exp.getArg2().getArg1();
     const Scalar zero( 0.0 );
@@ -540,7 +540,7 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::writeToSingleFile(
+void _Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
@@ -568,14 +568,14 @@ void Matrix::writeToSingleFile(
     {
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
+        common::unique_ptr<_Matrix> repM( copy( rowDist, colDist ) );
         repM->writeToSingleFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::writeToPartitionedFile(
+void _Matrix::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
@@ -594,14 +594,14 @@ void Matrix::writeToPartitionedFile(
     else
     {
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        common::unique_ptr<Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
+        common::unique_ptr<_Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
         repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::writeToFile(
+void _Matrix::writeToFile(
     const std::string& fileName,
     const std::string& fileType,
     const common::scalar::ScalarType dataType,
@@ -631,7 +631,7 @@ void Matrix::writeToFile(
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::readFromSingleFile( const std::string& fileName )
+void _Matrix::readFromSingleFile( const std::string& fileName )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -672,7 +672,7 @@ void Matrix::readFromSingleFile( const std::string& fileName )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
+void _Matrix::readFromSingleFile( const std::string& fileName, const DistributionPtr distribution )
 {
     if ( distribution.get() == NULL )
     {
@@ -730,7 +730,7 @@ void Matrix::readFromSingleFile( const std::string& fileName, const Distribution
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
+void _Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
 {
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
@@ -783,7 +783,7 @@ void Matrix::readFromPartitionedFile( const std::string& myPartitionFileName )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::resetRowDistribution( DistributionPtr newDist )
+void _Matrix::resetRowDistribution( DistributionPtr newDist )
 {
     SCAI_ASSERT_EQ_ERROR( getNumRows(), newDist->getGlobalSize(), "global size mismatch" )
 
@@ -796,7 +796,7 @@ void Matrix::resetRowDistribution( DistributionPtr newDist )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::resetRowDistributionByFirstColumn()
+void _Matrix::resetRowDistributionByFirstColumn()
 {
     if ( getRowDistribution().isReplicated() )
     {
@@ -848,7 +848,7 @@ void Matrix::resetRowDistributionByFirstColumn()
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::readFromFile( const std::string& matrixFileName, const std::string& distributionFileName )
+void _Matrix::readFromFile( const std::string& matrixFileName, const std::string& distributionFileName )
 {
     if ( distributionFileName.size() == 0 )
     {
@@ -895,7 +895,7 @@ void Matrix::readFromFile( const std::string& matrixFileName, const std::string&
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist )
+void _Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist )
 {
     SCAI_LOG_INFO( logger,
                    *this << ": readFromFile( " << fileName << " )" )
@@ -913,7 +913,7 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
     PartitionIO::getPartitionFileName( newFileName, isPartitioned, *comm );
 
-    SCAI_LOG_INFO( logger, *comm << ": Matrix.readFromFile ( " << fileName << " ) -> read "
+    SCAI_LOG_INFO( logger, *comm << ": _Matrix.readFromFile ( " << fileName << " ) -> read "
                    << newFileName << ", partitioned = " << isPartitioned );
 
     if ( !isPartitioned )
@@ -933,7 +933,7 @@ void Matrix::readFromFile( const std::string& fileName, DistributionPtr rowDist 
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices )
+void _Matrix::concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const _Matrix*>& matrices )
 {
     COMMON_THROWEXCEPTION( "concatenation of matrices not supported, #matrices = " << matrices.size()
                            << ", row dist = " << *rowDist << ", col dist = " << *colDist )
@@ -941,7 +941,7 @@ void Matrix::concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
+void _Matrix::vcat( const _Matrix& m1, const _Matrix& m2 )
 {
     SCAI_ASSERT_EQ_ERROR( m1.getRowDistribution(), m2.getRowDistribution(), "vcat: matrices must have same row distribution" )
 
@@ -949,7 +949,7 @@ void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
 
     DistributionPtr colDist( new NoDistribution( m1.getNumColumns() + m2.getNumColumns() ) );
 
-    std::vector<const Matrix*> matrices;
+    std::vector<const _Matrix*> matrices;
 
     matrices.push_back( &m1 );
     matrices.push_back( &m2 );
@@ -959,7 +959,7 @@ void Matrix::vcat( const Matrix& m1, const Matrix& m2 )
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::hcat( const Matrix& m1, const Matrix& m2 )
+void _Matrix::hcat( const _Matrix& m1, const _Matrix& m2 )
 {
     SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
  
@@ -968,7 +968,7 @@ void Matrix::hcat( const Matrix& m1, const Matrix& m2 )
     DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) ); 
     DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
     
-    std::vector<const Matrix*> matrices;
+    std::vector<const _Matrix*> matrices;
 
     matrices.push_back( &m1 );
     matrices.push_back( &m2 );
@@ -978,7 +978,7 @@ void Matrix::hcat( const Matrix& m1, const Matrix& m2 )
 
 /* ---------------------------------------------------------------------------------*/
 
-Scalar Matrix::maxDiffNorm( const Matrix& other ) const
+Scalar _Matrix::maxDiffNorm( const _Matrix& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();
@@ -1018,7 +1018,7 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
 
 /* ---------------------------------------------------------------------------------*/
 
-void Matrix::redistribute( const dmemo::Redistributor& redistributor )
+void _Matrix::redistribute( const dmemo::Redistributor& redistributor )
 {
     if ( getColDistribution().isReplicated() ) 
     {
@@ -1036,16 +1036,16 @@ void Matrix::redistribute( const dmemo::Redistributor& redistributor )
 
 /* ---------------------------------------------------------------------------------*/
 
-Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
+_Matrix* _Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix
-    common::unique_ptr<Matrix> rep( copy() );
+    common::unique_ptr<_Matrix> rep( copy() );
     // unique_ptr guarantees that data is freed if redistribute fails for any reason
     rep->redistribute( rowDistribution, colDistribution );
     return rep.release();
 }
 
-MatrixCreateKeyType Matrix::getCreateValue() const
+MatrixCreateKeyType _Matrix::getCreateValue() const
 {
     return MatrixCreateKeyType( getFormat(), getValueType() );
 }

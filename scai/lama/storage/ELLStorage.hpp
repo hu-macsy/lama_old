@@ -543,13 +543,13 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Matrix + Matrix for ELL only */
+    /** _Matrix + _Matrix for ELL only */
     void    matrixAddMatrixELL( const ValueType alpha,
                                 const ELLStorage<ValueType>& a,
                                 const ValueType beta,
                                 const ELLStorage<ValueType>& b );
 
-    /** Matrix times Matrix for ELL only */
+    /** _Matrix times _Matrix for ELL only */
     void matrixTimesMatrixELL( const ValueType alpha,
                                const ELLStorage<ValueType>& a,
                                const ELLStorage<ValueType>& b );

@@ -141,9 +141,9 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
 
     for ( unsigned int i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
     {
-        const Matrix& galerkin    = simpleAMGSolver.getGalerkin( i );
-        const Matrix& restriction = simpleAMGSolver.getRestriction( i );
-        const Matrix& interpol    = simpleAMGSolver.getInterpolation( i );
+        const _Matrix& galerkin    = simpleAMGSolver.getGalerkin( i );
+        const _Matrix& restriction = simpleAMGSolver.getRestriction( i );
+        const _Matrix& interpol    = simpleAMGSolver.getInterpolation( i );
         const Solver& smoother    = simpleAMGSolver.getSmoother( i );
 
         if ( i == 0 )

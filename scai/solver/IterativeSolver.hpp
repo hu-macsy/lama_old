@@ -101,7 +101,7 @@ public:
      *
      * @param coefficients The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to

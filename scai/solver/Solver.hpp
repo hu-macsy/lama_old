@@ -118,7 +118,7 @@ public:
      *
      * @param coefficients The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Solves the equation system based on the given rhs.
@@ -186,7 +186,7 @@ public:
      *
      * @return The coefficient matrix A.
      */
-    const lama::Matrix& getCoefficients() const;
+    const lama::_Matrix& getCoefficients() const;
 
     /**
      * @brief Redefines mLogger
@@ -220,7 +220,7 @@ public:
         /**
          * @brief The coefficient matrix A.
          */
-        const lama::Matrix* mCoefficients;
+        const lama::_Matrix* mCoefficients;
 
         /**
          * @brief The right-hand-side f.

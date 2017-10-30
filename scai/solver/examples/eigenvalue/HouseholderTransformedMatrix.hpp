@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Matrix class that builds HLH for a Householder matrix H = I - u * u' / alpha
+ * @brief _Matrix class that builds HLH for a Householder matrix H = I - u * u' / alpha
  * @author Thomas Brandes
  * @date 28.06.2017
  */
@@ -59,7 +59,7 @@ public:
      *  @param[in] alpha is the scaling factor.
      */
 
-    HouseholderTransformedMatrix( const Matrix& L, const _Vector& u, const Scalar alpha ) : 
+    HouseholderTransformedMatrix( const _Matrix& L, const _Vector& u, const Scalar alpha ) : 
 
         AbstractMatrix( L ),
         mL( L )
@@ -125,7 +125,7 @@ private:
     VectorPtr mR;   // help vector to make matrix * vector more efficient
     VectorPtr mS;   // help vector to make matrix * vector more efficient
 
-    const Matrix& mL;
+    const _Matrix& mL;
 };
 
 }

@@ -82,7 +82,7 @@ public:
 
     virtual ~GMRES();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     void setKrylovDim( unsigned int krylovDim );
 

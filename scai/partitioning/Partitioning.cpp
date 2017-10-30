@@ -94,7 +94,7 @@ void Partitioning::normWeights( std::vector<float>& weights )
 
 /* ---------------------------------------------------------------------- */
 
-void Partitioning::rectangularRedistribute( lama::Matrix& matrix, const float weight ) const
+void Partitioning::rectangularRedistribute( lama::_Matrix& matrix, const float weight ) const
 {
     SCAI_REGION( "partitioning.rect" )
 

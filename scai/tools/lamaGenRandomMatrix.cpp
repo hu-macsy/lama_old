@@ -160,9 +160,9 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType stype = getType();
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
+    MatrixPtr matrixPtr( _Matrix::getMatrix( _Matrix::CSR, stype ) );
 
-    Matrix& m = *matrixPtr;
+    _Matrix& m = *matrixPtr;
 
     m.allocate( nrows, ncols );
 

@@ -38,7 +38,7 @@
 namespace scai
 {
 
-using lama::Matrix;
+using lama::_Matrix;
 
 namespace solver
 {
@@ -71,7 +71,7 @@ TrivialPreconditioner::TrivialPreconditionerRuntime::~TrivialPreconditionerRunti
 {
 }
 
-void TrivialPreconditioner::initialize( const Matrix& coefficients )
+void TrivialPreconditioner::initialize( const _Matrix& coefficients )
 {
     Solver::initialize( coefficients );
 }

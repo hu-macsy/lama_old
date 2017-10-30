@@ -77,7 +77,7 @@ Scalar L2Norm::apply( const _Vector& vector ) const
     return l2Norm( vector );
 }
 
-Scalar L2Norm::apply( const Matrix& matrix ) const
+Scalar L2Norm::apply( const _Matrix& matrix ) const
 {
     return l2Norm( matrix );
 }
@@ -92,7 +92,7 @@ Scalar l2Norm( const _Vector& vector )
     return vector.l2Norm();
 }
 
-Scalar l2Norm( const Matrix& matrix )
+Scalar l2Norm( const _Matrix& matrix )
 {
     return matrix.l2Norm();
 }

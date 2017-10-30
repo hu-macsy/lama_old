@@ -52,7 +52,7 @@ namespace scai
 using tasking::SyncToken;
 
 using utilskernel::HArrayUtils;
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::DenseVector;
 using lama::Scalar;
@@ -100,11 +100,11 @@ Jacobi::JacobiRuntime::~JacobiRuntime()
     SCAI_LOG_INFO( logger, "~JacobiRuntime" )
 }
 
-void Jacobi::initialize( const Matrix& coefficients )
+void Jacobi::initialize( const _Matrix& coefficients )
 {
     using hmemo::_HArray;
 
-    if ( coefficients.getMatrixKind() == Matrix::DENSE )
+    if ( coefficients.getMatrixKind() == _Matrix::DENSE )
     {
         COMMON_THROWEXCEPTION(
             "Coefficients matrix " << typeid( coefficients ).name() << "(" << coefficients << ") is of unsupported type for Jacobi specialization (must be SparseMatrix)." );
@@ -119,11 +119,11 @@ void Jacobi::initialize( const Matrix& coefficients )
     if ( !runtime.mOldSolution.get() )
     {
         SCAI_LOG_DEBUG( logger, "Creating old solution vector using properties of the coefficient matrix. " )
-        const Matrix& m = *runtime.mCoefficients;
+        const _Matrix& m = *runtime.mCoefficients;
         runtime.mOldSolution.reset( m.newVector( m.getRowDistributionPtr() ) );
     }
 
-    if ( runtime.mCoefficients->getMatrixKind() == Matrix::SPARSE )
+    if ( runtime.mCoefficients->getMatrixKind() == _Matrix::SPARSE )
     {
         if ( !runtime.mDiagonal.get() )
         {
@@ -268,7 +268,7 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
             const HArray<ValueType>& haloX ) > haloF =
                 bind( jacobiIterateHalo, _1, _2, cref( *diagonal ), _3, omega );
 
-        if ( Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
+        if ( _Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
             void ( lama::MatrixStorage<ValueType>::*jacobiIterate )(

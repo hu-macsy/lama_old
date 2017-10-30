@@ -105,17 +105,17 @@ void matrixInfo()
 {
     using namespace scai::lama;
     vector<MatrixCreateKeyType> keys;
-    Matrix::getCreateValues( keys );
+    _Matrix::getCreateValues( keys );
     cout << endl;
-    cout << "Factory of Matrix: " << keys.size() << " entries" << endl;
+    cout << "Factory of _Matrix: " << keys.size() << " entries" << endl;
     cout << "=============================" << endl;
     cout << endl;
 
     for ( size_t i = 0; i < keys.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
-        scai::common::shared_ptr<Matrix> matrix ( Matrix::create( keys[i] ) );
-        cout << "    Matrix: " << *matrix << endl;
+        MatrixPtr matrix ( _Matrix::create( keys[i] ) );
+        cout << "    _Matrix: " << *matrix << endl;
     }
 
     cout << endl;
@@ -154,7 +154,7 @@ void normInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
-        scai::common::shared_ptr<Norm> norm( Norm::create( values[i] ) );
+        NormPtr norm( Norm::create( values[i] ) );
         cout << "      Norm: " << *norm << endl;
     }
 

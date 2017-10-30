@@ -466,7 +466,7 @@ _Vector& _Vector::operator=( const Expression_SMV& expression )
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
         // distribution is given by the row distribution of the matrix
-        const Matrix& matrix = expression.getArg2().getArg1();
+        const _Matrix& matrix = expression.getArg2().getArg1();
         DistributionPtr dist = matrix.getRowDistributionPtr();
         allocate( dist );
         // values remain uninitialized as we assume that 0.0 * this (undefined) will
@@ -489,7 +489,7 @@ _Vector& _Vector::operator=( const Expression_SVM& expression )
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
         // distribution is given by the row distribution of the matrix
-        const Matrix& matrix = expression.getArg2().getArg2();
+        const _Matrix& matrix = expression.getArg2().getArg2();
         DistributionPtr dist = matrix.getColDistributionPtr();
         allocate( dist );
         // values remain uninitialized as we assume that 0.0 * this (undefined) will
@@ -505,10 +505,10 @@ _Vector& _Vector::operator=( const Expression_SMV_SV& expression )
     const Expression_SMV& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
-    const Expression<Matrix, _Vector, Times>& matrixTimesVectorExp = exp1.getArg2();
+    const Expression<_Matrix, _Vector, Times>& matrixTimesVectorExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
     const _Vector& vectorY = exp2.getArg2();
-    const Matrix& matrix = matrixTimesVectorExp.getArg1();
+    const _Matrix& matrix = matrixTimesVectorExp.getArg1();
     const _Vector& vectorX = matrixTimesVectorExp.getArg2();
     _Vector* resultPtr = this;
     VectorPtr tmpResult;
@@ -537,11 +537,11 @@ _Vector& _Vector::operator=( const Expression_SVM_SV& expression )
     const Expression_SVM& exp1 = expression.getArg1();
     const Expression_SV& exp2 = expression.getArg2();
     const Scalar& alpha = exp1.getArg1();
-    const Expression<_Vector, Matrix, Times>& vectorTimesMatrixExp = exp1.getArg2();
+    const Expression<_Vector, _Matrix, Times>& vectorTimesMatrixExp = exp1.getArg2();
     const Scalar& beta = exp2.getArg1();
     const _Vector& vectorY = exp2.getArg2();
     const _Vector& vectorX = vectorTimesMatrixExp.getArg1();
-    const Matrix& matrix = vectorTimesMatrixExp.getArg2();
+    const _Matrix& matrix = vectorTimesMatrixExp.getArg2();
     _Vector* resultPtr = this;
     VectorPtr tmpResult;
 

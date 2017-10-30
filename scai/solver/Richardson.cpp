@@ -78,7 +78,7 @@ Richardson::RichardsonRuntime::~RichardsonRuntime() {}
 
 
 
-void Richardson::initialize( const lama::Matrix& coefficients )
+void Richardson::initialize( const lama::_Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -131,7 +131,7 @@ void Richardson::iterate()
 {
     RichardsonRuntime& runtime = getRuntime();
     const lama::_Vector& rhs = *runtime.mRhs;
-    const lama::Matrix& A = *runtime.mCoefficients;
+    const lama::_Matrix& A = *runtime.mCoefficients;
     //swap old solution and solution pointer begin
     lama::_Vector* ptr_OldSolution = &( *runtime.mProxyOldSolution );
     lama::_Vector* ptr_solution = &( *runtime.mSolution );

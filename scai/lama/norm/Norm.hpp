@@ -98,14 +98,14 @@ public:
     Scalar operator()( const _Vector& vector ) const;
 
     /**
-     * @brief Calculates the norm of the passed Matrix.
+     * @brief Calculates the norm of the passed _Matrix.
      *
      * To call this is equivalent to call apply with the same argument.
      *
-     * @param[in] matrix    the Matrix to caluclate the norm for.
+     * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    Scalar operator()( const Matrix& matrix ) const;
+    Scalar operator()( const _Matrix& matrix ) const;
 
     /**
      * @brief Calculates the norm of the passed Scalar.
@@ -124,12 +124,12 @@ public:
     virtual Scalar apply( const _Vector& vector ) const = 0;
 
     /**
-     * @brief Calculates the norm of the passed Matrix.
+     * @brief Calculates the norm of the passed _Matrix.
      *
-     * @param[in] matrix    the Matrix to caluclate the norm for.
+     * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    virtual Scalar apply( const Matrix& matrix ) const = 0;
+    virtual Scalar apply( const _Matrix& matrix ) const = 0;
 };
 
 } /* end namespace lama */

@@ -53,7 +53,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( Kaczmarz::logger, "Solver.IterativeSolver.Kaczmarz" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -86,7 +86,7 @@ Kaczmarz::KaczmarzRuntime::~KaczmarzRuntime()
 {
 }
 
-void Kaczmarz::initialize( const Matrix& coefficients )
+void Kaczmarz::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.Kaczmarz.initialize" )
     IterativeSolver::initialize( coefficients );
@@ -107,7 +107,7 @@ void Kaczmarz::iterate()
         this->getResidual();
     }
 
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
 
     const _Vector& b = *runtime.mRhs;
 

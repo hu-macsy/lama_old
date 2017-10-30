@@ -56,7 +56,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( InverseSolver::logger, "Solver.InverseSolver" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -94,7 +94,7 @@ InverseSolver::InverseSolverRuntime::~InverseSolverRuntime()
 
 /* --------------------------------------------------------------------------- */
 
-void InverseSolver::initialize( const Matrix& coefficients )
+void InverseSolver::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.Inverse.intialize" )
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
@@ -107,7 +107,7 @@ void InverseSolver::initialize( const Matrix& coefficients )
 
 /* --------------------------------------------------------------------------- */
 
-const Matrix& InverseSolver::getInverse() const
+const _Matrix& InverseSolver::getInverse() const
 {
     SCAI_ASSERT_ERROR( getConstRuntime().mInverse, "inverse not available (no call of initialize before)" );
     return *getConstRuntime().mInverse;

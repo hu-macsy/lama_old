@@ -53,7 +53,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -85,7 +85,7 @@ CG::CGRuntime::~CGRuntime()
 {
 }
 
-void CG::initialize( const Matrix& coefficients )
+void CG::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.CG.initialize" )
     IterativeSolver::initialize( coefficients );
@@ -110,7 +110,7 @@ void CG::iterate()
     }
 
     _Vector& residual = *runtime.mResidual;
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     _Vector& x = *runtime.mSolution;
     _Vector& p = *runtime.mP;
     _Vector& q = *runtime.mQ;

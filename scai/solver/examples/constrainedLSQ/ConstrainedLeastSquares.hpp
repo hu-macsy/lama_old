@@ -64,7 +64,7 @@ public:
      *  ATTENTION: The solver object only keeps a reference to the matrix A, so it
      *             must not be destroyed during the lifetime of this solver object
      */
-    ConstrainedLeastSquares( const lama::Matrix& A );
+    ConstrainedLeastSquares( const lama::_Matrix& A );
 
     void useTranspose();
 
@@ -115,7 +115,7 @@ private:
     
     // member variables of this class
 
-    const lama::Matrix& mA;   
+    const lama::_Matrix& mA;   
 
     lama::CentralPathHessian mCentralPathHessian;
 

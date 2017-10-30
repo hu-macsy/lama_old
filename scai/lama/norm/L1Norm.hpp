@@ -61,7 +61,7 @@ public:
 
     virtual Scalar apply( const _Vector& vector ) const;
 
-    virtual Scalar apply( const Matrix& matrix ) const;
+    virtual Scalar apply( const _Matrix& matrix ) const;
 
     static std::string createValue();
 
@@ -76,7 +76,7 @@ Scalar l1Norm( const Scalar& scalar );
 
 Scalar l1Norm( const _Vector& vector );
 
-Scalar l1Norm( const Matrix& matrix );
+Scalar l1Norm( const _Matrix& matrix );
 
 } /* end namespace lama */
 

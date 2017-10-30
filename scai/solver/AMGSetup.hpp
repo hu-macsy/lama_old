@@ -70,7 +70,7 @@ public:
 
     virtual ~AMGSetup();
 
-    virtual void initialize( const lama::Matrix& coefficients ) = 0;
+    virtual void initialize( const lama::_Matrix& coefficients ) = 0;
 
     virtual Solver& getCoarseLevelSolver() = 0;
 
@@ -78,11 +78,11 @@ public:
 
     virtual Solver& getSmoother( const unsigned int level ) = 0;
 
-    virtual const lama::Matrix& getGalerkin( const unsigned int level ) = 0;
+    virtual const lama::_Matrix& getGalerkin( const unsigned int level ) = 0;
 
-    virtual const lama::Matrix& getRestriction( const unsigned int level ) = 0;
+    virtual const lama::_Matrix& getRestriction( const unsigned int level ) = 0;
 
-    virtual const lama::Matrix& getInterpolation( const unsigned int level ) = 0;
+    virtual const lama::_Matrix& getInterpolation( const unsigned int level ) = 0;
 
     virtual lama::_Vector& getSolutionVector( const unsigned int level ) = 0;
 

@@ -185,7 +185,7 @@ public:
 
     void reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp );
 
-    /** Matrix-matrix multiplication : this += alpha * v1 * v2
+    /** _Matrix-matrix multiplication : this += alpha * v1 * v2
      *
      *  @param alpha is just an additional scaling factor to avoid temporaries
      *  @param v1 must be a two-dimensional grid-vector with v1.size( 0 ) == this->size( 0 )

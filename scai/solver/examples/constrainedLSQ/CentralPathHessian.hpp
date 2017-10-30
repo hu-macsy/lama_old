@@ -57,7 +57,7 @@ class CentralPathHessian : public AbstractMatrix
 
 public:
 
-    CentralPathHessian ( const Matrix& A ) :
+    CentralPathHessian ( const _Matrix& A ) :
 
         AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
 
@@ -113,7 +113,7 @@ public:
 
 private:
 
-    const Matrix& mA;   // reference kept the whole lifetime of this object
+    const _Matrix& mA;   // reference kept the whole lifetime of this object
     const Vector* mD;   // reference to the actual vector D
     Scalar mTau;        // value tau
 

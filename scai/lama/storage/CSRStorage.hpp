@@ -674,7 +674,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Matrix times Matrix for CSR only */
+    /** _Matrix times _Matrix for CSR only */
 
     void    matrixAddMatrixCSR( const ValueType alpha,
                                 const CSRStorage<ValueType>& a,
@@ -682,7 +682,7 @@ private:
                                 const CSRStorage<ValueType>& b,
                                 const hmemo::ContextPtr loc );
 
-    /** Matrix times Matrix for CSR only */
+    /** _Matrix times _Matrix for CSR only */
 
     void matrixTimesMatrixCSR( const ValueType alpha,
                                const CSRStorage<ValueType>& a,

@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
             dV1.setRandom( dist, bound );  
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
+            MatrixPtr m( _Matrix::getMatrix( _Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
 
             VectorPtr v2( dV1.newVector() );
@@ -534,9 +534,9 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
             v1->allocate( dist );
             *v1 = 3;
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
+            MatrixPtr m( _Matrix::getMatrix( _Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
-            m->setCommunicationKind( Matrix::ASYNCHRONOUS );
+            m->setCommunicationKind( _Matrix::ASYNCHRONOUS );
 
             VectorPtr v2( v1->newVector() );
 
@@ -705,7 +705,7 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 
             // CSRSparseMatrix<ValueType> m;
 
-            MatrixPtr m( Matrix::getMatrix( Matrix::CSR, v1->getValueType() ) );
+            MatrixPtr m( _Matrix::getMatrix( _Matrix::CSR, v1->getValueType() ) );
 
             m->setIdentity( dists[j] );
             m->setDiagonal( *v1 );

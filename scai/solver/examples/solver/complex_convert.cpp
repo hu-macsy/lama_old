@@ -217,7 +217,7 @@ int main( int argc, const char* argv[] )
 
         newCOO.writeToFile( out_filename, fileType, valueType, indexType, indexType, binary );
 
-        cout << "Output matrix file written: " << out_filename << ".mtx ( Matrix Market)" << endl;
+        cout << "Output matrix file written: " << out_filename << ".mtx ( _Matrix Market)" << endl;
     }
 }
 

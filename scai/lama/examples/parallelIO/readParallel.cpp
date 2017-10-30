@@ -84,11 +84,11 @@ int main( int argc, const char* argv[] )
 
     // oops, no factory for storage, only for matrix
 
-    common::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
+    common::unique_ptr<Matrix> matrixPtr( _Matrix::getMatrix( _Matrix::CSR, type ) );
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 
-    Matrix& matrix = *matrixPtr;
+    _Matrix& matrix = *matrixPtr;
 
     string inFileName = argv[1];
 

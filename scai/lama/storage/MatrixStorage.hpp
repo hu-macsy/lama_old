@@ -90,7 +90,7 @@ struct Format
         JDS,      //!< Jagged Diagonal Storage
         COO,      //!< Coordinate list
         STENCIL,  //!< stencil pattern
-        ASSEMBLY, //!<  Matrix storage used for assembling of values
+        ASSEMBLY, //!<  _Matrix storage used for assembling of values
         UNDEFINED //!<  Default value
     } MatrixStorageFormat;
 
@@ -102,7 +102,7 @@ COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format::MatrixStorageForma
 
 COMMON_DLL_IMPORTEXPORT Format::MatrixStorageFormat str2Format( const char* str );
 
-/** Key type used for the Matrix factory.
+/** Key type used for the _Matrix factory.
  *
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
@@ -585,7 +585,7 @@ public:
      * @brief write the matrix storage to an output file
      *
      * @param[in] fileName  is the name of the output file (suffix must be added according to the file type)
-     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] type      format of the output file ("frm" for SAMG, "mtx" for _MatrixMarket), default is to decide by suffix
      * @param[in] dataType  representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for row/col index values (default is settings of FileIO)
      * @param[in] fileMode  use BINARY or FORMATTED to force a certain mode, otherwise DEFAULT
@@ -1001,7 +1001,7 @@ public:
     virtual void invert( const MatrixStorage<ValueType>& other );
 
     /******************************************************************
-     *   Matrix * ( Vector | Matrix )                                  *
+     *   _Matrix * ( Vector | _Matrix )                                  *
      ******************************************************************/
 
     /** This method implements result = alpha * thisMatrix * x + beta * y.

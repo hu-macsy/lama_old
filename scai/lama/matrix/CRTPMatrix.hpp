@@ -67,7 +67,7 @@ namespace lama
  *  as a C++ idiom where a class X derived from this template is
  *  itself a template argument.
  *
- *  @tparam Derived is the derived class of Matrix
+ *  @tparam Derived is the derived class of _Matrix
  *  @tparam ValueType specifies the type of the matrix values
  *
  *  @todo: create, copy should also be defined here
@@ -213,7 +213,7 @@ public:
         }
     }
 
-    /** Implementation of Matrix::setRow for all typed matrices
+    /** Implementation of _Matrix::setRow for all typed matrices
      *
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
      */
@@ -277,7 +277,7 @@ public:
         }
     }
 
-    /** Implementation of Matrix::setColumn for all typed matrices
+    /** Implementation of _Matrix::setColumn for all typed matrices
      *
      *  The method is implemented by setting the local part of the column on each partition.
      *  All derived classes must provide setLocalColum( colArray, colIndex, op )

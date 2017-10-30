@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
@@ -53,7 +53,7 @@ using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
-static void bench( Matrix& mat )
+static void bench( _Matrix& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
@@ -66,7 +66,7 @@ static void bench( Matrix& mat )
 
     x->setRandom( size, bound );
 
-    mat.setCommunicationKind( Matrix::SYNCHRONOUS );
+    mat.setCommunicationKind( _Matrix::SYNCHRONOUS );
 
     mat.setContextPtr( ctx );
     x->setContextPtr( ctx );
@@ -77,7 +77,7 @@ static void bench( Matrix& mat )
 
     cout << "x = " << *x << endl;
 
-    common::unique_ptr<Matrix> matT( mat.newMatrix() );
+    common::unique_ptr<_Matrix> matT( mat.newMatrix() );
 
     double timeT = Walltime::get();
     {

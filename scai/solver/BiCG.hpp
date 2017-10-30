@@ -81,7 +81,7 @@ public:
 
     virtual ~BiCG();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -96,7 +96,7 @@ public:
         BiCGRuntime();
         virtual ~BiCGRuntime();
 
-        common::shared_ptr<lama::Matrix> mTransposeA;
+        common::shared_ptr<lama::_Matrix> mTransposeA;
         common::shared_ptr<lama::_Vector> mP2;
         common::shared_ptr<lama::_Vector> mQ2;
         common::shared_ptr<lama::_Vector> mZ2;

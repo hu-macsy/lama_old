@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 
@@ -51,7 +51,7 @@ using scai::common::Walltime;
 
 //static bool verboseFlag = false;
 
-static void bench( Matrix& b, Matrix& a )
+static void bench( _Matrix& b, _Matrix& a )
 {
     ContextPtr host = Context::getHostPtr();
     a.setContextPtr( host );

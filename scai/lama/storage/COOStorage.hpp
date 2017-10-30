@@ -54,7 +54,7 @@ namespace scai
 namespace lama
 {
 
-/** Matrix storage format for a COO sparse matrix.
+/** _Matrix storage format for a COO sparse matrix.
  *
  * COO stores a list of (row, column, value) tuples. For efficiency reasons,
  * three separate arrays are used instead of a single array of triples.
@@ -323,7 +323,7 @@ public:
     virtual COOStorage* newMatrixStorage() const;
 
     /******************************************************************
-     *  Matrix times Vector                                            *
+     *  _Matrix times Vector                                            *
      ******************************************************************/
 
     /** Implementation of MatrixStorage::matrixTimesVector for COO */

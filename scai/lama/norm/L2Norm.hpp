@@ -86,13 +86,13 @@ public:
     virtual Scalar apply( const _Vector& vector ) const;
 
     /**
-     * @brief calculates the l2 norm of the passed Matrix.
+     * @brief calculates the l2 norm of the passed _Matrix.
      *
-     * @param[in] matrix    the Matrix to calculate the l2 norm of.
+     * @param[in] matrix    the _Matrix to calculate the l2 norm of.
      *
-     * @return              the l2 norm of the Matrix matrix.
+     * @return              the l2 norm of the _Matrix matrix.
      */
-    virtual Scalar apply( const Matrix& matrix ) const;
+    virtual Scalar apply( const _Matrix& matrix ) const;
 
     /**
      *  Getter routine for key of this derived class used in Norm factory
@@ -128,13 +128,13 @@ COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Scalar& scalar );
 COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const _Vector& vector );
 
 /**
- * @brief calculates the l2 norm of the passed Matrix.
+ * @brief calculates the l2 norm of the passed _Matrix.
  *
- * @param[in] matrix    the Matrix to calculate the l2 norm of.
+ * @param[in] matrix    the _Matrix to calculate the l2 norm of.
  *
- * @return              the l2 norm of the Matrix matrix.
+ * @return              the l2 norm of the _Matrix matrix.
  */
-COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const Matrix& matrix );
+COMMON_DLL_IMPORTEXPORT Scalar l2Norm( const _Matrix& matrix );
 
 } /* end namespace lama */
 

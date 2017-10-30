@@ -269,9 +269,9 @@ void lsqBox( DenseVector<ValueType>& x,
     }
 }
 
-class HessianMatrix : AbstractMatrix ( const Matrix& A, const Vector& D, const Scalar& t )
+class HessianMatrix : AbstractMatrix ( const _Matrix& A, const Vector& D, const Scalar& t )
 {
-    HessianMatrix ( const Matrix& A, const Vector& D, const Scalar& t )
+    HessianMatrix ( const _Matrix& A, const Vector& D, const Scalar& t )
     {
     }
 
@@ -291,7 +291,7 @@ class HessianMatrix : AbstractMatrix ( const Matrix& A, const Vector& D, const S
 
 private
 
-    const Matrix& mA;
+    const _Matrix& mA;
     const Vector& mD;
     const Scalar mT;
 };
@@ -337,7 +337,7 @@ ValueTypValueType centralPathObjective(
     return value;
 }
 
-void dualityGap( Scalar& gap, Scalar& dualObj, const Matrix& A, cont Vector& b, const Vector& x, const Vector& l, const Vector& u )
+void dualityGap( Scalar& gap, Scalar& dualObj, const _Matrix& A, cont Vector& b, const Vector& x, const Vector& l, const Vector& u )
 
 {
     // Given x*, compute an estimate for the duality gap by implictly and

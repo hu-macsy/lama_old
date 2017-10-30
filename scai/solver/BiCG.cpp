@@ -54,7 +54,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( BiCG::logger, "Solver.IterativeSolver.BiCG" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -86,7 +86,7 @@ BiCG::BiCGRuntime::~BiCGRuntime()
 {
 }
 
-void BiCG::initialize( const Matrix& coefficients )
+void BiCG::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.BiCG.initialize" )
     CG::initialize( coefficients );
@@ -122,8 +122,8 @@ void BiCG::iterate()
 
     _Vector& residual = *runtime.mResidual;
     _Vector& residual2 = *runtime.mResidual2;
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transA = *runtime.mTransposeA;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transA = *runtime.mTransposeA;
     _Vector& x = *runtime.mSolution;
     _Vector& p = *runtime.mP;
     _Vector& p2 = *runtime.mP2;

@@ -169,7 +169,7 @@ int main( int argc, const char* argv[] )
 
         stencilSpecification >> nDims >> nPoints >> n1;
 
-        scai::common::unique_ptr<Matrix> matrixPtr;
+        MatrixPtr matrixPtr;
 
         switch ( nDims )
         {
@@ -209,7 +209,7 @@ int main( int argc, const char* argv[] )
         VectorPtr rhsPtr( matrixPtr->newVector() );
         VectorPtr solutionPtr( rhsPtr->newVector() );
 
-        Matrix& matrix   = *matrixPtr;
+        _Matrix& matrix   = *matrixPtr;
         _Vector& rhs      = *rhsPtr;
         _Vector& solution = *solutionPtr;
 
@@ -243,7 +243,7 @@ int main( int argc, const char* argv[] )
                 x = Scalar( 1 );
                 rhs = matrix * x;
 
-                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( _Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )

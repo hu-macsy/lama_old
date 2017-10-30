@@ -54,7 +54,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( QMR::logger, "Solver.QMR" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -87,7 +87,7 @@ QMR::QMRRuntime::~QMRRuntime()
 {
 }
 
-void QMR::initialize( const Matrix& coefficients )
+void QMR::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -131,8 +131,8 @@ void QMR::solveInit( _Vector& solution, const _Vector& rhs )
 void QMR::iterate()
 {
     QMRRuntime& runtime    = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposeA;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transposedA = *runtime.mTransposeA;
     _Vector& solution = *runtime.mSolution;
     _Vector& residual = *runtime.mResidual;
     _Vector& vecV = *runtime.mVecV;

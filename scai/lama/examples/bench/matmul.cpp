@@ -37,7 +37,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/all.hpp>
 

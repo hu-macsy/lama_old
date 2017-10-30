@@ -50,7 +50,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( SingleGridSetup::logger, "AMGSetup.SingleGridSetup" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -73,7 +73,7 @@ SingleGridSetup::~SingleGridSetup()
 {
 }
 
-void SingleGridSetup::initialize( const Matrix& coefficients )
+void SingleGridSetup::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "initialize_SingleGridSetup" )
     SCAI_LOG_DEBUG( logger, "SingleGridSetup::initialize" )
@@ -117,17 +117,17 @@ Solver& SingleGridSetup::getSmoother( const unsigned int )
     return *mSolver;
 }
 
-const Matrix& SingleGridSetup::getGalerkin( const unsigned int )
+const _Matrix& SingleGridSetup::getGalerkin( const unsigned int )
 {
     return mSolver->getCoefficients();
 }
 
-const Matrix& SingleGridSetup::getRestriction( const unsigned int )
+const _Matrix& SingleGridSetup::getRestriction( const unsigned int )
 {
     return *mIdentity;
 }
 
-const Matrix& SingleGridSetup::getInterpolation( const unsigned int )
+const _Matrix& SingleGridSetup::getInterpolation( const unsigned int )
 {
     return *mIdentity;
 }

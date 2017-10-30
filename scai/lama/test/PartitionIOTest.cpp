@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MatrixSingleIO )
+BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 {
     typedef RealType ValueType;   // no focus here on type
 
@@ -479,7 +479,7 @@ BOOST_AUTO_TEST_CASE( MatrixSingleIO )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
+BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 {
     typedef RealType ValueType;   // no focus here on type
 
@@ -572,7 +572,7 @@ BOOST_AUTO_TEST_CASE( MatrixPartitionIO )
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( MatrixColPartitionIO )
+BOOST_AUTO_TEST_CASE( _MatrixColPartitionIO )
 {
     typedef RealType ValueType;   // no focus here on type
 

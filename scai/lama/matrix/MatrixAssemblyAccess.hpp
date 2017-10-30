@@ -59,7 +59,7 @@ public:
 
     /** Construct an access */
 
-    MatrixAssemblyAccess( Matrix& matrix, const common::binary::BinaryOp op = common::binary::COPY );
+    MatrixAssemblyAccess( _Matrix& matrix, const common::binary::BinaryOp op = common::binary::COPY );
 
     /** Destructor of the access, also inserts the assembled entries into the matrix. */
 
@@ -146,7 +146,7 @@ private:
 
     void addCOO( CSRStorage<ValueType>& localStorage );
 
-    Matrix& mMatrix;
+    _Matrix& mMatrix;
 
     // for pushing the assembled data we use the C++ vector class
 

@@ -50,7 +50,7 @@
 namespace scai
 {
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -78,7 +78,7 @@ TFQMR::~TFQMR() {}
 
 TFQMR::TFQMRRuntime::~TFQMRRuntime() {}
 
-void TFQMR::initialize( const Matrix& coefficients )
+void TFQMR::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -111,7 +111,7 @@ void TFQMR::solveInit( _Vector& solution, const _Vector& rhs )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
     // Initialize
     this->getResidual();
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     *runtime.mInitialR = *runtime.mResidual;
     *runtime.mVecVEven = *runtime.mResidual;
 
@@ -163,7 +163,7 @@ void TFQMR::iterationEven()
 void TFQMR::iterationOdd()
 {
     TFQMRRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     const _Vector& initialR = *runtime.mInitialR;
     const _Vector& vecW = *runtime.mVecW;
     const _Vector& vecVOdd = *runtime.mVecVOdd;
@@ -209,7 +209,7 @@ void TFQMR::iterate()
     TFQMRRuntime& runtime = getRuntime();
     const IndexType& iteration = runtime.mIterations;
     lama::L2Norm norm;
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     _Vector& vecW = *runtime.mVecW;
     _Vector& vecD = *runtime.mVecD;
     _Vector& solution = *runtime.mSolution;

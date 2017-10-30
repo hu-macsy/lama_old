@@ -59,7 +59,7 @@ public:
     SingleGridSetup();
     virtual ~SingleGridSetup();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     virtual Solver& getCoarseLevelSolver();
 
@@ -67,11 +67,11 @@ public:
 
     virtual Solver& getSmoother( const unsigned int level );
 
-    virtual const lama::Matrix& getGalerkin( const unsigned int level );
+    virtual const lama::_Matrix& getGalerkin( const unsigned int level );
 
-    virtual const lama::Matrix& getRestriction( const unsigned int level );
+    virtual const lama::_Matrix& getRestriction( const unsigned int level );
 
-    virtual const lama::Matrix& getInterpolation( const unsigned int level );
+    virtual const lama::_Matrix& getInterpolation( const unsigned int level );
 
     virtual lama::_Vector& getSolutionVector( const unsigned int level );
 
@@ -123,7 +123,7 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     SolverPtr    mSolver;
-    common::unique_ptr<lama::Matrix> mIdentity;
+    common::unique_ptr<lama::_Matrix> mIdentity;
 
     common::unique_ptr<lama::_Vector> mSolutionVector;
     common::unique_ptr<lama::_Vector> mRhsVector;

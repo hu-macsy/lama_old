@@ -55,7 +55,7 @@ using namespace lama;
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_SUITE( MatrixConstructorTest )
+BOOST_AUTO_TEST_SUITE( _MatrixConstructorTest )
 
 /* ------------------------------------------------------------------------- */
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
 
     BOOST_CHECK_EQUAL( matrix.getFormat(), local.getFormat() );
 
-    if ( matrix.getMatrixKind() == Matrix::SPARSE )
+    if ( matrix.getMatrixKind() == _Matrix::SPARSE )
     {
         SparseMatrix<ValueType>& spMatrix = reinterpret_cast<SparseMatrix<ValueType>& >( matrix );
         spMatrix.prefetch();
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
 
         for ( size_t k = 0; k < testMatrices.size(); ++k )
         {
-            Matrix& otherMatrix = *testMatrices[k];
+            _Matrix& otherMatrix = *testMatrices[k];
 
             otherMatrix.assign( globalStorage );
 
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
 
         MatrixType matrix1( globalStorage );
 
-        if ( matrix1.getMatrixKind() == Matrix::DENSE )
+        if ( matrix1.getMatrixKind() == _Matrix::DENSE )
         {
             return;   // DENSE supports some other distribution
         }

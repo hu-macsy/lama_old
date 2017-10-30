@@ -53,7 +53,7 @@ namespace scai
 namespace solver
 {
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -79,7 +79,7 @@ CGNR::~CGNR() {}
 CGNR::CGNRRuntime::~CGNRRuntime() {}
 
 
-void CGNR::initialize( const Matrix& coefficients )
+void CGNR::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -126,8 +126,8 @@ void CGNR::solveInit( _Vector& solution, const _Vector& rhs )
 void CGNR::iterate()
 {
     CGNRRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposedMat;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transposedA = *runtime.mTransposedMat;
     _Vector& vecW = *runtime.mVecW;
     _Vector& vecD = *runtime.mVecD;
     _Vector& vecZ = *runtime.mVecZ;

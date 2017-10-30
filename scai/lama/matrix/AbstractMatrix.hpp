@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Matrix class to be used for matrix-free operations
+ * @brief _Matrix class to be used for matrix-free operations
  * @author Thomas Brandes
  * @date 28.06.2017
  */
@@ -50,18 +50,18 @@ namespace lama
  *  It might be used for matrix-free solvers where only the matrix * vector operations is
  *  required.
  */
-class AbstractMatrix : public Matrix
+class AbstractMatrix : public _Matrix
 {
 
 public:
 
     /** Set distributions, context of the matrix ( base class member variables ) by other matrix */
 
-    AbstractMatrix( const Matrix& other ) : Matrix( other )
+    AbstractMatrix( const _Matrix& other ) : _Matrix( other )
     {
     }
 
-    AbstractMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) : Matrix( rowDist, colDist )
+    AbstractMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) : _Matrix( rowDist, colDist )
     {
     }
 
@@ -111,11 +111,11 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void assign(const Matrix&)
+    virtual void assign(const _Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void assignTranspose(const Matrix&)
+    virtual void assignTranspose(const _Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -218,15 +218,15 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void matrixTimesScalar(const Matrix&, Scalar)
+    virtual void matrixTimesScalar(const _Matrix&, Scalar)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void matrixPlusMatrix(Scalar, const Matrix&, Scalar, const Matrix&)
+    virtual void matrixPlusMatrix(Scalar, const _Matrix&, Scalar, const _Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void matrixTimesMatrix(Matrix&, Scalar, const Matrix&, Scalar, const Matrix&) const
+    virtual void matrixTimesMatrix( _Matrix&, Scalar, const _Matrix&, Scalar, const _Matrix& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -262,7 +262,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void invert(const Matrix&)
+    virtual void invert(const _Matrix&)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -278,11 +278,11 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Matrix* newMatrix() const
+    virtual _Matrix* newMatrix() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Matrix* copy() const
+    virtual _Matrix* copy() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

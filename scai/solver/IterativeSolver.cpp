@@ -49,7 +49,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( IterativeSolver::logger, "Solver.IterativeSolver" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -99,7 +99,7 @@ IterativeSolver::IterativeSolverRuntime::~IterativeSolverRuntime()
 {
 }
 
-void IterativeSolver::initialize( const Matrix& coefficients )
+void IterativeSolver::initialize( const _Matrix& coefficients )
 {
     Solver::initialize( coefficients );
 

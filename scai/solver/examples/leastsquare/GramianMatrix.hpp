@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Matrix class that stands for A' * A but without building it explicitly
+ * @brief _Matrix class that stands for A' * A but without building it explicitly
  * @author Thomas Brandes
  * @date 28.06.2017
  */
@@ -59,7 +59,7 @@ public:
      *
      *  The size of the Gramian matrix is n x n if A has the size m x n
      */
-    GramianMatrix( const Matrix& A ) :
+    GramianMatrix( const _Matrix& A ) :
 
         AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
         mA( A )
@@ -106,7 +106,7 @@ public:
 private:
 
     VectorPtr mAx;      // help vector for A * x
-    const Matrix& mA;
+    const _Matrix& mA;
 };
 
 }

@@ -249,13 +249,13 @@ int main( int argc, const char* argv[] )
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
 
     // use vector of outDataType so no information is lost
-    common::shared_ptr<Matrix> matrix;
+    MatrixPtr matrix;
     VectorPtr v ( _Vector::getVector( _Vector::DENSE, options.outDataType ) );
 
     if ( options.matFileName != "" )
     {
         MatrixCreateKeyType matrixType( Format::CSR, options.outDataType );
-        matrix.reset( Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
+        matrix.reset( _Matrix::create( MatrixCreateKeyType ( matrixType ) ) );
         matrix->readFromFile( options.matFileName );
         cout << "Read in matrix from file " << options.matFileName << ": " << *matrix << endl;
     }

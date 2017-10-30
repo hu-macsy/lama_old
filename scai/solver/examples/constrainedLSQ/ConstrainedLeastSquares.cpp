@@ -304,7 +304,7 @@ void ConstrainedLeastSquares::computeSearchDirection(
 /*   Constructor                                                               */
 /* --------------------------------------------------------------------------- */
 
-ConstrainedLeastSquares::ConstrainedLeastSquares( const lama::Matrix& A ) :
+ConstrainedLeastSquares::ConstrainedLeastSquares( const lama::_Matrix& A ) :
 
     mA( A ),
     mCentralPathHessian( A ),

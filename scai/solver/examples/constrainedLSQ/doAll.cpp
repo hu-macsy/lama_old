@@ -110,7 +110,7 @@ int main( int argc, const char* argv[] )
  
     StencilMatrix<double> L( gridDist, stencil );
 
-    MatrixWithT Lopt( L, L );
+    _MatrixWithT Lopt( L, L );
 
     DenseVector<double> Zero( L.getNumRows() );
     Zero = 0;
@@ -142,7 +142,7 @@ int main( int argc, const char* argv[] )
     hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
 
     D.setContextPtr( ctx );
-    D.setCommunicationKind( Matrix::SYNCHRONOUS );
+    D.setCommunicationKind( _Matrix::SYNCHRONOUS );
     ub.setContextPtr( ctx );
     lb.setContextPtr( ctx );
 
@@ -152,7 +152,7 @@ int main( int argc, const char* argv[] )
 
     DenseVector<double> x( ctx );
 
-    MatrixWithT Dopt( D );
+    _MatrixWithT Dopt( D );
 
     JoinedMatrix A( Dopt, Lopt );
     JoinedVector T_ext( T, Zero );

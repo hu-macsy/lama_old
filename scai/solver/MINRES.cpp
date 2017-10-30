@@ -57,7 +57,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( MINRES::logger, "Solver.MINRES" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -80,7 +80,7 @@ MINRES::~MINRES() {}
 
 MINRES::MINRESRuntime::~MINRESRuntime() {}
 
-void MINRES::initialize( const Matrix& coefficients )
+void MINRES::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -124,7 +124,7 @@ void MINRES::solveInit( _Vector& solution, const _Vector& rhs )
 void MINRES::Lanczos()
 {
     MINRESRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     _Vector& vecV = *runtime.mVecV;
     _Vector& vecVOld = *runtime.mVecVOld;
     _Vector& vecVNew = *runtime.mVecVNew;

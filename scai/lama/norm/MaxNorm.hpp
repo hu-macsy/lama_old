@@ -62,7 +62,7 @@ public:
 
     virtual Scalar apply( const _Vector& vector ) const;
 
-    virtual Scalar apply( const Matrix& matrix ) const;
+    virtual Scalar apply( const _Matrix& matrix ) const;
 
     /**
      *  Getter routine for key of this derived class used in Norm factory
@@ -83,7 +83,7 @@ COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Scalar& scalar );
 
 COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const _Vector& vector );
 
-COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const Matrix& matrix );
+COMMON_DLL_IMPORTEXPORT Scalar maxNorm( const _Matrix& matrix );
 
 } /* end namespace lama */
 

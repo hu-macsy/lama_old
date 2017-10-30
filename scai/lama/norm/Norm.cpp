@@ -59,7 +59,7 @@ Scalar Norm::operator()( const _Vector& vector ) const
     return apply( vector );
 }
 
-Scalar Norm::operator()( const Matrix& matrix ) const
+Scalar Norm::operator()( const _Matrix& matrix ) const
 {
     return apply( matrix );
 }

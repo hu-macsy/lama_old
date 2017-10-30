@@ -53,7 +53,7 @@ public:
     Config()
     {
         // overlap communication with local computation
-        mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+        mCommunicationKind = scai::lama::_Matrix::SYNCHRONOUS;
         mComm              = scai::dmemo::Communicator::getCommunicatorPtr();
         mContext           = scai::hmemo::Context::getHostPtr();
         mMaxIters          = 1000;
@@ -96,11 +96,11 @@ public:
         }
         else if ( "SYNC" == val )
         {
-            mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+            mCommunicationKind = scai::lama::_Matrix::SYNCHRONOUS;
         }
         else if ( "ASYNC" == val )
         {
-            mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::_Matrix::ASYNCHRONOUS;
         }
         else if ( isNumber( val.c_str() ) )
         {
@@ -154,7 +154,7 @@ public:
 
     std::string            mMatrixFormat;
     scai::hmemo::ContextPtr     mContext;
-    scai::lama::Matrix::SyncKind mCommunicationKind;
+    scai::lama::_Matrix::SyncKind mCommunicationKind;
     int                    mMaxIters;
 
     void writeAt( std::ostream& stream ) const

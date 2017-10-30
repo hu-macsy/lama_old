@@ -117,13 +117,13 @@ int main( int argc, const char* argv[] )
     scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
     scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newDenseVector() );
 
-    Matrix& matrix = *matrixPtr;
+    _Matrix& matrix = *matrixPtr;
     Vector& rhs = *rhsPtr;
 
     // input matrix will be CSR format
 
-    scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
-    Matrix& inMatrix = *inMatrixPtr;
+    scai::common::unique_ptr<Matrix> inMatrixPtr( _Matrix::getMatrix( _Matrix::CSR, lamaconf.getValueType() ) );
+    _Matrix& inMatrix = *inMatrixPtr;
 
     // Each processor should print its configuration
 
@@ -144,7 +144,7 @@ int main( int argc, const char* argv[] )
         }
         catch ( const exception& )
         {
-            cout << "reading vector from file " << rhs_filename << " failed, take sum( Matrix, 2 ) " << endl;
+            cout << "reading vector from file " << rhs_filename << " failed, take sum( _Matrix, 2 ) " << endl;
             {
                 scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;

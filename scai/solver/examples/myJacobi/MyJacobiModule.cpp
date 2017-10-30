@@ -82,7 +82,7 @@ MyJacobi::MyJacobiRuntime::~MyJacobiRuntime()
 {
 }
 
-void MyJacobi::initialize( const scai::lama::Matrix& coefficients )
+void MyJacobi::initialize( const scai::lama::_Matrix& coefficients )
 {
     MyJacobiRuntime& runtime = getRuntime();
 

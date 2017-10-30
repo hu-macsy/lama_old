@@ -52,7 +52,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( Solver::logger, "Solver" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -92,7 +92,7 @@ Solver::SolverRuntime::~SolverRuntime()
     SCAI_LOG_INFO( logger, "~SolverRuntime" )
 }
 
-void Solver::initialize( const Matrix& coefficients )
+void Solver::initialize( const _Matrix& coefficients )
 {
     if ( getConstRuntime().mInitialized )
     {
@@ -189,7 +189,7 @@ const _Vector& Solver::getResidual() const
     return *runtime.mResidual;
 }
 
-const Matrix& Solver::getCoefficients() const
+const _Matrix& Solver::getCoefficients() const
 {
     SCAI_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" )
     return *getConstRuntime().mCoefficients;

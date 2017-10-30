@@ -92,7 +92,7 @@ public:
 
     /** Getter for the specified matrix format, might default */
 
-    scai::lama::Matrix::MatrixStorageFormat getFormat( ) const;
+    scai::lama::_Matrix::MatrixStorageFormat getFormat( ) const;
 
     /** Getter for the value type to be used */
 
@@ -108,7 +108,7 @@ public:
 
     /** get a new matrix of the specified matrix format and value type. */
 
-    scai::lama::Matrix* getMatrix();
+    scai::lama::_Matrix* getMatrix();
 
     scai::hmemo::ContextPtr getContextPtr() const
     {
@@ -154,7 +154,7 @@ public:
 
     scai::solver::LogLevel::LogLevel getLogLevel() const;
 
-    scai::lama::Matrix::SyncKind getCommunicationKind() const
+    scai::lama::_Matrix::SyncKind getCommunicationKind() const
     {
         return mCommunicationKind;
     }
@@ -188,11 +188,11 @@ private:
     std::string mSolverName;   // name of solver, used for factory
     std::string mNorm;         // name of norm, not yet factory
 
-    scai::lama::Matrix::MatrixStorageFormat mMatrixFormat;
+    scai::lama::_Matrix::MatrixStorageFormat mMatrixFormat;
 
     scai::hmemo::ContextPtr mContext;
 
-    scai::lama::Matrix::SyncKind     mCommunicationKind;
+    scai::lama::_Matrix::SyncKind     mCommunicationKind;
 
     scai::common::scalar::ScalarType   mValueType;          // value type to use
 
@@ -277,13 +277,13 @@ LamaConfig::LamaConfig()
 
     bool isSet;
 
-    mCommunicationKind = scai::lama::Matrix::SYNCHRONOUS;
+    mCommunicationKind = scai::lama::_Matrix::SYNCHRONOUS;
 
     if ( Settings::getEnvironment( isSet, "SCAI_ASYNCHRONOUS" ) )
     {
         if ( isSet )
         {
-            mCommunicationKind = scai::lama::Matrix::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::_Matrix::ASYNCHRONOUS;
         }
     }
 
@@ -353,11 +353,11 @@ LamaConfig::LamaConfig()
 
     if ( mContext->getType() == scai::hmemo::Context::CUDA )
     {
-        mMatrixFormat = scai::lama::Matrix::ELL;
+        mMatrixFormat = scai::lama::_Matrix::ELL;
     }
     else
     {
-        mMatrixFormat = scai::lama::Matrix::CSR;
+        mMatrixFormat = scai::lama::_Matrix::CSR;
     }
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_FORMAT" ) )
@@ -482,7 +482,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "Norm              = " << getNorm() << std::endl;
 }
 
-scai::lama::Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
+scai::lama::_Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
 {
     return mMatrixFormat;
 }
@@ -517,9 +517,9 @@ IndexType LamaConfig::getMaxIter() const
     return mMaxIter;
 }
 
-scai::lama::Matrix* LamaConfig::getMatrix()
+scai::lama::_Matrix* LamaConfig::getMatrix()
 {
-    return scai::lama::Matrix::getMatrix( mMatrixFormat, mValueType );
+    return scai::lama::_Matrix::getMatrix( mMatrixFormat, mValueType );
 }
 
 static std::string getLoggers()

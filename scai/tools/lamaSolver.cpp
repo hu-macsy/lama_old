@@ -163,18 +163,18 @@ int main( int argc, const char* argv[] )
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        scai::common::unique_ptr<_Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        scai::common::unique_ptr<_Vector> solutionPtr( rhsPtr->newVector() );
+        MatrixPtr matrixPtr( lamaconf.getMatrix() );
+        VectorPtr rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
+        VectorPtr solutionPtr( rhsPtr->newVector() );
 
-        Matrix& matrix   = *matrixPtr;
+        _Matrix& matrix   = *matrixPtr;
         _Vector& rhs      = *rhsPtr;
         _Vector& solution = *solutionPtr;
 
         // input matrix will be CSR format
 
-        scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
-        Matrix& inMatrix = *inMatrixPtr;
+        MatrixPtr inMatrixPtr( _Matrix::getMatrix( _Matrix::CSR, lamaconf.getValueType() ) );
+        _Matrix& inMatrix = *inMatrixPtr;
 
         // Here each processor should print its configuration
 
@@ -255,7 +255,7 @@ int main( int argc, const char* argv[] )
 
                 rhs = inMatrix * x;
 
-                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( _Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )

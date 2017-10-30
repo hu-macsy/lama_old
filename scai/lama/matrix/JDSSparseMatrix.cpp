@@ -119,7 +119,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const JDSSparseMatrix& other )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix& other, bool transposeFlag )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _Matrix& other, bool transposeFlag )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -140,7 +140,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix& other, bool transpose
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const _Matrix& other, DistributionPtr rowDist, DistributionPtr colDist )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -187,10 +187,10 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg2();
+    const _Matrix& master = expression.getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -201,10 +201,10 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM& expression )
     : SparseMatrix<ValueType>( createStorage() )
 
 {
-    const Matrix& master = expression.getArg1().getArg2();
+    const _Matrix& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -215,10 +215,10 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM_SM& expression 
     : SparseMatrix<ValueType>( createStorage() )
 {
     // inherit context from matA in alpha * matA + beta * matB
-    const Matrix& master = expression.getArg1().getArg2();
+    const _Matrix& master = expression.getArg1().getArg2();
     SparseMatrix<ValueType>::setContextPtr( master.getContextPtr() );
     SparseMatrix<ValueType>::setCommunicationKind( master.getCommunicationKind() );
-    Matrix::operator=( expression );
+    _Matrix::operator=( expression );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -340,7 +340,7 @@ const char* JDSSparseMatrix<ValueType>::getTypeName() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Matrix* JDSSparseMatrix<ValueType>::create()
+_Matrix* JDSSparseMatrix<ValueType>::create()
 {
     return new JDSSparseMatrix<ValueType>();
 }

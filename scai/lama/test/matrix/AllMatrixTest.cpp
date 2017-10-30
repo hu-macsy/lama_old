@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Test cases applied to each matrix class, i.e. test (virtual) methods of Matrix
+ * @brief Test cases applied to each matrix class, i.e. test (virtual) methods of _Matrix
  * @author Thomas Brandes
  * @date 31.08.2012
  */
@@ -64,7 +64,7 @@ using namespace lama;
 using namespace dmemo;
 using utilskernel::LArray;
 
-void initMatrix( Matrix& matrix, const char* rowDistKind, const char* colDistKind )
+void initMatrix( _Matrix& matrix, const char* rowDistKind, const char* colDistKind )
 {
     typedef SCAI_TEST_TYPE ValueType;
     const IndexType numRows = 4;
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 
     for ( size_t i = 0; i < allMatrices.size(); ++i )
     {
-        Matrix& matrix = *allMatrices[i];
+        _Matrix& matrix = *allMatrices[i];
         BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumRows() );
         BOOST_CHECK_EQUAL( IndexType( 0 ), matrix.getNumColumns() );
     }
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
 
         std::ostringstream os;
         os << matrix;    // calls virtutal method writeAt for each matrix class
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( setContextTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
 
         BOOST_CHECK_THROW(
         {
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
         initMatrix( matrix, "BLOCK", "BLOCK" );
         MatrixPtr copyMatrix( matrix.copy() );
         SCAI_LOG_DEBUG( logger, "copyTest: " << matrix << " with copy " << *copyMatrix );
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( l2NormTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l2Norm for this matrix: " << matrix )
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE( maxNormTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
@@ -282,12 +282,12 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 
     for ( size_t s = 0; s < allMatrices1.size(); ++s )
     {
-        Matrix& matrix = *allMatrices1[s];
+        _Matrix& matrix = *allMatrices1[s];
         initMatrix( matrix, "BLOCK", "CYCLIC" );
 
         for ( size_t ss = 0; ss < allMatrices2.size(); ++ss )
         {
-            Matrix& matrixT = *allMatrices2[ss];
+            _Matrix& matrixT = *allMatrices2[ss];
 
             if ( matrix.getMatrixKind() != matrixT.getMatrixKind() )
             {
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
         initMatrix( matrix, "BLOCK", "CYCLIC" );
         MatrixPtr copyMatrix( matrix.copy() );
         // transpse the matrix first time
@@ -362,15 +362,15 @@ BOOST_AUTO_TEST_CASE( assignAddTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix1 = *allMatrices[s];
+        _Matrix& matrix1 = *allMatrices[s];
 
         initMatrix( matrix1, "BLOCK", "NO" );
 
         MatrixPtr matrix2Ptr( matrix1.copy() );
         MatrixPtr matrix3Ptr( matrix1.newMatrix() );
 
-        Matrix& matrix2 = *matrix2Ptr;
-        Matrix& matrix3 = *matrix3Ptr;
+        _Matrix& matrix2 = *matrix2Ptr;
+        _Matrix& matrix3 = *matrix3Ptr;
 
         matrix3 = matrix1 + matrix2;
 
@@ -405,9 +405,9 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix1 = *allMatrices[s];
+        _Matrix& matrix1 = *allMatrices[s];
 
-        if ( matrix1.getMatrixKind() == Matrix::DENSE )
+        if ( matrix1.getMatrixKind() == _Matrix::DENSE )
         {
             continue;
         }
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
 
         MatrixPtr matrix2Ptr( matrix1.newMatrix() );
 
-        Matrix& matrix2 = *matrix2Ptr;
+        _Matrix& matrix2 = *matrix2Ptr;
 
         matrix2 = matrix1 * unityRight;   // not for Dense
 
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE( checkSymmetryTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
 
         matrix.setIdentity( 5 );
         BOOST_CHECK( matrix.checkSymmetry() );
@@ -474,14 +474,14 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
 
-        if ( matrix.getMatrixKind() == Matrix::DENSE )
+        if ( matrix.getMatrixKind() == _Matrix::DENSE )
         {
             continue;   // Dense does not support first column indexes
         }
 
-        if ( matrix.getFormat() == Matrix::DIA )
+        if ( matrix.getFormat() == _Matrix::DIA )
         {
             continue;   // DIA does not support first column indexes
         }
@@ -527,14 +527,14 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        Matrix& matrix = *allMatrices[s];
+        _Matrix& matrix = *allMatrices[s];
 
-        if ( matrix.getFormat() == Matrix::DIA )
+        if ( matrix.getFormat() == _Matrix::DIA )
         {
             continue;  // DIA has problems with diagonal property
         }
 
-        matrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+        matrix.setCommunicationKind( _Matrix::SYNCHRONOUS );
 
         for ( size_t i = 0; i < testDistributions.size(); ++i )
         {
@@ -616,7 +616,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                Matrix& matrix = *allMatrices[s];
+                _Matrix& matrix = *allMatrices[s];
 
                 matrix = csr;
 
@@ -679,7 +679,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
                 for ( size_t s = 0; s < allMatrices.size(); ++s )
                 {
-                    Matrix& matrix = *allMatrices[s];
+                    _Matrix& matrix = *allMatrices[s];
 
                     matrix = csr;
 
@@ -742,9 +742,9 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                Matrix& matrix = *allMatrices[s];
+                _Matrix& matrix = *allMatrices[s];
 
-                if ( matrix.getMatrixKind() != Matrix::DENSE )
+                if ( matrix.getMatrixKind() != _Matrix::DENSE )
                 {
                     // continue;
                 }
@@ -800,7 +800,7 @@ BOOST_AUTO_TEST_CASE( getTest )
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                Matrix& matrix = *allMatrices[s];
+                _Matrix& matrix = *allMatrices[s];
 
                 matrix = csr;
 
@@ -854,11 +854,11 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                Matrix& matrix = *allMatrices[s];
+                _Matrix& matrix = *allMatrices[s];
 
                 matrix = csr;
 
-                if ( matrix.getMatrixKind() == Matrix::SPARSE )
+                if ( matrix.getMatrixKind() == _Matrix::SPARSE )
                 {
                     continue;
                 }
@@ -934,7 +934,7 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
 
         for ( size_t k = 0; k < allMatrices.size(); ++k )
         {
-            Matrix& mat = *allMatrices[ k ];
+            _Matrix& mat = *allMatrices[ k ];
 
             mat.setCSRData( dist, colDist, numValues, ia, ja, values );
 
@@ -983,9 +983,9 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
 
         for ( size_t k = 0; k < allMatrices.size(); ++k )
         {
-            Matrix& mat = *allMatrices[ k ];
+            _Matrix& mat = *allMatrices[ k ];
 
-            if ( mat.getMatrixKind() != Matrix::DENSE )
+            if ( mat.getMatrixKind() != _Matrix::DENSE )
             {
                 continue;
             }
@@ -1037,11 +1037,11 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                Matrix& matrix = *allMatrices[s];
+                _Matrix& matrix = *allMatrices[s];
 
                 matrix = csr;
 
-                common::unique_ptr<Matrix> matrix1( matrix.copy() );
+                common::unique_ptr<_Matrix> matrix1( matrix.copy() );
 
                 matrix.redistribute( dist1, colDist);
 
@@ -1093,9 +1093,9 @@ BOOST_AUTO_TEST_CASE( hcatTest )
 
         for ( size_t s = 0; s < allMatrices.size(); ++s )
         {
-            Matrix& matrix = *allMatrices[s];
+            _Matrix& matrix = *allMatrices[s];
 
-            if ( matrix.getMatrixKind() == Matrix::DENSE )
+            if ( matrix.getMatrixKind() == _Matrix::DENSE )
             {
                 continue;
             }

@@ -407,7 +407,7 @@ void TextIO::readStorageImpl(
 {
     // binary mode does not matter as we have always formatted output
 
-    // read coo entries lines by line, similiar to MatrixMarket
+    // read coo entries lines by line, similiar to _MatrixMarket
     // i , j, val
 
     IndexType nnz;

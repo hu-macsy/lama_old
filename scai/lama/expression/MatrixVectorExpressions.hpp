@@ -1,5 +1,5 @@
 /**
- * @file MatrixVectorExpressions.hpp
+ * @file _MatrixVectorExpressions.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Operators to form symbolic expressions Scalar * Matrix * Vector + Scalar * Vector
+ * @brief Operators to form symbolic expressions Scalar * _Matrix * Vector + Scalar * Vector
  * @author Thomas Brandes
  * @date 28.03.2011
  */
@@ -47,12 +47,12 @@ namespace lama
 {
 
 /* ------------------------------------------------------------------------- */
-/*  Expressions return 'Scalar * Matrix * Vector'                            */
+/*  Expressions return 'Scalar * _Matrix * Vector'                            */
 /* ------------------------------------------------------------------------- */
 
 /**
  * @brief This times operator creates an expression that represents the product
- *        of a Matrix and a Vector.
+ *        of a _Matrix and a Vector.
  *
  * The times operator creates an Expression that represents the product of the
  * a matrix and a vector. To give an example this Expression is
@@ -63,12 +63,12 @@ namespace lama
  * @param[in] vector  The input vector.
  * @return            The expression representing this product.
  */
-inline Expression_SMV operator*( const Matrix& matrix, const _Vector& vector )
+inline Expression_SMV operator*( const _Matrix& matrix, const _Vector& vector )
 {
     return Expression_SMV( Scalar( 1.0 ), Expression_MV( matrix, vector ) );
 }
 
-inline Expression_SVM operator*( const _Vector& vector, const Matrix& matrix )
+inline Expression_SVM operator*( const _Vector& vector, const _Matrix& matrix )
 {
     return Expression_SVM( Scalar( 1.0 ), Expression_VM( vector, matrix ) );
 }
@@ -123,13 +123,13 @@ inline Expression_SVM operator*( const Expression_SVM& exp, const Scalar& scalar
 
 /**
  * @brief This times operator creates an expression that represents the product
- *        of a Matrix, Vector and Scalar.
+ *        of a _Matrix, Vector and Scalar.
  *
  * @param[in] matrix  The matrix.
  * @param[in] exp     The expression a*x
  * @return            The expression representing this product.
  */
-inline Expression_SMV operator*( const Matrix& matrix, const Expression_SV& exp )
+inline Expression_SMV operator*( const _Matrix& matrix, const Expression_SV& exp )
 {
     return Expression_SMV( exp.getArg1(), Expression_MV( matrix, exp.getArg2() ) );
 }
@@ -142,7 +142,7 @@ inline Expression_SMV operator*( const Matrix& matrix, const Expression_SV& exp 
  * @param[in] matrix  The matrix.
  * @return            The expression representing this product.
  */
-inline Expression_SVM operator*( const Expression_SV& exp, const Matrix& matrix )
+inline Expression_SVM operator*( const Expression_SV& exp, const _Matrix& matrix )
 {
     return Expression_SVM( exp.getArg1(), Expression_VM( exp.getArg2(), matrix ) );
 }
@@ -166,7 +166,7 @@ inline Expression_SVM operator*( const _Vector& vector, const Expression_SM& exp
 }
 
 /* ------------------------------------------------------------------------- */
-/*  Expressions 'Scalar * Matrix * Vector' +/- vector                        */
+/*  Expressions 'Scalar * _Matrix * Vector' +/- vector                        */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -276,7 +276,7 @@ inline Expression_SVM_SV operator+( const Expression_SVM& exp, const _Vector& ve
 }
 
 /* ------------------------------------------------------------------------- */
-/*  Expressions 'Scalar * Matrix * Vector' +/- 'Scalar * Vector'             */
+/*  Expressions 'Scalar * _Matrix * Vector' +/- 'Scalar * Vector'             */
 /* ------------------------------------------------------------------------- */
 
 /**

@@ -79,7 +79,7 @@ public:
 
     virtual ~MINRES();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -135,7 +135,7 @@ protected:
 
     MINRESRuntime mMINRESRuntime;
     /**
-     * @brief Performs one MINRES iteration based on Matrix/Vector operations
+     * @brief Performs one MINRES iteration based on _Matrix/Vector operations
      */
     virtual void iterate();
     void Lanczos();

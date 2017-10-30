@@ -106,7 +106,7 @@ class HessianMatrix : public AbstractMatrix
 
 public:
 
-    HessianMatrix ( const Matrix& A, const _Vector& D, const Scalar& tau ) :
+    HessianMatrix ( const _Matrix& A, const _Vector& D, const Scalar& tau ) :
 
         AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
 
@@ -149,7 +149,7 @@ public:
 
 private:
 
-    const Matrix& mA;
+    const _Matrix& mA;
     const _Vector& mD;
     const Scalar mTau;
 };

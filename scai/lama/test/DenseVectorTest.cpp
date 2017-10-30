@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE( matExpConstructorTest )
             CSRSparseMatrix<RealType> mat( rowDist, colDist );
 
             DenseVector<ValueType> x( colDist, 3 );
-            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * Matrix * Vector" );
+            SCAI_LOG_INFO( logger, "linear algebra expression: alpha * _Matrix * Vector" );
             DenseVector<ValueType> y( 2 * mat * x );
 
             BOOST_CHECK_EQUAL( y.getDistribution(), *rowDist );
@@ -509,7 +509,7 @@ BOOST_AUTO_TEST_CASE( assignTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_test_types )
 {
     // test  vector = scalar * matrix * vector + scalar * vector with all distributions, formats
 
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                _Matrix& A1 = *matrices[k];
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );
@@ -637,9 +637,9 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                Matrix& A1 = *matrices[k];
+                _Matrix& A1 = *matrices[k];
 
-                A1.setCommunicationKind( Matrix::SYNCHRONOUS );
+                A1.setCommunicationKind( _Matrix::SYNCHRONOUS );
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );

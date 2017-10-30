@@ -63,7 +63,7 @@ public:
 
     virtual ~Jacobi();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 

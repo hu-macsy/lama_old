@@ -53,11 +53,11 @@ public:
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
-        Matrix::getCreateValues( values );
+        _Matrix::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::MatrixPtr matrixPtr( scai::lama::Matrix::create( values[i] ) );
+            scai::lama::MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
             if ( ctx )
             {
@@ -72,11 +72,11 @@ public:
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
-        Matrix::getCreateValues( values );
+        _Matrix::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::MatrixPtr matrixPtr( scai::lama::Matrix::create( values[i] ) );
+            scai::lama::MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
             if ( values[i].second != stype )
             {

@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-// Matrix & vector related includes
+// _Matrix & vector related includes
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/all.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>

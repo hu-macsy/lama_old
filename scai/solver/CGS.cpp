@@ -55,7 +55,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -78,7 +78,7 @@ CGS::~CGS() {}
 
 CGS::CGSRuntime::~CGSRuntime() {}
 
-void CGS::initialize( const Matrix& coefficients )
+void CGS::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -132,7 +132,7 @@ void CGS::solveInit( _Vector& solution, const _Vector& rhs )
 void CGS::iterate()
 {
     CGSRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     const _Vector& res0 = *runtime.mRes0;
     _Vector& res = *runtime.mResidual;
     _Vector& vecP = *runtime.mVecP;

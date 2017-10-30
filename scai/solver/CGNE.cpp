@@ -53,7 +53,7 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( CGNE::logger, "Solver.CGNE" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -85,7 +85,7 @@ CGNE::~CGNE()
 CGNE::CGNERuntime::~CGNERuntime() {}
 
 
-void CGNE::initialize( const Matrix& coefficients )
+void CGNE::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -132,8 +132,8 @@ void CGNE::solveInit( _Vector& solution, const _Vector& rhs )
 void CGNE::iterate()
 {
     CGNERuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposedMat;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transposedA = *runtime.mTransposedMat;
     _Vector& vecP = *runtime.mVecP;
     _Vector& residual = *runtime.mResidual;
     _Vector& solution = *runtime.mSolution;

@@ -94,7 +94,7 @@ public:
      *
      * @param[in] coefficients  The matrix A from A * u = f.
      */
-    virtual void initialize( const lama::Matrix& )
+    virtual void initialize( const lama::_Matrix& )
     {
         COMMON_THROWEXCEPTION( "DiagonalSolver cannot be initialized by a matrix." )
     }

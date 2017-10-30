@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types 
     DenseMatrix<ValueType> origin = DenseMatrix<ValueType>( system.coefficients );
     DenseMatrix<ValueType> result = DenseMatrix<ValueType>( system.coefficients );
     inverseSolver.initialize( origin );
-    const Matrix& inverse = inverseSolver.getInverse();
+    const _Matrix& inverse = inverseSolver.getInverse();
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 
     typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;

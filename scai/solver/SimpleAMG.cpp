@@ -62,7 +62,7 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( SimpleAMG::logger, "Solver.IterativeSolver.SimpleAMG" )
 SCAI_LOG_DEF_LOGGER( SimpleAMG::SimpleAMGRuntime::logger, "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
@@ -114,7 +114,7 @@ void SimpleAMG::loadSetupLibs()
     }
 }
 
-void SimpleAMG::initialize( const Matrix& coefficients )
+void SimpleAMG::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.SimpleAMG.initialize" )
     SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
@@ -214,17 +214,17 @@ void SimpleAMG::setMinVarsCoarseLevel( unsigned int vars )
     mMinVarsCoarseLevel = vars;
 }
 
-const Matrix& SimpleAMG::getGalerkin( unsigned int level )
+const _Matrix& SimpleAMG::getGalerkin( unsigned int level )
 {
     return getRuntime().mSetup->getGalerkin( level );
 }
 
-const Matrix& SimpleAMG::getRestriction( unsigned int level )
+const _Matrix& SimpleAMG::getRestriction( unsigned int level )
 {
     return getRuntime().mSetup->getRestriction( level );
 }
 
-const Matrix& SimpleAMG::getInterpolation( unsigned int level )
+const _Matrix& SimpleAMG::getInterpolation( unsigned int level )
 {
     return getRuntime().mSetup->getInterpolation( level );
 }
@@ -311,9 +311,9 @@ void SimpleAMG::cycle()
     }
     else
     {
-        const Matrix& curGalerkin = amgSetup->getGalerkin( runtime.mCurrentLevel );
-        const Matrix& curRestriction = amgSetup->getRestriction( runtime.mCurrentLevel );
-        const Matrix& curInterpolation = amgSetup->getInterpolation( runtime.mCurrentLevel );
+        const _Matrix& curGalerkin = amgSetup->getGalerkin( runtime.mCurrentLevel );
+        const _Matrix& curRestriction = amgSetup->getRestriction( runtime.mCurrentLevel );
+        const _Matrix& curInterpolation = amgSetup->getInterpolation( runtime.mCurrentLevel );
         _Vector& curTmpRhs = amgSetup->getTmpResVector( runtime.mCurrentLevel );
         _Vector& curCoarseSolution = amgSetup->getSolutionVector( runtime.mCurrentLevel + 1 );
         _Vector& curCoarseRhs = amgSetup->getRhsVector( runtime.mCurrentLevel + 1 );
@@ -404,7 +404,7 @@ void SimpleAMG::logSetupInfo()
         if ( i == 0 )
         {
             std::stringstream output1;
-            output1 << "Operator Matrix Hierarchy:\n";
+            output1 << "Operator _Matrix Hierarchy:\n";
             mLogger->logMessage( LogLevel::advancedInformation, output1.str() );
             std::stringstream output2;
             output2 << "Lvl    #Rows    #Cols  #Entries Average\n";
@@ -428,7 +428,7 @@ void SimpleAMG::logSetupInfo()
         if ( i == 0 )
         {
             std::stringstream output1;
-            output1 << "Interpolation Matrix Hierarchy:\n";
+            output1 << "Interpolation _Matrix Hierarchy:\n";
             mLogger->logMessage( LogLevel::advancedInformation, output1.str() );
             std::stringstream output2;
             output2 << "Lvl    #Rows    #Cols  #Entries Average\n";

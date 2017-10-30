@@ -1,5 +1,5 @@
 /**
- * @file Matrix.hpp
+ * @file _Matrix.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -69,10 +69,10 @@ namespace lama
 
 /** Pointer class for a matrix, always use of a shared pointer. */
 
-typedef common::shared_ptr<class Matrix> MatrixPtr;
+typedef common::shared_ptr<class _Matrix> MatrixPtr;
 
 
-/** Key type used for the Matrix factory.
+/** Key type used for the _Matrix factory.
  *
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
@@ -80,14 +80,14 @@ typedef common::shared_ptr<class Matrix> MatrixPtr;
 typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
 
 /**
- * @brief The class Matrix is a abstract type that represents a distributed 2D real or complex matrix.
+ * @brief The class _Matrix is a abstract type that represents a distributed 2D real or complex matrix.
  *
- * Matrix is one of the LAMA Base Types and should be used in all situations where it is not necessary to access a
- * single element or to create a new Matrix.
+ * _Matrix is one of the LAMA Base Types and should be used in all situations where it is not necessary to access a
+ * single element or to create a new _Matrix.
  */
-class COMMON_DLL_IMPORTEXPORT Matrix:
+class COMMON_DLL_IMPORTEXPORT _Matrix:
 
-    public common::Factory<MatrixCreateKeyType, Matrix*>,
+    public common::Factory<MatrixCreateKeyType, _Matrix*>,
     public dmemo::Distributed,
     public Format
 
@@ -97,17 +97,17 @@ public:
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static Matrix* getMatrix( const MatrixStorageFormat format, const common::scalar::ScalarType valueType );
+    static _Matrix* getMatrix( const MatrixStorageFormat format, const common::scalar::ScalarType valueType );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
      */
-    typedef const Matrix& ExpressionMemberType;
+    typedef const _Matrix& ExpressionMemberType;
 
     /**
      * @brief Destructor, releases all allocated resources.
      */
-    virtual ~Matrix();
+    virtual ~_Matrix();
 
     /** Override Distributed::buildCSRGraph */
 
@@ -121,7 +121,7 @@ public:
      * @brief write the matrix to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file (SAMG, MatrixMarket), default is to decide by suffix
+     * @param[in] fileType format of the output file (SAMG, _MatrixMarket), default is to decide by suffix
      * @param[in] dataType representation type for output values, default is same type as matrix values
      * @param[in] indexType representation type for col/row index values
      * @param[in] fileMode can be used to forche BINARY or FORMATTED output
@@ -200,7 +200,7 @@ public:
      * @brief Operator that sets the matrix to the identity matrix.
      *
      * \code
-     * void sub( ..., Matrix& a, ... )
+     * void sub( ..., _Matrix& a, ... )
      * ...
      * SCAI_ASSERT_EQUAL_DEBUG( a.getNumRows(), a.getNumColumns() )
      * a.setIdentity( a.getRowDistribution() );
@@ -389,13 +389,13 @@ public:
      *
      *  @param[in] other   the matrix to be converted.
      */
-    virtual void assign( const Matrix& other ) = 0;
+    virtual void assign( const _Matrix& other ) = 0;
 
     /** @brief Assignment of a transposed matrix to this matrix
      *
      *  @param[in] other   the matrix to be assigned.
      */
-    virtual void assignTranspose( const Matrix& other ) = 0;
+    virtual void assignTranspose( const _Matrix& other ) = 0;
 
     /**
      * @brief Setting (distributed) matrix with any replicated/global matrix storage data.
@@ -566,7 +566,7 @@ public:
      *  @param[in]  elemOp specfies operatin applied to the elements before reduction
      *
      *  \code
-     *     const Matrix& m; _Vector& v;
+     *     const _Matrix& m; _Vector& v;
      *     m.reduce( v, dim = 0, common::binary::ADD, common::binary::SQR );  // builds row sums 
      *     m.reduce( v, dim = 1, common::binary::ADD, common::binary::SQR );  // builds diagonal of m' m 
      *  \endcode
@@ -706,36 +706,36 @@ public:
     /**
      * @brief Computes this = alpha * other.
      *
-     * @param[out]  other   the Matrix to multiply
+     * @param[out]  other   the _Matrix to multiply
      * @param[in]   alpha   the Scalar of the expression
      */
-    virtual void matrixTimesScalar( const Matrix& other, const Scalar alpha ) = 0;
+    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha ) = 0;
 
     /**
      * @brief Computes this = alpha * A + beta * B.
      *
      * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   A       the Matrix A of the expression
+     * @param[in]   A       the _Matrix A of the expression
      * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   B       the Matrix B of the expression
+     * @param[in]   B       the _Matrix B of the expression
      */
-    virtual void matrixPlusMatrix( const Scalar alpha, const Matrix& A, const Scalar beta, const Matrix& B ) = 0;
+    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B ) = 0;
 
     /**
      * @brief Computes result = alpha * this * B + beta * C.
      *
-     * @param[out]  result  the Matrix to store the result to
+     * @param[out]  result  the _Matrix to store the result to
      * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   B       the Matrix B of the expression
+     * @param[in]   B       the _Matrix B of the expression
      * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   C       the Matrix C of the expression
+     * @param[in]   C       the _Matrix C of the expression
      */
     virtual void matrixTimesMatrix(
-        Matrix& result,
+        _Matrix& result,
         const Scalar alpha,
-        const Matrix& B,
+        const _Matrix& B,
         const Scalar beta,
-        const Matrix& C ) const = 0;
+        const _Matrix& C ) const = 0;
 
     /**
      * @brief Concatenate multiple matrices horizontally/vertically to a new matrix.
@@ -750,17 +750,17 @@ public:
      * This routine should also be able to deal with aliases, i.e. one ore more of the input matrices  might be
      * the pointer to the result matrix.
      */
-    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const Matrix*>& matrices );
+    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const _Matrix*>& matrices );
 
     /**
      *   shorthand for cat( 0, { &m1, &m2 }, 2 )
      */
-    virtual void vcat( const Matrix& m1, const Matrix& m2 );
+    virtual void vcat( const _Matrix& m1, const _Matrix& m2 );
 
     /**
      *   shorthand for cat( 1, { &m1, &m2 }, 2 )
      */
-    virtual void hcat( const Matrix& m1, const Matrix& m2 );
+    virtual void hcat( const _Matrix& m1, const _Matrix& m2 );
 
     /** Getter routine for the local number of stored values. */
 
@@ -867,7 +867,7 @@ public:
      * This routine will also be used by copy constructors in base classes.
      *
      */
-    void inheritAttributes( const Matrix& other );
+    void inheritAttributes( const _Matrix& other );
 
     /**
      * @brief Prefetches matrix data to its 'preferred' context location.
@@ -888,70 +888,70 @@ public:
      * are inherited, but there might be implicit conversions regarding storage format and/or
      * value type of the matrix elements.
      */
-    Matrix& operator=( const Matrix& other );
+    _Matrix& operator=( const _Matrix& other );
 
     /**
      * @brief Assignment operator for alhpa * A
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator=( const Expression_SM& exp );
+    _Matrix& operator=( const Expression_SM& exp );
 
     /**
      * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
      *
      * @param[in] exp   representation of alpha * A * B as Expression object
      */
-    Matrix& operator=( const Expression_SMM& exp );
+    _Matrix& operator=( const Expression_SMM& exp );
 
     /**
      * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
      *
      * @param[in] exp   representation of alpha * A * B + beta * C as Expression object
      */
-    Matrix& operator=( const Expression_SMM_SM& exp );
+    _Matrix& operator=( const Expression_SMM_SM& exp );
 
     /**
      * @brief The assignment operator for alpha * A + beta * B
      *
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
-    Matrix& operator=( const Expression_SM_SM& exp );
+    _Matrix& operator=( const Expression_SM_SM& exp );
 
     /**
      * @brief The assignment operator this *= alpha
      *
      * @param[in] val   Factor used for scaling of the matrix
      */
-    Matrix& operator*=( const Scalar val );
+    _Matrix& operator*=( const Scalar val );
 
     /**
      * @brief The assignment operator this += A
      *
-     * @param[in] exp   Matrix to be added
+     * @param[in] exp   _Matrix to be added
      */
-    Matrix& operator+=( const Matrix& exp );
+    _Matrix& operator+=( const _Matrix& exp );
 
     /**
      * @brief The assignment operator this += alpha * A
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator+=( const Expression_SM& exp );
+    _Matrix& operator+=( const Expression_SM& exp );
 
     /**
      * @brief The assignment operator this -= A
      *
-     * @param[in] exp   Matrix to be added
+     * @param[in] exp   _Matrix to be added
      */
-    Matrix& operator-=( const Matrix& exp );
+    _Matrix& operator-=( const _Matrix& exp );
 
     /**
      * @brief The assignment operator this -= alpha * A
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    Matrix& operator-=( const Expression_SM& exp );
+    _Matrix& operator-=( const Expression_SM& exp );
 
     /**
      * @brief Computes the inverse of a matrix.
@@ -962,7 +962,7 @@ public:
      * This matrix will have afterwards the same distribution as the
      * other matrix.
      */
-    virtual void invert( const Matrix& other ) = 0;
+    virtual void invert( const _Matrix& other ) = 0;
 
     /**
      * @brief Returns the L1 norm of this.
@@ -1001,13 +1001,13 @@ public:
      * Note: This method is the most general implementation and should be
      *       implemented more efficiently in derived classes.
      */
-    virtual Scalar maxDiffNorm( const Matrix& other ) const;
+    virtual Scalar maxDiffNorm( const _Matrix& other ) const;
 
     /**
      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
      *
      * \code
-     * void sub( ..., const Matrix& matrix, ...)
+     * void sub( ..., const _Matrix& matrix, ...)
      * {
      *     ...
      *     // Create a copy of the input matrix
@@ -1027,7 +1027,7 @@ public:
      * This method is a workaround to call the constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual Matrix* newMatrix( void ) const = 0;
+    virtual _Matrix* newMatrix( void ) const = 0;
 
     /**
      *  @brief Create a new dense vector with same value type and context as matrix
@@ -1066,13 +1066,13 @@ public:
      * \code
      * common::unique_ptr<Matrix> newmatrix = matrix.copy();
      * // More convenient to use, but exactly same as follows:
-     * common::unique_ptr<Matrix> newmatrix = Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
+     * common::unique_ptr<Matrix> newmatrix = _Matrix::create( matrix.getCreateValue() ); *newmatrix = matrix;
      * \endcode
      *
      * This method is a workaround to call the copy constructor of a derived matrix class
      * where the derived class is not known at compile time.
      */
-    virtual Matrix* copy() const = 0;
+    virtual _Matrix* copy() const = 0;
 
     /**
      * @brief Copy this matrix with a new distribution
@@ -1080,7 +1080,7 @@ public:
      * @param[in] rowDistribution   new distribution of the rows
      * @param[in] colDistribution   new distribution of the columns
      */
-    virtual Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
+    virtual _Matrix* copy( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) const;
 
     /**
      * @brief Queries the keytype to create matrix from factory with same valuetype and storagetype
@@ -1148,7 +1148,7 @@ protected:
      *
      *  The number of rows and columns is given implicitly by the global sizes of the distributions.
      */
-    Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+    _Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**
      * @brief Constructs a matrix of a given size replicated on each partition.
@@ -1156,9 +1156,9 @@ protected:
      * @param[in] numRows      number of rows, must be non-negative.
      * @param[in] numColumns   number of columns, must be non-negative.
      *
-     * Same as Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
+     * Same as _Matrix( NoDistribution(numRows), NoDistribution(numColumns) )
      */
-    Matrix( const IndexType numRows, const IndexType numColumns );
+    _Matrix( const IndexType numRows, const IndexType numColumns );
 
     /**
      * @brief Constructs a square matrix with the given size and the specified distribution.
@@ -1166,23 +1166,23 @@ protected:
      * @param[in] distribution      specifies how the rows of the matrix are distributed among
      *                              the available partitions.
      *
-     * Same as Matrix( distribution, distribution ); column distribution will be same as that of rows.
+     * Same as _Matrix( distribution, distribution ); column distribution will be same as that of rows.
      */
-    Matrix( dmemo::DistributionPtr distribution );
+    _Matrix( dmemo::DistributionPtr distribution );
 
     /**
      * @brief Constructs a square matrix with a replicated distribution.
      *
      * @param[in] size              is the number of rows
      *
-     * Same as Matrix(size, size ).
+     * Same as _Matrix(size, size ).
      */
-    explicit Matrix( const IndexType size );
+    explicit _Matrix( const IndexType size );
 
     /**
      * @brief Default constructor, creates a replicated matrix of size 0 x 0.
      */
-    Matrix();
+    _Matrix();
 
     /**
      * @brief Redistribute the given matrix with the specified distributions.
@@ -1198,7 +1198,7 @@ protected:
      *   - other.getNumRows() == distribution->getGlobalSize()
      *   - other.getNumColumns() == colDistribution->getGlobalSize()
      */
-    Matrix( const Matrix& other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
+    _Matrix( const _Matrix& other, dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
     /**
      * @brief Copies a matrix to a new matrix with the same distribution.
@@ -1206,7 +1206,7 @@ protected:
      * @param[in] other  the matrix to take a copy from
      *
      */
-    Matrix( const Matrix& other );
+    _Matrix( const _Matrix& other );
 
     /**
      * @brief Sets the global/local size of replicated matrix.
@@ -1242,7 +1242,7 @@ protected:
 
     void checkSettings() const; // check valid member variables
 
-    void swapMatrix( Matrix& other ); // swap member variables of Matrix
+    void swapMatrix( _Matrix& other ); // swap member variables of _Matrix
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
@@ -1252,11 +1252,11 @@ private:
 
     using Distributed::getDistributionPtr;
 
-    void sanityCheck( const Expression<Matrix, Matrix, Times>& exp );
+    void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp );
 
-    void sanityCheck( const Expression<Matrix, Matrix, Times>& exp, const Matrix& C );
+    void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C );
 
-    void sanityCheck( const Matrix& A, const Matrix& B );
+    void sanityCheck( const _Matrix& A, const _Matrix& B );
 
     void setDefaultKind(); // set default values for communication and compute kind
 
@@ -1283,37 +1283,37 @@ private:
 /*             Inline methods                                               */
 /* ======================================================================== */
 
-inline IndexType Matrix::getNumRows() const
+inline IndexType _Matrix::getNumRows() const
 {
     return getDistribution().getGlobalSize();
 }
 
-inline IndexType Matrix::getNumColumns() const
+inline IndexType _Matrix::getNumColumns() const
 {
     return mColDistribution->getGlobalSize();
 }
 
-inline Matrix::SyncKind Matrix::getCommunicationKind() const
+inline _Matrix::SyncKind _Matrix::getCommunicationKind() const
 {
     return mCommunicationKind;
 }
 
-inline const dmemo::Distribution& Matrix::getColDistribution() const
+inline const dmemo::Distribution& _Matrix::getColDistribution() const
 {
     return *mColDistribution;
 }
 
-inline dmemo::DistributionPtr Matrix::getColDistributionPtr() const
+inline dmemo::DistributionPtr _Matrix::getColDistributionPtr() const
 {
     return mColDistribution;
 }
 
-inline const dmemo::Distribution& Matrix::getRowDistribution() const
+inline const dmemo::Distribution& _Matrix::getRowDistribution() const
 {
     return getDistribution();
 }
 
-inline dmemo::DistributionPtr Matrix::getRowDistributionPtr() const
+inline dmemo::DistributionPtr _Matrix::getRowDistributionPtr() const
 {
     return getDistributionPtr();
 }
@@ -1323,17 +1323,17 @@ inline dmemo::DistributionPtr Matrix::getRowDistributionPtr() const
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix::SyncKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const scai::lama::_Matrix::SyncKind& kind )
 {
     switch ( kind )
     {
-        case scai::lama::Matrix::SYNCHRONOUS:
+        case scai::lama::_Matrix::SYNCHRONOUS:
         {
             stream << "SYNCHRONOUS";
             break;
         }
 
-        case scai::lama::Matrix::ASYNCHRONOUS:
+        case scai::lama::_Matrix::ASYNCHRONOUS:
         {
             stream << "ASYNCHRONOUS";
             break;
@@ -1354,17 +1354,17 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::Matrix:
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const Matrix::MatrixKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const _Matrix::MatrixKind& kind )
 {
     switch ( kind )
     {
-        case scai::lama::Matrix::DENSE:
+        case scai::lama::_Matrix::DENSE:
         {
             stream << "DENSE";
             break;
         }
 
-        case scai::lama::Matrix::SPARSE:
+        case scai::lama::_Matrix::SPARSE:
         {
             stream << "SPARSE";
             break;

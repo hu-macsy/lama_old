@@ -58,7 +58,7 @@ namespace solver
 
 using utilskernel::LAMAKernel;
 
-using lama::Matrix;
+using lama::_Matrix;
 using lama::_Vector;
 using lama::DenseVector;
 using lama::Scalar;
@@ -138,7 +138,7 @@ GMRES::GMRESRuntime::~GMRESRuntime()
     mX0 = 0;
 }
 
-void GMRES::initialize( const Matrix& coefficients )
+void GMRES::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.GMRES.initialize" )
     IterativeSolver::initialize( coefficients );
@@ -238,7 +238,7 @@ void GMRES::iterate()
     unsigned int hIdxDiag = hIdxStart + krylovIndex;
     SCAI_LOG_INFO( logger, "GMRES(" << mKrylovDim << "): Inner Step " << krylovIndex << "." )
     _Vector& vCurrent = *( ( *runtime.mV )[krylovIndex] );
-    const Matrix& A = ( *runtime.mCoefficients );
+    const _Matrix& A = ( *runtime.mCoefficients );
 
     // lazy allocation structure mV
     if ( !( *runtime.mV )[krylovIndex + 1] )

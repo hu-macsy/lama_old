@@ -87,7 +87,7 @@ public:
      *
      * @param[in] coefficients  The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Solves the equation system with the given rhs and stores the
@@ -102,14 +102,14 @@ public:
      *  This routine must not be called before having called 'initialize'.
      */
 
-    const lama::Matrix& getInverse() const;
+    const lama::_Matrix& getInverse() const;
 
     struct InverseSolverRuntime: SolverRuntime
     {
         InverseSolverRuntime();
         virtual ~InverseSolverRuntime();
 
-        common::shared_ptr<lama::Matrix> mInverse;
+        common::shared_ptr<lama::_Matrix> mInverse;
     };
 
     virtual SolverPtr copy();

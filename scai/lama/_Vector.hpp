@@ -69,7 +69,7 @@ class Redistributor;    // forward declaration
 namespace lama
 {
 
-class Matrix;
+class _Matrix;
 
 /** Pointer class for a vector, always use of a shared pointer. */
 
@@ -213,7 +213,7 @@ public:
      *
      * The assignment operator assigns the result of the passed expression to
      * this, if necessary new memory will be allocated. The Vector will hold
-     * the result of the Matrix Vector multiplication represented by
+     * the result of the _Matrix Vector multiplication represented by
      * expression.
      *
      * @param[in] expression the input expression.
@@ -682,7 +682,7 @@ public:
      * @brief write the vector to an output file
      *
      * @param[in] fileName is the name of the output file (suffix must be added according to the file type)
-     * @param[in] fileType format of the output file ("frv" for SAMG, "mtx" for MatrixMarket), default is to decide by suffix
+     * @param[in] fileType format of the output file ("frv" for SAMG, "mtx" for _MatrixMarket), default is to decide by suffix
      * @param[in] dataType representation type for output values, if set it overrides IO settings
      * @param[in] fileMode can be BINARY or FORMATTED, DEFAULT_MODE keeps default/environment settings
      */

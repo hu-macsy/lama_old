@@ -78,7 +78,7 @@ Scalar MaxNorm::apply( const _Vector& vector ) const
     return maxNorm( vector );
 }
 
-Scalar MaxNorm::apply( const Matrix& matrix ) const
+Scalar MaxNorm::apply( const _Matrix& matrix ) const
 {
     return maxNorm( matrix );
 }
@@ -93,7 +93,7 @@ Scalar maxNorm( const _Vector& vector )
     return vector.maxNorm();
 }
 
-Scalar maxNorm( const Matrix& matrix )
+Scalar maxNorm( const _Matrix& matrix )
 {
     return matrix.maxNorm();
 }

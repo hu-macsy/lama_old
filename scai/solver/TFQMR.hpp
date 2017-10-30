@@ -84,7 +84,7 @@ public:
 
     virtual ~TFQMR();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -138,7 +138,7 @@ protected:
 
     TFQMRRuntime mTFQMRRuntime;
     /**
-     * @brief Performs one TFQMR iteration based on Matrix/Vector operations.
+     * @brief Performs one TFQMR iteration based on _Matrix/Vector operations.
      * iterationOdd() and iterationEven() is some update for iterate() based on
      * the number of iterations (even, odd).
      */
