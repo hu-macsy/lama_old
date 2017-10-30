@@ -1097,13 +1097,18 @@ template<typename ValueType>
 bool SparseVector<ValueType>::all( const common::binary::CompareOp op, const Vector& other ) const
 {
     SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
-    SCAI_ASSERT_EQ_ERROR( other.getValueType(), getValueType(), "value type mismatch for all compare, op = " << op )
 
     if ( other.getVectorKind() == Vector::DENSE )
     {
         // dense vector can deal with sparse vector
 
         return other.all( op, *this );
+    }
+
+    if ( other.getValueType() != getValueType() )
+    {
+        SparseVector<ValueType> tmpOther( other );
+        return all( op, tmpOther );
     }
 
     // both vectors are sparse and have same value type
