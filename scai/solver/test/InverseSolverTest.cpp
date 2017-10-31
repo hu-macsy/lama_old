@@ -52,6 +52,7 @@
 #include <scai/lama/norm/MaxNorm.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>

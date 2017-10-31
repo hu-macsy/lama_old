@@ -611,7 +611,7 @@ SparseVector<ValueType>::SparseVector(
     const OtherValueType zeroValue,
     hmemo::ContextPtr context ) :
 
-    _Vector( size, context )
+    Vector<ValueType>( size, context )
 
 {
     setSparseValues( nnz, nonZeroIndexes, nonZeroValues, zeroValue );

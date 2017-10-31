@@ -41,6 +41,7 @@
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
+#include <scai/lama/expression/all.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/lama/test/TestMacros.hpp>

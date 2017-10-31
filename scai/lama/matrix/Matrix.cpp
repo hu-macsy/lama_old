@@ -268,6 +268,8 @@ void Matrix<ValueType>::setRow(
 {
     SCAI_ASSERT_EQ_ERROR( row.size(), this->getNumColumns(), "row size mismatch" )
 
+    SCAI_LOG_DEBUG( logger, "setRow " << globalRowIndex << ": row = " << row << ", op = " << op )
+
     bool needsTmp = false;
 
     if ( row.getValueType() != this->getValueType() )

@@ -44,6 +44,7 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/SparseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
+#include <scai/lama/expression/all.hpp>
 
 using namespace scai;
 using namespace lama;

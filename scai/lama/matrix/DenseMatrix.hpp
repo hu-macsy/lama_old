@@ -287,21 +287,6 @@ public:
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    virtual void setRow( const _Vector&,
-                         const IndexType,
-                         const common::binary::BinaryOp )
-    {
-        // this->crtpSetRow( row, globalRowIndex, op );
-    }
-
-    virtual void setColumn(
-        const _Vector& /* column */,
-        const IndexType /* globalColIndex */,
-        const common::binary::BinaryOp /* op */)
-    {
-        // this->crtpSetColumn( column, globalColIndex, op );
-    }
-
     /** Implementation of pure _Matrix::setDenseData */
 
     virtual void setDenseData(
