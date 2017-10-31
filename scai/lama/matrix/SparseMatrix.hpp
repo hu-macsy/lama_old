@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/matrix/CRTPMatrix.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 
 // local library
 #include <scai/lama/storage/MatrixStorage.hpp>
@@ -77,12 +77,28 @@ template<typename > class DenseMatrix;
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseMatrix: 
 
-    public CRTPMatrix<SparseMatrix<ValueType>, ValueType>,
-    public _Matrix
+    public Matrix<ValueType>
 
 {
 
 public:
+
+    /* Using clauses for convenience, avoids using this->... */
+
+    using _Matrix::operator=;
+    using _Matrix::setContextPtr; 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;     
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+    using _Matrix::redistribute;
+
+    using Matrix<ValueType>::getValueType;
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
@@ -221,50 +237,11 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
-    /* Before overriding the virtual function make the other routine setIdentity( int n ) visible */
-
-    using _Matrix::setIdentity;
-
-    virtual void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const
-    {
-        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
-    }
-
-    virtual void vectorTimesMatrix(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const 
-    {
-        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
-    }
-
     /** @brief Implementation of pure method _Matrix::getColumn 
      *
      *  It is recommended to call getColumn with a SparseVector for a sparse matrix.
      */
     virtual void getColumn( _Vector& column, const IndexType globalColIndex ) const;
-
-    virtual void setRow( const _Vector& row,
-                         const IndexType globalRowIndex,
-                         const common::binary::BinaryOp op )
-    {
-        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
-    }
-
-    virtual void setColumn(
-        const _Vector& column,
-        const IndexType globalColIndex,
-        const common::binary::BinaryOp op )
-    {
-        CRTPMatrix<SparseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
-    }
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -574,12 +551,6 @@ public:
 
     virtual void resetDiagonalProperty();
 
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual common::scalar::ScalarType getValueType() const;
-
-    virtual size_t getValueTypeSize() const;
-
     SparseMatrix<ValueType>* newMatrix() const;
 
     /* Implementation of pure method _Matrix::copy with covariant return type */
@@ -605,21 +576,6 @@ public:
     /* Implementation of pure method of class _Matrix. */
 
     virtual size_t getMemoryUsage() const;
-
-    using _Matrix::operator=; // make overloaded routines visible before overwriting one
-
-    using _Matrix::getColDistribution;
-    using _Matrix::getColDistributionPtr;
-    using _Matrix::getRowDistribution;
-    using _Matrix::getRowDistributionPtr;
-    using _Matrix::setDistributionPtr;
-
-    using _Matrix::getCommunicationKind;
-
-    using _Matrix::getNumColumns;
-    using _Matrix::getNumRows;
-
-    using _Matrix::redistribute;
 
     /** Override the default assignment operator to guarantee deep copy. */
 
@@ -705,8 +661,6 @@ protected:
         const SparseMatrix<ValueType>& B,
         const ValueType beta,
         const SparseMatrix<ValueType>& C );
-
-    using _Matrix::mColDistribution;
 
 public:
 

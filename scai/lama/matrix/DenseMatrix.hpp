@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/matrix/CRTPMatrix.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 
 // local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
@@ -71,12 +71,28 @@ template<typename ValueType> class DenseVector;
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseMatrix:
 
-    public CRTPMatrix<DenseMatrix<ValueType>, ValueType>,
-    public _Matrix,
+    public Matrix<ValueType>,
     public _Matrix::Register<DenseMatrix<ValueType> >    // register at factory
 {
 
 public:
+
+    /* Using clauses for convenience, avoids using this->... */
+
+    using _Matrix::operator=;
+    using _Matrix::setContextPtr; 
+    using _Matrix::getNumRows;
+    using _Matrix::getNumColumns;
+    using _Matrix::setIdentity;   
+
+    using _Matrix::getRowDistribution;
+    using _Matrix::getRowDistributionPtr;
+    using _Matrix::getColDistribution;
+    using _Matrix::getColDistributionPtr;
+
+    using _Matrix::redistribute;
+
+    using Matrix<ValueType>::getValueType;
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
@@ -240,10 +256,6 @@ public:
 
     virtual bool isConsistent() const;
 
-    /** Make overloaded operator= available before overriding the default one. */
-
-    using _Matrix::operator=;
-
     /** Overrides the default assignment operator to guarantee deep copy. */
 
     DenseMatrix& operator=( const DenseMatrix& matrix );
@@ -264,8 +276,6 @@ public:
 
     virtual void setContextPtr( const hmemo::ContextPtr context );
 
-    using _Matrix::setContextPtr; // setContextPtr( localContext, haloContext )
-
     /* Implementation of pure method of class _Matrix. */
 
     virtual hmemo::ContextPtr getContextPtr() const
@@ -273,45 +283,23 @@ public:
         return mData[0]->getContextPtr();
     }
 
-    using _Matrix::setIdentity; // setIdentity( const IndexType n )
-
     /** Implementation of pure method _Matrix::setIdentity. */
 
     virtual void setIdentity( dmemo::DistributionPtr distribution );
 
-    virtual void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const
+    virtual void setRow( const _Vector&,
+                         const IndexType,
+                         const common::binary::BinaryOp )
     {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::matrixTimesVector( result, alpha, x, beta, y );
-    }
-
-    virtual void vectorTimesMatrix(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::vectorTimesMatrix( result, alpha, x, beta, y );
-    }
-
-    virtual void setRow( const _Vector& row,
-                         const IndexType globalRowIndex,
-                         const common::binary::BinaryOp op )
-    {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
+        // this->crtpSetRow( row, globalRowIndex, op );
     }
 
     virtual void setColumn(
-        const _Vector& column,
-        const IndexType globalColIndex,
-        const common::binary::BinaryOp op )
+        const _Vector& /* column */,
+        const IndexType /* globalColIndex */,
+        const common::binary::BinaryOp /* op */)
     {
-        CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
+        // this->crtpSetColumn( column, globalColIndex, op );
     }
 
     /** Implementation of pure _Matrix::setDenseData */
@@ -593,12 +581,6 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /* Implementation of pure method of class _Matrix. */
-
-    virtual common::scalar::ScalarType getValueType() const;
-
-    virtual size_t getValueTypeSize() const;
-
     /**
      * @brief Implementation of pure function _Matrix::copy with covariant return type.
      */
@@ -624,16 +606,6 @@ public:
 
     std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    using _Matrix::getNumRows;
-    using _Matrix::getNumColumns;
-
-    using _Matrix::getRowDistribution;
-    using _Matrix::getRowDistributionPtr;
-    using _Matrix::getColDistribution;
-    using _Matrix::getColDistributionPtr;
-
-    using _Matrix::redistribute;
-
     /** Implementation of pure methode _Matrix::getRow */
 
     virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
@@ -646,7 +618,7 @@ public:
 
     virtual void getColumn( _Vector& col, const IndexType globalColIndex ) const;
 
-    /** Get a complete row of the local storage, used by getRow in CRTPMatrix */
+    /** Get a complete row of the local storage */
 
     void getLocalRow( hmemo::HArray<ValueType>& row, const IndexType iLocal ) const;
 
@@ -794,7 +766,7 @@ DenseMatrix<ValueType>::DenseMatrix(
     const IndexType* const ja,
     const OtherValueType* const values )
 
-    : CRTPMatrix<DenseMatrix<ValueType>, ValueType>( numRows, numColumns )
+    : Matrix<ValueType>( numRows, numColumns )
 {
     mData.resize( 1 );
     mData[0].reset( new DenseStorage<ValueType>( numRows, numColumns ) );

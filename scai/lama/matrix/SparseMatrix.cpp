@@ -92,7 +92,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage ) :
 
-    _Matrix( storage->getNumRows(), storage->getNumColumns() )
+    Matrix<ValueType>( storage->getNumRows(), storage->getNumColumns() )
 {
     mLocalData = storage;
 
@@ -107,7 +107,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
 
-    _Matrix(
+    Matrix<ValueType>(
         rowDist,
         DistributionPtr( new NoDistribution( storage->getNumColumns() ) ) )
 
@@ -140,7 +140,7 @@ SparseMatrix<ValueType>::SparseMatrix(
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
 
-    _Matrix( rowDist, colDist )
+    Matrix<ValueType>( rowDist, colDist )
 {
     SCAI_ASSERT_EQUAL_ERROR( localData->getNumColumns(), colDist->getGlobalSize() )
     mLocalData = localData;
@@ -173,7 +173,7 @@ SparseMatrix<ValueType>::SparseMatrix(
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
 
-    _Matrix( rowDist, colDist )
+    Matrix<ValueType>( rowDist, colDist )
 {
     SCAI_LOG_INFO( logger, "Construct sparse matrix with finalized local, halo storage + Halo" )
     // TODO: asserts for correct sizes of all relevant sizes
@@ -190,7 +190,7 @@ SparseMatrix<ValueType>::SparseMatrix(
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix() : _Matrix( 0, 0 )
+SparseMatrix<ValueType>::SparseMatrix() : Matrix<ValueType>( 0, 0 )
 {
 }
 
@@ -283,7 +283,7 @@ bool SparseMatrix<ValueType>::isConsistent() const
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix( const SparseMatrix<ValueType>& other ) :
 
-    _Matrix( other )
+    Matrix<ValueType>( other )
 
 {
     // instead of calling assign( other ), we copy directly to avoid type queries
@@ -634,8 +634,8 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     // Set the new distributions
 
-    setDistributionPtr( rowDistributionPtr );
-    mColDistribution = colDistributionPtr;
+    _Matrix::setDistributionPtr( rowDistributionPtr );
+    _Matrix::mColDistribution = colDistributionPtr;
 
     // Handle all cases where we do not have to join the local/halo data of matrix
 
@@ -1934,7 +1934,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
             bind( matrixTimesVector, _1, _2, alphaValue, _3, ValueType( 1 ), _2 );
 
-    if ( _Matrix::SYNCHRONOUS == getCommunicationKind() )
+    if ( _Matrix::SYNCHRONOUS == _Matrix::getCommunicationKind() )
     {
         function <
         void(
@@ -2351,22 +2351,6 @@ void SparseMatrix<ValueType>::resetDiagonalProperty()
     }
 
     this->mLocalData->resetDiagonalProperty();
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-common::scalar::ScalarType SparseMatrix<ValueType>::getValueType() const
-{
-    return common::getScalarType<ValueType>();
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-size_t SparseMatrix<ValueType>::getValueTypeSize() const
-{
-    return sizeof( ValueType );
 }
 
 /* ------------------------------------------------------------------------- */

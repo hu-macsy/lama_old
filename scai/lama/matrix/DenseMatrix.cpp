@@ -132,7 +132,7 @@ DenseMatrix<ValueType>::DenseMatrix()
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType numColumns ) :
 
-    _Matrix( numRows, numColumns )
+    Matrix<ValueType>( numRows, numColumns )
 
 {
     computeOwners();
@@ -142,7 +142,7 @@ DenseMatrix<ValueType>::DenseMatrix( const IndexType numRows, const IndexType nu
 template<typename ValueType>
 DenseMatrix<ValueType>::DenseMatrix( DistributionPtr rowDist, DistributionPtr colDist ) :
 
-    _Matrix( rowDist, colDist )
+    Matrix<ValueType>( rowDist, colDist )
 
 {
     computeOwners();
@@ -255,10 +255,9 @@ DenseMatrix<ValueType>& DenseMatrix<ValueType>::operator=( const DenseMatrix<Val
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other )
-    :
+DenseMatrix<ValueType>::DenseMatrix( const DenseMatrix<ValueType>& other ) :
 
-    _Matrix()
+    Matrix<ValueType>()
 
 {
     SCAI_LOG_INFO( logger, "copy constructor( dense matrix, same value type) : " << other )
@@ -2373,18 +2372,6 @@ void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
     common::scalar::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << getNumRows() << " x " << getNumColumns() << ", rowdist = "
            << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
-}
-
-template<typename ValueType>
-common::scalar::ScalarType DenseMatrix<ValueType>::getValueType() const
-{
-    return common::getScalarType<ValueType>();
-}
-
-template<typename ValueType>
-size_t DenseMatrix<ValueType>::getValueTypeSize() const
-{
-    return sizeof( ValueType );
 }
 
 template<typename ValueType>

@@ -35,6 +35,8 @@
 #include <scai/lama/Vector.hpp>
 
 #include <scai/common/TypeTraits.hpp>
+#include <scai/common/mepr/TypeList.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -97,6 +99,12 @@ common::scalar::ScalarType Vector<ValueType>::getValueType() const
 {
     return TypeTraits<ValueType>::stype;
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( Vector, SCAI_ARRAY_TYPES_HOST )
 
 } /* end namespace lama */
 

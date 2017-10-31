@@ -39,6 +39,7 @@ scai_project (
     CLASSES
 
         _Matrix
+        Matrix
 
         COOSparseMatrix
         CSRSparseMatrix
