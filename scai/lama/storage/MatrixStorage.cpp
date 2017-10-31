@@ -241,7 +241,7 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* format2Str( const Format::MatrixStorageFormat storageFormat )
+const char* format2Str( const Format storageFormat )
 {
     switch ( storageFormat )
     {
@@ -285,13 +285,13 @@ const char* format2Str( const Format::MatrixStorageFormat storageFormat )
     return "UNDEFINED";
 }
 
-Format::MatrixStorageFormat str2Format( const char* str )
+Format str2Format( const char* str )
 {
-    for ( int format = 0; format < Format::UNDEFINED; ++format )
+    for ( int format = 0; format < static_cast<int>( Format::UNDEFINED ); ++format )
     {
-        if ( strcmp( format2Str( Format::MatrixStorageFormat( format ) ), str ) == 0 )
+        if ( strcmp( format2Str( Format( format ) ), str ) == 0 )
         {
-            return Format::MatrixStorageFormat( format );
+            return Format( format );
         }
     }
 
@@ -1727,7 +1727,7 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
     return true;
 }
 
-std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat )
+std::ostream& operator<<( std::ostream& stream, const Format& storageFormat )
 {
     stream << scai::lama::format2Str( storageFormat );
     return stream;

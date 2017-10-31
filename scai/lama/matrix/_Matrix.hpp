@@ -108,16 +108,14 @@ typedef MatrixStorageCreateKeyType MatrixCreateKeyType;
 class COMMON_DLL_IMPORTEXPORT _Matrix:
 
     public common::Factory<MatrixCreateKeyType, _Matrix*>,
-    public dmemo::Distributed,
-    public Format
-
+    public dmemo::Distributed
 {
 
 public:
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static _Matrix* getMatrix( const MatrixStorageFormat format, const common::scalar::ScalarType valueType );
+    static _Matrix* getMatrix( const Format format, const common::scalar::ScalarType valueType );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -1097,7 +1095,7 @@ public:
     /**
      * @brief Query the storage format of the used matrix format, e.g. CSR or ELL.
      */
-    virtual MatrixStorageFormat getFormat() const = 0;
+    virtual Format getFormat() const = 0;
 
     /**
      * @brief Query the size of one matrix element

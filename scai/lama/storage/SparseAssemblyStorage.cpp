@@ -185,7 +185,7 @@ void SparseAssemblyStorage<ValueType>::allocate( const IndexType numRows, const 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat SparseAssemblyStorage<ValueType>::getFormat() const
+Format SparseAssemblyStorage<ValueType>::getFormat() const
 {
     return Format::ASSEMBLY;
 }

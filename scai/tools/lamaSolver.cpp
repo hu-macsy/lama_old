@@ -173,7 +173,7 @@ int main( int argc, const char* argv[] )
 
         // input matrix will be CSR format
 
-        MatrixPtr inMatrixPtr( _Matrix::getMatrix( _Matrix::CSR, lamaconf.getValueType() ) );
+        MatrixPtr inMatrixPtr( _Matrix::getMatrix( Format::CSR, lamaconf.getValueType() ) );
         _Matrix& inMatrix = *inMatrixPtr;
 
         // Here each processor should print its configuration

@@ -105,7 +105,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.AllStorageTest" )
 BOOST_AUTO_TEST_CASE( factoryTest )
 {
     Storages allMatrixStorages;    // is created by factory
-    size_t nFormats = Format::UNDEFINED;
+    size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
      nFormats -= 1; // not for STENCIL
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     SCAI_LOG_INFO( logger, "#formats = " << nFormats << ", #types = " << nTypes )

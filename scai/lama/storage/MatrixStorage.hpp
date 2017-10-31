@@ -78,36 +78,31 @@ template<typename ValueType> class DenseStorage;
  *
  *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
  */
-struct Format
+enum class Format
 {
+    DENSE,    //!< Dense, all elements are stored
+    CSR,      //!< Compressed Sparse Row
+    ELL,      //!< ELLPack
+    DIA,      //!< Diagonal
+    JDS,      //!< Jagged Diagonal Storage
+    COO,      //!< Coordinate list
+    STENCIL,  //!< stencil pattern
+    ASSEMBLY, //!<  _Matrix storage used for assembling of values
+    UNDEFINED //!<  Default value
+};
 
-    typedef enum
-    {
-        DENSE,    //!< Dense, all elements are stored
-        CSR,      //!< Compressed Sparse Row
-        ELL,      //!< ELLPack
-        DIA,      //!< Diagonal
-        JDS,      //!< Jagged Diagonal Storage
-        COO,      //!< Coordinate list
-        STENCIL,  //!< stencil pattern
-        ASSEMBLY, //!<  _Matrix storage used for assembling of values
-        UNDEFINED //!<  Default value
-    } MatrixStorageFormat;
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format& storageFormat );
 
-}; /* end struct Format */
+COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format storageFormat );
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format::MatrixStorageFormat& storageFormat );
-
-COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format::MatrixStorageFormat storageFormat );
-
-COMMON_DLL_IMPORTEXPORT Format::MatrixStorageFormat str2Format( const char* str );
+COMMON_DLL_IMPORTEXPORT Format str2Format( const char* str );
 
 /** Key type used for the _Matrix factory.
  *
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
 
-typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> MatrixStorageCreateKeyType;
+typedef std::pair<Format, common::scalar::ScalarType> MatrixStorageCreateKeyType;
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
@@ -126,7 +121,6 @@ typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> Matri
  */
 
 class COMMON_DLL_IMPORTEXPORT _MatrixStorage:
-    public Format,
     public common::Factory<MatrixStorageCreateKeyType, _MatrixStorage*>,
     public common::Printable
 {
@@ -254,7 +248,7 @@ public:
 
     inline bool hasDiagonalProperty() const;
 
-    virtual Format::MatrixStorageFormat getFormat() const = 0;
+    virtual Format getFormat() const = 0;
 
     /** This method sets storage for the identity matrix
      *

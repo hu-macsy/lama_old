@@ -578,7 +578,7 @@ public:
 
     /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::DENSE;
     }

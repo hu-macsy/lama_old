@@ -255,7 +255,7 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType type = getType();
 
-    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
+    MatrixStorageCreateKeyType key( Format::CSR, type );
 
     // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
     // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );

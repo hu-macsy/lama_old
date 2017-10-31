@@ -290,7 +290,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-     virtual Format::MatrixStorageFormat getFormat() const
+     virtual Format getFormat() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

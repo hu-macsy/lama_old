@@ -160,7 +160,7 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType stype = getType();
 
-    MatrixPtr matrixPtr( _Matrix::getMatrix( _Matrix::CSR, stype ) );
+    MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, stype ) );
 
     _Matrix& m = *matrixPtr;
 

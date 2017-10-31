@@ -95,7 +95,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.AllMatrixTest" )
 BOOST_AUTO_TEST_CASE( factoryTest )
 {
     Matrices allMatrices;    // is created by factory
-    size_t nFormats = Format::UNDEFINED;
+    size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
     nFormats--;   // STENCIL_STORAGE not used for a matrix
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
             continue;   // Dense does not support first column indexes
         }
 
-        if ( matrix.getFormat() == _Matrix::DIA )
+        if ( matrix.getFormat() == Format::DIA )
         {
             continue;   // DIA does not support first column indexes
         }
@@ -529,7 +529,7 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
     {
         _Matrix& matrix = *allMatrices[s];
 
-        if ( matrix.getFormat() == _Matrix::DIA )
+        if ( matrix.getFormat() == Format::DIA )
         {
             continue;  // DIA has problems with diagonal property
         }

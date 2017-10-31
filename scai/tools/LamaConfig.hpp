@@ -92,7 +92,7 @@ public:
 
     /** Getter for the specified matrix format, might default */
 
-    scai::lama::_Matrix::MatrixStorageFormat getFormat( ) const;
+    scai::lama::Format getFormat( ) const;
 
     /** Getter for the value type to be used */
 
@@ -188,7 +188,7 @@ private:
     std::string mSolverName;   // name of solver, used for factory
     std::string mNorm;         // name of norm, not yet factory
 
-    scai::lama::_Matrix::MatrixStorageFormat mMatrixFormat;
+    scai::lama::Format mMatrixFormat;
 
     scai::hmemo::ContextPtr mContext;
 
@@ -353,18 +353,18 @@ LamaConfig::LamaConfig()
 
     if ( mContext->getType() == scai::hmemo::Context::CUDA )
     {
-        mMatrixFormat = scai::lama::_Matrix::ELL;
+        mMatrixFormat = scai::lama::Format::ELL;
     }
     else
     {
-        mMatrixFormat = scai::lama::_Matrix::CSR;
+        mMatrixFormat = scai::lama::Format::CSR;
     }
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_FORMAT" ) )
     {
         // check if we can create a matrix of this type
 
-        scai::lama::Format::MatrixStorageFormat format = scai::lama::str2Format( val.c_str() );
+        scai::lama::Format format = scai::lama::str2Format( val.c_str() );
 
         if ( format != scai::lama::Format::UNDEFINED )
         {
@@ -482,7 +482,7 @@ void LamaConfig::writeAt( std::ostream& stream ) const
     stream << "Norm              = " << getNorm() << std::endl;
 }
 
-scai::lama::_Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
+scai::lama::Format LamaConfig::getFormat( ) const
 {
     return mMatrixFormat;
 }

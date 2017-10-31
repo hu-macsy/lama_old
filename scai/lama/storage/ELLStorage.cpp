@@ -198,7 +198,7 @@ void ELLStorage<ValueType>::print( std::ostream& stream ) const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Format::MatrixStorageFormat ELLStorage<ValueType>::getFormat() const
+Format ELLStorage<ValueType>::getFormat() const
 {
     return Format::ELL;
 }

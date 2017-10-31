@@ -130,7 +130,7 @@ public:
     /**
      * @brief Implemementation of pure routine
      */
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return mLocalData->getFormat();
     }

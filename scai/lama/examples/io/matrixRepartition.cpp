@@ -165,7 +165,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 
     common::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
 
-    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
+    MatrixStorageCreateKeyType key( Format::CSR, type );
 
     common::unique_ptr<_MatrixStorage> storage( _MatrixStorage::create( key ) );
 
@@ -263,7 +263,7 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType type = getType();
 
-    MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
+    MatrixStorageCreateKeyType key( Format::CSR, type );
 
     // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
     // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );

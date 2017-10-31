@@ -66,7 +66,7 @@ SCAI_LOG_DEF_LOGGER( _Matrix::logger, "Matrix" )
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-_Matrix* _Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType valueType )
+_Matrix* _Matrix::getMatrix( const Format format, const common::scalar::ScalarType valueType )
 {
     MatrixCreateKeyType mattype( format, valueType );
     return _Matrix::create( mattype );
