@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/_Vector.hpp>
+#include <scai/lama/Vector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -73,11 +73,20 @@ template<typename ValueType> class DenseVector;
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SparseVector:
 
-    public _Vector,
+    public Vector<ValueType>,
     public _Vector::Register<SparseVector<ValueType> >    // register at factory
 
 {
 public:
+
+    using _Vector::logger;
+    using _Vector::getDistribution;
+    using _Vector::getContextPtr;
+    using _Vector::readFromFile;
+    using _Vector::setDistributionPtr;
+    using _Vector::getDistributionPtr;
+    using _Vector::size;
+    using Vector<ValueType>::getValueType;
 
     /** Default constructor, creates zero-sized replicated vector */
 
@@ -313,7 +322,7 @@ public:
 
     /** Implementation of pure method _Vector::getVectorKind() */
 
-    inline virtual VectorKind getVectorKind() const;
+    inline virtual _Vector::VectorKind getVectorKind() const;
 
     /**
      * @brief Implementation of pure method _Vector::isConsistent 
@@ -373,10 +382,6 @@ public:
      *  @param[in] fillRate  probablity for a non-zero entry
      */
     virtual void fillSparseRandom( const float fillRate, const IndexType bound );
-
-    /** Implementation of _Vector::getValueType */
-
-    virtual common::scalar::ScalarType getValueType() const;
 
     /**
      * @brief Implementation of pure method _Vector::buildLocalValues.
@@ -639,7 +644,7 @@ void SparseVector<ValueType>::setSparseValues(
 template<typename ValueType>
 _Vector::VectorKind SparseVector<ValueType>::getVectorKind() const
 {
-    return SPARSE;
+    return _Vector::SPARSE;
 }
 
 template<typename ValueType>

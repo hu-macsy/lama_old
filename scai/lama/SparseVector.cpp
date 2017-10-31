@@ -87,7 +87,7 @@ namespace lama
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector() :
 
-    _Vector( 0 ),
+    Vector<ValueType>( 0 ),
     mNonZeroIndexes(),
     mNonZeroValues(),
     mZeroValue( 0 )
@@ -97,7 +97,7 @@ SparseVector<ValueType>::SparseVector() :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const IndexType n ) :
 
-    _Vector( n ),
+    Vector<ValueType>( n ),
     mNonZeroIndexes(),
     mNonZeroValues(),
     mZeroValue( 0 )
@@ -107,7 +107,7 @@ SparseVector<ValueType>::SparseVector( const IndexType n ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( ContextPtr context ) :
 
-    _Vector( 0, context ),
+    Vector<ValueType>( 0, context ),
     mNonZeroIndexes( context ),
     mNonZeroValues( context ),
     mZeroValue( 0 )
@@ -117,7 +117,7 @@ SparseVector<ValueType>::SparseVector( ContextPtr context ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const IndexType n, ContextPtr context ) :
 
-    _Vector( n, context ),
+    Vector<ValueType>( n, context ),
     mNonZeroIndexes( context ),
     mNonZeroValues( context ),
     mZeroValue( 0 )
@@ -127,7 +127,7 @@ SparseVector<ValueType>::SparseVector( const IndexType n, ContextPtr context ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( DistributionPtr distribution ) :
     
-    _Vector( distribution ), 
+    Vector<ValueType>( distribution ), 
     mNonZeroIndexes(),
     mNonZeroValues(),
     mZeroValue( 0 )
@@ -139,7 +139,7 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( DistributionPtr distribution, ContextPtr context ) : 
 
-    _Vector( distribution, context ), 
+    Vector<ValueType>( distribution, context ), 
     mNonZeroIndexes( context ), 
     mNonZeroValues( context ),
     mZeroValue( 0 )
@@ -152,7 +152,7 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, ContextPtr 
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const IndexType size, const ValueType value, ContextPtr context ) :
 
-    _Vector( size, context ),
+    Vector<ValueType>( size, context ),
     mZeroValue( value )
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector, size = " << size << ", ZERO =" << value )
@@ -161,7 +161,7 @@ SparseVector<ValueType>::SparseVector( const IndexType size, const ValueType val
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const ValueType value, ContextPtr context ) :
 
-    _Vector( distribution, context ),
+    Vector<ValueType>( distribution, context ),
     mZeroValue( value )
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector, dist = " << *distribution  << ", ZERO =" << value )
@@ -170,7 +170,7 @@ SparseVector<ValueType>::SparseVector( DistributionPtr distribution, const Value
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const _Vector& other ) : 
 
-    _Vector( other )
+    Vector<ValueType>( other )
 
 {
     allocate( getDistributionPtr() );
@@ -180,7 +180,7 @@ SparseVector<ValueType>::SparseVector( const _Vector& other ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const _Vector& other, DistributionPtr distribution ) : 
 
-    _Vector( other )
+    Vector<ValueType>( other )
 
 {
     assign( other );
@@ -261,7 +261,7 @@ void SparseVector<ValueType>::assignImpl( const DenseVector<OtherValueType>& oth
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( dmemo::DistributionPtr distribution, const hmemo::_HArray& localValues ) :
 
-    _Vector( distribution )
+    Vector<ValueType>( distribution )
 
 {
     setDenseValues( localValues );
@@ -272,7 +272,7 @@ SparseVector<ValueType>::SparseVector( dmemo::DistributionPtr distribution, cons
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const hmemo::_HArray& localValues ) :
 
-    _Vector( DistributionPtr( new NoDistribution( localValues.size() ) ) )
+    Vector<ValueType>( DistributionPtr( new NoDistribution( localValues.size() ) ) )
 
 {
     setDenseValues( localValues );   // builds the sparse version
@@ -287,7 +287,7 @@ SparseVector<ValueType>::SparseVector(
     const hmemo::_HArray& values, 
     const Scalar zero ) :
 
-    _Vector( distribution )
+    Vector<ValueType>( distribution )
 
 {
     assign( zero );
@@ -299,7 +299,7 @@ SparseVector<ValueType>::SparseVector(
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const std::string& filename ) : 
 
-    _Vector( 0 )
+    Vector<ValueType>( 0 )
 
 {
     SCAI_LOG_INFO( logger, "Construct sparse vector from file " << filename )
@@ -344,7 +344,7 @@ void SparseVector<ValueType>::fillSparseRandom( const float fillRate, const Inde
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SV& expression ) : 
 
-    _Vector( expression.getArg2() )
+    Vector<ValueType>( expression.getArg2() )
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
@@ -355,7 +355,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV& expression ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SV_S& expression ) : 
 
-    _Vector( expression.getArg1().getArg2() )
+    Vector<ValueType>( expression.getArg1().getArg2() )
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
@@ -366,7 +366,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV_S& expression ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_VV& expression ) : 
 
-    _Vector( expression.getArg1() )
+    Vector<ValueType>( expression.getArg1() )
 
 {
     _Vector::operator=( expression );
@@ -376,7 +376,7 @@ SparseVector<ValueType>::SparseVector( const Expression_VV& expression ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SVV& expression ) :
 
-    _Vector( expression.getArg2().getArg1() )
+    Vector<ValueType>( expression.getArg2().getArg1() )
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
@@ -388,7 +388,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVV& expression ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SV_SV& expression ) :
 
-    _Vector( expression.getArg1().getArg2() )
+    Vector<ValueType>( expression.getArg1().getArg2() )
 
 {
     allocate( getDistributionPtr() );
@@ -401,7 +401,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV_SV& expression ) :
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SMV_SV& expression ) :
 
-    _Vector( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
+    Vector<ValueType>( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
             expression.getArg1().getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -413,7 +413,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SMV_SV& expression ) :
 
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SVM_SV& expression )
-    : _Vector( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
+    : Vector<ValueType>( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
               expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -426,7 +426,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVM_SV& expression )
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SMV& expression )
 
-    : _Vector( expression.getArg2().getArg1().getRowDistributionPtr(),
+    : Vector<ValueType>( expression.getArg2().getArg1().getRowDistributionPtr(),
               expression.getArg2().getArg1().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -438,7 +438,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SMV& expression )
 
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const Expression_SVM& expression )
-    : _Vector( expression.getArg2().getArg2().getColDistributionPtr(),
+    : Vector<ValueType>( expression.getArg2().getArg2().getColDistributionPtr(),
               expression.getArg2().getArg2().getContextPtr() )
 {
     allocate( getDistributionPtr() );
@@ -547,14 +547,6 @@ static void getSplitValues(
     {
         splitValues[p] = splitValues[0] + ( splitValues[nPartitions] - splitValues[0] ) * ValueType( p ) / ValueType( nPartitions );
     }
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-common::scalar::ScalarType SparseVector<ValueType>::getValueType() const
-{
-    return TypeTraits<ValueType>::stype;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1707,7 +1699,7 @@ VectorCreateKeyType SparseVector<ValueType>::getCreateValue() const
 template<typename ValueType>
 SparseVector<ValueType>::SparseVector( const SparseVector<ValueType>& other )
 
-    : _Vector( other ),
+    : Vector<ValueType>( other ),
       mNonZeroIndexes( other.mNonZeroIndexes ),
       mNonZeroValues( other.mNonZeroValues ),
       mZeroValue( other.mZeroValue )

@@ -273,6 +273,8 @@ public:
 
     _Vector& operator-=( const Expression_SMV& expression );
 
+    /** this -=  alpha * x * A */
+
     _Vector& operator-=( const Expression_SVM& expression );
 
     /** this -=  alpha * x */
@@ -1062,6 +1064,11 @@ public:
     inline hmemo::ContextPtr getContextPtr() const;
 
     /**
+     * @brief Getter function for the context (const reference) of a vector.
+     */
+    inline const hmemo::Context& getContext() const;
+
+    /**
      * @brief Returns the global memory that is allocated to hold this vector.
      * For a distributed vector all partitions are summed together.
      *
@@ -1308,6 +1315,12 @@ IndexType _Vector::size() const
 hmemo::ContextPtr _Vector::getContextPtr() const
 {
     return mContext;
+}
+
+const hmemo::Context& _Vector::getContext() const
+{
+    // Note: mContext is NEVER zero pointer
+    return *mContext;
 }
 
 template<typename OtherValueType>

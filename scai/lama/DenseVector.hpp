@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // base classes
-#include <scai/lama/_Vector.hpp>
+#include <scai/lama/Vector.hpp>
 
 // internal scai libraries
 #include <scai/utilskernel/LArray.hpp>
@@ -77,11 +77,20 @@ class SparseVector;
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DenseVector:
 
-    public _Vector,
+    public Vector<ValueType>,
     public _Vector::Register<DenseVector<ValueType> >    // register at factory
 
 {
 public:
+
+    using _Vector::logger;
+    using _Vector::getDistribution;
+    using _Vector::getContextPtr;
+    using _Vector::readFromFile;
+    using _Vector::setDistributionPtr;
+    using _Vector::getDistributionPtr;
+    using _Vector::size;
+    using Vector<ValueType>::getValueType;
 
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
@@ -305,7 +314,7 @@ public:
      * @brief Implementation of pure method _Vector::getVectorKind() 
      */
 
-    inline virtual VectorKind getVectorKind() const;
+    inline virtual _Vector::VectorKind getVectorKind() const;
 
     /**
      * @brief Implementation of pure method _Vector::isConsistent 
@@ -440,10 +449,6 @@ public:
     /** Same as scan but it uses another input vector. */
 
     void scan( const DenseVector<ValueType>& other );
-
-    /** Implementation of _Vector::getValueType */
-
-    virtual common::scalar::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method _Vector::setDenseValues.
