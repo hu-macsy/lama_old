@@ -241,65 +241,6 @@ IndexType _MatrixStorage::getNumValues() const
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* format2Str( const Format storageFormat )
-{
-    switch ( storageFormat )
-    {
-        case Format::CSR:
-            return "CSR";
-            break;
-
-        case Format::ELL:
-            return "ELL";
-            break;
-
-        case Format::DIA:
-            return "DIA";
-            break;
-
-        case Format::JDS:
-            return "JDS";
-            break;
-
-        case Format::COO:
-            return "COO";
-            break;
-
-        case Format::DENSE:
-            return "DENSE";
-            break;
-
-        case Format::STENCIL:
-            return "STENCIL";
-            break;
-
-        case Format::ASSEMBLY:
-            return "ASSEMBLY";
-            break;
-
-        case Format::UNDEFINED:
-            return "UNDEFINED";
-            break;
-    }
-
-    return "UNDEFINED";
-}
-
-Format str2Format( const char* str )
-{
-    for ( int format = 0; format < static_cast<int>( Format::UNDEFINED ); ++format )
-    {
-        if ( strcmp( format2Str( Format( format ) ), str ) == 0 )
-        {
-            return Format( format );
-        }
-    }
-
-    return Format::UNDEFINED;
-}
-
-/* ---------------------------------------------------------------------------------- */
-
 void _MatrixStorage::offsets2sizes( HArray<IndexType>& offsets )
 {
     const IndexType n = offsets.size() - 1;
@@ -1725,12 +1666,6 @@ bool MatrixStorage<ValueType>::checkSymmetry() const
     }
 
     return true;
-}
-
-std::ostream& operator<<( std::ostream& stream, const Format& storageFormat )
-{
-    stream << scai::lama::format2Str( storageFormat );
-    return stream;
 }
 
 /* ========================================================================= */

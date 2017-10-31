@@ -55,7 +55,8 @@ scai_project (
     HEADERS 
  
         all 
-        CRTPMatrix 
+        MatrixKind 
+        SyncKind 
         AbstractMatrix
 
     ADD_PARENT_SCOPE

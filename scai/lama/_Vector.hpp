@@ -36,6 +36,8 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
+#include <scai/lama/VectorKind.hpp>
+
 // base classes
 #include <scai/dmemo/Distributed.hpp>
 
@@ -74,25 +76,6 @@ class _Matrix;          // forward declaration
 /** Pointer class for a vector, always use of a shared pointer. */
 
 typedef common::shared_ptr<class _Vector> VectorPtr;
-
-/**
- * @brief Enum class for the different kind of vector
- */
-enum class VectorKind
-{
-    DENSE,      //!< vector format for a dense vector
-    SPARSE,     //!< vector format for a sparse vector
-    JOINED,     //!< vector format for a joined vector
-    UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
-}; 
-
-COMMON_DLL_IMPORTEXPORT const char* vectorKind2Str( const VectorKind vectorKind );
-
-COMMON_DLL_IMPORTEXPORT VectorKind str2VectorKind( const char* str );
-
-/** @brief Output operator<< for VectorKind prints meaningful names instead of int values */
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const VectorKind& kind );
 
 /** Type definition for the key type used for the Vector factory.
  *

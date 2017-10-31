@@ -36,6 +36,7 @@
 
 // local library
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/storage/Format.hpp>
 
 #include <scai/dmemo/Communicator.hpp>
 
@@ -73,29 +74,6 @@ namespace lama
 
 template<typename ValueType> class CSRStorage;
 template<typename ValueType> class DenseStorage;
-
-/** Enumeration type for different matrix storage formats.
- *
- *  Note: operator<< is implemented for this type and should be adapted in case of modifications.
- */
-enum class Format
-{
-    DENSE,    //!< Dense, all elements are stored
-    CSR,      //!< Compressed Sparse Row
-    ELL,      //!< ELLPack
-    DIA,      //!< Diagonal
-    JDS,      //!< Jagged Diagonal Storage
-    COO,      //!< Coordinate list
-    STENCIL,  //!< stencil pattern
-    ASSEMBLY, //!<  _Matrix storage used for assembling of values
-    UNDEFINED //!<  Default value
-};
-
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const Format& storageFormat );
-
-COMMON_DLL_IMPORTEXPORT const char* format2Str( const Format storageFormat );
-
-COMMON_DLL_IMPORTEXPORT Format str2Format( const char* str );
 
 /** Key type used for the _Matrix factory.
  *

@@ -43,6 +43,8 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/io/FileIO.hpp>
+#include <scai/lama/matrix/MatrixKind.hpp>
+#include <scai/lama/matrix/SyncKind.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
 #include <scai/lama/storage/MatrixStorage.hpp>
@@ -66,26 +68,6 @@ namespace scai
 
 namespace lama
 {
-
-/**
- * @brief Enum class for the different kind of matrix
- */
-enum class MatrixKind
-{
-    DENSE,      //!< matrix format for a dense vector
-    SPARSE,     //!< matrix format for a sparse matrix
-    JOINED,     //!< matrix format for a joined matrix
-    UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
-};
-
-/**
- * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
- */
-enum class SyncKind
-{
-    ASYNCHRONOUS, // asynchronous execution to overlap computations, communications
-    SYNCHRONOUS // synchronous, operations will not overlap
-};
 
 /** Pointer class for a matrix, always use of a shared pointer. */
 
@@ -1318,68 +1300,6 @@ inline const dmemo::Distribution& _Matrix::getRowDistribution() const
 inline dmemo::DistributionPtr _Matrix::getRowDistributionPtr() const
 {
     return getDistributionPtr();
-}
-
-/** This function prints a SyncKind on an output stream.
- *
- *  \param stream  is the reference to the output stream
- *  \param kind    is the enum value that is printed
- */
-inline std::ostream& operator<<( std::ostream& stream, const SyncKind& kind )
-{
-    switch ( kind )
-    {
-        case SyncKind::SYNCHRONOUS:
-        {
-            stream << "SYNCHRONOUS";
-            break;
-        }
-
-        case SyncKind::ASYNCHRONOUS:
-        {
-            stream << "ASYNCHRONOUS";
-            break;
-        }
-
-        default:
-        {
-            stream << "<unknown sync kind>";
-            break;
-        }
-    }
-
-    return stream;
-}
-
-/** This function prints a MatrixKind on an output stream.
- *
- *  \param stream   is the reference to the output stream
- *  \param kind      is the enum value that is printed
- */
-inline std::ostream& operator<<( std::ostream& stream, const MatrixKind& kind )
-{
-    switch ( kind )
-    {
-        case scai::lama::MatrixKind::DENSE:
-        {
-            stream << "DENSE";
-            break;
-        }
-
-        case scai::lama::MatrixKind::SPARSE:
-        {
-            stream << "SPARSE";
-            break;
-        }
-
-        default:
-        {
-            stream << "<unknown matrix kind>";
-            break;
-        }
-    }
-
-    return stream;
 }
 
 } /* end namespace lama */

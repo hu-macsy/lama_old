@@ -53,70 +53,19 @@
 #include <scai/tracing.hpp>
 
 // std
-#include <map>
 #include <ostream>
-
-using namespace scai::common;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
 
 namespace scai
 {
+
+using namespace common;
+using namespace hmemo;
+using namespace dmemo;
 
 namespace lama
 {
 
 SCAI_LOG_DEF_LOGGER( _Vector::logger, "Vector" )
-
-/* ---------------------------------------------------------------------------------- */
-
-const char* vectorKind2Str( const VectorKind vectorKind )
-{
-    switch ( vectorKind )
-    {
-        case VectorKind::DENSE:
-            return "DENSE";
-            break;
-
-        case VectorKind::SPARSE:
-            return "SPARSE";
-            break;
-
-        case VectorKind::JOINED:
-            return "JOINED";
-            break;
-
-        case VectorKind::UNDEFINED:
-            return "Undefined";
-            break;
-    }
-
-    return "<illegal_vector_kind>";
-}
-
-VectorKind str2VectorKind( const char* str )
-
-{
-    for ( int kind = 0; kind < static_cast<int>( VectorKind::UNDEFINED ); ++kind )
-    {
-        if ( strcmp( vectorKind2Str( VectorKind( kind ) ), str ) == 0 )
-        {
-            return VectorKind( kind );
-        }
-    }
-
-    return VectorKind::UNDEFINED;
-}
-
-/* ---------------------------------------------------------------------------------------*/
-/*    VectorKind opertor<<                                                                */
-/* ---------------------------------------------------------------------------------------*/
-
-std::ostream& operator<<( std::ostream& stream, const VectorKind& kind )
-{
-    stream << vectorKind2Str( kind );
-    return stream;
-}
 
 /* ---------------------------------------------------------------------------------------*/
 /*    Factory to create a vector                                                          */
