@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
     {
         _Matrix& matrix1 = *allMatrices[s];
 
-        if ( matrix1.getMatrixKind() == _Matrix::DENSE )
+        if ( matrix1.getMatrixKind() == MatrixKind::DENSE )
         {
             continue;
         }
@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
     {
         _Matrix& matrix = *allMatrices[s];
 
-        if ( matrix.getMatrixKind() == _Matrix::DENSE )
+        if ( matrix.getMatrixKind() == MatrixKind::DENSE )
         {
             continue;   // Dense does not support first column indexes
         }
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
             continue;  // DIA has problems with diagonal property
         }
 
-        matrix.setCommunicationKind( _Matrix::SYNCHRONOUS );
+        matrix.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
         for ( size_t i = 0; i < testDistributions.size(); ++i )
         {
@@ -548,10 +548,10 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
             SCAI_LOG_DEBUG( logger, "diagonalTest for " << matrix )
 
-            VectorPtr xPtr ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
-            VectorPtr y1Ptr( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
-            VectorPtr y2Ptr( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
-            VectorPtr dPtr ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+            VectorPtr xPtr ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            VectorPtr y1Ptr( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            VectorPtr y2Ptr( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            VectorPtr dPtr ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
             _Vector& x  = *xPtr;
             _Vector& y1 = *y1Ptr;
@@ -626,7 +626,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 // get each row and subtract it
 
-                VectorPtr row ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+                VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
@@ -685,7 +685,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
                     matrix.redistribute( rowDist, colDist );
 
-                    VectorPtr row ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+                    VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
                     // reduce on the parallel matrix
 
@@ -744,7 +744,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
             {
                 _Matrix& matrix = *allMatrices[s];
 
-                if ( matrix.getMatrixKind() != _Matrix::DENSE )
+                if ( matrix.getMatrixKind() != MatrixKind::DENSE )
                 {
                     // continue;
                 }
@@ -755,7 +755,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
                 // get each row and subtract it
 
-                VectorPtr col ( _Vector::getVector( _Vector::DENSE, matrix.getValueType() ) );
+                VectorPtr col ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
                 SCAI_LOG_INFO( logger, "getColTest for this matrix: " << matrix )
 
@@ -858,7 +858,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                 matrix = csr;
 
-                if ( matrix.getMatrixKind() == _Matrix::SPARSE )
+                if ( matrix.getMatrixKind() == MatrixKind::SPARSE )
                 {
                     continue;
                 }
@@ -985,7 +985,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
         {
             _Matrix& mat = *allMatrices[ k ];
 
-            if ( mat.getMatrixKind() != _Matrix::DENSE )
+            if ( mat.getMatrixKind() != MatrixKind::DENSE )
             {
                 continue;
             }
@@ -1095,7 +1095,7 @@ BOOST_AUTO_TEST_CASE( hcatTest )
         {
             _Matrix& matrix = *allMatrices[s];
 
-            if ( matrix.getMatrixKind() == _Matrix::DENSE )
+            if ( matrix.getMatrixKind() == MatrixKind::DENSE )
             {
                 continue;
             }

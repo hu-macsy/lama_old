@@ -69,7 +69,7 @@ static void bench( CSRSparseMatrix<ValueType>& mat )
     x = x + mat * y;  // warm up
     x = x + mat * y;  // warm up
 
-    mat.setCommunicationKind( _Matrix::SYNCHRONOUS );
+    mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     CommunicatorPtr comm = mat.getRowDistribution().getCommunicatorPtr();
 

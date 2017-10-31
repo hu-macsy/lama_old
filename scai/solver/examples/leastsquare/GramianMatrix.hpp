@@ -67,7 +67,7 @@ public:
     {
         SCAI_LOG_INFO( logger, "GramianMatrix( A = " << A << " )" )
 
-        mAx.reset( _Vector::getVector( _Vector::DENSE, A.getValueType() ) );
+        mAx.reset( _Vector::getVector( VectorKind::DENSE, A.getValueType() ) );
     }
 
     /** Reimplement the matrix * vector operation

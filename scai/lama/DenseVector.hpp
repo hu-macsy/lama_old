@@ -314,7 +314,7 @@ public:
      * @brief Implementation of pure method _Vector::getVectorKind() 
      */
 
-    inline virtual _Vector::VectorKind getVectorKind() const;
+    inline virtual VectorKind getVectorKind() const;
 
     /**
      * @brief Implementation of pure method _Vector::isConsistent 
@@ -701,9 +701,9 @@ public:
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-_Vector::VectorKind DenseVector<ValueType>::getVectorKind() const
+VectorKind DenseVector<ValueType>::getVectorKind() const
 {
-    return _Vector::DENSE;
+    return VectorKind::DENSE;
 }
 
 template<typename ValueType>

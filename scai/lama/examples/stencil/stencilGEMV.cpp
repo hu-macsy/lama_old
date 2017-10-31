@@ -74,7 +74,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
 
     std::cout << *comm << ": distribution = " << *gridDistribution << std::endl;
 
-    lama::_Matrix::SyncKind syncKind = lama::_Matrix::SYNCHRONOUS;
+    lama::SyncKind syncKind = lama::SyncKind::SYNCHRONOUS;
 
     // by default do matrix-vector operations synchronously, but can be set via environment
 
@@ -84,7 +84,7 @@ void bench( const common::Grid& grid, const common::Stencil<ValueType>& stencil 
     {
         if ( isSet )
         {
-            syncKind = scai::lama::_Matrix::ASYNCHRONOUS;
+            syncKind = scai::lama::SyncKind::ASYNCHRONOUS;
         }
     }
 

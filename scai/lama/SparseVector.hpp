@@ -322,7 +322,7 @@ public:
 
     /** Implementation of pure method _Vector::getVectorKind() */
 
-    inline virtual _Vector::VectorKind getVectorKind() const;
+    inline virtual VectorKind getVectorKind() const;
 
     /**
      * @brief Implementation of pure method _Vector::isConsistent 
@@ -642,9 +642,9 @@ void SparseVector<ValueType>::setSparseValues(
 }
 
 template<typename ValueType>
-_Vector::VectorKind SparseVector<ValueType>::getVectorKind() const
+VectorKind SparseVector<ValueType>::getVectorKind() const
 {
-    return _Vector::SPARSE;
+    return VectorKind::SPARSE;
 }
 
 template<typename ValueType>

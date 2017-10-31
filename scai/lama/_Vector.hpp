@@ -69,43 +69,37 @@ class Redistributor;    // forward declaration
 namespace lama
 {
 
-class _Matrix;
+class _Matrix;          // forward declaration
 
 /** Pointer class for a vector, always use of a shared pointer. */
 
 typedef common::shared_ptr<class _Vector> VectorPtr;
 
-/** Help class as forward declaration of enum types belonging to class Vector. */
-
-struct _VectorKind
+/**
+ * @brief Enum class for the different kind of vector
+ */
+enum class VectorKind
 {
-    /**
-     * @brief VectorKind describes if a vector is dense or sparse.
-     */
-    typedef enum
-    {
-        DENSE,      //!< vector format for a dense vector
-        SPARSE,     //!< vector format for a sparse vector
-        JOINED,     //!< vector format for a joined vector
-        UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
-    } VectorKind;
+    DENSE,      //!< vector format for a dense vector
+    SPARSE,     //!< vector format for a sparse vector
+    JOINED,     //!< vector format for a joined vector
+    UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
+}; 
 
-    static COMMON_DLL_IMPORTEXPORT const char* kind2Str( const VectorKind vectorKind );
+COMMON_DLL_IMPORTEXPORT const char* vectorKind2Str( const VectorKind vectorKind );
 
-    static COMMON_DLL_IMPORTEXPORT VectorKind str2Kind( const char* str );
-
-};  // struct _VectorKind
+COMMON_DLL_IMPORTEXPORT VectorKind str2VectorKind( const char* str );
 
 /** @brief Output operator<< for VectorKind prints meaningful names instead of int values */
 
-COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const _VectorKind::VectorKind& kind );
+COMMON_DLL_IMPORTEXPORT std::ostream& operator<<( std::ostream& stream, const VectorKind& kind );
 
 /** Type definition for the key type used for the Vector factory.
  *
  *  The key for vector create is a pair of vector format and the value type.
  */
 
-typedef std::pair<_VectorKind::VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
+typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -125,8 +119,7 @@ typedef std::pair<_VectorKind::VectorKind, common::scalar::ScalarType> VectorCre
 class COMMON_DLL_IMPORTEXPORT _Vector:
 
     public common::Factory<VectorCreateKeyType, _Vector*>,
-    public dmemo::Distributed,
-    public _VectorKind
+    public dmemo::Distributed
 
 {
 public:
@@ -374,11 +367,18 @@ public:
         return getValue( i );
     }
 
+    /**
+     *  Indexing of a distributed vector returns a proxy so that this operator can be used
+     *  on lhs and rhs of an assignment.
+     */
     VectorElemProxy operator[]( const IndexType i )
     {
         return VectorElemProxy( *this, i );
     }
 
+    /**
+     *  Indexing of a const distributed vector returns directly the corresponding element.
+     */
     Scalar operator[]( const IndexType i ) const
     {
         return getValue( i );

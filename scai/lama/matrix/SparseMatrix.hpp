@@ -584,9 +584,9 @@ public:
     /**
      * Gives info about the matrix kind (SPARSE).
      */
-    virtual _Matrix::MatrixKind getMatrixKind() const
+    virtual MatrixKind getMatrixKind() const
     {
-        return _Matrix::SPARSE;
+        return MatrixKind::SPARSE;
     }
 
     /** Get a complete row of this matrix from its local part. */

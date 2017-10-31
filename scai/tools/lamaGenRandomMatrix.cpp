@@ -184,8 +184,8 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    scai::common::unique_ptr<_Vector> xPtr( _Vector::getVector( _Vector::DENSE, stype ) );
-    scai::common::unique_ptr<_Vector> bPtr( _Vector::getVector( _Vector::DENSE, stype ) );
+    scai::common::unique_ptr<_Vector> xPtr( _Vector::getVector( VectorKind::DENSE, stype ) );
+    scai::common::unique_ptr<_Vector> bPtr( _Vector::getVector( VectorKind::DENSE, stype ) );
 
     _Vector& x = *xPtr;
     _Vector& b = *bPtr;

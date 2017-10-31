@@ -267,9 +267,9 @@ public:
     /**
      * Gives info about the matrix kind (DENSE).
      */
-    virtual _Matrix::MatrixKind getMatrixKind() const
+    virtual MatrixKind getMatrixKind() const
     {
-        return _Matrix::DENSE;
+        return MatrixKind::DENSE;
     }
 
     /* Implementation of pure method of class _Matrix. */

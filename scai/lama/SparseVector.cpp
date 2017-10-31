@@ -211,12 +211,12 @@ struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
     {
         if ( common::getScalarType<H>() ==  source.getValueType() )
         {
-            if ( source.getVectorKind() == _Vector::SPARSE )
+            if ( source.getVectorKind() == VectorKind::SPARSE )
             {
                 const SparseVector<H>& typedSource = reinterpret_cast<const SparseVector<H>&>( source );
                 target.assignImpl( typedSource );
             }
-            else if ( source.getVectorKind() == _Vector::DENSE )
+            else if ( source.getVectorKind() == VectorKind::DENSE )
             {
                 const DenseVector<H>& typedSource = reinterpret_cast<const DenseVector<H>&>( source );
                 target.assignImpl( typedSource );
@@ -1088,7 +1088,7 @@ bool SparseVector<ValueType>::all( const common::binary::CompareOp op, const _Ve
 {
     SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
 
-    if ( other.getVectorKind() == _Vector::DENSE )
+    if ( other.getVectorKind() == VectorKind::DENSE )
     {
         // dense vector can deal with sparse vector
 
@@ -1163,11 +1163,11 @@ void SparseVector<ValueType>::writeAt( std::ostream& stream ) const
 template<typename ValueType>
 void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vector& x, const Scalar& beta, const _Vector& y )
 {
-    if ( x.getValueType() == getValueType() && x.getVectorKind() == _Vector::SPARSE  )
+    if ( x.getValueType() == getValueType() && x.getVectorKind() == VectorKind::SPARSE  )
     {
         const SparseVector<ValueType>& spX = reinterpret_cast<const SparseVector<ValueType>&>( x );
 
-        if ( y.getValueType() == getValueType() && y.getVectorKind() == _Vector::SPARSE )
+        if ( y.getValueType() == getValueType() && y.getVectorKind() == VectorKind::SPARSE )
         {
             const SparseVector<ValueType>& spY = reinterpret_cast<const SparseVector<ValueType>&>( y );
          
@@ -1369,7 +1369,7 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::binary::B
         other.gatherLocalValues( otherValues, mNonZeroIndexes, common::binary::COPY, getContextPtr() );
         HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, op, getContextPtr() );
     }
-    else if ( other.getVectorKind() == _Vector::SPARSE )
+    else if ( other.getVectorKind() == VectorKind::SPARSE )
     {
         const SparseVector<ValueType>& otherSparse = reinterpret_cast<const SparseVector<ValueType>&>( other );
 
@@ -1685,7 +1685,7 @@ _Vector* SparseVector<ValueType>::create()
 template<typename ValueType>
 VectorCreateKeyType SparseVector<ValueType>::createValue()
 {
-    return VectorCreateKeyType( _Vector::SPARSE, common::getScalarType<ValueType>() );
+    return VectorCreateKeyType( VectorKind::SPARSE, common::getScalarType<ValueType>() );
 }
 
 template<typename ValueType>

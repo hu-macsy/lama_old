@@ -191,11 +191,11 @@ _Matrix::~_Matrix()
     SCAI_LOG_DEBUG( logger, "~Matrix" )
 }
 
-_Matrix::SyncKind _Matrix::getDefaultSyncKind()
+SyncKind _Matrix::getDefaultSyncKind()
 {
     static bool computed = false;
 
-    static SyncKind syncKind = ASYNCHRONOUS;
+    static SyncKind syncKind = SyncKind::ASYNCHRONOUS;
 
     if ( !computed )
     {
@@ -205,7 +205,7 @@ _Matrix::SyncKind _Matrix::getDefaultSyncKind()
 
         if ( !isAsync )
         {
-            syncKind = SYNCHRONOUS;
+            syncKind = SyncKind::SYNCHRONOUS;
         }
     }
 
@@ -984,8 +984,8 @@ Scalar _Matrix::maxDiffNorm( const _Matrix& other ) const
     IndexType nCols = getNumColumns();
     SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
     SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
-    VectorCreateKeyType vectorType1( _Vector::DENSE, getValueType() );
-    VectorCreateKeyType vectorType2( _Vector::DENSE, other.getValueType() );
+    VectorCreateKeyType vectorType1( VectorKind::DENSE, getValueType() );
+    VectorCreateKeyType vectorType2( VectorKind::DENSE, other.getValueType() );
     common::unique_ptr<_Vector> ptrRow1( _Vector::create( vectorType1 ) );
     common::unique_ptr<_Vector> ptrRow2( _Vector::create( vectorType2 ) );
     Scalar diff( 0 );

@@ -75,6 +75,40 @@ public:
 
     virtual size_t getValueTypeSize() const;
 
+    /** Implementation of _Matrix::matrixTimesVector */
+
+    void matrixTimesVector(
+        _Vector& result,
+        const Scalar alpha,
+        const _Vector& x,
+        const Scalar beta,
+        const _Vector& y ) const;
+
+    /** Implementation of _Matrix::vectorTimesMatrix */
+
+    void vectorTimesMatrix(
+        _Vector& result,
+        const Scalar alpha,
+        const _Vector& x,
+        const Scalar beta,
+        const _Vector& y ) const;
+
+    /** Implementation of _Matrix::setRow for all typed matrices
+     *
+     *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
+     */
+    void setRow( const _Vector& row, const IndexType globalRowIndex,
+                 const common::binary::BinaryOp op );
+
+    /** Implementation of _Matrix::setColumn for all typed matrices
+     *
+     *  The method is implemented by setting the local part of the column on each partition.
+     *  All derived classes must provide setLocalColum( colArray, colIndex, op )
+     */
+    void setColumn( const _Vector& column,
+                    const IndexType colIndex,
+                    const common::binary::BinaryOp op );
+
 protected:
 
     Matrix();
@@ -106,15 +140,6 @@ protected:
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const = 0;
 
-    /** Implementation of _Matrix::matrixTimesVector */
-
-    void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const;
-
     virtual void vectorTimesMatrixImpl(
         DenseVector<ValueType>& denseResult,
         const ValueType alphaValue,
@@ -122,38 +147,13 @@ protected:
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const = 0;
 
-    /** Implementation of _Matrix::vectorTimesMatrix */
-
-    void vectorTimesMatrix(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const;
-
     virtual void setLocalRow( const hmemo::HArray<ValueType>& row,
                               const IndexType localRowIndex,
                               const common::binary::BinaryOp op  ) = 0;
 
-    /** Implementation of _Matrix::setRow for all typed matrices
-     *
-     *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
-     */
-    void setRow( const _Vector& row, const IndexType globalRowIndex,
-                 const common::binary::BinaryOp op );
-
     virtual void setLocalColumn( const hmemo::HArray<ValueType>& column,
                                  const IndexType colIndex,
                                  const common::binary::BinaryOp op  ) = 0;
-
-    /** Implementation of _Matrix::setColumn for all typed matrices
-     *
-     *  The method is implemented by setting the local part of the column on each partition.
-     *  All derived classes must provide setLocalColum( colArray, colIndex, op )
-     */
-    void setColumn( const _Vector& column,
-                    const IndexType colIndex,
-                    const common::binary::BinaryOp op );
 
     /** This method is the same for dense/sparse matrices as column distribution is replicated */
 

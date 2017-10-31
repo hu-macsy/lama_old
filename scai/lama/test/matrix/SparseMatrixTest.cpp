@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
         BOOST_CHECK_EQUAL( matrix.getNumRows(), rowDist->getGlobalSize() );
         BOOST_CHECK_EQUAL( matrix.getNumColumns(), storage->getNumColumns() );
-        BOOST_CHECK_EQUAL( matrix.getMatrixKind(), _Matrix::SPARSE );
+        BOOST_CHECK_EQUAL( matrix.getMatrixKind(), MatrixKind::SPARSE );
 
         // Note: storage has been modified (as shared pointer)
 

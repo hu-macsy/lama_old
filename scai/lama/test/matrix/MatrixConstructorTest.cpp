@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( defaultConstructorTest, MatrixType, MatrixTypes )
 
     BOOST_CHECK_EQUAL( matrix.getFormat(), local.getFormat() );
 
-    if ( matrix.getMatrixKind() == _Matrix::SPARSE )
+    if ( matrix.getMatrixKind() == MatrixKind::SPARSE )
     {
         SparseMatrix<ValueType>& spMatrix = reinterpret_cast<SparseMatrix<ValueType>& >( matrix );
         spMatrix.prefetch();
@@ -547,7 +547,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpMMConstructorTest, MatrixType, MatrixTypes )
 
         MatrixType matrix1( globalStorage );
 
-        if ( matrix1.getMatrixKind() == _Matrix::DENSE )
+        if ( matrix1.getMatrixKind() == MatrixKind::DENSE )
         {
             return;   // DENSE supports some other distribution
         }

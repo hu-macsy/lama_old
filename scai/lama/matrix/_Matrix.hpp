@@ -67,6 +67,26 @@ namespace scai
 namespace lama
 {
 
+/**
+ * @brief Enum class for the different kind of matrix
+ */
+enum class MatrixKind
+{
+    DENSE,      //!< matrix format for a dense vector
+    SPARSE,     //!< matrix format for a sparse matrix
+    JOINED,     //!< matrix format for a joined matrix
+    UNDEFINED   //!< for convenience, always the last entry, stands also for number of entries
+};
+
+/**
+ * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
+ */
+enum class SyncKind
+{
+    ASYNCHRONOUS, // asynchronous execution to overlap computations, communications
+    SYNCHRONOUS // synchronous, operations will not overlap
+};
+
 /** Pointer class for a matrix, always use of a shared pointer. */
 
 typedef common::shared_ptr<class _Matrix> MatrixPtr;
@@ -823,24 +843,6 @@ public:
      */
     virtual hmemo::ContextPtr getContextPtr() const = 0;
 
-    /**
-     * @brief SyncKind describes if the communication and computation should be done synchronously or asynchronously.
-     */
-    typedef enum
-    {
-        ASYNCHRONOUS, // asynchronous execution to overlap computations, communications
-        SYNCHRONOUS // synchronous, operations will not overlap
-    } SyncKind;
-
-    /**
-     * @brief MatrixKind describes if a matrix is dense or sparse.
-     */
-    typedef enum
-    {
-        DENSE, //!< matrix kind for a dense matrix
-        SPARSE //!< matrix kind for a sparse matrix
-    } MatrixKind;
-
     /** Each derived matrix must give info about its kind (DENSE or SPARSE). */
 
     virtual MatrixKind getMatrixKind() const = 0;
@@ -1039,7 +1041,7 @@ public:
      */
     _Vector* newVector( void ) const
     {
-        _Vector* v = _Vector::getVector( _Vector::DENSE, getValueType() );
+        _Vector* v = _Vector::getVector( VectorKind::DENSE, getValueType() );
         v->setContextPtr( getContextPtr() );
         return v;
     }
@@ -1054,7 +1056,7 @@ public:
 
     _Vector* newVector( dmemo::DistributionPtr dist ) const
     {
-        _Vector* v = _Vector::getVector( _Vector::DENSE, getValueType() );
+        _Vector* v = _Vector::getVector( VectorKind::DENSE, getValueType() );
         v->setContextPtr( getContextPtr() );
         v->allocate( dist );
         return v;
@@ -1236,10 +1238,6 @@ protected:
 
     void resetRowDistributionByFirstColumn();
 
-    dmemo::DistributionPtr mColDistribution;
-
-protected:
-
     void checkSettings() const; // check valid member variables
 
     void swapMatrix( _Matrix& other ); // swap member variables of _Matrix
@@ -1247,6 +1245,14 @@ protected:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    /* ============================================================= */
+    /*    new member variables of class _Matrix                      */
+    /* ============================================================= */
+
+    dmemo::DistributionPtr mColDistribution;
+
+    SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
 
     using Distributed::getDistribution;
 
@@ -1261,8 +1267,6 @@ private:
     void setDefaultKind(); // set default values for communication and compute kind
 
     static SyncKind getDefaultSyncKind();  // get default kind as set by environment
-
-    SyncKind mCommunicationKind;//!< synchronous/asynchronous communication
 
     void writeToSingleFile(
         const std::string& fileName,
@@ -1293,7 +1297,7 @@ inline IndexType _Matrix::getNumColumns() const
     return mColDistribution->getGlobalSize();
 }
 
-inline _Matrix::SyncKind _Matrix::getCommunicationKind() const
+inline SyncKind _Matrix::getCommunicationKind() const
 {
     return mCommunicationKind;
 }
@@ -1320,20 +1324,20 @@ inline dmemo::DistributionPtr _Matrix::getRowDistributionPtr() const
 
 /** This function prints a SyncKind on an output stream.
  *
- *  \param stream   is the reference to the output stream
- *  \param kind      is the enum value that is printed
+ *  \param stream  is the reference to the output stream
+ *  \param kind    is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const scai::lama::_Matrix::SyncKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const SyncKind& kind )
 {
     switch ( kind )
     {
-        case scai::lama::_Matrix::SYNCHRONOUS:
+        case SyncKind::SYNCHRONOUS:
         {
             stream << "SYNCHRONOUS";
             break;
         }
 
-        case scai::lama::_Matrix::ASYNCHRONOUS:
+        case SyncKind::ASYNCHRONOUS:
         {
             stream << "ASYNCHRONOUS";
             break;
@@ -1354,17 +1358,17 @@ inline std::ostream& operator<<( std::ostream& stream, const scai::lama::_Matrix
  *  \param stream   is the reference to the output stream
  *  \param kind      is the enum value that is printed
  */
-inline std::ostream& operator<<( std::ostream& stream, const _Matrix::MatrixKind& kind )
+inline std::ostream& operator<<( std::ostream& stream, const MatrixKind& kind )
 {
     switch ( kind )
     {
-        case scai::lama::_Matrix::DENSE:
+        case scai::lama::MatrixKind::DENSE:
         {
             stream << "DENSE";
             break;
         }
 
-        case scai::lama::_Matrix::SPARSE:
+        case scai::lama::MatrixKind::SPARSE:
         {
             stream << "SPARSE";
             break;

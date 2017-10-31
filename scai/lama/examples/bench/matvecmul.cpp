@@ -66,7 +66,7 @@ static void bench( _Matrix& mat )
 
     x->setRandom( size, bound );
 
-    mat.setCommunicationKind( _Matrix::SYNCHRONOUS );
+    mat.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
     mat.setContextPtr( ctx );
     x->setContextPtr( ctx );

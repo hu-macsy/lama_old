@@ -662,12 +662,12 @@ void DenseMatrix<ValueType>::assign( const _Matrix& other )
     {
         SCAI_LOG_INFO( logger, "self assign, is skpped" )
     }
-    else if ( other.getMatrixKind() == _Matrix::DENSE )
+    else if ( other.getMatrixKind() == MatrixKind::DENSE )
     {
         SCAI_LOG_INFO( logger, "copy dense matrix" )
         DenseMatrixWrapper<ValueType, SCAI_NUMERIC_TYPES_HOST_LIST>::assignDense( *this, other );
     }
-    else if ( other.getMatrixKind() == _Matrix::SPARSE )
+    else if ( other.getMatrixKind() == MatrixKind::SPARSE )
     {
         SCAI_LOG_INFO( logger, "copy sparse matrix" )
         assignSparse( other );
@@ -1007,11 +1007,11 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
         return;
     }
 
-// Currently we only support redistribution of rows, col distribution must be replicated
+    // As only rows are exchanged, col distribution must be replicated
 
     if ( getColDistribution().getNumPartitions() != 1 )
     {
-// Join all column data
+        // Join all column data
         const IndexType numCols = getNumColumns();
         const IndexType numLocalRows = getRowDistribution().getLocalSize();
         common::shared_ptr<DenseStorage<ValueType> > colData;
@@ -1020,7 +1020,8 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
         mData.clear();
         mData.resize( 1 );
         mData[0] = colData;
-        this->mColDistribution.reset( new NoDistribution( getNumColumns() ) );
+        DistributionPtr noColDist( new NoDistribution( getNumColumns() ) );
+        _Matrix::setDistributedMatrix( getRowDistributionPtr(), noColDist );
     }
 
     redistributeRows( rowDistribution );
@@ -1232,7 +1233,7 @@ void DenseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInde
 {
     // if v is not a dense vector or not of same type, use a temporary dense vector
 
-    if ( row.getVectorKind() != _Vector:: DENSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != VectorKind::DENSE || row.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "getRow requires temporary" )
         DenseVector<ValueType> denseRow;
@@ -1358,7 +1359,7 @@ void DenseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalColI
 {
     // if col is not a dense vector, use a temporary dense vector
 
-    if ( col.getVectorKind() != _Vector:: DENSE || col.getValueType() != getValueType() )
+    if ( col.getVectorKind() != VectorKind::DENSE || col.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "getCol requires temporary, use DenseVector on DenseMatrix" )
         DenseVector<ValueType> denseColumn;
@@ -1503,7 +1504,7 @@ void DenseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
     {
         DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
         getDiagonal( tmpDiagonal );
@@ -1534,7 +1535,7 @@ void DenseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
         DenseVector<ValueType> tmpDiagonal( diagonal );
@@ -1661,7 +1662,7 @@ void DenseMatrix<ValueType>::scale( const _Vector& vector )
         COMMON_THROWEXCEPTION( "scale vector must have same distribution as matrix row distribution" )
     }
 
-    if ( vector.getVectorKind() != _Vector::DENSE || vector.getValueType() != getValueType() )
+    if ( vector.getVectorKind() != VectorKind::DENSE || vector.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "scale: vector requires temporary" )
         DenseVector<ValueType> tmpVector( vector );
@@ -1844,7 +1845,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     }
     const int COMM_DIRECTION = 1; // shift buffer to next processor
 
-    if ( _Matrix::ASYNCHRONOUS == _Matrix::getCommunicationKind() )
+    if ( SyncKind::ASYNCHRONOUS == _Matrix::getCommunicationKind() )
     {
         SCAI_LOG_INFO( logger, comm << ": asynchronous communication" )
 // asynchronous communication always requires same sizes of arrays, might shift some more data

@@ -106,13 +106,13 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         size_t size1 = v->getMemoryUsage();
 
-        if ( v->getVectorKind() == _Vector::DENSE )
+        if ( v->getVectorKind() == VectorKind::DENSE )
         {
             // a dense vector allocates really memory
 
             BOOST_CHECK( size1 >= size0 + n * common::typeSize( v->getValueType() ) );
         }
-        else if ( v->getVectorKind() == _Vector::SPARSE )
+        else if ( v->getVectorKind() == VectorKind::SPARSE )
         {
             // a sparse vector does not allocate here memory
 
@@ -457,7 +457,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
     {
         VectorPtr v1 = vectors[i];
 
-        if ( v1->getVectorKind() != _Vector::DENSE )
+        if ( v1->getVectorKind() != VectorKind::DENSE )
         {
             break;
         }
@@ -537,7 +537,7 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
             MatrixPtr m( _Matrix::getMatrix( _Matrix::CSR, v1->getValueType() ) );
             m->setIdentity( dist );
-            m->setCommunicationKind( _Matrix::ASYNCHRONOUS );
+            m->setCommunicationKind( SyncKind::ASYNCHRONOUS );
 
             VectorPtr v2( v1->newVector() );
 
@@ -585,10 +585,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
     VectorPtr v( _Vector::getDenseVector( stype, dist, ctx ) );
 
-    std::string format = _Vector::kind2Str( v->getVectorKind() );
+    std::string format = vectorKind2Str( v->getVectorKind() );
 
     BOOST_CHECK_EQUAL( "DENSE", format );
-    BOOST_CHECK_EQUAL( _Vector::str2Kind( "DENSE" ), v->getVectorKind() );
+    BOOST_CHECK_EQUAL( str2VectorKind( "DENSE" ), v->getVectorKind() );
 
     DenseVector<ValueType>* denseV = dynamic_cast<DenseVector<ValueType>* >( v.get() );
 

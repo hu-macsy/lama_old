@@ -154,7 +154,7 @@ public:
 
     scai::solver::LogLevel::LogLevel getLogLevel() const;
 
-    scai::lama::_Matrix::SyncKind getCommunicationKind() const
+    scai::lama::SyncKind getCommunicationKind() const
     {
         return mCommunicationKind;
     }
@@ -192,7 +192,7 @@ private:
 
     scai::hmemo::ContextPtr mContext;
 
-    scai::lama::_Matrix::SyncKind     mCommunicationKind;
+    scai::lama::SyncKind    mCommunicationKind;
 
     scai::common::scalar::ScalarType   mValueType;          // value type to use
 
@@ -277,13 +277,13 @@ LamaConfig::LamaConfig()
 
     bool isSet;
 
-    mCommunicationKind = scai::lama::_Matrix::SYNCHRONOUS;
+    mCommunicationKind = scai::lama::SyncKind::SYNCHRONOUS;
 
     if ( Settings::getEnvironment( isSet, "SCAI_ASYNCHRONOUS" ) )
     {
         if ( isSet )
         {
-            mCommunicationKind = scai::lama::_Matrix::ASYNCHRONOUS;
+            mCommunicationKind = scai::lama::SyncKind::ASYNCHRONOUS;
         }
     }
 
@@ -341,7 +341,7 @@ LamaConfig::LamaConfig()
         {
             CONFIG_ERROR( "SCAI_TYPE=" << val << " illegal, is not a scalar type" )
         }
-        else if ( scai::lama::_Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::_Vector::DENSE, type ) ) )
+        else if ( scai::lama::_Vector::canCreate( scai::lama::VectorCreateKeyType( scai::lama::VectorKind::DENSE, type ) ) )
         {
             mValueType = type;
         }

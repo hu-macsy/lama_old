@@ -146,7 +146,7 @@ void Matrix<ValueType>::matrixTimesVector(
         result.allocate( this->getRowDistributionPtr() );
     }
 
-    if ( x.getVectorKind() != _Vector::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getColDistribution() )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getColDistribution() )
     {
         SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << this->getValueType() << ">" )
 
@@ -159,7 +159,7 @@ void Matrix<ValueType>::matrixTimesVector(
 
     // Note: in case of beta == 0, we might skip this test
 
-    if ( y.getVectorKind() != _Vector::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getRowDistribution() )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getRowDistribution() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpY( y, this->getRowDistributionPtr() );
@@ -169,7 +169,7 @@ void Matrix<ValueType>::matrixTimesVector(
 
     const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-    if ( result.getVectorKind() != _Vector::DENSE || result.getValueType() != this->getValueType() )
+    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpResult( this->getRowDistributionPtr() );
@@ -202,7 +202,7 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
     SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-    if ( x.getVectorKind() != _Vector::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getRowDistribution() )
+    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getRowDistribution() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for x in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpX( x, this->getRowDistributionPtr() );
@@ -212,7 +212,7 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
     const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
 
-    if ( y.getVectorKind() != _Vector::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getColDistribution() )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getColDistribution() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * x * M + beta * y" )
         DenseVector<ValueType> tmpY( y, this->getColDistributionPtr() );
@@ -222,7 +222,7 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
     const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-    if ( result.getVectorKind() != _Vector::DENSE || result.getValueType() != this->getValueType() )
+    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpResult( this->getColDistributionPtr() );
@@ -283,7 +283,7 @@ void Matrix<ValueType>::setRow(
         needsTmp = true;
         SCAI_UNSUPPORTED( "setRow, row is not replicated, use temporary" )
     }
-    if ( row.getVectorKind() != _Vector::DENSE )
+    if ( row.getVectorKind() != VectorKind::DENSE )
     {
         needsTmp = true;
         SCAI_UNSUPPORTED( "setRow, row is not DENSE vector" )

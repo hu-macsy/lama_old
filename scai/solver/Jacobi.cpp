@@ -104,7 +104,7 @@ void Jacobi::initialize( const _Matrix& coefficients )
 {
     using hmemo::_HArray;
 
-    if ( coefficients.getMatrixKind() == _Matrix::DENSE )
+    if ( coefficients.getMatrixKind() == lama::MatrixKind::DENSE )
     {
         COMMON_THROWEXCEPTION(
             "Coefficients matrix " << typeid( coefficients ).name() << "(" << coefficients << ") is of unsupported type for Jacobi specialization (must be SparseMatrix)." );
@@ -123,7 +123,7 @@ void Jacobi::initialize( const _Matrix& coefficients )
         runtime.mOldSolution.reset( m.newVector( m.getRowDistributionPtr() ) );
     }
 
-    if ( runtime.mCoefficients->getMatrixKind() == _Matrix::SPARSE )
+    if ( runtime.mCoefficients->getMatrixKind() == lama::MatrixKind::SPARSE )
     {
         if ( !runtime.mDiagonal.get() )
         {
@@ -268,7 +268,7 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
             const HArray<ValueType>& haloX ) > haloF =
                 bind( jacobiIterateHalo, _1, _2, cref( *diagonal ), _3, omega );
 
-        if ( _Matrix::SYNCHRONOUS == coefficients.getCommunicationKind() )
+        if ( lama::SyncKind::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
             // For the local operation a jacobi step is done
             void ( lama::MatrixStorage<ValueType>::*jacobiIterate )(

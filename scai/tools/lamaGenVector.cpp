@@ -250,7 +250,7 @@ int main( int argc, const char* argv[] )
 
     // use vector of outDataType so no information is lost
     MatrixPtr matrix;
-    VectorPtr v ( _Vector::getVector( _Vector::DENSE, options.outDataType ) );
+    VectorPtr v ( _Vector::getVector( VectorKind::DENSE, options.outDataType ) );
 
     if ( options.matFileName != "" )
     {
@@ -286,7 +286,7 @@ int main( int argc, const char* argv[] )
 
     if ( matrix.get() )
     {
-        VectorPtr rhs ( _Vector::getVector( _Vector::DENSE, options.outDataType ) );
+        VectorPtr rhs ( _Vector::getVector( VectorKind::DENSE, options.outDataType ) );
         *rhs = *matrix * *v;
         v = rhs;
         cout << "Vector now rhs of multiplication with matrix: " << *v << endl;

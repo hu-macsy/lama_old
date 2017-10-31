@@ -70,23 +70,23 @@ SCAI_LOG_DEF_LOGGER( _Vector::logger, "Vector" )
 
 /* ---------------------------------------------------------------------------------- */
 
-const char* _VectorKind::kind2Str( const VectorKind vectorKind )
+const char* vectorKind2Str( const VectorKind vectorKind )
 {
     switch ( vectorKind )
     {
-        case DENSE:
+        case VectorKind::DENSE:
             return "DENSE";
             break;
 
-        case SPARSE:
+        case VectorKind::SPARSE:
             return "SPARSE";
             break;
 
-        case JOINED:
+        case VectorKind::JOINED:
             return "JOINED";
             break;
 
-        case UNDEFINED:
+        case VectorKind::UNDEFINED:
             return "Undefined";
             break;
     }
@@ -94,27 +94,27 @@ const char* _VectorKind::kind2Str( const VectorKind vectorKind )
     return "<illegal_vector_kind>";
 }
 
-_VectorKind::VectorKind _VectorKind::str2Kind( const char* str )
+VectorKind str2VectorKind( const char* str )
 
 {
-    for ( int kind = DENSE; kind < UNDEFINED; ++kind )
+    for ( int kind = 0; kind < static_cast<int>( VectorKind::UNDEFINED ); ++kind )
     {
-        if ( strcmp( kind2Str( VectorKind( kind ) ), str ) == 0 )
+        if ( strcmp( vectorKind2Str( VectorKind( kind ) ), str ) == 0 )
         {
             return VectorKind( kind );
         }
     }
 
-    return UNDEFINED;
+    return VectorKind::UNDEFINED;
 }
 
 /* ---------------------------------------------------------------------------------------*/
 /*    VectorKind opertor<<                                                                */
 /* ---------------------------------------------------------------------------------------*/
 
-std::ostream& operator<<( std::ostream& stream, const _VectorKind::VectorKind& kind )
+std::ostream& operator<<( std::ostream& stream, const VectorKind& kind )
 {
-    stream << _Vector::kind2Str( kind );
+    stream << vectorKind2Str( kind );
     return stream;
 }
 
@@ -133,7 +133,7 @@ _Vector* _Vector::getDenseVector(
     DistributionPtr distribution,
     ContextPtr context )
 {
-    VectorCreateKeyType vectype( _Vector::DENSE, valueType );
+    VectorCreateKeyType vectype( VectorKind::DENSE, valueType );
     _Vector* v = _Vector::create( vectype );
     v->allocate( distribution );
 

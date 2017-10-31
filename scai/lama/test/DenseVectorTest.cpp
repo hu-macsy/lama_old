@@ -641,7 +641,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
             {
                 _Matrix& A1 = *matrices[k];
 
-                A1.setCommunicationKind( _Matrix::SYNCHRONOUS );
+                A1.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );

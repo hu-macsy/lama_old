@@ -634,8 +634,7 @@ void SparseMatrix<ValueType>::redistribute( DistributionPtr rowDistributionPtr, 
 
     // Set the new distributions
 
-    _Matrix::setDistributionPtr( rowDistributionPtr );
-    _Matrix::mColDistribution = colDistributionPtr;
+    _Matrix::setDistributedMatrix( rowDistributionPtr, colDistributionPtr );
 
     // Handle all cases where we do not have to join the local/halo data of matrix
 
@@ -807,7 +806,7 @@ void SparseMatrix<ValueType>::getRowLocal( _Vector& row, const IndexType localRo
 {
     SCAI_ASSERT_EQ_ERROR( row.getValueType(), getValueType(), "type mismatch" )
 
-    if ( row.getVectorKind() == _Vector::SPARSE )
+    if ( row.getVectorKind() == VectorKind::SPARSE )
     {
         SparseVector<ValueType>& sparseRow = reinterpret_cast<SparseVector<ValueType>&>( row );
 
@@ -839,7 +838,7 @@ void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInd
 
     // if v is not a sparse vector, use a temporary sparse vector
 
-    if ( row.getVectorKind() != _Vector:: SPARSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != VectorKind::SPARSE || row.getValueType() != getValueType() )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getRow( DenseVector, " << globalRowIndex << ") requires temporary" )
         SparseVector<ValueType> spRow;
@@ -976,7 +975,7 @@ void SparseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalCol
 
     // if col is not a sparse vector use a temporary sparse vector
 
-    if ( col.getVectorKind() != _Vector:: SPARSE || col.getValueType() != getValueType() )
+    if ( col.getVectorKind() != VectorKind::SPARSE || col.getValueType() != getValueType() )
     {
         SCAI_LOG_INFO( logger, "SparseMatrix<" << getValueType() << ">::getCol( " << globalColIndex 
                                << ") requires temporary vector for col, kind = " << col.getVectorKind() )
@@ -1188,7 +1187,7 @@ void SparseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
         COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
     }
 
-    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
     {
         DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
         getDiagonal( tmpDiagonal );
@@ -1219,7 +1218,7 @@ void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
         COMMON_THROWEXCEPTION( "diagonal must have same distribution as matrix" )
     }
 
-    if ( diagonal.getVectorKind() != _Vector::DENSE || diagonal.getValueType() != getValueType() )
+    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
     {
         SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
         DenseVector<ValueType> tmpDiagonal( diagonal );
@@ -1257,7 +1256,7 @@ void SparseMatrix<ValueType>::reduce(
     SCAI_REGION( "Mat.Sp.reduce" )
 
     SCAI_ASSERT_EQ_ERROR( v.getValueType(), getValueType(), "type mismatch" )
-    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), _Vector::DENSE, "result vector in reduce must be DENSE" )
+    SCAI_ASSERT_EQ_ERROR( v.getVectorKind(), VectorKind::DENSE, "result vector in reduce must be DENSE" )
 
     DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
 
@@ -1476,7 +1475,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
     SCAI_LOG_INFO( logger,
                    "result = alpha * A * B + beta * C with result = " << result << ", alpha = " << alpha << ", A = " << *this << ", B = " << B << ", beta = " << beta << ", C = " << C )
 
-    if ( result.getMatrixKind() == _Matrix::DENSE )
+    if ( result.getMatrixKind() == MatrixKind::DENSE )
     {
         // we can deal here with DenseMatrix = SparseMatrix * DenseMatrix + DenseMatrix as it can
         // be considered as matrixTimesVectorN
@@ -1934,7 +1933,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
             bind( matrixTimesVector, _1, _2, alphaValue, _3, ValueType( 1 ), _2 );
 
-    if ( _Matrix::SYNCHRONOUS == _Matrix::getCommunicationKind() )
+    if ( SyncKind::SYNCHRONOUS == _Matrix::getCommunicationKind() )
     {
         function <
         void(

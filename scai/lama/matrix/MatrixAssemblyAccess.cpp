@@ -60,7 +60,7 @@ MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( _Matrix& matrix, const co
     mIsReleased( false ),
     mOp( op )
 {
-    SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), _Matrix::SPARSE, "Assembly only for sparse matrix supported" )
+    SCAI_ASSERT_EQ_ERROR( matrix.getMatrixKind(), MatrixKind::SPARSE, "Assembly only for sparse matrix supported" )
 
     // SCAI_ASSERT_EQ_ERROR( matrix.getNumValues(), 0, "Assembly only for zero sparse matrices supported" )
 }
