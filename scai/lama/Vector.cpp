@@ -49,6 +49,14 @@ namespace lama
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+Vector<ValueType>* Vector<ValueType>::getVector( VectorKind kind )
+{
+    return reinterpret_cast<Vector<ValueType>*>( _Vector::getVector( kind, TypeTraits<ValueType>::stype ) );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 Vector<ValueType>::Vector( const IndexType size, hmemo::ContextPtr context ) :
        
    _Vector( size, context )

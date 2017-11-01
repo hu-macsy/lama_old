@@ -35,6 +35,8 @@
 
 #include <scai/lama/_Vector.hpp>
 
+#include <scai/common/shared_ptr.hpp>
+
 namespace scai
 {
 
@@ -51,9 +53,21 @@ namespace lama
  */
 template <typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Vector: public _Vector
-
 {
 public:
+
+    /** Definiton of corresponding shared pointer type for this class 
+     *
+     *  \code
+     *      Vector<ValueType>::Ptr x( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
+     *      std::shared_ptr<Vector<ValueType> > x( Vector<ValueType>::getVector( VectorKind::DENSE ) );
+     *  \endcode
+     */
+    typedef common::shared_ptr<Vector<ValueType> > Ptr;
+
+    /** Create a new vector of a certain kind but with same value type */
+
+    static Vector<ValueType>* getVector( VectorKind kind );
 
     /** Desctructor. */
 
@@ -65,6 +79,55 @@ public:
 
     using _Vector::getContext;
     using _Vector::getDistribution;
+    using _Vector::operator=;
+
+    /** Help class to observe the further use of operator[] for Vector */
+
+    class VectorElemProxy
+    {
+    public:
+
+        /** Proxy constructed by ref to the array and the index value. */
+
+        inline VectorElemProxy( Vector<ValueType>& vector, const IndexType i );
+
+        /** Proxy for a vector element can be used to get its value, type conversion to ValueType
+         *
+         *  @returns current value of the vector element as a single value 
+         */
+        inline operator ValueType() const;
+
+        /** indexed value proxy can be assigned a scalar */
+
+        inline VectorElemProxy& operator= ( ValueType val );
+
+        /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
+
+        inline VectorElemProxy& operator= ( const VectorElemProxy& other );
+
+    private:
+
+        Vector<ValueType>& mVector;
+        IndexType mIndex;
+    };
+
+    /**
+     *  Indexing of a distributed vector returns a proxy so that this operator can be used
+     *  on lhs and rhs of an assignment.
+     */
+    VectorElemProxy operator[]( const IndexType i )
+    {
+        return VectorElemProxy( *this, i );
+    }
+
+    /**
+     *  Indexing of a const distributed vector returns directly the corresponding element.
+     */
+    ValueType operator[]( const IndexType i ) const
+    {
+        Scalar s = getValue( i );
+        return s.getValue<ValueType>();
+    }
 
 protected:
 
@@ -100,6 +163,41 @@ protected:
     Vector( const Vector<ValueType>& other );
 };
   
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Vector<ValueType>::VectorElemProxy::VectorElemProxy( Vector<ValueType>& vector, const IndexType i ) :
+
+    mVector( vector ),
+    mIndex( i )
+
+{
+}
+
+template<typename ValueType>
+Vector<ValueType>::VectorElemProxy::operator ValueType() const
+{
+    Scalar s = mVector.getValue( mIndex );
+    return s.getValue<ValueType>();
+}
+
+template<typename ValueType>
+typename Vector<ValueType>::VectorElemProxy& Vector<ValueType>::VectorElemProxy::operator= ( ValueType val )
+{
+    mVector.setValue( mIndex, Scalar( val ) );
+    return *this;
+}
+
+template<typename ValueType>
+typename Vector<ValueType>::VectorElemProxy& Vector<ValueType>::VectorElemProxy::operator= ( const Vector<ValueType>::VectorElemProxy& other )
+{
+    Scalar tmp = other.mVector.getValue( other.mIndex );
+    mVector.setValue( mIndex, tmp );
+    return *this;
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

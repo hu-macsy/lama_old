@@ -142,24 +142,24 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SetGetTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SetGetTest, ValueType, scai_array_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    TypedTestVectors<ValueType> vectors;
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _Vector& v = *vectors[i];
+        Vector<ValueType>& v =*vectors[i];
 
         v.allocate( n );
 
         v = 1;
 
-        Scalar s = v[0];
-        BOOST_CHECK_EQUAL( s, Scalar( 1 ) );
+        ValueType s = v[0];
+        BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
 
         v[n-2] = 9;
         v[1] = 7;
@@ -170,12 +170,15 @@ BOOST_AUTO_TEST_CASE( SetGetTest )
         }, common::Exception );
 
         s = v[2];
-        BOOST_CHECK_EQUAL( s, Scalar( 1 ) );
+        BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
         s = v[1];
-        BOOST_CHECK_EQUAL( s, Scalar( 7 ) );
+        BOOST_CHECK_EQUAL( s, ValueType( 7 ) );
         v[1] = 5;
         s = v[1];
-        BOOST_CHECK_EQUAL( s, Scalar( 5 ) );
+        BOOST_CHECK_EQUAL( s, ValueType( 5 ) );
+        v[1] = v[2];
+        s = v[1];
+        BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
     }
 }
 

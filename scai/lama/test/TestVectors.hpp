@@ -32,7 +32,7 @@
  * @date 27.07.2016
  */
 
-#include <scai/lama/_Vector.hpp>
+#include <scai/lama/Vector.hpp>
 
 #include <scai/common/shared_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -81,6 +81,37 @@ public:
 
             push_back( vectorPtr );
         }
+    }
+};
+
+
+template<typename ValueType>
+class TypedTestVectors : public std::vector<typename scai::lama::Vector<ValueType>::Ptr>
+{
+
+public:
+
+    /** Constructor creates already the list with shared vector pointers, one for each
+     *  registered key type in the Vector factory.
+     *
+     *  @param[in] ctx optional argument for the context where operations on vector should be executed
+     */
+    
+    TypedTestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    {   
+        using namespace scai::lama;
+
+        typename Vector<ValueType>::Ptr vectorPtrS( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
+        typename Vector<ValueType>::Ptr vectorPtrD( Vector<ValueType>::getVector( VectorKind::DENSE ) );
+
+        if ( ctx )
+        {   
+            vectorPtrS->setContextPtr( ctx );
+            vectorPtrD->setContextPtr( ctx );
+        }
+        
+        this->push_back( vectorPtrD );
+        this->push_back( vectorPtrS );
     }
 };
 

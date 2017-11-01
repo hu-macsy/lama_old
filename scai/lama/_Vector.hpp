@@ -107,36 +107,6 @@ class COMMON_DLL_IMPORTEXPORT _Vector:
 {
 public:
 
-    /** Help class to observe the further use of operator[] for _Vector */
-
-    class VectorElemProxy
-    {
-    public:
-
-        /** Proxy constructed by ref to the array and the index value. */
-
-        inline VectorElemProxy( _Vector& vector, const IndexType i );
-
-        /** Proxy for a vector element can be used to get its value, type conversion to Scalar
-         *
-         *  @returns current value of the vector element as a Scalar
-         */
-        inline operator Scalar() const;
-
-        /** indexed value proxy can be assigned a scalar */
-
-        inline VectorElemProxy& operator= ( Scalar val );
-
-        /** Override the default assignment operator to avoid ambiguous interpretation of a[i] = b[i] */
-
-        inline VectorElemProxy& operator= ( const VectorElemProxy& other );
-
-    private:
-
-        _Vector& mVector;
-        IndexType mIndex;
-    };
-
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
     static _Vector* getVector( const VectorKind format, const common::scalar::ScalarType valueType );
@@ -346,23 +316,6 @@ public:
      * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
      */
     Scalar operator()( const IndexType i ) const
-    {
-        return getValue( i );
-    }
-
-    /**
-     *  Indexing of a distributed vector returns a proxy so that this operator can be used
-     *  on lhs and rhs of an assignment.
-     */
-    VectorElemProxy operator[]( const IndexType i )
-    {
-        return VectorElemProxy( *this, i );
-    }
-
-    /**
-     *  Indexing of a const distributed vector returns directly the corresponding element.
-     */
-    Scalar operator[]( const IndexType i ) const
     {
         return getValue( i );
     }
@@ -1263,32 +1216,6 @@ private:
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */
-
-_Vector::VectorElemProxy::VectorElemProxy( _Vector& vector, const IndexType i ) :
-
-    mVector( vector ),
-    mIndex( i )
-
-{
-}
-
-_Vector::VectorElemProxy::operator Scalar() const
-{
-    return mVector.getValue( mIndex );
-}
-
-_Vector::VectorElemProxy& _Vector::VectorElemProxy::operator= ( Scalar val )
-{
-    mVector.setValue( mIndex, val );
-    return *this;
-}
-
-_Vector::VectorElemProxy& _Vector::VectorElemProxy::operator= ( const _Vector::VectorElemProxy& other )
-{
-    Scalar tmp = other.mVector.getValue( other.mIndex );
-    mVector.setValue( mIndex, tmp );
-    return *this;
-}
 
 IndexType _Vector::size() const
 {
