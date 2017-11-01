@@ -141,8 +141,8 @@ void CGNE::iterate()
     Scalar alpha;
     Scalar beta;
     Scalar eps = runtime.mEps;
-    Scalar scalarProductP = vecP.dotProduct( vecP );
-    Scalar scalarProductZR = vecZ.dotProduct( residual );
+    Scalar scalarProductP = vecP._dotProduct( vecP );
+    Scalar scalarProductZR = vecZ._dotProduct( residual );
 
     SCAI_LOG_INFO( logger, "scalarProductP = " << scalarProductP << ", scalarProductZR = " << scalarProductZR )
 
@@ -182,7 +182,7 @@ void CGNE::iterate()
     }
     else
     {
-        beta = vecZ.dotProduct( residual ) / scalarProductZR;
+        beta = vecZ._dotProduct( residual ) / scalarProductZR;
 
         SCAI_LOG_INFO( logger, "beta = " << beta )
     }

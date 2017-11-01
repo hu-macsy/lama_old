@@ -573,7 +573,7 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
             y2 = matrix * x + d;
             y2 = y2 - y1;
-            BOOST_CHECK( y2.maxNorm() < Scalar( 0.0001 ) );
+            BOOST_CHECK( y2._maxNorm() < Scalar( 0.0001 ) );
 
             // Write back modified diagonal and check result
 
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
             y2 = matrix * x - y1;
             y2 += -1;
 
-            BOOST_CHECK( y2.maxNorm() < Scalar( 0.0001 ) );
+            BOOST_CHECK( y2._maxNorm() < Scalar( 0.0001 ) );
         }
     }
 }
@@ -702,13 +702,13 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
                     row->redistribute( sRow.getDistributionPtr() );
 
-                    if ( ! ( row->maxDiffNorm( sRow ) < Scalar( 0.001 ) ) )
+                    if ( ! ( row->_maxDiffNorm( sRow ) < Scalar( 0.001 ) ) )
                     {
                         SCAI_LOG_ERROR( logger,  "i = " << i << ", j = " << j << ", s = " << s
                                         << ", fail for this matrix: " << matrix << std::endl );
                     }
 
-                    BOOST_CHECK( row->maxDiffNorm( sRow ) < Scalar( 0.001 ) );
+                    BOOST_CHECK( row->_maxDiffNorm( sRow ) < Scalar( 0.001 ) );
                 }
             }
         }

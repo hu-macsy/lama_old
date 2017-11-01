@@ -189,7 +189,7 @@ void QMR::iterate()
     vecY = vecY / rho;
     vecW = vecWT / psi;
     vecZ = vecZ / psi;
-    Scalar delta = vecZ.dotProduct( vecY );
+    Scalar delta = vecZ._dotProduct( vecY );
 
     if ( abs( delta ) < eps )
     {
@@ -236,7 +236,7 @@ void QMR::iterate()
     }
 
     vecPT = A * vecP;
-    epsilon = vecQ.dotProduct( vecPT );
+    epsilon = vecQ._dotProduct( vecPT );
 
     if ( abs( epsilon ) < eps || abs( 1.0 / eps ) < eps )
     {

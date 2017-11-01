@@ -274,7 +274,7 @@ void GMRES::iterate()
         }
 
         // normalize vCurrent
-        runtime.mG[0] = vCurrent.l2Norm().getValue<double>();
+        runtime.mG[0] = vCurrent._l2Norm().getValue<double>();
         double scal = 1.0 / runtime.mG[0];
         SCAI_LOG_DEBUG( logger, "Normalizing vCurrent with start residual " << runtime.mG[0] << "." )
         vCurrent = scal * vCurrent;
@@ -306,11 +306,11 @@ void GMRES::iterate()
     {
         SCAI_REGION( "Solver.GMRES.orthogonalization" )
         const _Vector& Vk = *( ( *runtime.mV )[k] );
-        runtime.mH[hIdxStart + k] = ( w.dotProduct( Vk ) ).getValue<double>();
+        runtime.mH[hIdxStart + k] = ( w._dotProduct( Vk ) ).getValue<double>();
         w = w - runtime.mH[hIdxStart + k] * Vk;
     }
 
-    runtime.mHd[krylovIndex] = w.l2Norm().getValue<double>();
+    runtime.mHd[krylovIndex] = w._l2Norm().getValue<double>();
     // normalize/store w in vNext (not needed in last step? Storage?)
     SCAI_LOG_DEBUG( logger, "Normalizing vNext." )
     _Vector& vNext = *( *runtime.mV )[krylovIndex + 1];

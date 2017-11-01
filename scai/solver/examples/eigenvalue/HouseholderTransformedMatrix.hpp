@@ -74,7 +74,7 @@ public:
         *h = L * u;
         *h /= alpha;
 
-        Scalar gamma = u.dotProduct( *h ) / alpha * 0.5;
+        Scalar gamma = u._dotProduct( *h ) / alpha * 0.5;
         
         mR.reset( u.copy() );
         mS.reset( u.newVector() );
@@ -99,8 +99,8 @@ public:
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 
         result = mL * x;
-        result -= mS->dotProduct( x ) * *mR;
-        result -= mR->dotProduct( x ) * *mS;
+        result -= mS->_dotProduct( x ) * *mR;
+        result -= mR->_dotProduct( x ) * *mS;
         result.setValue( 0, Scalar( 0 ) );
         result *= alpha;
         result += beta * y;

@@ -145,7 +145,7 @@ void TFQMR::iterationEven()
     _Vector& vecVOdd = *runtime.mVecVOdd;
     const Scalar& rho = runtime.mRhoOld;
     const Scalar& eps = runtime.mEps;
-    const Scalar dotProduct = initialR.dotProduct( vecZ );
+    const Scalar dotProduct = initialR._dotProduct( vecZ );
     Scalar& alpha = runtime.mAlpha;
 
     if ( abs( dotProduct ) < eps ) // scalar is small
@@ -174,7 +174,7 @@ void TFQMR::iterationOdd()
     _Vector& vecZ = *runtime.mVecZ;
     _Vector& vecVT = *runtime.mVecVT;
     const Scalar& eps = runtime.mEps;
-    rhoNew  = initialR.dotProduct( vecW );
+    rhoNew  = initialR._dotProduct( vecW );
 
     if ( abs( rhoOld ) < eps )          // scalar is small
     {

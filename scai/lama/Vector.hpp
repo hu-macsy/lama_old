@@ -36,6 +36,7 @@
 #include <scai/lama/_Vector.hpp>
 
 #include <scai/common/shared_ptr.hpp>
+#include <scai/common/TypeTraits.hpp>
 
 namespace scai
 {
@@ -64,6 +65,8 @@ public:
      *  \endcode
      */
     typedef common::shared_ptr<Vector<ValueType> > Ptr;
+
+    typedef typename common::TypeTraits<ValueType>::AbsType RealType;
 
     /** Create a new vector of a certain kind but with same value type */
 
@@ -129,6 +132,80 @@ public:
         return s.getValue<ValueType>();
     }
 
+    /**
+     * @brief Returns the L1 norm of this.
+     *
+     * @return the L1 norm of this.
+     *
+     * l1Norm computes the sum of the absolute values of this.
+     */
+    virtual RealType l1Norm() const = 0;
+
+    /**
+     * @brief Returns the L2 norm of this.
+     *
+     * @return the L2 norm of this.
+     *
+     * l2Norm computes the sum of the absolute values of this.
+     */
+    virtual RealType l2Norm() const = 0;
+
+    /**
+     * @brief Returns the max norm of this.
+     *
+     * @return the max norm of this.
+     *
+     * maxNorm computes the value of this with the largest magnitude.
+     */
+    virtual RealType maxNorm() const = 0;
+
+    /**
+     * @brief Returns the max norm of the difference with another vector
+     *
+     *  v1.maxDiffNorm( v2 ) is equivalent to:
+     *
+     *  \code
+     *      Vector<ValueType> tmp = v1 - v2;
+     *      maxNorm( tmp )
+     *  \endcode
+     *
+     *  But it avoids the temporary vector wherever possible
+     */
+    virtual RealType maxDiffNorm( const _Vector& other ) const = 0;
+
+    /**
+     * @brief Returns the global minimum value of this.
+     *
+     * @return   the global minimum value of this vector.
+     */
+    virtual ValueType min() const = 0;
+
+    /**
+     * @brief Returns the global maximum value of this.
+     *
+     * @return the global maximum value of this vector.
+     */
+    virtual ValueType max() const = 0;
+
+    /**
+     * @brief Returns the sum of all vector elements.
+     *
+     * @return the sum of all vector elements.
+     *
+     * As the summation of the values depends on the mapping of the values to
+     * the processors, this routine might return slightly different results
+     * for different parallel environments.
+     */
+    virtual ValueType sum() const = 0;
+
+    /**
+     * @brief Returns the dot product of this and other.
+     *
+     * @param[in] other   the vector to calculate the dot product with.
+     * @return            the dot product of this and other
+     */
+    virtual ValueType dotProduct( const _Vector& other ) const = 0;
+
 protected:
 
     /**
@@ -161,6 +238,22 @@ protected:
     /** Override the default copy constructor */
 
     Vector( const Vector<ValueType>& other );
+
+    // Implementations of pure _Vector methods to guarantee upward compatibilty
+
+    Scalar _l1Norm() const;
+
+    Scalar _l2Norm() const;
+
+    Scalar _maxNorm() const;
+
+    Scalar _maxDiffNorm( const _Vector& other ) const;
+
+    Scalar _sum() const;
+    Scalar _min() const;
+    Scalar _max() const;
+
+    Scalar _dotProduct( const _Vector& other ) const;
 };
   
 /* ------------------------------------------------------------------------- */

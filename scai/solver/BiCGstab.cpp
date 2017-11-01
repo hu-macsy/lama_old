@@ -154,7 +154,7 @@ void BiCGstab::iterate()
     const Scalar& eps = runtime.mEps;
     Scalar& resNorm = runtime.mResNorm;
     lama::L2Norm norm;
-    rhoNew = res0.dotProduct( res );
+    rhoNew = res0._dotProduct( res );
 
     if ( resNorm < eps || rhoOld < eps || omega < eps ) // scalars are small
     {
@@ -181,7 +181,7 @@ void BiCGstab::iterate()
     }
 
     vecV = A * vecPT;
-    Scalar innerProd = res0.dotProduct( vecV );
+    Scalar innerProd = res0._dotProduct( vecV );
 
     if ( resNorm < eps || innerProd < eps ) // scalar is small
     {
@@ -210,7 +210,7 @@ void BiCGstab::iterate()
         vecTT = vecT;
     }
 
-    innerProd = vecTT.dotProduct( vecTT );
+    innerProd = vecTT._dotProduct( vecTT );
 
     if ( resNorm < eps || innerProd < eps ) //scalar is small
     {
@@ -218,7 +218,7 @@ void BiCGstab::iterate()
     }
     else
     {
-        omega = vecTT.dotProduct( vecST ) / innerProd;
+        omega = vecTT._dotProduct( vecST ) / innerProd;
     }
 
     solution = solution + alpha * vecP;

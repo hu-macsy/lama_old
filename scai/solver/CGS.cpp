@@ -124,7 +124,7 @@ void CGS::solveInit( _Vector& solution, const _Vector& rhs )
     }
 
     //initial <res,res> inner product;
-    runtime.mInnerProdRes = ( *runtime.mRes0 ).dotProduct( *runtime.mRes0 );
+    runtime.mInnerProdRes = ( *runtime.mRes0 )._dotProduct( *runtime.mRes0 );
     SCAI_LOG_INFO( logger, "solveInit, mInnerProdRes = " << runtime.mInnerProdRes )
     runtime.mSolveInit = true;
 }
@@ -150,7 +150,7 @@ void CGS::iterate()
     Scalar& normRes = runtime.mNormRes;
     lama::L2Norm norm;
     vecT = A * vecPT;
-    Scalar innerProduct = res0.dotProduct( vecT );
+    Scalar innerProduct = res0._dotProduct( vecT );
 
     if ( normRes < eps || innerProduct < eps ) //innerProduct is small
     {
@@ -182,7 +182,7 @@ void CGS::iterate()
     solution = solution + alpha * vecUT;
     Scalar innerProdResOld = innerProdRes;
     res = res - alpha * A * vecUT;
-    innerProdRes = res0.dotProduct( res );
+    innerProdRes = res0._dotProduct( res );
     normRes = norm.apply( res );
 
     if ( normRes < eps || innerProdResOld < eps )            // innerProdResOld is small

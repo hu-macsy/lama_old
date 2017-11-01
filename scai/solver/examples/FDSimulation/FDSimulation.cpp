@@ -315,9 +315,9 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         // velocity y: vY = vY + DT / ( DH * rho ) * C * p;
         vY += v_factor * C * p;
 
-        lama::Scalar znorm = vZ.l2Norm();
-        lama::Scalar xnorm = vX.l2Norm();
-        lama::Scalar ynorm = vY.l2Norm();
+        lama::Scalar znorm = vZ._l2Norm();
+        lama::Scalar xnorm = vX._l2Norm();
+        lama::Scalar ynorm = vY._l2Norm();
 
         // create new Vector(Pointer) with same configuration as vZ
         common::unique_ptr<lama::_Vector> helpPtr( vZ.newVector() );
@@ -330,7 +330,7 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         help += DH_INV * F * vY;
         p += p_factor * help; // p_factor is 'DT * M'
 
-        lama::Scalar hnorm = help.l2Norm();
+        lama::Scalar hnorm = help._l2Norm();
         lama::Scalar pnorm = p.l2Norm();
 
         // update seismogram and pressure with source terms

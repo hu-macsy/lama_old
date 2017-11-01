@@ -868,7 +868,7 @@ void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const st
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::min() const
+ValueType SparseVector<ValueType>::min() const
 {
     // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
 
@@ -883,24 +883,24 @@ Scalar SparseVector<ValueType>::min() const
         localMin = Math::min( localMin, mZeroValue );
     }
 
-    return Scalar( getDistribution().getCommunicator().min( localMin ) );
+    return getDistribution().getCommunicator().min( localMin );
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 template<>
-Scalar SparseVector<ComplexFloat>::min() const
+ComplexFloat SparseVector<ComplexFloat>::min() const
 {
     COMMON_THROWEXCEPTION( "min unsupported on complex (float) (sparse) vector." )
 }
 
 template<>
-Scalar SparseVector<ComplexDouble>::min() const
+ComplexDouble SparseVector<ComplexDouble>::min() const
 {
     COMMON_THROWEXCEPTION( "min unsupported on complex (double) (sparse) vector." )
 }
 
 template<>
-Scalar SparseVector<ComplexLongDouble>::min() const
+ComplexLongDouble SparseVector<ComplexLongDouble>::min() const
 {
     COMMON_THROWEXCEPTION( "min unsupported on complex (long double) (sparse) vector." )
 }
@@ -909,7 +909,7 @@ Scalar SparseVector<ComplexLongDouble>::min() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::max() const
+ValueType SparseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
 
@@ -922,24 +922,24 @@ Scalar SparseVector<ValueType>::max() const
         localMax = Math::max( localMax, mZeroValue );
     }
 
-    return Scalar( getDistribution().getCommunicator().max( localMax ) );
+    return getDistribution().getCommunicator().max( localMax );
 }
 
 #ifdef SCAI_COMPLEX_SUPPORTED
 template<>
-Scalar SparseVector<ComplexFloat>::max() const
+ComplexFloat SparseVector<ComplexFloat>::max() const
 {
     COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
 }
 
 template<>
-Scalar SparseVector<ComplexDouble>::max() const
+ComplexDouble SparseVector<ComplexDouble>::max() const
 {
     COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
 }
 
 template<>
-Scalar SparseVector<ComplexLongDouble>::max() const
+ComplexLongDouble SparseVector<ComplexLongDouble>::max() const
 {
     COMMON_THROWEXCEPTION( "max unsupported for complex vectors." )
 }
@@ -948,11 +948,13 @@ Scalar SparseVector<ComplexLongDouble>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::l1Norm() const
+typename SparseVector<ValueType>::RealType SparseVector<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Vector.sparse.l1Norm" )
 
-    ValueType localL1Norm = mNonZeroValues.l1Norm();
+    typedef typename SparseVector<ValueType>::RealType RealType;
+
+    RealType localL1Norm = mNonZeroValues.l1Norm();
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
@@ -960,15 +962,17 @@ Scalar SparseVector<ValueType>::l1Norm() const
     {
         // ToDo: replace ABS with ASUM, is different for complex numbers
 
-        localL1Norm += common::applyUnary( common::unary::ABS, mZeroValue ) * ValueType( nZero );
+        RealType zeroNorm = common::applyUnary( common::unary::ABS, mZeroValue );
+        localL1Norm += zeroNorm * RealType( nZero );
     }
 
-    return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
+    return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
 /*---------------------------------------------------------------------------*/
+
 template<typename ValueType>
-Scalar SparseVector<ValueType>::sum() const
+ValueType SparseVector<ValueType>::sum() const
 {
     ValueType localSum = mNonZeroValues.sum();
 
@@ -979,54 +983,59 @@ Scalar SparseVector<ValueType>::sum() const
         localSum += mZeroValue * ValueType( nZero );
     }
 
-    return Scalar( getDistribution().getCommunicator().sum( localSum ) );
+    return getDistribution().getCommunicator().sum( localSum );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::l2Norm() const
+typename SparseVector<ValueType>::RealType SparseVector<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Vector.sparse.l2Norm" )
 
+    typedef typename SparseVector<ValueType>::RealType RealType;
+
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    ValueType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    RealType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
 
     IndexType nZero = getDistribution().getLocalSize() - mNonZeroValues.size();
 
     if ( nZero > 0 )
     {
-        localDotProduct += mZeroValue * mZeroValue * ValueType( nZero );
+        RealType zeroNorm = mZeroValue * Math::conj( mZeroValue ) * ValueType( nZero );
+        localDotProduct += zeroNorm;
     }
  
-    ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    RealType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
 
-    return Scalar( Math::sqrt( globalDotProduct ) );
+    return Math::sqrt( globalDotProduct );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<>
-Scalar SparseVector<IndexType>::l2Norm() const
+IndexType SparseVector<IndexType>::l2Norm() const
 {
     SCAI_REGION( "Vector.sparse.l2Norm" )
 
     // Note: we do not call l2Norm here for mNonZeroValues to avoid sqrt
 
-    ScalarRepType localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
-    ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( Math::sqrt( globalDotProduct ) );
+    double localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
+    double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return IndexType( Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::maxNorm() const
+typename SparseVector<ValueType>::RealType SparseVector<ValueType>::maxNorm() const
 {
     SCAI_REGION( "Vector.sparse.maxNorm" )
 
-    ValueType localMaxNorm = mNonZeroValues.maxNorm();
+    typedef typename SparseVector<ValueType>::RealType RealType;
+
+    RealType localMaxNorm = mNonZeroValues.maxNorm();
 
     // the ZERO element must also be considered if at least one element is zero
 
@@ -1039,17 +1048,19 @@ Scalar SparseVector<ValueType>::maxNorm() const
     }
 
     const Communicator& comm = getDistribution().getCommunicator();
-    ValueType globalMaxNorm = comm.max( localMaxNorm );
+
+    RealType globalMaxNorm = comm.max( localMaxNorm );
+
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
-    return Scalar( globalMaxNorm );
+    return globalMaxNorm;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
+typename SparseVector<ValueType>::RealType SparseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
 {
     // ToDo: find some more efficient solutions wherever possible
 
@@ -1258,7 +1269,7 @@ void SparseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const _Vect
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::dotProduct( const _Vector& other ) const
+ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
 {
     SCAI_REGION( "Vector.Sparse.dotP" )
 
@@ -1301,7 +1312,7 @@ Scalar SparseVector<ValueType>::dotProduct( const _Vector& other ) const
 
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
-    return Scalar( dotProduct );
+    return dotProduct;
 }
 
 /* ------------------------------------------------------------------------- */

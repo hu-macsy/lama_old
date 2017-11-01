@@ -1023,79 +1023,81 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::min() const
+ValueType DenseVector<ValueType>::min() const
 {
     // Note: min returns the maximal representation value on zero-sized vectors, TypeTraits<ValueType>::getMax()
     ValueType localMin = mLocalValues.min();
-    return Scalar( getDistribution().getCommunicator().min( localMin ) );
+    return getDistribution().getCommunicator().min( localMin );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::max() const
+ValueType DenseVector<ValueType>::max() const
 {
     // Note: max returns the minimal representation value on zero-sized vectors
     ValueType localMax = mLocalValues.max();
-    return Scalar( getDistribution().getCommunicator().max( localMax ) );
+    return getDistribution().getCommunicator().max( localMax );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::l1Norm() const
+typename DenseVector<ValueType>::RealType DenseVector<ValueType>::l1Norm() const
 {
-    ValueType localL1Norm = mLocalValues.l1Norm();
-    return Scalar( getDistribution().getCommunicator().sum( localL1Norm ) );
+    typename DenseVector<ValueType>::RealType localL1Norm = mLocalValues.l1Norm();
+    return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
 /*---------------------------------------------------------------------------*/
 template<typename ValueType>
-Scalar DenseVector<ValueType>::sum() const
+ValueType DenseVector<ValueType>::sum() const
 {
     ValueType localsum = mLocalValues.sum();
-    return Scalar( getDistribution().getCommunicator().sum( localsum ) );
+    return getDistribution().getCommunicator().sum( localsum );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::l2Norm() const
+typename DenseVector<ValueType>::RealType DenseVector<ValueType>::l2Norm() const
 {
+    typedef typename DenseVector<ValueType>::RealType RealType;
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
-    ValueType localDotProduct = mLocalValues.dotProduct( mLocalValues );
-    ValueType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    RealType localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    RealType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return common::Math::sqrt( globalDotProduct );
 }
 
 template<>
-Scalar DenseVector<IndexType>::l2Norm() const
+IndexType DenseVector<IndexType>::l2Norm() const
 {
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
 
-    ScalarRepType localDotProduct = mLocalValues.dotProduct( mLocalValues );
-    ScalarRepType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
-    return Scalar( common::Math::sqrt( globalDotProduct ) );
+    double localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    double globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    return IndexType( common::Math::sqrt( globalDotProduct ) );
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::maxNorm() const
+typename DenseVector<ValueType>::RealType DenseVector<ValueType>::maxNorm() const
 {
-    ValueType localMaxNorm = mLocalValues.maxNorm();
+    typedef typename DenseVector<ValueType>::RealType RealType;
+    RealType localMaxNorm = mLocalValues.maxNorm();
     const Communicator& comm = getDistribution().getCommunicator();
-    ValueType globalMaxNorm = comm.max( localMaxNorm );
+    RealType globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
-    return Scalar( globalMaxNorm );
+    return globalMaxNorm;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
+typename DenseVector<ValueType>::RealType DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
 {
     if (   other.getDistribution() != getDistribution() 
        ||  other.getVectorKind() != VectorKind::DENSE 
@@ -1109,17 +1111,19 @@ Scalar DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
 
     const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
 
-    ValueType localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
+    typedef typename DenseVector<ValueType>::RealType RealType;
+
+    RealType localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    ValueType globalMaxNorm = comm.max( localMaxNorm );
+    RealType globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
 
-    return Scalar( globalMaxNorm );
+    return globalMaxNorm;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1654,7 +1658,7 @@ void DenseVector<ValueType>::scatter(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::dotProduct( const _Vector& other ) const
+ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
 {
     SCAI_REGION( "Vector.Dense.dotP" )
     SCAI_LOG_INFO( logger, "Calculating dot product for " << *this << " * " << other )
@@ -1696,7 +1700,7 @@ Scalar DenseVector<ValueType>::dotProduct( const _Vector& other ) const
     ValueType dotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     SCAI_LOG_DEBUG( logger, "Global dot product = " << dotProduct )
 
-    return Scalar( dotProduct );
+    return dotProduct;
 }
 
 /* ------------------------------------------------------------------------- */

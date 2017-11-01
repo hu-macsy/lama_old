@@ -250,8 +250,8 @@ BOOST_AUTO_TEST_CASE( ConjTest )
 
         *v *= *v1;  // ( a + b i ) ( a - b i )
         
-        Scalar s1 = v->sum();
-        Scalar s2 = v1->dotProduct( *v1 );
+        Scalar s1 = v->_sum();
+        Scalar s2 = v1->_dotProduct( *v1 );
 
         SCAI_LOG_DEBUG( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
 
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
         v1 -= v2;
 
-        Scalar diff = v1.maxNorm();
+        Scalar diff = v1._maxNorm();
 
         SCAI_LOG_DEBUG( logger, "v = " << v1 << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
 
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
         v1 += v2;
         v1 -= Scalar( 1 );
 
-        Scalar diff = v1.maxNorm();
+        Scalar diff = v1._maxNorm();
 
         BOOST_CHECK( diff < Scalar( 0.0001 ) );
     }
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE( PowTest )
 
         v1 -= v2;
 
-        Scalar diff = v1.maxNorm();
+        Scalar diff = v1._maxNorm();
 
         BOOST_CHECK( diff < Scalar( 0.0001 ) );
  
@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 
             *v3 -= *v4;
 
-            BOOST_CHECK( v3->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v3->_maxNorm() < Scalar( 1e-4 ) );
         }
     }
 }
@@ -491,7 +491,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
             *v2 -= dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *m * dV1;
 
@@ -499,15 +499,15 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 
             *v2 -= 2 * dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = *m * dV1 - dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *m * dV1 - 2 * dV1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
         }
     }
 }
@@ -550,7 +550,7 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
             *v2 -= *v1;
 
-            Scalar s = v2->maxNorm();
+            Scalar s = v2->_maxNorm();
 
             BOOST_CHECK( s < Scalar( 1e-4 ) );
 
@@ -560,15 +560,15 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 
             *v2 -= 2 * *v1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = *v1 * *m - *v1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
 
             *v2 = 2 * *v1 * *m - 2 * *v1;
 
-            BOOST_CHECK( v2->maxNorm() < Scalar( 1e-4 ) );
+            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
         }
     }
 }
@@ -653,7 +653,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
             SCAI_LOG_DEBUG( logger, "dotProduct, v1 = " << *v1 << ", v2 = " << *v2 );
 
-            Scalar dotp = v1->dotProduct( *v2 );  // replicated computation
+            Scalar dotp = v1->_dotProduct( *v2 );  // replicated computation
 
             for ( size_t j = 0; j < dists.size(); ++j )
             {
@@ -664,7 +664,7 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
                 v1->redistribute( dist );
                 v2->redistribute( dist );
 
-                Scalar distDotp = v1->dotProduct( *v2 );
+                Scalar distDotp = v1->_dotProduct( *v2 );
 
                 // we cannot check for equality due to different rounding errors
 
@@ -732,7 +732,7 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 
             *v3 -= *v2;
 
-            BOOST_CHECK( v3->maxNorm() < Scalar( 0.0001 ) );
+            BOOST_CHECK( v3->_maxNorm() < Scalar( 0.0001 ) );
         }
     }
 }

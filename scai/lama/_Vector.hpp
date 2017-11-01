@@ -680,14 +680,14 @@ public:
      *
      * @return   the global minimum value of this vector.
      */
-    virtual Scalar min() const = 0;
+    virtual Scalar _min() const = 0;
 
     /**
      * @brief Returns the global maximum value of this.
      *
      * @return the global maximum value of this vector.
      */
-    virtual Scalar max() const = 0;
+    virtual Scalar _max() const = 0;
 
     /**
      * @brief Returns the sum of all vector elements.
@@ -698,7 +698,7 @@ public:
      * the processors, this routine might return slightly different results
      * for different parallel environments.
      */
-    virtual Scalar sum() const = 0;
+    virtual Scalar _sum() const = 0;
 
     /**
      * @brief Returns the L1 norm of this.
@@ -707,7 +707,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l1Norm() const = 0;
+    virtual Scalar _l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -716,7 +716,7 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l2Norm() const = 0;
+    virtual Scalar _l2Norm() const = 0;
 
     /**
      * @brief Returns the max norm of this.
@@ -725,7 +725,7 @@ public:
      *
      * maxNorm computes the value of this with the largest magnitude.
      */
-    virtual Scalar maxNorm() const = 0;
+    virtual Scalar _maxNorm() const = 0;
 
     /**
      * @brief Returns the max norm of the difference with another vector
@@ -739,7 +739,7 @@ public:
      *
      *  But it avoids the temporary vector wherever possible
      */
-    virtual Scalar maxDiffNorm( const _Vector& other ) const = 0;
+    virtual Scalar _maxDiffNorm( const _Vector& other ) const = 0;
 
     /**
      *  Method to create a new vector of the same kind and same type
@@ -905,7 +905,7 @@ public:
      * @param[in] other   the vector to calculate the dot product with.
      * @return            the dot product of this and other
      */
-    virtual Scalar dotProduct( const _Vector& other ) const = 0;
+    virtual Scalar _dotProduct( const _Vector& other ) const = 0;
 
     /**
      *  @brief Update this vector with another vector elementwise

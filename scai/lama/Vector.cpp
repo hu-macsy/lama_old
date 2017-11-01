@@ -109,6 +109,57 @@ common::scalar::ScalarType Vector<ValueType>::getValueType() const
 }
 
 /* ========================================================================= */
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_l1Norm() const
+{
+    return Scalar( l1Norm() );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_l2Norm() const
+{
+    return Scalar( l2Norm() );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_maxNorm() const
+{
+    return Scalar( maxNorm() );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_maxDiffNorm( const _Vector& other ) const
+{
+    return Scalar( maxDiffNorm( other ) );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_min() const
+{
+    return Scalar( min() );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_max() const
+{
+    return Scalar( min() );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_sum() const
+{
+    return Scalar( sum() );
+}
+
+template<typename ValueType>
+Scalar Vector<ValueType>::_dotProduct( const _Vector& other ) const
+{
+    return Scalar( dotProduct( other ) );
+}
+
+
+/* ========================================================================= */
 /*       Template instantiations                                             */
 /* ========================================================================= */
 

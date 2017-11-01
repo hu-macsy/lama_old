@@ -504,7 +504,7 @@ int main( int argc, const char* argv[] )
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution.maxNorm();
+                Scalar maxDiff = compSolution._maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else

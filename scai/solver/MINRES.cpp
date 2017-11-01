@@ -137,7 +137,7 @@ void MINRES::Lanczos()
     vecVOld.swap( vecV );
     vecV.swap( vecVNew );
     vecVNew = A * vecV - beta * vecVOld;
-    alpha = vecV.dotProduct( vecVNew );
+    alpha = vecV._dotProduct( vecVNew );
     vecVNew = vecVNew - alpha * vecV;
     betaNew = norm.apply( vecVNew );
 

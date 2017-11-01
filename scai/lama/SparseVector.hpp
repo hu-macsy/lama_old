@@ -88,6 +88,8 @@ public:
     using _Vector::size;
     using Vector<ValueType>::getValueType;
 
+    typedef typename Vector<ValueType>::RealType RealType;
+
     /** Default constructor, creates zero-sized replicated vector */
 
     SparseVector();
@@ -468,23 +470,23 @@ public:
 
     virtual void setValue( const IndexType globalIndex, const Scalar value );
 
-    virtual Scalar min() const;
+    virtual ValueType min() const;
 
-    virtual Scalar max() const;
+    virtual ValueType max() const;
 
-    virtual Scalar sum() const;
+    virtual ValueType sum() const;
 
-    virtual Scalar l1Norm() const;
+    virtual RealType l1Norm() const;
 
-    virtual Scalar l2Norm() const;
+    virtual RealType l2Norm() const;
 
     /** Implementation of pure method _Vector::maxNorm */
 
-    virtual Scalar maxNorm() const;
+    virtual RealType maxNorm() const;
 
     /** Implementation of pure method _Vector::maxDiffNorm */
 
-    virtual Scalar maxDiffNorm( const _Vector& other ) const;
+    virtual RealType maxDiffNorm( const _Vector& other ) const;
 
     /** Implementation of pure method _Vector::all */
 
@@ -521,7 +523,7 @@ public:
 
     /** Implementation of pure method _Vector::dotProduct */
 
-    virtual Scalar dotProduct( const _Vector& other ) const;
+    virtual ValueType dotProduct( const _Vector& other ) const;
 
     /** Implementation of pure method _Vector::setVector */
 

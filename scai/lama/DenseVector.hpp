@@ -92,6 +92,8 @@ public:
     using _Vector::size;
     using Vector<ValueType>::getValueType;
 
+    typedef typename Vector<ValueType>::RealType RealType;
+
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
     DenseVector();
@@ -503,21 +505,21 @@ public:
 
     virtual void setValue( const IndexType globalIndex, const Scalar value );
 
-    virtual Scalar min() const;
+    virtual ValueType min() const;
 
-    virtual Scalar max() const;
+    virtual ValueType max() const;
 
-    virtual Scalar sum() const;
+    virtual ValueType sum() const;
 
-    virtual Scalar l1Norm() const;
+    virtual RealType l1Norm() const;
 
-    virtual Scalar l2Norm() const;
+    virtual RealType l2Norm() const;
 
-    virtual Scalar maxNorm() const;
+    virtual RealType maxNorm() const;
 
     /** Implementation of pure method _Vector::maxDiffNorm */
 
-    virtual Scalar maxDiffNorm( const _Vector& other ) const;
+    virtual RealType maxDiffNorm( const _Vector& other ) const;
 
     /** Implementation of pure method _Vector::all */
 
@@ -627,7 +629,7 @@ public:
         const common::binary::BinaryOp op = common::binary::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
-    virtual Scalar dotProduct( const _Vector& other ) const;
+    virtual ValueType dotProduct( const _Vector& other ) const;
 
     using _Vector::prefetch; // prefetch() with no arguments
 

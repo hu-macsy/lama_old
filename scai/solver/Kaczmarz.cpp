@@ -129,7 +129,7 @@ void Kaczmarz::iterate()
 
         Scalar bi = b( iRow );
 
-        Scalar p = ( bi - z.dotProduct( x ) ) / z.dotProduct( z );
+        Scalar p = ( bi - z._dotProduct( x ) ) / z._dotProduct( z );
 
         x = x + p * z;
     }

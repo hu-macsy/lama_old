@@ -90,7 +90,7 @@ Scalar maxNorm( const Scalar& scalar )
 
 Scalar maxNorm( const _Vector& vector )
 {
-    return vector.maxNorm();
+    return vector._maxNorm();
 }
 
 Scalar maxNorm( const _Matrix& matrix )

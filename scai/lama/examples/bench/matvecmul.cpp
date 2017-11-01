@@ -117,7 +117,7 @@ static void bench( _Matrix& mat )
 
     *y1 -= *y2;
 
-    cout << "max diff = " << y1->maxNorm() << endl;
+    cout << "max diff = " << y1->_maxNorm() << endl;
 }
 
 int main( int argc, const char* argv[] )

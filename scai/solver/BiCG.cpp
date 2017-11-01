@@ -153,7 +153,7 @@ void BiCG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = z2.dotProduct( z );
+    pScalar = z2._dotProduct( z );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -169,22 +169,22 @@ void BiCG::iterate()
         SCAI_LOG_DEBUG( logger, "beta = " << beta << ", is p = " << pScalar << " / p_old = " << lastPScalar )
 
         p = z + beta * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p._l2Norm() )
         p2 = z2 + conj( beta ) * p2;
-        SCAI_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2._l2Norm() )
     }
 
     {
         SCAI_REGION( "Solver.BiCG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q._l2Norm() )
         q2 = transA * p2; //p2 * A;
-        SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2._l2Norm() )
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = p2.dotProduct( q );
+    const Scalar pqProd = p2._dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
 /*    if ( pqProd == Scalar( 0.0 ) )
@@ -201,16 +201,16 @@ void BiCG::iterate()
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.BiCG.update_x" )
         x = x + alpha * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x._l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
         SCAI_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual._l2Norm() )
         residual2 = residual2 - conj( alpha ) * q2;
         //residual2 = residual2 - alpha * q2;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual._l2Norm() )
     }
     //BiCG implementation end
     mBiCGRuntime.mSolution.setDirty( false );

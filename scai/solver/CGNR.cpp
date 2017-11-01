@@ -140,7 +140,7 @@ void CGNR::iterate()
     const Scalar& eps = runtime.mEps;
     vecW = A * vecD;
     Scalar normVecW = norm.apply( vecW );
-    Scalar scalarProduct = vecZ.dotProduct( residual2 );
+    Scalar scalarProduct = vecZ._dotProduct( residual2 );
 
     if ( normVecW < eps || 1.0 / normVecW < eps )         //norm is small
     {
@@ -171,7 +171,7 @@ void CGNR::iterate()
     }
     else
     {
-        beta = vecZ.dotProduct( residual2 ) / scalarProduct;
+        beta = vecZ._dotProduct( residual2 ) / scalarProduct;
     }
 
     vecD = vecZ + beta * vecD;

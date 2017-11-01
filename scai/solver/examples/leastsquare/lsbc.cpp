@@ -164,13 +164,13 @@ ValueType centralPathObjective(
 {
     DenseVector<ValueType> tmp ( x - lb );
     tmp.log(); 
-    ValueType s1 = tmp.sum().getValue<ValueType>();
+    ValueType s1 = tmp.sum();
     tmp = ub - x;
     tmp.log(); 
-    ValueType s2 = tmp.sum().getValue<ValueType>();
+    ValueType s2 = tmp.sum();
     ValueType barrier = -s1 - s2;
     DenseVector<ValueType> res( A * x - b );
-    ValueType dp = res.dotProduct( res ).getValue<ValueType>();
+    ValueType dp = res.dotProduct( res );
     ValueType value = tau * dp + barrier;
 
     std::cout << "central path, t = " << tau << ", resnorm = " << common::Math::sqrt( dp ) 
@@ -297,7 +297,7 @@ void computeSearchDirection(
     ValueType eps = 1e-14;
     ValueType e = 0.01;
 
-    ValueType normG = g.l2Norm().getValue<ValueType>();
+    ValueType normG = g.l2Norm();
    
     ValueType tol = common::Math::max( eps, common::Math::min( ValueType( 0.1 ), e * gap / normG ) );
 
@@ -357,7 +357,7 @@ void lsqBox(
 
     DenseVector<ValueType> residual( A * x - b );
 
-    ValueType tau = 1.0 / residual.l2Norm().getValue<ValueType>();
+    ValueType tau = 1.0 / residual.l2Norm();
 
     ValueType gap = 0.0;
     ValueType dualObj = 1.0;

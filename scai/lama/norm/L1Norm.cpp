@@ -89,7 +89,7 @@ Scalar l1Norm( const Scalar& scalar )
 
 Scalar l1Norm( const _Vector& vector )
 {
-    return vector.l1Norm();
+    return vector._l1Norm();
 }
 
 Scalar l1Norm( const _Matrix& matrix )

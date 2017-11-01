@@ -131,7 +131,7 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = z.dotProduct( residual );
+    pScalar = z._dotProduct( residual );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -162,18 +162,18 @@ void CG::iterate()
 
         p = z + beta * p;
 
-        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p._l2Norm() )
     }
 
     {
         SCAI_REGION( "Solver.CG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q._l2Norm() )
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = q.dotProduct( p );
+    const Scalar pqProd = q._dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
 /*    if ( pqProd == Scalar( 0.0 ) )
@@ -189,13 +189,13 @@ void CG::iterate()
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x._l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
         SCAI_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual._l2Norm() )
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );
