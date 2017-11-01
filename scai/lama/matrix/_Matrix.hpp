@@ -818,8 +818,6 @@ public:
 
     /**
      *  @brief Getter routine for the context.
-     *
-     *  Note: Only for SparseMatrix the context of the halo can be queried.
      */
     virtual hmemo::ContextPtr getContextPtr() const = 0;
 
@@ -947,13 +945,13 @@ public:
     virtual void invert( const _Matrix& other ) = 0;
 
     /**
-     * @brief Returns the L1 norm of this.
+     * @brief Returns the L1 norm of this matrix.
      *
-     * @return the L1 norm of this.
+     * @return the L1 norm of this as 'anonymous' scalar
      *
-     * l1Norm computes the sum of the absolute values of this.
+     * l1Norm computes the sum of the absolute values of all entries
      */
-    virtual Scalar l1Norm( void ) const = 0;
+    virtual Scalar _l1Norm( void ) const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -962,14 +960,14 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual Scalar l2Norm( void ) const = 0;
+    virtual Scalar _l2Norm( void ) const = 0;
 
     /**
      * @brief Getter routine of the max norm of this matrix.
      *
      * @return the maximal absolute value for elements of this matrix
      */
-    virtual Scalar maxNorm( void ) const = 0;
+    virtual Scalar _maxNorm( void ) const = 0;
 
     /**
      * @brief Returns the max norm of ( this - other ).
@@ -983,7 +981,7 @@ public:
      * Note: This method is the most general implementation and should be
      *       implemented more efficiently in derived classes.
      */
-    virtual Scalar maxDiffNorm( const _Matrix& other ) const;
+    virtual Scalar _maxDiffNorm( const _Matrix& other ) const;
 
     /**
      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.

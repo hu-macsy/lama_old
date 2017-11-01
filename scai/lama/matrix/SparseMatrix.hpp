@@ -102,6 +102,8 @@ public:
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
+    typedef typename Matrix<ValueType>::RealType RealType;  //!< type used for norm computations
+
     /** Getter for the type name of the class. */
 
     static const char* typeName();
@@ -473,19 +475,20 @@ public:
         const Scalar beta,
         const _Matrix& C ) const;
 
-    /* Implementation of pure method of class _Matrix. */
-    virtual Scalar l1Norm() const;
+    /* Implementation of pure method of class Matrix. */
+
+    virtual RealType l1Norm() const;
 
     /* Implementation of pure method of class _Matrix. */
-    virtual Scalar l2Norm() const;
+    virtual RealType l2Norm() const;
 
     /** Implementation of pure method of class _Matrix for sparse matrices. */
 
-    virtual Scalar maxNorm() const;
+    virtual RealType maxNorm() const;
 
     /** Implementation of pure method of class _Matrix for sparse matrices. */
 
-    virtual Scalar maxDiffNorm( const _Matrix& other ) const;
+    virtual RealType maxDiffNorm( const _Matrix& other ) const;
 
     /**
      * @brief Same as maxDiffNorm but with other as sparse matrix of same value type.

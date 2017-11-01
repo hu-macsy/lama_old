@@ -94,7 +94,7 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.AllMatrixTest" )
 
 BOOST_AUTO_TEST_CASE( factoryTest )
 {
-    Matrices allMatrices;    // is created by factory
+    _Matrices allMatrices;    // is created by factory
     size_t nFormats = static_cast<size_t>( Format::UNDEFINED );
     size_t nTypes   = SCAI_COMMON_COUNT_NARG( SCAI_NUMERIC_TYPES_HOST );
     nFormats--;   // SPARSE_ASSEMBLY_STORAGE not used for a matrix
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( factoryTest )
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for typeName" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( setContextTest )
 
     hmemo::ContextPtr nullContext = hmemo::ContextPtr();   // null context
 
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
 
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for setContext" )
 
@@ -175,12 +175,12 @@ BOOST_AUTO_TEST_CASE( setContextTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( copyTest )
+BOOST_AUTO_TEST_CASE( _copyTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     // For copy we just take one arithmetic type to reduce number of test cases
     common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    Matrices allMatrices( stype, context );    // is created by factory
+    _Matrices allMatrices( stype, context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for copy method" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
@@ -195,9 +195,36 @@ BOOST_AUTO_TEST_CASE( copyTest )
         BOOST_CHECK_EQUAL( matrix.getFormat(), copyMatrix->getFormat() );
         BOOST_CHECK_EQUAL( matrix.getValueType(), copyMatrix->getValueType() );
         BOOST_CHECK_EQUAL( matrix.getContextPtr(), copyMatrix->getContextPtr() );
-        Scalar maxDiff = copyMatrix->maxDiffNorm( matrix );
+        Scalar maxDiff = copyMatrix->_maxDiffNorm( matrix );
         // value should be exactly 0
         BOOST_CHECK_EQUAL( 0, maxDiff.getValue<float>() );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
+{
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices<ValueType> testMatrices( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << testMatrices.size() << "  matrices for copy method" )
+
+    for ( size_t s = 0; s < testMatrices.size(); ++s )
+    {
+        Matrix<ValueType>& matrix = *testMatrices[s];
+        initMatrix( matrix, "BLOCK", "BLOCK" );
+        typename Matrix<ValueType>::Ptr copyMatrix( matrix.copy() );
+        // verify for same matrix
+        BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getRowDistribution() );
+        BOOST_CHECK_EQUAL( matrix.getColDistribution(), copyMatrix->getColDistribution() );
+        BOOST_CHECK_EQUAL( matrix.getFormat(), copyMatrix->getFormat() );
+        BOOST_CHECK_EQUAL( matrix.getValueType(), copyMatrix->getValueType() );
+        BOOST_CHECK_EQUAL( matrix.getContextPtr(), copyMatrix->getContextPtr() );
+        ValueType maxDiff = copyMatrix->maxDiffNorm( matrix );
+        // value should be exactly 0
+        BOOST_CHECK_EQUAL( ValueType( 0 ), maxDiff );
     }
 }
 
@@ -209,7 +236,7 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
     const Scalar scale( 2 );
     const Scalar expectedNorm = scale * Scalar( N );
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for l1Norm" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
@@ -218,30 +245,35 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
-        Scalar l1Norm = matrix.l1Norm();
+        Scalar l1Norm = matrix._l1Norm();
         SCAI_CHECK_CLOSE( expectedNorm, l1Norm, 0.001 );
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( l2NormTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
 {
+    typedef typename Matrix<ValueType>::RealType RealType;
+
     const IndexType N = 8;
-    const Scalar scale( 2 );
-    const Scalar expectedNorm = sqrt( Scalar( N ) * scale * scale );
+    const ValueType scale( 2 );
+    const RealType expectedNorm = common::Math::sqrt( N * scale * scale );
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    Matrices allMatrices( context );    // is created by factory
-    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for l2Norm" )
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    SCAI_LOG_DEBUG( logger, "Test " << allMatrices.size() << "  matrices for l2Norm" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices[s];
+        Matrix<ValueType>& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l2Norm for this matrix: " << matrix )
-        Scalar l2Norm = matrix.l2Norm();
-        SCAI_CHECK_CLOSE( expectedNorm, l2Norm, 0.001 );
+        RealType l2Norm = matrix.l2Norm();
+        BOOST_CHECK_CLOSE( expectedNorm, l2Norm, 0.001 );
     }
 }
 
@@ -253,7 +285,7 @@ BOOST_AUTO_TEST_CASE( maxNormTest )
     const Scalar scale( 2 );
     const Scalar expectedNorm = scale;
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for maxNorm" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
@@ -262,7 +294,7 @@ BOOST_AUTO_TEST_CASE( maxNormTest )
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
-        Scalar maxNorm = matrix.maxNorm();
+        Scalar maxNorm = matrix._maxNorm();
         SCAI_CHECK_CLOSE( expectedNorm, maxNorm, 0.001 );
     }
 }
@@ -272,22 +304,26 @@ BOOST_AUTO_TEST_CASE( maxNormTest )
 BOOST_AUTO_TEST_CASE( transposeTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
     // For transpose we just take one arithmetic type to reduce number of test cases
     // we also take same type
-    common::scalar::ScalarType stype1 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    common::scalar::ScalarType stype2 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    Matrices allMatrices1( stype1, context );    // is created by factory
-    Matrices allMatrices2( stype2, context );    // is created by factory
+
+    typedef SCAI_TEST_TYPE ValueType;
+
+    Matrices<ValueType> allMatrices1( context ); // one instance of each supported matrix of ValueType
+    Matrices<ValueType> allMatrices2( context ); // one instance of each supported matrix of ValueType
+
     SCAI_LOG_INFO( logger, "Test " << allMatrices1.size() << "  matrices for assignTranpose method" )
 
     for ( size_t s = 0; s < allMatrices1.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices1[s];
+        Matrix<ValueType>& matrix = *allMatrices1[s];
+
         initMatrix( matrix, "BLOCK", "CYCLIC" );
 
         for ( size_t ss = 0; ss < allMatrices2.size(); ++ss )
         {
-            _Matrix& matrixT = *allMatrices2[ss];
+            Matrix<ValueType>& matrixT = *allMatrices2[ss];
 
             if ( matrix.getMatrixKind() != matrixT.getMatrixKind() )
             {
@@ -295,26 +331,19 @@ BOOST_AUTO_TEST_CASE( transposeTest )
             }
 
             // transpse the matrix first time
+
             matrixT.assignTranspose( matrix );
             SCAI_LOG_DEBUG( logger, "transposeTest: " << matrixT << " , orig is " << matrix );
             BOOST_CHECK_EQUAL( matrix.getRowDistribution(), matrixT.getColDistribution() );
             BOOST_CHECK_EQUAL( matrix.getColDistribution(), matrixT.getRowDistribution() );
-            MatrixPtr matrixTT( matrix.newMatrix() );
+            Matrix<ValueType>::Ptr matrixTT( matrix.newMatrix() );
             matrixTT->assignTranspose( matrixT );
             // verify for same matrix
             BOOST_CHECK_EQUAL( matrix.getRowDistribution(), matrixTT->getRowDistribution() );
             BOOST_CHECK_EQUAL( matrix.getColDistribution(), matrixTT->getColDistribution() );
-            Scalar maxDiff = matrixTT->maxDiffNorm( matrix );
+            ValueType maxDiff = matrixTT->maxDiffNorm( matrix );
 
-            if ( matrix.getValueType() == matrixT.getValueType() )
-            {
-                BOOST_CHECK_EQUAL( 0, maxDiff.getValue<SCAI_TEST_TYPE>() );
-            }
-            else
-            {
-                // we might have some conversion loss
-                BOOST_CHECK( maxDiff.getValue<float>() < 0.001 );
-            }
+            BOOST_CHECK_EQUAL( 0, maxDiff );
         }
     }
 }
@@ -324,16 +353,19 @@ BOOST_AUTO_TEST_CASE( transposeTest )
 BOOST_AUTO_TEST_CASE( selfTransposeTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    typedef SCAI_TEST_TYPE ValueType;
+
     // For transpose we just take one arithmetic type to reduce number of test cases
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    Matrices allMatrices( stype, context );    // is created by factory
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for assignTranpose method" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices[s];
+        Matrix<ValueType>& matrix = *allMatrices[s];
         initMatrix( matrix, "BLOCK", "CYCLIC" );
-        MatrixPtr copyMatrix( matrix.copy() );
+        Matrix<ValueType>::Ptr copyMatrix( matrix.copy() );
         // transpse the matrix first time
         matrix.assignTranspose( matrix );
         SCAI_LOG_DEBUG( logger, "transposeTest: " << matrix << " , orig is " << *copyMatrix );
@@ -348,29 +380,27 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( assignAddTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assignAddTest, ValueType, scai_numeric_test_types )
 {
     // ToDo: test fails due to alias for ELLStorage;
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    Matrices<ValueType> testMatrices( context );  
 
-    Matrices allMatrices( stype, context );    // is created by factory
+    SCAI_LOG_INFO( logger, "Test " << testMatrices.size() << "  matrices for assign operator tests" )
 
-    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for assign operator tests" )
-
-    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    for ( size_t s = 0; s < testMatrices.size(); ++s )
     {
-        _Matrix& matrix1 = *allMatrices[s];
+        Matrix<ValueType>& matrix1 = *testMatrices[s];
 
         initMatrix( matrix1, "BLOCK", "NO" );
 
-        MatrixPtr matrix2Ptr( matrix1.copy() );
-        MatrixPtr matrix3Ptr( matrix1.newMatrix() );
+        typename Matrix<ValueType>::Ptr matrix2Ptr( matrix1.copy() );
+        typename Matrix<ValueType>::Ptr matrix3Ptr( matrix1.newMatrix() );
 
-        _Matrix& matrix2 = *matrix2Ptr;
-        _Matrix& matrix3 = *matrix3Ptr;
+        Matrix<ValueType>& matrix2 = *matrix2Ptr;
+        Matrix<ValueType>& matrix3 = *matrix3Ptr;
 
         matrix3 = matrix1 + matrix2;
 
@@ -383,7 +413,7 @@ BOOST_AUTO_TEST_CASE( assignAddTest )
         matrix1 += matrix3;
         matrix1 -= 3 * matrix3;
 
-        BOOST_CHECK_EQUAL( Scalar( 0 ), matrix1.maxNorm() );
+        BOOST_CHECK_EQUAL( ValueType( 0 ), matrix1.maxNorm() );
 
         matrix1 = matrix2;
 
@@ -399,7 +429,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
 
     common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
-    Matrices allMatrices( stype, context );    // is created by factory
+    _Matrices allMatrices( stype, context );    // is created by factory
 
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for assign operator tests" )
 
@@ -440,7 +470,7 @@ BOOST_AUTO_TEST_CASE( checkSymmetryTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
 
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
 
@@ -465,7 +495,7 @@ BOOST_AUTO_TEST_CASE( setDiagonalPropertyTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
 
     TestDistributions testDistributions( n1 * n2 );
     DistributionPtr repDist( new NoDistribution( n1 * n2 ) );
@@ -519,7 +549,7 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    Matrices allMatrices( context );    // is created by factory
+    _Matrices allMatrices( context );    // is created by factory
 
     TestDistributions testDistributions( n1 * n2 );
 
@@ -612,7 +642,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
         {
             DistributionPtr colDist = colDistributions[j];
 
-            Matrices allMatrices( context );    // is created by factory
+            _Matrices allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
@@ -638,7 +668,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix._maxNorm() < Scalar( 0.001 ) );
             }
         }
     }
@@ -675,7 +705,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
             {
                 DistributionPtr colDist = colDistributions[j];
 
-                Matrices allMatrices( context );    // is created by factory
+                _Matrices allMatrices( context );    // is created by factory
 
                 for ( size_t s = 0; s < allMatrices.size(); ++s )
                 {
@@ -738,7 +768,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
         {
             DistributionPtr colDist = colDistributions[j];
 
-            Matrices allMatrices( context );    // is created by factory
+            _Matrices allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
@@ -767,7 +797,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix._maxNorm() < Scalar( 0.001 ) );
             }
         }
     }
@@ -796,7 +826,7 @@ BOOST_AUTO_TEST_CASE( getTest )
         {
             DistributionPtr colDist = colDistributions[cd];
 
-            Matrices allMatrices( context );    // is created by factory
+            _Matrices allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
@@ -806,7 +836,7 @@ BOOST_AUTO_TEST_CASE( getTest )
 
                 matrix.redistribute( rowDist, colDist );
 
-                SCAI_LOG_DEBUG( logger, "getTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
+                SCAI_LOG_DEBUG( logger, "getTest for this matrix: " << matrix << ", max = " << matrix._maxNorm() )
 
                 // get each element and subract it
 
@@ -850,7 +880,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
         {
             DistributionPtr colDist = colDistributions[cd];
 
-            Matrices allMatrices( context );    // is created by factory
+            _Matrices allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
@@ -870,7 +900,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                 matrix.redistribute( rowDist, colDist );
 
-                SCAI_LOG_DEBUG( logger, "getSetTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
+                SCAI_LOG_DEBUG( logger, "getSetTest for this matrix: " << matrix << ", max = " << matrix._maxNorm() )
 
                 // get each element and subract it
 
@@ -889,7 +919,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix._maxNorm() < Scalar( 0.001 ) );
             }
         }
     }
@@ -930,7 +960,7 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
 
         // now we have local CSR data to set
 
-        Matrices allMatrices( context );    // is created by factory
+        _Matrices allMatrices( context );    // is created by factory
 
         for ( size_t k = 0; k < allMatrices.size(); ++k )
         {
@@ -979,7 +1009,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
 
         // now we have local DIA data to set
 
-        Matrices allMatrices( context );    // is created by factory
+        _Matrices allMatrices( context );    // is created by factory
 
         for ( size_t k = 0; k < allMatrices.size(); ++k )
         {
@@ -1033,7 +1063,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
                 continue;
             }
 
-            Matrices allMatrices( context );    // is created by factory
+            _Matrices allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
@@ -1055,7 +1085,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
                 matrix -= *matrix1;   // sub works local as same distribution
 
-                BOOST_CHECK( matrix.maxNorm() < 0.001 );
+                BOOST_CHECK( matrix._maxNorm() < 0.001 );
             }
         }
     }
@@ -1089,7 +1119,7 @@ BOOST_AUTO_TEST_CASE( hcatTest )
     {
         DistributionPtr dist = distributions[d1];
 
-        Matrices allMatrices( context );    // is created by factory
+        _Matrices allMatrices( context );    // is created by factory
 
         for ( size_t s = 0; s < allMatrices.size(); ++s )
         {
@@ -1111,7 +1141,7 @@ BOOST_AUTO_TEST_CASE( hcatTest )
 
             csr2.redistribute( matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
 
-            BOOST_CHECK( matrix.maxDiffNorm( csr2 ) < 0.001 );
+            BOOST_CHECK( matrix._maxDiffNorm( csr2 ) < 0.001 );
         }
     }
 }

@@ -2051,44 +2051,46 @@ void SparseMatrix<ValueType>::matrixTimesScalar( const _Matrix& other, Scalar al
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::l1Norm() const
+typename Matrix<ValueType>::RealType SparseMatrix<ValueType>::l1Norm() const
 {
     SCAI_REGION( "Mat.Sp.l1Norm" )
-    ValueType myValue = mLocalData->l1Norm();
-    myValue += mHaloData->l1Norm();
+    typedef typename Matrix<ValueType>::RealType RealType;
+    RealType myValue = mLocalData->l1Norm();
+    myValue += static_cast<RealType>( mHaloData->l1Norm() );
     const Communicator& comm = getRowDistribution().getCommunicator();
-    ValueType allValue = comm.sum( myValue );
+    RealType allValue = comm.sum( myValue );
     SCAI_LOG_INFO( logger, "l1 norm: local value = " << myValue << ", value = " << allValue )
-    return Scalar( allValue );
+    return allValue;
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::l2Norm() const
+typename Matrix<ValueType>::RealType SparseMatrix<ValueType>::l2Norm() const
 {
     SCAI_REGION( "Mat.Sp.l2Norm" )
-    ValueType tmp = mLocalData->l2Norm();
-    ValueType myValue = tmp * tmp;
+    typedef typename Matrix<ValueType>::RealType RealType;
+    RealType tmp = mLocalData->l2Norm();
+    RealType myValue = tmp * tmp;
     tmp = mHaloData->l2Norm();
     myValue += tmp * tmp;
     const Communicator& comm = getRowDistribution().getCommunicator();
-    ValueType allValue = comm.sum( myValue );
+    RealType allValue = comm.sum( myValue );
     // allValue = ::sqrt( allValue );
     allValue = common::Math::sqrt( allValue );
     SCAI_LOG_INFO( logger, "max norm: local value = " << myValue << ", global value = " << allValue )
-    return Scalar( allValue );
+    return allValue;
 }
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::maxNorm() const
+typename Matrix<ValueType>::RealType SparseMatrix<ValueType>::maxNorm() const
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename Matrix<ValueType>::RealType RealType;
 
     SCAI_REGION( "Mat.Sp.maxNorm" )
 
-    AbsType myMax = mLocalData->maxNorm();
-    AbsType myMaxHalo = mHaloData->maxNorm();
+    RealType myMax = mLocalData->maxNorm();
+    RealType myMaxHalo = mHaloData->maxNorm();
 
     if ( myMaxHalo > myMax )
     {
@@ -2097,17 +2099,17 @@ Scalar SparseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    AbsType allMax = comm.max( myMax );
+    RealType allMax = comm.max( myMax );
 
     SCAI_LOG_INFO( logger, "max norm: local max = " << myMax << ", global max = " << allMax )
 
-    return Scalar( allMax );
+    return allMax;
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+typename Matrix<ValueType>::RealType SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 {
     // Implementation works only for same row distribution, replicated col distribution
     // and the same type
@@ -2118,12 +2120,12 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
-        return Scalar( maxDiffNormImpl( *typedOther ) );
+        return maxDiffNormImpl( *typedOther );
     }
     else if ( !getColDistribution().isReplicated() )
     {
         // take default implementation of base class
-        return _Matrix::maxDiffNorm( other );
+        return maxDiffNorm( other );
     }
     else
     {
@@ -2132,7 +2134,7 @@ Scalar SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
         SparseMatrix<ValueType> typedOther( tmpPtr );
         typedOther.assign( other );
         typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );
-        return Scalar( maxDiffNormImpl( typedOther ) );
+        return maxDiffNormImpl( typedOther );
     }
 }
 

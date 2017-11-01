@@ -48,6 +48,16 @@ namespace lama
 {
 
 /* ------------------------------------------------------------------------- */
+/*    static methods                                                         */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Matrix<ValueType>* Matrix<ValueType>::getMatrix( Format format )
+{
+    return reinterpret_cast<Matrix<ValueType>*>( _Matrix::getMatrix( format, TypeTraits<ValueType>::stype ) );
+}
+
+/* ------------------------------------------------------------------------- */
 /*    Constructors / Destructor                                              */
 /* ------------------------------------------------------------------------- */
 
@@ -397,6 +407,36 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 
         comm.sumArray( localResult );
     }
+}
+
+/* ========================================================================= */
+
+template<typename ValueType>
+Scalar Matrix<ValueType>::_l1Norm() const
+{
+    return Scalar( l1Norm() );
+}
+
+template<typename ValueType>
+Scalar Matrix<ValueType>::_l2Norm() const
+{
+    return Scalar( l2Norm() );
+}
+
+template<typename ValueType>
+Scalar Matrix<ValueType>::_maxNorm() const
+{
+    return Scalar( maxNorm() );
+}
+
+template<typename ValueType>
+typename Matrix<ValueType>::RealType Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+{
+    // Base class provides implementation, just extract the right result
+
+    typedef typename Matrix<ValueType>::RealType RealType;
+    Scalar diff = _Matrix::_maxDiffNorm( other );
+    return diff.getValue<RealType>();
 }
 
 /* ========================================================================= */

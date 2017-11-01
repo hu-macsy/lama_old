@@ -53,7 +53,38 @@ class COMMON_DLL_IMPORTEXPORT Matrix:
 
 public:
 
+    /** Definiton of corresponding shared pointer type for this class 
+     *
+     *  \code
+     *      Matrix<ValueType>::Ptr x( Matrix<ValueType>::getMatrix( Format::CSR ) );
+     *      std::shared_ptr<Matrix<ValueType> > x( Matrix<ValueType>::getMatrix( Format::CSR ) );
+     *  \endcode
+     *
+     *  Be careful: the getMatrix returns a new object that must be deleted.
+     */
+    typedef common::shared_ptr<Matrix<ValueType> > Ptr;
+
+    /** Define the corresponding RealType that is return type for norm computations. */
+
+    typedef typename common::TypeTraits<ValueType>::AbsType RealType;
+
+    /** Create a new matrix of a certain format but with same value type */
+
+    static Matrix<ValueType>* getMatrix( const Format format );
+
     virtual ~Matrix();
+
+    /** Overwrite _Matrix::newMatrix to get the covariant return type */
+
+    virtual Matrix<ValueType>* newMatrix( void ) const = 0;
+
+    /** Overwrite _Matrix::copy to get the covariant return type */
+
+    virtual Matrix<ValueType>* copy( void ) const = 0;
+
+    // Important: pass assign operator so it can also be used here
+
+    using _Matrix::operator=;
 
     /** 
      *  Implementation of pure method of _Matrix::getValueType 
@@ -109,6 +140,18 @@ public:
                     const IndexType colIndex,
                     const common::binary::BinaryOp op );
 
+    /**
+     * @brief Returns the L1 norm of this matrix.
+     *
+     * @return the L1 norm of this as real value 
+     *
+     * l1Norm computes the sum of the absolute values of all entries
+     */
+    virtual RealType l1Norm( void ) const = 0;
+    virtual RealType l2Norm( void ) const = 0;
+    virtual RealType maxNorm( void ) const = 0;
+    virtual RealType maxDiffNorm( const _Matrix& other ) const = 0;
+
 protected:
 
     Matrix();
@@ -163,6 +206,12 @@ protected:
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const;
+
+    // Implementations of pure _Matrix methods to guarantee upward compatibilty
+
+    Scalar _l1Norm()  const;
+    Scalar _l2Norm()  const;
+    Scalar _maxNorm() const;
 };
 
 } /* end namespace lama */

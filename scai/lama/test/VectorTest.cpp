@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( WriteTest )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
     dmemo::DistributionPtr dist1( new dmemo::BlockDistribution( n + 1, comm ) );
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetGetTest, ValueType, scai_array_test_types )
 
     const IndexType n = 13;
 
-    TypedTestVectors<ValueType> vectors;
+    TestVectors<ValueType> vectors;
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
@@ -184,56 +184,56 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetGetTest, ValueType, scai_array_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( InvertTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
+
+    typedef typename Vector<ValueType>::RealType RealType;   
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        Vector<ValueType>& v = *vectors[i];
 
-        if ( ! common::isNumeric( v->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
+        v.allocate( dist );
 
-        v->allocate( dist );
+        v = 4;
 
-        *v = 4;
+        v.invert();
 
-        v->invert();
+        ValueType s = v[n / 2 ];
 
-        Scalar s = ( *v )( n / 2 );
+        // s should be 0.25, but might not be exact
 
-        // s should be 2, but might not be exact
+        RealType diff = s - 0.25;
+        RealType eps  = 0.00001;
 
-        BOOST_CHECK( ( s - Scalar( 0.25 ) ) < 0.00001 );
+        BOOST_CHECK( diff < eps );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( ConjTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        VectorPtr v = vectors[i];
+        Vector<ValueType>& v = *vectors[i];
 
-        if ( ! common::isComplex( v->getValueType() ) )
+        if ( ! common::isComplex( v.getValueType() ) )
         {
             continue;   // test only useful for complex numbers
         }
@@ -242,20 +242,21 @@ BOOST_AUTO_TEST_CASE( ConjTest )
 
         float fillRate = 0.1f;
 
-        v->setSparseRandom( dist, 0, fillRate, 1 );
+        v.setSparseRandom( dist, 0, fillRate, 1 );
         
-        VectorPtr v1( v->copy() );
+        typename Vector<ValueType>::Ptr v1Ptr( v.copy() );
+        Vector<ValueType>& v1 = *v1Ptr;
 
-        v->conj();
+        v.conj();
 
-        *v *= *v1;  // ( a + b i ) ( a - b i )
+        v *= v1;  // ( a + b i ) ( a - b i )
         
-        Scalar s1 = v->_sum();
-        Scalar s2 = v1->_dotProduct( *v1 );
+        ValueType s1 = v.sum();
+        ValueType s2 = v1.dotProduct( v1 );
 
         SCAI_LOG_DEBUG( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
 
-        BOOST_CHECK( abs( s1 - s2 ) < Scalar( 0.0001 ) );
+        BOOST_CHECK( common::Math::abs( s1 - s2 ) < 0.0001 );
     }
 }
 
@@ -267,7 +268,7 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
@@ -306,31 +307,29 @@ BOOST_AUTO_TEST_CASE( ExpLogTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( SinCosTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _Vector& v1 = *vectors[i];
-
-        if ( ! common::isNumeric( v1.getValueType() ) )
-        {
-            continue;   // this test would fail for IndexType
-        }
+        Vector<ValueType>& v1 = *vectors[i];
 
         float fillRate = 0.1f;
 
         v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
-        VectorPtr v2Ptr( v1.copy() );
-        _Vector& v2 = *v2Ptr;
+        typename Vector<ValueType>::Ptr v2Ptr( v1.copy() );
+
+        typedef typename Vector<ValueType>::RealType RealType;
+
+        Vector<ValueType>& v2 = *v2Ptr;
 
         // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
 
@@ -342,60 +341,63 @@ BOOST_AUTO_TEST_CASE( SinCosTest )
         v1 *= v1;
         v2 *= v2;
         v1 += v2;
-        v1 -= Scalar( 1 );
+        v1 -= ValueType( 1 );
 
-        Scalar diff = v1._maxNorm();
+        RealType diff = v1.maxNorm();
+        RealType eps  = 0.00001;
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( PowTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    TestVectors vectors;
+    TestVectors<ValueType> vectors;
+
+    typedef typename Vector<ValueType>::RealType RealType;
 
     dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _Vector& v1 = *vectors[i];
-
-        if ( ! common::isNumeric( v1.getValueType() ) )
-        {
-            continue;   // this test would fail for IndexType
-        }
+        Vector<ValueType>& v1 = *vectors[i];
 
         float fillRate = 0.1f;
 
-        v1.setSparseRandom( vectorDist, 0, fillRate, 2 );
+        ValueType zero = 0;
+
+        IndexType bound = 2;
+
+        v1.setSparseRandom( vectorDist, zero, fillRate, bound );
 
         v1 += 2.0;   // range 2 .. 4
 
-        VectorPtr v2Ptr( v1.copy() );
-        _Vector& v2 = *v2Ptr;
+        common::shared_ptr<Vector<ValueType> > v2Ptr( v1.copy() );
+        Vector<ValueType>& v2 = *v2Ptr;
 
         v1.powExp( 2 );   // v[i] = v[i] ** 2.0
         v1.powExp( 0.5 ); 
 
         v1 -= v2;
 
-        Scalar diff = v1._maxNorm();
+        RealType diff = v1.maxNorm();
+        RealType eps  = 0.0001;
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
  
-        Scalar e( common::Math::exp( 0.0 ) );
+        ValueType e( common::Math::exp( 0.0 ) );
 
         v1.powBase( e );  // v1[i] = 2 ** v1
         v2.exp();
         v1 -= v2;
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
     }
 }
 
@@ -405,7 +407,7 @@ BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
@@ -452,7 +454,7 @@ BOOST_AUTO_TEST_CASE( assign_MV_Test )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
@@ -518,7 +520,7 @@ BOOST_AUTO_TEST_CASE( assign_VM_Test )
 {
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
@@ -613,8 +615,8 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
     // we want to compare all combination of sparse/dense vectors
 
-    TestVectors vectors1;
-    TestVectors vectors2;
+    _TestVectors vectors1;
+    _TestVectors vectors2;
 
     dmemo::TestDistributions dists( n );
 
@@ -682,7 +684,7 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 
     const IndexType n = 13;
 
-    TestVectors vectors;
+    _TestVectors vectors;
 
     dmemo::TestDistributions dists( n );
 
@@ -753,8 +755,8 @@ BOOST_AUTO_TEST_CASE( allTest )
 
     // we want to compare all combination of sparse/dense vectors
 
-    TestVectors vectors1;
-    TestVectors vectors2;
+    _TestVectors vectors1;
+    _TestVectors vectors2;
 
     for ( size_t i = 0; i < vectors1.size(); ++i )
     {

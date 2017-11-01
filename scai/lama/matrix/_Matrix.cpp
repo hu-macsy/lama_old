@@ -978,7 +978,7 @@ void _Matrix::hcat( const _Matrix& m1, const _Matrix& m2 )
 
 /* ---------------------------------------------------------------------------------*/
 
-Scalar _Matrix::maxDiffNorm( const _Matrix& other ) const
+Scalar _Matrix::_maxDiffNorm( const _Matrix& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();

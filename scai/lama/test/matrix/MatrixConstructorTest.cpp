@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convertConstructorTest, MatrixType, MatrixTypes )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        Matrices testMatrices( ctx );
+        _Matrices testMatrices( ctx );
 
         for ( size_t k = 0; k < testMatrices.size(); ++k )
         {

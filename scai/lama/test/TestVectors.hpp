@@ -48,12 +48,12 @@ namespace lama
 /** Class for a list of vectors, one for each supported
  *  vector storage format and each supported arithmetic type.
  *
- *  Note: Currently only DENSE vectors are supported, but SPARSE might be
- *        supported in future releases.
- *
+ *  Supported vector formats and types might depend on the current version
+ *  of LAMA and of its configuration. Therefore vectors a generated via 
+ *  the vector factory.
  */
 
-class TestVectors : public std::vector<scai::lama::VectorPtr>
+class _TestVectors : public std::vector<scai::lama::VectorPtr>
 {
 
 public:
@@ -64,7 +64,7 @@ public:
      *  @param[in] ctx optional argument for the context where operations on vector should be executed
      */
 
-    TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
         std::vector<VectorCreateKeyType> values;  //  all create values
@@ -84,9 +84,11 @@ public:
     }
 };
 
-
+/** 
+ *  Class for a list of vectors with a given type.
+ */
 template<typename ValueType>
-class TypedTestVectors : public std::vector<typename scai::lama::Vector<ValueType>::Ptr>
+class TestVectors : public std::vector<typename scai::lama::Vector<ValueType>::Ptr>
 {
 
 public:
@@ -97,7 +99,7 @@ public:
      *  @param[in] ctx optional argument for the context where operations on vector should be executed
      */
     
-    TypedTestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    TestVectors( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {   
         using namespace scai::lama;
 

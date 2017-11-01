@@ -266,15 +266,15 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Scalar l1Norm() const
+    virtual Scalar _l1Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Scalar l2Norm() const
+    virtual Scalar _l2Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Scalar maxNorm() const
+    virtual Scalar _maxNorm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

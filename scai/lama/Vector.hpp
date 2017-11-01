@@ -66,6 +66,8 @@ public:
      */
     typedef common::shared_ptr<Vector<ValueType> > Ptr;
 
+    /** Define the corresponding RealType that is return type for norm computations. */
+
     typedef typename common::TypeTraits<ValueType>::AbsType RealType;
 
     /** Create a new vector of a certain kind but with same value type */
@@ -75,6 +77,14 @@ public:
     /** Desctructor. */
 
     virtual ~Vector();
+
+    /** Overwrite _Vector::newVector to get the covariant return type */
+
+    virtual Vector<ValueType>* newVector( void ) const = 0;
+
+    /** Overwrite _Vector::copy to get the covariant return type */
+
+    virtual Vector<ValueType>* copy( void ) const = 0;
 
     /** Implementation of _Vector::getValueType */
 

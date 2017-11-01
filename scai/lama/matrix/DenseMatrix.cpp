@@ -2147,15 +2147,15 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::maxNorm() const
+typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::maxNorm() const
 {
-    typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
+    typedef typename Matrix<ValueType>::RealType RealType;
 
-    AbsType myMaxDiff = 0;
+    RealType myMaxDiff = 0;
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        AbsType maxDiff = mData[i]->maxNorm();
+        RealType maxDiff = mData[i]->maxNorm();
 
         if ( maxDiff > myMaxDiff )
         {
@@ -2165,30 +2165,33 @@ Scalar DenseMatrix<ValueType>::maxNorm() const
 
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    return Scalar( comm.max( myMaxDiff ) );
+    return comm.max( myMaxDiff );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::l1Norm() const
+typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
-    ValueType mySum = static_cast<ValueType>( 0.0 );
+
+    typedef typename Matrix<ValueType>::RealType RealType;
+
+    RealType mySum = 0;
     IndexType n = mData.size();
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        mySum += mData[i]->l1Norm();
+        mySum += static_cast<RealType>( mData[i]->l1Norm() );
     }
 
-    return Scalar( comm.sum( mySum ) );
+    return comm.sum( mySum );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::l2Norm() const
+typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType mySum = static_cast<ValueType>( 0.0 );
@@ -2201,13 +2204,13 @@ Scalar DenseMatrix<ValueType>::l2Norm() const
         mySum += tmp * tmp;
     }
 
-    return Scalar( common::Math::sqrt( comm.sum( mySum ) ) );
+    return common::Math::sqrt( comm.sum( mySum ) );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 {
     if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {
@@ -2221,13 +2224,13 @@ Scalar DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
     {
         const DenseMatrix<ValueType>* typedOther = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
-        return Scalar( maxDiffNormImpl( *typedOther ) );
+        return maxDiffNormImpl( *typedOther );
     }
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
         DenseMatrix<ValueType> typedOther( other, getRowDistributionPtr(), getColDistributionPtr() );
-        return Scalar( maxDiffNormImpl( typedOther ) );
+        return maxDiffNormImpl( typedOther );
     }
 }
 

@@ -95,7 +95,7 @@ Scalar maxNorm( const _Vector& vector )
 
 Scalar maxNorm( const _Matrix& matrix )
 {
-    return matrix.maxNorm();
+    return matrix._maxNorm();
 }
 
 } /* end namespace lama */

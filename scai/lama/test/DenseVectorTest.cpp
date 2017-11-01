@@ -549,7 +549,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            _Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
@@ -635,7 +635,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            _Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {

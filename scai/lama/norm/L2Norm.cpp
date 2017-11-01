@@ -94,7 +94,7 @@ Scalar l2Norm( const _Vector& vector )
 
 Scalar l2Norm( const _Matrix& matrix )
 {
-    return matrix.l2Norm();
+    return matrix._l2Norm();
 }
 
 } /* end namespace lama */
