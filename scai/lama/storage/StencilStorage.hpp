@@ -208,14 +208,14 @@ public:
 
     /** _MatrixStorage */
 
-    virtual void setRow(const scai::hmemo::_HArray&, IndexType, scai::common::binary::BinaryOp)
+    virtual void setRow(const scai::hmemo::_HArray&, IndexType, scai::common::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "setRow unsuported" )
     }
 
     /** _MatrixStorage */
 
- 	virtual void setColumn(const scai::hmemo::_HArray&, IndexType, scai::common::binary::BinaryOp)
+ 	virtual void setColumn(const scai::hmemo::_HArray&, IndexType, scai::common::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "setColumn unsuported" )
     }
@@ -320,7 +320,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for Stencil storage */
 
     void setValue( const IndexType, const IndexType, const ValueType,
-                   const common::binary::BinaryOp = common::binary::COPY )
+                   const common::BinaryOp = common::BinaryOp::COPY )
     {
         COMMON_THROWEXCEPTION( "setValue cannot be applied for stencil storage" )
     }

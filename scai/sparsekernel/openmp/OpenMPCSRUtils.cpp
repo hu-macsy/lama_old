@@ -654,7 +654,7 @@ static void sumColumns(
     const IndexType csrJA[],
     const ValueType csrValues[],
     const IndexType numRows,
-    const common::unary::UnaryOp elemOp )
+    const common::UnaryOp elemOp )
 {
     #pragma omp parallel for
     for ( IndexType i = 0; i < numRows; ++i )
@@ -676,8 +676,8 @@ static void reduceColumns(
     const IndexType csrJA[],
     const ValueType csrValues[],
     const IndexType numRows,
-    const common::binary::BinaryOp reduceOp,
-    const common::unary::UnaryOp elemOp )
+    const common::BinaryOp reduceOp,
+    const common::UnaryOp elemOp )
 {
     // no parallel execution possible due to output dependencies on result
 
@@ -701,8 +701,8 @@ void OpenMPCSRUtils::reduce(
     const ValueType csrValues[],
     const IndexType numRows,
     const IndexType dim,
-    const common::binary::BinaryOp reduceOp,
-    const common::unary::UnaryOp elemOp )
+    const common::BinaryOp reduceOp,
+    const common::UnaryOp elemOp )
 {
     SCAI_REGION( "OpenMP.CSRUtils.reduce" )
 
@@ -728,7 +728,7 @@ void OpenMPCSRUtils::reduce(
 
         switch ( reduceOp )
         {
-            case common::binary::ADD :
+            case common::BinaryOp::ADD :
 
                 sumColumns( result, csrIA, csrJA, csrValues, numRows, elemOp );
                 break;
@@ -886,7 +886,7 @@ void OpenMPCSRUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
     #pragma omp parallel
     {
@@ -1448,7 +1448,7 @@ void OpenMPCSRUtils::matrixAdd(
 
     #pragma omp parallel
     {
-        BuildSparseVector<ValueType> sparseRow( numColumns, common::binary::ADD );
+        BuildSparseVector<ValueType> sparseRow( numColumns, common::BinaryOp::ADD );
 
         #pragma omp for
 
@@ -1540,7 +1540,7 @@ void OpenMPCSRUtils::binaryOp(
     const IndexType bIA[],
     const IndexType bJA[],
     const ValueType bValues[],
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.CSR.binaryOp" )
 
@@ -1637,7 +1637,7 @@ void OpenMPCSRUtils::matrixMultiply(
     {
         SCAI_REGION( "OpenMP.CSR.matrixMultiply" )
 
-        BuildSparseVector<ValueType> sparseRow( n, common::binary::ADD ); // one for each thread
+        BuildSparseVector<ValueType> sparseRow( n, common::BinaryOp::ADD ); // one for each thread
 
         #pragma omp for
 

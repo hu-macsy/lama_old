@@ -257,8 +257,8 @@ void buildComplex( HArray<ValueType>& array, HArray<ValueType>& imagValues )
     ValueType i = -1;    // Note: will never be called here
 #endif
 
-    utilskernel::HArrayUtils::compute( imagValues, imagValues, common::binary::MULT, i );
-    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::binary::ADD );
+    utilskernel::HArrayUtils::compute( imagValues, imagValues, common::BinaryOp::MULT, i );
+    utilskernel::HArrayUtils::binaryOp( array, array, imagValues, common::BinaryOp::ADD );
 
 }
 
@@ -301,7 +301,7 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 
         utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), colMajorDist, 
                                             rIn.get(), rowMajorDist, 
-                                            common::binary::COPY, false );
+                                            common::BinaryOp::COPY, false );
     }
     else
     {
@@ -309,7 +309,7 @@ static void changeMajor( hmemo::HArray<ValueType>& out, const hmemo::HArray<Valu
 
         utilskernel::OpenMPSection::assign( wOut.get(), nDims, grid.sizes(), rowMajorDist, 
                                             rIn.get(), colMajorDist, 
-                                            common::binary::COPY, false );
+                                            common::BinaryOp::COPY, false );
     }
 }
 
@@ -405,7 +405,7 @@ uint32_t MatlabIO::writeArrayData( MATIOStream& outFile, const HArray<ValueType>
 #else
         ValueType minusi = -1;  // unreachable code at all here
 #endif
-        utilskernel::HArrayUtils::compute( tmp, array, common::binary::MULT, minusi );
+        utilskernel::HArrayUtils::compute( tmp, array, common::BinaryOp::MULT, minusi );
         utilskernel::HArrayUtils::setArray( real, tmp );
 
         wBytes += writeArrayData( outFile, real, dryRun );

@@ -63,8 +63,8 @@ int main( int, char** )
     setVal.getSupportedContext( loc );
     hmemo::WriteOnlyAccess<double> writeB( b, loc, size );
     hmemo::WriteOnlyAccess<double> writeC( c, loc, size );
-    setVal[loc]( writeB.get(), size, double( 2 ), common::binary::COPY );
-    setVal[loc]( writeC.get(), size, double( 3 ), common::binary::COPY );
+    setVal[loc]( writeB.get(), size, double( 2 ), common::BinaryOp::COPY );
+    setVal[loc]( writeC.get(), size, double( 3 ), common::BinaryOp::COPY );
     writeB.release();
     writeC.release();
     add ( a, b, c );

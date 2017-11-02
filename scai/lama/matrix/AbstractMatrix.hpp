@@ -155,11 +155,11 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setRow( const _Vector&, IndexType, common::binary::BinaryOp )
+    virtual void setRow( const _Vector&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setColumn( const _Vector&, IndexType, common::binary::BinaryOp )
+    virtual void setColumn( const _Vector&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -178,8 +178,8 @@ public:
 
     virtual void reduce( _Vector&, 
                          const IndexType,
-                         const common::binary::BinaryOp,
-                         const common::unary::UnaryOp ) const
+                         const common::BinaryOp,
+                         const common::UnaryOp ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -200,7 +200,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setValue(IndexType, IndexType, Scalar, common::binary::BinaryOp)
+    virtual void setValue(IndexType, IndexType, Scalar, common::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

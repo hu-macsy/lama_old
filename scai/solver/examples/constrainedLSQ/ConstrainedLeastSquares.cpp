@@ -61,7 +61,7 @@ bool isInterior( const Vector& x,
                  const Vector& lb,
                  const Vector& ub )
 {
-    return x.all( common::binary::LT, ub ) && x.all( common::binary::GT, lb );
+    return x.all( common::CompareOp::LT, ub ) && x.all( common::CompareOp::GT, lb );
 }
 
 void ConstrainedLeastSquares::dualityGap( 
@@ -97,7 +97,7 @@ void ConstrainedLeastSquares::dualityGap(
     Vector& m = *mPtr;
     m = ( -1 ) * kappa * mA;
 
-    m.setScalar( Scalar( 0 ), common::binary::MAX );
+    m.setScalar( Scalar( 0 ), common::BinaryOp::MAX );
 
     dualObj = - kappa.dotProduct( kappa ) * 0.25  - kappa.dotProduct( b_s ) - m.dotProduct( d2 );
     gap     = res.dotProduct( res ) - dualObj;
@@ -407,7 +407,7 @@ void ConstrainedLeastSquares::solve(
 
     // diagATA = sum(A .* A)';
 
-    mA.reduce( mDiagATA, 1, common::binary::ADD, common::unary::SQR );
+    mA.reduce( mDiagATA, 1, common::BinaryOp::ADD, common::unary::SQR );
 
     SCAI_ASSERT_EQ_ERROR( mDiagATA.size(), n, "serious mismatch" )
 

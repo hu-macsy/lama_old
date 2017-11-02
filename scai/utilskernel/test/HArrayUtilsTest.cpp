@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             {
                 BOOST_CHECK_THROW(
                 {
-                    HArrayUtils::gather( array2, array1, perm, binary::COPY, ctx );
+                    HArrayUtils::gather( array2, array1, perm, BinaryOp::COPY, ctx );
                 }, common::Exception );
 
                 continue;
@@ -134,11 +134,11 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             // create array with same type, context
             std::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
-            HArrayUtils::gather( array2, array1, perm, binary::COPY, ctx );
+            HArrayUtils::gather( array2, array1, perm, BinaryOp::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
             tmp->resize( n ); // no init required as all values are set
             bool unique = true;  // perm has unique indexes
-            HArrayUtils::scatter( *tmp, perm, unique, array1, binary::COPY, ctx );
+            HArrayUtils::scatter( *tmp, perm, unique, array1, BinaryOp::COPY, ctx );
 
             // as perm is its inverse, tmp and array2 should be the same
 
@@ -163,9 +163,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setScalarTest, ValueType, scai_numeric_test_types
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
     HArray<ValueType> array( N );
-    HArrayUtils::setScalar( array, a, binary::COPY, ctx );  // array = a
-    HArrayUtils::setScalar( array, b, binary::ADD, ctx  );  // array += b
-    HArrayUtils::setScalar( array, c, binary::MULT, ctx  ); // array *= c
+    HArrayUtils::setScalar( array, a, BinaryOp::COPY, ctx );  // array = a
+    HArrayUtils::setScalar( array, b, BinaryOp::ADD, ctx  );  // array += b
+    HArrayUtils::setScalar( array, c, BinaryOp::MULT, ctx  ); // array *= c
     ValueType expectedValue = ( a + b ) * c;
     {
         ReadAccess<ValueType> read( array, host );
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
     HArray<ValueType> array( N );
-    HArrayUtils::setScalar( array, a, binary::COPY, ctx );  // array = a
+    HArrayUtils::setScalar( array, a, BinaryOp::COPY, ctx );  // array = a
     HArrayUtils::setVal( array, k, b );  // array[k] = b
     {
         ReadAccess<ValueType> read( array, host );
@@ -209,9 +209,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOpTest, ValueType, scai_array_test_types )
 {
-    // check of all unary array operations
+    // check of all UnaryOp array operations
 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -219,27 +219,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
     const ValueType values[] = { 1, 2, 3, 4  };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < unary::MAX_UNARY_OP; ++i )
+    for ( IndexType i = 0; i < UnaryOp::MAX_UNARY_OP; ++i )
     {
-        unary::UnaryOp op = unary::UnaryOp( i );
+        UnaryOp op = UnaryOp( i );
 
         HArray<ValueType> array( ctx );
 
         array.setRawData( n, values );
 
-        SCAI_LOG_DEBUG( logger, "test unary op " << op << " for " << array )
+        SCAI_LOG_DEBUG( logger, "test UnaryOp op " << op << " for " << array )
 
         if ( ! isUnarySupported<ValueType>( op ) )
         {
             BOOST_CHECK_THROW(
             {
-                HArrayUtils::unaryOp( array, array, op, ctx );
+                HArrayUtils::UnaryOpOp( array, array, op, ctx );
             }, Exception );
 
             continue;  // not all operations are supported for IndexType
         }
 
-        HArrayUtils::unaryOp( array, array, op, ctx );
+        HArrayUtils::UnaryOpOp( array, array, op, ctx );
 
         ReadAccess<ValueType> read( array, host );
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOpTest, ValueType, scai_array_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types )
 {
-    // check of all unary array operations
+    // check of all UnaryOp array operations
 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -289,11 +289,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
     const IndexType n = sizeof( values1 ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
-        if ( op == binary::COPY )
+        if ( op == BinaryOp::COPY )
         {
             continue;    // not implemented
         }
@@ -305,11 +305,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
         array1.setRawData( n, values1 );
         array2.setRawData( n, values2 );
 
-        if ( op == binary::POW )
+        if ( op == BinaryOp::POW )
         {
             // first argument must not be negative, build ABS
 
-            HArrayUtils::unaryOp( array1, array1, unary::ABS, ctx );
+            HArrayUtils::UnaryOpOp( array1, array1, UnaryOp::ABS, ctx );
         }
 
         HArrayUtils::binaryOp( array3, array1, array2, op, ctx );
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
         {
             ValueType x1  = values1[i];
 
-            if ( op == binary::POW )
+            if ( op == BinaryOp::POW )
             {
                 x1 = common::Math::abs( x1 );
             }
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
 BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
 {
-    // check of all unary array operations
+    // check of all UnaryOp array operations
 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -364,9 +364,9 @@ BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
 
     const IndexType n = sizeof( values1 ) / sizeof( IndexType );
 
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
         HArray<IndexType> array1( ctx );
         HArray<IndexType> array2( ctx );
@@ -416,9 +416,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
         HArray<ValueType> array1( ctx );
         HArray<ValueType> array2( ctx );
@@ -462,9 +462,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
         HArray<ValueType> array1( ctx );
         HArray<ValueType> array2( ctx );
@@ -498,7 +498,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_test_types )
 {
-    // check of all unary array operations
+    // check of all UnaryOp array operations
 
     ContextPtr ctx  = Context::getContextPtr();
     ContextPtr host = Context::getHostPtr();
@@ -515,9 +515,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
     const IndexType nnz1 = sizeof( values1 ) / sizeof( ValueType );
     const IndexType nnz2 = sizeof( values2 ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
         HArray<IndexType> ia1( ctx );
         HArray<IndexType> ia2( ctx );
@@ -623,9 +623,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
     SCAI_ASSERT_EQ_ERROR( nnz, nnz1, "serious size mismatch" )
     SCAI_ASSERT_EQ_ERROR( nnz, nnz2, "serious size mismatch" )
 
-    for ( IndexType i = 0; i < binary::MAX_BINARY_OP; ++i )
+    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
     {
-        binary::BinaryOp op = binary::BinaryOp( i );
+        BinaryOp op = BinaryOp( i );
 
         LArray<IndexType> ia1( ctx );
         LArray<IndexType> ia2( ctx );
@@ -712,7 +712,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( allSparseTest, ValueType, scai_numeric_test_types
 
     bool allFlag;
 
-    IndexType n = HArrayUtils::allSparse( allFlag, ia1, array1, zero1, ia2, array2, zero2, binary::EQ, ctx );
+    IndexType n = HArrayUtils::allSparse( allFlag, ia1, array1, zero1, ia2, array2, zero2, CompareOp::EQ, ctx );
 
     BOOST_CHECK_EQUAL( n, 4 );  
     BOOST_CHECK( allFlag );
@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copysignTest, ValueType, scai_numeric_test_types 
     magArray.setRawData( n, magnitude );
     signArray.setRawData( n, sign );
     resultArray.setRawData( n, result );
-    HArrayUtils::binaryOp( resultArray, magArray, signArray, binary::COPY_SIGN, ctx );
+    HArrayUtils::binaryOp( resultArray, magArray, signArray, BinaryOp::COPY_SIGN, ctx );
     {
         ReadAccess<ValueType> readMag( magArray, host );
         ReadAccess<ValueType> readSign( signArray, host );
@@ -769,7 +769,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GatherTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> target;
     BOOST_CHECK( HArrayUtils::validIndexes( indexes, M ) );
     BOOST_CHECK( !HArrayUtils::validIndexes( indexes, 1 ) );
-    HArrayUtils::gatherImpl( target, source, indexes, binary::COPY );
+    HArrayUtils::gatherImpl( target, source, indexes, BinaryOp::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -814,7 +814,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_ty
 
     LArray<ValueType> target;
 
-    HArrayUtils::sparseGather( target, sourceVA, sourceIA, indexes, binary::COPY );
+    HArrayUtils::sparseGather( target, sourceVA, sourceIA, indexes, BinaryOp::COPY );
 
     BOOST_REQUIRE_EQUAL( target.size(), indexes.size() );
 
@@ -851,11 +851,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ScatterTest, ValueType, scai_numeric_test_types )
         // scatter on an empty array with more than one index should always fail
 
         LArray<ValueType> target;
-        HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, binary::COPY );
+        HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, BinaryOp::COPY );
 
     }, Exception );
     LArray<ValueType> target( M );
-    HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, binary::COPY );
+    HArrayUtils::scatterImpl( target, indexes, uniqueIndexes, source, BinaryOp::COPY );
 
     for ( IndexType i = 0; i < N; ++i )
     {
@@ -990,7 +990,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( randomTest, ValueType, array_types )
     // not possible: BOOST_CHECK_CLOSE( n, nonZeroIndexes.size(), 20  );
     // not possible for unsigned int abs( n - nonZeroIndexes.size() )
 
-    BOOST_CHECK( common::applyBinary( n, common::binary::ABS_DIFF, nonZeroIndexes.size() ) < ( n / 5 ) );
+    BOOST_CHECK( common::applyBinary( n, common::BinaryOp::ABS_DIFF, nonZeroIndexes.size() ) < ( n / 5 ) );
 }
 
 /* --------------------------------------------------------------------- */
@@ -1013,7 +1013,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortPermTest, ValueType, array_types )
     BOOST_REQUIRE_EQUAL( array1.size(), n );
 
     LArray<RealValueType> array2;   // = array[perm]
-    HArrayUtils::gatherImpl( array2, array, perm, binary::COPY );
+    HArrayUtils::gatherImpl( array2, array, perm, BinaryOp::COPY );
 
     BOOST_CHECK_EQUAL( array2.maxDiffNorm( array1 ), RealValueType( 0 ) );
 }
@@ -1037,7 +1037,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortSparseTest, ValueType, array_types )
     for ( IndexType i = 0; i < 2; ++i )
     { 
         bool ascending = i == 0 ? false : true;
-        binary::CompareOp op = ascending ? binary::LE : binary::GE;
+        CompareOp op = ascending ? CompareOp::LE : CompareOp::GE;
 
         HArrayUtils::sortSparseEntries( indexes, values, ascending );
 
@@ -1092,7 +1092,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sortValuesTest, ValueType, array_types )
     LArray<RealValueType> array( n, vals, loc );
 
     HArrayUtils::sort( NULL, &array, array, descending );
-    BOOST_CHECK( HArrayUtils::isSorted( array, binary::GE ) );
+    BOOST_CHECK( HArrayUtils::isSorted( array, CompareOp::GE ) );
 
     RealValueType expectedVals[] = { 1, 2,  2, 5, 8, 13, 14 };
     LArray<RealValueType> array1( n, expectedVals, loc );
@@ -1131,8 +1131,8 @@ BOOST_AUTO_TEST_CASE( bucketSortTest )
     BOOST_CHECK_EQUAL( perm.size(), n );
 
     LArray<IndexType> sortedArray;
-    HArrayUtils::gatherImpl( sortedArray, array, perm, binary::COPY );
-    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, binary::LE, loc ) );
+    HArrayUtils::gatherImpl( sortedArray, array, perm, BinaryOp::COPY );
+    BOOST_CHECK( HArrayUtils::isSorted( sortedArray, CompareOp::LE, loc ) );
 
     // number of buckets = 1, so only two values array[i] == 0 are taken
 
@@ -1201,7 +1201,7 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
 
     HArrayUtils::mergeSort( array, sortOffsets, ascending );
 
-    BOOST_CHECK( HArrayUtils::isSorted( array, binary::LE, loc ) );
+    BOOST_CHECK( HArrayUtils::isSorted( array, CompareOp::LE, loc ) );
 
     array.setRawData( n, vals );
 
@@ -1223,7 +1223,7 @@ BOOST_AUTO_TEST_CASE( mergeSortTest )
 
     // check that array_sorted  ==  array_unsorted[perm]
 
-    HArrayUtils::gather( array, arrayUnsorted, perm, binary::SUB, loc );
+    HArrayUtils::gather( array, arrayUnsorted, perm, BinaryOp::SUB, loc );
 
     BOOST_CHECK_EQUAL( 0, array.maxNorm() );
 }
@@ -1285,7 +1285,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArraySectionTest, ValueType, array_types )
     const IndexType ofs_y = 1;
     const IndexType inc_y = 2;
 
-    HArrayUtils::setArraySection( x, ofs_x, inc_x, y, ofs_y, inc_y, n, binary::COPY, loc );
+    HArrayUtils::setArraySection( x, ofs_x, inc_x, y, ofs_y, inc_y, n, BinaryOp::COPY, loc );
 
     for ( IndexType i = 0; i < n; ++i )
     {
@@ -1315,7 +1315,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
     {
         SCAI_LOG_INFO( logger, "supported value type " << TypeTraits<ValueType>::id() << " can be used in HArray utilities" )
 
-        HArrayUtils::setArray( y, x, binary::COPY, loc );
+        HArrayUtils::setArray( y, x, BinaryOp::COPY, loc );
 
         BOOST_REQUIRE_EQUAL( y.size(), x.size() );
 
@@ -1334,7 +1334,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setArrayFailTest, ValueType, all_types )
 
         BOOST_CHECK_THROW(
         {
-            HArrayUtils::setArray( y, x, binary::COPY, loc );
+            HArrayUtils::setArray( y, x, BinaryOp::COPY, loc );
         },
         common::Exception );
     }
@@ -1590,7 +1590,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sparseTest, ValueType, scai_numeric_test_types )
     BOOST_CHECK_EQUAL( sparseArray.size(), IndexType( 7 ) );
     BOOST_REQUIRE_EQUAL( sparseArray.size(), sparseIndexes.size() );
     // The sparse indexes must be sorted, no doubles
-    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, binary::LT, loc ) );
+    BOOST_CHECK( HArrayUtils::isSorted( sparseIndexes, CompareOp::LT, loc ) );
     denseArray.purge();  // will also reset size
     HArrayUtils::buildDenseArray( denseArray, n, sparseArray, sparseIndexes, loc );
     BOOST_REQUIRE_EQUAL( denseArray.size(), n );
@@ -1628,7 +1628,7 @@ BOOST_AUTO_TEST_CASE( insertTest )
     }
 
     BOOST_CHECK_EQUAL( indexArray.size(), n );
-    BOOST_CHECK( HArrayUtils::isSorted( indexArray, binary::LT, loc ) );
+    BOOST_CHECK( HArrayUtils::isSorted( indexArray, CompareOp::LT, loc ) );
 
     LArray<ValueType> valueArray;
 
@@ -1824,7 +1824,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( mergeSparseTest, ValueType, scai_array_test_types
     HArray<IndexType> indexes;
     HArray<ValueType> values;
 
-    common::binary::BinaryOp op = common::binary::COPY;    // replace enries at same place
+    common::BinaryOp op = common::BinaryOp::COPY;    // replace enries at same place
 
     HArrayUtils::mergeSparse( indexes, values, indexes1, values1, indexes2, values2, op );
 

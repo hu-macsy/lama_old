@@ -59,7 +59,7 @@ public:
 
     /** Construct an access */
 
-    MatrixAssemblyAccess( _Matrix& matrix, const common::binary::BinaryOp op = common::binary::COPY );
+    MatrixAssemblyAccess( _Matrix& matrix, const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Destructor of the access, also inserts the assembled entries into the matrix. */
 
@@ -160,7 +160,7 @@ private:
 
     bool mIsReleased;
 
-    common::binary::BinaryOp mOp;   // specifies how to combine with available entries
+    common::BinaryOp mOp;   // specifies how to combine with available entries
 };
 
 }

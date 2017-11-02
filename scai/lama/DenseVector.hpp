@@ -461,7 +461,7 @@ public:
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes,
         const hmemo::_HArray& nonZeroValues,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /**
      * Implementation of _Vector::copy with covariant return type.
@@ -521,11 +521,11 @@ public:
 
     /** Implementation of pure method _Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const Scalar value ) const;
+    virtual bool all( common::CompareOp op, const Scalar value ) const;
 
     /** Implementation of pure method _Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const _Vector& other ) const;
+    virtual bool all( common::CompareOp op, const _Vector& other ) const;
 
     virtual void swap( _Vector& other );
 
@@ -570,15 +570,15 @@ public:
 
     /** Implementation of pure method _Vector::setScalar */
 
-    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar = false );
+    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false );
 
     /** Implementation of pure method _Vector::setVector */
 
-    virtual void setVector( const _Vector& other, const common::binary::BinaryOp op, const bool swapScalar = false );
+    virtual void setVector( const _Vector& other, const common::BinaryOp op, const bool swapScalar = false );
 
     /** Implementation of pure method _Vector::applyUnary */
 
-    virtual void applyUnary( common::unary::UnaryOp op );
+    virtual void applyUnary( common::UnaryOp op );
 
     /** Setting this vector by gathering vector elements from another vector.
      *
@@ -592,7 +592,7 @@ public:
     virtual void gather(
         const DenseVector<ValueType>& source,
         const DenseVector<IndexType>& index,
-        const common::binary::BinaryOp op = common::binary::COPY );
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Scattering values from another vector into this vector
      *
@@ -605,14 +605,14 @@ public:
     virtual void scatter(
         const DenseVector<IndexType>& index,
         const DenseVector<ValueType>& source,
-        const common::binary::BinaryOp op = common::binary::COPY );
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /**
      * @brief Implementation of pure method _Vector::buildLocalValues.
      */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
@@ -624,7 +624,7 @@ public:
     virtual void gatherLocalValues(
         hmemo::_HArray& localValues,
         const hmemo::HArray<IndexType>& localIndexes,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     virtual ValueType dotProduct( const _Vector& other ) const;

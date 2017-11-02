@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign0Test, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                     rSource.get() + sourceOffset, sourceDistances, binary::ADD, false );
+                     rSource.get() + sourceOffset, sourceDistances, BinaryOp::ADD, false );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign1Test, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                     rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
+                     rSource.get() + sourceOffset, sourceDistances, BinaryOp::COPY, false );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign2Test, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, 
-                     rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
+                     rSource.get() + sourceOffset, sourceDistances, BinaryOp::COPY, false );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign3Test, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                     rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
+                     rSource.get() + sourceOffset, sourceDistances, BinaryOp::COPY, false );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign4Test, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assign[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                     rSource.get() + sourceOffset, sourceDistances, binary::COPY, false );
+                     rSource.get() + sourceOffset, sourceDistances, BinaryOp::COPY, false );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar0Test, ValueType, scai_array_test_typ
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                           scalar, binary::SUB, true );
+                           scalar, BinaryOp::SUB, true );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar1Test, ValueType, scai_array_test_typ
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                           scalar, binary::SUB, true );
+                           scalar, BinaryOp::SUB, true );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -497,7 +497,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar2Test, ValueType, scai_array_test_typ
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                           scalarVal, binary::MULT, swap );
+                           scalarVal, BinaryOp::MULT, swap );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar3Test, ValueType, scai_array_test_typ
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                           scalarVal, binary::MULT, swap );
+                           scalarVal, BinaryOp::MULT, swap );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -613,7 +613,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
         assignScalar[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                           scalarVal, binary::MULT, swap );
+                           scalarVal, BinaryOp::MULT, swap );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -626,19 +626,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignScalar4Test, ValueType, scai_array_test_typ
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOp1Test, SourceValueType, scai_array_test_types )
 {
     typedef RealType TargetValueType;
 
-    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+    static LAMAKernel<SectionKernelTrait::UnaryOpOp<TargetValueType, SourceValueType> > UnaryOpOp;
 
     ContextPtr loc = testContext;
 
-    unaryOp.getSupportedContext( loc );
+    UnaryOpOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unaryOp1Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+    SCAI_LOG_INFO( logger, "UnaryOpOp1Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
                                            << common::TypeTraits<SourceValueType>::id() << "> for " 
                                            << *testContext << ", done on " << *loc )
 
@@ -675,8 +675,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+        UnaryOpOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::UnaryOp::COPY );
     }
 
     ReadAccess<TargetValueType> rTarget( target );
@@ -689,19 +689,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp1Test, SourceValueType, scai_array_test_ty
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOp2Test, SourceValueType, scai_array_test_types )
 {
     typedef RealType TargetValueType;
 
-    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+    static LAMAKernel<SectionKernelTrait::UnaryOpOp<TargetValueType, SourceValueType> > UnaryOpOp;
 
     ContextPtr loc = testContext;
 
-    unaryOp.getSupportedContext( loc );
+    UnaryOpOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unaryOp2Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+    SCAI_LOG_INFO( logger, "UnaryOpOp2Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
                                            << common::TypeTraits<SourceValueType>::id() << "> for " 
                                            << *testContext << ", done on " << *loc )
 
@@ -741,8 +741,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unaryOp[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, 
-                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+        UnaryOpOp[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::UnaryOp::COPY );
     }
 
     ReadAccess<TargetValueType> rTarget( target );
@@ -755,19 +755,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp2Test, SourceValueType, scai_array_test_ty
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOp3Test, SourceValueType, scai_array_test_types )
 {
     typedef RealType TargetValueType;
 
-    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+    static LAMAKernel<SectionKernelTrait::UnaryOpOp<TargetValueType, SourceValueType> > UnaryOpOp;
 
     ContextPtr loc = testContext;
 
-    unaryOp.getSupportedContext( loc );
+    UnaryOpOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unaryOp3Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+    SCAI_LOG_INFO( logger, "UnaryOpOp3Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
                                            << common::TypeTraits<SourceValueType>::id() << "> for " 
                                            << *testContext << ", done on " << *loc )
 
@@ -806,8 +806,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_ty
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+        UnaryOpOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::UnaryOp::COPY );
     }
 
     ReadAccess<TargetValueType> rTarget( target );
@@ -820,19 +820,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp3Test, SourceValueType, scai_array_test_ty
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOp4Test, SourceValueType, scai_array_test_types )
 {
     typedef RealType TargetValueType;
 
-    static LAMAKernel<SectionKernelTrait::unaryOp<TargetValueType, SourceValueType> > unaryOp;
+    static LAMAKernel<SectionKernelTrait::UnaryOpOp<TargetValueType, SourceValueType> > UnaryOpOp;
 
     ContextPtr loc = testContext;
 
-    unaryOp.getSupportedContext( loc );
+    UnaryOpOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unaryOp4Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
+    SCAI_LOG_INFO( logger, "UnaryOpOp4Test<" << common::TypeTraits<TargetValueType>::id() << ", " 
                                            << common::TypeTraits<SourceValueType>::id() << "> for " 
                                            << *testContext << ", done on " << *loc )
 
@@ -872,8 +872,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_ty
         WriteAccess<TargetValueType> wTarget( target, loc );
         ReadAccess<SourceValueType> rSource( source, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
-                      rSource.get() + sourceOffset, sourceDistances, common::unary::COPY );
+        UnaryOpOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, 
+                      rSource.get() + sourceOffset, sourceDistances, common::UnaryOp::COPY );
     }
 
     ReadAccess<TargetValueType> rTarget( target );
@@ -886,17 +886,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unaryOp4Test, SourceValueType, scai_array_test_ty
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unary1Test, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp1Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+    static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
     ContextPtr loc = testContext;
 
-    unary.getSupportedContext( loc );
+    UnaryOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unary1Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "UnaryOp1Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
     const IndexType n1 = 8;
 
@@ -924,7 +924,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary1Test, ValueType, scai_numeric_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
+        UnaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::UnaryOp::MINUS );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -937,17 +937,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary1Test, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp2Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+    static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
     ContextPtr loc = testContext;
 
-    unary.getSupportedContext( loc );
+    UnaryOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unary2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "UnaryOp2Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
     const IndexType n1 = 3;
     const IndexType n2 = 4;
@@ -980,7 +980,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unary[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, common::unary::MINUS );
+        UnaryOp[loc]( wTarget.get() + targetOffset, 2, sizes, targetDistances, common::UnaryOp::MINUS );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -993,17 +993,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary2Test, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unary3Test, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp3Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+    static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
     ContextPtr loc = testContext;
 
-    unary.getSupportedContext( loc );
+    UnaryOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unary3Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "UnaryOp3Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
     const IndexType n1 = 3;
     const IndexType n2 = 1;
@@ -1030,7 +1030,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary3Test, ValueType, scai_numeric_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
+        UnaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::UnaryOp::MINUS );
     }
 
     ReadAccess<ValueType> rTarget( target );
@@ -1043,17 +1043,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary3Test, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( unary4Test, ValueType, scai_numeric_test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOp4Test, ValueType, scai_numeric_test_types )
 {
-    static LAMAKernel<SectionKernelTrait::unary<ValueType> > unary;
+    static LAMAKernel<SectionKernelTrait::UnaryOp<ValueType> > UnaryOp;
 
     ContextPtr loc = testContext;
 
-    unary.getSupportedContext( loc );
+    UnaryOp.getSupportedContext( loc );
 
     BOOST_WARN_EQUAL( loc.get(), testContext.get() );
 
-    SCAI_LOG_INFO( logger, "unary4Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
+    SCAI_LOG_INFO( logger, "UnaryOp4Test<" << common::TypeTraits<ValueType>::id() << "> for " << *testContext << ", done on " << *loc )
 
     const IndexType n1 = 3;
     const IndexType n2 = 1;
@@ -1081,7 +1081,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unary4Test, ValueType, scai_numeric_test_types )
     {
         WriteAccess<ValueType> wTarget( target, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        unary[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::unary::MINUS );
+        UnaryOp[loc]( wTarget.get() + targetOffset, nDims, sizes, targetDistances, common::UnaryOp::MINUS );
     }
 
     ReadAccess<ValueType> rTarget( target );

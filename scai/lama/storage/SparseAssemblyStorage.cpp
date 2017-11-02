@@ -470,7 +470,7 @@ void SparseAssemblyStorage<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
     const ValueType val,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX( i, mNumRows, "illegal row index" )
     SCAI_ASSERT_VALID_INDEX( j, mNumColumns, "illegal col index" )
@@ -667,7 +667,7 @@ void SparseAssemblyStorage<ValueType>::setCSRDataImpl(
     SCAI_ASSERT_EQUAL( ja.size(), numValues, "size misamtch" );
     SCAI_ASSERT_EQUAL( values.size(), numValues, "size misamtch" );
     SCAI_ASSERT_EQUAL( ia.size(), numRows + 1, "size misamtch" );
-    SCAI_ASSERT( HArrayUtils::isSorted( ia, common::binary::LE, prefLoc ),
+    SCAI_ASSERT( HArrayUtils::isSorted( ia, common::CompareOp::LE, prefLoc ),
                  "illegal offset array, not ascending entries" );
     SCAI_ASSERT_EQUAL( HArrayUtils::getValImpl( ia, numRows ), numValues,
                        "illegal offset array, not ascending entries" );
@@ -916,7 +916,7 @@ void SparseAssemblyStorage<ValueType>::getColumn( _HArray& column, const IndexTy
 template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_GE_DEBUG( row.size(), mNumColumns, "row array to small for set" )
@@ -941,7 +941,7 @@ void SparseAssemblyStorage<ValueType>::setRowImpl( const HArray<OtherType>& row,
 template<typename ValueType>
 template<typename OtherType>
 void SparseAssemblyStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
     SCAI_ASSERT_GE_DEBUG( column.size(), mNumRows, "column array to small for set" )

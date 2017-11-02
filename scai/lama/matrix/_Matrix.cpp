@@ -49,7 +49,6 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 namespace scai
 {
@@ -568,7 +567,7 @@ void _Matrix::writeToSingleFile(
     {
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        common::unique_ptr<_Matrix> repM( copy( rowDist, colDist ) );
+        std::unique_ptr<_Matrix> repM( copy( rowDist, colDist ) );
         repM->writeToSingleFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
@@ -594,7 +593,7 @@ void _Matrix::writeToPartitionedFile(
     else
     {
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        common::unique_ptr<_Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
+        std::unique_ptr<_Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
         repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
@@ -823,7 +822,7 @@ void _Matrix::resetRowDistributionByFirstColumn()
 
         // if storage has not the global column index of diagonal first, this test is likely to fail
 
-        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LE ),
+        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::CompareOp::LE ),
                            "first column indexes are not sorted, cannot be global indexes" )
 
         // otherwise building the distribution will fail
@@ -999,7 +998,7 @@ void _Matrix::redistribute( const dmemo::Redistributor& redistributor )
 _Matrix* _Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix
-    common::unique_ptr<_Matrix> rep( copy() );
+    std::unique_ptr<_Matrix> rep( copy() );
     // unique_ptr guarantees that data is freed if redistribute fails for any reason
     rep->redistribute( rowDistribution, colDistribution );
     return rep.release();

@@ -75,7 +75,7 @@ struct SectionKernelTrait
                                      const IndexType targetDistances[],
                                      const ValueType sourceSection[],
                                      const IndexType sourceDistances[],
-                                     const common::binary::BinaryOp op,
+                                     const common::BinaryOp op,
                                      const bool swapOperands );
         static const char* getId()
         {
@@ -89,12 +89,12 @@ struct SectionKernelTrait
      *  @tparam TargetValueType specifies the value type used in the reduction.
      */
     template <typename TargetValueType, typename SourceValueType>
-    struct unaryOp
+    struct UnaryOpOp
     {
         /** @brief assign one section to another
          *
          *  \code
-         *     targetSection = unaryOp( sourceSection );
+         *     targetSection = UnaryOpOp( sourceSection );
          *  \endcode
          */
         typedef void ( *FuncType ) ( TargetValueType targetSection[],
@@ -103,11 +103,11 @@ struct SectionKernelTrait
                                      const IndexType targetDistances[],
                                      const SourceValueType sourceSection[],
                                      const IndexType sourceDistances[],
-                                     const common::unary::UnaryOp op );
+                                     const common::UnaryOp op );
 
         static const char* getId()
         {
-            return "Section.unaryOp";
+            return "Section.UnaryOpOp";
         }
     };
 
@@ -129,7 +129,7 @@ struct SectionKernelTrait
                                      const IndexType sizes[],
                                      const IndexType distances[],
                                      ValueType val,
-                                     const common::binary::BinaryOp op,
+                                     const common::BinaryOp op,
                                      const bool swapOperands );
         static const char* getId()
         {
@@ -142,7 +142,7 @@ struct SectionKernelTrait
      *  @tparam ValueType specifies the value type of the elements in the section.
      */
     template <typename ValueType>
-    struct unary
+    struct UnaryOp
     {
         /** @brief assign one section to another
          *
@@ -156,7 +156,7 @@ struct SectionKernelTrait
                                      const IndexType nDims,
                                      const IndexType sizes[],
                                      const IndexType distances[],
-                                     const common::unary::UnaryOp op );
+                                     const common::UnaryOp op );
         static const char* getId()
         {
             return "Section.assign";

@@ -96,14 +96,14 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::NullType>
         Derived*,
         const hmemo::_HArray&,
         const IndexType,
-        const common::binary::BinaryOp )
+        const common::BinaryOp )
     {}
 
     static void setColumnImpl(
         Derived*,
         const hmemo::_HArray&,
         const IndexType,
-        const common::binary::BinaryOp )
+        const common::BinaryOp )
     {}
 
     static void getColumnImpl(
@@ -209,7 +209,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
         Derived* obj,
         const hmemo::_HArray& row,
         const IndexType i,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
     {
         if ( row.getValueType() == common::getScalarType<H>() )
         {
@@ -240,7 +240,7 @@ struct CRTPMatrixStorageWrapper<Derived, common::mepr::TypeList<H, T> >
         Derived* obj,
         const hmemo::_HArray& column,
         const IndexType j,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
     {
         if ( column.getValueType() == common::getScalarType<H>() )
         {

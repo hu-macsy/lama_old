@@ -515,7 +515,7 @@ public:
      */
     virtual void setRow( const _Vector& row,
                          const IndexType globalRowIndex,
-                         const common::binary::BinaryOp op ) = 0;
+                         const common::BinaryOp op ) = 0;
 
     /** @brief Pure method to set one column of the matrix.
      *
@@ -531,7 +531,7 @@ public:
     virtual void setColumn(
         const _Vector& column,
         const IndexType globalColIndex,
-        const common::binary::BinaryOp op ) = 0;
+        const common::BinaryOp op ) = 0;
 
     /** @brief This method returns the diagonal.
      *
@@ -567,16 +567,16 @@ public:
      *
      *  \code
      *     const _Matrix& m; _Vector& v;
-     *     m.reduce( v, dim = 0, common::binary::ADD, common::binary::SQR );  // builds row sums 
-     *     m.reduce( v, dim = 1, common::binary::ADD, common::binary::SQR );  // builds diagonal of m' m 
+     *     m.reduce( v, dim = 0, common::BinaryOp::ADD, common::BinaryOp::SQR );  // builds row sums 
+     *     m.reduce( v, dim = 1, common::BinaryOp::ADD, common::BinaryOp::SQR );  // builds diagonal of m' m 
      *  \endcode
      */
 
     virtual void reduce( 
         _Vector& v, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp ) const = 0;
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const = 0;
 
     /** @brief This method scales all values with a vector.
      *
@@ -632,7 +632,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const common::binary::BinaryOp op = common::binary::COPY ) = 0;
+        const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
 

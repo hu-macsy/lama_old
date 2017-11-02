@@ -186,8 +186,8 @@ void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar in
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), common::binary::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), common::binary::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), common::BinaryOp::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), common::BinaryOp::ADD, context );
 }
 
 template<typename ValueType>
@@ -513,7 +513,7 @@ bool DenseVector<ValueType>::isSorted( bool ascending ) const
 
     const HArray<ValueType>& localValues = getLocalValues();
 
-    bool is = HArrayUtils::isSorted( localValues, ascending ? common::binary::LE : common::binary::GE );
+    bool is = HArrayUtils::isSorted( localValues, ascending ? common::CompareOp::LE : common::CompareOp::GE );
 
     if ( size == 1 )
     {
@@ -907,7 +907,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::fillSparseData( 
     const HArray<IndexType>& nonZeroIndexes, 
     const _HArray& nonZeroValues,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     // Note: scatter checks for legal indexes
 
@@ -1124,7 +1124,7 @@ NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Scalar value ) const
+bool DenseVector<ValueType>::all( const common::CompareOp op, const Scalar value ) const
 {
     ValueType typedValue = value.getValue<ValueType>();
 
@@ -1138,7 +1138,7 @@ bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const Scal
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool DenseVector<ValueType>::all( const common::binary::CompareOp op, const _Vector& other ) const
+bool DenseVector<ValueType>::all( const common::CompareOp op, const _Vector& other ) const
 {
     SCAI_ASSERT_EQ_ERROR( other.getDistribution(), getDistribution(), "distribution mismatch for all compare, op = " << op )
 
@@ -1197,7 +1197,7 @@ void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const _Vec
     {
         SCAI_LOG_INFO( logger, "this = " << alpha << " * x -> this = x;  this *= " << alpha )
         assign( x );
-        HArrayUtils::setScalar( mLocalValues, alphaV, common::binary::MULT, mContext );
+        HArrayUtils::setScalar( mLocalValues, alphaV, common::BinaryOp::MULT, mContext );
         return;
     }
 
@@ -1263,15 +1263,15 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
         }
         else if ( alphaV == common::constants::ONE )
         {
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, nonZeroValues, common::binary::ADD, getContextPtr());
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, nonZeroValues, common::BinaryOp::ADD, getContextPtr());
         }
         else
         {
             // ToDo: if there is scatter with scaling factor for the scattered values, employ it here
 
             HArray<ValueType> tmpValues;
-            HArrayUtils::compute( tmpValues, nonZeroValues, common::binary::MULT, alphaV, mContext );
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, tmpValues, common::binary::ADD, mContext );
+            HArrayUtils::compute( tmpValues, nonZeroValues, common::BinaryOp::MULT, alphaV, mContext );
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, tmpValues, common::BinaryOp::ADD, mContext );
         }
     }
     else
@@ -1453,9 +1453,9 @@ template<typename ValueType>
 void DenseVector<ValueType>::gather(
     const DenseVector<ValueType>& source,
     const DenseVector<IndexType>& index,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
-    if ( op != common::binary::COPY )
+    if ( op != common::BinaryOp::COPY )
     {
         SCAI_ASSERT_EQ_ERROR( getDistribution(), index.getDistribution(), "both vectors must have same distribution" )
     }
@@ -1496,7 +1496,7 @@ void DenseVector<ValueType>::gather(
 
     HArray<IndexType> requiredIndexes;  // local index values sorted by owner
 
-    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, common::binary::COPY );
+    HArrayUtils::gather( requiredIndexes, index.getLocalValues(), perm, common::BinaryOp::COPY );
 
     // exchange communication plans
 
@@ -1534,7 +1534,7 @@ void DenseVector<ValueType>::gather(
 
     HArray<ValueType> sendValues;  // values to send from my source values
 
-    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, common::binary::COPY );
+    HArrayUtils::gather( sendValues, source.getLocalValues(), sendIndexes, common::BinaryOp::COPY );
 
     // send via communication plan
 
@@ -1542,7 +1542,7 @@ void DenseVector<ValueType>::gather(
 
     comm.exchangeByPlan( recvValues, recvPlan, sendValues, sendPlan );
 
-    if ( op == common::binary::COPY )
+    if ( op == common::BinaryOp::COPY )
     {
         mLocalValues.resize( perm.size() );
     }
@@ -1562,7 +1562,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::scatter(
     const DenseVector<IndexType>& index,
     const DenseVector<ValueType>& source,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     bool hasUniqueIndexes = false;
 
@@ -1607,9 +1607,9 @@ void DenseVector<ValueType>::scatter(
 
     HArray<ValueType> sendValues;   // local source values sorted same as index values
 
-    HArrayUtils::gather( sendIndexes, index.getLocalValues(), perm, common::binary::COPY );
+    HArrayUtils::gather( sendIndexes, index.getLocalValues(), perm, common::BinaryOp::COPY );
 
-    HArrayUtils::gather( sendValues, source.getLocalValues(), perm, common::binary::COPY );
+    HArrayUtils::gather( sendValues, source.getLocalValues(), perm, common::BinaryOp::COPY );
 
     // exchange communication plans
 
@@ -1686,7 +1686,7 @@ ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
     
         LArray<ValueType> myValues;   // build values at same position as sparse vector
 
-        gatherLocalValues( myValues, sparseOther.getNonZeroIndexes(), common::binary::COPY, getContextPtr() );
+        gatherLocalValues( myValues, sparseOther.getNonZeroIndexes(), common::BinaryOp::COPY, getContextPtr() );
 
         localDotProduct = myValues.dotProduct( sparseOther.getNonZeroValues() );
     }
@@ -1701,7 +1701,7 @@ ValueType DenseVector<ValueType>::dotProduct( const _Vector& other ) const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setVector( const _Vector& other, common::binary::BinaryOp op, const bool swapArgs )
+void DenseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp op, const bool swapArgs )
 {
     SCAI_REGION( "Vector.Dense.setVector" )
 
@@ -1752,7 +1752,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::binary::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::BinaryOp::COPY, mContext );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1815,7 +1815,7 @@ void DenseVector<ValueType>::assignImpl( const SparseVector<OtherValueType>& oth
 {
     allocate( other.getDistributionPtr() );
     assign( other.getZero() );
-    fillSparseData( other.getNonZeroIndexes(), other.getNonZeroValues(), common::binary::COPY );
+    fillSparseData( other.getNonZeroIndexes(), other.getNonZeroValues(), common::BinaryOp::COPY );
 }
 
 template<typename ValueType>
@@ -1829,7 +1829,7 @@ void DenseVector<ValueType>::assignImpl( const DenseVector<OtherValueType>& othe
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar )
+void DenseVector<ValueType>::setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar )
 {
     SCAI_LOG_DEBUG( logger, *this << ": setScalar " << value << ", op = " << op )
 
@@ -1846,11 +1846,11 @@ template<typename ValueType>
 void DenseVector<ValueType>::buildLocalValues(
 
      _HArray& localValues, 
-     const common::binary::BinaryOp op,
+     const common::BinaryOp op,
      ContextPtr prefLoc ) const
 
 {
-    if ( op == common::binary::COPY )
+    if ( op == common::BinaryOp::COPY )
     {
         HArrayUtils::assign( localValues, mLocalValues, prefLoc );
     }
@@ -1868,7 +1868,7 @@ void DenseVector<ValueType>::gatherLocalValues(
 
      _HArray& localValues,
      const HArray<IndexType>& indexes,
-     const common::binary::BinaryOp op,
+     const common::BinaryOp op,
      ContextPtr prefLoc ) const
 {
     HArrayUtils::gather( localValues, mLocalValues, indexes, op, prefLoc );
@@ -1887,10 +1887,10 @@ void DenseVector<ValueType>::wait() const
 }
 
 template<typename ValueType>
-void DenseVector<ValueType>::applyUnary( const common::unary::UnaryOp op )
+void DenseVector<ValueType>::applyUnary( const common::UnaryOp op )
 {
     // myValues = op ( myValues )
-    HArrayUtils::unaryOp( mLocalValues, mLocalValues, op, mContext );
+    HArrayUtils::UnaryOpOp( mLocalValues, mLocalValues, op, mContext );
 }
 
 template<typename ValueType>

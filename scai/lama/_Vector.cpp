@@ -581,28 +581,28 @@ _Vector& _Vector::operator=( const Scalar value )
 _Vector& _Vector::operator*=( const Scalar value )
 {
     bool noSwapArgs = false;
-    setScalar( value, common::binary::MULT, noSwapArgs );
+    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
     return *this;
 }
 
 _Vector& _Vector::operator*=( const _Vector& other )
 {
     bool noSwapArgs = false;
-    setVector( other, common::binary::MULT, noSwapArgs );
+    setVector( other, common::BinaryOp::MULT, noSwapArgs );
     return *this;
 }
 
 _Vector& _Vector::operator/=( const Scalar value )
 {
     bool noSwapArgs = false;
-    setScalar( value, common::binary::DIVIDE, noSwapArgs );
+    setScalar( value, common::BinaryOp::DIVIDE, noSwapArgs );
     return *this;
 }
 
 _Vector& _Vector::operator/=( const _Vector& other )
 {
     bool noSwapArgs = false;
-    setVector( other, common::binary::DIVIDE, noSwapArgs );
+    setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
     return *this;
 }
 
@@ -621,14 +621,14 @@ _Vector& _Vector::operator-=( const _Vector& other )
 _Vector& _Vector::operator+=( const Scalar value )
 {
     bool noSwapArgs = false;
-    setScalar( value, common::binary::ADD, noSwapArgs );
+    setScalar( value, common::BinaryOp::ADD, noSwapArgs );
     return *this;
 }
 
 _Vector& _Vector::operator-=( const Scalar value )
 {
     bool noSwapArgs = false;
-    setScalar( value, common::binary::SUB, noSwapArgs );
+    setScalar( value, common::BinaryOp::SUB, noSwapArgs );
     return *this;
 }
 
@@ -801,92 +801,92 @@ void _Vector::writeToFile(
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*   unary operations                                                                     */
+/*   UnaryOp operations                                                                     */
 /* ---------------------------------------------------------------------------------------*/
 
 void _Vector::invert()
 {
     bool swapArgs = true;
-    setScalar( Scalar( 1 ), binary::DIVIDE, swapArgs );
+    setScalar( Scalar( 1 ), BinaryOp::DIVIDE, swapArgs );
 }
 
 void _Vector::powBase( const _Vector& other )
 {
     bool swapArgs = true;
-    setVector( other, common::binary::POW, swapArgs );
+    setVector( other, common::BinaryOp::POW, swapArgs );
 }
 
 void _Vector::powExp( const _Vector& other )
 {
     bool swapArgs = false;
-    setVector( other, common::binary::POW, swapArgs );
+    setVector( other, common::BinaryOp::POW, swapArgs );
 }
 
 void _Vector::powBase( const Scalar value )
 {
     bool swapArgs = true;  // this[i] =  value ** this[i] 
-    setScalar( value, common::binary::POW, swapArgs );
+    setScalar( value, common::BinaryOp::POW, swapArgs );
 }
 
 void _Vector::powExp( const Scalar value )
 {
     bool swapArgs = false;  // this[i] = this[i] ** value
-    setScalar( value, common::binary::POW, swapArgs );
+    setScalar( value, common::BinaryOp::POW, swapArgs );
 }
 
 void _Vector::conj()
 {
-    applyUnary( common::unary::CONJ );
+    applyUnary( common::UnaryOp::CONJ );
 }
 
 void _Vector::abs()
 {
-    applyUnary( common::unary::ABS );
+    applyUnary( common::UnaryOp::ABS );
 }
 
 void _Vector::exp()
 {
-    applyUnary( common::unary::EXP );
+    applyUnary( common::UnaryOp::EXP );
 }
 
 void _Vector::sqrt()
 {
-    applyUnary( common::unary::SQRT );
+    applyUnary( common::UnaryOp::SQRT );
 }
 
 void _Vector::sin()
 {
-    applyUnary( common::unary::SIN );
+    applyUnary( common::UnaryOp::SIN );
 }
 
 void _Vector::cos()
 {
-    applyUnary( common::unary::COS );
+    applyUnary( common::UnaryOp::COS );
 }
 
 void _Vector::tan()
 {
-    applyUnary( common::unary::TAN );
+    applyUnary( common::UnaryOp::TAN );
 }
 
 void _Vector::atan()
 {
-    applyUnary( common::unary::ATAN );
+    applyUnary( common::UnaryOp::ATAN );
 }
 
 void _Vector::log()
 {
-    applyUnary( common::unary::LOG );
+    applyUnary( common::UnaryOp::LOG );
 }
 
 void _Vector::floor()
 {
-    applyUnary( common::unary::FLOOR );
+    applyUnary( common::UnaryOp::FLOOR );
 }
 
 void _Vector::ceil()
 {
-    applyUnary( common::unary::CEIL );
+    applyUnary( common::UnaryOp::CEIL );
 }
 
 /* ---------------------------------------------------------------------------------------*/

@@ -166,7 +166,7 @@ ValueType CUDAReduceUtils::reduceAbsMaxVal( const ValueType array[], const Index
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, const ValueType zero, binary::BinaryOp op )
+ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, const ValueType zero, BinaryOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array = " << array << ", n = " << n << ", op = " << op )
 
@@ -180,22 +180,22 @@ ValueType CUDAReduceUtils::reduce( const ValueType array[], const IndexType n, c
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
             result = reduceSum( array, n, zero );
             break;
 
-        case binary::MAX :
+        case BinaryOp::MAX :
             // SCAI_ASSERT_EQ_ERROR( common::TypeTraits<AbsType>::stype, common::TypeTraits<ValueType>::stype, "MAX not supported for complex" )
             absResult = reduceMaxVal( absArray, n, absZero );
             result = absResult;
             break;
 
-        case binary::MIN :
+        case BinaryOp::MIN :
             absResult = reduceMinVal( absArray, n, absZero );
             result = absResult;
             break;
 
-        case binary::ABS_MAX :
+        case BinaryOp::ABS_MAX :
             result = reduceAbsMaxVal( array, n, zero );
             break;
 
@@ -213,9 +213,9 @@ ValueType CUDAReduceUtils::reduce2(
     const ValueType array1[],
     const ValueType array2[],
     const IndexType n,
-    const binary::BinaryOp binOp,
+    const BinaryOp binOp,
     const ValueType zero,
-    const binary::BinaryOp redOp )
+    const BinaryOp redOp )
 {
     SCAI_REGION( "CUDA.Utils.reduce2" )
 
@@ -299,7 +299,7 @@ ValueType CUDAReduceUtils::scan( ValueType array[], const IndexType n, ValueType
 
 template<typename ValueType>
 __global__
-void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values, const binary::CompareOp op )
+void isSortedKernel( bool* result, const IndexType numValues, const ValueType* values, const CompareOp op )
 {
     const int i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -310,7 +310,7 @@ void isSortedKernel( bool* result, const IndexType numValues, const ValueType* v
 }
 
 template<typename ValueType>
-bool CUDAReduceUtils::isSorted( const ValueType array[], const IndexType n, const binary::CompareOp op )
+bool CUDAReduceUtils::isSorted( const ValueType array[], const IndexType n, const CompareOp op )
 {
     SCAI_REGION( "CUDA.Utils.isSorted" )
 

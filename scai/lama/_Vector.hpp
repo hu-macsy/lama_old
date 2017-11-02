@@ -49,6 +49,7 @@
 
 // others
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 #include <scai/common/UnaryOp.hpp>
 #include <scai/hmemo.hpp>
 
@@ -414,7 +415,7 @@ public:
         const Scalar zeroValue = Scalar( 0 ) )
     {
         setSameValue( n, zeroValue );
-        fillSparseData( nonZeroIndexes, nonZeroValues, common::binary::COPY );
+        fillSparseData( nonZeroIndexes, nonZeroValues, common::BinaryOp::COPY );
     } 
 
     /** Same as setSparseData but here with raw data for non-zero indexes and values. 
@@ -451,7 +452,7 @@ public:
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const common::binary::BinaryOp op ) = 0;
+        const common::BinaryOp op ) = 0;
 
     /**
      * @brief Sets the local data of the vector to zero. 
@@ -849,7 +850,7 @@ public:
      */
     virtual void buildLocalValues( 
         hmemo::_HArray& localValues, 
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
@@ -868,7 +869,7 @@ public:
     virtual void gatherLocalValues( 
         hmemo::_HArray& localValues, 
         const hmemo::HArray<IndexType>& localIndexes,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
@@ -927,7 +928,7 @@ public:
      *
      *  In contrary to the loop, it can be assumed that the vector operation is full parallel.
      */
-    virtual void setVector( const _Vector& other, common::binary::BinaryOp op, const bool swapArgs = false ) = 0;
+    virtual void setVector( const _Vector& other, common::BinaryOp op, const bool swapArgs = false ) = 0;
 
     /**
      *  @brief Update this vector with a scalar value elementswise
@@ -948,27 +949,27 @@ public:
      *
      *  Here are some examples how this method is used:
      *  \code
-     *      v.invert()      v.setScalar( Scalar( 1 ), binary::DIVIDE, true );
-     *      v += s;         v.setScalar( s, binary::ADD, false );
-     *      v *= s;         v.setScalar( s, binary::MULT, false );
+     *      v.invert()      v.setScalar( Scalar( 1 ), BinaryOp::DIVIDE, true );
+     *      v += s;         v.setScalar( s, BinaryOp::ADD, false );
+     *      v *= s;         v.setScalar( s, BinaryOp::MULT, false );
      *  \endcode
      */
-    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapScalar = false ) = 0;
+    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false ) = 0;
 
     /**
-     *  @brief Apply a unary operation for each element of the vector.
+     *  @brief Apply a UnaryOp operation for each element of the vector.
      */
-    virtual void applyUnary( common::unary::UnaryOp op ) = 0;
+    virtual void applyUnary( common::UnaryOp op ) = 0;
 
     /**
      *  @brief Boolean reduction returns true if all elements fullfill the compare operation with a scalar.
      */
-    virtual bool all( common::binary::CompareOp op, const Scalar value ) const = 0;
+    virtual bool all( common::CompareOp op, const Scalar value ) const = 0;
 
     /**
      *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
      */
-    virtual bool all( common::binary::CompareOp op, const _Vector& other ) const = 0;
+    virtual bool all( common::CompareOp op, const _Vector& other ) const = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -1255,7 +1256,7 @@ void _Vector::setSparseRawData(
     setSameValue( n, zeroValue );
     hmemo::HArrayRef<IndexType> aNonZeroIndexes( nnz, nonZeroIndexes );
     hmemo::HArrayRef<OtherValueType> aNonZeroValues( nnz, nonZeroValues );
-    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::binary::COPY );
+    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::BinaryOp::COPY );
 } 
   
 } /* end namespace lama */

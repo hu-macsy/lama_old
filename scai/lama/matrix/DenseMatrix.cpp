@@ -50,7 +50,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/print_string.hpp>
@@ -65,9 +64,7 @@ using namespace scai::dmemo;
 namespace scai
 {
 
-using common::unique_ptr;
 using common::TypeTraits;
-using common::scoped_array;
 using utilskernel::LAMAKernel;
 
 namespace lama
@@ -689,7 +686,7 @@ void DenseMatrix<ValueType>::assignSparse( const _Matrix& other )
     {
         DistributionPtr repColDist( new NoDistribution( other.getNumColumns() ) );
 
-        // common::unique_ptr<Matrix> tmpOther( other.copy() );
+        // std::unique_ptr<Matrix> tmpOther( other.copy() );
         // tmpOther->redistribute( other.getRowDistributionPtr(), repColDist );
         // SCAI_LOG_WARN( logger, "create temporary matrix with replicated columns: " << *tmpOther )
         // assignSparse( *tmpOther );
@@ -1413,7 +1410,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalRow(
     const hmemo::HArray<ValueType>& row,
     const IndexType localRowIndex,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_REGION( "Mat.Dense.setLocalRow" )
 
@@ -1437,7 +1434,7 @@ void DenseMatrix<ValueType>::setLocalRow(
 
     HArray<ValueType> rowResorted;   // row resorted according to the owners
 
-    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, common::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, common::BinaryOp::COPY );
 
     ReadAccess<IndexType> rOffsets( offsets );
 
@@ -1469,7 +1466,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalColumn(
     const hmemo::HArray<ValueType>& column,
     const IndexType globalColIndex,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_REGION( "Mat.Dense.setLocalColumn" )
 
@@ -1565,8 +1562,8 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::reduce(
     _Vector& v, 
     const IndexType dim, 
-    const common::binary::BinaryOp reduceOp, 
-    const common::unary::UnaryOp elemOp ) const
+    const common::BinaryOp reduceOp, 
+    const common::UnaryOp elemOp ) const
 {
     SCAI_REGION( "Mat.Dense.reduce" )
 
@@ -1611,7 +1608,7 @@ void DenseMatrix<ValueType>::reduce(
 
         if ( np == 1 )
         {
-             SCAI_ASSERT_EQ_ERROR( reduceOp, common::binary::ADD, "only add supported" )
+             SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
 
              mData[0]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
              getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
@@ -1728,7 +1725,7 @@ void DenseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
     const Scalar val,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
 
@@ -1849,7 +1846,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     {
         SCAI_LOG_INFO( logger, comm << ": asynchronous communication" )
 // asynchronous communication always requires same sizes of arrays, might shift some more data
-        common::unique_ptr<tasking::SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
+        std::unique_ptr<tasking::SyncToken> st( comm.shiftAsync( *recvValues, *sendValues, COMM_DIRECTION ) );
         SCAI_LOG_INFO( logger,
                        comm << ": matrixTimesVector, my dense block = " << *mData[rank] << ", localX = " << localX << ", localY = " << localY << ", localResult = " << localResult )
 // overlap communication with local computation
@@ -2394,7 +2391,7 @@ DenseMatrix<ValueType>* DenseMatrix<ValueType>::newMatrix() const
 {
     SCAI_LOG_INFO( logger, "SparseMatrix<ValueType>::newMatrix" )
     // use auto pointer for new sparse matrix to get data freed in case of Exception
-    common::unique_ptr<DenseMatrix<ValueType> > newDenseMatrix( new DenseMatrix<ValueType>() );
+    std::unique_ptr<DenseMatrix<ValueType> > newDenseMatrix( new DenseMatrix<ValueType>() );
     // inherit the context for local and halo storage
     newDenseMatrix->setContextPtr( this->getContextPtr() );
     newDenseMatrix->setCommunicationKind( this->getCommunicationKind() );

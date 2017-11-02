@@ -391,7 +391,7 @@ public:
      */
     virtual void buildLocalValues(
         hmemo::_HArray& localValues,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
@@ -403,7 +403,7 @@ public:
     virtual void gatherLocalValues(
         hmemo::_HArray& localValues,
         const hmemo::HArray<IndexType>& localIndexes,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /** Get the array with the non-zero values. */
@@ -425,7 +425,7 @@ public:
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /**
      * Setting sparse values with raw data 
@@ -488,11 +488,11 @@ public:
 
     /** Implementation of pure method _Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const Scalar value ) const;
+    virtual bool all( common::CompareOp op, const Scalar value ) const;
 
     /** Implementation of pure method _Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const _Vector& other ) const;
+    virtual bool all( common::CompareOp op, const _Vector& other ) const;
 
     virtual void swap( _Vector& other );
 
@@ -525,15 +525,15 @@ public:
 
     /** Implementation of pure method _Vector::setVector */
 
-    virtual void setVector( const _Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setVector( const _Vector& other, const common::BinaryOp op, const bool swapArgs = false );
 
     /** Implementation of pure method _Vector::setScalar */
 
-    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapArgs = false );
 
     /** Implementation of pure method _Vector::applyUnary */
 
-    virtual void applyUnary( common::unary::UnaryOp op );
+    virtual void applyUnary( common::UnaryOp op );
 
     using _Vector::prefetch; // prefetch() with no arguments
 
@@ -557,7 +557,7 @@ private:
 
     /** Help routine for binary operation of two sparse vectors */
 
-    void binOpSparse( const SparseVector<ValueType>& other, const common::binary::BinaryOp op, bool swapArgs );
+    void binOpSparse( const SparseVector<ValueType>& other, const common::BinaryOp op, bool swapArgs );
 
     utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
     utilskernel::LArray<ValueType> mNonZeroValues;   //!< my local non-zero values
@@ -638,7 +638,7 @@ void SparseVector<ValueType>::setSparseValues(
 
     // values at same index will be replaced
 
-    fillSparseData( indexes, values, common::binary::COPY );
+    fillSparseData( indexes, values, common::BinaryOp::COPY );
 }
 
 template<typename ValueType>

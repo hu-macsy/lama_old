@@ -67,7 +67,7 @@ GridVector<ValueType>::GridVector( const std::string& filename ) : DenseVector<V
 }
 
 template<typename ValueType>
-void GridVector<ValueType>::reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp )
+void GridVector<ValueType>::reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp )
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( dim, other.nDims(), "illegeal reduction dim on this grid " << other.globalGrid() )
 
@@ -182,7 +182,7 @@ void GridVector<ValueType>::setDiagonal( const GridSection<ValueType>& diagonal,
         const ValueType* sourcePtr = rSource.get() + offsetSource;
         ValueType* targetPtr = wTarget.get() + offsetTarget;
     
-        common::binary::BinaryOp op = common::binary::COPY;
+        common::BinaryOp op = common::BinaryOp::COPY;
 
         bool swap = false;
 

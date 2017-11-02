@@ -114,7 +114,7 @@ public:
      *  Note: all derived classes must provide setLocalRow( rowArray, localRowIndex, op )
      */
     void setRow( const _Vector& row, const IndexType globalRowIndex,
-                 const common::binary::BinaryOp op );
+                 const common::BinaryOp op );
 
     /** Implementation of _Matrix::setColumn for all typed matrices
      *
@@ -123,7 +123,7 @@ public:
      */
     void setColumn( const _Vector& column,
                     const IndexType colIndex,
-                    const common::binary::BinaryOp op );
+                    const common::BinaryOp op );
 
     /**
      * @brief Returns the L1 norm of this matrix.
@@ -182,11 +182,11 @@ protected:
 
     virtual void setLocalRow( const hmemo::HArray<ValueType>& row,
                               const IndexType localRowIndex,
-                              const common::binary::BinaryOp op  ) = 0;
+                              const common::BinaryOp op  ) = 0;
 
     virtual void setLocalColumn( const hmemo::HArray<ValueType>& column,
                                  const IndexType colIndex,
-                                 const common::binary::BinaryOp op  ) = 0;
+                                 const common::BinaryOp op  ) = 0;
 
     /** This method is the same for dense/sparse matrices as column distribution is replicated */
 

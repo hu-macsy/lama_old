@@ -628,7 +628,7 @@ void Communicator::updateHalo(
     IndexType numSendValues = providesPlan.totalQuantity();
     HArray<ValueType> sendValues( numSendValues ); //!< temporary array for send communication
 
-    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
 
     exchangeByPlan( haloValues, requiredPlan, sendValues, providesPlan );
 }
@@ -668,7 +668,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // put together the (send) values to provide for other partitions
 
-    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), common::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( *sendValues, localValues, halo.getProvidesIndexes(), common::BinaryOp::COPY );
 
     SyncToken* token( exchangeByPlanAsync( haloValues, requiredPlan, *sendValues, providesPlan ) );
 

@@ -795,13 +795,13 @@ void SparseMatrix<ValueType>::getLocalRowDense( HArray<ValueType>& row, const In
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
     mLocalData->getRow( tmpRow, localRowIndex );
-    HArrayUtils::scatterImpl( row, localIndexes, true, tmpRow, common::binary::COPY );
+    HArrayUtils::scatterImpl( row, localIndexes, true, tmpRow, common::BinaryOp::COPY );
 
     // get halo part
 
     mHaloData->getRow( tmpRow, localRowIndex );
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::scatterImpl( row, haloIndexes, true, tmpRow, common::binary::COPY );
+    HArrayUtils::scatterImpl( row, haloIndexes, true, tmpRow, common::BinaryOp::COPY );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1067,7 +1067,7 @@ void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HA
 
     const HArray<IndexType>& haloGlobalIndexes = mHalo.getRequiredIndexes();
 
-    HArrayUtils::gather( indexes2, haloGlobalIndexes, haloIndexes2, common::binary::COPY );
+    HArrayUtils::gather( indexes2, haloGlobalIndexes, haloIndexes2, common::BinaryOp::COPY );
 
     ValueType one = 1;  // just union of entries, no scaling
     ValueType zero = 0;  // zero element of sparse arrays
@@ -1092,7 +1092,7 @@ void SparseMatrix<ValueType>::getLocalRowSparse( HArray<IndexType>& indexes, _HA
 template<typename ValueType>
 void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
         const IndexType localRowIndex,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
 {
     SCAI_REGION( "Mat.Sp.setLocalRow" )
 
@@ -1110,13 +1110,13 @@ void SparseMatrix<ValueType>::setLocalRow( const HArray<ValueType>& row,
 
     HArray<IndexType> localIndexes;
     distributionCol.getOwnedIndexes( localIndexes );
-    HArrayUtils::gatherImpl( tmpRow, row, localIndexes, common::binary::COPY );
+    HArrayUtils::gatherImpl( tmpRow, row, localIndexes, common::BinaryOp::COPY );
     mLocalData->setRow( tmpRow, localRowIndex, op );
 
     // set halo part
 
     const HArray<IndexType>& haloIndexes = mHalo.getRequiredIndexes();
-    HArrayUtils::gatherImpl( tmpRow, row, haloIndexes, common::binary::COPY );
+    HArrayUtils::gatherImpl( tmpRow, row, haloIndexes, common::BinaryOp::COPY );
     mHaloData->setRow( tmpRow, localRowIndex, op );
 }
 
@@ -1155,7 +1155,7 @@ void SparseMatrix<ValueType>::getLocalColumn( HArray<ValueType>& column, const I
 template<typename ValueType>
 void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
         const IndexType colIndex,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
 {
     SCAI_REGION( "Mat.Sp.setLocalCol" )
 
@@ -1255,8 +1255,8 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::reduce(
     _Vector& v, 
     const IndexType dim,
-    const common::binary::BinaryOp reduceOp,
-    const common::unary::UnaryOp elemOp ) const
+    const common::BinaryOp reduceOp,
+    const common::UnaryOp elemOp ) const
 {
     SCAI_REGION( "Mat.Sp.reduce" )
 
@@ -1304,7 +1304,7 @@ void SparseMatrix<ValueType>::reduce(
 
         if ( getColDistribution().getCommunicator().getSize() == 1 )
         {
-             SCAI_ASSERT_EQ_ERROR( reduceOp, common::binary::ADD, "only add supported" )
+             SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
              getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
              return;
         }
@@ -1696,7 +1696,7 @@ void SparseMatrix<ValueType>::haloOperationSync(
             SCAI_REGION( "Mat.Sp.syncGatherHalo" )
             SCAI_LOG_INFO( logger,
                            comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::binary::COPY );
+            HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
             // Note: send values might be fetched to the host by halo exchange
         }
 
@@ -1801,7 +1801,7 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
 
     if ( haloResult.size() > 0 )
     {
-        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), false, haloResult, common::binary::ADD );
+        HArrayUtils::scatterImpl( localResult, mHalo.getProvidesIndexes(), false, haloResult, common::BinaryOp::ADD );
     }
 
     SCAI_LOG_DEBUG( logger, "invHaloOpSync done" )
@@ -1836,7 +1836,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         // Note: gather will be done where denseX is available
         SCAI_LOG_INFO( logger,
                        comm << ": gather " << mHalo.getProvidesIndexes().size() << " values of X to provide on " << *localX.getValidContext() );
-        HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::binary::COPY );
+        HArrayUtils::gatherImpl( mTempSendValues, localX, mHalo.getProvidesIndexes(), common::BinaryOp::COPY );
         // prefetch needed otherwise sending will block until local computation has finished
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
@@ -2245,7 +2245,7 @@ void SparseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
     const Scalar val,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
 

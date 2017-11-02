@@ -183,7 +183,7 @@ public:
 
     /** Set this grid vector by another grid vector that is reduced in one dimension */
 
-    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp );
+    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp );
 
     /** _Matrix-matrix multiplication : this += alpha * v1 * v2
      *

@@ -167,7 +167,7 @@ int main( int argc, const char* argv[] )
     m.allocate( nrows, ncols );
 
     {
-        MatrixAssemblyAccess<double> access( m, common::binary::COPY );
+        MatrixAssemblyAccess<double> access( m, common::BinaryOp::COPY );
 
         for ( IndexType i = 0; i < nrows; ++i )
         {

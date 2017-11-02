@@ -83,7 +83,7 @@ using utilskernel::OpenMPUtils;
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
-using common::binary;
+using common::BinaryOp;
 
 namespace lama
 {
@@ -236,7 +236,7 @@ IndexType _MatrixStorage::getNumValues() const
     ContextPtr loc = sizes.getValidContext();
     reduce.getSupportedContext( loc );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, binary::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, BinaryOp::ADD );
     return numValues;
 }
 
@@ -442,7 +442,7 @@ void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& 
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<IndexType> ja( csrJA, loc );
     ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), binary::COPY, mNumRows );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -536,10 +536,10 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
     // copy out the corresponding sections, ia needs a shifting to zero
 
     LArray<IndexType> blockIA( n + 1 );
-    HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, BinaryOp::COPY, loc );
 
     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
-    HArrayUtils::compute( blockIA, blockIA, binary::SUB, offset, loc );
+    HArrayUtils::compute( blockIA, blockIA, BinaryOp::SUB, offset, loc );
 
     IndexType numBlockValues = blockIA[n];
 
@@ -548,8 +548,8 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
     LArray<IndexType> blockJA( numBlockValues );
     LArray<ValueType> blockValues( numBlockValues );
 
-    HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, binary::COPY, loc );
-    HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, BinaryOp::COPY, loc );
+    HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, BinaryOp::COPY, loc );
 
     other.setCSRData( n, mNumColumns, numBlockValues, blockIA, blockJA, blockValues );
 }
@@ -629,9 +629,9 @@ void MatrixStorage<ValueType>::vcat( const _MatrixStorage* others[], const Index
 
         otherIA += offset;  // add elementwise the latest offset
 
-        HArrayUtils::setArraySection( csrIA, lb, 1, otherIA, 0, 1, n, binary::COPY, ctx );
-        HArrayUtils::setArraySection( csrJA, offset, 1, otherJA, 0, 1, nnz, binary::COPY, ctx );
-        HArrayUtils::setArraySection( csrValues, offset, 1, otherValues, 0, 1, nnz, binary::COPY, ctx );
+        HArrayUtils::setArraySection( csrIA, lb, 1, otherIA, 0, 1, n, BinaryOp::COPY, ctx );
+        HArrayUtils::setArraySection( csrJA, offset, 1, otherJA, 0, 1, nnz, BinaryOp::COPY, ctx );
+        HArrayUtils::setArraySection( csrValues, offset, 1, otherValues, 0, 1, nnz, BinaryOp::COPY, ctx );
 
         lb += n;
         offset += nnz;
@@ -740,7 +740,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, binary::COPY );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, BinaryOp::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );
@@ -1039,8 +1039,8 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::reduce(
     hmemo::HArray<ValueType>& array, 
     const IndexType dim, 
-    const common::binary::BinaryOp reduceOp,
-    const common::unary::UnaryOp elemOp )
+    const common::BinaryOp reduceOp,
+    const common::UnaryOp elemOp )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;

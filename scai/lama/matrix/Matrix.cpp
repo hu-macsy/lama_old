@@ -274,7 +274,7 @@ template<typename ValueType>
 void Matrix<ValueType>::setRow( 
     const _Vector& row, 
     const IndexType globalRowIndex,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_ASSERT_EQ_ERROR( row.size(), this->getNumColumns(), "row size mismatch" )
 
@@ -339,7 +339,7 @@ template<typename ValueType>
 void Matrix<ValueType>::setColumn( 
     const _Vector& column,
     const IndexType colIndex,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     using namespace scai::hmemo;
 

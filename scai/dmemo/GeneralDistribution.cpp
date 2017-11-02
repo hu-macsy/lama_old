@@ -240,13 +240,13 @@ GeneralDistribution::GeneralDistribution(
     {
         SCAI_ASSERT_DEBUG( dynamic_cast<const GeneralDistribution*>( &other ), "no general dist" )
         const GeneralDistribution& otherGen = reinterpret_cast<const GeneralDistribution&>( other );
-        HArrayUtils::gather( sortedIndexes, otherGen.getMyIndexes(), perm, common::binary::COPY );
+        HArrayUtils::gather( sortedIndexes, otherGen.getMyIndexes(), perm, common::BinaryOp::COPY );
     }
     else
     {
         HArray<IndexType> currentIndexes;
         other.getOwnedIndexes( currentIndexes );
-        HArrayUtils::gather( sortedIndexes, currentIndexes, perm, common::binary::COPY );
+        HArrayUtils::gather( sortedIndexes, currentIndexes, perm, common::BinaryOp::COPY );
     }
 
     // make communication plans for sending data and receiving to exchange 

@@ -185,7 +185,7 @@ DistributionPtr MetisPartitioning::computeIt( const CommunicatorPtr comm, const 
 
     // verify that indexes are sorted otherwise global to local via binary search won't work
 
-    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LT ), 
+    SCAI_ASSERT_ERROR( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::CompareOp::LT ), 
                        *comm << ": local row indexes unsorted." )
 
     IndexType globalSize = matrix.getRowDistribution().getGlobalSize();

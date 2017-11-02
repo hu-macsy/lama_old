@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( vectorAssemblyTest )
         // Assemble vector data by arbitrary processors, entries at same location are summed up
 
         {
-            VectorAssemblyAccess<ValueType> assembly( vector1, common::binary::ADD );
+            VectorAssemblyAccess<ValueType> assembly( vector1, common::BinaryOp::ADD );
 
             for ( IndexType i = 0; i < nnz; ++i )
             {

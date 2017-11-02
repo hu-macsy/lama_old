@@ -53,7 +53,7 @@ using namespace utilskernel;
 
 using common::TypeTraits;
 using common::binary;
-using common::unary;
+using common::UnaryOp;
 
 /* --------------------------------------------------------------------- */
 
@@ -416,9 +416,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
 
     BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
 
-    for ( int op = binary::COPY; op < binary::MAX_BINARY_OP; ++op )
+    for ( int op = BinaryOp::COPY; op < BinaryOp::MAX_BINARY_OP; ++op )
     {
-        binary::BinaryOp binOp = binary::BinaryOp( op );
+        BinaryOp binOp = BinaryOp( op );
 
         HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
         HArray<RealType> dense1( numRows * numColumns, dense_values1, testContext );
@@ -477,9 +477,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
     ValueType val = 2;
 
-    for ( int op = binary::COPY; op < binary::MAX_BINARY_OP; ++op )
+    for ( int op = BinaryOp::COPY; op < BinaryOp::MAX_BINARY_OP; ++op )
     {
-        binary::BinaryOp binOp = binary::BinaryOp( op );
+        BinaryOp binOp = BinaryOp( op );
 
         HArray<ValueType> dense( numRows * numColumns, dense_values, testContext );
 

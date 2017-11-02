@@ -54,7 +54,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, VectorAssemblyAccess
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-VectorAssemblyAccess<ValueType>::VectorAssemblyAccess( _Vector& vector, const common::binary::BinaryOp op ) : 
+VectorAssemblyAccess<ValueType>::VectorAssemblyAccess( _Vector& vector, const common::BinaryOp op ) : 
 
     mVector( vector ),
     mIsReleased( false ),
@@ -93,8 +93,8 @@ void VectorAssemblyAccess<ValueType>::exchangeCOO(
     HArray<IndexType> sendIA;
     HArray<ValueType> sendValues;
 
-    HArrayUtils::gather( sendIA, inIA, perm, common::binary::COPY );
-    HArrayUtils::gather( sendValues, inValues, perm, common::binary::COPY );
+    HArrayUtils::gather( sendIA, inIA, perm, common::BinaryOp::COPY );
+    HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
     HArrayUtils::unscan( offsets );  // now we have size
 

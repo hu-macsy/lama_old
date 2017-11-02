@@ -314,8 +314,8 @@ public:
     virtual void reduce( 
         _Vector& v, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp ) const;
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const;
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -523,7 +523,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const common::binary::BinaryOp op = common::binary::COPY );
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /**
      * @brief Read access to the halo of the distributed matrix.
@@ -610,7 +610,7 @@ public:
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
-                      const common::binary::BinaryOp op  );
+                      const common::BinaryOp op  );
 
     /** Get the local part of a col of this matrix */
 
@@ -620,7 +620,7 @@ public:
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
-                         const common::binary::BinaryOp op  );
+                         const common::BinaryOp op  );
 
 protected:
 
