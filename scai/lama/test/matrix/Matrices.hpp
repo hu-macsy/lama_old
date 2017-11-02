@@ -34,7 +34,6 @@
 
 #include <scai/lama/matrix/Matrix.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <vector>

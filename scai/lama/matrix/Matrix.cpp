@@ -49,7 +49,8 @@
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -568,7 +569,7 @@ void Matrix::writeToSingleFile(
     {
         DistributionPtr rowDist( new NoDistribution( getNumRows() ) );
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        common::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
+        std::unique_ptr<Matrix> repM( copy( rowDist, colDist ) );
         repM->writeToSingleFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
@@ -594,7 +595,7 @@ void Matrix::writeToPartitionedFile(
     else
     {
         DistributionPtr colDist( new NoDistribution( getNumColumns() ) );
-        common::unique_ptr<Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
+        std::unique_ptr<Matrix> repM( copy( getRowDistributionPtr(), colDist ) );
         repM->writeToPartitionedFile( fileName, fileType, dataType, indexType, fileMode );
     }
 }
@@ -986,8 +987,8 @@ Scalar Matrix::maxDiffNorm( const Matrix& other ) const
     SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
     VectorCreateKeyType vectorType1( Vector::DENSE, getValueType() );
     VectorCreateKeyType vectorType2( Vector::DENSE, other.getValueType() );
-    common::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
-    common::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
+    std::unique_ptr<Vector> ptrRow1( Vector::create( vectorType1 ) );
+    std::unique_ptr<Vector> ptrRow2( Vector::create( vectorType2 ) );
     Scalar diff( 0 );
 
     // now traverse  all rows
@@ -1039,7 +1040,7 @@ void Matrix::redistribute( const dmemo::Redistributor& redistributor )
 Matrix* Matrix::copy( DistributionPtr rowDistribution, DistributionPtr colDistribution ) const
 {
     // simple default implementation that works for each matrix
-    common::unique_ptr<Matrix> rep( copy() );
+    std::unique_ptr<Matrix> rep( copy() );
     // unique_ptr guarantees that data is freed if redistribute fails for any reason
     rep->redistribute( rowDistribution, colDistribution );
     return rep.release();

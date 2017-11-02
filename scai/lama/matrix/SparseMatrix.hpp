@@ -47,7 +47,7 @@
 // internal scai libraries
 #include <scai/tasking/SyncToken.hpp>
 
-#include <scai/common/function.hpp>
+#include <functional>
 
 namespace scai
 {
@@ -122,8 +122,8 @@ public:
     /** This method sets all relevant data of a sparse matrix and checks consistency */
 
     void set(
-        common::shared_ptr<MatrixStorage<ValueType> > localData,
-        common::shared_ptr<MatrixStorage<ValueType> > haloData,
+        std::shared_ptr<MatrixStorage<ValueType> > localData,
+        std::shared_ptr<MatrixStorage<ValueType> > haloData,
         const dmemo::Halo& halo,
         dmemo::DistributionPtr rowDist,
         dmemo::DistributionPtr colDist );
@@ -139,20 +139,20 @@ public:
      * Note: this constructor will not create a copy of the storage data.
      *       but just join the ownership
      */
-    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage );
+    SparseMatrix( std::shared_ptr<MatrixStorage<ValueType> > storage );
 
-    SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, dmemo::DistributionPtr rowDist );
+    SparseMatrix( std::shared_ptr<MatrixStorage<ValueType> > storage, dmemo::DistributionPtr rowDist );
 
     SparseMatrix(
-        common::shared_ptr<MatrixStorage<ValueType> > storage,
+        std::shared_ptr<MatrixStorage<ValueType> > storage,
         dmemo::DistributionPtr rowDist,
         dmemo::DistributionPtr colDist );
 
     /** Constructor of a sparse matrix with local and halo data available. */
 
     SparseMatrix(
-        common::shared_ptr<MatrixStorage<ValueType> > localData,
-        common::shared_ptr<MatrixStorage<ValueType> > haloData,
+        std::shared_ptr<MatrixStorage<ValueType> > localData,
+        std::shared_ptr<MatrixStorage<ValueType> > haloData,
         const dmemo::Halo& halo,
         dmemo::DistributionPtr rowDist,
         dmemo::DistributionPtr colDist );
@@ -412,12 +412,12 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX ) > localF,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
@@ -441,12 +441,12 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX ) > localF,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
@@ -462,12 +462,12 @@ public:
         hmemo::HArray<ValueType>& localResult,
         const hmemo::HArray<ValueType>& localX,
         hmemo::HArray<ValueType>& haloX,
-        common::function <
+        std::function <
         tasking::SyncToken * (
             const MatrixStorage<ValueType>* localMatrix,
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& localX ) > localAsyncF,
-        common::function <
+        std::function <
         void(
             const MatrixStorage<ValueType>* haloMatrix,
             hmemo::HArray<ValueType>& localResult,
@@ -671,9 +671,9 @@ protected:
 
     void checkSettings();
 
-    common::shared_ptr<MatrixStorage<ValueType> > mLocalData; //!< local columns of sparse matrix
+    std::shared_ptr<MatrixStorage<ValueType> > mLocalData; //!< local columns of sparse matrix
 
-    common::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
+    std::shared_ptr<MatrixStorage<ValueType> > mHaloData; //!< local columns of sparse matrix
 
     dmemo::Halo mHalo; //!< Exchange plans for halo part due to column distribution
 

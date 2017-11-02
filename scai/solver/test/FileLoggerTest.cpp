@@ -43,16 +43,16 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/test/Configuration.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
+
+#include <memory>
 
 using namespace scai;
 
 using namespace solver;
 
 using common::Exception;
-using common::unique_ptr;
-using common::scoped_array;
+using std::unique_ptr;
 
 /* --------------------------------------------------------------------- */
 
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( LoggingTest )
     SCAI_CHECK_THROW( flogger.setLogFile( logFileName + "1" ), Exception );
     flogger.logMessage( testMessage );
     flogger.closeLogFile();
-    scoped_array<char> fileInput( new char[testMessage.length()] );
+    unique_ptr<char[]> fileInput( new char[testMessage.length()] );
     std::fstream fileStream;
     fileStream.open( logFileName.c_str(), std::fstream::in );
     fileStream.read( fileInput.get(), testMessage.length() );

@@ -73,7 +73,7 @@ class Matrix;
 
 /** Pointer class for a vector, always use of a shared pointer. */
 
-typedef common::shared_ptr<class Vector> VectorPtr;
+typedef std::shared_ptr<class Vector> VectorPtr;
 
 /** Help class as forward declaration of enum types belonging to class Vector. */
 

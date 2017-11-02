@@ -44,10 +44,10 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/SCAITypes.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>
+#include <memory>
 
 namespace scai
 {
@@ -59,7 +59,7 @@ class IterativeSolver;
 
 class Criterion;
 
-typedef common::shared_ptr<Criterion> CriterionPtr;
+typedef std::shared_ptr<Criterion> CriterionPtr;
 
 /**
  * @brief The class Criterion is the base class for all stopping criterions

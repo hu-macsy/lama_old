@@ -50,7 +50,7 @@ namespace solver
 {
 
 class OmegaSolver;
-typedef common::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
+typedef std::shared_ptr<OmegaSolver> OldSolutionHandlerPtr;
 
 /**
  * @brief The OldSolutionHandler class only manages the omega parameter

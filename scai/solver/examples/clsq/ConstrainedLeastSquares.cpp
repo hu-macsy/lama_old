@@ -306,7 +306,7 @@ void ConstrainedLeastSquares::computeSearchDirection(
 
     mDiagonalMatrix.setDiagonal( diagonal );
 
-    common::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
+    std::shared_ptr<Jacobi> preconditioner( new Jacobi( "JacobiPreconditioner" ) );
 
     preconditioner->initialize( mDiagonalMatrix );
 

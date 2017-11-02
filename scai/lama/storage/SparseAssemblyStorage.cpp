@@ -256,7 +256,7 @@ void SparseAssemblyStorage<ValueType>::check( const char* msg ) const
 template<typename ValueType>
 SparseAssemblyStorage<ValueType>* SparseAssemblyStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<SparseAssemblyStorage<ValueType> > storage( new SparseAssemblyStorage<ValueType>() );
+    std::unique_ptr<SparseAssemblyStorage<ValueType> > storage( new SparseAssemblyStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

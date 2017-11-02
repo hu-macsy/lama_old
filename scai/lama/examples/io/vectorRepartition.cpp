@@ -39,11 +39,12 @@
 #include <scai/lama/io/PartitionIO.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
+
+#include <memory>
 
 using namespace std;
 
@@ -108,9 +109,9 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 {
     common::scalar::ScalarType type = getType();
 
-    common::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
+    std::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
 
-    common::unique_ptr<_HArray> array( _HArray::create( type ) );
+    std::unique_ptr<_HArray> array( _HArray::create( type ) );
 
     IndexType size;    // total size of the array
 
@@ -142,7 +143,7 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 
 void readArrayBlocked( _HArray& array, const string& inFileName, const IndexType np_in )
 {
-    typedef common::shared_ptr<_HArray> ArrayPtr;    // use shared pointer in vector
+    typedef std::shared_ptr<_HArray> ArrayPtr;    // use shared pointer in vector
 
     vector<ArrayPtr> blockVector;
 
@@ -208,7 +209,7 @@ void writeArrayBlocked( const _HArray& array, const string& outFileName, const I
 {
     // create temporary array for each block of same type
 
-    common::unique_ptr<_HArray> blockArray( _HArray::create( array.getValueType() ) );
+    std::unique_ptr<_HArray> blockArray( _HArray::create( array.getValueType() ) );
 
     IndexType size = array.size();
 
@@ -257,8 +258,8 @@ int main( int argc, const char* argv[] )
 
     MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
 
-    // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
-    // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
+    // std::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
+    // std::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
 
     // take double as default
 
@@ -296,7 +297,7 @@ int main( int argc, const char* argv[] )
         }
     }
 
-    common::unique_ptr<_HArray> fullVector( _HArray::create( type ) );
+    std::unique_ptr<_HArray> fullVector( _HArray::create( type ) );
 
     // read in one or all partitions in the memory
 

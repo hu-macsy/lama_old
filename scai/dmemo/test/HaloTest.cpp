@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( updateHaloTest, ValueType, scai_numeric_test_type
     }
 
     {
-        common::unique_ptr<tasking::SyncToken> token( comm->updateHaloAsync( haloData, localData, halo ) );
+        std::unique_ptr<tasking::SyncToken> token( comm->updateHaloAsync( haloData, localData, halo ) );
     }
 
     BOOST_CHECK_EQUAL( static_cast<IndexType>( requiredIndexes.size() ), haloData.size() );

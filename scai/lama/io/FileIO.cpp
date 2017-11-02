@@ -36,7 +36,6 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/exception/IOException.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -44,6 +43,7 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 
 namespace scai
 {
@@ -255,7 +255,7 @@ int FileIO::removeFile( const std::string& fileName )
 
     if ( canCreate( suffix ) )
     {
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         SCAI_LOG_INFO( logger, "delete file via " << *fileIO )
 
@@ -285,7 +285,7 @@ void FileIO::write(
         SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->writeArray( array, outFileName );
@@ -309,7 +309,7 @@ void FileIO::write(
         SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->writeSparse( size, indexes, values, outFileName );
@@ -332,7 +332,7 @@ void FileIO::read(
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->readArray( array, inFileName, first, n );
@@ -354,7 +354,7 @@ void FileIO::read(
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->readGridArray( array, grid, inFileName );
@@ -377,7 +377,7 @@ void FileIO::read(
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     fileIO->setDataType( dataType );
     fileIO->readSparse( size, indexes, values, inFileName );
@@ -395,7 +395,7 @@ IndexType FileIO::getArraySize( const std::string& inFileName )
                              ": unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     IndexType size = nIndex;
 
@@ -415,7 +415,7 @@ IndexType FileIO::getStorageSize( const std::string& fileName )
         SCAI_THROWEXCEPTION( common::IOException, "Unsupported suffix " << suffix << ", no FileIO handler availabe" )
     }
 
-    common::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
+    std::unique_ptr<FileIO> fileIO ( FileIO::create( suffix ) );
 
     IndexType size = nIndex;
 

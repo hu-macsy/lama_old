@@ -49,20 +49,21 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+#include <functional>
+
 using namespace scai::hmemo;
+
+using std::shared_ptr;
 
 namespace scai
 {
-
-using common::shared_ptr;
 
 using utilskernel::LAMAKernel;
 using utilskernel::UtilKernelTrait;
@@ -73,7 +74,7 @@ using sparsekernel::JDSKernelTrait;
 
 namespace lama
 {
-// Allow for shared_ptr<ValueType> instead of common::shared_ptr<ValueType>
+// Allow for shared_ptr<ValueType> instead of std::shared_ptr<ValueType>
 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1144,7 +1145,7 @@ tasking::SyncToken* JDSStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
     static LAMAKernel<JDSKernelTrait::normalGEMV<ValueType> > normalGEMV;
     normalGEMV.getSupportedContext( loc );
-    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+    std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
     SCAI_ASYNCHRONOUS( syncToken.get() )
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
     // to the end of the computations.
@@ -1190,7 +1191,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
     SCAI_LOG_INFO( logger, *this << ": matrixTimesVector on " << *loc )
-    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+    std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
     SCAI_ASYNCHRONOUS( syncToken.get() )
     SCAI_CONTEXT_ACCESS( loc )
     // all accesses will be pushed to the sync token as LAMA arrays have to be protected up
@@ -1295,9 +1296,9 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
             const HArray<ValueType>&,
             const ValueType omega ) const
         = &JDSStorage<ValueType>::jacobiIterate;
-        using scai::common::bind;
-        using scai::common::ref;
-        using scai::common::cref;
+        using std::bind;
+        using std::ref;
+        using std::cref;
         return new tasking::TaskSyncToken( bind( jb, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
     }
 
@@ -1313,7 +1314,7 @@ tasking::SyncToken* JDSStorage<ValueType>::jacobiIterateAsync(
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, oldSolution.size() )
     SCAI_ASSERT_EQUAL_DEBUG( mNumRows, mNumColumns )
     // matrix must be square
-    common::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
+    std::unique_ptr<tasking::SyncToken> syncToken( loc->getSyncToken() );
     syncToken->setCurrent();
     WriteOnlyAccess<ValueType> wSolution( solution, loc, mNumRows );
     ReadAccess<IndexType> jdsDLG( mDlg, loc );
@@ -1606,7 +1607,7 @@ JDSStorage<ValueType>* JDSStorage<ValueType>::copy() const
 template<typename ValueType>
 JDSStorage<ValueType>* JDSStorage<ValueType>::newMatrixStorage() const
 {
-    common::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() );
+    std::unique_ptr<JDSStorage<ValueType> > storage( new JDSStorage<ValueType>() );
     storage->setContextPtr( this->getContextPtr() );
     return storage.release();
 }

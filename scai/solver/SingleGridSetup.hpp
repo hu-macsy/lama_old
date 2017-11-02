@@ -123,11 +123,11 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     SolverPtr    mSolver;
-    common::unique_ptr<lama::Matrix> mIdentity;
+    std::unique_ptr<lama::Matrix> mIdentity;
 
-    common::unique_ptr<lama::Vector> mSolutionVector;
-    common::unique_ptr<lama::Vector> mRhsVector;
-    common::unique_ptr<lama::Vector> mTmpResVector;
+    std::unique_ptr<lama::Vector> mSolutionVector;
+    std::unique_ptr<lama::Vector> mRhsVector;
+    std::unique_ptr<lama::Vector> mTmpResVector;
 
 };
 

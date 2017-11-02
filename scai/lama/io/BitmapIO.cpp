@@ -189,7 +189,7 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
         // due to alignment: imageSize might be slightly higher
 
         SCAI_ASSERT_GE_ERROR( imageSize, grid.size(), "size mismatch" )
-        common::scoped_array<unsigned char> tmp( new unsigned char[ imageSize ] );
+        std::unique_ptr<unsigned char[]> tmp( new unsigned char[ imageSize ] );
         IndexType nBytes = fread( tmp.get(), 1, imageSize, file );
         SCAI_ASSERT_EQ_ERROR( imageSize, nBytes, "could not read all expected image pixels" )
 
@@ -230,7 +230,7 @@ void BitmapIO::readGridImpl( HArray<ValueType>& data, common::Grid& grid, const 
 
         IndexType nBytes = fread( ColorMasks, 1, sizeof( ColorMasks) , file );
         SCAI_LOG_ERROR( logger, "read color mask, nbytes = " << nBytes )
-        common::scoped_array<unsigned char> tmp( new unsigned char[ width * height ] );
+        std::unique_ptr<unsigned char[]> tmp( new unsigned char[ width * height ] );
         nBytes = fread( tmp.get(), 1, width * height, file );
         SCAI_LOG_ERROR( logger, "read bitmap data, nbytes = " << nBytes )
         SCAI_LOG_ERROR( logger, "allocate data, size = " << grid.size() )
@@ -303,7 +303,7 @@ void BitmapIO::writeGridImpl( const HArray<ValueType>& data, const common::Grid&
     fwrite( &fileHeader, 1, sizeof( fileHeader ), f );
     fwrite( &infoHeader, 1, sizeof( infoHeader ), f );
 
-    common::scoped_array<unsigned char> tmpData( new unsigned char[ imageBytes ] );
+    std::unique_ptr<unsigned char[]> tmpData( new unsigned char[ imageBytes ] );
 
     ReadAccess<ValueType> rPixelData( data );
 

@@ -55,7 +55,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -68,7 +67,6 @@
 namespace scai
 {
 
-using common::scoped_array;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
 using utilskernel::LArray;

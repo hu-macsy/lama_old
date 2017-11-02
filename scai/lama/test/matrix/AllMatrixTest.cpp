@@ -1041,7 +1041,7 @@ BOOST_AUTO_TEST_CASE( redistributeTest )
 
                 matrix = csr;
 
-                common::unique_ptr<Matrix> matrix1( matrix.copy() );
+                std::unique_ptr<Matrix> matrix1( matrix.copy() );
 
                 matrix.redistribute( dist1, colDist);
 

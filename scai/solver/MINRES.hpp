@@ -94,12 +94,12 @@ public:
         MINRESRuntime();
         virtual ~MINRESRuntime();
 
-        common::shared_ptr<lama::Vector> mVecV;
-        common::shared_ptr<lama::Vector> mVecVOld;
-        common::shared_ptr<lama::Vector> mVecVNew;
-        common::shared_ptr<lama::Vector> mVecP;
-        common::shared_ptr<lama::Vector> mVecPOld;
-        common::shared_ptr<lama::Vector> mVecPNew;
+        std::shared_ptr<lama::Vector> mVecV;
+        std::shared_ptr<lama::Vector> mVecVOld;
+        std::shared_ptr<lama::Vector> mVecVNew;
+        std::shared_ptr<lama::Vector> mVecP;
+        std::shared_ptr<lama::Vector> mVecPOld;
+        std::shared_ptr<lama::Vector> mVecPNew;
 
         lama::Scalar mAlpha;
         lama::Scalar mBetaNew;

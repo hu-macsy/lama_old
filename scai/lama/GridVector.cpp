@@ -211,7 +211,7 @@ void GridVector<ValueType>::writeLocalToFile(
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         if ( dataType != common::scalar::UNKNOWN )
         {

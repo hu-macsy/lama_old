@@ -60,7 +60,7 @@ Solver::Solver( const std::string& id )
     : mId( id ), mLogger(
         new CommonLogger( "dummyLog", LogLevel::noLogging,
                           LoggerWriteBehaviour::toConsoleOnly,
-                          common::shared_ptr<Timer>( new Timer() ) ) )
+                          std::shared_ptr<Timer>( new Timer() ) ) )
 {
     SCAI_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }

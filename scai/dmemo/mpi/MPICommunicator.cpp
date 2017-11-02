@@ -44,24 +44,20 @@
 
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/unique_ptr.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/BinaryOp.hpp>
 
 // std
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 using namespace std;
 
+using std::unique_ptr;
+
 namespace scai
 {
-
-using common::shared_ptr;
-using common::unique_ptr;
-using common::scoped_array;
 
 namespace dmemo
 {
@@ -499,7 +495,7 @@ void MPICommunicator::exchangeByPlanImpl(
     PartitionId noReceives = 0; // will be incremented
     void* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
-    scoped_array<MPI_Request> commRequest( new MPI_Request[maxReceives] );
+    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[maxReceives] );
 
     size_t typeSize = common::typeSize( stype );
 
@@ -551,7 +547,7 @@ void MPICommunicator::exchangeByPlanImpl(
     }
 
     // wait for completion of receives
-    scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noReceives] );
     SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
     // ToDo: check for correct sizes, was done in earlier version, but is now redundant
 }
@@ -573,7 +569,7 @@ tasking::SyncToken* MPICommunicator::exchangeByPlanAsyncImpl(
                    << ", send to " << sendPlan.size() << " processors, recv from " << recvPlan.size() )
     int noRequests = sendPlan.size() + recvPlan.size();
     // create MPIToken as unique_ptr, so it will be freed in case of exception
-    scai::common::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
+    std::unique_ptr<MPISyncToken> pSyncToken( new MPISyncToken( noRequests ) );
     MPISyncToken& syncToken = *pSyncToken;
     void* recvDataForMe = NULL;
     IndexType recvDataForMeSize = 0;
@@ -669,7 +665,7 @@ void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
 
     int noReceives = 0;
 
-    scoped_array<MPI_Request> commRequest( new MPI_Request[getSize()] );
+    unique_ptr<MPI_Request[]> commRequest( new MPI_Request[getSize()] );
 
     for ( PartitionId i = 0; i < getSize(); ++i )
     {
@@ -684,7 +680,7 @@ void MPICommunicator::all2allvImpl( void* recvBuffer[], IndexType recvCount[],
 
     // wait for completion of receives
 
-    scoped_array<MPI_Status> statuses( new MPI_Status[noReceives] );
+    unique_ptr<MPI_Status[]> statuses( new MPI_Status[noReceives] );
 
     SCAI_MPICALL( logger, MPI_Waitall( noReceives, commRequest.get(), statuses.get() ), "MPI_Waitall" )
 }
@@ -906,8 +902,8 @@ void MPICommunicator::scatterVImpl(
     {
         void* sendbuf = const_cast<void*>( allVals );
         PartitionId np = getSize();
-        scoped_array<int> counts( new int[np] );
-        scoped_array<int> displs( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
+        unique_ptr<int[]> displs( new int[np] );
         int displacement = 0;
 
         for ( PartitionId i = 0; i < np; i++ )
@@ -928,7 +924,7 @@ void MPICommunicator::scatterVImpl(
     {
         // VampirTrace: requires valid counts array, even if values will be ignored
         PartitionId np = getSize();
-        scoped_array<int> counts( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
 
         for ( PartitionId i = 0; i < np; i++ )
         {
@@ -988,8 +984,8 @@ void MPICommunicator::gatherVImpl(
     if ( root == getRank() )
     {
         PartitionId np = getSize();
-        scoped_array<int> counts( new int[np] );
-        scoped_array<int> displs( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
+        unique_ptr<int[]> displs( new int[np] );
         int displacement = 0;
 
         for ( PartitionId i = 0; i < np; i++ )
@@ -1012,7 +1008,7 @@ void MPICommunicator::gatherVImpl(
 
         PartitionId np = getSize();
 
-        scoped_array<int> counts( new int[np] );
+        unique_ptr<int[]> counts( new int[np] );
 
         for ( PartitionId i = 0; i < np; i++ )
         {
@@ -1051,7 +1047,7 @@ void MPICommunicator::maxlocImpl( void* val, IndexType* location, PartitionId ro
 
     // only on Host
 
-    common::scoped_array<char> tmp ( new char[ tmpSize ] );
+    std::unique_ptr<char[]> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
     MPI_Reduce( tmp.get(), val, 1, commType, MPI_MAXLOC, root, selectMPIComm() );
@@ -1081,7 +1077,7 @@ void MPICommunicator::minlocImpl( void* val, IndexType* location, PartitionId ro
 
     // only on host
 
-    common::scoped_array<char> tmp ( new char[ tmpSize ] );
+    std::unique_ptr<char[]> tmp ( new char[ tmpSize ] );
     memcpy( tmp.get(), val,  tmpSize );
 
     MPI_Reduce( tmp.get(), val, 1, commType, MPI_MINLOC, root, selectMPIComm() );
@@ -1129,7 +1125,7 @@ void MPICommunicator::swapImpl( void* val, const IndexType n, PartitionId partne
 
     // only on host
 
-    common::scoped_array<char> tmp ( new char[ n * common::typeSize( stype ) ] );
+    std::unique_ptr<char[]> tmp ( new char[ n * common::typeSize( stype ) ] );
 
     memcpy( tmp.get(), val, n * common::typeSize( stype ) );
 

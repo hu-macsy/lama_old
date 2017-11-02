@@ -42,13 +42,15 @@
 #include <scai/utilskernel/test/HArrays.hpp>
 
 #include <scai/common/Math.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/exception/Exception.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/mepr/ScalarTypeHelper.hpp>
 
 #include <typeinfo>
+#include <memory>
+
+using std::unique_ptr;
 
 using namespace scai;
 using namespace scai::utilskernel;
@@ -130,7 +132,7 @@ BOOST_AUTO_TEST_CASE( untypedTest )
             }
 
             // create array with same type, context
-            common::unique_ptr<_HArray> tmp( array2.copy() );
+            std::unique_ptr<_HArray> tmp( array2.copy() );
             // array2 = array1[ perm ], tmp[ perm ] = array1
             HArrayUtils::gather( array2, array1, perm, binary::COPY, ctx );
             BOOST_CHECK_EQUAL( array2.size(), perm.size() );
@@ -872,7 +874,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scan1Test, ValueType, array_types )
     ContextPtr loc = Context::getContextPtr();
     ValueType vals[]     = { 3, 1, 4, 2 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
-    scoped_array<ValueType> scans( new ValueType[n + 1] );
+    unique_ptr<ValueType[]> scans( new ValueType[n + 1] );
     scans[0] = 0;
 
     for ( IndexType i = 0; i < n; ++i )
@@ -901,7 +903,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scanTest, ValueType, array_types )
     ValueType first      = 1;
     ValueType vals[]     = { 3, 1, 4, 2 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
-    scoped_array<ValueType> scans( new ValueType[n] );
+    unique_ptr<ValueType[]> scans( new ValueType[n] );
 
     scans[0] = first + vals[0];
 
@@ -931,7 +933,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( unscanTest, ValueType, array_types )
     ContextPtr loc = Context::getContextPtr();
     ValueType vals[]     = { 0, 4, 7, 11, 15 };
     const IndexType n = sizeof( vals ) / sizeof( ValueType );
-    scoped_array<ValueType> unscans( new ValueType[n - 1] );
+    unique_ptr<ValueType[]> unscans( new ValueType[n - 1] );
     unscans[0] = 0;
 
     for ( IndexType i = 0; i < n - 1; ++i )

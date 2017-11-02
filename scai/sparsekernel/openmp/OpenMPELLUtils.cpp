@@ -47,19 +47,19 @@
 #include <scai/tracing.hpp>
 
 
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Math.hpp>
 
 // std
 #include <cmath>
 #include <set>
 #include <map>
+#include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -695,7 +695,7 @@ void OpenMPELLUtils::matrixAddSizes(
 
     #pragma omp parallel
     {
-        common::scoped_array<IndexType> indexList( new IndexType[n] );
+        std::unique_ptr<IndexType[]> indexList( new IndexType[n] );
 
         for ( IndexType j = 0; j < n; j++ )
         {
@@ -854,8 +854,8 @@ void OpenMPELLUtils::matrixAdd(
     #pragma omp parallel
     {
 
-        common::scoped_array<IndexType> indexList( new IndexType[numColumns] );
-        common::scoped_array<ValueType> valueList( new ValueType[numColumns] );
+        std::unique_ptr<IndexType[]> indexList( new IndexType[numColumns] );
+        std::unique_ptr<ValueType[]> valueList( new ValueType[numColumns] );
 
         for ( IndexType j = 0; j < numColumns; j++ )
         {
@@ -1091,7 +1091,7 @@ void OpenMPELLUtils::normalGEMV(
     if ( syncToken )
     {
         // combine the vectors with their scaling factors to reduze number of args
-        syncToken->run( common::bind( normalGEMV_a<ValueType>, result,
+        syncToken->run( std::bind( normalGEMV_a<ValueType>, result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*> ( beta, y ),
                                       numRows, numValuesPerRow, ellSizes, ellJA, ellValues ) );
@@ -1174,7 +1174,7 @@ void OpenMPELLUtils::sparseGEMV(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( sparseGEMV_a<ValueType>, result,
+        syncToken->run( std::bind( sparseGEMV_a<ValueType>, result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       numRows, numValuesPerRow,
                                       std::pair<IndexType, const IndexType*>( numNonZeroRows, rowIndexes ),

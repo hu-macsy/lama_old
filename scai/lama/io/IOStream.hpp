@@ -41,7 +41,6 @@
 // scai internal libraries
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/loop.hpp>
 #include <scai/common/exception/IOException.hpp>
@@ -58,6 +57,7 @@
 #include <typeinfo>
 #include <iostream>
 #include <iomanip>
+#include <memory>
 
 namespace scai
 {
@@ -303,7 +303,7 @@ inline void IOStream::writeBinDirect( const hmemo::HArray<ValueType>& data )
     }
     else
     {
-        scai::common::scoped_array<ValueType> tmp( new ValueType[ data.size() ] );
+        std::unique_ptr<ValueType[]> tmp( new ValueType[ data.size() ] );
 
         if ( scai::common::isComplex( scai::common::TypeTraits<ValueType>::stype ) )
         {
@@ -371,7 +371,7 @@ inline void IOStream::readBinDirect( hmemo::HArray<ValueType>& data,
     }
     else
     {
-        scai::common::scoped_array<ValueType> tmp( new ValueType[ data.size() ] );
+        std::unique_ptr<ValueType[]> tmp( new ValueType[ data.size() ] );
 
         std::fstream::read( reinterpret_cast<char*>( tmp.get() ), ndata );
 

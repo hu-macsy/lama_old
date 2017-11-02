@@ -36,8 +36,9 @@
 // base class
 #include <scai/lama/io/IOStream.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/safer_memcpy.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -77,7 +78,7 @@ public:
      *  The read element needs further parsing to read storage/array data.
      */
 
-    uint32_t readDataElement( common::scoped_array<char>& dataElement );
+    uint32_t readDataElement( std::unique_ptr<char[]>& dataElement );
 
     /**
      * @param[in] buffer is the string that contains the data element

@@ -36,9 +36,9 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <iostream>
+#include <memory>
 
 using namespace scai;
 using namespace scai::hmemo;

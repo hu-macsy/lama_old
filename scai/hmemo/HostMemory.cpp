@@ -48,11 +48,11 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/safer_memcpy.hpp>
 
 // std
 #include <cstring>
+#include <functional>
 
 using scai::common::safer_memcpy;
 
@@ -64,7 +64,7 @@ namespace hmemo
 
 SCAI_LOG_DEF_LOGGER( HostMemory::logger, "Memory.HostMemory" )
 
-HostMemory::HostMemory( common::shared_ptr<const HostContext> hostContextPtr ) :
+HostMemory::HostMemory( std::shared_ptr<const HostContext> hostContextPtr ) :
 
     Memory( memtype::HostMemory ),
     mHostContextPtr( hostContextPtr )
@@ -140,7 +140,7 @@ void HostMemory::memset( void* dst, const int val, const size_t size ) const
 
 tasking::SyncToken* HostMemory::memcpyAsync( void* dst, const void* src, const size_t size ) const
 {
-    return new tasking::TaskSyncToken( common::bind( &::memcpy, dst, src, size ) );
+    return new tasking::TaskSyncToken( std::bind( &::memcpy, dst, src, size ) );
 }
 
 ContextPtr HostMemory::getContextPtr() const
@@ -150,13 +150,13 @@ ContextPtr HostMemory::getContextPtr() const
 
 MemoryPtr HostMemory::getIt()
 {
-    static common::shared_ptr<HostMemory> instancePtr;
+    static std::shared_ptr<HostMemory> instancePtr;
 
     if ( !instancePtr.get() )
     {
         SCAI_LOG_DEBUG( logger, "Create instance for HostMemory" )
         ContextPtr contextPtr = Context::getContextPtr( common::context::Host );
-        common::shared_ptr<const HostContext> hostContextPtr = common::dynamic_pointer_cast<const HostContext>( contextPtr );
+        std::shared_ptr<const HostContext> hostContextPtr = std::dynamic_pointer_cast<const HostContext>( contextPtr );
         SCAI_ASSERT( hostContextPtr.get(), "Serious: dynamic cast failed" )
         instancePtr.reset( new HostMemory( hostContextPtr ) );
     }

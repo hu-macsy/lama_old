@@ -40,8 +40,7 @@
 // base classes
 #include <scai/dmemo/Distribution.hpp>
 
-// internal scai libraries
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -220,7 +219,7 @@ private:
 
     GenBlockDistribution(); // disable default destructor
 
-    common::scoped_array<IndexType> mOffsets;  //!< offset for each partition
+    std::unique_ptr<IndexType[]> mOffsets;  //!< offset for each partition
 
     // this processor owns mLB, ..., mUB - 1
 

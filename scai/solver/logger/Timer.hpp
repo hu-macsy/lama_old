@@ -37,12 +37,10 @@
 // for dll_import
 #include <scai/common/config.hpp>
 
-// internal scai libraries
-#include <scai/common/shared_ptr.hpp>
-
 // std
 #include <map>
 #include <string>
+#include <memory>
 
 namespace scai
 {
@@ -51,7 +49,7 @@ namespace solver
 {
 
 class Timer;
-typedef common::shared_ptr<Timer> TimerPtr;
+typedef std::shared_ptr<Timer> TimerPtr;
 
 /**
  * @brief Timer class that offers a set of timers identified by their ids.

@@ -34,12 +34,12 @@
 
 #include <scai/lama/storage/MatrixStorage.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 #include <vector>
+#include <memory>
 
-typedef scai::common::shared_ptr<scai::lama::_MatrixStorage> StoragePtr;
+typedef std::shared_ptr<scai::lama::_MatrixStorage> StoragePtr;
 
 /** Class for a list of matrix storage pointers, one for each supported
  *  matrix storage format and each supported arithmetic type.
@@ -79,7 +79,7 @@ public:
  */
 
 template<typename ValueType>
-class TypedStorages : public std::vector<scai::common::shared_ptr<scai::lama::MatrixStorage<ValueType> > >
+class TypedStorages : public std::vector<std::shared_ptr<scai::lama::MatrixStorage<ValueType> > >
 {
 public:
 
@@ -101,7 +101,7 @@ public:
                 _MatrixStorage* storage = _MatrixStorage::create( values[i] );
                 MatrixStorage<ValueType>* typedStorage = dynamic_cast<MatrixStorage<ValueType>*>( storage );
                 SCAI_ASSERT( typedStorage, "dynamic cast failed" )
-                shared_ptr<MatrixStorage<ValueType> > typedStoragePtr( typedStorage );
+                std::shared_ptr<MatrixStorage<ValueType> > typedStoragePtr( typedStorage );
 
                 if ( ctx )
                 {

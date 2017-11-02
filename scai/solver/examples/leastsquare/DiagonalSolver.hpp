@@ -121,7 +121,7 @@ public:
         {
         }
     
-        common::shared_ptr<lama::Vector> mInvDiagonal;
+        std::shared_ptr<lama::Vector> mInvDiagonal;
     };
     
     virtual SolverPtr copy()

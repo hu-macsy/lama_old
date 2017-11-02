@@ -49,12 +49,12 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/SCAITypes.hpp>
 
 // std
 #include <map>
 #include <utility>
+#include <memory>
 
 namespace scai
 {
@@ -62,7 +62,7 @@ namespace scai
 namespace dmemo
 {
 
-typedef common::shared_ptr<const class Distribution> DistributionPtr;
+typedef std::shared_ptr<const class Distribution> DistributionPtr;
 
 class Distributed;
 

@@ -37,10 +37,11 @@
 #include <scai/common/LibModule.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <iostream>
+#include <memory>
 
+using std::unique_ptr;
 using namespace scai::common;
 
 void runIt()

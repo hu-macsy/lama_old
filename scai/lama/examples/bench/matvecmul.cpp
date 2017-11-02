@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <memory>
 
 #include <scai/lama.hpp>
 
@@ -44,7 +45,6 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Settings.hpp>
 
 using namespace scai;
@@ -53,7 +53,7 @@ using namespace scai::hmemo;
 using namespace std;
 using scai::common::Walltime;
 
-typedef common::shared_ptr<_DenseVector> DenseVectorPtr;
+typedef std::shared_ptr<_DenseVector> DenseVectorPtr;
 
 static void bench( Matrix& mat )
 {
@@ -78,7 +78,7 @@ static void bench( Matrix& mat )
 
     cout << "x = " << *x << endl;
 
-    common::unique_ptr<Matrix> matT( mat.newMatrix() );
+    std::unique_ptr<Matrix> matT( mat.newMatrix() );
 
     double timeT = Walltime::get();
     {

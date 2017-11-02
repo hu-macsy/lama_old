@@ -215,26 +215,6 @@ if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
 endif ()
 
-## configure c++11/boost dependent sources
-
-if ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
-    if    ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    else  ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    endif ( ${Boost_VERSION} GREATER "105700" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-else ()
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-endif ()
-
 ## configure c++11/pthread dependent headers, add specific sources
 
 #if    ( CXX_SUPPORTS_C11 )
@@ -245,9 +225,7 @@ endif ()
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
 #endif (  CXX_SUPPORTS_C11 )
 
-install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
-                ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
-                ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+install ( FILES ${CONFIGURE_DIR}/SCAITypes.hpp
                 ${CONFIGURE_DIR}/Thread.hpp 
           DESTINATION "include/scai/${MODULE_NAME}" )
 

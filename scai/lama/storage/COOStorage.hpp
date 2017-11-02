@@ -46,7 +46,8 @@
 #include <scai/utilskernel/LAMAKernel.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/UtilKernelTrait.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 namespace scai
 {

@@ -43,11 +43,11 @@
 
 #include <scai/tracing.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
 #include <locale>
 #include <string>
+#include <memory>
 
 using namespace std;
 using namespace scai::hmemo;
@@ -595,7 +595,7 @@ SyncToken* Communicator::shiftAsync(
     recvData.resize( numElems ); // size should fit at least to keep own data
     // For shifting of data we use the pure virtual methods implemened by each communicator
     // Note: get is the method of the accesses and not of the auto_ptr
-    common::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
+    std::unique_ptr<SyncToken> syncToken( shiftAsync( recvData.get(), sendData.get(), numElems, direction ) );
     SCAI_ASSERT_DEBUG( syncToken.get(), "NULL pointer for sync token" )
     // release of accesses are delayed, add routines  in the sync token so they are called at synchonization
     syncToken->pushRoutine( sendData.releaseDelayed() );
@@ -635,7 +635,7 @@ void Communicator::updateHalo(
 
 /* -------------------------------------------------------------------------- */
 
-static void releaseArray( common::shared_ptr<_HArray> array )
+static void releaseArray( std::shared_ptr<_HArray> array )
 {
     array->clear();
 }
@@ -664,7 +664,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     IndexType numSendValues = providesPlan.totalQuantity();
 
-    common::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
+    std::shared_ptr<HArray<ValueType> > sendValues( new HArray<ValueType>( numSendValues ) );
 
     // put together the (send) values to provide for other partitions
 
@@ -674,7 +674,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // Also push the sendValues array to the token so it will be freed after synchronization
     // Note: it is guaranteed that access to sendValues is freed before sendValues
-    token->pushRoutine( common::bind( releaseArray, sendValues ) );
+    token->pushRoutine( std::bind( releaseArray, sendValues ) );
     return token;
 }
 
@@ -894,7 +894,7 @@ ValueType Communicator::scanDefault( ValueType localValue ) const
     PartitionId rank = getRank();
     PartitionId root = 0;
 
-    common::scoped_array<ValueType> allValues( new ValueType[ size ] );
+    std::unique_ptr<ValueType[]> allValues( new ValueType[ size ] );
 
     gather( allValues.get(), 1, root, &localValue );
     bcast ( allValues.get(), size, root );
@@ -967,7 +967,7 @@ void Communicator::maxlocDefault( ValueType& val, IndexType& location, const Par
         myMaxLocation = location;
     }
 
-    common::scoped_array<IndexType> allMaxLocations( new IndexType[ getSize() ] );
+    std::unique_ptr<IndexType[]> allMaxLocations( new IndexType[ getSize() ] );
 
     gather( allMaxLocations.get(), 1, root, &myMaxLocation );
 
@@ -1005,7 +1005,7 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
         myMinLocation = location;
     }
 
-    common::scoped_array<IndexType> allMinLocations( new IndexType[ getSize() ] );
+    std::unique_ptr<IndexType[]> allMinLocations( new IndexType[ getSize() ] );
 
     gather( allMinLocations.get(), 1, root, &myMinLocation );
 
@@ -1153,7 +1153,7 @@ SyncToken* Communicator::exchangeByPlanAsync(
     hmemo::WriteOnlyAccess<ValueType> recvData( recvArray, comCtx, recvSize );
     SyncToken* token( exchangeByPlanAsync( recvData.get(), recvPlan, sendData.get(), sendPlan ) );
     // Add the read and write access to the sync token to get it freed after successful wait
-    // conversion common::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> common::shared_ptr<BaseAccess> supported
+    // conversion std::shared_ptr<hmemo::HostWriteAccess<ValueType> > -> std::shared_ptr<BaseAccess> supported
     token->pushRoutine( recvData.releaseDelayed() );
     token->pushRoutine( sendData.releaseDelayed() );
     // return ownership of new created object
@@ -1171,9 +1171,9 @@ void Communicator::setNodeData()
 
     int maxNameLength = maxProcessorName();
 
-    common::scoped_array<char> myNodeName( new char[ maxNameLength ] );
+    std::unique_ptr<char[]> myNodeName( new char[ maxNameLength ] );
 
-    common::scoped_array<char> allNodeNames( new char[ maxNameLength * getSize() ] );
+    std::unique_ptr<char[]> allNodeNames( new char[ maxNameLength * getSize() ] );
 
     getProcessorName( myNodeName.get() );
 

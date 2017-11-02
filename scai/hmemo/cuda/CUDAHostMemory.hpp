@@ -47,7 +47,7 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/weak_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -73,7 +73,7 @@ class COMMON_DLL_IMPORTEXPORT CUDAHostMemory:
 
 public:
 
-    CUDAHostMemory( common::shared_ptr<const CUDAContext> cudaContext );
+    CUDAHostMemory( std::shared_ptr<const CUDAContext> cudaContext );
 
     virtual ~CUDAHostMemory();
 
@@ -110,7 +110,7 @@ protected:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    common::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
+    std::shared_ptr<const CUDAContext> mCUDAContext;   // fast DMA transfer to this device
 };
 
 } /* end namespace hmemo */

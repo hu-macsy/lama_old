@@ -40,14 +40,13 @@
 
 // base classes
 #include <scai/hmemo/Context.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // internal scai libraries
 #include <scai/tasking/TaskSyncToken.hpp>
 
 #include <scai/common/Thread.hpp>
 
-// common
+#include <memory>
 
 namespace scai
 {
@@ -67,7 +66,7 @@ class COMMON_DLL_IMPORTEXPORT HostContext:
 
     public Context,
     private Context::Register<HostContext>,
-    public common::enable_shared_from_this<HostContext>
+    public std::enable_shared_from_this<HostContext>
 {
 
 public:

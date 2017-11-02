@@ -53,7 +53,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -163,9 +163,9 @@ int main( int argc, const char* argv[] )
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        scai::common::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        scai::common::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        scai::common::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        std::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
+        std::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
+        std::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
 
         Matrix& matrix   = *matrixPtr;
         Vector& rhs      = *rhsPtr;
@@ -173,7 +173,7 @@ int main( int argc, const char* argv[] )
 
         // input matrix will be CSR format
 
-        scai::common::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
+        std::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
         Matrix& inMatrix = *inMatrixPtr;
 
         // Here each processor should print its configuration
@@ -248,7 +248,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<Vector> xPtr( rhs.newVector() );
+                std::unique_ptr<Vector> xPtr( rhs.newVector() );
                 Vector& x = *xPtr;
 
                 x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
@@ -360,7 +360,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
+        std::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
 
         // setting up a common logger, prints also rank of communicator
 
@@ -499,7 +499,7 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
+                std::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
                 Vector& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );

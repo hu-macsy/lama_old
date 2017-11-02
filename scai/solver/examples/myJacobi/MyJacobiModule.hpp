@@ -94,10 +94,10 @@ public:
         MyJacobiRuntime();
         virtual ~MyJacobiRuntime();
 
-        scai::common::shared_ptr<scai::lama::Matrix> mDiagonalTimesLU;
-        scai::common::shared_ptr<scai::lama::Matrix> mDiagonalInverted;
-        scai::common::shared_ptr<scai::lama::Vector> mDiagonalTimesRhs;
-        scai::common::shared_ptr<scai::lama::Vector> mOldSolution;
+        std::shared_ptr<scai::lama::Matrix> mDiagonalTimesLU;
+        std::shared_ptr<scai::lama::Matrix> mDiagonalInverted;
+        std::shared_ptr<scai::lama::Vector> mDiagonalTimesRhs;
+        std::shared_ptr<scai::lama::Vector> mOldSolution;
         scai::solver::SolutionProxy mProxyOldSolution;
     };
 

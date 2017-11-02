@@ -285,7 +285,7 @@ void MatrixCreator::buildPoisson(
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr( );   // get the default communicator
 
-    common::shared_ptr<GridDistribution> gridDistribution( new GridDistribution( globalGrid, comm ) );
+    std::shared_ptr<GridDistribution> gridDistribution( new GridDistribution( globalGrid, comm ) );
 
     SCAI_LOG_INFO( logger, *comm << ": " << *gridDistribution )
 
@@ -472,7 +472,7 @@ void MatrixCreator::fillRandom( Matrix& matrix, float density )
 
     // now we draw the non-zero values
 
-    common::unique_ptr<hmemo::_HArray> csrValues( hmemo::_HArray::create( matrix.getValueType() ) );
+    std::unique_ptr<hmemo::_HArray> csrValues( hmemo::_HArray::create( matrix.getValueType() ) );
 
     hmemo::_HArray& values = *csrValues;
 

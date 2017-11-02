@@ -100,8 +100,8 @@ int main( int argc, char** argv )
     std::string loggerName = "<AMG>";
     LoggerPtr amgLogger( new CommonLogger ( loggerName, LogLevel::completeInformation,
                                             LoggerWriteBehaviour::toConsoleOnly,
-                                            scai::common::shared_ptr<Timer>( new Timer() ) ) );
-    scai::common::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
+                                            std::shared_ptr<Timer>( new Timer() ) ) );
+    std::shared_ptr<SimpleAMG> amgSolver( new SimpleAMG( "SimpleAMG solver", amgLogger ) );
     amgSolver->setHostOnlyLevel( 4 );
     amgSolver->setReplicatedLevel( 5 );
     amgSolver->setMaxLevels( 25 );

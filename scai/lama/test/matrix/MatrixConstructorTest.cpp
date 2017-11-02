@@ -450,14 +450,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( virtualConstructorTest, MatrixType, MatrixTypes )
 
         // virtual default constructor generates default matrix
 
-        common::unique_ptr<MatrixType> newMatrix( matrix.newMatrix() );
+        std::unique_ptr<MatrixType> newMatrix( matrix.newMatrix() );
 
         const StorageType& newLocalStorage = newMatrix->getLocalStorage();
 
         BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumRows() );
         BOOST_CHECK_EQUAL( IndexType( 0 ), newLocalStorage.getNumColumns() );
 
-        common::unique_ptr<MatrixType > copyMatrix( matrix.copy() );
+        std::unique_ptr<MatrixType > copyMatrix( matrix.copy() );
 
         const StorageType& localStorage = matrix.getLocalStorage();
         const StorageType& copyLocalStorage = copyMatrix->getLocalStorage();

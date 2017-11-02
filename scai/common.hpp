@@ -36,8 +36,6 @@
 
 #pragma message("It is not recommended to include whole common")
 
-#include <scai/common/bind.hpp>
-
 #ifdef SCAI_COMPLEX_SUPPORTED
 #include <scai/common/Complex.hpp>
 #endif
@@ -47,7 +45,6 @@
 #include <scai/common/ContextType.hpp>
 #include <scai/common/Factory1.hpp>
 #include <scai/common/Factory.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/LibModule.hpp>
 #include <scai/common/Math.hpp>
 #include <scai/common/NonCopyable.hpp>
@@ -56,12 +53,9 @@
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/ScalarType.hpp>
 #include <scai/common/Settings.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Thread.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/weak_ptr.hpp>
 
 // CUDA
 #include <scai/common/cuda/CUDACallable.hpp>

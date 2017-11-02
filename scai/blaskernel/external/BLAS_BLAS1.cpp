@@ -50,7 +50,8 @@
 #include <scai/common/Settings.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/bind.hpp>
+
+#include <functional>
 
 namespace scai
 {
@@ -259,7 +260,7 @@ void BLAS_BLAS1::axpy(
     if ( syncToken )
     {
         // just set call to this routine as task to be executed; new thread will have syncToken == NULL
-        syncToken->run( common::bind( BLASWrapper<ValueType>::axpy, n, alpha, x, incX, y, incY ) );
+        syncToken->run( std::bind( BLASWrapper<ValueType>::axpy, n, alpha, x, incX, y, incY ) );
     }
     else
     {
