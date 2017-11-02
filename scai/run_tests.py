@@ -59,21 +59,9 @@ def run_test(testname, path, output_dir):
 
     ensure_directory_exists(output_dir)
 
-    try:
-        with open(stdout_path, 'w') as stdout, open(stderr_path, 'w') as stderr:
-            try:
-                retcode = subprocess.call(args, stdout=stdout, stderr=stderr)
-                return retcode == 0
-            except Exception as e:
-                print("ERROR: Failed to run test '{}'".format(testname), file=sys.stderr)
-                print(e, file=sys.stderr)
-                print(file=sys.stderr)
-                return False
-
-    except IOError as e:
-        print("ERROR: Could not open stdout/stderr files for writing for test '{}'".format(testname), file=sys.stderr)
-        print(e, file=sys.stderr)
-        return False
+    with open(stdout_path, 'w') as stdout, open(stderr_path, 'w') as stderr:
+        retcode = subprocess.call(args, stdout=stdout, stderr=stderr)
+        return retcode == 0
 
 
 def run_serial_tests(executable_paths, output_dir):
@@ -91,7 +79,11 @@ def run_serial_tests(executable_paths, output_dir):
         print(message + padding, end="")
         sys.stdout.flush()
 
-        passed = run_test(test.name, test.path, output_dir)
+        try:
+            passed = run_test(test.name, test.path, output_dir)
+        except Exception as e:
+            passed = False;
+            print("\nException when running test {}:\n{}\n".format(test.name, e))
 
         if passed:
             successful_tests.append(test)
