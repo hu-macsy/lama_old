@@ -1394,7 +1394,7 @@ void JDSStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType JDSStorage<ValueType>::l1Norm() const
+NormType<ValueType> JDSStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     const IndexType n = mNumValues;
@@ -1415,7 +1415,7 @@ ValueType JDSStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType JDSStorage<ValueType>::l2Norm() const
+NormType<ValueType> JDSStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     const IndexType n = mNumValues;
@@ -1436,7 +1436,7 @@ ValueType JDSStorage<ValueType>::l2Norm() const
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
-typename JDSStorage<ValueType>::StorageAbsType JDSStorage<ValueType>::maxNorm() const
+NormType<ValueType> JDSStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
     return mValues.maxNorm();

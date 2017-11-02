@@ -1718,7 +1718,7 @@ void ELLStorage<ValueType>::jacobiIterateHalo(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::l1Norm() const
+NormType<ValueType> ELLStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
 
@@ -1738,7 +1738,7 @@ ValueType ELLStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType ELLStorage<ValueType>::l2Norm() const
+NormType<ValueType> ELLStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
 
@@ -1758,13 +1758,13 @@ ValueType ELLStorage<ValueType>::l2Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename ELLStorage<ValueType>::StorageAbsType ELLStorage<ValueType>::maxNorm() const
+NormType<ValueType> ELLStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
 
     if ( mNumRows == 0 || mNumValuesPerRow == 0 )
     {
-        return StorageAbsType( 0 );
+        return NormType<ValueType>( 0 );
     }
 
     static LAMAKernel<ELLKernelTrait::absMaxVal<ValueType> > absMaxVal;

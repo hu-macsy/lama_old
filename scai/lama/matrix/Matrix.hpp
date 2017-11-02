@@ -53,10 +53,6 @@ class COMMON_DLL_IMPORTEXPORT Matrix:
 
 public:
 
-    /** Define the corresponding RealType that is return type for norm computations. */
-
-    typedef typename common::TypeTraits<ValueType>::AbsType RealType;
-
     /** Create a new matrix of a certain format but with same value type */
 
     static Matrix<ValueType>* getMatrix( const Format format );
@@ -136,15 +132,15 @@ public:
      *
      * l1Norm computes the sum of the absolute values of all entries
      */
-    virtual RealType l1Norm( void ) const = 0;
-    virtual RealType l2Norm( void ) const = 0;
-    virtual RealType maxNorm( void ) const = 0;
+    virtual NormType<ValueType> l1Norm( void ) const = 0;
+    virtual NormType<ValueType> l2Norm( void ) const = 0;
+    virtual NormType<ValueType> maxNorm( void ) const = 0;
 
     /** 
      * we provide here an implementation that works for any kind of
      * matrices.
      */
-    virtual RealType maxDiffNorm( const _Matrix& other ) const = 0;
+    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const = 0;
 
 protected:
 

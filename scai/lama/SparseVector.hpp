@@ -88,8 +88,6 @@ public:
     using _Vector::size;
     using Vector<ValueType>::getValueType;
 
-    typedef typename Vector<ValueType>::RealType RealType;
-
     /** Default constructor, creates zero-sized replicated vector */
 
     SparseVector();
@@ -476,17 +474,17 @@ public:
 
     virtual ValueType sum() const;
 
-    virtual RealType l1Norm() const;
+    virtual NormType<ValueType> l1Norm() const;
 
-    virtual RealType l2Norm() const;
+    virtual NormType<ValueType> l2Norm() const;
 
     /** Implementation of pure method _Vector::maxNorm */
 
-    virtual RealType maxNorm() const;
+    virtual NormType<ValueType> maxNorm() const;
 
     /** Implementation of pure method _Vector::maxDiffNorm */
 
-    virtual RealType maxDiffNorm( const _Vector& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const _Vector& other ) const;
 
     /** Implementation of pure method _Vector::all */
 

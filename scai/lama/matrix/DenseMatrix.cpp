@@ -2147,15 +2147,13 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::maxNorm() const
+NormType<ValueType> DenseMatrix<ValueType>::maxNorm() const
 {
-    typedef typename Matrix<ValueType>::RealType RealType;
-
-    RealType myMaxDiff = 0;
+    NormType<ValueType> myMaxDiff = 0;
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        RealType maxDiff = mData[i]->maxNorm();
+        NormType<ValueType> maxDiff = mData[i]->maxNorm();
 
         if ( maxDiff > myMaxDiff )
         {
@@ -2171,18 +2169,16 @@ typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::l1Norm() const
+NormType<ValueType> DenseMatrix<ValueType>::l1Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
 
-    typedef typename Matrix<ValueType>::RealType RealType;
-
-    RealType mySum = 0;
+    NormType<ValueType> mySum = 0;
     IndexType n = mData.size();
 
     for ( IndexType i = 0; i < n; i++ )
     {
-        mySum += static_cast<RealType>( mData[i]->l1Norm() );
+        mySum += static_cast<NormType<ValueType> >( mData[i]->l1Norm() );
     }
 
     return comm.sum( mySum );
@@ -2191,7 +2187,7 @@ typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::l1Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::l2Norm() const
+NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 {
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType mySum = static_cast<ValueType>( 0.0 );
@@ -2210,7 +2206,7 @@ typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::l2Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 {
     if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {

@@ -96,8 +96,6 @@ public:
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
 
-    typedef typename Matrix<ValueType>::RealType RealType;  // instead of using 
-
     typedef DenseStorage<ValueType> StorageType;
 
     typedef common::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
@@ -490,18 +488,18 @@ public:
     }
 
     /* Implementation of pure method of class _Matrix. */
-    virtual RealType l1Norm() const;
+    virtual NormType<ValueType> l1Norm() const;
 
     /* Implementation of pure method of class _Matrix. */
-    virtual RealType l2Norm() const;
+    virtual NormType<ValueType> l2Norm() const;
 
     /** Implementation of _Matrix::maxNorm for dense matrices. */
 
-    virtual RealType maxNorm() const;
+    virtual NormType<ValueType> maxNorm() const;
 
     /** Implementation of _Matrix::maxDiffNorm for dense matrices. */
 
-    virtual RealType maxDiffNorm( const _Matrix& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const;
 
     /** Get the maximal difference between two elements for dense matrices of same type. */
 

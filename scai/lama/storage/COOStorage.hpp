@@ -81,7 +81,6 @@ class COMMON_DLL_IMPORTEXPORT COOStorage:
 public:
 
     typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** get typename of the matrix storage format. */
 
@@ -391,15 +390,15 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual ValueType l1Norm() const;
+    virtual NormType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual ValueType l2Norm() const;
+    virtual NormType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual StorageAbsType maxNorm() const;
+    virtual NormType<ValueType> maxNorm() const;
 
     /** Get a value of the matrix.
      *

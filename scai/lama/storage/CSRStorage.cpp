@@ -2429,7 +2429,7 @@ void CSRStorage<ValueType>::matrixTimesMatrixCSR(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CSRStorage<ValueType>::l1Norm() const
+NormType<ValueType> CSRStorage<ValueType>::l1Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l1Norm()" )
     return HArrayUtils::asum( mValues, this->getContextPtr() );
@@ -2438,18 +2438,19 @@ ValueType CSRStorage<ValueType>::l1Norm() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ValueType CSRStorage<ValueType>::l2Norm() const
+NormType<ValueType> CSRStorage<ValueType>::l2Norm() const
 {
     SCAI_LOG_INFO( logger, *this << ": l2Norm()" )
     ContextPtr prefLoc = this->getContextPtr();
-    ValueType res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
-    return common::Math::sqrt( res );
+    NormType<ValueType> res = HArrayUtils::dotProduct( mValues, mValues, prefLoc );
+    res = common::Math::sqrt( res );
+    return res;
 }
 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxNorm() const
+NormType<ValueType> CSRStorage<ValueType>::maxNorm() const
 {
     // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
@@ -2472,7 +2473,7 @@ typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxNorm() 
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+NormType<ValueType> CSRStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_REGION( "Storage.CSR.maxDiffNorm" )
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
@@ -2499,7 +2500,7 @@ typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxDiffNor
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
+NormType<ValueType> CSRStorage<ValueType>::maxDiffNormImpl( const CSRStorage<ValueType>& other ) const
 {
     // no more checks needed here
     SCAI_LOG_INFO( logger, *this << ": maxDiffNormImpl( " << other << " )" )

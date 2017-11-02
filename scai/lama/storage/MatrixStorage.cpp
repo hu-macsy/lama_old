@@ -1311,8 +1311,7 @@ void MatrixStorage<ValueType>::matrixTimesMatrix(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename MatrixStorage<ValueType>::StorageAbsType
-MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
+NormType<ValueType> MatrixStorage<ValueType>::maxDiffNorm( const MatrixStorage<ValueType>& other ) const
 {
     SCAI_ASSERT_EQUAL_ERROR( mNumRows, other.getNumRows() )
     SCAI_ASSERT_EQUAL_ERROR( mNumColumns, other.getNumColumns() )
@@ -1472,8 +1471,7 @@ void MatrixStorage<ValueType>::setRawDenseData(
     const OtherValueType values[],
     const ValueType epsilon )
 {
-    SCAI_ASSERT_GT_ERROR( StorageAbsType( epsilon ), 0, "epsilon = " << epsilon << ", must not be negative" )
-    mEpsilon = epsilon;
+    mEpsilon = common::Math::abs( epsilon );
     // wrap all the data in a dense storage and make just an assign
     SCAI_LOG_INFO( logger, "set dense storage " << numRows << " x " << numColumns )
     HArrayRef<OtherValueType> data( numRows * numColumns, values );

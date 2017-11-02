@@ -56,10 +56,6 @@ class COMMON_DLL_IMPORTEXPORT Vector: public _Vector
 {
 public:
 
-    /** Define the corresponding RealType that is return type for norm computations. */
-
-    typedef typename common::TypeTraits<ValueType>::AbsType RealType;
-
     /** Create a new vector of a certain kind but with same value type */
 
     static Vector<ValueType>* getVector( VectorKind kind );
@@ -139,7 +135,7 @@ public:
      *
      * l1Norm computes the sum of the absolute values of this.
      */
-    virtual RealType l1Norm() const = 0;
+    virtual NormType<ValueType> l1Norm() const = 0;
 
     /**
      * @brief Returns the L2 norm of this.
@@ -148,7 +144,7 @@ public:
      *
      * l2Norm computes the sum of the absolute values of this.
      */
-    virtual RealType l2Norm() const = 0;
+    virtual NormType<ValueType> l2Norm() const = 0;
 
     /**
      * @brief Returns the max norm of this.
@@ -157,7 +153,7 @@ public:
      *
      * maxNorm computes the value of this with the largest magnitude.
      */
-    virtual RealType maxNorm() const = 0;
+    virtual NormType<ValueType> maxNorm() const = 0;
 
     /**
      * @brief Returns the max norm of the difference with another vector
@@ -171,7 +167,7 @@ public:
      *
      *  But it avoids the temporary vector wherever possible
      */
-    virtual RealType maxDiffNorm( const _Vector& other ) const = 0;
+    virtual NormType<ValueType> maxDiffNorm( const _Vector& other ) const = 0;
 
     /**
      * @brief Returns the global minimum value of this.

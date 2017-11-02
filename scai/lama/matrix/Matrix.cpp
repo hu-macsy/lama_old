@@ -436,10 +436,8 @@ Scalar Matrix<ValueType>::_maxDiffNorm( const _Matrix& other ) const
 }
 
 template<typename ValueType>
-typename Matrix<ValueType>::RealType Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 {
-    typedef typename Matrix<ValueType>::RealType RealType;
-
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();
 
@@ -449,7 +447,7 @@ typename Matrix<ValueType>::RealType Matrix<ValueType>::maxDiffNorm( const _Matr
     DenseVector<ValueType> row;
     DenseVector<ValueType> rowOther;
 
-    RealType diff = 0;
+    NormType<ValueType> diff = 0;
 
     // now traverse  all rows
 
@@ -460,7 +458,7 @@ typename Matrix<ValueType>::RealType Matrix<ValueType>::maxDiffNorm( const _Matr
         getRow( row, i );
         other.getRow( rowOther, i );
 
-        RealType diffRow = row.maxDiffNorm( rowOther );
+        NormType<ValueType> diffRow = row.maxDiffNorm( rowOther );
 
         if ( diffRow > diff )
         {

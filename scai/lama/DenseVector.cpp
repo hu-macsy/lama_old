@@ -1043,9 +1043,9 @@ ValueType DenseVector<ValueType>::max() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DenseVector<ValueType>::RealType DenseVector<ValueType>::l1Norm() const
+NormType<ValueType> DenseVector<ValueType>::l1Norm() const
 {
-    typename DenseVector<ValueType>::RealType localL1Norm = mLocalValues.l1Norm();
+    NormType<ValueType> localL1Norm = mLocalValues.l1Norm();
     return getDistribution().getCommunicator().sum( localL1Norm );
 }
 
@@ -1060,12 +1060,11 @@ ValueType DenseVector<ValueType>::sum() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DenseVector<ValueType>::RealType DenseVector<ValueType>::l2Norm() const
+NormType<ValueType> DenseVector<ValueType>::l2Norm() const
 {
-    typedef typename DenseVector<ValueType>::RealType RealType;
     // Note: we do not call l2Norm here for mLocalValues to avoid sqrt
-    RealType localDotProduct = mLocalValues.dotProduct( mLocalValues );
-    RealType globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
+    NormType<ValueType> localDotProduct = mLocalValues.dotProduct( mLocalValues );
+    NormType<ValueType> globalDotProduct = getDistribution().getCommunicator().sum( localDotProduct );
     return common::Math::sqrt( globalDotProduct );
 }
 
@@ -1082,12 +1081,11 @@ IndexType DenseVector<IndexType>::l2Norm() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DenseVector<ValueType>::RealType DenseVector<ValueType>::maxNorm() const
+NormType<ValueType> DenseVector<ValueType>::maxNorm() const
 {
-    typedef typename DenseVector<ValueType>::RealType RealType;
-    RealType localMaxNorm = mLocalValues.maxNorm();
+    NormType<ValueType> localMaxNorm = mLocalValues.maxNorm();
     const Communicator& comm = getDistribution().getCommunicator();
-    RealType globalMaxNorm = comm.max( localMaxNorm );
+    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
                    << ", max norm global = " << globalMaxNorm )
@@ -1097,7 +1095,7 @@ typename DenseVector<ValueType>::RealType DenseVector<ValueType>::maxNorm() cons
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-typename DenseVector<ValueType>::RealType DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
+NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const _Vector& other ) const
 {
     if (   other.getDistribution() != getDistribution() 
        ||  other.getVectorKind() != VectorKind::DENSE 
@@ -1111,13 +1109,11 @@ typename DenseVector<ValueType>::RealType DenseVector<ValueType>::maxDiffNorm( c
 
     const DenseVector<ValueType>& denseOther = reinterpret_cast<const DenseVector<ValueType>&>( other );
 
-    typedef typename DenseVector<ValueType>::RealType RealType;
-
-    RealType localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
+    NormType<ValueType> localMaxNorm = mLocalValues.maxDiffNorm( denseOther.getLocalValues() );
 
     const Communicator& comm = getDistribution().getCommunicator();
 
-    RealType globalMaxNorm = comm.max( localMaxNorm );
+    NormType<ValueType> globalMaxNorm = comm.max( localMaxNorm );
 
     SCAI_LOG_INFO( logger,
                    comm << ": max norm " << *this << ", local max norm: " << localMaxNorm
