@@ -169,8 +169,6 @@ And therefore inherit all there external dependencies:
 
    <a href="http://www.nvidia.com/object/cuda_home_new.html" target="_blank"> CUDA </a>
 
-* Compiler supporting Intel MIC Architecture for using the Xeon Phi Coprocessor
-
 * |MKL|: for Intel optimized blas routines [#f1]_
 
 .. |MKL| raw:: html
@@ -195,12 +193,6 @@ And therefore inherit all there external dependencies:
 .. |MPI| raw:: html
 
 	<a href="https://www.mpi-forum.org/docs/docs.html" target="_blank"> MPI </a>
-
-* |GPI| (Global Adress Programming Interface): for Interprocess Communication [#f1]_
-
-.. |GPI| raw:: html
-
-	<a href="http://www.gpi-site.com/gpi2" target="_blank"> GPI </a>
 
 * |Metis|: for Graph Partitioning [#f1]_
 

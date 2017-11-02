@@ -96,12 +96,12 @@ public:
         BiCGRuntime();
         virtual ~BiCGRuntime();
 
-        common::shared_ptr<lama::_Matrix> mTransposeA;
-        common::shared_ptr<lama::_Vector> mP2;
-        common::shared_ptr<lama::_Vector> mQ2;
-        common::shared_ptr<lama::_Vector> mZ2;
+        lama::_MatrixPtr mTransposeA;
+        lama::_VectorPtr mP2;
+        lama::_VectorPtr mQ2;
+        lama::_VectorPtr mZ2;
         lama::Scalar mPScalar2;
-        mutable common::shared_ptr<lama::_Vector> mResidual2;
+        mutable lama::_VectorPtr mResidual2;
     };
 
     const lama::_Vector& getResidual2() const;

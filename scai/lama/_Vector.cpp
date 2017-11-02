@@ -706,7 +706,7 @@ void _Vector::writeToSingleFile(
     {
         // writing a distributed vector into a single file requires redistributon
 
-        common::unique_ptr<_Vector> repV( copy() );
+        std::unique_ptr<_Vector> repV( copy() );
         repV->replicate();
         repV->writeToSingleFile( fileName, fileType, dataType, fileMode );
     }

@@ -103,8 +103,9 @@ public:
         RichardsonRuntime();
         virtual ~RichardsonRuntime();
 
-        common::unique_ptr<lama::_Vector> mOldSolution;
-        common::unique_ptr<lama::_Vector> mX;
+        lama::_VectorPtr mOldSolution;
+        lama::_VectorPtr mX;
+
         SolutionProxy mProxyOldSolution;
     };
     /**

@@ -46,7 +46,7 @@ set +e
 # Test for Host context is mandatory, other contexts are optional and tested if supported
 
 SCAI_CONTEXT_LIST="Host"
-SCAI_OTHER_CONTEXTS="CUDA MIC"
+SCAI_OTHER_CONTEXTS="CUDA"
 
 # check which of the optional contexts are supported in the current configuration
 
@@ -107,7 +107,5 @@ do
     echo "Running lama matrix tests with $i processes"
     mpirun -np $i --output-filename ${dirname}/lamaMatrixMPITest.xml ./matrix/lamaMatrixTest --SCAI_COMMUNICATOR=MPI --SCAI_NUM_THREADS=1 ${BOOST_TEST_ARGS}
 done
-
-#ToDo: insert GPI run here
 
 echo "Tests finished, results in directory: ${dirname}"

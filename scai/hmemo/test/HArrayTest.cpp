@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE( newArrayTest )
     using namespace common;
     HArray<float> A( 10, 1.0f );
   
-    common::unique_ptr<_HArray> tmpA( A.newArray() );
+    std::unique_ptr<_HArray> tmpA( A.newArray() );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), tmpA->size() );
     BOOST_CHECK_EQUAL( tmpA->getValueType(), A.getValueType() );
@@ -361,7 +361,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
     using namespace common;
     HArray<float> A( N, 1.0f );
   
-    common::unique_ptr<_HArray> tmpA( A.copy() );
+    std::unique_ptr<_HArray> tmpA( A.copy() );
 
     BOOST_CHECK_EQUAL( N, tmpA->size() );
     BOOST_CHECK_EQUAL( tmpA->getValueType(), A.getValueType() );

@@ -761,7 +761,7 @@ void DenseMatrix<ValueType>::assign( const _MatrixStorage& storage, Distribution
         }
         else if ( colDist->isReplicated() )
         {
-            common::shared_ptr<DenseStorage<ValueType> > dataPtr( new DenseStorage<ValueType>( storage ) );
+            std::shared_ptr<DenseStorage<ValueType> > dataPtr( new DenseStorage<ValueType>( storage ) );
 
             mData.resize( 1 );
             mData[0] = dataPtr;
@@ -918,7 +918,7 @@ void DenseMatrix<ValueType>::allocateData()
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::splitColumnData(
-    std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
+    std::vector<std::shared_ptr<DenseStorage<ValueType> > >& chunks,
     const DenseStorage<ValueType>& columnData,
     const Distribution& colDistribution )
 {
@@ -1014,7 +1014,7 @@ void DenseMatrix<ValueType>::redistribute( DistributionPtr rowDistribution, Dist
         // Join all column data
         const IndexType numCols = getNumColumns();
         const IndexType numLocalRows = getRowDistribution().getLocalSize();
-        common::shared_ptr<DenseStorage<ValueType> > colData;
+        std::shared_ptr<DenseStorage<ValueType> > colData;
         colData.reset( new DenseStorage<ValueType>( numLocalRows, numCols ) );
         joinColumnData( colData->getData(), 0, numLocalRows );
         mData.clear();
@@ -1032,7 +1032,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::splitColumns( DistributionPtr colDistribution )
 {
     SCAI_ASSERT_EQUAL_ERROR( 1, getColDistribution().getNumPartitions() )
-    common::shared_ptr<DenseStorage<ValueType> > oldStorage = mData[0];
+    std::shared_ptr<DenseStorage<ValueType> > oldStorage = mData[0];
     _Matrix::setDistributedMatrix( getRowDistributionPtr(), colDistribution );
     computeOwners(); // compute mapping column index -> chunk
     SCAI_ASSERT_EQUAL_ERROR( getRowDistribution().getLocalSize(), oldStorage->getNumRows() )
@@ -1057,7 +1057,7 @@ void DenseMatrix<ValueType>::redistribute( const Redistributor& redistributor, D
         redistribute( getRowDistributionPtr(), repColDistributionPtr );
     }
 
-    common::shared_ptr<DenseStorage<ValueType> > newData( mData[0]->newMatrixStorage() );
+    std::shared_ptr<DenseStorage<ValueType> > newData( mData[0]->newMatrixStorage() );
     newData->redistribute( *mData[0], redistributor );
     mData[0] = newData;
 

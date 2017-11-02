@@ -19,7 +19,6 @@ Recommended:
  * MPI
 
 Optional:
- * GPI-2
  * Metis/ParMetis
  * Java
  * Documentation:

@@ -48,10 +48,9 @@
 
 #include <scai/logging.hpp>
 
-#include <scai/common/unique_ptr.hpp>
-
 // std
 #include <vector>
+#include <memory>
 
 #define MEMORY_MAX_CONTEXTS 4
 
@@ -198,7 +197,7 @@ private:
 
     std::vector<ContextData> mContextData; // Incarnations of the array at different contexts
 
-    common::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
+    std::unique_ptr<tasking::SyncToken> mSyncToken; //!<  outstanding transfers
 
     ContextDataIndex findContextData( ContextPtr context ) const;
 

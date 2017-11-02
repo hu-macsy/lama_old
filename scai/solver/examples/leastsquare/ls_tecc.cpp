@@ -54,7 +54,7 @@ void joinMatrix( CSRSparseMatrix<ValueType>& result, const CSRSparseMatrix<Value
 {
     SCAI_ASSERT_EQ_ERROR( a.getNumColumns(), b.getNumColumns(), "joined matrices must have same number of columns" );
 
-    typedef scai::common::shared_ptr<scai::lama::_MatrixStorage> StoragePtr;
+    typedef std::shared_ptr<scai::lama::_MatrixStorage> StoragePtr;
 
     StoragePtr shared_ptrA( a.getLocalStorage().copy() );
     StoragePtr shared_ptrB( b.getLocalStorage().copy() );

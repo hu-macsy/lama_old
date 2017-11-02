@@ -107,7 +107,7 @@ public:
         CGNRRuntime();
         virtual ~CGNRRuntime();
 
-        common::shared_ptr<lama::_Matrix> mTransposedMat;
+        lama::_MatrixPtr mTransposedMat;
         lama::_VectorPtr mVecD;
         lama::_VectorPtr mVecW;
         lama::_VectorPtr mVecZ;

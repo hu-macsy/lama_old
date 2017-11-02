@@ -42,7 +42,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/config.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/Printable.hpp>
 #include <scai/common/NonCopyable.hpp>
 
@@ -72,8 +71,6 @@ enum MemoryType
     HostMemory,       //!< memory for CPU as host, is main memory
     CUDAMemory,       //!< CUDA GPU memory on a device
     CUDAHostMemory,   //!< pinned memory that allows faster transfer to a certain CUDA Device
-    MICMemory,        //!< Memory on Intel MIC
-    GPIMemory,        //!< Pinned memory for GPI communication
     UserMemory        //!< can be used for a new derived Context class
 };
 

@@ -46,7 +46,7 @@ scai_test ( EXECUTABLE hmemoTest
             UNIT_TEST
             RUN )
 
-scai_subdirectories( CUDA MIC )
+scai_subdirectories( CUDA )
 
 ### Copy the README and xmltest.sh file in build directory ### 
 

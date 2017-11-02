@@ -45,10 +45,10 @@
 #include <scai/hmemo/Context.hpp>
 
 #include <scai/tracing.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 // std
 #include <sstream>
+#include <memory>
 
 namespace scai
 {
@@ -153,7 +153,7 @@ void DecompositionSolver::solveImplTyped( const lama::SparseMatrix<ValueType>& c
 
     // from now on we do it all on storage, but we need CSR storage for the solver
 
-    common::unique_ptr<lama::CSRStorage<ValueType> > tmpCSRStorage;
+    std::unique_ptr<lama::CSRStorage<ValueType> > tmpCSRStorage;
 
     const lama::CSRStorage<ValueType>* csrStorage;
 

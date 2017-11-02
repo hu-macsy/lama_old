@@ -50,9 +50,6 @@
 
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/bind.hpp>
-#include <scai/common/function.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -60,11 +57,14 @@
 
 // std
 #include <vector>
+#include <memory>
+#include <functional>
+
+using std::unique_ptr;
 
 namespace scai
 {
 
-using common::scoped_array;
 using common::TypeTraits;
 
 using tasking::TaskSyncToken;
@@ -103,7 +103,7 @@ IndexType OpenMPCSRUtils::scanParallel( PartitionId numThreads, IndexType array[
 {
     // std::cout << "Scan with " << numThreads << " in parallel" << std::endl;
     // For more threads, we do it in parallel
-    scoped_array<IndexType> threadCounter( new IndexType[numThreads] );
+    unique_ptr<IndexType[]> threadCounter( new IndexType[numThreads] );
     SCAI_LOG_DEBUG( logger, "scanParallel: " << numValues << " entries for " << numThreads << " threads" )
     #pragma omp parallel
     {
@@ -826,7 +826,7 @@ void OpenMPCSRUtils::normalGEMV(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y,
+        syncToken->run( std::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y,
                                       numRows, csrIA, csrJA, csrValues ) );
     }
     else
@@ -873,7 +873,7 @@ void OpenMPCSRUtils::normalGEVM(
     {
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
-        syncToken->run( common::bind( normalGEVM_s<ValueType>, result,
+        syncToken->run( std::bind( normalGEVM_s<ValueType>, result,
                                       std::pair<ValueType, const ValueType*>( alpha, x ),
                                       std::pair<ValueType, const ValueType*>( beta, y ),
                                       numRows, numColumns, csrIA, csrJA, csrValues ) );
@@ -926,7 +926,7 @@ void OpenMPCSRUtils::sparseGEMV(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( sparseGEMV<ValueType>, result, alpha,
+        syncToken->run( std::bind( sparseGEMV<ValueType>, result, alpha,
                                       x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
         return;
     }
@@ -1080,7 +1080,7 @@ void OpenMPCSRUtils::jacobi(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( jacobi<ValueType>, solution, csrIA, csrJA, csrValues, oldSolution, rhs, omega, numRows ) );
+        syncToken->run( std::bind( jacobi<ValueType>, solution, csrIA, csrJA, csrValues, oldSolution, rhs, omega, numRows ) );
         return;
     }
 
@@ -1233,7 +1233,7 @@ void OpenMPCSRUtils::decomposition(
 {
     // current workaround without MKL: inverse solver of dense matrix
 
-    common::scoped_array<ValueType> denseA( new ValueType[ numRows * numRows ] );
+    std::unique_ptr<ValueType[]> denseA( new ValueType[ numRows * numRows ] );
 
     for ( IndexType i = 0; i < numRows; ++i )
     {

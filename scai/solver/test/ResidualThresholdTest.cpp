@@ -52,7 +52,7 @@
 #include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace scai;
 using namespace scai::solver;
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
 
 BOOST_AUTO_TEST_CASE( writeAtTest )
 {
-    common::unique_ptr<ResidualThreshold> testcriterion( new ResidualThreshold() );
+    std::unique_ptr<ResidualThreshold> testcriterion( new ResidualThreshold() );
     SCAI_COMMON_WRITEAT_TEST( *testcriterion );
 }
 /* --------------------------------------------------------------------- */

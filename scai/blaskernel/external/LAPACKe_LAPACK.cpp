@@ -43,7 +43,6 @@
 
 // internal scai libraries
 #include <scai/kregistry/KernelRegistry.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Settings.hpp>
@@ -53,10 +52,13 @@
 // external
 #include <mkl_lapacke.h>
 
+#include <memory>
+
+using std::unique_ptr;
+
 namespace scai
 {
 
-using common::scoped_array;
 using common::TypeTraits;
 
 namespace blaskernel
@@ -118,7 +120,7 @@ void LAPACKe_LAPACK::getinv( const IndexType n, ValueType* a,
 
     typedef LAPACKeTrait::LAPACKIndexType LAPACKIndexType;
 
-    scoped_array<LAPACKIndexType> ipiv( new LAPACKIndexType[n] );  // freed by destructor
+    unique_ptr<LAPACKIndexType[]> ipiv( new LAPACKIndexType[n] );  // freed by destructor
 
     SCAI_LOG_INFO( logger,
                    "getinv<float> for " << n << " x " << n << " matrix, uses MKL" )

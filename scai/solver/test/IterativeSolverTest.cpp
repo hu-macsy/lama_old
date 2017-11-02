@@ -39,7 +39,6 @@
 #include <scai/dmemo/BlockDistribution.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
@@ -56,6 +55,8 @@
 #include <scai/solver/logger/Timer.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/test/TestMacros.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace hmemo;

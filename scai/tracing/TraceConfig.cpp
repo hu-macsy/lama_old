@@ -45,6 +45,9 @@
 // std
 #include <iostream>
 #include <cstdlib>
+#include <memory>
+
+using std::shared_ptr;
 
 namespace scai
 {
@@ -53,7 +56,6 @@ namespace tracing
 {
 
 using common::Thread;
-using common::shared_ptr;
 
 /* -------------------------------------------------------------------------- *
  *   Static class variables                                                   *
@@ -326,7 +328,7 @@ TraceData* TraceConfig::getTraceData( ThreadId threadId )
     Thread::ScopedLock lock( mapMutex );
     shared_ptr<TraceData> traceData;
     // Old stuff: shared_ptr<TraceData> traceData = mTraceDataMap[threadId];
-    std::map<ThreadId, common::shared_ptr<TraceData> >::const_iterator it = mTraceDataMap.find( threadId );
+    std::map<ThreadId, std::shared_ptr<TraceData> >::const_iterator it = mTraceDataMap.find( threadId );
 
     if ( it == mTraceDataMap.end() )
     {

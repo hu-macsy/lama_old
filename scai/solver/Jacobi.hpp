@@ -76,10 +76,9 @@ public:
         JacobiRuntime();
         virtual ~JacobiRuntime();
 
-        //TODO: HArray?
         lama::_VectorPtr mOldSolution;
         SolutionProxy mProxyOldSolution;
-        common::shared_ptr<hmemo::_HArray> mDiagonal;
+        std::shared_ptr<hmemo::_HArray> mDiagonal;
     };
 
     /**

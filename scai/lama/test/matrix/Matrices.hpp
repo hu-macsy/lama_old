@@ -34,6 +34,8 @@
 
 #include <scai/lama/matrix/Matrix.hpp>
 
+#include <scai/common/TypeTraits.hpp>
+
 #include <vector>
 
 /** Class for a list of matrix pointers, one for each supported

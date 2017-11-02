@@ -34,9 +34,12 @@
 
 #include <scai/tasking/Task.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Walltime.hpp>
 #include <scai/common/Settings.hpp>
+
+#include <functional>
+
+using std::bind;
 
 using namespace scai::common;
 using namespace scai::tasking;

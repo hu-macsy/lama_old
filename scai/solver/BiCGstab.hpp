@@ -100,14 +100,14 @@ public:
         BiCGstabRuntime();
         virtual ~BiCGstabRuntime();
 
-        common::shared_ptr<lama::_Vector> mRes0;
-        common::shared_ptr<lama::_Vector> mVecV;
-        common::shared_ptr<lama::_Vector> mVecP;
-        common::shared_ptr<lama::_Vector> mVecS;
-        common::shared_ptr<lama::_Vector> mVecT;
-        common::shared_ptr<lama::_Vector> mVecPT;
-        common::shared_ptr<lama::_Vector> mVecST;
-        common::shared_ptr<lama::_Vector> mVecTT;
+        lama::_VectorPtr mRes0;
+        lama::_VectorPtr mVecV;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecS;
+        lama::_VectorPtr mVecT;
+        lama::_VectorPtr mVecPT;
+        lama::_VectorPtr mVecST;
+        lama::_VectorPtr mVecTT;
 
         lama::Scalar mEps;
         lama::Scalar mResNorm;

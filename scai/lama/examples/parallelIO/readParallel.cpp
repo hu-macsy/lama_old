@@ -43,9 +43,10 @@
 #include <scai/dmemo/CyclicDistribution.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/unique_ptr.hpp>
 
 #include "utility.hpp"
+
+#include <memory>
 
 using namespace std;
 
@@ -84,7 +85,11 @@ int main( int argc, const char* argv[] )
 
     // oops, no factory for storage, only for matrix
 
+<<<<<<< HEAD
     common::unique_ptr<Matrix> matrixPtr( _Matrix::getMatrix( _Matrix::CSR, type ) );
+=======
+    std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, type ) );
+>>>>>>> lama_intern/feature/remove_boost
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
 

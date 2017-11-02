@@ -39,9 +39,10 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/bind.hpp>
-#include <scai/common/weak_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
+
+#include <memory>
+#include <functional>
 
 /** Exampes of a new context class that implements all relevant routines. */
 
@@ -54,7 +55,7 @@ private:
 
     int mDeviceNr;     // MockContext with different device numbers are not equal
 
-    mutable scai::common::weak_ptr<scai::hmemo::Memory> mMemory;
+    mutable std::weak_ptr<scai::hmemo::Memory> mMemory;
 
 public:
 
@@ -134,13 +135,13 @@ private:
 
 /* --------------------------------------------------------------------- */
 
-static std::vector<scai::common::weak_ptr<class MockContext> > contextInstances( 6 );
+static std::vector<std::weak_ptr<class MockContext> > contextInstances( 6 );
 
 /* --------------------------------------------------------------------- */
 
 inline scai::hmemo::ContextPtr MockContext::create( int deviceNr )
 {
-    scai::common::shared_ptr<MockContext> context;
+    std::shared_ptr<MockContext> context;
     SCAI_ASSERT( deviceNr < 6, "number of instances limited" )
 
     // use the last contextInstance if it is still valid
@@ -148,7 +149,7 @@ inline scai::hmemo::ContextPtr MockContext::create( int deviceNr )
     if ( contextInstances[deviceNr].expired() )
     {
         // create a new instance of MockContext and keep it for further uses
-        context = scai::common::shared_ptr<MockContext>( new MockContext( deviceNr ) );
+        context = std::shared_ptr<MockContext>( new MockContext( deviceNr ) );
         contextInstances[deviceNr] = context;
     }
     else

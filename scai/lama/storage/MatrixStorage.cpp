@@ -60,11 +60,12 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/SCAITypes.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/loop.hpp>
+
+#include <functional>
 
 namespace scai
 {
@@ -1161,9 +1162,9 @@ SyncToken* MatrixStorage<ValueType>::matrixTimesVectorAsync(
         const ValueType,
         const HArray<ValueType>& ) const
     = &MatrixStorage<ValueType>::matrixTimesVector;
-    using common::bind;
-    using common::ref;
-    using common::cref;
+    using std::bind;
+    using std::ref;
+    using std::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -1186,9 +1187,9 @@ SyncToken* MatrixStorage<ValueType>::vectorTimesMatrixAsync(
         const ValueType,
         const HArray<ValueType>& ) const
     = &MatrixStorage<ValueType>::vectorTimesMatrix;
-    using common::bind;
-    using common::ref;
-    using common::cref;
+    using std::bind;
+    using std::ref;
+    using std::cref;
     return new TaskSyncToken( bind( pf, this, ref( result ), alpha, cref( x ), beta, cref( y ) ) );
 }
 
@@ -1222,9 +1223,9 @@ SyncToken* MatrixStorage<ValueType>::jacobiIterateAsync(
         const HArray<ValueType>&,
         const ValueType ) const
     = &MatrixStorage<ValueType>::jacobiIterate;
-    using common::bind;
-    using common::cref;
-    using common::ref;
+    using std::bind;
+    using std::cref;
+    using std::ref;
     return new TaskSyncToken( bind( pf, this, ref( solution ), cref( oldSolution ), cref( rhs ), omega ) );
 }
 
@@ -1532,7 +1533,7 @@ void MatrixStorage<ValueType>::writeToFile(
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         if ( dataType != common::scalar::UNKNOWN )
         {
@@ -1577,7 +1578,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
         // fileIO->setDataType( common::scalar::INTERNAL );

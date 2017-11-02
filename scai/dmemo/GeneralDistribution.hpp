@@ -205,7 +205,7 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
-typedef common::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
+typedef std::shared_ptr<GeneralDistribution> GeneralDistributionPtr;
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */

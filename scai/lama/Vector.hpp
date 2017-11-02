@@ -43,6 +43,7 @@ namespace scai
 
 namespace lama
 {
+
 /**
  * @brief Definition of an abstract class that represents a distributed one-dimensional vector 
  *        of a certain value type.

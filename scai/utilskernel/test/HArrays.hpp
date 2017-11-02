@@ -36,7 +36,7 @@
 
 #include <vector>
 
-typedef scai::common::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
+typedef std::shared_ptr<scai::hmemo::_HArray> ArrayPtr;
 
 /** Class for a list of arrays, one for each supported array type.
  */

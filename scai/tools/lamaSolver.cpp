@@ -53,7 +53,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace scai;
@@ -248,7 +248,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                scai::common::unique_ptr<_Vector> xPtr( rhs.newVector() );
+                _VectorPtr xPtr( rhs.newVector() );
                 _Vector& x = *xPtr;
 
                 x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
@@ -360,7 +360,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        scai::common::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
+        std::unique_ptr<Solver> mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
 
         // setting up a common logger, prints also rank of communicator
 
@@ -499,8 +499,10 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                scai::common::unique_ptr<_Vector> compSolutionPtr( rhs.newVector() );
+
+                _VectorPtr compSolutionPtr( rhs.newVector() );
                 _Vector& compSolution = *compSolutionPtr;
+
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;

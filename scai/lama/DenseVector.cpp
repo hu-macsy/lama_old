@@ -53,7 +53,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -63,11 +62,11 @@
 
 // std
 #include <ostream>
+#include <memory>
 
 namespace scai
 {
 
-using common::scoped_array;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
 using utilskernel::LArray;
@@ -677,14 +676,14 @@ void DenseVector<ValueType>::sortImpl(
 
     PartitionId nPartitions = comm.getSize();
 
-    common::scoped_array<ValueType> splitValues( new ValueType[ nPartitions + 1 ] );
+    std::unique_ptr<ValueType[]> splitValues( new ValueType[ nPartitions + 1 ] );
 
     {
         ReadAccess<ValueType> rSortedValues( sortedValues );
         getSplitValues( splitValues.get(), comm, rSortedValues.get(), sortedValues.size(), ascending );
     }
 
-    common::scoped_array<IndexType> quantities( new IndexType[ nPartitions ] );
+    std::unique_ptr<IndexType[]> quantities( new IndexType[ nPartitions ] );
 
     // Determine quantities for each processor
 
@@ -929,7 +928,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::copy() const
 template<typename ValueType>
 DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
 {
-    common::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() );
+    std::unique_ptr<DenseVector<ValueType> > vector( new DenseVector<ValueType>() );
     vector->setContextPtr( this->getContextPtr() );
     return vector.release();
 }
@@ -2012,7 +2011,7 @@ void DenseVector<ValueType>::writeLocalToFile(
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         if ( dataType != common::scalar::UNKNOWN )
         {

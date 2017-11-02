@@ -70,6 +70,8 @@
 
 // std
 #include <cmath>
+#include <memory>
+#include <functional>
 
 using namespace scai::hmemo;
 using namespace scai::dmemo;
@@ -80,7 +82,10 @@ namespace scai
 namespace lama
 {
 
-using common::shared_ptr;
+using std::shared_ptr;
+using std::unique_ptr;
+using std::function;
+using std::bind;
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 using sparsekernel::CSRKernelTrait;
@@ -90,7 +95,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SparseMatrix<ValueTy
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage ) :
+SparseMatrix<ValueType>::SparseMatrix( shared_ptr<MatrixStorage<ValueType> > storage ) :
 
     Matrix<ValueType>( storage->getNumRows(), storage->getNumColumns() )
 {
@@ -105,7 +110,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 /* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
+SparseMatrix<ValueType>::SparseMatrix( shared_ptr<MatrixStorage<ValueType> > storage, DistributionPtr rowDist ) :
 
     Matrix<ValueType>(
         rowDist,
@@ -136,7 +141,7 @@ SparseMatrix<ValueType>::SparseMatrix( common::shared_ptr<MatrixStorage<ValueTyp
 
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
-    common::shared_ptr<MatrixStorage<ValueType> > localData,
+    shared_ptr<MatrixStorage<ValueType> > localData,
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
 
@@ -167,8 +172,8 @@ SparseMatrix<ValueType>::SparseMatrix(
 
 template<typename ValueType>
 SparseMatrix<ValueType>::SparseMatrix(
-    common::shared_ptr<MatrixStorage<ValueType> > localData,
-    common::shared_ptr<MatrixStorage<ValueType> > haloData,
+    shared_ptr<MatrixStorage<ValueType> > localData,
+    shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
     DistributionPtr colDist ) :
@@ -196,8 +201,8 @@ SparseMatrix<ValueType>::SparseMatrix() : Matrix<ValueType>( 0, 0 )
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::set(
-    common::shared_ptr<MatrixStorage<ValueType> > localData,
-    common::shared_ptr<MatrixStorage<ValueType> > haloData,
+    shared_ptr<MatrixStorage<ValueType> > localData,
+    shared_ptr<MatrixStorage<ValueType> > haloData,
     const Halo& halo,
     DistributionPtr rowDist,
     DistributionPtr colDist ) 
@@ -594,7 +599,7 @@ void SparseMatrix<ValueType>::buildLocalStorage( _MatrixStorage& storage ) const
     {
         // temporary local storage with joined columns needed before
         bool keepDiagonalProperty = true;
-        common::shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
+        shared_ptr<MatrixStorage<ValueType> > tmp( mLocalData->newMatrixStorage() );
         tmp->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), keepDiagonalProperty );
         storage = *tmp;
     }
@@ -689,7 +694,7 @@ void SparseMatrix<ValueType>::redistribute( const Redistributor& redistributor, 
         redistribute( getRowDistributionPtr(), repColDistributionPtr );
     }
 
-    common::shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );
+    shared_ptr<MatrixStorage<ValueType> > newData( mLocalData->newMatrixStorage() );
     newData->redistribute( *mLocalData, redistributor );
     mLocalData = newData;
 
@@ -1379,7 +1384,7 @@ void SparseMatrix<ValueType>::concatenate(
     dmemo::DistributionPtr colDist,
     const std::vector<const _Matrix*>& matrices )
 {
-    common::unique_ptr<_Matrix> mPtr( this->newMatrix() );
+    unique_ptr<_Matrix> mPtr( this->newMatrix() );
 
     SparseMatrix<ValueType>& newMatrix = static_cast<SparseMatrix<ValueType>& >( *mPtr );
  
@@ -1597,7 +1602,7 @@ void SparseMatrix<ValueType>::cat( const IndexType dim, const _Matrix* other[], 
 
     if ( dim == 0  )
     {
-        common::scoped_array<const _MatrixStorage*> storages( new const _MatrixStorage*[ n ] );
+        std::unique_ptr<const _MatrixStorage*[]> storages( new const _MatrixStorage*[ n ] );
 
         for ( IndexType i = 0; i < n; ++i )
         {
@@ -1669,12 +1674,12 @@ void SparseMatrix<ValueType>::haloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
-    common::function <
+    function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localF,
-    common::function <
+    function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
@@ -1742,12 +1747,12 @@ void SparseMatrix<ValueType>::invHaloOperationSync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
-    common::function <
+    function <
     void(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localF,
-    common::function <
+    function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
@@ -1809,12 +1814,12 @@ void SparseMatrix<ValueType>::haloOperationAsync(
     HArray<ValueType>& localResult,
     const HArray<ValueType>& localX,
     HArray<ValueType>& haloX,
-    common::function <
+    function <
     tasking::SyncToken * (
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localAsyncF,
-    common::function <
+    function <
     void(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
@@ -1836,7 +1841,7 @@ void SparseMatrix<ValueType>::haloOperationAsync(
         mTempSendValues.prefetch( comm.getCommunicationContext( mTempSendValues ) );
     }
 
-    common::unique_ptr<tasking::SyncToken> localComputation;
+    unique_ptr<tasking::SyncToken> localComputation;
     {
         SCAI_REGION( "Mat.Sp.asyncLocal" )
         SCAI_LOG_INFO( logger,
@@ -1893,7 +1898,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    using namespace scai::common;
+    using namespace std::placeholders;
 
     SCAI_REGION( "Mat.Sp.timesVector" )
 
@@ -2126,7 +2131,7 @@ NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other )
     else
     {
         SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        common::shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
+        shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
         SparseMatrix<ValueType> typedOther( tmpPtr );
         typedOther.assign( other );
         typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );

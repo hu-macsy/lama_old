@@ -33,16 +33,16 @@
  * @date 26.08.2015
  */
 
-#include <scai/common/unique_ptr.hpp>
-
 #include <iostream>
+
+#include <memory>
 
 /* -----------------------------------------------------------------------------*/
 
 int main()
 {
-    scai::common::unique_ptr<double> sum( new double );
-    scai::common::scoped_array<double> vals ( new double[10] );
+    std::unique_ptr<double> sum( new double );
+    std::unique_ptr<double[]> vals ( new double[10] );
     *sum = 0.0;
 
     for ( int i = 0; i < 10; ++ i )

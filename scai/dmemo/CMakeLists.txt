@@ -46,7 +46,7 @@ scai_module(
 
     MODULE_NAME   dmemo
     INTERNAL_DEPS common logging tracing tasking hmemo kregistry blaskernel utilskernel sparsekernel 
-    EXTERNAL_DEPS OpenMP MPI GASPI
+    EXTERNAL_DEPS OpenMP MPI
 )
 
 ### Add classes/headers to source files CXX_SOURCES, CXX_HEADERS, ...
@@ -74,13 +74,6 @@ scai_project (
     )
 
 ### add subdirectories
-
-if ( GASPI_FOUND AND USE_GASPI )
-    include( Package/Boost )
-    message( STATUS "add BOOST_INCLUDE_DIR=${BOOST_INCLUDE_DIR}" )
-    include_directories ( ${BOOST_INCLUDE_DIR} )
-    add_subdirectory( gpi )
-endif ()
 
 if ( MPI_FOUND AND USE_MPI )
     add_subdirectory ( mpi )

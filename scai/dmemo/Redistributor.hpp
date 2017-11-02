@@ -51,7 +51,7 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -375,8 +375,8 @@ private:
 
     Halo mHalo; // Halo structure for exchanging non-local values
 
-    mutable common::unique_ptr<CommunicationPlan> mProvidesPlan;
-    mutable common::unique_ptr<CommunicationPlan> mRequiredPlan;
+    mutable std::unique_ptr<CommunicationPlan> mProvidesPlan;
+    mutable std::unique_ptr<CommunicationPlan> mRequiredPlan;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
@@ -551,7 +551,7 @@ void Redistributor::exchangeHalo( hmemo::HArray<ValueType>& targetHalo, const hm
     SCAI_REGION( "Redistributor.exchangeHalo" )
     const Communicator& comm = mSourceDistribution->getCommunicator();
     // use asynchronous communication to avoid deadlocks
-    common::unique_ptr<tasking::SyncToken> token (
+    std::unique_ptr<tasking::SyncToken> token (
         comm.exchangeByPlanAsync( targetHalo, mHalo.getRequiredPlan(), sourceHalo, mHalo.getProvidesPlan() ) );
     token->wait();
     // synchronization is done implicitly

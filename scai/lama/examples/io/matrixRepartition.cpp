@@ -39,12 +39,13 @@
 #include <scai/lama/io/PartitionIO.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/Communicator.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
+
+#include <memory>
 
 using namespace std;
 
@@ -55,7 +56,7 @@ using namespace lama;
 
 /** Define StoragePtr as shared pointer to any storage */
 
-typedef common::shared_ptr<_MatrixStorage> StoragePtr;
+typedef std::shared_ptr<_MatrixStorage> StoragePtr;
 
 static common::scalar::ScalarType getType()
 {
@@ -143,7 +144,7 @@ void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, cons
     {
         IndexType ns = storageVector.size();
 
-        common::scoped_array<const _MatrixStorage*> storages( new const _MatrixStorage*[ ns ] );
+        std::unique_ptr<const _MatrixStorage*[]> storages( new const _MatrixStorage*[ ns ] );
 
         for ( IndexType i = 0; i < ns; ++i )
         {
@@ -163,11 +164,11 @@ void directPartitioning( const string& inFileName, const string& outFileName, co
 {
     common::scalar::ScalarType type = getType();
 
-    common::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
+    std::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
 
     MatrixStorageCreateKeyType key( Format::CSR, type );
 
-    common::unique_ptr<_MatrixStorage> storage( _MatrixStorage::create( key ) );
+    std::unique_ptr<_MatrixStorage> storage( _MatrixStorage::create( key ) );
 
     IndexType numRows;     // partitioning is done among numbers of rows
     IndexType numColumns;  // dummy here
@@ -210,7 +211,7 @@ void writeStorageBlocked( const _MatrixStorage& storage, const string& outFileNa
 {
     // create temporary storage for each block of same type / format
 
-    common::unique_ptr<_MatrixStorage> blockStorage( storage.newMatrixStorage() );
+    std::unique_ptr<_MatrixStorage> blockStorage( storage.newMatrixStorage() );
 
     IndexType numRows = storage.getNumRows();
 
@@ -265,8 +266,8 @@ int main( int argc, const char* argv[] )
 
     MatrixStorageCreateKeyType key( Format::CSR, type );
 
-    // common::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
-    // common::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
+    // std::unique_ptr<_MatrixStorage> fullStorage ( _MatrixStorage::create( key ) );
+    // std::unique_ptr<_MatrixStorage> blockStorage ( _MatrixStorage::create( key ) );
 
     // take double as default
 

@@ -35,8 +35,6 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/DenseVector.hpp>
 
-#include <scai/common/unique_ptr.hpp>
-
 #include <scai/solver/logger/CommonLogger.hpp>
 
 #include "CentralPathHessian.hpp" 

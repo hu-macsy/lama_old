@@ -226,7 +226,7 @@ static int getDefaultDeviceNr()
 /*      Factory::Register - create( int )                                        */
 /* ----------------------------------------------------------------------------- */
 
-static common::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
+static std::weak_ptr<CUDAContext> mCUDAContext[SCAI_MAX_CUDA_DEVICES];
 
 ContextPtr CUDAContext::create( int deviceNr )
 {
@@ -244,12 +244,12 @@ ContextPtr CUDAContext::create( int deviceNr )
             "device = " << cudaDeviceNr << " out of range" << ", max supported device = " << SCAI_MAX_CUDA_DEVICES )
     }
 
-    common::shared_ptr<CUDAContext> context = common::shared_ptr<CUDAContext>();
+    std::shared_ptr<CUDAContext> context = std::shared_ptr<CUDAContext>();
 
     if ( mCUDAContext[cudaDeviceNr].expired() )
     {
         // create a new context for the device and return the shared pointer
-        context = common::shared_ptr<CUDAContext>( new CUDAContext( cudaDeviceNr ) );
+        context = std::shared_ptr<CUDAContext>( new CUDAContext( cudaDeviceNr ) );
         // we keep a weak pointer so that we can return
         mCUDAContext[cudaDeviceNr] = context;
     }

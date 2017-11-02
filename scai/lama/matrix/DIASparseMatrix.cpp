@@ -38,10 +38,13 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
-using common::shared_ptr;
 using namespace dmemo;
 
 namespace lama
@@ -55,13 +58,13 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, DIASparseMatrix<Valu
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage()
+std::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage()
 {
     return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
 }
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage(
+std::shared_ptr<MatrixStorage<ValueType> > DIASparseMatrix<ValueType>::createStorage(
     const IndexType numRows,
     const IndexType numColumns )
 {
@@ -308,7 +311,7 @@ void DIASparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 DIASparseMatrix<ValueType>* DIASparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
+    std::unique_ptr<DIASparseMatrix<ValueType> > newSparseMatrix( new DIASparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

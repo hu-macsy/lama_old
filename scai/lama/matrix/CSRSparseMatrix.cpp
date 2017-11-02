@@ -38,10 +38,13 @@
 #include <scai/common/macros/print_string.hpp>
 #include <scai/common/macros/instantiate.hpp>
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace scai
 {
 
-using common::shared_ptr;
 using namespace dmemo;
 
 namespace lama
@@ -55,13 +58,13 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CSRSparseMatrix<Valu
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > CSRSparseMatrix<ValueType>::createStorage()
+std::shared_ptr<MatrixStorage<ValueType> > CSRSparseMatrix<ValueType>::createStorage()
 {
     return shared_ptr<MatrixStorage<ValueType> >( new StorageType() );
 }
 
 template<typename ValueType>
-common::shared_ptr<MatrixStorage<ValueType> > CSRSparseMatrix<ValueType>::createStorage(
+std::shared_ptr<MatrixStorage<ValueType> > CSRSparseMatrix<ValueType>::createStorage(
     const IndexType numRows,
     const IndexType numColumns )
 {
@@ -308,7 +311,7 @@ void CSRSparseMatrix<ValueType>::swapLocalStorage( StorageType& localStorage )
 template<typename ValueType>
 CSRSparseMatrix<ValueType>* CSRSparseMatrix<ValueType>::newMatrix() const
 {
-    common::unique_ptr<CSRSparseMatrix<ValueType> > newSparseMatrix( new CSRSparseMatrix<ValueType>() );
+    std::unique_ptr<CSRSparseMatrix<ValueType> > newSparseMatrix( new CSRSparseMatrix<ValueType>() );
     // inherit the context, communication kind of this matrix for the new matrix
     newSparseMatrix->setContextPtr( this->getContextPtr() );
     newSparseMatrix->setCommunicationKind( this->getCommunicationKind() );

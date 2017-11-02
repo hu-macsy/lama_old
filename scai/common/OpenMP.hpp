@@ -34,8 +34,6 @@
 
 #pragma once
 
-#include <scai/common/mic/MICCallable.hpp>
-
 #ifdef _OPENMP
 
 #include <omp.h>
@@ -81,28 +79,28 @@ inline double omp_get_wtime( void )
  */
 
 template<typename ValueType>
-inline MIC_CALLABLE_MEMBER void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
+inline void atomicAdd( ValueType& sharedResult, const ValueType& threadResult )
 {
     #pragma omp critical
     sharedResult += threadResult;
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER void atomicAdd( float& sharedResult, const float& threadResult )
+inline void atomicAdd( float& sharedResult, const float& threadResult )
 {
     #pragma omp atomic
     sharedResult += threadResult;
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER void atomicAdd( double& sharedResult, const double& threadResult )
+inline void atomicAdd( double& sharedResult, const double& threadResult )
 {
     #pragma omp atomic
     sharedResult += threadResult;
 }
 
 template<>
-inline MIC_CALLABLE_MEMBER void atomicAdd( int& sharedResult, const int& threadResult )
+inline void atomicAdd( int& sharedResult, const int& threadResult )
 {
     #pragma omp atomic
     sharedResult += threadResult;

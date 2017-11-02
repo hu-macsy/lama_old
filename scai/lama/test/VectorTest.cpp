@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
         v1 += 2.0;   // range 2 .. 4
 
-        common::shared_ptr<Vector<ValueType> > v2Ptr( v1.copy() );
+        VectorPtr<ValueType> v2Ptr( v1.copy() );
         Vector<ValueType>& v2 = *v2Ptr;
 
         v1.powExp( 2 );   // v[i] = v[i] ** 2.0
@@ -634,8 +634,8 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
             // generate two arrays of same value type with random numbers
 
-            common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-            common::shared_ptr<_HArray> data2( _HArray::create( v2->getValueType() ) );
+            std::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
+            std::shared_ptr<_HArray> data2( _HArray::create( v2->getValueType() ) );
 
             data1->resize( n );
             data2->resize( n );
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE( scaleTest )
             continue;   // this test does not work for int, uint, ....
         }
 
-        common::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
+        std::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
         data1->resize( n );
         utilskernel::HArrayUtils::setRandom( *data1, 1 );
 

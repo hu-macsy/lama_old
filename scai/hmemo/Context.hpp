@@ -47,10 +47,8 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/function.hpp>
-
 #include <stack>
+#include <memory>
 
 namespace scai
 {
@@ -67,13 +65,13 @@ namespace hmemo
 
 class Memory;  // forward declaration
 
-typedef common::shared_ptr<Memory> MemoryPtr;
+typedef std::shared_ptr<Memory> MemoryPtr;
 
 class Context;   // forward declaration
 
 /** Context pointers will be always const, so context can never be modified. */
 
-typedef common::shared_ptr<const Context> ContextPtr;
+typedef std::shared_ptr<const Context> ContextPtr;
 
 /** @brief This class is a common base class for all possible contexts.
  *

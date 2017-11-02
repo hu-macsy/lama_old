@@ -37,7 +37,7 @@
 #include <scai/lama/io/FileIO.hpp>
 #include <scai/partitioning/Partitioning.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace scai;
 using namespace hmemo;

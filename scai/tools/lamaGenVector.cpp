@@ -249,6 +249,7 @@ int main( int argc, const char* argv[] )
     cout << "Generate vector ( size = " << options.size << ", val = " << options.value << " )" << endl;
 
     // use vector of outDataType so no information is lost
+
     _MatrixPtr matrix;
     _VectorPtr v ( _Vector::getVector( VectorKind::DENSE, options.outDataType ) );
 
@@ -287,6 +288,7 @@ int main( int argc, const char* argv[] )
     if ( matrix.get() )
     {
         _VectorPtr rhs ( _Vector::getVector( VectorKind::DENSE, options.outDataType ) );
+
         *rhs = *matrix * *v;
         v = rhs;
         cout << "Vector now rhs of multiplication with matrix: " << *v << endl;

@@ -41,7 +41,7 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <scai/common/shared_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -123,7 +123,7 @@ private:
      *  when all timings even of running threads are finished.
      */
 
-    common::shared_ptr<class TraceConfig> mTraceConfig;
+    std::shared_ptr<class TraceConfig> mTraceConfig;
 
     class TraceData* mTraceData; // pointer to all trace data of the thread
 

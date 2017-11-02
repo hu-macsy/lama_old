@@ -50,7 +50,7 @@ namespace scai
 namespace solver
 {
 
-typedef common::shared_ptr<class AMGSetup> AMGSetupPtr;
+typedef std::shared_ptr<class AMGSetup> AMGSetupPtr;
 
 /**
  * @brief The class AMGSetup should describe the Interace to an AMG Setup.

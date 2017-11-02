@@ -43,8 +43,17 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/loop.hpp>
+
+#include <functional>
+
+using std::function;
+
+using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
+
+using std::bind;
 
 namespace scai
 {
@@ -266,7 +275,7 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
             const lama::MatrixStorage<ValueType>* haloMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& haloX ) > haloF =
-                bind( jacobiIterateHalo, _1, _2, cref( *diagonal ), _3, omega );
+                bind( jacobiIterateHalo, _1, _2, std::cref( *diagonal ), _3, omega );
 
         if ( lama::SyncKind::SYNCHRONOUS == coefficients.getCommunicationKind() )
         {
@@ -282,7 +291,7 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
                 const lama::MatrixStorage<ValueType>* haloMatrix,
                 HArray<ValueType>& localResult,
                 const HArray<ValueType>& localX ) > localF =
-                    bind( jacobiIterate, _1, _2, _3, cref( localRhs ), omega );
+                    bind( jacobiIterate, _1, _2, _3, std::cref( localRhs ), omega );
             coefficients.haloOperationSync( localSolution, localOldSolution, haloOldSolution, localF, haloF );
         }
         else
@@ -297,7 +306,7 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
                 const lama::MatrixStorage<ValueType>* haloMatrix,
                 HArray<ValueType>& localResult,
                 const HArray<ValueType>& localX ) > localAsyncF =
-                    bind( jacobiIterateAsync, _1, _2, _3, cref( localRhs ), omega );
+                    bind( jacobiIterateAsync, _1, _2, _3, std::cref( localRhs ), omega );
             coefficients.haloOperationAsync( localSolution, localOldSolution, haloOldSolution, localAsyncF, haloF );
         }
     }

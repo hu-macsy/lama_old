@@ -42,9 +42,8 @@
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/storage/CSRStorage.hpp>
 
-#include <scai/common/unique_ptr.hpp>
-
 #include <iostream>
+#include <memory>
 #include <stdlib.h>
 
 using namespace scai;
@@ -71,7 +70,7 @@ int main()
     const IndexType irow = 3;
     const IndexType N = sizeof( perm ) / sizeof( IndexType );
     CSRSparseMatrix<ValueType> a;
-    common::scoped_array<ValueType> values( new ValueType[ N * N ] );
+    std::unique_ptr<ValueType[]> values( new ValueType[ N * N ] );
 
     for ( IndexType i = 0; i < N; ++i )
     {

@@ -181,11 +181,6 @@ ContextPtr Context::getContextPtr()
             return getContextPtr( common::context::CUDA );
         }
 
-        if ( ctx_string == "MIC" )
-        {
-            return getContextPtr( common::context::MIC );
-        }
-
         if ( ctx_string == "HOST" )
         {
             return getContextPtr( common::context::Host );

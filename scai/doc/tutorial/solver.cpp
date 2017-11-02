@@ -76,7 +76,7 @@ int main()
             "<CG>: ",
             LogLevel::solverInformation,
             LoggerWriteBehaviour::toConsoleOnly,
-            scai::common::shared_ptr<Timer>( new Timer() ) ) );
+            std::shared_ptr<Timer>( new Timer() ) ) );
     // stopping criterion for solver: stopps after 10 iterations
     CriterionPtr criterion( new IterationCount( 10 ) );
     // solver itself

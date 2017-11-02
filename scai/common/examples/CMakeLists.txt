@@ -41,11 +41,6 @@ include ( scai_function/scai_example_directory )
 
 include ( Compiler/CheckC++11 )
 
-if ( NOT CXX_SUPPORTS_C11 )
-    include( Package/Boost )
-    include_directories ( ${BOOST_INCLUDE_DIR} )
-endif ()
-
 # example of a library module ( will be used by executable UseModule )
 # must be build SHARED regardless the SCAI_LIBRARY_TYPE is SHARED or STATIC
 
@@ -59,7 +54,6 @@ set ( EXECUTABLE_FILES ${EXECUTABLE_FILES}
           CriticalRegion
           DemoFactory
           DemoFactory1
-          DemoFunction 
           DemoGrid
           DemoLoopMacro
           DemoMath

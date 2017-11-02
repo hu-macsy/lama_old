@@ -109,7 +109,7 @@ public:
         InverseSolverRuntime();
         virtual ~InverseSolverRuntime();
 
-        common::shared_ptr<lama::_Matrix> mInverse;
+        lama::_MatrixPtr mInverse;
     };
 
     virtual SolverPtr copy();

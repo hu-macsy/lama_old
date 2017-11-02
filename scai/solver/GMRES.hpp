@@ -41,8 +41,7 @@
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/IterativeSolver.hpp>
 
-// internal scai libraries
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -100,19 +99,19 @@ public:
         virtual ~GMRESRuntime();
 
         // arrays to store rotations
-        common::scoped_array<double> mCC;
-        common::scoped_array<double> mSS;
+        std::unique_ptr<double[]> mCC;
+        std::unique_ptr<double[]> mSS;
 
         // array for Hessenberg equation
         // H*y=g
-        common::scoped_array<double> mG;
-        common::scoped_array<double> mY;
+        std::unique_ptr<double[]> mG;
+        std::unique_ptr<double[]> mY;
 
         // Hessenberg matrix
         // mH:  Upper triangular (columnwise)
         // mHd: diagonal band h(i+1,i)
-        common::scoped_array<double> mH;
-        common::scoped_array<double> mHd;
+        std::unique_ptr<double[]> mH;
+        std::unique_ptr<double[]> mHd;
 
         // krylov space
         std::vector<lama::_Vector*>* mV;

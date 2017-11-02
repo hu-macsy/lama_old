@@ -42,7 +42,6 @@
 
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/assert.hpp>
 #include <scai/utilskernel/LArray.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
@@ -51,6 +50,8 @@
 #include <scai/hmemo/Context.hpp>
 
 #include <scai/logging.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace lama;
@@ -374,7 +375,7 @@ BOOST_AUTO_TEST_CASE( inverseTestIdentity )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         storage.setIdentity( N );
-        common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
         inverse->invert( storage );
         BOOST_CHECK( inverse->maxDiffNorm( storage ) < common::TypeTraits<ValueType>::small() );
     }
@@ -393,10 +394,10 @@ BOOST_AUTO_TEST_CASE( inverseTestRandom )
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         setDenseRandom( storage );
         BOOST_REQUIRE_EQUAL( storage.getNumRows(), storage.getNumColumns () );  // must be square
-        common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > inverse( storage.newMatrixStorage() );
         inverse->invert( storage );
-        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > identity( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > identity( storage.newMatrixStorage() );
         // result = storage * inverse, must be identity
         result->matrixTimesMatrix( ValueType( 1 ), storage, *inverse, ValueType( 0 ), *inverse );
         identity->setIdentity( storage.getNumRows() );
@@ -418,10 +419,10 @@ BOOST_AUTO_TEST_CASE( inverseTestRandom1 )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
         setDenseRandom( storage );
-        common::unique_ptr<MatrixStorage<ValueType> > inverse( storage.copy() );
+        std::unique_ptr<MatrixStorage<ValueType> > inverse( storage.copy() );
         inverse->invert( *inverse );
-        common::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > identity( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > result( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > identity( storage.newMatrixStorage() );
         result->matrixTimesMatrix( ValueType( 1 ), storage, *inverse, ValueType( 0 ), *inverse );
         identity->setIdentity( storage.getNumRows() );
         SCAI_LOG_DEBUG( logger, "max diff norm = " << result->maxDiffNorm( *identity ) )
@@ -523,7 +524,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorAsyncTest )
         SCAI_LOG_DEBUG( logger, "storage = " << storage )
         // result = alpha * storage * x + beta * y
         LArray<ValueType> result( context );
-        common::unique_ptr<tasking::SyncToken> token( storage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
+        std::unique_ptr<tasking::SyncToken> token( storage.matrixTimesVectorAsync( result, alpha, x, beta, y ) );
         token->wait();
         // should be the same as computed with dense storage
         BOOST_CHECK_EQUAL( denseResult.maxDiffNorm( result ), 0 );
@@ -657,7 +658,7 @@ BOOST_AUTO_TEST_CASE( vectorTimesMatrixAsyncTest )
         setDenseData( storage );
         SCAI_LOG_DEBUG( logger, "GEVM asynchron: storage = " << storage )
         LArray<ValueType> result( context );
-        common::unique_ptr<tasking::SyncToken> token;
+        std::unique_ptr<tasking::SyncToken> token;
         token.reset( storage.vectorTimesMatrixAsync( result, alpha, x, beta, y ) );
         token->wait();
         // should be the same as computed with dense storage
@@ -769,7 +770,7 @@ BOOST_AUTO_TEST_CASE( jacobiTest )
         const LArray<ValueType> oldSolution( storage.getNumRows(), 1 );
         const LArray<ValueType> rhs( storage.getNumRows(), 2 );
         // clone the storage and set its diagonal to zero, but keep inverse of diagonal
-        common::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
+        std::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
         LArray<ValueType> diagonalInverse;
         storage1->getDiagonal( diagonalInverse );
         diagonalInverse.invert();
@@ -824,7 +825,7 @@ BOOST_AUTO_TEST_CASE( jacobiAsyncTest )
             LArray<ValueType> solution2( context );
             storage.jacobiIterate( solution1, oldSolution, rhs, omega );
             {
-                common::unique_ptr<tasking::SyncToken> token;
+                std::unique_ptr<tasking::SyncToken> token;
                 token.reset( storage.jacobiIterateAsync( solution2, oldSolution, rhs, omega ) );
             }
             BOOST_CHECK( solution1.maxDiffNorm( solution2 ) < common::TypeTraits<ValueType>::small() );
@@ -851,12 +852,12 @@ BOOST_AUTO_TEST_CASE( jacobiHaloTest )
         }
 
         setDenseHalo( storage );
-        common::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > local( storage.newMatrixStorage() );
         setDenseSquareData( *local );
         SCAI_LOG_DEBUG( logger, "storage for jacobiIterateHalo = " << storage )
         const LArray<ValueType> oldSolution( storage.getNumColumns(), 1 );
         // clone the storage and set its diagonal to zero, but keep inverse of diagonal
-        common::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
+        std::unique_ptr<MatrixStorage<ValueType> > storage1( storage.copy() );
         LArray<ValueType> diagonalInverse;
         local->getDiagonal( diagonalInverse );
         diagonalInverse.invert();
@@ -919,10 +920,10 @@ BOOST_AUTO_TEST_CASE( matrixAddTest )
         }
 
         SCAI_LOG_DEBUG( logger, "storage for matrixAdd = " << storage )
-        common::unique_ptr<MatrixStorage<ValueType> > a( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > b( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > c( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > res( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > a( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > b( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > c( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > res( storage.newMatrixStorage() );
         ValueType alpha = 1;
         ValueType beta  = 2;
         a->setIdentity( N );
@@ -959,8 +960,8 @@ BOOST_AUTO_TEST_CASE( matrixMultTest )
         }
 
         SCAI_LOG_DEBUG( logger, "storage for matrixMult = " << storage )
-        common::unique_ptr<MatrixStorage<ValueType> > a( storage.newMatrixStorage() );
-        common::unique_ptr<MatrixStorage<ValueType> > b( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > a( storage.newMatrixStorage() );
+        std::unique_ptr<MatrixStorage<ValueType> > b( storage.newMatrixStorage() );
         ValueType alpha = 1;
         ValueType beta  = 0;
         setDenseSquareData( *a );
@@ -1010,7 +1011,7 @@ BOOST_AUTO_TEST_CASE( setCSRDataTest )
     for ( size_t s = 0; s < allMatrixStorages.size(); ++s )
     {
         MatrixStorage<ValueType>& storage = *allMatrixStorages[s];
-        common::unique_ptr<MatrixStorage<ValueType> > storageDense( storage.copy() );
+        std::unique_ptr<MatrixStorage<ValueType> > storageDense( storage.copy() );
         SCAI_LOG_DEBUG( logger, "setCSRData for " << storage )
         storage.clear();
         IndexType numRows;
@@ -1083,7 +1084,7 @@ BOOST_AUTO_TEST_CASE( setDIADataTest )
             continue;
         }
 
-        common::unique_ptr<MatrixStorage<ValueType> > storageDense( storage.copy() );
+        std::unique_ptr<MatrixStorage<ValueType> > storageDense( storage.copy() );
         storageDense->setDenseData( numRows, numColumns, denseArray );
         SCAI_LOG_DEBUG( logger, "setDIAData for " << storage )
         storage.clear();

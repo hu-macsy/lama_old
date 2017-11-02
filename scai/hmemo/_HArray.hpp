@@ -227,8 +227,8 @@ public:
      *  type is not known at compile time.
      *
      *  \code
-     *  common::unique_ptr<_Harray> arr1( _HArray::create( type ) );
-     *  common::unique_ptr<_Harray> arr2( _HArray::create( type ) );
+     *  std::unique_ptr<_Harray> arr1( _HArray::create( type ) );
+     *  std::unique_ptr<_Harray> arr2( _HArray::create( type ) );
      *  ...
      *  arr1.swap( arr2 );   // is okay as they have same 'unknown' type
      *  \endcode

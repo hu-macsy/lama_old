@@ -39,11 +39,9 @@
 #include <scai/dmemo/Distributed.hpp>
 #include <scai/utilskernel/HArrayUtils.hpp>
 
-// internal scai libraries
-#include <scai/common/unique_ptr.hpp>
-
 // std
 #include <fstream>
+#include <memory>
 
 #define MASTER 0
 
@@ -94,7 +92,7 @@ void GenBlockDistribution::setOffsets(
 
 void GenBlockDistribution::setOffsets( const PartitionId rank, const PartitionId numPartitions, const IndexType mySize )
 {
-    common::scoped_array<IndexType> localSizes( new IndexType[numPartitions] );
+    std::unique_ptr<IndexType[]> localSizes( new IndexType[numPartitions] );
     // rank 0 is root
     mCommunicator->gather( localSizes.get(), 1, 0, &mySize );
     mCommunicator->bcast( localSizes.get(), numPartitions, 0 );

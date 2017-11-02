@@ -46,7 +46,6 @@
 #include <scai/hmemo.hpp>
 
 #include <scai/common/Factory.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 // std
 #include <ostream>
@@ -585,7 +584,7 @@ public:
      *
      *  \code
      *  _MatrixStorage& arg;
-     *  common::unique_ptr<_MatrixStorage> tmp( arg.newMatrixStorage() );
+     *  std::unique_ptr<_MatrixStorage> tmp( arg.newMatrixStorage() );
      *  ...
      *  arg.swap( tmp );   // is okay as they have same 'unknown' type and 'unknown' format
      *  \endcode

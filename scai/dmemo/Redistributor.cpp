@@ -40,15 +40,15 @@
 
 // internal scai libraries
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 using namespace scai::hmemo;
 
 namespace scai
 {
 
-using common::unique_ptr;
-using common::scoped_array;
+using std::unique_ptr;
 
 namespace dmemo
 {
@@ -191,8 +191,8 @@ void Redistributor::buildVPlans( const IndexType haloSourceSizes[], const IndexT
     const IndexType numProvides = mHalo.getProvidesPlan().totalQuantity();
     const IndexType numRequired = mHalo.getRequiredPlan().totalQuantity();
     // calculate number of provided and required values by summing up the corresponding quantities
-    scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
-    scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
+    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
+    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
 
     // For building the new schedule we need the sizes, can be calculated by the offsets
 
@@ -225,8 +225,8 @@ void Redistributor::buildRowPlans(
     const IndexType numProvides = mHalo.getProvidesPlan().totalQuantity();
     const IndexType numRequired = mHalo.getRequiredPlan().totalQuantity();
     // calculate number of provided and required values by summing up the corresponding quantities
-    scoped_array<IndexType> provideQuantities( new IndexType[numProvides] );
-    scoped_array<IndexType> requiredQuantities( new IndexType[numRequired] );
+    unique_ptr<IndexType[]> provideQuantities( new IndexType[numProvides] );
+    unique_ptr<IndexType[]> requiredQuantities( new IndexType[numRequired] );
     ContextPtr contextPtr = Context::getHostPtr();
     // For building the new schedule we need the sizes, can be calculated by the offsets
     {

@@ -45,7 +45,7 @@ include ( scai_function/relative_install )
 scai_module(
 
     MODULE_NAME   common
-    EXTERNAL_DEPS OpenMP CUDA MIC dl Thread 
+    EXTERNAL_DEPS OpenMP CUDA dl Thread
 )
 
 ## Common now configures some include files
@@ -76,10 +76,9 @@ checkValues( "${SCAI_HOST_TYPES_LIST}" "${TYPE_LIST_VALUES}" )
 set ( EXT_HOST_TYPES_LIST ${SCAI_HOST_TYPES_LIST} ) #SCAI_HOST_TYPES_LIST - long double, ComplexLongDouble
 list ( REMOVE_ITEM EXT_HOST_TYPES_LIST ${LONG_DOUBLE_VALUES} )
 
-## CUDA and MIC do not support 'long' types
+## CUDA does not support 'long' types
 
 set ( CUDA_TYPES_LIST ${EXT_HOST_TYPES_LIST} )
-set ( MIC_TYPES_LIST ${EXT_HOST_TYPES_LIST} ) 
 
 ## USE_COMPLEX : set it true if at least one complex type is instantiated
 
@@ -97,7 +96,6 @@ endforeach ()
 listToString ( ", " "${SCAI_HOST_TYPES_LIST}" ALL_HOST_TYPES )
 listToString ( ", " "${EXT_HOST_TYPES_LIST}" EXT_HOST_TYPES )
 listToString ( ", " "${CUDA_TYPES_LIST}" CUDA_TYPES )
-listToString ( ", " "${MIC_TYPES_LIST}" MIC_TYPES )
 
 ###################################################################
 ## Define index type that is used for addressing 32 or 64 bit    ##
@@ -114,7 +112,6 @@ scai_build_variable ( NAME      SCAI_INDEX_TYPE
 concatString ( "IndexType" ", " "${ALL_HOST_TYPES}"  ARRAY_HOST_TYPES )
 concatString ( "IndexType" ", " "${EXT_HOST_TYPES}"  ARRAY_EXT_HOST_TYPES )
 concatString ( "IndexType" ", " "${CUDA_TYPES}"  ARRAY_CUDA_TYPES )
-concatString ( "IndexType" ", " "${MIC_TYPES}"  ARRAY_MIC_TYPES )
 
 # SCAI_SCALAR_REP_TYPE : determine "biggest" common type as ScalarRepType
 
@@ -218,26 +215,6 @@ if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
 endif ()
 
-## configure c++11/boost dependent sources
-
-if ( NOT CXX_SUPPORTS_C11 )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in_boost" "${CONFIGURE_DIR}/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in_boost" "${CONFIGURE_DIR}/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in_boost" "${CONFIGURE_DIR}/shared_ptr.hpp" )
-    if    ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost_157" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    else  ( ${Boost_VERSION} GREATER "105700" )
-        configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in_boost" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    endif ( ${Boost_VERSION} GREATER "105700" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in_boost" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-else ()
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/bind.hpp.in" "${CONFIGURE_DIR}/bind.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/function.hpp.in" "${CONFIGURE_DIR}/function.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/shared_ptr.hpp.in" "${CONFIGURE_DIR}/shared_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/unique_ptr.hpp.in" "${CONFIGURE_DIR}/unique_ptr.hpp" )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/weak_ptr.hpp.in" "${CONFIGURE_DIR}/weak_ptr.hpp" )
-endif ()
-
 ## configure c++11/pthread dependent headers, add specific sources
 
 #if    ( CXX_SUPPORTS_C11 )
@@ -248,9 +225,7 @@ endif ()
     configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
 #endif (  CXX_SUPPORTS_C11 )
 
-install ( FILES ${CONFIGURE_DIR}/bind.hpp ${CONFIGURE_DIR}/function.hpp
-                ${CONFIGURE_DIR}/shared_ptr.hpp ${CONFIGURE_DIR}/unique_ptr.hpp
-                ${CONFIGURE_DIR}/weak_ptr.hpp ${CONFIGURE_DIR}/SCAITypes.hpp
+install ( FILES ${CONFIGURE_DIR}/SCAITypes.hpp
                 ${CONFIGURE_DIR}/Thread.hpp 
           DESTINATION "include/scai/${MODULE_NAME}" )
 
@@ -261,9 +236,9 @@ scai_project(
     HEADERS ${COMMON_HEADERS}
 )
 
-## add subdirectories, add cuda and mic even if CUDA or MIC disabled for include file
+## add subdirectories, add cuda even if CUDA is disabled for include file
 
-scai_subdirectories( cuda EXAMPLES exception macros mepr mic TEST )
+scai_subdirectories( cuda EXAMPLES exception macros mepr TEST )
 
 if ( CUDA_FOUND AND USE_CUDA )
     cuda_compile ( CUDA_FILES ${CUDA_SOURCES} )

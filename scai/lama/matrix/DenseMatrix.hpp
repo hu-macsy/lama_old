@@ -45,8 +45,7 @@
 
 #include <scai/lama/storage/DenseStorage.hpp>
 
-// internal scai libraries
-#include <scai/common/shared_ptr.hpp>
+#include <memory>
 
 namespace scai
 {
@@ -98,7 +97,7 @@ public:
 
     typedef DenseStorage<ValueType> StorageType;
 
-    typedef common::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
+    typedef std::shared_ptr<DenseStorage<ValueType> > DenseStoragePtr;
 
     /** Getter for the type name of the class. */
 
@@ -589,7 +588,7 @@ public:
 
     /** local data is allocated in chunks according to column distribution */
 
-    std::vector<common::shared_ptr<DenseStorage<ValueType> > > mData;
+    std::vector<std::shared_ptr<DenseStorage<ValueType> > > mData;
 
     /** Implementation of pure methode _Matrix::getRow */
 
@@ -669,7 +668,7 @@ private:
      *  After: chunks.size() == columnDist.getNumPartitions()
      */
     static void splitColumnData(
-        std::vector<common::shared_ptr<DenseStorage<ValueType> > >& chunks,
+        std::vector<std::shared_ptr<DenseStorage<ValueType> > >& chunks,
         const DenseStorage<ValueType>& columnData,
         const dmemo::Distribution& columnDist );
 

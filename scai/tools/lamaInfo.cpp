@@ -49,12 +49,11 @@
 #include <scai/partitioning/Partitioning.hpp>
 
 #include <scai/common/ContextType.hpp>
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/shared_ptr.hpp>
 #include <scai/common/LibModule.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -195,7 +194,7 @@ void setupInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
-        scai::common::shared_ptr<AMGSetup> setup( AMGSetup::create( values[i] ) );
+        std::shared_ptr<AMGSetup> setup( AMGSetup::create( values[i] ) );
         cout << "    Setup: " << *setup << endl;
     }
 
@@ -216,7 +215,7 @@ void distributionInfo()
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
         CommunicatorPtr comm = Communicator::getCommunicatorPtr();  // get the default one
-        scai::common::shared_ptr<Distribution> dist( Distribution::getDistributionPtr( values[i], comm, 10, 1.0 ) );
+        std::shared_ptr<Distribution> dist( Distribution::getDistributionPtr( values[i], comm, 10, 1.0 ) );
         cout << "    Distribution: " << *dist << endl;
     }
 
@@ -256,7 +255,7 @@ void fileIOInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << values[i] << endl;
-        scai::common::unique_ptr<FileIO> fileIO( FileIO::create( values[i] ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( values[i] ) );
         cout << "    FileIO: " << *fileIO << endl;
     }
 

@@ -54,7 +54,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -64,11 +63,11 @@
 
 // std
 #include <ostream>
+#include <memory>
 
 namespace scai
 {
 
-using common::scoped_array;
 using common::Math;
 using common::TypeTraits;
 using utilskernel::HArrayUtils;
@@ -753,7 +752,7 @@ SparseVector<ValueType>* SparseVector<ValueType>::copy() const
 template<typename ValueType>
 SparseVector<ValueType>* SparseVector<ValueType>::newVector() const
 {
-    common::unique_ptr<SparseVector<ValueType> > vector( new SparseVector<ValueType>() );
+    std::unique_ptr<SparseVector<ValueType> > vector( new SparseVector<ValueType>() );
     vector->setContextPtr( this->getContextPtr() );
     return vector.release();
 }
@@ -1639,7 +1638,7 @@ void SparseVector<ValueType>::writeLocalToFile(
     {
         // okay, we can use FileIO class from factory
 
-        common::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
+        std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         if ( dataType != common::scalar::UNKNOWN )
         {

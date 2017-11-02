@@ -36,13 +36,15 @@
 
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/shared_ptr.hpp>
 
 #include <iostream>
+#include <memory>
 
 using namespace scai;
 using namespace scai::hmemo;
 using namespace scai::common;
+
+using std::shared_ptr;
 
 void doit( int NITER, IndexType NSIZE, ContextPtr context )
 {

@@ -63,12 +63,6 @@ BOOST_AUTO_TEST_CASE( TraitTest )
     KernelTraitContextFunction<TraitDummyRoutine> f;
     int x = f[ context::CUDA ]();  // just call it
     BOOST_CHECK_EQUAL( 15, x );
-    // throw exception if called for MIC, not registered
-    BOOST_CHECK_THROW(
-    {
-        x = f[ context::MIC ]();
-
-    }, KernelRegistryException );
     // misspelling of name or signature is no more possible here, so no further test for failure
 }
 

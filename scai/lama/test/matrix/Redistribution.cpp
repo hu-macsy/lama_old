@@ -58,7 +58,7 @@ using namespace scai::lama;
 using namespace scai::hmemo;
 using namespace scai::dmemo;
 
-using scai::common::unique_ptr;
+using std::unique_ptr;
 
 /* ------------------------------------------------------------------------- */
 

@@ -98,7 +98,7 @@ struct unary
  *  compiler optimization must be switched on.
  */
 template <typename ValueType>
-MIC_CALLABLE_MEMBER CUDA_CALLABLE_MEMBER
+CUDA_CALLABLE_MEMBER
 inline ValueType applyUnary( const unary::UnaryOp op, const ValueType& x )
 {
     switch ( op )

@@ -39,10 +39,10 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Thread.hpp>
 
 #include <iostream>
+#include <functional>
 
 using namespace scai;
 using namespace common;
@@ -120,7 +120,7 @@ int main( int argc, const char** argv )
 
     for ( int i = 0; i < NT; ++i )
     {
-        tokenArray[i] = new TaskSyncToken( bind( &task, i, nr, NSIZE ) );
+        tokenArray[i] = new TaskSyncToken( std::bind( &task, i, nr, NSIZE ) );
     }
 
     for ( int i = 0; i < NT; ++i )

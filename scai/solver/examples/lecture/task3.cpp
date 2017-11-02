@@ -78,7 +78,7 @@ int main( int argc, char* argv[] )
     rhs = m * solution;
     //Reset solution to zero so that there is something to solve
     solution = 0.0;
-    common::shared_ptr<Timer> timer( new Timer() );
+    std::shared_ptr<Timer> timer( new Timer() );
     LoggerPtr logger( new CommonLogger( "CGLogger", LogLevel::convergenceHistory, LoggerWriteBehaviour::toConsoleOnly, timer ) );
     //Create a CG solver using the Constructor with logger as an argument
     CG cgSolver( "CGTestSolver", logger );

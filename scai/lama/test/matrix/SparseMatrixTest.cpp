@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE( localConstructorTest )
 
     for ( size_t i = 0; i < storages.size(); ++i )
     {
-        common::shared_ptr<MatrixStorage<ValueType> > storage = storages[i];
+        std::shared_ptr<MatrixStorage<ValueType> > storage = storages[i];
 
         setDenseData( *storage );  // fill it with some data
 

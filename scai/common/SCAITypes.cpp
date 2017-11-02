@@ -36,7 +36,7 @@
 
 #include <scai/common/SCAITypes.hpp>
 
-MIC_CALLABLE_MEMBER const IndexType nIndex = std::numeric_limits<IndexType>::max();
+const IndexType nIndex = std::numeric_limits<IndexType>::max();
 
-MIC_CALLABLE_MEMBER const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
+const PartitionId nPartition = std::numeric_limits<PartitionId>::max();
 

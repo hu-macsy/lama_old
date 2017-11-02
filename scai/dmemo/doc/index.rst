@@ -13,7 +13,7 @@ routines for data structures using heterogeneous arrays.
 
 * A distribution defines a mapping of data (e.g. vectors, arrays) to the processors of the distributed-memory
   platform.
-* In contrary to the communication primitives provided by the MPI or GPI communication libraries, the 
+* In contrary to the communication primitives provided by MPI, the
   communication routines provided here are more high-level routines that provide operations on arrays or
   vectors that involve communication, e.g. redistributions or halo exchange. Furthermore, they exploit
   C++ features like overloading and templates and by using the SCAI heterogeneous arrays they are aware 
@@ -31,7 +31,6 @@ Class                    Description
 :ref:`Communicator`      Base class for communication between different partitions
 :ref:`NoCommunicator`    Default Communicator to be used on serial machines
 :ref:`MPICommunicator`   MPI Communicator
-:ref:`GPICommunicator`   GPI Communicator
 :ref:`Distribution`      Mapping of an index range to a number of partitions
 :ref:`CommunicationPlan` Communication schedule for exchanging non-local values
 ======================== ================================================================================
@@ -44,7 +43,6 @@ Class                    Description
    CommunicationPlan
    NoCommunicator
    MPICommunicator
-   GPICommunicator
 
 *******
 Example
@@ -72,7 +70,7 @@ Environment Variables
 The default communicator is usually that communication library that has been
 used for the installation. If both are supported, it can be chosen:
 
-* ``SCAI_COMMUNICATOR`` (either MPI or GPI)
+* ``SCAI_COMMUNICATOR`` ("MPI" or "NO" for no distributed communication)
 
 If a CUDA-Aware MPI installation is available, the following environment
 variable should be set:
@@ -97,14 +95,12 @@ Internal dependencies:
 External dependencies: 
 
 * :ref:`MPI`
-* :ref:`GPI`
 * :ref:`Metis`
 
 .. toctree::
    :hidden:
 
    MPI
-   GPI
    Metis
 
 ************

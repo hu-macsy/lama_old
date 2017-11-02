@@ -96,8 +96,7 @@ int main( int argc, const char* argv[] )
     // oops, no factory for storage, only for matrix
 
     _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
-
-    _Matrix& matrix = *matrixPtr;
+    _Matrix&   matrix = *matrixPtr;
 
     std::string inFileName = argv[1];
 

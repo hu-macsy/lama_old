@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE( anyAddressingTest )
 
         // own counter array to check for good local indexes on each partition
 
-        common::scoped_array<IndexType> counts( new IndexType[nP] );
+        std::unique_ptr<IndexType[]> counts( new IndexType[nP] );
  
         for ( IndexType iP = 0; iP < nP; ++iP )
         {

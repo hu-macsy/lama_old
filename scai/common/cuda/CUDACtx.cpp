@@ -39,6 +39,8 @@
 
 #include <iostream>
 
+#include <functional>
+
 namespace scai
 {
 
@@ -200,7 +202,7 @@ CUDACtx::~CUDACtx()
 
 /* ----------------------------------------------------------------------- */
 
-void CUDACtx::addShutdown( common::function<void()> routine )
+void CUDACtx::addShutdown( std::function<void()> routine )
 {
     mShutdownFunctions.push_back( routine );
 }

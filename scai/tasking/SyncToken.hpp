@@ -42,14 +42,14 @@
 #include <scai/common/Printable.hpp>
 
 // internal scai library
-#include <scai/common/shared_ptr.hpp>
-#include <scai/common/function.hpp>
 #include <scai/common/Thread.hpp>
 
 #include <scai/logging.hpp>
 
 // std
 #include <vector>
+#include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -90,7 +90,7 @@ public:
  * absolutely mandatory and can be done in the following ways:
  *
  * \code
- *    common::unique_ptr<SyncToken> token ( new XXXSyncToken( ...) )
+ *    std::unique_ptr<SyncToken> token ( new XXXSyncToken( ...) )
  *    ! synchronization is alway done when object will be deleted at the end of the scope
  *
  *    token->wait();     // explicit wait
@@ -138,11 +138,11 @@ public:
      *  @param member shared pointer to an object that can be SyncTokenMember
      */
 
-    void pushToken( common::shared_ptr<SyncTokenMember> member );
+    void pushToken( std::shared_ptr<SyncTokenMember> member );
 
     /** Add a routine to be called after synchronization. */
 
-    void pushRoutine( common::function<void()> routine );
+    void pushRoutine( std::function<void()> routine );
 
     /**
      *  Set this SyncToken as the current one of this thread.
@@ -212,11 +212,11 @@ private:
 
     /** Vector of shared pointers  that will be released after completion. */
 
-    std::vector< common::shared_ptr<SyncTokenMember > > mTokens;
+    std::vector< std::shared_ptr<SyncTokenMember > > mTokens;
 
     bool mSynchronized;  //!< if true the token has already been synchronized.
 
-    std::vector< common::function<void()> > mSynchronizedFunctions;
+    std::vector< std::function<void()> > mSynchronizedFunctions;
 
 public:
 

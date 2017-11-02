@@ -54,10 +54,11 @@
 #include <scai/lama/norm/L2Norm.hpp>
 #include <scai/lama/norm/L1Norm.hpp>
 
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/tracing.hpp>
+
+#include <memory>
 
 /*********************************/
 
@@ -301,7 +302,7 @@ void solveIt( const std::string name, Vector& sol, const _Matrix& mat, const Vec
                                          LogLevel::convergenceHistory,
                                          LoggerWriteBehaviour::toConsoleOnly
                                        ) );
-    common::unique_ptr<Solver> mySolver( Solver::create( name, name ) );
+    std::unique_ptr<Solver> mySolver( Solver::create( name, name ) );
     mySolver->setLogger( logger );
     IterativeSolver* itSolver = dynamic_cast<IterativeSolver*>( mySolver.get() );
     SCAI_ASSERT( itSolver != NULL, "No iterative solver : " << *mySolver )

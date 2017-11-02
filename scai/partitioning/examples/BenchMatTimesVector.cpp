@@ -44,13 +44,14 @@
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 #include <scai/common/Walltime.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/common/Settings.hpp>
 
 #include <scai/dmemo/BlockDistribution.hpp>
 #include <scai/dmemo/CyclicDistribution.hpp>
 #include <scai/lama/io/PartitionIO.hpp>
 #include <scai/partitioning/Partitioning.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace lama;

@@ -333,7 +333,7 @@ static void uncompress( char out[], int out_len, const char in[], int len, int f
 
 /* --------------------------------------------------------------------------------- */
 
-uint32_t MATIOStream::readDataElement( common::scoped_array<char>& dataElement )
+uint32_t MATIOStream::readDataElement( std::unique_ptr<char[]>& dataElement )
 {
     char buffer[8];
 
@@ -366,7 +366,7 @@ uint32_t MATIOStream::readDataElement( common::scoped_array<char>& dataElement )
     {
         // allocate temporary data for the compressed data and read it
 
-        common::scoped_array<char> compressedData( new char[nBytes] );
+        std::unique_ptr<char[]> compressedData( new char[nBytes] );
 
         fstream::read( compressedData.get(), nBytes );
 

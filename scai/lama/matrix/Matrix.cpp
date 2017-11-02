@@ -313,7 +313,7 @@ void Matrix<ValueType>::setRow(
 
     // row should be a DenseVector of same type, otherwise use a temporary
 
-    common::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
+    std::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
 
     const DenseVector<ValueType>* typedRow = dynamic_cast<const DenseVector<ValueType>*>( &row );
 
@@ -347,7 +347,7 @@ void Matrix<ValueType>::setColumn(
 
     // col should be a DenseVector of same type, otherwise use a temporary
 
-    common::shared_ptr<const DenseVector<ValueType> > tmpVector;  // only allocated if needed
+    std::shared_ptr<const DenseVector<ValueType> > tmpVector;  // only allocated if needed
 
     const DenseVector<ValueType>* typedColumn = dynamic_cast<const DenseVector<ValueType>*>( &column );
 
