@@ -59,7 +59,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/print_string.hpp>
@@ -86,6 +85,7 @@ using std::shared_ptr;
 using std::unique_ptr;
 using std::function;
 using std::bind;
+using std::cref;
 using utilskernel::LAMAKernel;
 using utilskernel::HArrayUtils;
 using sparsekernel::CSRKernelTrait;
@@ -1971,6 +1971,8 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
+    using namespace std::placeholders;
+
     SCAI_LOG_INFO( logger, "result = " << alphaValue << " * x * A + " << betaValue << " * y"
                    ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
 

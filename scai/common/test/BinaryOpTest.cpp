@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
         s << BinaryOp( type );
         BOOST_CHECK( s.str().length() > 0 );
 
-        if ( type == BinaryOp::COPY )
+        if ( BinaryOp( type ) == BinaryOp::COPY )
         {
             BOOST_CHECK_EQUAL( s.str(), "COPY" );
         }
@@ -60,10 +60,10 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 
     // comparison binary operations
 
-    for ( int type = 0; type < static_cast<int>( BinaryOp::MAX_COMPARE_OP ); ++type )
+    for ( int type = 0; type < static_cast<int>( CompareOp::MAX_COMPARE_OP ); ++type )
     {
         std::ostringstream s;
-        s << BinaryOp( type );
+        s << CompareOp( type );
         BOOST_CHECK( s.str().length() > 0 );
     }
 }
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
 {
     // we do not check here the results but make sure that all ops are supported
 
-    for ( int op = BinaryOp::COPY; op < BinaryOp::MAX_BINARY_OP; ++op )
+    for ( int op = 0; op < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++op )
     {
         T x = 5;
         T y = 2;
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
 
         if ( common::TypeTraits<T>::stype == common::TypeTraits<IndexType>::stype )
         {
-            if ( op == BinaryOp::POW || op == BinaryOp::COPY_SIGN )
+            if ( BinaryOp( op ) == BinaryOp::POW || BinaryOp( op ) == BinaryOp::COPY_SIGN )
             {
                 // ToDo: we could check that an exception is thrown
 

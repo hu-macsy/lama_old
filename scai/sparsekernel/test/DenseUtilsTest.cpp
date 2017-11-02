@@ -52,7 +52,7 @@ using namespace sparsekernel;
 using namespace utilskernel;
 
 using common::TypeTraits;
-using common::binary;
+using common::BinaryOp;
 using common::UnaryOp;
 
 /* --------------------------------------------------------------------- */
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setTest, ValueType, scai_numeric_test_types )
 
     BOOST_REQUIRE_EQUAL( dense_n, numRows * numColumns );
 
-    for ( int op = BinaryOp::COPY; op < BinaryOp::MAX_BINARY_OP; ++op )
+    for ( int op = 0; op < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++op )
     {
         BinaryOp binOp = BinaryOp( op );
 
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValueTest, ValueType, scai_numeric_test_types 
 
     ValueType val = 2;
 
-    for ( int op = BinaryOp::COPY; op < BinaryOp::MAX_BINARY_OP; ++op )
+    for ( int op = 0; op < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++op )
     {
         BinaryOp binOp = BinaryOp( op );
 

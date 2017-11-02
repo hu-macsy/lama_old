@@ -1,39 +1,39 @@
-/**
- * @file HArrayUtilsTest.cpp
- *
- * @license
- * Copyright (c) 2009-2017
- * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
- * for Fraunhofer-Gesellschaft
- *
- * This file is part of the SCAI framework LAMA.
- *
- * LAMA is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
- *
- * Other Usage
- * Alternatively, this file may be used in accordance with the terms and
- * conditions contained in a signed written agreement between you and
- * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
- * @endlicense
- *
- * @brief Tests for the class HArrayUtils
- * @author Thomas Brandes
- * @date 22.01.2016
- */
+	/**
+	 * @file HArrayUtilsTest.cpp
+	 *
+	 * @license
+	 * Copyright (c) 2009-2017
+	 * Fraunhofer Institute for Algorithms and Scientific Computing SCAI
+	 * for Fraunhofer-Gesellschaft
+	 *
+	 * This file is part of the SCAI framework LAMA.
+	 *
+	 * LAMA is free software: you can redistribute it and/or modify it under the
+	 * terms of the GNU Affero General Public License as published by the Free
+	 * Software Foundation, either version 3 of the License, or (at your option)
+	 * any later version.
+	 *
+	 * LAMA is distributed in the hope that it will be useful, but WITHOUT ANY
+	 * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+	 * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for
+	 * more details.
+	 *
+	 * You should have received a copy of the GNU Affero General Public License
+	 * along with LAMA. If not, see <http://www.gnu.org/licenses/>.
+	 *
+	 * Other Usage
+	 * Alternatively, this file may be used in accordance with the terms and
+	 * conditions contained in a signed written agreement between you and
+	 * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
+	 * @endlicense
+	 *
+	 * @brief Tests for the class HArrayUtils
+	 * @author Thomas Brandes
+	 * @date 22.01.2016
+	 */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/mpl/list.hpp>
+	#include <boost/test/unit_test.hpp>
+	#include <boost/mpl/list.hpp>
 
 #include <scai/utilskernel/HArrayUtils.hpp>
 #include <scai/utilskernel/LArray.hpp>
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( UnaryOpOpTest, ValueType, scai_array_test_types )
     const ValueType values[] = { 1, 2, 3, 4  };
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < UnaryOp::MAX_UNARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( UnaryOp::MAX_UNARY_OP ); ++i )
     {
         UnaryOp op = UnaryOp( i );
 
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTest, ValueType, scai_numeric_test_types 
 
     const IndexType n = sizeof( values1 ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         BinaryOp op = BinaryOp( i );
 
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_CASE( binaryOpIndexTypeTest )
 
     const IndexType n = sizeof( values1 ) / sizeof( IndexType );
 
-    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         BinaryOp op = BinaryOp( i );
 
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar1, ValueType, scai_numeric_test
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         BinaryOp op = BinaryOp( i );
 
@@ -462,7 +462,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpTestScalar2, ValueType, scai_numeric_test
 
     const IndexType n = sizeof( values ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         BinaryOp op = BinaryOp( i );
 
@@ -515,7 +515,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseNewTest, ValueType, scai_numeric_te
     const IndexType nnz1 = sizeof( values1 ) / sizeof( ValueType );
     const IndexType nnz2 = sizeof( values2 ) / sizeof( ValueType );
 
-    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         BinaryOp op = BinaryOp( i );
 
@@ -623,7 +623,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpSparseSameTest, ValueType, scai_numeric_t
     SCAI_ASSERT_EQ_ERROR( nnz, nnz1, "serious size mismatch" )
     SCAI_ASSERT_EQ_ERROR( nnz, nnz2, "serious size mismatch" )
 
-    for ( IndexType i = 0; i < BinaryOp::MAX_BINARY_OP; ++i )
+    for ( int i = 0; i < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++i )
     {
         BinaryOp op = BinaryOp( i );
 

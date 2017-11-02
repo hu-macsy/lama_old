@@ -51,7 +51,8 @@
 using namespace scai;
 using namespace utilskernel;
 using namespace hmemo;
-using common::binary;
+using common::BinaryOp;
+using common::CompareOp;
 
 /* --------------------------------------------------------------------- */
 
