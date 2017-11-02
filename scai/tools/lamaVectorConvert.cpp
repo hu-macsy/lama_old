@@ -95,7 +95,7 @@ int main( int argc, const char* argv[] )
 
     common::scalar::ScalarType type = getType();
 
-    VectorPtr vectorPtr( _Vector::getVector( VectorKind::DENSE, type ) );
+    _VectorPtr vectorPtr( _Vector::getVector( VectorKind::DENSE, type ) );
 
     _Vector& vector = *vectorPtr;
 

@@ -95,7 +95,7 @@ public:
 
         virtual ~KaczmarzRuntime();
 
-        lama::VectorPtr mRow;
+        lama::_VectorPtr mRow;
     };
 
     /**

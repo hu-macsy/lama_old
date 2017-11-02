@@ -104,22 +104,22 @@ public:
         QMRRuntime();
         virtual ~QMRRuntime();
 
-        lama::MatrixPtr mTransposeA;
-        lama::VectorPtr mInitialRes;
-        lama::VectorPtr mVecV;
-        lama::VectorPtr mVecW;
-        lama::VectorPtr mVecY;      /*preconditioning 1*/
-        lama::VectorPtr mVecZ;
+        lama::_MatrixPtr mTransposeA;
+        lama::_VectorPtr mInitialRes;
+        lama::_VectorPtr mVecV;
+        lama::_VectorPtr mVecW;
+        lama::_VectorPtr mVecY;      /*preconditioning 1*/
+        lama::_VectorPtr mVecZ;
 
-        lama::VectorPtr mVecWT;
-        lama::VectorPtr mVecVT;
-        lama::VectorPtr mVecYT;
-        lama::VectorPtr mVecZT;
-        lama::VectorPtr mVecP;
-        lama::VectorPtr mVecQ;
-        lama::VectorPtr mVecPT;
-        lama::VectorPtr mVecS;
-        lama::VectorPtr mVecD;
+        lama::_VectorPtr mVecWT;
+        lama::_VectorPtr mVecVT;
+        lama::_VectorPtr mVecYT;
+        lama::_VectorPtr mVecZT;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecQ;
+        lama::_VectorPtr mVecPT;
+        lama::_VectorPtr mVecS;
+        lama::_VectorPtr mVecD;
 
         lama::Scalar mGamma;
         lama::Scalar mTheta;

@@ -40,7 +40,7 @@
  *  matrix storage format and each supported arithmetic type.
  */
 
-class _Matrices : public std::vector<scai::lama::MatrixPtr>
+class _Matrices : public std::vector<scai::lama::_MatrixPtr>
 {
 
 public:
@@ -55,7 +55,7 @@ public:
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
+            scai::lama::_MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
             if ( ctx )
             {
@@ -74,7 +74,7 @@ public:
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
+            scai::lama::_MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
             if ( values[i].second != stype )
             {
@@ -100,7 +100,7 @@ public:
  *  given value type. These matrices are all initialized as zero matrices.
  */
 template<typename ValueType>
-class Matrices : public std::vector<typename scai::lama::Matrix<ValueType>::Ptr>
+class Matrices : public std::vector<typename scai::lama::MatrixPtr<ValueType> >
 {
 
 public:
@@ -125,7 +125,7 @@ public:
                 continue;
             }
             
-            typename Matrix<ValueType>::Ptr matrixPtr( Matrix<ValueType>::getMatrix( values[i].first ) );
+            MatrixPtr<ValueType> matrixPtr( Matrix<ValueType>::getMatrix( values[i].first ) );
 
             if ( ctx )
             {

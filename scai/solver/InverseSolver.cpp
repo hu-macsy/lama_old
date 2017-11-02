@@ -98,7 +98,7 @@ void InverseSolver::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.Inverse.intialize" )
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
-    getRuntime().mInverse = lama::MatrixPtr( coefficients.newMatrix() );
+    getRuntime().mInverse = lama::_MatrixPtr( coefficients.newMatrix() );
     getRuntime().mInverse->invert( coefficients );
     getRuntime().mInverse->setContextPtr( coefficients.getContextPtr() );
     getRuntime().mInverse->prefetch();

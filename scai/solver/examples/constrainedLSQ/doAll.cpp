@@ -178,7 +178,7 @@ int main( int argc, const char* argv[] )
         return 1;
     }
 
-    VectorPtr residual( A.newVector( 0 ) );
+    _VectorPtr residual( A.newVector( 0 ) );
 
     *residual = A * x - T_ext;
 

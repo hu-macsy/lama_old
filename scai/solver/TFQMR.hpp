@@ -99,13 +99,13 @@ public:
         TFQMRRuntime();
         virtual ~TFQMRRuntime();
 
-        lama::VectorPtr mVecD;
-        lama::VectorPtr mInitialR;
-        lama::VectorPtr mVecVEven;
-        lama::VectorPtr mVecVOdd;
-        lama::VectorPtr mVecVT;
-        lama::VectorPtr mVecW;
-        lama::VectorPtr mVecZ;
+        lama::_VectorPtr mVecD;
+        lama::_VectorPtr mInitialR;
+        lama::_VectorPtr mVecVEven;
+        lama::_VectorPtr mVecVOdd;
+        lama::_VectorPtr mVecVT;
+        lama::_VectorPtr mVecW;
+        lama::_VectorPtr mVecZ;
 
         lama::Scalar mEps;
         lama::Scalar mAlpha;

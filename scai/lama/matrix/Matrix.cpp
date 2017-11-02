@@ -430,13 +430,45 @@ Scalar Matrix<ValueType>::_maxNorm() const
 }
 
 template<typename ValueType>
+Scalar Matrix<ValueType>::_maxDiffNorm( const _Matrix& other ) const
+{
+    return Scalar( maxDiffNorm( other ) );
+}
+
+template<typename ValueType>
 typename Matrix<ValueType>::RealType Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 {
-    // Base class provides implementation, just extract the right result
-
     typedef typename Matrix<ValueType>::RealType RealType;
-    Scalar diff = _Matrix::_maxDiffNorm( other );
-    return diff.getValue<RealType>();
+
+    IndexType nRows = getNumRows();
+    IndexType nCols = getNumColumns();
+
+    SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
+    SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
+
+    DenseVector<ValueType> row;
+    DenseVector<ValueType> rowOther;
+
+    RealType diff = 0;
+
+    // now traverse  all rows
+
+    for ( IndexType i = 0; i < nRows; ++i )
+    {
+        // Note: rows will be broadcast in case of distributed matrices
+
+        getRow( row, i );
+        other.getRow( rowOther, i );
+
+        RealType diffRow = row.maxDiffNorm( rowOther );
+
+        if ( diffRow > diff )
+        {
+            diff = diffRow;
+        }
+    }
+
+    return diff;
 }
 
 /* ========================================================================= */

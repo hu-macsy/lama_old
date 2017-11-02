@@ -460,7 +460,7 @@ _Vector& _Vector::operator=( const Expression_SMV_SV& expression )
     const _Matrix& matrix = matrixTimesVectorExp.getArg1();
     const _Vector& vectorX = matrixTimesVectorExp.getArg2();
     _Vector* resultPtr = this;
-    VectorPtr tmpResult;
+    _VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {
@@ -492,7 +492,7 @@ _Vector& _Vector::operator=( const Expression_SVM_SV& expression )
     const _Vector& vectorX = vectorTimesMatrixExp.getArg1();
     const _Matrix& matrix = vectorTimesMatrixExp.getArg2();
     _Vector* resultPtr = this;
-    VectorPtr tmpResult;
+    _VectorPtr tmpResult;
 
     if ( &vectorX == this )
     {

@@ -133,7 +133,7 @@ public:
         else
         {
             mA1.reduce( v, dim, reduceOp, elemOp );
-            VectorPtr tmpV( v.copy() );
+            _VectorPtr tmpV( v.copy() );
             mA2.reduce( *tmpV, dim, reduceOp, elemOp );
             v += *tmpV;
         }

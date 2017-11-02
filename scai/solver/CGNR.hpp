@@ -108,10 +108,10 @@ public:
         virtual ~CGNRRuntime();
 
         common::shared_ptr<lama::_Matrix> mTransposedMat;
-        lama::VectorPtr mVecD;
-        lama::VectorPtr mVecW;
-        lama::VectorPtr mVecZ;
-        lama::VectorPtr mResidual2;
+        lama::_VectorPtr mVecD;
+        lama::_VectorPtr mVecW;
+        lama::_VectorPtr mVecZ;
+        lama::_VectorPtr mResidual2;
 
         lama::Scalar mEps;
     };

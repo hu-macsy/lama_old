@@ -97,9 +97,9 @@ public:
         CGRuntime();
         virtual ~CGRuntime();
 
-        lama::VectorPtr mP;
-        lama::VectorPtr mQ;
-        lama::VectorPtr mZ;
+        lama::_VectorPtr mP;
+        lama::_VectorPtr mQ;
+        lama::_VectorPtr mZ;
         lama::Scalar mPScalar;
     };
 

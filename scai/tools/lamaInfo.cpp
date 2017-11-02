@@ -114,7 +114,7 @@ void matrixInfo()
     for ( size_t i = 0; i < keys.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
-        MatrixPtr matrix ( _Matrix::create( keys[i] ) );
+        _MatrixPtr matrix ( _Matrix::create( keys[i] ) );
         cout << "    _Matrix: " << *matrix << endl;
     }
 
@@ -134,7 +134,7 @@ void vectorInfo()
     for ( size_t i = 0; i < keys.size(); ++i )
     {
         cout << "  Registered values[" << i << "] = " << keys[i].first << ", " << keys[i].second << endl;
-        VectorPtr vector ( _Vector::create( keys[i] ) );
+        _VectorPtr vector ( _Vector::create( keys[i] ) );
         cout << "    Vector: " << *vector << endl;
     }
 

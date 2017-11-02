@@ -105,7 +105,7 @@ public:
 
 private:
 
-    VectorPtr mAx;      // help vector for A * x
+    _VectorPtr mAx;      // help vector for A * x
     const _Matrix& mA;
 };
 

@@ -169,7 +169,7 @@ int main( int argc, const char* argv[] )
 
         stencilSpecification >> nDims >> nPoints >> n1;
 
-        MatrixPtr matrixPtr;
+        _MatrixPtr matrixPtr;
 
         switch ( nDims )
         {
@@ -206,8 +206,8 @@ int main( int argc, const char* argv[] )
 
         std::cout << "Stencil matrix = " << *matrixPtr << std::endl;
 
-        VectorPtr rhsPtr( matrixPtr->newVector() );
-        VectorPtr solutionPtr( rhsPtr->newVector() );
+        _VectorPtr rhsPtr( matrixPtr->newVector() );
+        _VectorPtr solutionPtr( rhsPtr->newVector() );
 
         _Matrix& matrix   = *matrixPtr;
         _Vector& rhs      = *rhsPtr;
@@ -237,7 +237,7 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                VectorPtr xPtr( rhs.newVector() );
+                _VectorPtr xPtr( rhs.newVector() );
                 _Vector& x = *xPtr;
                 x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );

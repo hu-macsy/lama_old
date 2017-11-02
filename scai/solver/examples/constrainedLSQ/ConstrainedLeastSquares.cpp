@@ -86,7 +86,7 @@ void ConstrainedLeastSquares::dualityGap(
     Vector& kappa = *kappaPtr;
 
     d1 = x - lb;
-    VectorPtr bsPtr( mA.newVector( 0 ) );
+    _VectorPtr bsPtr( mA.newVector( 0 ) );
     Vector& b_s = *bsPtr;
     b_s = b - mA * lb;
     d2 = ub - lb;
@@ -377,7 +377,7 @@ void ConstrainedLeastSquares::solve(
 
     SCAI_ASSERT_ERROR( isInterior( x, lb, ub ), "x not in bounds" );
 
-    VectorPtr residualPtr( mA.newVector( 0 ) );   // size = #rows
+    _VectorPtr residualPtr( mA.newVector( 0 ) );   // size = #rows
     *residualPtr = 0;
 
     SCAI_LOG_INFO( logger, "norm b = " << b.l2Norm() )

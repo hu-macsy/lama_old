@@ -2125,7 +2125,7 @@ typename Matrix<ValueType>::RealType SparseMatrix<ValueType>::maxDiffNorm( const
     else if ( !getColDistribution().isReplicated() )
     {
         // take default implementation of base class
-        return maxDiffNorm( other );
+        return Matrix<ValueType>::maxDiffNorm( other );
     }
     else
     {

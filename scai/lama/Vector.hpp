@@ -35,7 +35,7 @@
 
 #include <scai/lama/_Vector.hpp>
 
-#include <scai/common/shared_ptr.hpp>
+#include <memory>
 #include <scai/common/TypeTraits.hpp>
 
 namespace scai
@@ -43,7 +43,6 @@ namespace scai
 
 namespace lama
 {
-
 /**
  * @brief Definition of an abstract class that represents a distributed one-dimensional vector 
  *        of a certain value type.
@@ -56,15 +55,6 @@ template <typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Vector: public _Vector
 {
 public:
-
-    /** Definiton of corresponding shared pointer type for this class 
-     *
-     *  \code
-     *      Vector<ValueType>::Ptr x( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
-     *      std::shared_ptr<Vector<ValueType> > x( Vector<ValueType>::getVector( VectorKind::DENSE ) );
-     *  \endcode
-     */
-    typedef common::shared_ptr<Vector<ValueType> > Ptr;
 
     /** Define the corresponding RealType that is return type for norm computations. */
 
@@ -266,6 +256,17 @@ protected:
     Scalar _dotProduct( const _Vector& other ) const;
 };
   
+/** 
+ * Definiton of corresponding shared pointer type for the class Vector<ValueType> by a type alias.
+ *
+ *  \code
+ *      VectorPtr<ValueType> x( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
+ *      std::shared_ptr<Vector<ValueType> > x( Vector<ValueType>::getVector( VectorKind::DENSE ) );
+ *  \endcode
+*/
+template<typename ValueType>
+using VectorPtr = std::shared_ptr<Vector<ValueType> >;
+
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */

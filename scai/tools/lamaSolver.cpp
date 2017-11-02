@@ -163,9 +163,9 @@ int main( int argc, const char* argv[] )
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        MatrixPtr matrixPtr( lamaconf.getMatrix() );
-        VectorPtr rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        VectorPtr solutionPtr( rhsPtr->newVector() );
+        _MatrixPtr matrixPtr( lamaconf.getMatrix() );
+        _VectorPtr rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
+        _VectorPtr solutionPtr( rhsPtr->newVector() );
 
         _Matrix& matrix   = *matrixPtr;
         _Vector& rhs      = *rhsPtr;
@@ -173,8 +173,8 @@ int main( int argc, const char* argv[] )
 
         // input matrix will be CSR format
 
-        MatrixPtr inMatrixPtr( _Matrix::getMatrix( Format::CSR, lamaconf.getValueType() ) );
-        _Matrix& inMatrix = *inMatrixPtr;
+        _MatrixPtr in_MatrixPtr( _Matrix::getMatrix( Format::CSR, lamaconf.getValueType() ) );
+        _Matrix& inMatrix = *in_MatrixPtr;
 
         // Here each processor should print its configuration
 

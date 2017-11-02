@@ -53,17 +53,6 @@ class COMMON_DLL_IMPORTEXPORT Matrix:
 
 public:
 
-    /** Definiton of corresponding shared pointer type for this class 
-     *
-     *  \code
-     *      Matrix<ValueType>::Ptr x( Matrix<ValueType>::getMatrix( Format::CSR ) );
-     *      std::shared_ptr<Matrix<ValueType> > x( Matrix<ValueType>::getMatrix( Format::CSR ) );
-     *  \endcode
-     *
-     *  Be careful: the getMatrix returns a new object that must be deleted.
-     */
-    typedef common::shared_ptr<Matrix<ValueType> > Ptr;
-
     /** Define the corresponding RealType that is return type for norm computations. */
 
     typedef typename common::TypeTraits<ValueType>::AbsType RealType;
@@ -150,6 +139,11 @@ public:
     virtual RealType l1Norm( void ) const = 0;
     virtual RealType l2Norm( void ) const = 0;
     virtual RealType maxNorm( void ) const = 0;
+
+    /** 
+     * we provide here an implementation that works for any kind of
+     * matrices.
+     */
     virtual RealType maxDiffNorm( const _Matrix& other ) const = 0;
 
 protected:
@@ -212,7 +206,19 @@ protected:
     Scalar _l1Norm()  const;
     Scalar _l2Norm()  const;
     Scalar _maxNorm() const;
+    Scalar _maxDiffNorm( const _Matrix& other ) const;
 };
+
+/** 
+ * Definiton of corresponding shared pointer type for the class Matrix<ValueType> by a type alias.
+ *
+ *  \code
+ *      MatrixPtr<ValueType> x( Matrix<ValueType>::getMatrix( Format::COO ) );
+ *      std::shared_ptr<Matrix<ValueType> > x( Matrix<ValueType>::getMatrix( Format::COO ) );
+ *  \endcode
+*/
+template<typename ValueType>
+using MatrixPtr = std::shared_ptr<Matrix<ValueType> >;
 
 } /* end namespace lama */
 

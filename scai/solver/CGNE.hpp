@@ -107,8 +107,8 @@ public:
         virtual ~CGNERuntime();
 
         common::shared_ptr<lama::_Matrix> mTransposedMat;
-        lama::VectorPtr mVecP;
-        lama::VectorPtr mVecZ;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecZ;
 
         lama::Scalar mEps;
     };

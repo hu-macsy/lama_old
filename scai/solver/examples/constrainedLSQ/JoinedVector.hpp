@@ -331,8 +331,8 @@ private:
 
     // joined vector might be owner of the individual parts
 
-    VectorPtr pV1;
-    VectorPtr pV2;
+    _VectorPtr pV1;
+    _VectorPtr pV2;
 };
 
 }

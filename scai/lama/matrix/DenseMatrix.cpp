@@ -2217,7 +2217,7 @@ typename Matrix<ValueType>::RealType DenseMatrix<ValueType>::maxDiffNorm( const 
         COMMON_THROWEXCEPTION( "maxDiffNorm requires matrices of same format" );
     }
 
-// Implementation works only for same distributions and same type
+    // Implementation works only for same distributions and same type
 
     if ( ( getRowDistribution() == other.getRowDistribution() ) && ( getColDistribution() == other.getColDistribution() )
             && ( getValueType() == other.getValueType() ) )

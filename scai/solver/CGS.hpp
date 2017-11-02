@@ -100,14 +100,14 @@ public:
         CGSRuntime();
         virtual ~CGSRuntime();
 
-        lama::VectorPtr mRes0;
-        lama::VectorPtr mVecP;
-        lama::VectorPtr mVecQ;
-        lama::VectorPtr mVecU;
-        lama::VectorPtr mVecT;
-        lama::VectorPtr mVecPT;
-        lama::VectorPtr mVecUT;
-        lama::VectorPtr mVecTemp;
+        lama::_VectorPtr mRes0;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecQ;
+        lama::_VectorPtr mVecU;
+        lama::_VectorPtr mVecT;
+        lama::_VectorPtr mVecPT;
+        lama::_VectorPtr mVecUT;
+        lama::_VectorPtr mVecTemp;
 
         lama::Scalar mEps;
         lama::Scalar mNormRes;

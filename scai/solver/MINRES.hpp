@@ -94,12 +94,12 @@ public:
         MINRESRuntime();
         virtual ~MINRESRuntime();
 
-        lama::VectorPtr mVecV;
-        lama::VectorPtr mVecVOld;
-        lama::VectorPtr mVecVNew;
-        lama::VectorPtr mVecP;
-        lama::VectorPtr mVecPOld;
-        lama::VectorPtr mVecPNew;
+        lama::_VectorPtr mVecV;
+        lama::_VectorPtr mVecVOld;
+        lama::_VectorPtr mVecVNew;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecPOld;
+        lama::_VectorPtr mVecPNew;
 
         lama::Scalar mAlpha;
         lama::Scalar mBetaNew;

@@ -135,7 +135,7 @@ public:
 
 private:
 
-    MatrixPtr mATPtr;   // transposed matrix might also be allocated here
+    _MatrixPtr mATPtr;   // transposed matrix might also be allocated here
 
     const _Matrix& mA;
     const _Matrix& mAT;

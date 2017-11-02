@@ -75,7 +75,7 @@ class _Matrix;          // forward declaration
 
 /** Pointer class for a vector, always use of a shared pointer. */
 
-typedef common::shared_ptr<class _Vector> VectorPtr;
+typedef common::shared_ptr<class _Vector> _VectorPtr;
 
 /** Type definition for the key type used for the Vector factory.
  *

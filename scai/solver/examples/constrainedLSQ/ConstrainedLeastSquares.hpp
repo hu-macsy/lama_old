@@ -135,18 +135,18 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    lama::VectorPtr resPtr;   // keep temporary for residual, A * x - b
-    lama::VectorPtr kappaPtr;  // 
+    lama::_VectorPtr resPtr;   // keep temporary for residual, A * x - b
+    lama::_VectorPtr kappaPtr;  // 
 
-    lama::VectorPtr d1Ptr;   // keep temporary for x - lb
-    lama::VectorPtr d2Ptr;   // keep temporary for ub - x
-    lama::VectorPtr dxPtr;   // keep temporary for ub - x
+    lama::_VectorPtr d1Ptr;   // keep temporary for x - lb
+    lama::_VectorPtr d2Ptr;   // keep temporary for ub - x
+    lama::_VectorPtr dxPtr;   // keep temporary for ub - x
 
-    lama::VectorPtr dPtr;   
-    lama::VectorPtr DPtr;   
-    lama::VectorPtr gPtr;   
-    lama::VectorPtr mPtr;   
-    lama::VectorPtr xNewPtr;   
+    lama::_VectorPtr dPtr;   
+    lama::_VectorPtr DPtr;   
+    lama::_VectorPtr gPtr;   
+    lama::_VectorPtr mPtr;   
+    lama::_VectorPtr xNewPtr;   
 
 };
 

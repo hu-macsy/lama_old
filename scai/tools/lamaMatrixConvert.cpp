@@ -95,7 +95,7 @@ int main( int argc, const char* argv[] )
 
     // oops, no factory for storage, only for matrix
 
-    MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
+    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, type ) );
 
     _Matrix& matrix = *matrixPtr;
 

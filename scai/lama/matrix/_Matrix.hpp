@@ -71,7 +71,7 @@ namespace lama
 
 /** Pointer class for a matrix, always use of a shared pointer. */
 
-typedef common::shared_ptr<class _Matrix> MatrixPtr;
+typedef common::shared_ptr<class _Matrix> _MatrixPtr;
 
 
 /** Key type used for the _Matrix factory.
@@ -963,7 +963,7 @@ public:
     virtual Scalar _l2Norm( void ) const = 0;
 
     /**
-     * @brief Getter routine of the max norm of this matrix.
+     * @brief Returns the max norm of this matrix
      *
      * @return the maximal absolute value for elements of this matrix
      */
@@ -976,12 +976,10 @@ public:
      * @return the max norm of ( this - other )
      *
      * The maximal value is given by the largest difference between two elements
-     * at the same position of the matrices.
-     *
-     * Note: This method is the most general implementation and should be
-     *       implemented more efficiently in derived classes.
+     * at the same position of the matrices. This method must be implemented by
+     * derived classes.
      */
-    virtual Scalar _maxDiffNorm( const _Matrix& other ) const;
+    virtual Scalar _maxDiffNorm( const _Matrix& other ) const = 0;
 
     /**
      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.

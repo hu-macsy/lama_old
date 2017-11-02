@@ -57,9 +57,9 @@ static void bench( _Matrix& mat )
 {
     ContextPtr ctx = Context::getContextPtr();
 
-    VectorPtr x( mat.newVector( mat.getRowDistributionPtr() ) );
-    VectorPtr y1( mat.newVector( mat.getRowDistributionPtr() ) );
-    VectorPtr y2( mat.newVector( mat.getRowDistributionPtr() ) );
+    _VectorPtr x( mat.newVector( mat.getRowDistributionPtr() ) );
+    _VectorPtr y1( mat.newVector( mat.getRowDistributionPtr() ) );
+    _VectorPtr y2( mat.newVector( mat.getRowDistributionPtr() ) );
 
     const IndexType size = mat.getNumRows();
     const IndexType bound = 1; 

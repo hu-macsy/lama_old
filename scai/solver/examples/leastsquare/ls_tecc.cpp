@@ -344,7 +344,7 @@ void dualityGap( Scalar& gap, Scalar& dualObj, const _Matrix& A, cont Vector& b,
     // analytically computing a dual feasible point which converges to the 
     // optimum as x* converges to the optimum for the primal problem
 
-    VectorPtr b_s ( b.newVector() );
+    _VectorPtr b_s ( b.newVector() );
 
     *b_s = b - A * l;
 

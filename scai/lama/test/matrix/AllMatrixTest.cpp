@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE( _copyTest )
     {
         _Matrix& matrix = *allMatrices[s];
         initMatrix( matrix, "BLOCK", "BLOCK" );
-        MatrixPtr copyMatrix( matrix.copy() );
+        _MatrixPtr copyMatrix( matrix.copy() );
         SCAI_LOG_DEBUG( logger, "copyTest: " << matrix << " with copy " << *copyMatrix );
         // verify for same matrix
         BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getRowDistribution() );
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
     {
         Matrix<ValueType>& matrix = *testMatrices[s];
         initMatrix( matrix, "BLOCK", "BLOCK" );
-        typename Matrix<ValueType>::Ptr copyMatrix( matrix.copy() );
+        MatrixPtr<ValueType> copyMatrix( matrix.copy() );
         // verify for same matrix
         BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getRowDistribution() );
         BOOST_CHECK_EQUAL( matrix.getColDistribution(), copyMatrix->getColDistribution() );
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE( transposeTest )
             SCAI_LOG_DEBUG( logger, "transposeTest: " << matrixT << " , orig is " << matrix );
             BOOST_CHECK_EQUAL( matrix.getRowDistribution(), matrixT.getColDistribution() );
             BOOST_CHECK_EQUAL( matrix.getColDistribution(), matrixT.getRowDistribution() );
-            Matrix<ValueType>::Ptr matrixTT( matrix.newMatrix() );
+            MatrixPtr<ValueType> matrixTT( matrix.newMatrix() );
             matrixTT->assignTranspose( matrixT );
             // verify for same matrix
             BOOST_CHECK_EQUAL( matrix.getRowDistribution(), matrixTT->getRowDistribution() );
@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
     {
         Matrix<ValueType>& matrix = *allMatrices[s];
         initMatrix( matrix, "BLOCK", "CYCLIC" );
-        Matrix<ValueType>::Ptr copyMatrix( matrix.copy() );
+        MatrixPtr<ValueType> copyMatrix( matrix.copy() );
         // transpse the matrix first time
         matrix.assignTranspose( matrix );
         SCAI_LOG_DEBUG( logger, "transposeTest: " << matrix << " , orig is " << *copyMatrix );
@@ -396,8 +396,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignAddTest, ValueType, scai_numeric_test_types
 
         initMatrix( matrix1, "BLOCK", "NO" );
 
-        typename Matrix<ValueType>::Ptr matrix2Ptr( matrix1.copy() );
-        typename Matrix<ValueType>::Ptr matrix3Ptr( matrix1.newMatrix() );
+        MatrixPtr<ValueType> matrix2Ptr( matrix1.copy() );
+        MatrixPtr<ValueType> matrix3Ptr( matrix1.newMatrix() );
 
         Matrix<ValueType>& matrix2 = *matrix2Ptr;
         Matrix<ValueType>& matrix3 = *matrix3Ptr;
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
         unityLeft.setIdentity( matrix1.getRowDistributionPtr() );
         unityRight.setIdentity( matrix1.getColDistributionPtr() );
 
-        MatrixPtr matrix2Ptr( matrix1.newMatrix() );
+        _MatrixPtr matrix2Ptr( matrix1.newMatrix() );
 
         _Matrix& matrix2 = *matrix2Ptr;
 
@@ -578,10 +578,10 @@ BOOST_AUTO_TEST_CASE( diagonalTest )
 
             SCAI_LOG_DEBUG( logger, "diagonalTest for " << matrix )
 
-            VectorPtr xPtr ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
-            VectorPtr y1Ptr( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
-            VectorPtr y2Ptr( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
-            VectorPtr dPtr ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            _VectorPtr xPtr ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            _VectorPtr y1Ptr( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            _VectorPtr y2Ptr( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+            _VectorPtr dPtr ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
             _Vector& x  = *xPtr;
             _Vector& y1 = *y1Ptr;
@@ -656,7 +656,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 // get each row and subtract it
 
-                VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                _VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
@@ -715,7 +715,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
                     matrix.redistribute( rowDist, colDist );
 
-                    VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                    _VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
                     // reduce on the parallel matrix
 
@@ -785,7 +785,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
                 // get each row and subtract it
 
-                VectorPtr col ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                _VectorPtr col ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
 
                 SCAI_LOG_INFO( logger, "getColTest for this matrix: " << matrix )
 

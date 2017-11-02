@@ -53,7 +53,7 @@ namespace lama
  *  the vector factory.
  */
 
-class _TestVectors : public std::vector<scai::lama::VectorPtr>
+class _TestVectors : public std::vector<scai::lama::_VectorPtr>
 {
 
 public:
@@ -72,7 +72,7 @@ public:
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::VectorPtr vectorPtr( scai::lama::_Vector::create( values[i] ) );
+            scai::lama::_VectorPtr vectorPtr( scai::lama::_Vector::create( values[i] ) );
 
             if ( ctx )
             {
@@ -88,7 +88,7 @@ public:
  *  Class for a list of vectors with a given type.
  */
 template<typename ValueType>
-class TestVectors : public std::vector<typename scai::lama::Vector<ValueType>::Ptr>
+class TestVectors : public std::vector<typename scai::lama::VectorPtr<ValueType> >
 {
 
 public:
@@ -103,8 +103,8 @@ public:
     {   
         using namespace scai::lama;
 
-        typename Vector<ValueType>::Ptr vectorPtrS( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
-        typename Vector<ValueType>::Ptr vectorPtrD( Vector<ValueType>::getVector( VectorKind::DENSE ) );
+        VectorPtr<ValueType> vectorPtrS( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
+        VectorPtr<ValueType> vectorPtrD( Vector<ValueType>::getVector( VectorKind::DENSE ) );
 
         if ( ctx )
         {   

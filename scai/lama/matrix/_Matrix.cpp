@@ -978,46 +978,6 @@ void _Matrix::hcat( const _Matrix& m1, const _Matrix& m2 )
 
 /* ---------------------------------------------------------------------------------*/
 
-Scalar _Matrix::_maxDiffNorm( const _Matrix& other ) const
-{
-    IndexType nRows = getNumRows();
-    IndexType nCols = getNumColumns();
-    SCAI_ASSERT_EQUAL( nRows, other.getNumRows(), "size mismatch" )
-    SCAI_ASSERT_EQUAL( nCols, other.getNumColumns(), "size mismatch" )
-    VectorCreateKeyType vectorType1( VectorKind::DENSE, getValueType() );
-    VectorCreateKeyType vectorType2( VectorKind::DENSE, other.getValueType() );
-    common::unique_ptr<_Vector> ptrRow1( _Vector::create( vectorType1 ) );
-    common::unique_ptr<_Vector> ptrRow2( _Vector::create( vectorType2 ) );
-    Scalar diff( 0 );
-
-    // now traverse  all rows
-
-    for ( IndexType i = 0; i < nRows; ++i )
-    {
-        // Note: rows will be broadcast in case of distributed matrices
-        getRow( *ptrRow1, i );
-        other.getRow( *ptrRow2, i );
-
-        // compare the two vectors element-wise
-
-        for ( IndexType j = 0; j < nCols; j++ )
-        {
-            Scalar elem1 = ptrRow1->getValue( j );
-            Scalar elem2 = ptrRow2->getValue( j );
-            Scalar diff1  = abs( elem1 - elem2 );
-
-            if ( diff1 > diff )
-            {
-                diff = diff1;
-            }
-        }
-    }
-
-    return diff;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::redistribute( const dmemo::Redistributor& redistributor )
 {
     if ( getColDistribution().isReplicated() ) 

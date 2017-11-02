@@ -278,6 +278,10 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
+    virtual Scalar _maxDiffNorm( const _Matrix& ) const
+    {
+        COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
+    }
     virtual _Matrix* newMatrix() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )

@@ -69,7 +69,7 @@ public:
 
         // build the help vectors mR and mS that are used within the matrix * vector operation
 
-        VectorPtr h( u.newVector() );
+        _VectorPtr h( u.newVector() );
 
         *h = L * u;
         *h /= alpha;
@@ -122,8 +122,8 @@ public:
 
 private:
 
-    VectorPtr mR;   // help vector to make matrix * vector more efficient
-    VectorPtr mS;   // help vector to make matrix * vector more efficient
+    _VectorPtr mR;   // help vector to make matrix * vector more efficient
+    _VectorPtr mS;   // help vector to make matrix * vector more efficient
 
     const _Matrix& mL;
 };

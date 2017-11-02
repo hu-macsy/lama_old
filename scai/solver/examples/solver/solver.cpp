@@ -122,8 +122,8 @@ int main( int argc, const char* argv[] )
 
     // input matrix will be CSR format
 
-    scai::common::unique_ptr<Matrix> inMatrixPtr( _Matrix::getMatrix( _Matrix::CSR, lamaconf.getValueType() ) );
-    _Matrix& inMatrix = *inMatrixPtr;
+    scai::common::unique_ptr<Matrix> in_MatrixPtr( _Matrix::getMatrix( _Matrix::CSR, lamaconf.getValueType() ) );
+    _Matrix& inMatrix = *in_MatrixPtr;
 
     // Each processor should print its configuration
 
