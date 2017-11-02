@@ -192,8 +192,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 
     TestVectors<ValueType> vectors;
 
-    typedef typename Vector<ValueType>::RealType RealType;   
-
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
@@ -210,8 +208,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 
         // s should be 0.25, but might not be exact
 
-        RealType diff = s - 0.25;
-        RealType eps  = 0.00001;
+        NormType<ValueType> diff = s - 0.25;
+        NormType<ValueType> eps  = 0.00001;
 
         BOOST_CHECK( diff < eps );
     }
@@ -326,9 +324,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
         v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
         VectorPtr<ValueType> v2Ptr( v1.copy() );
-
-        typedef typename Vector<ValueType>::RealType RealType;
-
         Vector<ValueType>& v2 = *v2Ptr;
 
         // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
@@ -343,8 +338,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
         v1 += v2;
         v1 -= ValueType( 1 );
 
-        RealType diff = v1.maxNorm();
-        RealType eps  = 0.00001;
+        NormType<ValueType> diff = v1.maxNorm();
+        NormType<ValueType> eps  = 0.00001;
 
         BOOST_CHECK( diff < eps );
     }
@@ -359,8 +354,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
     const IndexType n = 100;
 
     TestVectors<ValueType> vectors;
-
-    typedef typename Vector<ValueType>::RealType RealType;
 
     dmemo::DistributionPtr vectorDist( new dmemo::BlockDistribution( n, comm ) );
 
@@ -386,8 +379,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
         v1 -= v2;
 
-        RealType diff = v1.maxNorm();
-        RealType eps  = 0.0001;
+        NormType<ValueType> diff = v1.maxNorm();
+        NormType<ValueType> eps  = 0.0001;
 
         BOOST_CHECK( diff < eps );
  

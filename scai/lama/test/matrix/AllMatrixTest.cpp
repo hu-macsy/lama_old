@@ -254,11 +254,9 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
 {
-    typedef typename Matrix<ValueType>::RealType RealType;
-
     const IndexType N = 8;
     const ValueType scale( 2 );
-    const RealType expectedNorm = common::Math::sqrt( N * scale * scale );
+    const NormType<ValueType> expectedNorm = common::Math::sqrt( N * scale * scale );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
@@ -272,7 +270,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l2Norm for this matrix: " << matrix )
-        RealType l2Norm = matrix.l2Norm();
+        NormType<ValueType> l2Norm = matrix.l2Norm();
         BOOST_CHECK_CLOSE( expectedNorm, l2Norm, 0.001 );
     }
 }
