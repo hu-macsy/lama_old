@@ -111,6 +111,10 @@ def main():
     parser.add_argument('--output_dir', dest='output_dir', required=True,
                         help='The directory in which to store the standard output, test logs and test reports.')
     args = parser.parse_args()
+
+    print("Running LAMA tests.")
+    print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the provided output directory.")
+    print("Output directory: {}\n".format(args.output_dir))
     serial_result = run_serial_tests(SERIAL_TESTS, args.output_dir)
     print()
 
