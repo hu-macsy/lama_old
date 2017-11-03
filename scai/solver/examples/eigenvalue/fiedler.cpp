@@ -160,7 +160,7 @@ int main( int argc, const char* argv[] )
  
     Scalar alpha = n + n12;
 
-    HouseholderTransformedMatrix HLH( L, u, alpha );
+    HouseholderTransformedMatrix<ValueType> HLH( L, u, alpha );
 
     DenseVector<ValueType> t( L.getRowDistributionPtr(), 1.0 );
 

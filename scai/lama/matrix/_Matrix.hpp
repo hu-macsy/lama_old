@@ -1015,12 +1015,7 @@ public:
      *  This routine might be very helpful for writing linear algebra code that works
      *  for any value type of matrices.
      */
-    _Vector* newVector( void ) const
-    {
-        _Vector* v = _Vector::getVector( VectorKind::DENSE, getValueType() );
-        v->setContextPtr( getContextPtr() );
-        return v;
-    }
+    virtual _Vector* newVector( void ) const = 0;
 
     /*
      *  @brief Create a dense vector with same value type and context as matrix
@@ -1030,13 +1025,7 @@ public:
      *  Be careful: the vector remains uninitialized.
      */
 
-    _Vector* newVector( dmemo::DistributionPtr dist ) const
-    {
-        _Vector* v = _Vector::getVector( VectorKind::DENSE, getValueType() );
-        v->setContextPtr( getContextPtr() );
-        v->allocate( dist );
-        return v;
-    }
+    virtual _Vector* newVector( dmemo::DistributionPtr dist ) const = 0;
 
     /**
      * @brief Constructor function which creates a copy of this matrix.

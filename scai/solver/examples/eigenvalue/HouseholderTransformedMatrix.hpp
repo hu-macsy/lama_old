@@ -47,7 +47,8 @@ namespace lama
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.
  */
-class HouseholderTransformedMatrix : public AbstractMatrix
+template<typename ValueType>
+class HouseholderTransformedMatrix<ValueType> : public AbstractMatrix<ValueType>
 {
 
 public:
@@ -59,7 +60,7 @@ public:
      *  @param[in] alpha is the scaling factor.
      */
 
-    HouseholderTransformedMatrix( const _Matrix& L, const _Vector& u, const Scalar alpha ) : 
+    HouseholderTransformedMatrix( const Matrix<ValueType>& L, const Vector<ValueType>& u, const ValueType alpha ) : 
 
         AbstractMatrix( L ),
         mL( L )
@@ -69,39 +70,39 @@ public:
 
         // build the help vectors mR and mS that are used within the matrix * vector operation
 
-        _VectorPtr h( u.newVector() );
+        DenseVector<ValueType> h( L.getContextPtr() );
 
-        *h = L * u;
-        *h /= alpha;
+        h = L * u;
+        h /= alpha;
 
-        Scalar gamma = u._dotProduct( *h ) / alpha * 0.5;
+        ValueType gamma = u.dotProduct( h ) / alpha * 0.5;
         
         mR.reset( u.copy() );
         mS.reset( u.newVector() );
 
         *mS = *h - gamma * u;
 
-        mS->setValue( 0, Scalar( 0 ) );
-        mR->setValue( 0, Scalar( 0 ) );
+        mS->setValue( 0, ValueType( 0 ) );
+        mR->setValue( 0, ValueType( 0 ) );
     }
 
     /** Reimplement the matrix * vector operation
      *
      *  H L H * x = L * x - s' * x * r - r' * x * s
      */
-    virtual void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const
+    virtual void matrixTimesVectorImpl(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const Vector<ValueType>& x,
+        const ValueType beta,
+        const Vector<ValueType>& y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 
         result = mL * x;
-        result -= mS->_dotProduct( x ) * *mR;
-        result -= mR->_dotProduct( x ) * *mS;
-        result.setValue( 0, Scalar( 0 ) );
+        result -= mS->dotProduct( x ) * *mR;
+        result -= mR->dotProduct( x ) * *mS;
+        result[0] = ValueType( 0 );
         result *= alpha;
         result += beta * y;
     }
@@ -122,10 +123,10 @@ public:
 
 private:
 
-    _VectorPtr mR;   // help vector to make matrix * vector more efficient
-    _VectorPtr mS;   // help vector to make matrix * vector more efficient
+    VectorPtr<ValueType> mR;   // help vector to make matrix * vector more efficient
+    VectorPtr<ValueType> mS;   // help vector to make matrix * vector more efficient
 
-    const _Matrix& mL;
+    const Matrix<ValueType>& mL;
 };
 
 }

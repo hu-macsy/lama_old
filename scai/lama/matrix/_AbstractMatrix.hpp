@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Typed Matrix class to be used for matrix-free operations
+ * @brief _Matrix class to be used for matrix-free operations
  * @author Thomas Brandes
  * @date 28.06.2017
  */
@@ -36,7 +36,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 namespace scai
 {
@@ -50,19 +50,18 @@ namespace lama
  *  It might be used for matrix-free solvers where only the matrix * vector operations is
  *  required.
  */
-template<typename ValueType>
-class AbstractMatrix : public Matrix<ValueType>
+class AbstractMatrix : public _Matrix
 {
 
 public:
 
     /** Set distributions, context of the matrix ( base class member variables ) by other matrix */
 
-    AbstractMatrix( const Matrix<ValueType>& other ) : Matrix<ValueType>( other )
+    AbstractMatrix( const _Matrix& other ) : _Matrix( other )
     {
     }
 
-    AbstractMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) : Matrix<ValueType>( rowDist, colDist )
+    AbstractMatrix( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist ) : _Matrix( rowDist, colDist )
     {
     }
 
@@ -144,14 +143,6 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void setLocalRow( const hmemo::HArray<ValueType>& row, IndexType, common::BinaryOp )
-    {
-        COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
-    }
-    virtual void setLocalColumn( const hmemo::HArray<ValueType>& column, IndexType, common::BinaryOp )
-    {
-        COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
-    }
     virtual void getRow( _Vector&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
@@ -218,13 +209,12 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
 
-    virtual void matrixTimesVectorImpl( DenseVector<ValueType>&, const ValueType, 
-                                         const DenseVector<ValueType>&, const ValueType, const DenseVector<ValueType>& ) const
+    virtual void matrixTimesVector( _Vector&, const Scalar, const _Vector&, const Scalar, const _Vector& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual void vectorTimesMatrixImpl( DenseVector<ValueType>&, const ValueType, 
-                                        const DenseVector<ValueType>&, const ValueType, const DenseVector<ValueType>& ) const
+
+    virtual void vectorTimesMatrix( _Vector&, Scalar, const _Vector&, Scalar, const _Vector& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
@@ -276,27 +266,27 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual ValueType l1Norm() const
+    virtual Scalar _l1Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual ValueType l2Norm() const
+    virtual Scalar _l2Norm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual ValueType maxNorm() const
+    virtual Scalar _maxNorm() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual ValueType maxDiffNorm( const _Matrix& ) const
+    virtual Scalar _maxDiffNorm( const _Matrix& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Matrix<ValueType>* newMatrix() const
+    virtual _Matrix* newMatrix() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-    virtual Matrix<ValueType>* copy() const
+    virtual _Matrix* copy() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
