@@ -40,6 +40,9 @@ then
 	exit
 fi
 
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BINDIR=$SCRIPTDIR
+
 genericPatternSimple=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}" Test @ thread_"[0-9]{1,2}" \( main -> simpleLogging.cpp::"[0-9]{1,2}" \)"
 genericPatternComplex1=[0-9]{4}-[0-9]{2}-[0-9]{2},\ [0-9]{2}:[0-9]{2}:[0-9]{2}
 genericPatternComplex2="@ thread_"[0-9]{1,2}" \( main -> complexLogging.cpp::"[0-9]{1,2}" \)"
@@ -55,7 +58,7 @@ echo "Running runtime configuration tests:"
 
 for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
     export SCAI_LOG=$level
-    output=$( ./simpleLoggingTRACE | tr -d '\n' ) 
+    output=$( $BINDIR/simpleLoggingTRACE | tr -d '\n' )
 
     pattern=^
     case $level in
@@ -99,7 +102,7 @@ export SCAI_LOG=TRACE
 
 for level in "TRACE" "DEBUG" "INFO" "WARN" "ERROR" "FATAL" "OFF"; do
 
-        output=$( ./simpleLogging${level} | tr -d '\n' ) 
+        output=$( $BINDIR/simpleLogging${level} | tr -d '\n' )
 
         pattern=^
         case $level in
@@ -156,7 +159,7 @@ echo "Hierarchical configuration tests:"
     echo "Class2=WARN" >> loggerConfig.cfg
     echo "Class2.method2=TRACE" >> loggerConfig.cfg
 
-    output=$( ./complexLogging | tr -d '\n' )
+    output=$( $BINDIR/complexLogging | tr -d '\n' )
 
     pattern=^
     pattern+=$genericPatternComplex1" Class1 "$genericPatternComplex2" DEBUG message class1"
@@ -189,7 +192,7 @@ echo "Format string configuration tests:"
     # check all available variables
     # check format string: #date
     echo 'format="#date"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^[0-9]{4}-[0-9]{2}-[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #date"
@@ -199,7 +202,7 @@ echo "Format string configuration tests:"
 
     # check format string: #time
     echo 'format="#time"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^[0-9]{2}:[0-9]{2}:[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #time"
@@ -209,7 +212,7 @@ echo "Format string configuration tests:"
 
     # check format string: #name
     echo 'format="#name"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"Test"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #name"
@@ -219,7 +222,7 @@ echo "Format string configuration tests:"
 
     # check format string: #func
     echo 'format="#func"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"main"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #func"
@@ -229,7 +232,7 @@ echo "Format string configuration tests:"
 
     # check format string: #file
     echo 'format="#file"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"simpleLogging.cpp"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #file"
@@ -239,7 +242,7 @@ echo "Format string configuration tests:"
 
     # check format string: #line
     echo 'format="#line"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^[0-9]{1,2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #line"
@@ -249,7 +252,7 @@ echo "Format string configuration tests:"
 
     # check format string: #level
     echo 'format="#level"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^FATAL$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #level"
@@ -259,7 +262,7 @@ echo "Format string configuration tests:"
 
     # check format string: #msg
     echo 'format="#msg"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #msg"
@@ -269,7 +272,7 @@ echo "Format string configuration tests:"
     
     # check format string: #stack
     echo 'format="#stack"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern="stack"
     # Only for GCC
     #pattern=^"    stack\[1\] : scai::logging::GenLogger::log\(char const\*, scai::logging::SourceLocation&, std::string const&\)"
@@ -283,7 +286,7 @@ echo "Format string configuration tests:"
     # check format string: #<environmental variable> with existing variable
     echo 'format="#ENV_TEST_VAR"' > loggerConfig.cfg
     export ENV_TEST_VAR=scai_test
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"scai_test"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #<environmental variable> with existing variable"
@@ -294,7 +297,7 @@ echo "Format string configuration tests:"
     # check format string: #<environmental variable> with not existing variable
     echo 'format="#ENV_TEST_VAR"' > loggerConfig.cfg
     unset ENV_TEST_VAR
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"\\$\{ENV_TEST_VAR\}"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #<environmental variable> with not existing variable"
@@ -304,7 +307,7 @@ echo "Format string configuration tests:"
     
     # check format string: #MsG (check that variable parsing is case insensitive)
     echo 'format="#msg"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using format string #MsG (variables case sensitive?)"
@@ -315,7 +318,7 @@ echo "Format string configuration tests:"
     # check some combinations of variables
     # check combined format string: #msg #level #line
     echo 'format="#msg #level #line"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"fatal message FATAL "[0-9]{1,2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using combined format string #msg #level #line"
@@ -325,7 +328,7 @@ echo "Format string configuration tests:"
 
     # check combined format string: #file #msg #date
     echo 'format="#file #msg #date"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"simpleLogging.cpp fatal message "[0-9]{4}-[0-9]{2}-[0-9]{2}$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using combined format string #file #msg #date"
@@ -335,7 +338,7 @@ echo "Format string configuration tests:"
 
     # check format string with additional text in it
     echo 'format="error message: #msg"' > loggerConfig.cfg
-    output=$( ./simpleLoggingFATAL | tr -d '\n' )
+    output=$( $BINDIR/simpleLoggingFATAL | tr -d '\n' )
     pattern=^"error message: fatal message"$
     if ! [[ "$output" =~ $pattern ]]; then
         echo "ERROR: Output wrong when using additional text in format string."
