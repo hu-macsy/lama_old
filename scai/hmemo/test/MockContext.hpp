@@ -39,7 +39,6 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/assert.hpp>
 
 #include <memory>

@@ -674,7 +674,7 @@ SyncToken* Communicator::updateHaloAsync(
 
     // Also push the sendValues array to the token so it will be freed after synchronization
     // Note: it is guaranteed that access to sendValues is freed before sendValues
-    token->pushRoutine( common::bind( releaseArray, sendValues ) );
+    token->pushRoutine( std::bind( releaseArray, sendValues ) );
     return token;
 }
 

@@ -37,7 +37,6 @@
 
 // internal scai libraries
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Settings.hpp>
 
 // std

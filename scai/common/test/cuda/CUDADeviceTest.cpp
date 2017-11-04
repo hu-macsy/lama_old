@@ -40,7 +40,6 @@
 #include <scai/common/Settings.hpp>
 
 #include <scai/common/test/cuda/CUDAKernel.hpp>
-#include <scai/common/bind.hpp>
 
 #include <iostream>
 
@@ -95,9 +94,9 @@ BOOST_AUTO_TEST_CASE( shutdownTest )
     scai::common::Settings::getEnvironment( nr, "SCAI_DEVICE" );
     {
         scai::common::CUDACtx myCuda( nr );
-        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
+        myCuda.addShutdown( std::bind( &inc, &val ) );
         BOOST_CHECK_EQUAL( 0, val );
-        myCuda.addShutdown( scai::common::bind( &inc, &val ) );
+        myCuda.addShutdown( std::bind( &inc, &val ) );
         // shutdown routine will only be called with destructor
     }
     // inc should have been called twice by destructor

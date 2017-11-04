@@ -47,7 +47,6 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 
 // std
 #include <cstring> // import ::memcpy

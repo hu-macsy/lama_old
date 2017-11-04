@@ -32,8 +32,6 @@
  * @date 25.01.2016
  */
 
-#include <scai/common/bind.hpp>
-
 #include <iostream>
 #include <functional>
 
@@ -49,8 +47,9 @@ int f ( double x, int p )
     return static_cast<int>( x * f );
 }
 
-using namespace scai::common;
 using std::function;
+using std::bind;
+using namespace std::placeholders;
 
 int main()
 {

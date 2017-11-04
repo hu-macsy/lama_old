@@ -48,7 +48,6 @@
 #include <scai/logging.hpp>
 
 #include <scai/common/macros/throw.hpp>
-#include <scai/common/bind.hpp>
 
 #include <functional>
 
@@ -392,7 +391,7 @@ std::function<void()> WriteAccess<ValueType>::releaseDelayed()
     // This access itself is treated as released
     mArray = 0;
     mData  = 0;
-    return common::bind( releaseAccess, ctxArray, mContextDataIndex );
+    return std::bind( releaseAccess, ctxArray, mContextDataIndex );
 }
 
 /* --------------------------------------------------------------------------- */

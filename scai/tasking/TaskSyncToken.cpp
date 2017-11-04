@@ -36,7 +36,6 @@
 #include <scai/tasking/TaskSyncToken.hpp>
 
 // internal scai libraries
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/throw.hpp>
 
 #include <memory>

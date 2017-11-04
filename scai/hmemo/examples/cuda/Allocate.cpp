@@ -44,6 +44,8 @@ using namespace scai;
 using namespace scai::hmemo;
 using namespace scai::common;
 
+using std::shared_ptr;
+
 void doit( int NITER, IndexType NSIZE, ContextPtr context )
 {
     std::vector<shared_ptr<HArray<double> > > stack;

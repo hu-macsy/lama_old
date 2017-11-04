@@ -59,7 +59,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/throw.hpp>
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/macros/print_string.hpp>
@@ -1904,7 +1903,8 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
-    using namespace scai::common;
+    using namespace std;
+    using namespace std::placeholders;
 
     SCAI_REGION( "Mat.Sp.timesVector" )
 
@@ -1977,6 +1977,8 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
+    using namespace std::placeholders;
+
     SCAI_LOG_INFO( logger, "result = " << alphaValue << " * x * A + " << betaValue << " * y"
                    ", x = " << denseX << ", y = " << denseY << ", A = " << *this )
 
@@ -1992,7 +1994,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
-    using namespace scai::common;
+    using namespace std;
 
     function <
     void(

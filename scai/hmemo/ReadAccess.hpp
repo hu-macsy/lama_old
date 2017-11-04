@@ -44,7 +44,6 @@
 #include <scai/common/config.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 
 #include <functional>
 
@@ -241,7 +240,7 @@ std::function<void()> ReadAccess<ValueType>::releaseDelayed()
     const _HArray* ctxArray = mArray;
     // This access itself is treated as released
     mArray = NULL;
-    return common::bind( releaseAccess, ctxArray, mContextDataIndex );
+    return std::bind( releaseAccess, ctxArray, mContextDataIndex );
 }
 
 /* ---------------------------------------------------------------------------------*/

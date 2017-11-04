@@ -46,7 +46,6 @@
 #include <scai/tracing.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
-#include <scai/common/bind.hpp>
 
 namespace scai
 {
@@ -304,11 +303,11 @@ void OpenMPCOOUtils::normalGEMV(
         // bind has limited number of arguments, so take help routine for call
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
-        syncToken->run( common::bind( normalGEMV_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numValues, cooIA, cooJA, cooValues ) );
+        syncToken->run( std::bind( normalGEMV_a<ValueType>,
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numRows, numValues, cooIA, cooJA, cooValues ) );
         return;
     }
 
@@ -377,11 +376,11 @@ void OpenMPCOOUtils::normalGEVM(
     {
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in pair structs
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
-        syncToken->run( common::bind( normalGEVM_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numColumns, numValues, cooIA, cooJA, cooValues ) );
+        syncToken->run( std::bind( normalGEVM_a<ValueType>,
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numColumns, numValues, cooIA, cooJA, cooValues ) );
         return;
     }
 

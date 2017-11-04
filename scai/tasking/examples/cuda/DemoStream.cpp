@@ -39,7 +39,6 @@
 #include <scai/common/cuda/CUDAError.hpp>
 
 #include <scai/common/Settings.hpp>
-#include <scai/common/bind.hpp>
 
 #include <iostream>
 

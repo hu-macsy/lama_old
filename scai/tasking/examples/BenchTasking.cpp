@@ -38,8 +38,6 @@
 #include <scai/common/Thread.hpp>
 #include <scai/common/macros/throw.hpp>
 
-#include <scai/common/bind.hpp>
-
 #include <memory>
 
 using namespace std;
@@ -84,7 +82,7 @@ void doTasking( int N )
     {
         arg[i] = 1;
         int omp_threads = 1;
-        tasks[i] = new Task( common::bind( &work, common::ref( arg[i] ) ), omp_threads );
+        tasks[i] = new Task( std::bind( &work, std::ref( arg[i] ) ), omp_threads );
     }
 
     for ( int i = 0; i < N; ++i )

@@ -39,7 +39,6 @@
 
 #include <scai/common/SCAITypes.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 #include <functional>
@@ -72,6 +71,10 @@ struct MyPair
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( bindFunctionTest, ValueType, scai_numeric_test_types )
 {
+    using std::bind;
+    using std::function;
+    using namespace std::placeholders;
+
     function<ValueType()> fn_five = bind ( my_divide<ValueType>, static_cast<ValueType>( 10 ), static_cast<ValueType>( 2 ) );
     ValueType res1 = fn_five();
     BOOST_CHECK_EQUAL( res1, 5.0 );

@@ -49,7 +49,6 @@
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
-#include <scai/common/bind.hpp>
 
 #include <memory>
 
@@ -539,14 +538,14 @@ void OpenMPJDSUtils::normalGEMV(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEMV_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
-                                      perm,
-                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
-                                      jdsJA, jdsValues ) );
+        syncToken->run( std::bind( normalGEMV_a<ValueType>,
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
+                                   perm,
+                                   std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                   jdsJA, jdsValues ) );
         return;
     }
 
@@ -630,14 +629,14 @@ void OpenMPJDSUtils::normalGEVM(
 
     if ( syncToken )
     {
-        syncToken->run( common::bind( normalGEVM_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      std::pair<IndexType, const IndexType*>( numColumns, jdsILG ),
-                                      perm,
-                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
-                                      jdsJA, jdsValues ) );
+        syncToken->run( std::bind( normalGEVM_a<ValueType>,
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   std::pair<IndexType, const IndexType*>( numColumns, jdsILG ),
+                                   perm,
+                                   std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                   jdsJA, jdsValues ) );
         return;
     }
 

@@ -36,13 +36,15 @@
 
 #include <scai/tasking/TaskSyncToken.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/test/TestMacros.hpp>
 
 #include <memory>
 
 using namespace scai::common;
 using namespace scai::tasking;
+
+using std::bind;
+using std::ref;
 
 static const int WORKLOAD = 1000000;
 

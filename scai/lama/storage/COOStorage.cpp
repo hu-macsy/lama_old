@@ -51,7 +51,6 @@
 
 #include <scai/tracing.hpp>
 
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
