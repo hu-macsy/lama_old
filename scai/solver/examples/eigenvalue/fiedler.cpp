@@ -109,7 +109,7 @@ void makeLaplacian( CSRSparseMatrix<ValueType>& L )
     DenseVector<ValueType> x( L.getColDistributionPtr(), 1 );
     DenseVector<ValueType> y( L * x );
 
-    SCAI_ASSERT_LT_ERROR( y.maxNorm(), Scalar( 1e-8 ), "L not Laplacian matrix" )
+    SCAI_ASSERT_LT_ERROR( y.maxNorm(), ValueType( 1e-8 ), "L not Laplacian matrix" )
 }
 
 /** Main program to determine the Fiedler vector for a Laplacian matrix
@@ -135,7 +135,7 @@ int main( int argc, const char* argv[] )
     CSRSparseMatrix<ValueType> L;  // laplacian matrix
 
     IndexType kmax = 100;        // maximal number of iterations
-    Scalar    eps  = 1e-5;       // accuracy for maxNorm 
+    ValueType eps  = 1e-5;       // accuracy for maxNorm 
 
     L.readFromFile( argv[1] );
 
@@ -158,7 +158,7 @@ int main( int argc, const char* argv[] )
 
     u[0] = n12 + 1;
  
-    Scalar alpha = n + n12;
+    ValueType alpha = n + n12;
 
     HouseholderTransformedMatrix<ValueType> HLH( L, u, alpha );
 
@@ -191,9 +191,9 @@ int main( int argc, const char* argv[] )
 
         y = HLH * t;
 
-        Scalar lambda = t.dotProduct( y );
+        ValueType lambda = t.dotProduct( y );
         diff = y - lambda * t;
-        Scalar diffNorm = diff.maxNorm();
+        ValueType diffNorm = diff.maxNorm();
 
         std::cout << "Iter " << k << ", lambda = " << lambda << ", diff = " << diffNorm << std::endl;
 
@@ -209,7 +209,7 @@ int main( int argc, const char* argv[] )
     }
 
     t[0] = 0.0;
-    Scalar beta = u.dotProduct( t ) / alpha;
+    ValueType beta = u.dotProduct( t ) / alpha;
     t = t - beta * u;
 
     time = common::Walltime::get() - time ;

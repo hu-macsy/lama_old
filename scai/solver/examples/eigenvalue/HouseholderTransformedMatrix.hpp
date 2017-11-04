@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/AbstractMatrix.hpp>
+#include <scai/lama/matrix/OperatorMatrix.hpp>
 
 namespace scai
 {
@@ -42,13 +42,13 @@ namespace scai
 namespace lama
 {
 
-/** Abstract matrix class that stands for H * L * H with H = I - u * u' / alpha 
+/** Matrix class that stands for H * L * H with H = I - u * u' / alpha 
  *
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.
  */
 template<typename ValueType>
-class HouseholderTransformedMatrix<ValueType> : public AbstractMatrix<ValueType>
+class HouseholderTransformedMatrix : public OperatorMatrix<ValueType>
 {
 
 public:
@@ -62,7 +62,7 @@ public:
 
     HouseholderTransformedMatrix( const Matrix<ValueType>& L, const Vector<ValueType>& u, const ValueType alpha ) : 
 
-        AbstractMatrix( L ),
+        OperatorMatrix<ValueType>( L ),
         mL( L )
 
     {
@@ -77,13 +77,11 @@ public:
 
         ValueType gamma = u.dotProduct( h ) / alpha * 0.5;
         
-        mR.reset( u.copy() );
-        mS.reset( u.newVector() );
+        mR = u;
+        mS = h - gamma * u;
 
-        *mS = *h - gamma * u;
-
-        mS->setValue( 0, ValueType( 0 ) );
-        mR->setValue( 0, ValueType( 0 ) );
+        mS[0] = ValueType( 0 );
+        mR[0] = ValueType( 0 );
     }
 
     /** Reimplement the matrix * vector operation
@@ -93,15 +91,15 @@ public:
     virtual void matrixTimesVectorImpl(
         DenseVector<ValueType>& result,
         const ValueType alpha,
-        const Vector<ValueType>& x,
+        const DenseVector<ValueType>& x,
         const ValueType beta,
-        const Vector<ValueType>& y ) const
+        const DenseVector<ValueType>& y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mL = " << mL )
 
         result = mL * x;
-        result -= mS->dotProduct( x ) * *mR;
-        result -= mR->dotProduct( x ) * *mS;
+        result -= mS.dotProduct( x ) * mR;
+        result -= mR.dotProduct( x ) * mS;
         result[0] = ValueType( 0 );
         result *= alpha;
         result += beta * y;
@@ -114,17 +112,12 @@ public:
         return mL.getContextPtr();
     }
 
-    /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
-
-    virtual common::scalar::ScalarType getValueType() const
-    {
-        return mL.getValueType();
-    }
+    using OperatorMatrix<ValueType>::logger;
 
 private:
 
-    VectorPtr<ValueType> mR;   // help vector to make matrix * vector more efficient
-    VectorPtr<ValueType> mS;   // help vector to make matrix * vector more efficient
+    DenseVector<ValueType> mR;   // help vector to make matrix * vector more efficient
+    DenseVector<ValueType> mS;   // help vector to make matrix * vector more efficient
 
     const Matrix<ValueType>& mL;
 };

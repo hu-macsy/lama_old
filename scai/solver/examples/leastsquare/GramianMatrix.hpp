@@ -34,7 +34,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/AbstractMatrix.hpp>
+#include <scai/lama/matrix/OperatorMatrix.hpp>
 #include <scai/lama/_Vector.hpp>
 
 namespace scai
@@ -43,12 +43,13 @@ namespace scai
 namespace lama
 {
 
-/** Abstract matrix class that stands for A' * A without building it explicitly
+/** Operator matrix class that stands for A' * A without building it explicitly
  *
  *  The above matrix is not built explicitly and only some methods are implemented so
  *  this class can be used in solvers that exploit matrix-free methods.
  */
-class GramianMatrix : public AbstractMatrix
+template<typename ValueType>
+class GramianMatrix : public OperatorMatrix<ValueType>
 {
 
 public:
@@ -59,54 +60,48 @@ public:
      *
      *  The size of the Gramian matrix is n x n if A has the size m x n
      */
-    GramianMatrix( const _Matrix& A ) :
+    GramianMatrix( const Matrix<ValueType>& A ) :
 
-        AbstractMatrix( A.getColDistributionPtr(), A.getColDistributionPtr() ),
+        OperatorMatrix<ValueType>( A.getColDistributionPtr(), A.getColDistributionPtr() ),
         mA( A )
 
     {
         SCAI_LOG_INFO( logger, "GramianMatrix( A = " << A << " )" )
-
-        mAx.reset( _Vector::getVector( VectorKind::DENSE, A.getValueType() ) );
     }
 
-    /** Reimplement the matrix * vector operation
-     *
-     *  
+    /** 
+     *  Implementation of the linear operator
      */
-    virtual void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const
+    virtual void matrixTimesVectorImpl(
+        DenseVector<ValueType>& result,
+        const ValueType alpha,
+        const DenseVector<ValueType>& x,
+        const ValueType beta,
+        const DenseVector<ValueType>& y ) const
     {
         SCAI_LOG_INFO( logger, "matrixTimesVector, mA = " << mA )
 
-        *mAx= mA * x;
-        result = *mAx * mA;  // same as mA' * mAx
+        mAx    = mA * x;
+        result = mAx * mA;  // same as mA' * mAx
         result *= alpha;
         result += beta * y;
     }
 
-    /** This method must be provided so that solvers can decide about context of operations. */
+    /** Provide the context where linear operator is executed */
 
     virtual hmemo::ContextPtr getContextPtr() const
     {
         return mA.getContextPtr();
     }
 
-    /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
+    /** Just use here the logger of the base class. */
 
-    virtual common::scalar::ScalarType getValueType() const
-    {
-        return mA.getValueType();
-    }
+    using OperatorMatrix<ValueType>::logger;
 
 private:
 
-    _VectorPtr mAx;      // help vector for A * x
-    const _Matrix& mA;
+    mutable DenseVector<ValueType> mAx;      // help vector for A * x
+    const Matrix<ValueType>& mA;     // This class keeps only a reference
 };
 
 }
