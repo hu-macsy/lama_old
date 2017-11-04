@@ -45,10 +45,7 @@ using namespace scai::tasking;
 
 using std::shared_ptr;
 using std::bind;
-<<<<<<< HEAD
-=======
 using std::ref;
->>>>>>> feature/remove_threads
 
 /** Maximal number of threads in the pool. */
 
@@ -121,7 +118,7 @@ BOOST_AUTO_TEST_CASE( runTest )
                 for ( int i = 0; i < ntasks; i++ )
                 {
                     x[i] = -1;
-                    pool.schedule( bind( &work, i, std::ref( x[i] ) ) );
+                    pool.schedule( bind( &work, i, ref( x[i] ) ) );
                 }
 
                 // end of scope: pool waits for all tasks/work to be finished
@@ -158,7 +155,7 @@ BOOST_AUTO_TEST_CASE( waitTest )
             for ( int i = 0; i < ntasks; i++ )
             {
                 x[i] = -1;
-                tasks[i] = pool.schedule( bind( &work, i, std::ref( x[i] ) ) );
+                tasks[i] = pool.schedule( bind( &work, i, ref( x[i] ) ) );
             }
 
             for ( int i = 0; i < ntasks; i++ )
@@ -186,10 +183,10 @@ BOOST_AUTO_TEST_CASE( singleTest )
     {
         int resultThread;
         int resultMaster;
-        shared_ptr<ThreadPoolTask> task = pool.schedule( bind( &work, i, std::ref( resultThread ) ) );
+        shared_ptr<ThreadPoolTask> task = pool.schedule( bind( &work, i, ref( resultThread ) ) );
         // Master thread does something and then waits
         rnd = ( rnd + 19 ) % 17;
-        work( i + rnd, std::ref( resultMaster ) );
+        work( i + rnd, ref( resultMaster ) );
         BOOST_CHECK_EQUAL( i + rnd, resultMaster );
         pool.wait( task );
         BOOST_CHECK_EQUAL( i, resultThread );
