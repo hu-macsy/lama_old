@@ -33,11 +33,9 @@ All you need for the LAMA installation are the following software packages:
 
   - Optional: implementation of the |OpenMP_API|, version 2.0 or higher
 
-  - Recommended but not mandatory: support of the ISO-C++ standard C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
+  - Now mandatory: support of the ISO-C++ standard C++11 (e.g. since gcc 4.7, icc 11.1, clang 2.9)
 
 - :ref:`Boost <scaicommon:Boost>` (version 1.34 or later)
-
-  - Required if the C++11 standard is not supported by the C++ compiler
 
   - Required if unit tests of the projects should be built
 
@@ -67,9 +65,10 @@ The following software packages are not mandatory, but will give you a performan
 
   - Needed for the implementation of the dense blas functions. Supported libraries are: Intel MKL, BLAS. 
 
-- :ref:`CUDA <scaicommon:CUDA>` (version 4.0 or later)
+- :ref:`CUDA <scaicommon:CUDA>` (version 7.0 or later)
 
-  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability since cc 1.3).
+  - Needed to utilize CUDA capable GPUs from Nvidia (support for compute capability cc 2.0 or higher).
+  - C++11 support required for the CUDA compiler (since nvcc 7.0)
 
 - :ref:`MPI <scaidmemo:MPI>`
 
@@ -128,7 +127,7 @@ Nevertheless we encountered different problems, and here are some general advice
 - CXX Compilers
 
   We have very good experience with all versions of the GNU C++ compiler suite and the Intel C++ compiler
-  tools. We highly recommend using compiler versions that support the C++11 features, i.e. GCC 4.8.1 or higher,
+  tools. We now require using compiler versions that support the C++11 features, i.e. GCC 4.8.1 or higher,
   or Intel C++ 15.0 or higher. In this case, Boost is no more mandatory that also avoids a lot of problems.
 
 - Boost
