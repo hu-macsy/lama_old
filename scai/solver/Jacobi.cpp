@@ -261,7 +261,8 @@ void Jacobi::iterateTyped( const lama::SparseMatrix<ValueType>& coefficients )
 
         const HArray<ValueType>* diagonal = dynamic_cast<const HArray<ValueType>*>( getRuntime().mDiagonal.get() );
 
-        using namespace scai::common;  // placeholders are also needed
+        using namespace std;                // bind, ref, cref
+        using namespace std::placeholders;  // placeholders are also needed
 
         void ( scai::lama::MatrixStorage<ValueType>::*jacobiIterateHalo )(
             HArray<ValueType>& localSolution,

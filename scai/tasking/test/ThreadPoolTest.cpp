@@ -45,6 +45,10 @@ using namespace scai::tasking;
 
 using std::shared_ptr;
 using std::bind;
+<<<<<<< HEAD
+=======
+using std::ref;
+>>>>>>> feature/remove_threads
 
 /** Maximal number of threads in the pool. */
 

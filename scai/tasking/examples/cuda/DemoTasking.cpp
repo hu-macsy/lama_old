@@ -47,6 +47,9 @@ using namespace scai;
 using namespace common;
 using namespace tasking;
 
+using std::bind;
+using std::cref;
+
 /* --------------------------------------------------------------------- */
 
 float* myAllocate( const CUDACtx& ctx, int N )

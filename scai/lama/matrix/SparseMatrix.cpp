@@ -1898,6 +1898,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
     const ValueType betaValue,
     const DenseVector<ValueType>& denseY ) const
 {
+    using namespace std;
     using namespace std::placeholders;
 
     SCAI_REGION( "Mat.Sp.timesVector" )
@@ -1988,7 +1989,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const ValueType beta,
         const HArray<ValueType>& y ) const = &MatrixStorage<ValueType>::vectorTimesMatrix;
 
-    using namespace scai::common;
+    using namespace std;
 
     function <
     void(
