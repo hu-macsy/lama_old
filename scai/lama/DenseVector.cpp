@@ -1257,7 +1257,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
 
         const bool unique = true;  // non-zero indexes in sparse vectors are always unique
 
-        if ( xZeroVal != common::constants::ZERO )
+        if ( xZeroVal != common::Constants::ZERO )
         {
             // we have also to add the zero values
 
@@ -1265,7 +1265,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const Vector& x )
             sparseX.buildLocalValues( xDenseValues);
             utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, mContext );
         }
-        else if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::constants::ONE )
+        else if ( nonZeroValues.getValueType() == getValueType() && alphaV == common::Constants::ONE )
         {
             const HArray<ValueType>& typedValues = reinterpret_cast<const HArray<ValueType>&>( nonZeroValues );
             HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, typedValues, common::BinaryOp::ADD, getContextPtr());

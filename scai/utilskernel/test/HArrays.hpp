@@ -52,7 +52,7 @@ public:
     {
         using namespace scai::common;
         using namespace scai::hmemo;
-        std::vector<scalar::ScalarType> values;  //  all create values
+        std::vector<ScalarType> values;  //  all create values
         _HArray::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )

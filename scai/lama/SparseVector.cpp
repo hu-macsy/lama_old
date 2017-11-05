@@ -1221,7 +1221,7 @@ Scalar SparseVector<ValueType>::dotProduct( const Vector& other ) const
 
         localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
     }
-    else if ( mZeroValue == common::constants::ZERO )
+    else if ( mZeroValue == common::Constants::ZERO )
     {
         HArray<ValueType> otherNonZeroValues;  //  the values form other at my non-zero indexes
 
@@ -1599,7 +1599,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
         const IndexType size = getDistribution().getLocalSize();
 
-        if ( mZeroValue == common::constants::ZERO )
+        if ( mZeroValue == common::Constants::ZERO )
         {
             fileIO->writeSparse( size, mNonZeroIndexes, mNonZeroValues, fileName );
         }

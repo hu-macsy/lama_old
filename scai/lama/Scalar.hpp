@@ -196,7 +196,7 @@ public:
 
     inline bool hasComplexValue() const
     {
-        return common::Math::imag( mValue ) != common::constants::ZERO;
+        return common::Math::imag( mValue ) != common::Constants::ZERO;
     }
 
     /** Return a Scalar with the corresponding eps0 value of a type.

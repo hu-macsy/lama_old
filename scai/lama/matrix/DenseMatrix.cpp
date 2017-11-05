@@ -1806,7 +1806,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     // It makes no sense to prefetch denseX because, if a transfer is started
     // the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != common::constants::ZERO )
+    if ( betaValue != common::Constants::ZERO )
     {
         denseY.prefetch( localContext );
     }

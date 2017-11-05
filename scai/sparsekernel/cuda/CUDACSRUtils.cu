@@ -806,7 +806,7 @@ void CUDACSRUtils::normalGEMV(
     {
         vectorBindTexture( x );
 
-        if ( alpha == constants::ONE && beta == constants::ONE )
+        if ( alpha == Constants::ONE && beta == Constants::ONE )
         {
             // result = A * x_d + y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -814,7 +814,7 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_alpha_one_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( alpha == constants::ONE && beta == constants::ZERO )
+        else if ( alpha == Constants::ONE && beta == Constants::ZERO )
         {
             // result = A * x_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -822,14 +822,14 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_alpha_one_beta_zero<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( alpha == constants::ZERO && beta == constants::ONE )
+        else if ( alpha == Constants::ZERO && beta == Constants::ONE )
         {
             // result = y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             assign_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>( result, y, numRows );
         }
-        else if ( alpha == constants::ONE )
+        else if ( alpha == Constants::ONE )
         {
             // result = A * x_d + beta * y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -837,14 +837,14 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, beta, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( alpha == constants::ZERO )
+        else if ( alpha == Constants::ZERO )
         {
             // result = A * x_d + beta * y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, true>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             scale_kernel<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>( result, y, beta, numRows );
         }
-        else if ( beta == constants::ONE )
+        else if ( beta == Constants::ONE )
         {
             // result = alpha * A * x_d + y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -852,7 +852,7 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_beta_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, alpha, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( beta == constants::ZERO )
+        else if ( beta == Constants::ZERO )
         {
             // result = alpha * A * x_d + y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, true>, cudaFuncCachePreferL1 ),
@@ -871,7 +871,7 @@ void CUDACSRUtils::normalGEMV(
     }
     else
     {
-        if ( alpha == constants::ONE && beta == constants::ONE )
+        if ( alpha == Constants::ONE && beta == Constants::ONE )
         {
             // result = A * x_d + y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -879,7 +879,7 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_alpha_one_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( alpha == constants::ONE && beta == constants::ZERO )
+        else if ( alpha == Constants::ONE && beta == Constants::ZERO )
         {
             // result = A * x_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -887,14 +887,14 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_alpha_one_beta_zero<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( alpha == constants::ZERO && beta == constants::ONE )
+        else if ( alpha == Constants::ZERO && beta == Constants::ONE )
         {
             // result = y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( assign_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             assign_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>( result, y, numRows );
         }
-        else if ( alpha == constants::ONE )
+        else if ( alpha == Constants::ONE )
         {
             // result = A * x_d + beta * y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_alpha_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -902,14 +902,14 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, beta, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( alpha == constants::ZERO )
+        else if ( alpha == Constants::ZERO )
         {
             // result = beta * y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( scale_kernel<ValueType, false>, cudaFuncCachePreferL1 ),
                                "LAMA_STATUS_CUDA_FUNCSETCACHECONFIG_FAILED" )
             scale_kernel<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>( result, y, beta, numRows );
         }
-        else if ( beta == constants::ONE )
+        else if ( beta == Constants::ONE )
         {
             // result = alpha * A * x_d + y_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_one<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -917,7 +917,7 @@ void CUDACSRUtils::normalGEMV(
             normal_gemv_kernel_beta_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, y, alpha, csrValues, csrIA, csrJA, numRows );
         }
-        else if ( beta == constants::ZERO )
+        else if ( beta == Constants::ZERO )
         {
             // result = alpha * A * x_d
             SCAI_CUDA_RT_CALL( cudaFuncSetCacheConfig( normal_gemv_kernel_beta_zero<ValueType, false>, cudaFuncCachePreferL1 ),
@@ -1052,7 +1052,7 @@ void CUDACSRUtils::sparseGEMV(
     {
         vectorBindTexture( x );
 
-        if ( alpha == constants::ONE )
+        if ( alpha == Constants::ONE )
         {
             sparse_gemv_kernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );
@@ -1065,7 +1065,7 @@ void CUDACSRUtils::sparseGEMV(
     }
     else
     {
-        if ( alpha == constants::ONE )
+        if ( alpha == Constants::ONE )
         {
             sparse_gemv_kernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock, 0, stream >>>
             ( result, x, alpha, csrValues, csrIA, csrJA, rowIndexes, numNonZeroRows );

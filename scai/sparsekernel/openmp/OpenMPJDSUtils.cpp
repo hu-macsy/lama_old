@@ -727,7 +727,7 @@ void OpenMPJDSUtils::jacobi(
                 pos += jdsDLG[j];
             }
 
-            if ( omega == scai::common::constants::ONE )
+            if ( omega == scai::common::Constants::ONE )
             {
                 solution[i] = temp / diag;
             }

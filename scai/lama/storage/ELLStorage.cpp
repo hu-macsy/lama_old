@@ -670,7 +670,7 @@ void ELLStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 
     for ( IndexType j = 0; j < mNumColumns; ++j )
     {
-        if ( rRow[j] == common::constants::ZERO )
+        if ( rRow[j] == common::Constants::ZERO )
         {
             continue;
         }
@@ -695,7 +695,7 @@ void ELLStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        if ( rColumn[i] == common::constants::ZERO )
+        if ( rColumn[i] == common::Constants::ZERO )
         {
             continue;
         }
@@ -1157,7 +1157,7 @@ SyncToken* ELLStorage<ValueType>::gemv(
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::constants::ZERO || ( mNumValuesPerRow == 0 ) )
+    if ( alpha == common::Constants::ZERO || ( mNumValuesPerRow == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
@@ -1175,7 +1175,7 @@ SyncToken* ELLStorage<ValueType>::gemv(
     // check for correct sizes of x
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         // take version that does not access y at all (can be undefined or aliased to result)
         return normalGEMV( result, alpha, x, async );
@@ -1184,7 +1184,7 @@ SyncToken* ELLStorage<ValueType>::gemv(
     // y is relevant, so it must have correct size
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    if ( &result == &y && ( beta == common::constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
     {
         // y += A * x,  where only some rows in A are filled, uses more efficient routine
         return sparseGEMV( result, alpha, x, async );
@@ -1212,7 +1212,7 @@ SyncToken* ELLStorage<ValueType>::gevm(
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::constants::ZERO || ( mNumValuesPerRow == 0 ) )
+    if ( alpha == common::Constants::ZERO || ( mNumValuesPerRow == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
@@ -1230,7 +1230,7 @@ SyncToken* ELLStorage<ValueType>::gevm(
     // check for correct sizes of x
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         // take version that does not access y at all (can be undefined or aliased to result)
         return normalGEVM( result, alpha, x, async );
@@ -1239,7 +1239,7 @@ SyncToken* ELLStorage<ValueType>::gevm(
     // y is relevant, so it must have correct size
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
-    if ( &result == &y && ( beta == common::constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
     {
         // y += A * x,  where only some rows in A are filled, uses more efficient routine
         return sparseGEVM( result, alpha, x, async );
@@ -1873,7 +1873,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
         return;
     }
 
-    if ( beta != scai::common::constants::ZERO )
+    if ( beta != scai::common::Constants::ZERO )
     {
         if ( ( c.getFormat() == Format::ELL ) && ( &c != this ) )
         {
@@ -1891,7 +1891,7 @@ void ELLStorage<ValueType>::matrixTimesMatrix(
     ELLStorage<ValueType> tmp;
     tmp.matrixTimesMatrixELL( alpha, *ellA, *ellB );
 
-    if ( beta != scai::common::constants::ZERO )
+    if ( beta != scai::common::Constants::ZERO )
     {
         ELLStorage<ValueType> tmp1;
         tmp1.matrixAddMatrixELL( static_cast<ValueType>( 1.0 ), tmp, beta, *ellC );

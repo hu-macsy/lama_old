@@ -788,7 +788,7 @@ void HArrayUtils::axpy(
     SCAI_LOG_INFO( logger, "result += " << alpha << " * x"
                    ", x = " << x << ", result = " << result )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         return;
     }
@@ -828,11 +828,11 @@ void HArrayUtils::arrayPlusArray(
  
     bool noSwapScalar = false;
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         // result = alpha * x [ + 0 * y ]
 
-        if ( alpha == common::constants::ZERO )
+        if ( alpha == common::Constants::ZERO )
         {
             // result = 0 * x + 0 * y, be careful about size of result
 
@@ -849,20 +849,20 @@ void HArrayUtils::arrayPlusArray(
         return;
     }
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // result = beta * y
         binaryOpScalar( result, y, beta, BinaryOp::MULT, noSwapScalar, prefLoc );
         return;
     }
 
-    if ( &y == &result && beta == common::constants::ONE )
+    if ( &y == &result && beta == common::Constants::ONE )
     {
         axpy( result, alpha, x, prefLoc );
         return;
     }
 
-    if ( &x == &result && alpha == common::constants::ONE )
+    if ( &x == &result && alpha == common::Constants::ONE )
     {
         axpy( result, beta, y, prefLoc );
         return;
@@ -901,28 +901,28 @@ void HArrayUtils::arrayPlusScalar(
 
     // check for zero terms as we do not need read access and assert correct sizes
 
-    if ( alpha == common::constants::ZERO ) // result = b
+    if ( alpha == common::Constants::ZERO ) // result = b
     {
         result.resize( x.size() );
         assignScalar( result, beta, BinaryOp::COPY, prefLoc );
         return;
     }
 
-    if ( &x == &result && alpha == common::constants::ONE ) // result += b (elementwise)
+    if ( &x == &result && alpha == common::Constants::ONE ) // result += b (elementwise)
     {
         assignScalar( result, beta, BinaryOp::ADD, prefLoc );
         return;
     }
 
-    if ( alpha == common::constants::ONE ) // result = x + b (elementwise)
+    if ( alpha == common::Constants::ONE ) // result = x + b (elementwise)
     {
         binaryOpScalar( result, x, beta, BinaryOp::ADD, false, prefLoc );
         return;
     }
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
-        if ( alpha == common::constants::ZERO ) // result = 0
+        if ( alpha == common::Constants::ZERO ) // result = 0
         {
             setScalar( result, ValueType( 0 ), BinaryOp::COPY, prefLoc );
         }
@@ -972,7 +972,7 @@ void HArrayUtils::arrayTimesArray(
     SCAI_ASSERT_EQUAL( x.size(), y.size(), "size mismatch" )
     const IndexType n = x.size();
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         setScalar( result, ValueType( 0 ), BinaryOp::COPY, prefLoc );
         return;
@@ -997,7 +997,7 @@ void HArrayUtils::arrayTimesArray(
         binaryOp[loc]( resultAccess.get(), xAccess.get(), yAccess.get(), n, BinaryOp::MULT );
     }
 
-    if ( alpha != common::constants::ONE )
+    if ( alpha != common::Constants::ONE )
     {
         setScalar( result, alpha, BinaryOp::MULT, prefLoc );
     }
