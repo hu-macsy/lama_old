@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( simpleTest )
         // Assemble matrix data by arbitrary processors, entries at same location are summed up
 
         {
-            MatrixAssemblyAccess<ValueType> assembly( matrix1, common::binary::ADD );
+            MatrixAssemblyAccess<ValueType> assembly( matrix1, common::BinaryOp::ADD );
 
             for ( IndexType i = 0; i < nnz; ++i )
             {

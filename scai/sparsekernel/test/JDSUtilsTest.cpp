@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
 
         WriteOnlyAccess<ValueType> wRow( row, loc, numColumns );
 
-        common::binary::BinaryOp op = common::binary::SUB;
+        common::BinaryOp op = common::BinaryOp::SUB;
 
         getRow[loc]( wRow.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wValues.get() );
         setRow[loc]( wValues.get(), i, numColumns, numRows, rPerm.get(), rIlg.get(), rDlg.get(), rJa.get(), wRow.get(), op );

@@ -167,7 +167,7 @@ int main( int argc, const char* argv[] )
     m.allocate( nrows, ncols );
 
     {
-        MatrixAssemblyAccess<double> access( m, common::binary::COPY );
+        MatrixAssemblyAccess<RealType> access( m, common::BinaryOp::COPY );
 
         for ( IndexType i = 0; i < nrows; ++i )
         {
@@ -177,7 +177,7 @@ int main( int argc, const char* argv[] )
 
                 if ( takeIt )
                 {
-                    double val = common::Math::random<double>( 1 );
+                    RealType val = common::Math::random<RealType>( 1 );
                     access.push( i, j, val );
                 }
             }

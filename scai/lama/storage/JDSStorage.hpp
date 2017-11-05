@@ -336,7 +336,7 @@ public:
 
     template<typename OtherType>
     void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const common::binary::BinaryOp op );
+                     const common::BinaryOp op );
 
     /** Implementation of pure method MatrixStorage::getColumn */
 
@@ -346,7 +346,7 @@ public:
 
     template<typename OtherType>
     void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const common::binary::BinaryOp op );
+                        const common::BinaryOp op );
 
     /** This method returns the diagonal
      *
@@ -410,7 +410,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for JDS storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const common::binary::BinaryOp op = common::binary::COPY );
+                   const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 

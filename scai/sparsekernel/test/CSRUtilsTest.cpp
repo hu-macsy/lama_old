@@ -1390,7 +1390,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 
             reduce[loc]( wResult.get(),
                          rIA.get(), rJA.get(), rValues.get(), numRows, dim,
-                         common::binary::ADD, common::unary::COPY );
+                         common::BinaryOp::ADD, common::UnaryOp::COPY );
         }
 
         HArray<ValueType> expectedRes;

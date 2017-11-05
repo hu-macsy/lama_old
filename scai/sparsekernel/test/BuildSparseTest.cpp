@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( buildSparseIndexesTest )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_test_types )
 {
-    BuildSparseVector<ValueType> myVector( 10, common::binary::ADD );
+    BuildSparseVector<ValueType> myVector( 10, common::BinaryOp::ADD );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest, ValueType, scai_numeric_te
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( buildSparseVectorTest1, ValueType, scai_numeric_test_types )
 {
-    BuildSparseVector<ValueType> myVector( 10, common::binary::COPY );
+    BuildSparseVector<ValueType> myVector( 10, common::BinaryOp::COPY );
 
     BOOST_CHECK_EQUAL( IndexType( 0 ), myVector.getLength() );
     BOOST_CHECK( myVector.isEmpty() );

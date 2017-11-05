@@ -59,6 +59,7 @@
 #include <set>
 #include <map>
 #include <memory>
+#include <functional>
 
 namespace scai
 {
@@ -1241,7 +1242,7 @@ void OpenMPELLUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
     #pragma  omp parallel
     {

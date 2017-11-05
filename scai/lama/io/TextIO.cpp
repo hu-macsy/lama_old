@@ -256,7 +256,7 @@ void TextIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySectionImpl( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }
@@ -358,7 +358,7 @@ void TextIO::readData(
     HArrayUtils::setArrayImpl( ia, dIA );  // conversion from RealType to IndexType
     HArrayUtils::setArrayImpl( ja, dJA );  // conversion from RealType to IndexType
 
-    IndexType minRowIndex = HArrayUtils::reduce( ia, common::binary::MIN );
+    IndexType minRowIndex = HArrayUtils::reduce( ia, common::BinaryOp::MIN );
 
     if ( minRowIndex == 0 )
     {
@@ -368,8 +368,8 @@ void TextIO::readData(
     {
         // offset base = 1, convert it to 0
 
-        HArrayUtils::setScalar( ia, IndexType( 1 ), common::binary::SUB );
-        HArrayUtils::setScalar( ja, IndexType( 1 ), common::binary::SUB );
+        HArrayUtils::setScalar( ia, IndexType( 1 ), common::BinaryOp::SUB );
+        HArrayUtils::setScalar( ja, IndexType( 1 ), common::BinaryOp::SUB );
     }
     else
     {

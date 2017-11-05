@@ -297,10 +297,10 @@ public:
      */
     virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const = 0;
 
-    virtual void setRow( const hmemo::_HArray& row, const IndexType i, common::binary::BinaryOp op ) = 0;
+    virtual void setRow( const hmemo::_HArray& row, const IndexType i, common::BinaryOp op ) = 0;
 
     virtual void setColumn( const hmemo::_HArray& column, const IndexType j,
-                            common::binary::BinaryOp op            ) = 0;
+                            common::BinaryOp op            ) = 0;
 
     /** This method returns the j-th column of the matrix
      *
@@ -742,8 +742,8 @@ public:
     virtual void reduce( 
         hmemo::HArray<ValueType>& array, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp );
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp );
 
     /**
      * @brief fills matrix storage by csr sparse data.
@@ -873,7 +873,7 @@ public:
     virtual void setValue( const IndexType i,
                            const IndexType j,
                            const ValueType val,
-                           const common::binary::BinaryOp op = common::binary::COPY ) = 0;
+                           const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.

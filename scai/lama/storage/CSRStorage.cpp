@@ -80,7 +80,8 @@ using namespace utilskernel;
 
 using std::unique_ptr;
 using common::TypeTraits;
-using common::binary;
+using common::BinaryOp;
+using common::CompareOp;
 
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::DIAKernelTrait;
@@ -191,7 +192,7 @@ void CSRStorage<ValueType>::check( const char* msg ) const
         SCAI_ASSERT_ERROR(
             numValues == mNumValues,
             "ia[" << mNumRows << "] = " << numValues << ", expected " << mNumValues << ", msg = " << msg )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), mNumRows + 1, binary::LE ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( csrIA.get(), mNumRows + 1, CompareOp::LE ),
                            *this << " @ " << msg << ": IA is illegal offset array" )
     }
     // check column indexes in JA
@@ -262,7 +263,7 @@ void CSRStorage<ValueType>::setIdentity( const IndexType size )
         setVal.getSupportedContext( loc );
         SCAI_CONTEXT_ACCESS( loc )
         WriteOnlyAccess<ValueType> values( mValues, loc, mNumValues );
-        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), binary::COPY );
+        setVal[loc]( values.get(), mNumRows, ValueType( 1 ), BinaryOp::COPY );
     }
     mDiagonalProperty = true; // obviously given for identity matrix
     mSortedRows = true; // obviously given for identity matrix
@@ -289,12 +290,12 @@ void CSRStorage<ValueType>::setCSRDataImpl(
 
     if ( ia.size() == numRows )
     {
-        IndexType sumIA = HArrayUtils::reduce( ia, binary::ADD );
+        IndexType sumIA = HArrayUtils::reduce( ia, BinaryOp::ADD );
         SCAI_ASSERT_EQUAL( numValues, sumIA, "sizes do not sum up to numValues" );
     }
     else if ( ia.size() == numRows + 1 )
     {
-        SCAI_ASSERT( HArrayUtils::isSorted( ia, binary::LE ), "ia is invalid offset array, entries not ascending" )
+        SCAI_ASSERT( HArrayUtils::isSorted( ia, CompareOp::LE ), "ia is invalid offset array, entries not ascending" )
         SCAI_ASSERT_EQUAL( numValues, HArrayUtils::getValImpl( ia, numRows ), "last entry in offsets must be numValues" );
     }
     else
@@ -612,7 +613,7 @@ void CSRStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
     mValues.clear();
     WriteOnlyAccess<IndexType> ia( mIa, mNumRows + 1 );
     // make a correct initialization for the offset array
-    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), binary::COPY  );
+    OpenMPUtils::setVal( ia.get(), mNumRows + 1, IndexType( 0 ), BinaryOp::COPY  );
     mDiagonalProperty = checkDiagonalProperty();
 }
 
@@ -810,7 +811,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::setValue( const IndexType i,
                                       const IndexType j,
                                       const ValueType val,
-                                      const binary::BinaryOp op )
+                                      const BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -940,7 +941,7 @@ void CSRStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
         ReadAccess<IndexType> csrIA( mIa, loc );
         WriteAccess<ValueType> wValues( mValues, loc );     // partial setting
         //  wValues[ wIa[ i ] ] = rDiagonal[ i ];
-        setScatter[loc]( wValues.get(), csrIA.get(), true, rDiagonal.get(), binary::COPY, numDiagonalElements );
+        setScatter[loc]( wValues.get(), csrIA.get(), true, rDiagonal.get(), BinaryOp::COPY, numDiagonalElements );
     }
 
     if ( SCAI_LOG_TRACE_ON( logger ) )
@@ -978,7 +979,7 @@ void CSRStorage<ValueType>::getRowImpl( HArray<OtherType>& row, const IndexType 
     const ReadAccess<IndexType> ja( mJa, loc );
     const ReadAccess<ValueType> values( mValues, loc );
 
-    setScatter[loc]( wRow.get(), ja.get() + n1, true, values.get() + n1, binary::COPY, nrow );
+    setScatter[loc]( wRow.get(), ja.get() + n1, true, values.get() + n1, BinaryOp::COPY, nrow );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1002,7 +1003,7 @@ void CSRStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 
     // just copy the corresponding parts of the csrJA and csrValues array
 
-    binary::BinaryOp op = binary::COPY;
+    BinaryOp op = BinaryOp::COPY;
 
     const IndexType inc = 1;  // no strides
 
@@ -1048,7 +1049,7 @@ void CSRStorage<ValueType>::getSparseColumn(
 
     // values = mValues[ pos ];
 
-    HArrayUtils::gather( values, mValues, valuePos, binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1056,7 +1057,7 @@ void CSRStorage<ValueType>::getSparseColumn(
 template<typename ValueType>
 template<typename OtherType>
 void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-                                        const binary::BinaryOp op )
+                                        const BinaryOp op )
 {
     SCAI_REGION( "Storage.CSR.setRow" )
 
@@ -1083,7 +1084,7 @@ void CSRStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
         const ReadAccess<IndexType> ja( mJa, loc );
         const ReadAccess<OtherType> rRow( row, loc );
 
-        setGather[loc]( wRow.get(), rRow.get(), ja.get() + n1, binary::COPY, nrow );
+        setGather[loc]( wRow.get(), rRow.get(), ja.get() + n1, BinaryOp::COPY, nrow );
     }
 
     HArrayUtils::setArraySection( mValues, n1, 1, gatheredRow, 0, 1, nrow, op, loc );
@@ -1109,7 +1110,7 @@ void CSRStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) cons
 template<typename ValueType>
 template<typename OtherType>
 void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-        const binary::BinaryOp op )
+        const BinaryOp op )
 {
     SCAI_REGION( "Storage.CSR.setCol" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1144,7 +1145,7 @@ void CSRStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, binary::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, BinaryOp::COPY, loc );
     HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
 }
 
@@ -1166,7 +1167,7 @@ void CSRStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
     WriteOnlyAccess<OtherValueType> wDiagonal( diagonal, loc, numDiagonalElements );
     ReadAccess<IndexType> csrIA( mIa, loc );
     ReadAccess<ValueType> rValues( mValues, loc );
-    setGather[loc]( wDiagonal.get(), rValues.get(), csrIA.get(), binary::COPY, numDiagonalElements );
+    setGather[loc]( wDiagonal.get(), rValues.get(), csrIA.get(), BinaryOp::COPY, numDiagonalElements );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1175,7 +1176,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_ASSERT_EQUAL( mValues.size(), mNumValues, "size mismatch" )
-    HArrayUtils::compute( mValues, mValues, binary::MULT, value, this->getContextPtr() );
+    HArrayUtils::compute( mValues, mValues, BinaryOp::MULT, value, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1183,7 +1184,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void CSRStorage<ValueType>::conj()
 {
-    HArrayUtils::unaryOp( mValues, mValues, common::unary::CONJ, this->getContextPtr() );
+    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1317,12 +1318,12 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
     // copy out the corresponding sections, ia needs a shifting to zero
 
     LArray<IndexType> blockIA( n + 1 );
-    HArrayUtils::setArraySection( blockIA, 0, 1, mIa, first, 1, n +  1, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockIA, 0, 1, mIa, first, 1, n +  1, BinaryOp::COPY, loc );
 
-    // Note: binary::ADD with -offset is strange if IndexType is unsigned
+    // Note: BinaryOp::ADD with -offset is strange if IndexType is unsigned
 
     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
-    HArrayUtils::compute( blockIA, blockIA, binary::SUB, offset, loc );
+    HArrayUtils::compute( blockIA, blockIA, BinaryOp::SUB, offset, loc );
 
     IndexType numBlockValues = blockIA[n];
 
@@ -1331,8 +1332,8 @@ void CSRStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexType 
     LArray<IndexType> blockJA( numBlockValues );
     LArray<ValueType> blockValues( numBlockValues );
 
-    HArrayUtils::setArraySection( blockJA, 0, 1, mJa, offset, 1, numBlockValues, binary::COPY, loc );
-    HArrayUtils::setArraySection( blockValues, 0, 1, mValues, offset, 1, numBlockValues, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockJA, 0, 1, mJa, offset, 1, numBlockValues, BinaryOp::COPY, loc );
+    HArrayUtils::setArraySection( blockValues, 0, 1, mValues, offset, 1, numBlockValues, BinaryOp::COPY, loc );
 
     other.setCSRData( n, mNumColumns, numBlockValues, blockIA, blockJA, blockValues );
 }
@@ -1382,8 +1383,8 @@ void CSRStorage<ValueType>::buildCSR(
         ReadAccess<IndexType> inJA( mJa, loc );
         WriteOnlyAccess<IndexType> csrIA( ia, loc, mNumRows + 1 );
         WriteOnlyAccess<IndexType> csrJA( *ja, loc, mNumValues );
-        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, binary::COPY );
-        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, binary::COPY );
+        setIndexes[ loc ]( csrIA.get(), inIA.get(), mNumRows + 1, BinaryOp::COPY );
+        setIndexes[ loc ]( csrJA.get(), inJA.get(), mNumValues, BinaryOp::COPY );
     }
     // copy values
     {
@@ -1393,7 +1394,7 @@ void CSRStorage<ValueType>::buildCSR(
         SCAI_CONTEXT_ACCESS( loc )
         ReadAccess<ValueType> inValues( mValues, loc );
         WriteOnlyAccess<OtherValueType> csrValues( *values, loc, mNumValues );
-        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, binary::COPY );
+        setValues[ loc ]( csrValues.get(), inValues.get(), mNumValues, BinaryOp::COPY );
     }
 }
 
@@ -1414,7 +1415,7 @@ void CSRStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& col
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<IndexType> ja( mJa, loc );
     ReadAccess<IndexType> ia( mIa, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), binary::COPY, mNumRows );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1864,7 +1865,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
     if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
 
         if ( async )
         {
@@ -1920,7 +1921,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
     {
         SCAI_LOG_INFO( logger, "gevm, alpha = 0 : result = " << beta << " * y " )
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
 
         if ( async )
         {
@@ -2260,7 +2261,7 @@ template<typename ValueType>
 void CSRStorage<ValueType>::binaryOpCSR(
     const CSRStorage<ValueType>& a,
     const CSRStorage<ValueType>& b,
-    common::binary::BinaryOp op )
+    common::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "this = a " << op << " b " )
 
@@ -2468,7 +2469,7 @@ typename CSRStorage<ValueType>::StorageAbsType CSRStorage<ValueType>::maxNorm() 
     ReadAccess<ValueType> csrValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     ValueType zero   = 0;
-    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, zero, binary::ABS_MAX );
+    ValueType maxval = reduce[loc]( csrValues.get(), mNumValues, zero, BinaryOp::ABS_MAX );
     return maxval;
 }
 
@@ -2620,11 +2621,11 @@ SCAI_COMMON_INST_CLASS( CSRStorage, SCAI_NUMERIC_TYPES_HOST )
     template void CSRStorage<ValueType>::setRowImpl(          \
             const hmemo::HArray<OtherValueType>&,             \
             const IndexType,                                  \
-            const binary::BinaryOp );                         \
+            const BinaryOp );                         \
     template void CSRStorage<ValueType>::setColumnImpl(       \
             const hmemo::HArray<OtherValueType>&,             \
             const IndexType,                                  \
-            const binary::BinaryOp );                         \
+            const BinaryOp );                         \
     template void CSRStorage<ValueType>::getDiagonalImpl(     \
             hmemo::HArray<OtherValueType>& ) const;           \
     template void CSRStorage<ValueType>::setDiagonalImpl(     \

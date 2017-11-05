@@ -80,14 +80,14 @@ namespace utilskernel
 SCAI_LOG_DEF_LOGGER( CUDAUtils::logger, "CUDA.Utils" )
 
 /* --------------------------------------------------------------------------- */
-/*                                 unary kernels                               */
+/*                                 UnaryOp kernels                               */
 /* --------------------------------------------------------------------------- */
 
-/** This kernel can be applied for any arbitrary unary operation */
+/** This kernel can be applied for any arbitrary UnaryOp operation */
 
 template<typename ValueType>
 __global__
-void unaryOpKernel( ValueType out[], const unary::UnaryOp op, const ValueType in[], IndexType n )
+void UnaryOpOpKernel( ValueType out[], const UnaryOp op, const ValueType in[], IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -97,7 +97,7 @@ void unaryOpKernel( ValueType out[], const unary::UnaryOp op, const ValueType in
     }
 }
 
-/** The following kernel is a specialization of unaryOpKernel with op == unary::CONJ
+/** The following kernel is a specialization of UnaryOpOpKernel with op == UnaryOp::CONJ
  *
  *  Note: latest CUDA compiler releases show no performance benefits but we keep it
  *        here to demonstrate how specific kernels might be used for optimization
@@ -180,7 +180,7 @@ void floorKernel( IndexType out[], const IndexType in[], const IndexType n )
 
 template<typename ValueType>
 __global__
-void binOpKernel( ValueType out[], const ValueType in1[], const common::binary::BinaryOp op, const ValueType in2[], const IndexType n )
+void binOpKernel( ValueType out[], const ValueType in1[], const common::BinaryOp op, const ValueType in2[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -190,7 +190,7 @@ void binOpKernel( ValueType out[], const ValueType in1[], const common::binary::
     }
 }
 
-/** Special version of binOpKernel with op == binary::MULT */
+/** Special version of binOpKernel with op == BinaryOp::MULT */
 
 template<typename ValueType>
 __global__
@@ -204,7 +204,7 @@ void multKernel( ValueType out[], const ValueType in1[], const ValueType in2[], 
     }
 }
 
-/** Special version of binOpKernel with op == common::binary::ADD */
+/** Special version of binOpKernel with op == common::BinaryOp::ADD */
 
 template<typename ValueType>
 __global__
@@ -220,7 +220,7 @@ void addKernel( ValueType out[], const ValueType in1[], const ValueType in2[], c
 
 template<typename ValueType>
 __global__
-void binOpScalar1Kernel( ValueType out[], const ValueType value, const common::binary::BinaryOp op, const ValueType in[], const IndexType n )
+void binOpScalar1Kernel( ValueType out[], const ValueType value, const common::BinaryOp op, const ValueType in[], const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -232,7 +232,7 @@ void binOpScalar1Kernel( ValueType out[], const ValueType value, const common::b
 
 template<typename ValueType>
 __global__
-void binOpScalar2Kernel( ValueType out[], const ValueType in[], const binary::BinaryOp op, const ValueType value, const IndexType n )
+void binOpScalar2Kernel( ValueType out[], const ValueType in[], const BinaryOp op, const ValueType value, const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -267,7 +267,7 @@ void scaleVectorAddScalarKernel( ValueType array1[], const ValueType array2[], c
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-/*   binary::MULT kernel                                                                                              */
+/*   BinaryOp::MULT kernel                                                                                              */
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 template<typename ValueType>
@@ -297,7 +297,7 @@ void divScalarKernel( ValueType out[], const ValueType value, const ValueType in
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op )
+void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const BinaryOp op )
 {
     SCAI_REGION( "CUDA.Utils.setVal" )
 
@@ -318,19 +318,19 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 
     switch ( op )
     {
-        case binary::COPY:
+        case BinaryOp::COPY:
             thrust::fill( data, data + n, value );
             break;
 
-        case binary::ADD:
+        case BinaryOp::ADD:
             thrust::for_each( data, data + n,  _1 += value );
             break;
 
-        case binary::SUB:
+        case BinaryOp::SUB:
             thrust::for_each( data, data + n,  _1 -= value );
             break;
 
-        case binary::MULT:
+        case BinaryOp::MULT:
         {
             if ( val == scai::common::constants::ZERO )
             {
@@ -343,7 +343,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
         }
         break;
 
-        case binary::DIVIDE:
+        case BinaryOp::DIVIDE:
         {
             if ( val == scai::common::constants::ZERO )
             {
@@ -433,11 +433,11 @@ void CUDAUtils::scatterVal( ValueType out[], const IndexType indexes[], const Va
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void CUDAUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op )
+void CUDAUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
 {
-    SCAI_REGION( "CUDA.Utils.unaryOp" )
+    SCAI_REGION( "CUDA.Utils.UnaryOpOp" )
 
-    SCAI_LOG_INFO( logger, "unaryOp<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
+    SCAI_LOG_INFO( logger, "UnaryOpOp<" << TypeTraits<ValueType>::id() << ">( ..., n = " << n << ")" )
 
     if ( n <= 0 )
     {
@@ -451,31 +451,31 @@ void CUDAUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType 
 
     switch ( op )
     {
-        case unary::CONJ :
+        case UnaryOp::CONJ :
         {
             conjKernel <<< dimGrid, dimBlock>>>( out, in, n );
 
             break;
         }
 
-        case unary::MINUS :
+        case UnaryOp::MINUS :
         {
             multScalarKernel <<< dimGrid, dimBlock>>>( out, in, ValueType( -1 ), n );
 
             break;
         }
 
-        case unary::ABS :
+        case UnaryOp::ABS :
         {
             absKernel <<< dimGrid, dimBlock>>>( out, in, n );
 
             break;
         }
 
-        case unary::FLOOR :
+        case UnaryOp::FLOOR :
         {
             // the performance of this kernel should be compared to
-            // unaryOpKernel with op == unary::CEIL to decide whether it is worth
+            // UnaryOpOpKernel with op == UnaryOp::CEIL to decide whether it is worth
 
             floorKernel <<< dimGrid, dimBlock>>>( out, in, n );
 
@@ -484,7 +484,7 @@ void CUDAUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType 
 
         default:
 
-            unaryOpKernel <<< dimGrid, dimBlock>>>( out, op, in, n );
+            UnaryOpOpKernel <<< dimGrid, dimBlock>>>( out, op, in, n );
     }
 
     SCAI_CUDA_RT_CALL( cudaStreamSynchronize( 0 ), "cudaStreamSynchronize( 0 )" );
@@ -498,7 +498,7 @@ void CUDAUtils::binaryOp(
     const ValueType in1[],
     const ValueType in2[],
     const IndexType n,
-    const binary::BinaryOp op )
+    const BinaryOp op )
 {
     SCAI_REGION( "CUDA.Utils.binOp" )
 
@@ -518,13 +518,13 @@ void CUDAUtils::binaryOp(
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             addKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             multKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in1, in2, n );
             break;
@@ -547,7 +547,7 @@ void CUDAUtils::binaryOpScalar(
     const ValueType in[],
     const ValueType value,
     const IndexType n,
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const bool swapScalar )
 {
     SCAI_REGION( "CUDA.Utils.binOpScalar" )
@@ -567,17 +567,17 @@ void CUDAUtils::binaryOpScalar(
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             addScalarKernel<ValueType> <<< dimGrid, dimBlock>>>( out, in, value, n );
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             if ( value == scai::common::constants::ZERO )
             {
-                CUDAUtils::setVal( out, n, value, binary::COPY );
+                CUDAUtils::setVal( out, n, value, BinaryOp::COPY );
                 return;
             }
 
@@ -586,13 +586,13 @@ void CUDAUtils::binaryOpScalar(
             break;
         }
 
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
         {
             if ( swapScalar )
             {
                 if ( value == scai::common::constants::ZERO )
                 {
-                    CUDAUtils::setVal( out, n, value, binary::COPY );
+                    CUDAUtils::setVal( out, n, value, BinaryOp::COPY );
                     return;
                 }
     
@@ -649,7 +649,7 @@ void CUDAUtils::RegArrayKernels<ValueType>::registerKernels( kregistry::KernelRe
     KernelRegistry::set<UtilKernelTrait::setVal<ValueType> >( setVal, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scaleVectorAddScalar<ValueType> >( scaleVectorAddScalar, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::scatterVal<ValueType> >( scatterVal, ctx, flag );
-    KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::UnaryOpOp<ValueType> >( UnaryOpOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
 }

@@ -208,7 +208,7 @@ void CUDASortUtils::sort(
 
         if ( inValues != outValues )
         {
-            CUDASparseUtils::set( outValues, inValues, n, binary::COPY );
+            CUDASparseUtils::set( outValues, inValues, n, BinaryOp::COPY );
         }
 
         if ( n > 1 )
@@ -236,7 +236,7 @@ void CUDASortUtils::sort(
 
     if ( inValues != outValues )
     {
-        CUDASparseUtils::set( outValues, inValues, n, common::binary::COPY );
+        CUDASparseUtils::set( outValues, inValues, n, common::BinaryOp::COPY );
     }
 
     if ( n > 1 )

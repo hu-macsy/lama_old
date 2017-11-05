@@ -79,7 +79,7 @@ using namespace tasking;
 using std::unique_ptr;
 using std::shared_ptr;
 using common::TypeTraits;
-using common::binary;
+using common::BinaryOp;
 using common::Grid;
 
 namespace lama
@@ -255,7 +255,7 @@ void StencilStorage<ValueType>::getDiagonal( _HArray& array ) const
 
     SCAI_LOG_ERROR( logger, "diagonal value is = " << diagonalValue );
 
-    HArrayUtils::assignScalar( array, diagonalValue, common::binary::COPY );
+    HArrayUtils::assignScalar( array, diagonalValue, common::BinaryOp::COPY );
 
     // Attention: reflecting boundaries can imply changes on the diagonal values
 }
@@ -463,7 +463,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     values.resize( mNumColumns );
 
-    HArrayUtils::assignScalar( values, ValueType( 0 ), common::binary::COPY );
+    HArrayUtils::assignScalar( values, ValueType( 0 ), common::BinaryOp::COPY );
 
     HArray<IndexType> sparseIA;
     HArray<ValueType> sparseValues;
@@ -472,7 +472,7 @@ void StencilStorage<ValueType>::getRow( hmemo::_HArray& values, const IndexType 
 
     bool unique = true;  // sparseIA has only unique values
 
-    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, common::binary::COPY );
+    HArrayUtils::scatter( values, sparseIA, unique, sparseValues, common::BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -632,7 +632,7 @@ void StencilStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -646,12 +646,12 @@ void StencilStorage<ValueType>::matrixTimesVector(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = false;
@@ -687,7 +687,7 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
     if ( alpha == common::constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
         return NULL;
     }
 
@@ -701,12 +701,12 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = true;

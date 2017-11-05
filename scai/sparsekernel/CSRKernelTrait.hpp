@@ -570,8 +570,8 @@ struct CSRKernelTrait
             const ValueType csrValues[],
             const IndexType numRows,
             const IndexType dim,
-            const common::binary::BinaryOp reduceOp,
-            const common::unary::UnaryOp elemOp );
+            const common::BinaryOp reduceOp,
+            const common::UnaryOp elemOp );
 
         static const char* getId()
         {
@@ -760,7 +760,7 @@ struct CSRKernelTrait
             const IndexType bIA[],
             const IndexType bJA[],
             const ValueType bValues[],
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {

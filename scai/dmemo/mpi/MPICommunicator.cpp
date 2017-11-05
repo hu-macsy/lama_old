@@ -291,7 +291,7 @@ void MPICommunicator::max_operator( void* in, void* out, int* count, MPI_Datatyp
 
     for ( int i = 0; i < *count; ++i )
     {
-        b[i] = common::applyBinary( a[i], common::binary::MAX, b[i] );
+        b[i] = common::applyBinary( a[i], common::BinaryOp::MAX, b[i] );
     }
 }
 
@@ -303,7 +303,7 @@ void MPICommunicator::min_operator( void* in, void* out, int* count, MPI_Datatyp
 
     for ( int i = 0; i < *count; ++i )
     {
-        b[i] = common::applyBinary( a[i], common::binary::MIN, b[i] );
+        b[i] = common::applyBinary( a[i], common::BinaryOp::MIN, b[i] );
     }
 }
 

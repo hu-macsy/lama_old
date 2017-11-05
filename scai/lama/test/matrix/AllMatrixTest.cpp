@@ -633,7 +633,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
                     matrix.getRow( *row, iRow );
                     // BOOST_REQUIRE_EQUAL( nCols, row->size() );
                     // BOOST_REQUIRE( row->isConsistent() );
-                    matrix.setRow( *row, iRow, common::binary::SUB );
+                    matrix.setRow( *row, iRow, common::BinaryOp::SUB );
                 }
 
                 // the final matrix should be zero
@@ -656,8 +656,8 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
-    common::binary::BinaryOp reduceOp = common::binary::ADD;
-    common::unary::UnaryOp   elemOp   = common::unary::SQR;
+    common::BinaryOp reduceOp = common::BinaryOp::ADD;
+    common::UnaryOp   elemOp   = common::UnaryOp::SQR;
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
@@ -762,7 +762,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
                 for ( IndexType iCol = 0; iCol < matrix.getNumColumns(); ++iCol )
                 {
                     matrix.getColumn( *col, iCol );
-                    matrix.setColumn( *col, iCol, common::binary::SUB );
+                    matrix.setColumn( *col, iCol, common::BinaryOp::SUB );
                 }
 
                 // the final matrix should be zero
@@ -882,7 +882,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                         if ( s != Scalar( 0 ) )
                         {
-                            matrix.setValue( iRow, jCol, s, common::binary::SUB );
+                            matrix.setValue( iRow, jCol, s, common::BinaryOp::SUB );
                         }
                     }
                 }

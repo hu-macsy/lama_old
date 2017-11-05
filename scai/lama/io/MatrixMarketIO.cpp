@@ -589,7 +589,7 @@ void MatrixMarketIO::readVectorCoordinates(
         inFile.readFormatted( indexes, colDummy, values, numValues );
     }
 
-    HArrayUtils::setScalar( indexes, IndexType( 1 ), common::binary::SUB );
+    HArrayUtils::setScalar( indexes, IndexType( 1 ), common::BinaryOp::SUB );
 }
 
 /* --------------------------------------------------------------------------------- */
@@ -682,7 +682,7 @@ void MatrixMarketIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }

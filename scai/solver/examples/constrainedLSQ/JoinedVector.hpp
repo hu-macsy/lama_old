@@ -202,12 +202,12 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void buildLocalValues(scai::hmemo::_HArray&, scai::common::binary::BinaryOp, scai::hmemo::ContextPtr) const
+	virtual void buildLocalValues(scai::hmemo::_HArray&, scai::common::BinaryOp, scai::hmemo::ContextPtr) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void gatherLocalValues(scai::hmemo::_HArray&, const scai::hmemo::HArray<int>&, scai::common::binary::BinaryOp, scai::hmemo::ContextPtr) const
+	virtual void gatherLocalValues(scai::hmemo::_HArray&, const scai::hmemo::HArray<int>&, scai::common::BinaryOp, scai::hmemo::ContextPtr) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
@@ -252,27 +252,27 @@ public:
         return mV1.dotProduct( jOther.first() ) + mV2.dotProduct( jOther.second() );
     }
 
-	virtual void setVector(const Vector&, scai::common::binary::BinaryOp, bool)
+	virtual void setVector(const Vector&, scai::common::BinaryOp, bool)
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void setScalar(Scalar, scai::common::binary::BinaryOp, bool)
+	virtual void setScalar(Scalar, scai::common::BinaryOp, bool)
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void applyUnary(scai::common::unary::UnaryOp)
+	virtual void applyUnary(scai::common::UnaryOp)
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual bool all(scai::common::binary::CompareOp, Scalar) const
+	virtual bool all(scai::common::CompareOp, Scalar) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual bool all(scai::common::binary::CompareOp, const Vector&) const
+	virtual bool all(scai::common::CompareOp, const Vector&) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }

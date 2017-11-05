@@ -207,7 +207,7 @@ struct SparseKernelTrait
             const ValueType values2[],
             const ValueType zero2,
             const IndexType n2,
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {
@@ -242,7 +242,7 @@ struct SparseKernelTrait
             const ValueType values2[],
             const ValueType zero2,
             const IndexType n2,
-            const common::binary::CompareOp op );
+            const common::CompareOp op );
 
         static const char* getId()
         {
@@ -279,7 +279,7 @@ struct SparseKernelTrait
             const IndexType indexes2[],
             const ValueType values2[],
             const IndexType n2,
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {

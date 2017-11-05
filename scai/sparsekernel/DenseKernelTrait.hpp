@@ -163,7 +163,7 @@ struct DenseKernelTrait
                                      const IndexType numRows,
                                      const IndexType numColumns,
                                      const DenseValueType2 in[],
-                                     const common::binary::BinaryOp op );
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {
@@ -181,7 +181,7 @@ struct DenseKernelTrait
             const IndexType numRows,
             const IndexType numColumns,
             const DenseValueType val,
-            const common::binary::BinaryOp op );
+            const common::BinaryOp op );
 
         static const char* getId()
         {

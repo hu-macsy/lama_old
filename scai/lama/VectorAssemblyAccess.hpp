@@ -62,7 +62,7 @@ public:
      *  @param[in] op specifies how to deal with entries at same positions
      */
 
-    VectorAssemblyAccess( Vector& vector, const common::binary::BinaryOp op = common::binary::COPY );
+    VectorAssemblyAccess( Vector& vector, const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Destructor of the access, also communicates and inserts the assembled entries into the vector. */
 
@@ -150,7 +150,7 @@ private:
 
     bool mIsReleased;
 
-    common::binary::BinaryOp mOp;   // specifies how to combine with available entries
+    common::BinaryOp mOp;   // specifies how to combine with available entries
 };
 
 }

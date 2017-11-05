@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             HArray<IndexType>& jdsILG = const_cast<HArray<IndexType>&>( jdsStorage.getIlg() );
             IndexType idx = 2;
             IndexType val = 4;
-            HArrayUtils::setValImpl( jdsILG, idx, val, binary::COPY );
+            HArrayUtils::setValImpl( jdsILG, idx, val, BinaryOp::COPY );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal ilg" ); }, Exception );
         }
         else if ( icase == 3 )
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             HArray<IndexType>& jdsDLG = const_cast<HArray<IndexType>&>( jdsStorage.getDlg() );
             IndexType idx = 2;
             IndexType val = 4;
-            HArrayUtils::setValImpl( jdsDLG, idx, val, binary::COPY );
+            HArrayUtils::setValImpl( jdsDLG, idx, val, BinaryOp::COPY );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal dlg" ); }, Exception );
         }
         else if ( icase == 4 )
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( checkTest, ValueType, scai_numeric_test_types )
             HArray<IndexType>& jdsPerm = const_cast<HArray<IndexType>&>( jdsStorage.getPerm() );
             IndexType idx = 0;
             IndexType val = 0;
-            HArrayUtils::setValImpl( jdsPerm, idx, val, binary::COPY );
+            HArrayUtils::setValImpl( jdsPerm, idx, val, BinaryOp::COPY );
             BOOST_CHECK_THROW( { jdsStorage.check( "Expect illegal perm" ); }, Exception );
         }
     } // CASE_LOOP

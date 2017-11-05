@@ -41,6 +41,7 @@
 
 #include <scai/logging.hpp>
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 #include <scai/common/UnaryOp.hpp>
 
 namespace scai
@@ -85,7 +86,7 @@ public:
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     static void sparseGather(
@@ -93,7 +94,7 @@ public:
         const hmemo::_HArray& sourceNonZeroValues,
         const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -104,7 +105,7 @@ public:
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -116,7 +117,7 @@ public:
         const hmemo::HArray<SourceValueType>& sourceNonZeroValues,
         const hmemo::HArray<IndexType>& sourceNonZeroIndexes,
         const hmemo::HArray<IndexType>& indexes,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -129,7 +130,7 @@ public:
         const hmemo::HArray<IndexType>& index,
         const bool unique,
         const hmemo::_HArray& source,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -143,7 +144,7 @@ public:
         const hmemo::HArray<IndexType>& index,
         const bool unique,
         const hmemo::HArray<SourceValueType>& source,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /**
@@ -155,7 +156,7 @@ public:
     static void assignScalar(
         hmemo::_HArray& target,
         const ValueType value,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc  = hmemo::ContextPtr() )
     __attribute__( ( noinline ) );
 
@@ -252,14 +253,14 @@ public:
     static void setArray(
         hmemo::_HArray& target,
         const hmemo::_HArray& source,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename TargetValueType, typename SourceValueType>
     static void setArrayImpl(
         hmemo::HArray<TargetValueType>& target,
         const hmemo::HArray<SourceValueType>& source,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** General version for setting sectioned arrays.
@@ -283,7 +284,7 @@ public:
         const IndexType sourceOffset,
         const IndexType sourceStride,
         const IndexType n,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     /** Typed version for setting sectioned arrays */
@@ -297,14 +298,14 @@ public:
         const IndexType sourceOffset,
         const IndexType sourceStride,
         const IndexType n,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static void setScalar(
         hmemo::HArray<ValueType>& target,
         const ValueType value,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     __attribute__( ( noinline ) );
 
@@ -313,7 +314,7 @@ public:
         hmemo::HArray<ValueType>& target,
         const IndexType index,
         const ValueType val,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     template<typename ValueType>
     static ValueType getValImpl(
@@ -323,15 +324,15 @@ public:
     template<typename ValueType>
     static ValueType reduce(
         const hmemo::HArray<ValueType>& array,
-        const common::binary::BinaryOp redOp,
+        const common::BinaryOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
     static ValueType reduce2(
         const hmemo::HArray<ValueType>& array1,
         const hmemo::HArray<ValueType>& array2,
-        const common::binary::BinaryOp binOp,
-        const common::binary::BinaryOp redOp,
+        const common::BinaryOp binOp,
+        const common::BinaryOp redOp,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Functions that returns true if the element-wise comparison 
@@ -344,7 +345,7 @@ public:
     template<typename ValueType>
     static bool all(
         const hmemo::HArray<ValueType>& array1,
-        const common::binary::CompareOp compareOp,
+        const common::CompareOp compareOp,
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -359,7 +360,7 @@ public:
     template<typename ValueType>
     static bool allScalar(
         const hmemo::HArray<ValueType>& array,
-        const common::binary::CompareOp compareOp,
+        const common::CompareOp compareOp,
         const ValueType value,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -385,7 +386,7 @@ public:
         const hmemo::HArray<ValueType>& array2,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
-    /** Elementwise unary operation on array: result[i] = op( x[i] )
+    /** Elementwise UnaryOp operation on array: result[i] = op( x[i] )
      *
      *  @param[out] result  output array
      *  @param[in]  x       input array
@@ -394,10 +395,10 @@ public:
      */
 
     template<typename ValueType>
-    static void unaryOp(
+    static void UnaryOpOp(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
-        const common::unary::UnaryOp op,
+        const common::UnaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Elementwise binary operation on array: result[i] = op( x[i], y[i] )
@@ -413,7 +414,7 @@ public:
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const hmemo::HArray<ValueType>& y,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Elementwise binary operation on array: result[i] = op( x[i], y ), second arg is scalar
@@ -432,7 +433,7 @@ public:
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
         const ValueType y,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const bool swapScalar,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
@@ -442,7 +443,7 @@ public:
     static void compute(
         hmemo::HArray<ValueType>& result,
         const hmemo::HArray<ValueType>& x,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const ValueType y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     {
@@ -455,7 +456,7 @@ public:
     static void compute(
         hmemo::HArray<ValueType>& result,
         const ValueType x,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         const hmemo::HArray<ValueType>& y,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() )
     {
@@ -480,7 +481,7 @@ public:
     template<typename ValueType>
     static bool isSorted( 
         const hmemo::HArray<ValueType>& array, 
-        const common::binary::CompareOp op,
+        const common::CompareOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Build the running sums within an array
@@ -652,10 +653,10 @@ public:
      *  /code
      *    in:    indexes[] = { 0, 1, 5, 7, 7, 9, 9 };    
      *    in:    values [] = { 0, 1, 2, 3, 4, 5, 6 };
-     *    elimDoubles ( indexes, values, binary::COPY )
+     *    elimDoubles ( indexes, values, BinaryOp::COPY )
      *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
      *    out:   values [] = { 0, 1, 2, 4, 6 };
-     *    elimDoubles ( indexes, values, binary::ADD )
+     *    elimDoubles ( indexes, values, BinaryOp::ADD )
      *    out:   indexes[] = { 0, 1, 5, 7, 9 };    
      *    out:   values [] = { 0, 1, 2, 7, 11 };
      *  /endcode
@@ -664,7 +665,7 @@ public:
     static void elimDoubles(
         hmemo::HArray<IndexType>& indexes,
         hmemo::HArray<ValueType>& values,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** Initialize an array with the sequence 0, .., n-1
      *
@@ -865,7 +866,7 @@ public:
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     template<typename ValueType>
@@ -877,7 +878,7 @@ public:
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
         const ValueType zero2,
-        const common::binary::CompareOp op,
+        const common::CompareOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
     /** Merge non-zero entries of sparse array
@@ -898,7 +899,7 @@ public:
         const hmemo::HArray<ValueType>& values1,
         const hmemo::HArray<IndexType>& indexes2,
         const hmemo::HArray<ValueType>& values2,
-        const common::binary::BinaryOp op,
+        const common::BinaryOp op,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() );
 
 private:

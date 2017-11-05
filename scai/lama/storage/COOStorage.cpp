@@ -251,7 +251,7 @@ void COOStorage<ValueType>::setIdentity( const IndexType size )
     SCAI_CONTEXT_ACCESS( loc )
     setOrder[loc]( ia.get(), mNumValues );
     setOrder[loc]( ja.get(), mNumValues );
-    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), common::binary::COPY );
+    setVal[loc]( values.get(), mNumValues, ValueType( 1 ), common::BinaryOp::COPY );
     mDiagonalProperty = true;
 }
 
@@ -372,7 +372,7 @@ template<typename ValueType>
 void COOStorage<ValueType>::setValue( const IndexType i,
                                       const IndexType j,
                                       const ValueType val,
-                                      const common::binary::BinaryOp op )
+                                      const common::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -464,7 +464,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const ValueType value )
 template<typename ValueType>
 void COOStorage<ValueType>::conj()
 {
-    HArrayUtils::unaryOp( mValues, mValues, common::unary::CONJ, this->getContextPtr() );
+    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -567,7 +567,7 @@ template<typename ValueType>
 typename COOStorage<ValueType>::StorageAbsType COOStorage<ValueType>::maxNorm() const
 {
     SCAI_LOG_INFO( logger, *this << ": maxNorm()" )
-    return HArrayUtils::reduce( mValues, common::binary::ABS_MAX, this->getContextPtr() );
+    return HArrayUtils::reduce( mValues, common::BinaryOp::ABS_MAX, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -647,7 +647,7 @@ void COOStorage<ValueType>::matrixTimesVector(
     if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
         return;
     }
 
@@ -661,12 +661,12 @@ void COOStorage<ValueType>::matrixTimesVector(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
     }
 
     bool async = false;
@@ -743,12 +743,12 @@ void COOStorage<ValueType>::vectorTimesMatrix(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -775,7 +775,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     if ( alpha == common::constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, loc );
         return new tasking::NoSyncToken();
     }
 
@@ -787,13 +787,13 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     {
         result.clear();
         result.resize( mNumRows );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
-        // Note: binary::MULT will deal with
+        // Note: BinaryOp::MULT will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, loc );
     }
 
     bool async = true;
@@ -913,7 +913,7 @@ void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherType>& dia
     hmemo::WriteAccess<ValueType> wValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // diagonal elements are the first entries of mValues
-    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::binary::COPY );
+    set[loc]( wValues.get(), rDiagonal.get(), numDiagonalElements, common::BinaryOp::COPY );
 }
 
 template<typename ValueType>
@@ -930,7 +930,7 @@ void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherType>& diagonal 
     hmemo::ReadAccess<ValueType> rValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // diagonal elements are the first entries of mValues
-    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::binary::COPY );
+    set[loc]( wDiagonal.get(), rValues.get(), numDiagonalElements, common::BinaryOp::COPY );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -970,7 +970,7 @@ void COOStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
     values.clear();
     values.resize( valuePos.size());
 
-    HArrayUtils::gather( values, mValues, valuePos, common::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, common::BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1013,8 +1013,8 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
 
     // row[ colIndexes ] = mValues[ pos ];
 
-    HArrayUtils::gatherImpl( rowValues, mValues, valuePos, common::binary::COPY, loc );
-    HArrayUtils::scatterImpl( row, colIndexes, true, rowValues, common::binary::COPY, loc );
+    HArrayUtils::gatherImpl( rowValues, mValues, valuePos, common::BinaryOp::COPY, loc );
+    HArrayUtils::scatterImpl( row, colIndexes, true, rowValues, common::BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1022,7 +1022,7 @@ void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherType>& row, const Ind
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-                                        const common::binary::BinaryOp op )
+                                        const common::BinaryOp op )
 {
     SCAI_REGION( "Storage.COO.setRow" )
 
@@ -1059,7 +1059,7 @@ void COOStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 
     // mValues[pos] = row[ colIndexes ]
 
-    HArrayUtils::gatherImpl( rowValues, row, colIndexes, common::binary::COPY, loc );
+    HArrayUtils::gatherImpl( rowValues, row, colIndexes, common::BinaryOp::COPY, loc );
     HArrayUtils::scatterImpl( mValues, valuePos, true, rowValues, op, loc );
 }
 
@@ -1098,7 +1098,7 @@ void COOStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo
 
     // column[ row ] = mValues[ pos ];
 
-    HArrayUtils::gather( values, mValues, valuePos, common::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, common::BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1121,7 +1121,7 @@ void COOStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) cons
 template<typename ValueType>
 template<typename OtherType>
 void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
 {
     SCAI_REGION( "Storage.COO.setCol" )
 
@@ -1156,7 +1156,7 @@ void COOStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[ rowIndexes ]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, common::binary::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, common::BinaryOp::COPY, loc );
     HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
 }
 
@@ -1166,7 +1166,7 @@ template<typename ValueType>
 void COOStorage<ValueType>::scaleImpl( const ValueType value )
 {
     // multiply value with each entry of mValues
-    utilskernel::HArrayUtils::setScalar( mValues, value, common::binary::MULT, this->getContextPtr() );
+    utilskernel::HArrayUtils::setScalar( mValues, value, common::BinaryOp::MULT, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1192,12 +1192,12 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -1276,8 +1276,8 @@ void COOStorage<ValueType>::buildCSR(
 
     // CSR array ja, values are the COO arrays resorted
 
-    utilskernel::HArrayUtils::gatherImpl( *csrJA, mJA, perm, common::binary::COPY, preferredLoc );
-    utilskernel::HArrayUtils::gatherImpl( *csrValues, mValues, perm, common::binary::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gatherImpl( *csrJA, mJA, perm, common::BinaryOp::COPY, preferredLoc );
+    utilskernel::HArrayUtils::gatherImpl( *csrValues, mValues, perm, common::BinaryOp::COPY, preferredLoc );
 
     // Note: sort is stable, so diagonal values remain first in each row
 }
@@ -1345,9 +1345,9 @@ SCAI_COMMON_INST_CLASS( COOStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void COOStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void COOStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-            const common::binary::BinaryOp );                          \
+            const common::BinaryOp );                          \
     template void COOStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-            const common::binary::BinaryOp );                       \
+            const common::BinaryOp );                       \
     template void COOStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void COOStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void COOStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \
