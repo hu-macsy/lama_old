@@ -65,7 +65,7 @@ SCAI_LOG_DEF_LOGGER( _Matrix::logger, "Matrix" )
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-_Matrix* _Matrix::getMatrix( const Format format, const common::scalar::ScalarType valueType )
+_Matrix* _Matrix::getMatrix( const Format format, const common::ScalarType valueType )
 {
     MatrixCreateKeyType mattype( format, valueType );
     return _Matrix::create( mattype );
@@ -542,8 +542,8 @@ _Matrix& _Matrix::operator=( const Expression_SM_SM& exp )
 void _Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
-    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
     const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
@@ -577,8 +577,8 @@ void _Matrix::writeToSingleFile(
 void _Matrix::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
-    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
     const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
@@ -603,8 +603,8 @@ void _Matrix::writeToPartitionedFile(
 void _Matrix::writeToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType indexType,
+    const common::ScalarType dataType,
+    const common::ScalarType indexType,
     const FileIO::FileMode fileMode ) const
 {
     SCAI_LOG_INFO( logger,

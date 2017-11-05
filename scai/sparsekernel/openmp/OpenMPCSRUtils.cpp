@@ -784,7 +784,7 @@ void OpenMPCSRUtils::normalGEMV_s(
                 temp += csrValues[jj] * x[j];
             }
 
-            if ( beta == common::constants::ZERO )
+            if ( beta == common::Constants::ZERO )
             {
                 result[i] = alpha * temp;
             }
@@ -1101,7 +1101,7 @@ void OpenMPCSRUtils::jacobi(
 
             // here we take advantange of a good branch precondiction
 
-            if ( omega == common::constants::ONE )
+            if ( omega == common::Constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -1156,7 +1156,7 @@ void OpenMPCSRUtils::jacobiHalo(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == common::constants::ONE )
+            if ( omega == common::Constants::ONE )
             {
                 solution[i] -= temp / diag;
             }
@@ -1206,7 +1206,7 @@ void OpenMPCSRUtils::jacobiHaloWithDiag(
                 temp += haloValues[j] * oldSolution[haloJA[j]];
             }
 
-            if ( omega == common::constants::ONE )
+            if ( omega == common::Constants::ONE )
             {
                 solution[i] -= temp / diag;
             }

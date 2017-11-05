@@ -398,7 +398,7 @@ void CUSparseCSRUtils::matrixMultiply(
     cudaMemcpy( &nnzA, &aIA[m], sizeof( IndexType ), cudaMemcpyDeviceToHost );
     cudaMemcpy( &nnzB, &bIA[k], sizeof( IndexType ), cudaMemcpyDeviceToHost );
 
-    if ( alpha != common::constants::ONE )
+    if ( alpha != common::Constants::ONE )
     {
         COMMON_THROWEXCEPTION( "cusparseMatrixMultiply only supports alpha = 1, but alpha = " << alpha )
     }

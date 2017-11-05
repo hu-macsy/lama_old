@@ -1280,7 +1280,7 @@ ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
 
         localDotProduct = mNonZeroValues.dotProduct( mNonZeroValues );
     }
-    else if ( mZeroValue == common::constants::ZERO )
+    else if ( mZeroValue == common::Constants::ZERO )
     {
         HArray<ValueType> otherNonZeroValues;  //  the values form other at my non-zero indexes
 
@@ -1623,7 +1623,7 @@ template<typename ValueType>
 void SparseVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -1640,7 +1640,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             // overwrite the default settings
 
@@ -1658,7 +1658,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
         const IndexType size = getDistribution().getLocalSize();
 
-        if ( mZeroValue == common::constants::ZERO )
+        if ( mZeroValue == common::Constants::ZERO )
         {
             fileIO->writeSparse( size, mNonZeroIndexes, mNonZeroValues, fileName );
         }

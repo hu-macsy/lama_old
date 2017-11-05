@@ -104,14 +104,14 @@ public:
 
     template<typename ValueType>
     inline void writeBinary( const hmemo::HArray<ValueType>& data,
-                             const common::scalar::ScalarType type );
+                             const common::ScalarType type );
 
     inline void skipBinary( const IndexType size, const size_t typeSize );
 
     template<typename ValueType>
     inline void readBinary( hmemo::HArray<ValueType>& data,
                             const IndexType size,
-                            const common::scalar::ScalarType type );
+                            const common::ScalarType type );
 
     template<typename ValueType>
     void writeFormatted( const hmemo::HArray<ValueType>& val, int prec );
@@ -200,12 +200,12 @@ private:
 template<typename ValueType>
 struct IOStream::Wrapper<ValueType, common::mepr::NullType>
 {
-    static void writeBinResolved( IOStream&, const hmemo::HArray<ValueType>&, const common::scalar::ScalarType fileType )
+    static void writeBinResolved( IOStream&, const hmemo::HArray<ValueType>&, const common::ScalarType fileType )
     {
         COMMON_THROWEXCEPTION( "unsupported file data type " << fileType )
     }
 
-    static void readBinResolved( IOStream&, hmemo::HArray<ValueType>&, const IndexType, const common::scalar::ScalarType fileType )
+    static void readBinResolved( IOStream&, hmemo::HArray<ValueType>&, const IndexType, const common::ScalarType fileType )
     {
         COMMON_THROWEXCEPTION( "unsupported file data type " << fileType )
     }
@@ -216,7 +216,7 @@ struct IOStream::Wrapper<ValueType, common::mepr::NullType>
 template<typename ValueType, typename H, typename T>
 struct IOStream::Wrapper<ValueType, common::mepr::TypeList<H, T> >
 {
-    static void writeBinResolved( IOStream& fs, const hmemo::HArray<ValueType>& data, const common::scalar::ScalarType fileType )
+    static void writeBinResolved( IOStream& fs, const hmemo::HArray<ValueType>& data, const common::ScalarType fileType )
     {
         if ( fileType == common::TypeTraits<H>::stype )
         {
@@ -228,7 +228,7 @@ struct IOStream::Wrapper<ValueType, common::mepr::TypeList<H, T> >
         }
     }
 
-    static void readBinResolved( IOStream& fs, hmemo::HArray<ValueType>& data, const IndexType size, const common::scalar::ScalarType fileType )
+    static void readBinResolved( IOStream& fs, hmemo::HArray<ValueType>& data, const IndexType size, const common::ScalarType fileType )
     {
         if ( fileType == common::TypeTraits<H>::stype )
         {
@@ -245,9 +245,9 @@ struct IOStream::Wrapper<ValueType, common::mepr::TypeList<H, T> >
 
 template<typename ValueType>
 inline void IOStream::writeBinary( const hmemo::HArray<ValueType>& data,
-                                   const common::scalar::ScalarType type )
+                                   const common::ScalarType type )
 {
-    if ( type == common::scalar::INTERNAL || common::scalar::INDEX_TYPE == type || type == common::TypeTraits<ValueType>::stype )
+    if ( type == common::ScalarType::INTERNAL || common::ScalarType::INDEX_TYPE == type || type == common::TypeTraits<ValueType>::stype )
     {
         // no type conversion needed
 
@@ -271,9 +271,9 @@ void IOStream::skipBinary( const IndexType size, const size_t typeSize )
 template<typename ValueType>
 inline void IOStream::readBinary( hmemo::HArray<ValueType>& data,
                                   const IndexType size,
-                                  const common::scalar::ScalarType type )
+                                  const common::ScalarType type )
 {
-    if ( common::scalar::INTERNAL == type || common::scalar::INDEX_TYPE == type || type == common::TypeTraits<ValueType>::stype )
+    if ( common::ScalarType::INTERNAL == type || common::ScalarType::INDEX_TYPE == type || type == common::TypeTraits<ValueType>::stype )
     {
         // no type conversion needed
 

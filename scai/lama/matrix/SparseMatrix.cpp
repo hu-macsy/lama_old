@@ -953,7 +953,7 @@ void SparseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInd
             {
                 SCAI_LOG_TRACE( logger, comm << ": got index = " << rIndexes[offset + i] << ", val = " << rData[ i ] )
 
-                if ( rData[i] != common::constants::ZERO )
+                if ( rData[i] != common::Constants::ZERO )
                 {
                     wIndexes[count] = rIndexes[offset + i];
                     wValues[count] = rData[i];
@@ -1491,7 +1491,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
         ValueType betaVal = beta.getValue<ValueType>();
         const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
 
-        if ( betaVal != common::constants::ZERO )
+        if ( betaVal != common::Constants::ZERO )
         {
             SCAI_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
         }
@@ -1639,7 +1639,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrixImpl(
     // already verified
     SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getRowDistribution() )
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQ_ERROR( C.getRowDistribution(), A.getRowDistribution(), "distribution/size mismatch" )
         SCAI_ASSERT_EQ_ERROR( C.getColDistribution(), B.getColDistribution(), "distribution/size mismatch" )

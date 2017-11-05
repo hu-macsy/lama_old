@@ -421,7 +421,7 @@ size_t DenseStorage<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType DenseStorage<ValueType>::getValueType() const
+common::ScalarType DenseStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -653,7 +653,7 @@ void DenseStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_INFO( logger,
                    "Computing z = " << alpha << " * A * x + " << beta << " * y" << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
@@ -662,7 +662,7 @@ void DenseStorage<ValueType>::matrixTimesVector(
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
     }
@@ -677,7 +677,7 @@ void DenseStorage<ValueType>::matrixTimesVector(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.resize( mNumRows );
         utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, this->getContextPtr() );
@@ -697,11 +697,11 @@ void DenseStorage<ValueType>::matrixTimesVector(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if ( beta == common::constants::ZERO )
+        if ( beta == common::Constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if ( beta == common::constants::ONE )
+        else if ( beta == common::Constants::ONE )
         {
             // no scaling required
         }
@@ -742,7 +742,7 @@ void DenseStorage<ValueType>::vectorTimesMatrix(
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
     }
@@ -759,7 +759,7 @@ void DenseStorage<ValueType>::vectorTimesMatrix(
 
     // using BLAS2 interface requires result and y to be aliased
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.resize( mNumColumns );
         utilskernel::HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, this->getContextPtr() );
@@ -780,11 +780,11 @@ void DenseStorage<ValueType>::vectorTimesMatrix(
     {
         SCAI_LOG_INFO( logger, "empty matrix, so compute result = " << beta << " * result " )
 
-        if ( beta == common::constants::ZERO )
+        if ( beta == common::Constants::ZERO )
         {
             // nothing more to do, y is already 0
         }
-        else if ( beta == common::constants::ONE )
+        else if ( beta == common::Constants::ONE )
         {
             // no scaling required
         }
@@ -942,7 +942,7 @@ void DenseStorage<ValueType>::matrixTimesMatrixDense(
     mNumRows = m;
     mNumColumns = n;
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         // do not care at all about C as it might be any dummy, or aliased to result
         static LAMAKernel<UtilKernelTrait::setVal<ValueType> > setVal;

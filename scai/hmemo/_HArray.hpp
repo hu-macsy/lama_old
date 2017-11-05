@@ -85,7 +85,7 @@ class COMMON_DLL_IMPORTEXPORT _HArray:
 
     public common::Printable,
     public tasking::SyncTokenMember,
-    public common::Factory<common::scalar::ScalarType, _HArray*>
+    public common::Factory<common::ScalarType, _HArray*>
 {
     // Member variables of this class
 
@@ -109,9 +109,9 @@ public:
     /**
      * @brief Query the value type of the array elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
-    using common::Factory<common::scalar::ScalarType, _HArray*>::create;
+    using common::Factory<common::ScalarType, _HArray*>::create;
 
     /**
      *  @brief Create a new empty array with same value type.

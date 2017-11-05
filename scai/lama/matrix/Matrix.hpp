@@ -111,7 +111,7 @@ public:
      *    }
      *  \endcode
      */
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Implementation of pure method _Matrix::getValueTypeSize */
 

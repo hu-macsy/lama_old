@@ -644,7 +644,7 @@ void COOStorage<ValueType>::matrixTimesVector(
                    *this << ": matrixTimesVector, result = " << result << ", alpha = " << alpha << ", x = " << x << ", beta = " << beta << ", y = " << y )
     SCAI_REGION( "Storage.COO.matrixTimesVector" )
 
-    if ( alpha == common::constants::ZERO || mNumValues == 0 )
+    if ( alpha == common::Constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
@@ -657,7 +657,7 @@ void COOStorage<ValueType>::matrixTimesVector(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumRows );
@@ -739,7 +739,7 @@ void COOStorage<ValueType>::vectorTimesMatrix(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumColumns );
@@ -772,7 +772,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
     SCAI_REGION( "Storage.COO.matrixTimesVectorAsync" )
     ContextPtr loc = this->getContextPtr();
 
-    if ( alpha == common::constants::ZERO || mNumValues == 0 )
+    if ( alpha == common::Constants::ZERO || mNumValues == 0 )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, loc );
@@ -783,7 +783,7 @@ SyncToken* COOStorage<ValueType>::matrixTimesVectorAsync(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumRows );
@@ -1188,7 +1188,7 @@ SyncToken* COOStorage<ValueType>::vectorTimesMatrixAsync(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumColumns );

@@ -1114,7 +1114,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
                    "Computing z = " << alpha << " * A * x + " << beta << " * y"
                    << ", with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
@@ -1123,7 +1123,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
     }
@@ -1137,7 +1137,7 @@ void DIAStorage<ValueType>::matrixTimesVector(
     // Note: read access to y must appear before write access to result in case of alias
     ReadAccess<ValueType> rX( x, loc );
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         ReadAccess<ValueType> rY( y, loc );
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );  // result might be aliased to y
@@ -1173,7 +1173,7 @@ void DIAStorage<ValueType>::vectorTimesMatrix(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumColumns );
@@ -1249,7 +1249,7 @@ SyncToken* DIAStorage<ValueType>::vectorTimesMatrixAsync(
     // Step 1: result = beta * y
     ContextPtr loc = this->getContextPtr();
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumColumns );

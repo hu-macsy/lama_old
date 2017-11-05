@@ -319,14 +319,14 @@ BOOST_AUTO_TEST_CASE( createTest )
     HArray<float> A( 10, 1.0f );
     HArray<double> B( 10, 3.1415 );
     HArray<IndexType> C( 10, 5 );
-    std::vector<scai::common::scalar::ScalarType> values;
+    std::vector<scai::common::ScalarType> values;
     _HArray::getCreateValues( values );
 
-    BOOST_CHECK( _HArray::canCreate( scalar::FLOAT ) );
-    BOOST_CHECK( _HArray::canCreate( scalar::DOUBLE ) );
+    BOOST_CHECK( _HArray::canCreate( ScalarType::FLOAT ) );
+    BOOST_CHECK( _HArray::canCreate( ScalarType::DOUBLE ) );
     BOOST_CHECK( _HArray::canCreate( TypeTraits<IndexType>::stype ) );
-    BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
-    _HArray* ca1 = _HArray::create( scalar::FLOAT );
+    BOOST_CHECK( !_HArray::canCreate( ScalarType::INTERNAL ) );
+    _HArray* ca1 = _HArray::create( ScalarType::FLOAT );
     BOOST_REQUIRE( ca1 );
     HArray<double>* da1 = dynamic_cast<HArray<double>*>( ca1 );
     HArray<float>* fa1 = dynamic_cast<HArray<float>*>( ca1 );
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE( createTest )
     BOOST_CHECK( fa1 != NULL );
     BOOST_CHECK_THROW(
     {
-        _HArray* ca1 = _HArray::create( scalar::INTERNAL );
+        _HArray* ca1 = _HArray::create( ScalarType::INTERNAL );
         ca1->clear();
     }, Exception );
 }

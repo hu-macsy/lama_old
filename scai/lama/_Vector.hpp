@@ -83,7 +83,7 @@ typedef std::shared_ptr<class _Vector> _VectorPtr;
  *  The key for vector create is a pair of vector format and the value type.
  */
 
-typedef std::pair<VectorKind, common::scalar::ScalarType> VectorCreateKeyType;
+typedef std::pair<VectorKind, common::ScalarType> VectorCreateKeyType;
 
 /**
  * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
@@ -110,7 +110,7 @@ public:
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static _Vector* getVector( const VectorKind format, const common::scalar::ScalarType valueType );
+    static _Vector* getVector( const VectorKind format, const common::ScalarType valueType );
 
     /** @brief More convenient routine to create a dense vector with certain properties.
      *
@@ -119,7 +119,7 @@ public:
      *  @param[in] context optional, becomes the context of the new vector
      */
     static _Vector* getDenseVector(
-        const common::scalar::ScalarType valueType,
+        const common::ScalarType valueType,
         dmemo::DistributionPtr distribution,
         hmemo::ContextPtr context = hmemo::ContextPtr() );
 
@@ -628,13 +628,13 @@ public:
     void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /**
      * @brief Returns the value at the passed global index.
@@ -1172,7 +1172,7 @@ private:
     virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const = 0;
 
     /** write the whole vector into a single file, can imply redistribution */
@@ -1180,7 +1180,7 @@ private:
     void writeToSingleFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
     /** same as writeLocalToFile but also communication for error handling */
@@ -1188,7 +1188,7 @@ private:
     void writeToPartitionedFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
     void readFromSingleFile( const std::string& fileName );

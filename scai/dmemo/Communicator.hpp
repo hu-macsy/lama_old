@@ -303,7 +303,7 @@ public:
         const CommunicationPlan& recvPlan,
         const void* sendData,
         const CommunicationPlan& sendPlan,
-        const common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief Asynchronous exchange of data between all processors by communication plans.
      *
@@ -334,7 +334,7 @@ public:
         const CommunicationPlan& recvPlan,
         const void* sendData,
         const CommunicationPlan& sendPlan,
-        const common::scalar::ScalarType stype ) const = 0;
+        const common::ScalarType stype ) const = 0;
 
     /* @brief Scatter of an array of values from root to all other processors.
      *
@@ -349,7 +349,7 @@ public:
     /** Non-template version with coded ValueType is pure routine to be implemented by derived classes. */
 
     virtual void scatterImpl( void* myVals, const IndexType n, const PartitionId root,
-                              const void* allVals, common::scalar::ScalarType stype ) const = 0;
+                              const void* allVals, common::ScalarType stype ) const = 0;
 
     /* @brief Scatter of an array of values from root to all other processors.
      *
@@ -363,7 +363,7 @@ public:
     void scatterV( ValueType myVals[], const IndexType n, const PartitionId root, const ValueType allVals[], const IndexType sizes[] ) const;
 
     virtual void scatterVImpl( void* myVals, const IndexType n, const PartitionId root,
-                               const void* allVals, const IndexType sizes[], common::scalar::ScalarType stype ) const = 0;
+                               const void* allVals, const IndexType sizes[], common::ScalarType stype ) const = 0;
 
     /* @brief Gather of an array of values from all processors to root.
      *
@@ -376,7 +376,7 @@ public:
     template<typename ValueType>
     void gather( ValueType allVals[], const IndexType n, const PartitionId root, const ValueType myVals[] ) const;
 
-    virtual void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::scalar::ScalarType stype ) const = 0;
+    virtual void gatherImpl( void* allVals, const IndexType n, const PartitionId root, const void* myVals, common::ScalarType stype ) const = 0;
 
     /* @brief Gather of an array of double values from all processors to root.
      *
@@ -398,7 +398,7 @@ public:
         const PartitionId root,
         const void* myvals,
         const IndexType sizes[],
-        common::scalar::ScalarType stype ) const = 0;
+        common::ScalarType stype ) const = 0;
 
     /* @brief Swap of an array with another processor.
      *
@@ -415,7 +415,7 @@ public:
         void* val,
         const IndexType n,
         PartitionId partner,
-        common::scalar::ScalarType stype ) const = 0;
+        common::ScalarType stype ) const = 0;
 
     /* @brief This routine shifts data between neighbored processors.
      *
@@ -442,7 +442,7 @@ public:
         const void* oldVals,
         const IndexType oldSize,
         const PartitionId dest,
-        common::scalar::ScalarType stype ) const = 0;
+        common::ScalarType stype ) const = 0;
 
     /* @brief Asynchronous version of shift.
      *
@@ -473,7 +473,7 @@ public:
         const void* oldVals,
         const PartitionId dest,
         const IndexType size,
-        common::scalar::ScalarType stype ) const = 0;
+        common::ScalarType stype ) const = 0;
 
     /** All-to-all exchange of an IndexType value between all processors.
      *
@@ -496,7 +496,7 @@ public:
     virtual void all2allvImpl(
         void* recvBuffer[], IndexType recvCount[],
         void* sendBuffer[], IndexType sendCount[],
-        common::scalar::ScalarType stype ) const = 0;
+        common::ScalarType stype ) const = 0;
 
     /** Pure method for bcast
      *
@@ -505,7 +505,7 @@ public:
      *  @param[in]     root processor with correct values of val
      *  @param[in]     stype codes the used data type of values
      */
-    virtual void bcastImpl( void* values, const IndexType n, const PartitionId root, common::scalar::ScalarType stype ) const = 0;
+    virtual void bcastImpl( void* values, const IndexType n, const PartitionId root, common::ScalarType stype ) const = 0;
 
     /**************************************************************************************
      *                                                                                    *
@@ -568,15 +568,15 @@ public:
      *   @param[in]  n is the number of values in arrays inValues and outValues
      *   @param[in]  stype specifies the data type of the data
      */
-    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void sumImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
 
     /**  Find minimal values from all processes and distributes the result back to all processes. */
 
-    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void minImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
 
     /**  Find maximal values from all processes and distributes the result back to all processes. */
 
-    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void maxImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
 
     /* @brief Maximal value combined with a location value where maximum was found.
      *
@@ -595,9 +595,9 @@ public:
     template<typename ValueType>
     void minloc( ValueType& val, IndexType& location, const PartitionId root ) const;
 
-    virtual void maxlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
+    virtual void maxlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const = 0;
 
-    virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::scalar::ScalarType stype ) const = 0;
+    virtual void minlocImpl( void* val, IndexType* location, PartitionId root, common::ScalarType stype ) const = 0;
 
     /** Scan values among the processor belonging to this communicator. */
 
@@ -606,7 +606,7 @@ public:
 
     /** Inclusive scan, similiar to sum but each processor has partial sums */
 
-    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::scalar::ScalarType stype ) const = 0;
+    virtual void scanImpl( void* outValues, const void* inValues, const IndexType n, common::ScalarType stype ) const = 0;
 
     /** Default implementation */
 
@@ -620,7 +620,7 @@ public:
      *  @param[in] vType specifies the type of the reduction array values
      *  @param[in] iType specifies the index type used
      */
-    virtual bool supportsLocReduction( common::scalar::ScalarType vType, common::scalar::ScalarType iType ) const = 0;
+    virtual bool supportsLocReduction( common::ScalarType vType, common::ScalarType iType ) const = 0;
 
     /** Default implementation for maxloc that uses a gather operation instead of reduction. */
 

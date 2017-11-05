@@ -1549,7 +1549,7 @@ void CSRStorage<ValueType>::matrixTimesVectorN(
     SCAI_ASSERT_EQUAL_ERROR( x.size(), n * mNumColumns )
     SCAI_ASSERT_EQUAL_ERROR( result.size(), n * mNumRows )
 
-    if ( ( beta != common::constants::ZERO ) && ( &result != &y ) )
+    if ( ( beta != common::Constants::ZERO ) && ( &result != &y ) )
     {
         SCAI_ASSERT_EQUAL_ERROR( y.size(), n * mNumRows )
     }
@@ -1862,7 +1862,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
+    if ( alpha == common::Constants::ZERO || ( mNumValues == 0 ) )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
@@ -1880,7 +1880,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
     // check for correct sizes of x
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         // take version that does not access y at all (can be undefined or aliased to result)
         return normalGEMV( result, alpha, x, async );
@@ -1889,7 +1889,7 @@ SyncToken* CSRStorage<ValueType>::gemv(
     // y is relevant, so it must have correct size
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumRows )
 
-    if ( &result == &y && ( beta == common::constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
     {
         // y += A * x,  where only some rows in A are filled, uses more efficient routine
         return sparseGEMV( result, alpha, x, async );
@@ -1917,7 +1917,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
                    << ", result = " << result << ", x = " << x << ", y = " << y
                    << ", A (this) = " << *this );
 
-    if ( alpha == common::constants::ZERO || ( mNumValues == 0 ) )
+    if ( alpha == common::Constants::ZERO || ( mNumValues == 0 ) )
     {
         SCAI_LOG_INFO( logger, "gevm, alpha = 0 : result = " << beta << " * y " )
         // so we just have result = beta * y, will be done synchronously
@@ -1936,7 +1936,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
     // check for correct sizes of x
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumRows )
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         // take version that does not access y at all (can be undefined or aliased to result)
         return normalGEVM( result, alpha, x, async );
@@ -1945,7 +1945,7 @@ SyncToken* CSRStorage<ValueType>::gevm(
     // y is relevant, so it must have correct size
     SCAI_ASSERT_EQUAL_ERROR( y.size(), mNumColumns )
 
-    if ( &result == &y && ( beta == common::constants::ONE ) && ( mRowIndexes.size() > 0 ) )
+    if ( &result == &y && ( beta == common::Constants::ONE ) && ( mRowIndexes.size() > 0 ) )
     {
         // y += x * A,  where only some rows in A are filled, uses more efficient routine
         return sparseGEVM( result, alpha, x, async );
@@ -2220,7 +2220,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
         csrB = tmpB.get();
     }
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         // c temporary needed if not correct format/type or aliased to this
         if ( ( c.getFormat() == Format::CSR ) && ( &c != this ) )
@@ -2242,7 +2242,7 @@ void CSRStorage<ValueType>::matrixTimesMatrix(
     tmp1.setContextPtr( loc );
     tmp1.matrixTimesMatrixCSR( alpha, *csrA, *csrB, loc );
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         CSRStorage<ValueType> tmp2;
         tmp2.setContextPtr( loc );

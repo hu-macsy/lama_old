@@ -1793,7 +1793,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     // It makes no sense to prefetch denseX because, if a transfer is started
     // the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != common::constants::ZERO )
+    if ( betaValue != common::Constants::ZERO )
     {
         denseY.prefetch( localContext );
     }
@@ -2366,7 +2366,7 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    common::scalar::ScalarType type = common::getScalarType<ValueType>();
+    common::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << getNumRows() << " x " << getNumColumns() << ", rowdist = "
            << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
 }
@@ -2417,7 +2417,7 @@ _Matrix* DenseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    common::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType ( Format::DENSE, skind );
 }
 

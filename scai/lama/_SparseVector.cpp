@@ -123,7 +123,7 @@ _SparseVector::_SparseVector( const Vector& other ) :
 /*  Implementation of methods/constructors for _SparseVector                 */
 /* ------------------------------------------------------------------------- */
 
-_SparseVector* _SparseVector::create( common::scalar::ScalarType type )
+_SparseVector* _SparseVector::create( common::ScalarType type )
 {
     // There is only one factor for all vectors
 

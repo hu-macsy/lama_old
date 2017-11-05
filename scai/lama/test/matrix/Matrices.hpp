@@ -68,7 +68,7 @@ public:
         }
     }
 
-    _Matrices( scai::common::scalar::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _Matrices( scai::common::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
@@ -114,7 +114,7 @@ public:
         using namespace scai;
         using namespace lama;
 
-        common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+        common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
         std::vector<MatrixCreateKeyType> values;  //  all create values
 

@@ -64,8 +64,8 @@ void convertCmplx2Real( HArray<IndexType>& outIA,
 
     // ComplexValueType must be complex, RealValueType must not
 
-    common::scalar::ScalarType inType = TypeTraits<ComplexValueType>::stype;
-    common::scalar::ScalarType outType = TypeTraits<RealValueType>::stype;
+    common::ScalarType inType = TypeTraits<ComplexValueType>::stype;
+    common::ScalarType outType = TypeTraits<RealValueType>::stype;
 
     SCAI_ASSERT( common::isComplex( inType ), inType << " illegal, must be complex" );
     SCAI_ASSERT( !common::isComplex( outType ), outType << " illegal, must not be complex" );
@@ -149,8 +149,8 @@ int main( int argc, const char* argv[] )
     File::FileType fileType = File::MATRIX_MARKET;
 
     bool binary = false;
-    common::scalar::ScalarType valueType = TypeTraits<RealValueType>::stype;
-    common::scalar::ScalarType indexType = TypeTraits<IndexType>::stype;
+    common::ScalarType valueType = TypeTraits<RealValueType>::stype;
+    common::ScalarType indexType = TypeTraits<IndexType>::stype;
 
     if ( argc != 3 )
     {

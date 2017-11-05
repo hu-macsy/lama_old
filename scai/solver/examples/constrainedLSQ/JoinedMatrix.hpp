@@ -148,7 +148,7 @@ public:
     
     /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
 
-    virtual common::scalar::ScalarType getValueType() const
+    virtual common::ScalarType getValueType() const
     {
         return mA1.getValueType();
     }   

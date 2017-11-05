@@ -71,14 +71,14 @@ SCAI_LOG_DEF_LOGGER( _Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-_Vector* _Vector::getVector( const VectorKind kind, const common::scalar::ScalarType valueType )
+_Vector* _Vector::getVector( const VectorKind kind, const common::ScalarType valueType )
 {
     VectorCreateKeyType vectype( kind, valueType );
     return _Vector::create( vectype );
 }
 
 _Vector* _Vector::getDenseVector(
-    const common::scalar::ScalarType valueType,
+    const common::ScalarType valueType,
     DistributionPtr distribution,
     ContextPtr context )
 {
@@ -682,7 +682,7 @@ void _Vector::assign( const _HArray& globalValues )
 void _Vector::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -745,7 +745,7 @@ void _Vector::replicate()
 void _Vector::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode ) const
 {
     bool errorFlag = false;
@@ -774,7 +774,7 @@ void _Vector::writeToPartitionedFile(
 void _Vector::writeToFile(
     const std::string& fileName,
     const std::string& fileType,               /* = "", take IO type by suffix   */
-    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const common::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
     const FileIO::FileMode fileMode            /* = DEFAULT_MODE */
 ) const
 {

@@ -97,7 +97,7 @@ public:
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static _Matrix* getMatrix( const Format format, const common::scalar::ScalarType valueType );
+    static _Matrix* getMatrix( const Format format, const common::ScalarType valueType );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -130,8 +130,8 @@ public:
     void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
@@ -1057,7 +1057,7 @@ public:
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /**
      * @brief Query the storage format of the used matrix format, e.g. CSR or ELL.
@@ -1236,15 +1236,15 @@ private:
     void writeToSingleFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
-        const common::scalar::ScalarType indexType,
+        const common::ScalarType dataType,
+        const common::ScalarType indexType,
         const FileIO::FileMode fileMode ) const;
 
     void writeToPartitionedFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
-        const common::scalar::ScalarType indexType,
+        const common::ScalarType dataType,
+        const common::ScalarType indexType,
         const FileIO::FileMode fileMode ) const;
 };
 

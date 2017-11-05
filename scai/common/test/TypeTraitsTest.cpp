@@ -58,7 +58,7 @@ typedef boost::mpl::list<SCAI_ALL_TYPES> TraitTypes;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( IdTest, ValueType, TraitTypes )
 {
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    ScalarType stype = TypeTraits<ValueType>::stype;
     std::ostringstream out1;
     std::ostringstream out2;
     out1 << TypeTraits<ValueType>::id();
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TypeSizeTest, ValueType, TraitTypes )
 {
     // this test is essential as otherwise certain copy routines might fail
 
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    ScalarType stype = TypeTraits<ValueType>::stype;
     BOOST_CHECK_EQUAL( sizeof( ValueType ), typeSize( stype ) );
 }
 
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IsComplexTest, ValueType, TraitTypes )
 {
     // this test is essential as otherwise certain copy routines might fail
 
-    scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    ScalarType stype = TypeTraits<ValueType>::stype;
 
     bool v1 = isComplex( stype );
 

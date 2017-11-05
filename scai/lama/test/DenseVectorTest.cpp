@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {

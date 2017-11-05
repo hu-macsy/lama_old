@@ -1467,7 +1467,7 @@ void CUDAJDSUtils::normalGEMV(
     const IndexType jdsJA[],
     const ValueType jdsValues[] )
 {
-    if ( ( beta == scai::common::constants::ONE ) && ( result == y ) )
+    if ( ( beta == scai::common::Constants::ONE ) && ( result == y ) )
     {
         // result = alpha * A * x + beta * y ->  result += alpha * A * x
         sparseGEMV( result, alpha, x, numRows, jdsPerm, jdsILG, ndlg, jdsDLG, jdsJA, jdsValues );
@@ -1509,37 +1509,37 @@ void CUDAJDSUtils::normalGEMV(
 
         if ( useSharedMem )
         {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
+            if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ZERO && beta == scai::common::Constants::ONE )
             {
                 assign_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, jdsPerm, numRows );
             }
-            else if ( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ZERO )
             {
                 scale_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, beta, jdsPerm, numRows );
             }
-            else if ( beta == scai::common::constants::ONE )
+            else if ( beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_beta_one<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( beta == scai::common::constants::ZERO )
+            else if ( beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_beta_zero<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -1554,37 +1554,37 @@ void CUDAJDSUtils::normalGEMV(
         {
             vectorBindTexture( jdsDLG );
 
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
+            if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ZERO && beta == scai::common::Constants::ONE )
             {
                 assign_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, jdsPerm, numRows );
             }
-            else if ( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ZERO )
             {
                 scale_kernel<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, beta, jdsPerm, numRows );
             }
-            else if ( beta == scai::common::constants::ONE )
+            else if ( beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_beta_one<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( beta == scai::common::constants::ZERO )
+            else if ( beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_beta_zero<ValueType, true, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -1624,37 +1624,37 @@ void CUDAJDSUtils::normalGEMV(
     {
         if ( useSharedMem )
         {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
+            if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ZERO && beta == scai::common::Constants::ONE )
             {
                 assign_kernel<ValueType, true, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, jdsPerm, numRows );
             }
-            else if ( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ZERO )
             {
                 scale_kernel<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, beta, jdsPerm, numRows );
             }
-            else if ( beta == scai::common::constants::ONE )
+            else if ( beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_beta_one<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( beta == scai::common::constants::ZERO )
+            else if ( beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_beta_zero<ValueType, false, true> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
@@ -1667,37 +1667,37 @@ void CUDAJDSUtils::normalGEMV(
         }
         else // no sharedMem
         {
-            if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ONE )
+            if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one_beta_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ONE && beta == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ONE && beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_alpha_one_beta_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO && beta == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ZERO && beta == scai::common::Constants::ONE )
             {
                 assign_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, jdsPerm, numRows );
             }
-            else if ( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_alpha_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, beta, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( alpha == scai::common::constants::ZERO )
+            else if ( alpha == scai::common::Constants::ZERO )
             {
                 scale_kernel<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, y, beta, jdsPerm, numRows );
             }
-            else if ( beta == scai::common::constants::ONE )
+            else if ( beta == scai::common::Constants::ONE )
             {
                 normal_gemv_kernel_beta_one<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );
             }
-            else if ( beta == scai::common::constants::ZERO )
+            else if ( beta == scai::common::Constants::ZERO )
             {
                 normal_gemv_kernel_beta_zero<ValueType, false, false> <<< dimGrid, dimBlock, sharedMemSize, stream>>>
                 ( result, x, y, alpha, jdsValues, jdsDLG, jdsILG, jdsJA, jdsPerm, numRows, ndlg );

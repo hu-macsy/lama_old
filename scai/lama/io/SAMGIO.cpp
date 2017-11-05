@@ -188,7 +188,7 @@ void SAMGIO::writeArrayImpl(
 
     int typeSize = sizeof( ValueType );
 
-    if ( mScalarTypeData != common::scalar::INTERNAL )
+    if ( mScalarTypeData != common::ScalarType::INTERNAL )
     {
         typeSize = common::typeSize( mScalarTypeData );
     }
@@ -329,9 +329,9 @@ void SAMGIO::readArrayImpl( HArray<ValueType>& array, const std::string& fileNam
 
     // check if the specified data size fits the expected data type
 
-    common::scalar::ScalarType dataType = mScalarTypeData;
+    common::ScalarType dataType = mScalarTypeData;
 
-    if ( mScalarTypeData == common::scalar::INTERNAL )
+    if ( mScalarTypeData == common::ScalarType::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
@@ -456,7 +456,7 @@ void SAMGIO::writeStorageImpl(
         outFile.writeBinary( csrIA, mScalarTypeIndex );
         outFile.writeBinary( csrJA, mScalarTypeIndex );
 
-        if ( mScalarTypeData != common::scalar::PATTERN )
+        if ( mScalarTypeData != common::ScalarType::PATTERN )
         {
             outFile.writeBinary( csrValues, mScalarTypeData );
         }
@@ -471,7 +471,7 @@ void SAMGIO::writeStorageImpl(
         outFile.writeFormatted( csrIA, precIndex );
         outFile.writeFormatted( csrJA, precIndex );
 
-        if ( mScalarTypeData != common::scalar::PATTERN )
+        if ( mScalarTypeData != common::ScalarType::PATTERN )
         {
             outFile.writeFormatted( csrValues, precData );
         }
@@ -597,7 +597,7 @@ void SAMGIO::readStorageImpl(
     size_t indexTypeSize = common::typeSize( mScalarTypeIndex );
     size_t valueTypeSize = sizeof( ValueType );
 
-    if ( mScalarTypeData != common::scalar::INTERNAL )
+    if ( mScalarTypeData != common::ScalarType::INTERNAL )
     {
         valueTypeSize = common::typeSize( mScalarTypeData );
     }
@@ -626,7 +626,7 @@ void SAMGIO::readStorageImpl(
 
     if ( binary )
     {
-        // Note: read operations can deal with scalar::INTERNAL, scalar::INDEX_TYPE
+        // Note: read operations can deal with ScalarType::INTERNAL, ScalarType::INDEX_TYPE
 
         inFile.skipBinary( firstRow, indexTypeSize );
         inFile.readBinary( csrIA, numBlockRows + 1, mScalarTypeIndex );
@@ -667,7 +667,7 @@ void SAMGIO::readStorageImpl(
 
     csrJA -= IndexType( 1 );
 
-    if ( mScalarTypeData == common::scalar::PATTERN )
+    if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
         csrValues.setSameValue( numBlockValues, ValueType( 1 ) );   // set values with default value
     }

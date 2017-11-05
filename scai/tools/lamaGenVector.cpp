@@ -90,17 +90,17 @@ static bool isValue( const char* arg )
     return true;
 }
 
-static common::scalar::ScalarType getType()
+static common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+    common::ScalarType type = common::TypeTraits<double>::stype;
 
     std::string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }
@@ -116,7 +116,7 @@ struct CommandLineOptions
     string outFileName;
     string matFileName;
 
-    common::scalar::ScalarType outDataType;
+    common::ScalarType outDataType;
 
     Scalar value;   // value for the vector
 
@@ -186,7 +186,7 @@ struct CommandLineOptions
 
     void checkOutDataType()
     {
-        if ( outDataType != common::scalar::INTERNAL )
+        if ( outDataType != common::ScalarType::INTERNAL )
         {
             return;
         }
@@ -195,11 +195,11 @@ struct CommandLineOptions
 
         if ( conj( value ) == value )
         {
-            outDataType = common::scalar::DOUBLE;
+            outDataType = common::ScalarType::DOUBLE;
         }
         else
         {
-            outDataType = common::scalar::DOUBLE_COMPLEX;
+            outDataType = common::ScalarType::DOUBLE_COMPLEX;
         }
 
         cout << "No output data type specified, take " << outDataType << " due to value = " << value << endl;

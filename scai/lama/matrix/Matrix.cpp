@@ -116,7 +116,7 @@ Matrix<ValueType>::~Matrix()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType Matrix<ValueType>::getValueType() const
+common::ScalarType Matrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }

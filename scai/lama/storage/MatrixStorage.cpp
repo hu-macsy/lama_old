@@ -349,7 +349,7 @@ MatrixStorage<ValueType>::~MatrixStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
+common::ScalarType MatrixStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -472,7 +472,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
     // If the size of other value type is smaller that this value type, it might be better
     // to use the other value type.
 
-    if ( other.getValueType() == common::scalar::FLOAT && getValueType() == common::scalar::DOUBLE )
+    if ( other.getValueType() == common::ScalarType::FLOAT && getValueType() == common::ScalarType::DOUBLE )
     {
         other.copyTo( *this );
         return;
@@ -1505,8 +1505,8 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType valuesType,
-    const common::scalar::ScalarType indexType,
+    const common::ScalarType valuesType,
+    const common::ScalarType indexType,
     const FileIO::FileMode mode ) const
 {
     writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );
@@ -1518,8 +1518,8 @@ void MatrixStorage<ValueType>::writeToFile(
     const PartitionId /* rank */,
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType indexType,
+    const common::ScalarType dataType,
+    const common::ScalarType indexType,
     const FileIO::FileMode mode ) const
 {
     std::string suffix = fileType;
@@ -1535,12 +1535,12 @@ void MatrixStorage<ValueType>::writeToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             fileIO->setDataType( dataType );
         }
 
-        if ( indexType != common::scalar::UNKNOWN )
+        if ( indexType != common::ScalarType::UNKNOWN )
         {
             fileIO->setIndexType( indexType );
         }
@@ -1581,7 +1581,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
-        // fileIO->setDataType( common::scalar::INTERNAL );
+        // fileIO->setDataType( common::ScalarType::INTERNAL );
 
         SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
 

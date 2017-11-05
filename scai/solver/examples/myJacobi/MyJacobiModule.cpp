@@ -173,11 +173,11 @@ void MyJacobi::iterate()
 {
     switch ( getRuntime().mDiagonalTimesLU->getValueType() )
     {
-        case scai::common::scalar::FLOAT:
+        case scai::common::ScalarType::FLOAT:
             iterate<float>();
             break;
 
-        case scai::common::scalar::DOUBLE:
+        case scai::common::ScalarType::DOUBLE:
             iterate<double>();
             break;
 

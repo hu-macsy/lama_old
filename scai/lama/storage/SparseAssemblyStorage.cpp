@@ -927,7 +927,7 @@ void SparseAssemblyStorage<ValueType>::setRowImpl( const HArray<OtherType>& row,
 
     for ( IndexType j = 0; j < mNumColumns; ++j )
     {
-        if ( rRow[j] == common::constants::ZERO )
+        if ( rRow[j] == common::Constants::ZERO )
         {
             continue;
         }
@@ -952,7 +952,7 @@ void SparseAssemblyStorage<ValueType>::setColumnImpl( const HArray<OtherType>& c
 
     for ( IndexType i = 0; i < mNumRows; ++i )
     {
-        if ( rColumn[i] == common::constants::ZERO )
+        if ( rColumn[i] == common::Constants::ZERO )
         {
             continue;
         }

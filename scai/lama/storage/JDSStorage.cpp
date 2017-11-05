@@ -1033,7 +1033,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
@@ -1042,7 +1042,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
     }
@@ -1061,7 +1061,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     // this call will finish the computation, syncToken == NULL
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         ReadAccess<ValueType> rY( y, loc );
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
@@ -1094,7 +1094,7 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumColumns );
@@ -1203,7 +1203,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     ReadAccess<ValueType> jdsValues( mValues, loc );
     ReadAccess<ValueType> rX( x, loc );
 
-    if ( beta == scai::common::constants::ZERO )
+    if ( beta == scai::common::Constants::ZERO )
     {
         // alias of result and y handled by correct order
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );

@@ -1253,7 +1253,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
 
         const bool unique = true;  // non-zero indexes in sparse vectors are always unique
 
-        if ( xZeroVal != common::constants::ZERO )
+        if ( xZeroVal != common::Constants::ZERO )
         {
             // we have also to add the zero values
 
@@ -1261,7 +1261,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
             sparseX.buildLocalValues( xDenseValues);
             utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, mContext );
         }
-        else if ( alphaV == common::constants::ONE )
+        else if ( alphaV == common::Constants::ONE )
         {
             HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, nonZeroValues, common::BinaryOp::ADD, getContextPtr());
         }
@@ -1996,7 +1996,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -2013,7 +2013,7 @@ void DenseVector<ValueType>::writeLocalToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             // overwrite the default settings
 
@@ -2042,7 +2042,7 @@ IndexType DenseVector<ValueType>::readLocalFromFile( const std::string& fileName
 {
     SCAI_LOG_INFO( logger, "read local array from file " << fileName )
 
-    FileIO::read( mLocalValues, fileName, common::scalar::INTERNAL, first, n );
+    FileIO::read( mLocalValues, fileName, common::ScalarType::INTERNAL, first, n );
 
     return mLocalValues.size();
 }

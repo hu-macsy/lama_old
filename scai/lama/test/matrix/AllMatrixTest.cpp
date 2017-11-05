@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE( _copyTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     // For copy we just take one arithmetic type to reduce number of test cases
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
     _Matrices allMatrices( stype, context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for copy method" )
 
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     _Matrices allMatrices( stype, context );    // is created by factory
 
@@ -891,7 +891,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
                     continue;
                 }
 
-                if ( matrix.getValueType() != common::scalar::FLOAT )
+                if ( matrix.getValueType() != common::ScalarType::FLOAT )
                 {
                     continue;
                 }

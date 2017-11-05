@@ -75,7 +75,7 @@ public:
 
     /** Implementation of _Vector::getValueType */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     using _Vector::getContext;
     using _Vector::getDistribution;

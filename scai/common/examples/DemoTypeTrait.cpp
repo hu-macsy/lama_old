@@ -51,7 +51,7 @@ void testRoutine()
     typeTemplate = "<" + typeTemplate + ">";
 
     cout << "TypeTraits" << typeTemplate << " = " << TypeTraits<ValueType>::id() << endl;
-    scai::common::scalar::ScalarType stype = TypeTraits<ValueType>::stype;
+    scai::common::ScalarType stype = TypeTraits<ValueType>::stype;
     cout << "TypeTraits" << typeTemplate << "::stype = " << stype << endl;
     cout << "isComplex = " << isComplex( stype ) << endl;
 

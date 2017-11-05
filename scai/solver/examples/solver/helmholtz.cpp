@@ -111,9 +111,9 @@ bool isComplexType()
 
     switch ( common::TypeTraits<ValueType>::stype )
     {
-        case common::scalar::DOUBLE_COMPLEX:
-        case common::scalar::COMPLEX:
-        case common::scalar::LONG_DOUBLE_COMPLEX :
+        case common::ScalarType::DOUBLE_COMPLEX:
+        case common::ScalarType::COMPLEX:
+        case common::ScalarType::LONG_DOUBLE_COMPLEX :
             isComplex = true;
             break;
 

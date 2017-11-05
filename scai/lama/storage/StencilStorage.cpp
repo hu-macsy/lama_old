@@ -629,7 +629,7 @@ void StencilStorage<ValueType>::matrixTimesVector(
 
     SCAI_REGION( "Storage.Stencil.matrixTimesVector" )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
@@ -642,7 +642,7 @@ void StencilStorage<ValueType>::matrixTimesVector(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumRows );
@@ -684,7 +684,7 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 
     SCAI_REGION( "Storage.Stencil.matrixTimesVectorAsync" )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
         HArrayUtils::compute( result, beta, BinaryOp::MULT, y, this->getContextPtr() );
@@ -697,7 +697,7 @@ SyncToken* StencilStorage<ValueType>::matrixTimesVectorAsync(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumRows );

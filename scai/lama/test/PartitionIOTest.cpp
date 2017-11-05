@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( VectorSingleIO )
 
         // now write the distributed vector and its distribution, each to a single file
 
-        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *dist, distFileName );
 
         DenseVector<ValueType> readVector;
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE( VectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
-        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         DenseVector<ValueType> readVector;
 
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE( SparseVectorPartitionIO )
             PartitionIO::write( *dist, distFileName );
         }
 
-        vector.writeToFile( vectorFileName, "", common::scalar::INTERNAL, FileIO::BINARY );
+        vector.writeToFile( vectorFileName, "", common::ScalarType::INTERNAL, FileIO::BINARY );
 
         SparseVector<ValueType> readVector;
 
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE( _MatrixSingleIO )
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
         PartitionIO::write( *rowDist, distFileName );
 
         CSRSparseMatrix<ValueType> readMatrix;
@@ -505,7 +505,7 @@ BOOST_AUTO_TEST_CASE( _MatrixPartitionIO )
 
         MatrixCreator::fillRandom( matrix, fillRate );
 
-        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
 
         bool withDist = rowDist->getBlockDistributionSize() == nIndex;
 
@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE( _MatrixColPartitionIO )
 
         // Stencil matrix has diagonal property so we know the distribution
 
-        matrix.writeToFile( matrixFileName, "", common::scalar::INTERNAL, common::scalar::INTERNAL, FileIO::BINARY );
+        matrix.writeToFile( matrixFileName, "", common::ScalarType::INTERNAL, common::ScalarType::INTERNAL, FileIO::BINARY );
 
         SCAI_LOG_INFO( logger, "written matrix " << matrix << " to partitioned file, dist in col indexes" )
 

@@ -337,7 +337,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 
         case BinaryOp::ADD :
         {
-            if ( val == common::constants::ZERO )
+            if ( val == common::Constants::ZERO )
             {
                 return;
             }
@@ -354,7 +354,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 
         case BinaryOp::SUB :
         {
-            if ( val == common::constants::ZERO )
+            if ( val == common::Constants::ZERO )
             {
                 return;
             }
@@ -372,11 +372,11 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
         case BinaryOp::MULT :
         {
             // scale all values of the array
-            if ( val == common::constants::ONE )
+            if ( val == common::Constants::ONE )
             {
                 // skip it
             }
-            else if ( val == common::constants::ZERO )
+            else if ( val == common::Constants::ZERO )
             {
                 setVal( array, n, ValueType( 0 ), BinaryOp::COPY );
             }
@@ -396,11 +396,11 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
         case BinaryOp::DIVIDE :
         {
             // scale all values of the array
-            if ( val == common::constants::ONE )
+            if ( val == common::Constants::ONE )
             {
                 // skip it
             }
-            else if ( val == common::constants::ZERO )
+            else if ( val == common::Constants::ZERO )
             {
                 COMMON_THROWEXCEPTION( "DIVIDE by ZERO, val = " << val )
             }
@@ -1009,13 +1009,13 @@ void OpenMPUtils::binaryOpScalar(
 
         case BinaryOp::MULT :
         {
-            if ( value == common::constants::ZERO )
+            if ( value == common::Constants::ZERO )
             {
                 // Important : in might be undefined
 
                 setVal( out, n, value, BinaryOp:: COPY );
             }
-            else if ( value == common::constants::ONE )
+            else if ( value == common::Constants::ONE )
             {
                 set( out, in, n, BinaryOp:: COPY );
             }

@@ -332,7 +332,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 
         case BinaryOp::MULT:
         {
-            if ( val == scai::common::constants::ZERO )
+            if ( val == scai::common::Constants::ZERO )
             {
                 thrust::fill( data, data + n, ValueType( 0 ) );
             }
@@ -345,7 +345,7 @@ void CUDAUtils::setVal( ValueType array[], const IndexType n, const ValueType va
 
         case BinaryOp::DIVIDE:
         {
-            if ( val == scai::common::constants::ZERO )
+            if ( val == scai::common::Constants::ZERO )
             {
                 COMMON_THROWEXCEPTION( "Divide by ZERO" )
             }
@@ -575,7 +575,7 @@ void CUDAUtils::binaryOpScalar(
 
         case BinaryOp::MULT :
         {
-            if ( value == scai::common::constants::ZERO )
+            if ( value == scai::common::Constants::ZERO )
             {
                 CUDAUtils::setVal( out, n, value, BinaryOp::COPY );
                 return;
@@ -590,7 +590,7 @@ void CUDAUtils::binaryOpScalar(
         {
             if ( swapScalar )
             {
-                if ( value == scai::common::constants::ZERO )
+                if ( value == scai::common::Constants::ZERO )
                 {
                     CUDAUtils::setVal( out, n, value, BinaryOp::COPY );
                     return;

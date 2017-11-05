@@ -103,7 +103,7 @@ Vector<ValueType>::~Vector()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType Vector<ValueType>::getValueType() const
+common::ScalarType Vector<ValueType>::getValueType() const
 {
     return TypeTraits<ValueType>::stype;
 }
