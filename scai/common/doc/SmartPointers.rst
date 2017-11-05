@@ -5,20 +5,18 @@ Smart Pointers
 
 The philosophy of using smart pointers in LAMA is explained in the developers guide.
 As smart pointers free the allocated data in their destructor, the code becomes 
-more robust as a forgotten free does not matter and when an exception is thrown.
+more robust as a forgotten free does not matter. Especially in case of exceptions
+the compiler takes care that the data is freed.
 
-Smart pointers are now provided by C++11. For backward compatibility it is possible
-to use smart pointers of the Boost libarary. For abstraction, we have corresponding
-type definitions in the common library.
+Smart pointers are now provided by C++11 and are used.
 
 .. code-block:: c++
 
-   #include <common/shared_ptr.hpp>
-   #include <common/unique_ptr.hpp>
+   #include <memory>
 
-   common::shared_ptr<T> X ( new T (...) );
-   common::unique_ptr<T> Y ( new T (...) );
-   common::scoped_array<T> A ( new T [10] );
+   std::shared_ptr<T> X ( new T (...) );
+   std::unique_ptr<T> Y ( new T (...) );
+   std::unique_ptr<T[]> A ( new T [10] );
 
 
 If an object has been allocated dynamically, it must be deleted when it is no more used.
@@ -36,8 +34,9 @@ case when the lifetime of the object is in one scope. The unique pointer only ta
 the object is freed at the end of the scope or in case of exceptions. It is not recommended
 when ownership changes, i.e. in pointer assignments or as arguments or results of functions.
 
-A scoped array has exactly the same purpose as the unique pointer but is used for arrays instead
-of single objects. Its implementation uses the new[] and delete[] operator. 
+Unique pointers might also be used for an array instead of a single object. In this case the
+array type must be specified. Its implementation uses the ``delete[]`` operator instead
+of ``delete``.
 
 Shared Pointers
 ^^^^^^^^^^^^^^^
@@ -47,13 +46,6 @@ same distribution might be used for multiple vectors and none of the vectors is 
 the ownership.
 
 The ``std::shared_ptr`` is a new C++11 feature and has exactly the semantic as needed for this purpose.
-If it is used, the C++11 support must be explicitly enabled by the C++ compiler.
-
-If the C++ compiler does not support C++11 features, the Boost library offers the same functionality
-with ``boost::shared_ptr``.
-
-The SCAI common library offers a class ``common::shared_ptr``. It 
-allows using either of the both possibilities without any loss of efficiency.
 
 Unique Pointers in LAMA
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,14 +56,7 @@ used when ownership changes and not in standard library containers (see
 :ref:`container`),
 
 The ``std::uniqe_ptr`` is a new C++11 feature and has exactly the semantic as needed. 
-If it is used, the C++11 support must be explicitly enabled by the C++ compiler.
-
-If the C++ compiler does not support C++11 features, the ``std::auto_ptr`` might be used that
-is very similiar but has some limitations and becomes a deprecated feature in newer versions. 
-
-The SCAI common library offers a class ``common::unique_ptr`` that is used in LAMA. This abstraction
-allows using either of the both possibilities without any loss of efficiency. Its functionality
-is in the same way limited as the ``std::auto_ptr``.
+As it is used, the C++11 support must be explicitly enabled by the C++ compiler.
 
 Scoped Arrays in LAMA
 ^^^^^^^^^^^^^^^^^^^^^
@@ -79,20 +64,15 @@ Scoped Arrays in LAMA
 LAMA uses scoped arrays in all situations where lifetime of the array is limited to one scope or where
 ownership is exactly defined, e.g. for a member variable of an object.
 
-The ``std::uniqe_ptr`` is a new C++11 feature and has exactly the semantic as needed for LAMA. 
-If it is used, the C++11 support must be explicitly enabled by the C++ compiler.
-
-If the C++ compiler does not support C++11 features, the ``boost::scoped_array`` is used.
-
-The SCAI common library offers a class ``common::scoped_array`` that is used in LAMA. This abstraction
-allows using either of the both other possibilities without any loss of efficiency.
+The ``std::uniqe_ptr`` is a C++11 feature and has exactly the semantic as needed for LAMA. 
+Therefore the C++11 support must be explicitly enabled by the C++ compiler.
 
 .. code-block:: c++
 
     {
         int np = getSize();
-        scai::common::scoped_array<int> counts( new int[np] );
-        scai::common::scoped_array<int> displs( new int[np] );
+        std::unique_ptr<int[]> counts( new int[np] );
+        std::unique_ptr<int[]> displs( new int[np] );
 
         int displacement = 0;
 
@@ -120,15 +100,15 @@ copy constructor is rather expensive. The problem of ownership and deletion of t
 as for all pointer objects. 
 
 Using std::unique_ptr is one of the recommended solutions for containers if ownership is clearly restricted
-to the container. Unfortunately it requires C++11 support and the former solution of std::auto_ptr cannot be
-used in containers. So it is also not supported for common::unique_ptr.
+to the container. The use of std::shared_ptr is also possible and has the advantage that ownership might be
+taken over by other objects. As it is more flexible, this approach is more often used in LAMA.
 
 ::
 
-    std::vector<Matrix> matrices;                          // copy constructor of Matrix used
-    std::vector<Matrix*> matrices1;                        // objects are not freed by destructor
-    std::vector<common::unique_ptr<Matrix> > matrices2;    // only possible with std::unique_ptr, but not with std::auto_ptr
-    std::vector<common::shared_ptr<Matrix> > matrices3;    // recommended, always 
+    std::vector<Matrix> matrices;                       // copy constructor of Matrix used
+    std::vector<Matrix*> matrices1;                     // objects are not freed by destructor
+    std::vector<std::unique_ptr<Matrix> > matrices2;    // might be possible
+    std::vector<std::shared_ptr<Matrix> > matrices3;    // recommended, always 
 
 Therefore, the recommeded solution is using shared pointers in containers as it is done in LAMA for all
 allocated objects in containers.
