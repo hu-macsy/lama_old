@@ -52,7 +52,7 @@ using namespace scai::lama;
 using namespace scai::utilskernel;
 using namespace scai::hmemo;
 using scai::common::Exception;
-using scai::common::binary;
+using scai::common::BinaryOp;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
