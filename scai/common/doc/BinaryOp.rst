@@ -29,7 +29,7 @@ new values, the corresponding values are just replaced.
 
 .. code-block:: c++
 
-    scai::common::binary::BinaryOp op = scai::common::binary::SUB;
+    scai::common::BinaryOp op = scai::common::BinaryOp::SUB;
     double x = 1.0;
     double y = 1.5;
     double res = scai::common::applyBinary<double>( x, op, y );
@@ -47,11 +47,13 @@ LE         x <= y
 LT         x < y
 GE         x >= y
 GT         x > y
+EQ         x == y
+NE         x != y
 =========  =================================
 
 .. code-block:: c++
 
-    scai::common::binary::CompareOp op = scai::common::binary::LE;
+    scai::common::CompareOp op = scai::common::CompareOp::LE;
     double x = 1.0;
     double y = 1.5;
     bool res = scai::common::applyBinary<double>( x, op, y );
@@ -85,7 +87,7 @@ of individual functions for each kind of operator.
 
 .. code-block:: c++
 
-    scai::common::unary::UnaryOp op = scai::common::unary::SIN;
+    scai::common::UnaryOp op = scai::common::UnaryOp::SIN;
     double x = 1.0;
     double y = scai::common::applyUnary<double>( op, x );
 
