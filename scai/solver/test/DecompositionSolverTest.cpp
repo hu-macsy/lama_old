@@ -92,14 +92,14 @@ typedef boost::mpl::list<SCAI_NUMERIC_TYPES_EXT_HOST> scai_ext_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( DecompositionTest, ValueType, scai_ext_test_types )
 {
-    if ( TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE ||
-            TypeTraits<ValueType>::stype == scalar::LONG_DOUBLE_COMPLEX )
+    if ( TypeTraits<ValueType>::stype == ScalarType::LONG_DOUBLE ||
+            TypeTraits<ValueType>::stype == ScalarType::LONG_DOUBLE_COMPLEX )
     {
         // skip because not supported by pardiso or cuSolver
         return;
     }
 
-    if ( TypeTraits<IndexType>::stype != scalar::INT )
+    if ( TypeTraits<IndexType>::stype != ScalarType::INT )
     {
         // skip because external solver can only deal with IndexType = int
         return;

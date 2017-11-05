@@ -2380,13 +2380,13 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    common::scalar::ScalarType type = common::getScalarType<ValueType>();
+    common::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << getNumRows() << " x " << getNumColumns() << ", rowdist = "
            << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
 }
 
 template<typename ValueType>
-common::scalar::ScalarType DenseMatrix<ValueType>::getValueType() const
+common::ScalarType DenseMatrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -2443,7 +2443,7 @@ Matrix* DenseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    common::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType ( Format::DENSE, skind );
 }
 

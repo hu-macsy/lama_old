@@ -319,7 +319,7 @@ void TextIO::writeStorageImpl(
     int precIndex = 0;
     int precData  = getDataPrecision( common::TypeTraits<ValueType>::stype );
 
-    if ( mScalarTypeData == common::scalar::PATTERN )
+    if ( mScalarTypeData == common::ScalarType::PATTERN )
     {
         outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
     }
@@ -423,7 +423,7 @@ void TextIO::readStorageImpl(
         return;
     }
 
-    bool readPattern = mScalarTypeData == common::scalar::PATTERN;
+    bool readPattern = mScalarTypeData == common::ScalarType::PATTERN;
 
     IndexType nEntries = 2;
 

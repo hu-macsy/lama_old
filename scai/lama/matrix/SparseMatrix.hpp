@@ -576,7 +576,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     virtual size_t getValueTypeSize() const;
 

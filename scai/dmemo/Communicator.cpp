@@ -1032,8 +1032,8 @@ void Communicator::minlocDefault( ValueType& val, IndexType& location, const Par
 template<typename ValueType>
 void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
-    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
+    common::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    common::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
     if ( supportsLocReduction( vType, iType ) )
     {
@@ -1070,8 +1070,8 @@ void Communicator::maxloc( ValueType& val, IndexType& location, const PartitionI
 template<typename ValueType>
 void Communicator::minloc( ValueType& val, IndexType& location, const PartitionId root ) const
 {
-    common::scalar::ScalarType vType = common::TypeTraits<ValueType>::stype;
-    common::scalar::ScalarType iType = common::TypeTraits<IndexType>::stype;
+    common::ScalarType vType = common::TypeTraits<ValueType>::stype;
+    common::ScalarType iType = common::TypeTraits<IndexType>::stype;
 
     if ( supportsLocReduction( vType, iType ) )
     {

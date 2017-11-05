@@ -196,7 +196,7 @@ template<typename ValueType>
 void GridVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -213,7 +213,7 @@ void GridVector<ValueType>::writeLocalToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             // overwrite the default settings
 

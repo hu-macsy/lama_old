@@ -481,7 +481,7 @@ static void getSplitValues(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType SparseVector<ValueType>::getValueType() const
+common::ScalarType SparseVector<ValueType>::getValueType() const
 {
     return TypeTraits<ValueType>::stype;
 }
@@ -1564,7 +1564,7 @@ template<typename ValueType>
 void SparseVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -1581,7 +1581,7 @@ void SparseVector<ValueType>::writeLocalToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             // overwrite the default settings
 

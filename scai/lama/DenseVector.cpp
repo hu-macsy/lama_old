@@ -892,7 +892,7 @@ void DenseVector<ValueType>::swap( HArray<ValueType>& newValues, DistributionPtr
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType DenseVector<ValueType>::getValueType() const
+common::ScalarType DenseVector<ValueType>::getValueType() const
 {
     return TypeTraits<ValueType>::stype;
 }
@@ -1941,7 +1941,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::writeLocalToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -1958,7 +1958,7 @@ void DenseVector<ValueType>::writeLocalToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             // overwrite the default settings
 
@@ -1987,7 +1987,7 @@ IndexType DenseVector<ValueType>::readLocalFromFile( const std::string& fileName
 {
     SCAI_LOG_INFO( logger, "read local array from file " << fileName )
 
-    FileIO::read( mLocalValues, fileName, common::scalar::INTERNAL, first, n );
+    FileIO::read( mLocalValues, fileName, common::ScalarType::INTERNAL, first, n );
 
     return mLocalValues.size();
 }

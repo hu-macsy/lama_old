@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     VectorPtr v( Vector::getDenseVector( stype, dist, ctx ) );
 

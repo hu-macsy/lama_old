@@ -285,7 +285,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }
-     virtual common::scalar::ScalarType getValueType() const
+     virtual common::ScalarType getValueType() const
     {
         COMMON_THROWEXCEPTION( "not implemented for abstract matrix" )
     }

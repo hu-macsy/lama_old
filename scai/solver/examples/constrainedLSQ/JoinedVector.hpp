@@ -131,7 +131,7 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual scai::common::scalar::ScalarType getValueType() const
+	virtual scai::common::ScalarType getValueType() const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
@@ -307,7 +307,7 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void writeLocalToFile(const std::string&, const std::string&, scai::common::scalar::ScalarType, FileIO::FileMode) const
+	virtual void writeLocalToFile(const std::string&, const std::string&, scai::common::ScalarType, FileIO::FileMode) const
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }

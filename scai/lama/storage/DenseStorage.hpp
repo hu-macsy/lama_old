@@ -142,7 +142,7 @@ public:
 
     /** Getter routine for the data type of the elements. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Getter routine for the enum value that stands for this format. */
 

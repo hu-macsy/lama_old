@@ -105,7 +105,7 @@ virtual bool isConsistent() const;
      * @throw  common::Exception if no dense vector of this type is registered in factory.
      */
 
-    static _SparseVector* create( common::scalar::ScalarType type );
+    static _SparseVector* create( common::ScalarType type );
 
     // make operators and methods of Vector visible for _SparseVector
 
@@ -428,7 +428,7 @@ public:
 
     /** Implementation of Vector::getValueType */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /**
      * @brief Implementation of pure method Vector::buildLocalValues.
@@ -622,7 +622,7 @@ private:
     virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
     /** Implementation of Vector::readLocalFromFile */

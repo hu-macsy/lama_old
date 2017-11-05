@@ -122,14 +122,14 @@ std::ostream& operator<<( std::ostream& stream, const _Vector::VectorKind& kind 
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Vector* Vector::getVector( const VectorKind kind, const common::scalar::ScalarType valueType )
+Vector* Vector::getVector( const VectorKind kind, const common::ScalarType valueType )
 {
     VectorCreateKeyType vectype( kind, valueType );
     return Vector::create( vectype );
 }
 
 Vector* Vector::getDenseVector(
-    const common::scalar::ScalarType valueType,
+    const common::ScalarType valueType,
     DistributionPtr distribution,
     ContextPtr context )
 {
@@ -769,7 +769,7 @@ void Vector::assign( const _HArray& globalValues )
 void Vector::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode
 ) const
 {
@@ -832,7 +832,7 @@ void Vector::replicate()
 void Vector::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
+    const common::ScalarType dataType,
     const FileIO::FileMode fileMode ) const
 {
     bool errorFlag = false;
@@ -861,7 +861,7 @@ void Vector::writeToPartitionedFile(
 void Vector::writeToFile(
     const std::string& fileName,
     const std::string& fileType,               /* = "", take IO type by suffix   */
-    const common::scalar::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
+    const common::ScalarType dataType, /* = UNKNOWN, take defaults of IO type */
     const FileIO::FileMode fileMode            /* = DEFAULT_MODE */
 ) const
 {

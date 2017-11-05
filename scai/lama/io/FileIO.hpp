@@ -263,11 +263,11 @@ public:
 
     /** Setter for representation type used for indexes in file. */
 
-    void setIndexType( common::scalar::ScalarType type );
+    void setIndexType( common::ScalarType type );
 
     /** Setter for representation type used for data values in file. */
 
-    void setDataType( common::scalar::ScalarType type );
+    void setDataType( common::ScalarType type );
 
     /** Enable/Disable binary mode. */
 
@@ -309,7 +309,7 @@ public:
     static void write(
         const hmemo::_HArray& array,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Static method to write a sparse array into a file.
      *
@@ -324,7 +324,7 @@ public:
         const hmemo::HArray<IndexType>& indexes,
         const hmemo::_HArray& values,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Static method to read an array or a contiguous section of an array from a file.
      *
@@ -344,7 +344,7 @@ public:
     static void read(
         hmemo::_HArray& array,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL,
+        const common::ScalarType dataType = common::ScalarType::INTERNAL,
         const IndexType first = 0,
         const IndexType n = nIndex );
 
@@ -353,7 +353,7 @@ public:
         hmemo::HArray<IndexType>& indexes,
         hmemo::_HArray& array,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Stati method to read a multi-dimensional array from a file. */
 
@@ -361,7 +361,7 @@ public:
         hmemo::_HArray& array,
         common::Grid& grid,
         const std::string& fileName,
-        const common::scalar::ScalarType dataType = common::scalar::INTERNAL );
+        const common::ScalarType dataType = common::ScalarType::INTERNAL );
 
     /** Return the size of an array saved in a file. */
 
@@ -386,13 +386,13 @@ protected:
      *  @param[in] valueType is the actual type of values to be printed
      */
 
-    int getDataPrecision( common::scalar::ScalarType valueType );
+    int getDataPrecision( common::ScalarType valueType );
 
     FileMode mFileMode;                     //!< if true binary mode must be respected
     bool mAppendMode;                       //!< if true output is appended to existing files
 
-    common::scalar::ScalarType mScalarTypeIndex; //!< representation type of row indexes
-    common::scalar::ScalarType mScalarTypeData;  //!< representation type of array/matrix value entries
+    common::ScalarType mScalarTypeIndex; //!< representation type of row indexes
+    common::ScalarType mScalarTypeData;  //!< representation type of array/matrix value entries
 
 protected:
 

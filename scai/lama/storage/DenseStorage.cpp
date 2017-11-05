@@ -421,7 +421,7 @@ size_t DenseStorage<ValueType>::getMemoryUsageImpl() const
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType DenseStorage<ValueType>::getValueType() const
+common::ScalarType DenseStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }

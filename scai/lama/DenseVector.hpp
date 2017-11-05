@@ -374,7 +374,7 @@ public:
 
     /** Implementation of Vector::getValueType */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /**
      * Implementation of pure method Vector::setDenseValues.
@@ -598,7 +598,7 @@ private:
     virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
     /** Implementation of Vector::readLocalFromFile */

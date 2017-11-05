@@ -41,19 +41,19 @@ namespace scai
 namespace common
 {
 
-const scalar::ScalarType TypeTraits<char>::stype;
-const scalar::ScalarType TypeTraits<int>::stype;
-const scalar::ScalarType TypeTraits<long>::stype;
-const scalar::ScalarType TypeTraits<unsigned int>::stype;
-const scalar::ScalarType TypeTraits<unsigned long>::stype;
-const scalar::ScalarType TypeTraits<float>::stype;
-const scalar::ScalarType TypeTraits<double>::stype;
-const scalar::ScalarType TypeTraits<long double>::stype;
+const ScalarType TypeTraits<char>::stype;
+const ScalarType TypeTraits<int>::stype;
+const ScalarType TypeTraits<long>::stype;
+const ScalarType TypeTraits<unsigned int>::stype;
+const ScalarType TypeTraits<unsigned long>::stype;
+const ScalarType TypeTraits<float>::stype;
+const ScalarType TypeTraits<double>::stype;
+const ScalarType TypeTraits<long double>::stype;
 
 #ifdef SCAI_COMPLEX_SUPPORTED
-const scalar::ScalarType TypeTraits<ComplexFloat>::stype;
-const scalar::ScalarType TypeTraits<ComplexDouble>::stype;
-const scalar::ScalarType TypeTraits<ComplexLongDouble>::stype;
+const ScalarType TypeTraits<ComplexFloat>::stype;
+const ScalarType TypeTraits<ComplexDouble>::stype;
+const ScalarType TypeTraits<ComplexLongDouble>::stype;
 #endif
 
 }  // namespace common

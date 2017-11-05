@@ -150,7 +150,7 @@ void MatrixMarketIO::writeMMHeader(
     const IndexType numColumns,
     const IndexType numValues,
     const Symmetry symmetry,
-    const common::scalar::ScalarType dataType )
+    const common::ScalarType dataType )
 {
     outFile << "%%MatrixMarket ";
 
@@ -174,24 +174,24 @@ void MatrixMarketIO::writeMMHeader(
 
     switch ( dataType )
     {
-        case common::scalar::DOUBLE:
-        case common::scalar::FLOAT:
-        case common::scalar::LONG_DOUBLE:
+        case common::ScalarType::DOUBLE:
+        case common::ScalarType::FLOAT:
+        case common::ScalarType::LONG_DOUBLE:
             outFile << "real ";
             break;
 
-        case common::scalar::COMPLEX:
-        case common::scalar::DOUBLE_COMPLEX:
-        case common::scalar::LONG_DOUBLE_COMPLEX:
+        case common::ScalarType::COMPLEX:
+        case common::ScalarType::DOUBLE_COMPLEX:
+        case common::ScalarType::LONG_DOUBLE_COMPLEX:
             outFile << "complex ";
             break;
 
-        case common::scalar::INT:
-        case common::scalar::LONG:
+        case common::ScalarType::INT:
+        case common::ScalarType::LONG:
             outFile << "integer ";
             break;
 
-        case common::scalar::PATTERN:
+        case common::ScalarType::PATTERN:
             outFile << "pattern ";
             break;
 
@@ -220,7 +220,7 @@ void MatrixMarketIO::readMMHeader(
     IndexType& numRows,
     IndexType& numColumns,
     IndexType& numValues,
-    common::scalar::ScalarType& dataType,
+    common::ScalarType& dataType,
     bool& isVector,
     Symmetry& symmetry )
 {
@@ -293,23 +293,23 @@ void MatrixMarketIO::readMMHeader(
 
     if ( buffer == "real" )
     {
-        dataType = common::scalar::FLOAT;
+        dataType = common::ScalarType::FLOAT;
     }
     else if ( buffer == "double" )
     {
-        dataType = common::scalar::DOUBLE;
+        dataType = common::ScalarType::DOUBLE;
     }
     else if ( buffer == "integer" )
     {
-        dataType = common::scalar::INDEX_TYPE;
+        dataType = common::ScalarType::INDEX_TYPE;
     }
     else if ( buffer == "complex" )
     {
-        dataType = common::scalar::COMPLEX;
+        dataType = common::ScalarType::COMPLEX;
     }
     else if ( buffer == "pattern" )
     {
-        dataType = common::scalar::PATTERN;
+        dataType = common::ScalarType::PATTERN;
     }
     else
     {
@@ -468,9 +468,9 @@ void MatrixMarketIO::writeArrayImpl(
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
-    common::scalar::ScalarType dataType = mScalarTypeData;
+    common::ScalarType dataType = mScalarTypeData;
 
-    if ( dataType == common::scalar::INTERNAL )
+    if ( dataType == common::ScalarType::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
@@ -509,9 +509,9 @@ void MatrixMarketIO::writeSparseImpl(
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
-    common::scalar::ScalarType dataType = mScalarTypeData;
+    common::ScalarType dataType = mScalarTypeData;
 
-    if ( dataType == common::scalar::INTERNAL )
+    if ( dataType == common::ScalarType::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
@@ -541,7 +541,7 @@ void MatrixMarketIO::readArrayInfo( IndexType& size, const std::string& fileName
     SCAI_REGION( "IO.MM.readArrayInfo" )
 
     Symmetry symmetry;
-    common::scalar::ScalarType mmType;
+    common::ScalarType mmType;
 
     IndexType numRows;
     IndexType numColumns;
@@ -569,11 +569,11 @@ void MatrixMarketIO::readVectorCoordinates(
     IOStream& inFile, 
     const IndexType numValues, 
     const bool isVector,
-    common::scalar::ScalarType mmType )
+    common::ScalarType mmType )
 {
     // todo: pattern for vector
 
-    SCAI_ASSERT_ERROR( mmType != common::scalar::PATTERN, "pattern not handled yet" )
+    SCAI_ASSERT_ERROR( mmType != common::ScalarType::PATTERN, "pattern not handled yet" )
 
     if ( isVector )
     {
@@ -604,7 +604,7 @@ void MatrixMarketIO::readArrayImpl(
     SCAI_REGION( "IO.MM.readArray" )
 
     Symmetry symmetry;
-    common::scalar::ScalarType mmType;
+    common::ScalarType mmType;
 
     IndexType numRows;
     IndexType numColumns;
@@ -700,7 +700,7 @@ void MatrixMarketIO::readSparseImpl(
     SCAI_REGION( "IO.MM.readSparse" )
 
     Symmetry symmetry;
-    common::scalar::ScalarType mmType;
+    common::ScalarType mmType;
 
     IndexType numRows;
     IndexType numColumns;
@@ -921,9 +921,9 @@ void MatrixMarketIO::writeDenseMatrix(
 
     IOStream outFile( fileName, std::ios::out | std::ios::trunc );
 
-    common::scalar::ScalarType dataType = mScalarTypeData;
+    common::ScalarType dataType = mScalarTypeData;
 
-    if ( dataType == common::scalar::INTERNAL )
+    if ( dataType == common::ScalarType::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
@@ -999,9 +999,9 @@ void MatrixMarketIO::writeStorageImpl(
 
     int numValues = cooIA.size();
 
-    common::scalar::ScalarType dataType = mScalarTypeData;
+    common::ScalarType dataType = mScalarTypeData;
 
-    if ( dataType == common::scalar::INTERNAL )
+    if ( dataType == common::ScalarType::INTERNAL )
     {
         dataType = common::TypeTraits<ValueType>::stype;
     }
@@ -1029,7 +1029,7 @@ void MatrixMarketIO::writeStorageImpl(
 
     int precIndex = 0;
 
-    if ( dataType == common::scalar::PATTERN )
+    if ( dataType == common::ScalarType::PATTERN )
     {
         outFile.writeFormatted( cooIA, precIndex, cooJA, precIndex );
     }
@@ -1055,7 +1055,7 @@ void MatrixMarketIO::readStorageInfo(
     SCAI_REGION( "IO.MM.readStorageInfo" )
 
     Symmetry symmetry;
-    common::scalar::ScalarType mmType;
+    common::ScalarType mmType;
     bool isVector;
 
     IndexType numValuesFile;
@@ -1172,7 +1172,7 @@ void MatrixMarketIO::readStorageImpl(
     SCAI_REGION( "IO.MM.readStorage" )
 
     Symmetry symmetry;
-    common::scalar::ScalarType mmType;
+    common::ScalarType mmType;
 
     IndexType numRows;
     IndexType numColumns;
@@ -1222,11 +1222,11 @@ void MatrixMarketIO::readStorageImpl(
 
     SCAI_LOG_DEBUG( logger, "read in" )
 
-    if ( common::scalar::PATTERN == mmType )
+    if ( common::ScalarType::PATTERN == mmType )
     {
         // to be consistent with other FileIO handlers throw an exception if not Pattern expected
 
-        SCAI_ASSERT_EQ_ERROR( common::scalar::PATTERN, mScalarTypeData, "File " << fileName << " has only matrix pattern" )
+        SCAI_ASSERT_EQ_ERROR( common::ScalarType::PATTERN, mScalarTypeData, "File " << fileName << " has only matrix pattern" )
 
         inFile.readFormatted( ia, ja, numValuesFile );
         val.setSameValue( numValuesFile, ValueType( 1 ) );

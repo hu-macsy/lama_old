@@ -178,7 +178,7 @@ template<typename TList> struct Calling;
 
 template<> struct Calling<common::mepr::NullType>
 {
-    static bool callBench( const common::scalar::ScalarType, const IndexType )
+    static bool callBench( const common::ScalarType, const IndexType )
     {
         return false;
     }
@@ -189,7 +189,7 @@ template<> struct Calling<common::mepr::NullType>
 template<typename HeadType, typename TailTypes>
 struct Calling<common::mepr::TypeList<HeadType, TailTypes> >
 {
-    static bool callBench( const common::scalar::ScalarType stype, const IndexType n )
+    static bool callBench( const common::ScalarType stype, const IndexType n )
     {
         if ( common::TypeTraits<HeadType>::stype == stype )
         {
@@ -227,13 +227,13 @@ int main( int argc, const char* argv[] )
 
     string typeString;
 
-    common::scalar::ScalarType dataType = common::scalar::DOUBLE;
+    common::ScalarType dataType = common::ScalarType::DOUBLE;
 
     if ( common::Settings::getEnvironment( typeString, "SCAI_TYPE" ) )
     {
         dataType = common::str2ScalarType( typeString.c_str() );
 
-        if ( dataType == common::scalar::UNKNOWN )
+        if ( dataType == common::ScalarType::UNKNOWN )
         {
             HOST_PRINT( rank, "SCAI_TYPE=" << typeString << ": is not a known data type" )
             return -1;

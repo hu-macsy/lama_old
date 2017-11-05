@@ -58,17 +58,17 @@ using namespace lama;
 
 typedef std::shared_ptr<_MatrixStorage> StoragePtr;
 
-static common::scalar::ScalarType getType()
+static common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<double>::stype;
+    common::ScalarType type = common::TypeTraits<double>::stype;
 
     string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << endl;
         }
@@ -94,7 +94,7 @@ void printHelp( const char* cmd )
     cout << "   --SCAI_IO_TYPE_DATA=<data_type> is data type used for file output" << endl;
     cout << "   " << endl;
     cout << "   Supported types: ";
-    vector<common::scalar::ScalarType> dataTypes;
+    vector<common::ScalarType> dataTypes;
     hmemo::_HArray::getCreateValues( dataTypes );
 
     for ( size_t i = 0; i < dataTypes.size(); ++i )
@@ -162,7 +162,7 @@ void readStorageBlocked( _MatrixStorage& storage, const string& inFileName, cons
  */
 void directPartitioning( const string& inFileName, const string& outFileName, const PartitionId np_out )
 {
-    common::scalar::ScalarType type = getType();
+    common::ScalarType type = getType();
 
     std::unique_ptr<FileIO>  inputIO ( FileIO::create( FileIO::getSuffix( inFileName ) ) );
 
@@ -262,7 +262,7 @@ int main( int argc, const char* argv[] )
         return -1;
     }
 
-    common::scalar::ScalarType type = getType();
+    common::ScalarType type = getType();
 
     MatrixStorageCreateKeyType key( _MatrixStorage::Format::CSR, type );
 

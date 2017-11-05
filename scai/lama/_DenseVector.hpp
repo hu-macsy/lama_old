@@ -131,7 +131,7 @@ public:
      * @throw  common::Exception if no dense vector of this type is registered in factory.
      */
      
-    static _DenseVector* create( common::scalar::ScalarType );
+    static _DenseVector* create( common::ScalarType );
 
     // make operators and methods of Vector visible for _DenseVector
 
