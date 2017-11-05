@@ -45,7 +45,7 @@ include ( scai_function/relative_install )
 scai_module(
 
     MODULE_NAME   common
-    EXTERNAL_DEPS OpenMP CUDA dl Thread
+    EXTERNAL_DEPS OpenMP CUDA dl
 )
 
 ## Common now configures some include files
@@ -184,6 +184,7 @@ set ( COMMON_CLASSES
         Settings
         Walltime
         LibModule
+        Thread
         TypeTraits
 )
 
@@ -216,18 +217,7 @@ if ( NOT CXX_SUPPORTS_C11 OR USE_BOOST_TEST )
     install ( FILES ${CONFIGURE_DIR}/boost_check.hpp DESTINATION "include/scai/${MODULE_NAME}" )
 endif ()
 
-## configure c++11/pthread dependent headers, add specific sources
-
-#if    ( CXX_SUPPORTS_C11 )
-#    list ( APPEND COMMON_SOURCES Thread )
-#    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in" "${CONFIGURE_DIR}/Thread.hpp" )
-#else  ( CXX_SUPPORTS_C11 )
-    list ( APPEND COMMON_SOURCES Thread_pthread )
-    configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/Thread.hpp.in_pthread" "${CONFIGURE_DIR}/Thread.hpp" )
-#endif (  CXX_SUPPORTS_C11 )
-
 install ( FILES ${CONFIGURE_DIR}/SCAITypes.hpp
-                ${CONFIGURE_DIR}/Thread.hpp 
           DESTINATION "include/scai/${MODULE_NAME}" )
 
 scai_project( 
