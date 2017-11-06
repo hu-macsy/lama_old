@@ -52,7 +52,7 @@ using scai::common::Walltime;
 static bool verboseFlag = false;
 
 template<typename ValueType>
-static void bench( IndexType size, double fillRate )
+static void bench( IndexType size, float fillRate )
 {
     ContextPtr host = Context::getHostPtr();
     CSRSparseMatrix<ValueType> a( size, size );
@@ -125,9 +125,9 @@ int main()
     }
 
     IndexType sizes[] = { 100, 350, 1000, 2500 };
-    double fillrates[] = { 0.005, 0.01, 0.02, 0.05 };
+    float fillrates[] = { 0.005, 0.01, 0.02, 0.05 };
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
-    int nrates = sizeof( fillrates ) / sizeof( double );
+    int nrates = sizeof( fillrates ) / sizeof( float );
 
     for ( int i = 0; i < nsizes; ++i )
     {
