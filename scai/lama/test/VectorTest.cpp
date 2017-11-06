@@ -208,10 +208,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 
         // s should be 0.25, but might not be exact
 
-        NormType<ValueType> diff = s - 0.25;
+        ValueType expected = 0.25;
+
         NormType<ValueType> eps  = 0.00001;
 
-        BOOST_CHECK( diff < eps );
+        BOOST_CHECK( common::Math::abs( s - expected )  < eps );
     }
 }
 
@@ -384,7 +385,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
         BOOST_CHECK( diff < eps );
  
-        ValueType e( common::Math::exp( 0.0 ) );
+        ValueType e( common::Math::exp( ValueType( 0 ) ) );
 
         v1.powBase( e );  // v1[i] = 2 ** v1
         v2.exp();

@@ -244,6 +244,10 @@ scai_library ( PREFIX  ${SCAI_LIBRARY_PREFIX}
                VERSION ${SCAI_VERSION}
                ${CXX_SOURCES} )
 
+## using std::Thread in C++ compiler with C++11 support requires linking pthread library
+
+target_link_libraries( ${MODULE_LIBRARY} pthread )
+
 ### install ###
 
 ## install headers

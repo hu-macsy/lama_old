@@ -102,7 +102,7 @@ int main()
     }
 
     IndexType sizes[] = { 10000, 30000 };
-    double fillrates[] = { 0.001, 0.002, 0.003 };
+    float fillrates[] = { 0.001, 0.002, 0.003 };
     int nsizes = sizeof( sizes ) / sizeof( IndexType );
     int nrates = sizeof( fillrates ) / sizeof( double );
 
@@ -121,7 +121,7 @@ int main()
             // take the second supported value type
             typedef SCAI_COMMON_FIRST_ARG( SCAI_COMMON_TAIL( SCAI_NUMERIC_TYPES_HOST ) ) ValueType1;
 #endif
-            double rate = fillrates[j];
+            float rate = fillrates[j];
             CSRSparseMatrix<ValueType> a( size, size );
             CSRSparseMatrix<ValueType> a1( size, size );
             ELLSparseMatrix<ValueType1> b( size, size );

@@ -819,7 +819,7 @@ template<>
 inline CUDA_CALLABLE_MEMBER
 double Math::abs( const Complex<double>& a )
 {
-    typedef float ValueType;
+    typedef double ValueType;
 
     ABS_FUNCTION_CODE
 }
