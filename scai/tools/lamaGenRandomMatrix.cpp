@@ -82,17 +82,17 @@ static void printUsage( const char* prog_name )
  *   - or command line argument --SCAI_TYPE=...
  */
 
-static common::scalar::ScalarType getType()
+static common::ScalarType getType()
 {
-    common::scalar::ScalarType type = common::TypeTraits<RealType>::stype;
+    common::ScalarType type = common::TypeTraits<RealType>::stype;
 
     std::string val;
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType env_type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( env_type == scai::common::scalar::UNKNOWN )
+        if ( env_type == scai::common::ScalarType::UNKNOWN )
         {
             std::cout << "SCAI_TYPE=" << val << " illegal, is not a scalar type" << std::endl;
         }
@@ -158,7 +158,7 @@ int main( int argc, const char* argv[] )
 
     cout << "Generate random file " << matrixFileName << ", fillRate = " << fillRate << endl;
 
-    common::scalar::ScalarType stype = getType();
+    common::ScalarType stype = getType();
 
     std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
 
@@ -167,7 +167,7 @@ int main( int argc, const char* argv[] )
     m.allocate( nrows, ncols );
 
     {
-        MatrixAssemblyAccess<double> access( m, common::binary::COPY );
+        MatrixAssemblyAccess<RealType> access( m, common::BinaryOp::COPY );
 
         for ( IndexType i = 0; i < nrows; ++i )
         {
@@ -177,7 +177,7 @@ int main( int argc, const char* argv[] )
 
                 if ( takeIt )
                 {
-                    double val = common::Math::random<double>( 1 );
+                    RealType val = common::Math::random<RealType>( 1 );
                     access.push( i, j, val );
                 }
             }

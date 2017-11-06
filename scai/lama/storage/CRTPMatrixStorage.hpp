@@ -147,12 +147,12 @@ public:
         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::getRowImpl( static_cast<const Derived*>( this ), row, i );
     }
 
-    void setRow( const hmemo::_HArray& row, const IndexType i, const common::binary::BinaryOp op )
+    void setRow( const hmemo::_HArray& row, const IndexType i, const common::BinaryOp op )
     {
         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::setRowImpl( static_cast<Derived*>( this ), row, i, op );
     }
 
-    void setColumn( const hmemo::_HArray& column, const IndexType j, const common::binary::BinaryOp op )
+    void setColumn( const hmemo::_HArray& column, const IndexType j, const common::BinaryOp op )
     {
         mepr::CRTPMatrixStorageWrapper<Derived, SCAI_NUMERIC_TYPES_HOST_LIST>::setColumnImpl( static_cast<Derived*>( this ), column, j, op );
     }

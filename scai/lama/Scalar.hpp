@@ -196,7 +196,7 @@ public:
 
     inline bool hasComplexValue() const
     {
-        return common::Math::imag( mValue ) != common::constants::ZERO;
+        return common::Math::imag( mValue ) != common::Constants::ZERO;
     }
 
     /** Return a Scalar with the corresponding eps0 value of a type.
@@ -206,7 +206,7 @@ public:
      *  @returns TypeTraits<ValueType>::eps0() for ValueType with TypeTraits<ValueType>::sid == type
      */
 
-    static inline Scalar eps0( const common::scalar::ScalarType type );
+    static inline Scalar eps0( const common::ScalarType type );
 
     /** Return a Scalar with the corresponding eps1 value of a type.
      *
@@ -215,7 +215,7 @@ public:
      *  @returns TypeTraits<ValueType>::eps1() for ValueType with TypeTraits<ValueType>::sid == type
      */
 
-    static inline Scalar eps1( const common::scalar::ScalarType type );
+    static inline Scalar eps1( const common::ScalarType type );
 
 protected:
 
@@ -454,12 +454,12 @@ struct TypeTraitAccess;
 template<>
 struct TypeTraitAccess<common::mepr::NullType>
 {
-    static Scalar eps1( const common::scalar::ScalarType& )
+    static Scalar eps1( const common::ScalarType& )
     {
         return Scalar( 0 );
     }
 
-    static Scalar eps0( const common::scalar::ScalarType& )
+    static Scalar eps0( const common::ScalarType& )
     {
         return Scalar( 0 );
     }
@@ -468,7 +468,7 @@ struct TypeTraitAccess<common::mepr::NullType>
 template<typename H, typename T>
 struct TypeTraitAccess<common::mepr::TypeList<H, T> >
 {
-    static Scalar eps1( const common::scalar::ScalarType& type )
+    static Scalar eps1( const common::ScalarType& type )
     {
         if ( common::TypeTraits<H>::stype == type )
         {
@@ -480,7 +480,7 @@ struct TypeTraitAccess<common::mepr::TypeList<H, T> >
         }
     }
 
-    static Scalar eps0( const common::scalar::ScalarType& type )
+    static Scalar eps0( const common::ScalarType& type )
     {
         if ( common::TypeTraits<H>::stype == type )
         {
@@ -493,12 +493,12 @@ struct TypeTraitAccess<common::mepr::TypeList<H, T> >
     }
 };
 
-Scalar Scalar::eps0( const common::scalar::ScalarType type )
+Scalar Scalar::eps0( const common::ScalarType type )
 {
     return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps0( type );
 }
 
-Scalar Scalar::eps1( const common::scalar::ScalarType type )
+Scalar Scalar::eps1( const common::ScalarType type )
 {
     return TypeTraitAccess<SCAI_NUMERIC_TYPES_HOST_LIST>::eps1( type );
 }

@@ -106,7 +106,7 @@ COMMON_DLL_IMPORTEXPORT Format::MatrixStorageFormat str2Format( const char* str 
  *  Note: own struct instead of std::pair to allow definition of operator <<
  */
 
-typedef std::pair<Format::MatrixStorageFormat, common::scalar::ScalarType> MatrixStorageCreateKeyType;
+typedef std::pair<Format::MatrixStorageFormat, common::ScalarType> MatrixStorageCreateKeyType;
 
 /** The class _MatrixStorage is the base class for all matrix storage classes
  supported by LAMA.
@@ -155,7 +155,7 @@ public:
 
     /** Objects of this class should give info about their value type. */
 
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /** Clear the matrix storage, resets size to 0 x 0.
      *
@@ -297,10 +297,10 @@ public:
      */
     virtual void getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo::_HArray& values, const IndexType j ) const = 0;
 
-    virtual void setRow( const hmemo::_HArray& row, const IndexType i, common::binary::BinaryOp op ) = 0;
+    virtual void setRow( const hmemo::_HArray& row, const IndexType i, common::BinaryOp op ) = 0;
 
     virtual void setColumn( const hmemo::_HArray& column, const IndexType j,
-                            common::binary::BinaryOp op            ) = 0;
+                            common::BinaryOp op            ) = 0;
 
     /** This method returns the j-th column of the matrix
      *
@@ -597,8 +597,8 @@ public:
     virtual void writeToFile(
         const std::string& fileName,
         const std::string& type = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const = 0;
 
     virtual bool checkSymmetry() const = 0;
@@ -705,7 +705,7 @@ public:
 
     /** Implementation of pure method. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Construct a matrix from a dense matrix in row-major order (C-style).
      *  Values of the matrix will be considered as zero if their absolute value is smaller than eps.
@@ -742,8 +742,8 @@ public:
     virtual void reduce( 
         hmemo::HArray<ValueType>& array, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp );
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp );
 
     /**
      * @brief fills matrix storage by csr sparse data.
@@ -873,7 +873,7 @@ public:
     virtual void setValue( const IndexType i,
                            const IndexType j,
                            const ValueType val,
-                           const common::binary::BinaryOp op = common::binary::COPY ) = 0;
+                           const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
 
     /**
      *  This method builds CSC sparse data (column sizes, row indexes and data values) for a matrix storage.
@@ -970,8 +970,8 @@ public:
     virtual void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void writeToFile(
@@ -979,8 +979,8 @@ public:
         const PartitionId rank,
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     virtual void readFromFile( const std::string& fileName, const IndexType firstRow = 0, const IndexType nRows = nIndex );

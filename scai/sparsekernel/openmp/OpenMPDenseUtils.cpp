@@ -245,7 +245,7 @@ void OpenMPDenseUtils::set(
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType2 in[],
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     using namespace common;
 
@@ -253,7 +253,7 @@ void OpenMPDenseUtils::set(
 
     switch ( op )
     {
-        case binary::COPY :
+        case BinaryOp::COPY :
         {
             #pragma omp parallel for 
 
@@ -314,7 +314,7 @@ void OpenMPDenseUtils::setValue(
     const IndexType numRows,
     const IndexType numColumns,
     const DenseValueType val,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_REGION( "OpenMP.DenseUtils.setValue" )
 
@@ -322,7 +322,7 @@ void OpenMPDenseUtils::setValue(
 
     switch ( op )
     {
-        case binary::COPY :
+        case BinaryOp::COPY :
         {
             // Parallel initialization very important for efficient  allocation
             #pragma omp parallel for 
@@ -338,7 +338,7 @@ void OpenMPDenseUtils::setValue(
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             // Parallel initialization very important for efficient  allocation
 

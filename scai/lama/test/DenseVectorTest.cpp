@@ -537,7 +537,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( MatrixVectorMultTest, ValueType, scai_numeric_tes
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -623,7 +623,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -787,7 +787,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( sortTest, ValueType, scai_array_test_types )
     sortVector.redistribute( repDist );
     perm.redistribute( repDist );
 
-    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), common::binary::LE ) );
+    BOOST_REQUIRE( utilskernel::HArrayUtils::isSorted( sortVector.getLocalValues(), common::CompareOp::LE ) );
 
     hmemo::ReadAccess<ValueType> rSorted( sortVector.getLocalValues() );
     hmemo::ReadAccess<IndexType> rPerm( perm.getLocalValues() );
@@ -848,7 +848,7 @@ BOOST_AUTO_TEST_CASE( gatherTest )
 
             SCAI_LOG_INFO( logger, "gather source[index] with source = " << source << ", index = " << index )
 
-            target.gather( source, index, common::binary::ADD );
+            target.gather( source, index, common::BinaryOp::ADD );
 
             BOOST_CHECK_EQUAL( target.size(), index.size() );
             BOOST_CHECK_EQUAL( target.getDistribution(), index.getDistribution() );
@@ -922,13 +922,13 @@ BOOST_AUTO_TEST_CASE( scatterTest )
 
                 BOOST_CHECK_THROW(
                 {
-                    target.scatter( index, source, common::binary::ADD );
+                    target.scatter( index, source, common::BinaryOp::ADD );
                 }, common::Exception );
 
                 continue;
             }
 
-            target.scatter( index, source, common::binary::ADD );
+            target.scatter( index, source, common::BinaryOp::ADD );
 
             hmemo::ReadAccess<ValueType> rTarget( target.getLocalValues() );
 

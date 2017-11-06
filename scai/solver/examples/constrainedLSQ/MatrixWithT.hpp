@@ -104,8 +104,8 @@ public:
     virtual void reduce(
         Vector& v,
         const IndexType dim,
-        const common::binary::BinaryOp reduceOp,
-        const common::unary::UnaryOp elemOp ) const
+        const common::BinaryOp reduceOp,
+        const common::UnaryOp elemOp ) const
     {
         if ( dim == 1 )
         {
@@ -128,7 +128,7 @@ public:
     
     /** This method must be provided so that solvers can decide about the type of additional runtime vectors. */
 
-    virtual common::scalar::ScalarType getValueType() const
+    virtual common::ScalarType getValueType() const
     {
         return mA.getValueType();
     }   

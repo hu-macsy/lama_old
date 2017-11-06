@@ -286,7 +286,7 @@ struct JDSKernelTrait
                                      const IndexType dlg[],
                                      const IndexType ja[],
                                      const OtherValueType row[],
-                                     const common::binary::BinaryOp op );
+                                     const common::BinaryOp op );
 
         static const char* getId()
         {

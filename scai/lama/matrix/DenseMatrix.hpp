@@ -300,7 +300,7 @@ public:
 
     virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,
-                         const common::binary::BinaryOp op )
+                         const common::BinaryOp op )
     {
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setRow( row, globalRowIndex, op );
     }
@@ -308,7 +308,7 @@ public:
     virtual void setColumn(
         const Vector& column,
         const IndexType globalColIndex,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
     {
         CRTPMatrix<DenseMatrix<ValueType>, ValueType>::setColumn( column, globalColIndex, op );
     }
@@ -443,8 +443,8 @@ public:
     virtual void reduce( 
         Vector& v, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp ) const;
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const;
 
     /* Implementation of pure method of class Matrix. */
 
@@ -468,7 +468,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const common::binary::BinaryOp op = common::binary::COPY );
+        const common::BinaryOp op = common::BinaryOp::COPY );
 
     /* Implemenation of pure method of class Matrix */
 
@@ -594,7 +594,7 @@ public:
 
     /* Implementation of pure method of class Matrix. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     virtual size_t getValueTypeSize() const;
 
@@ -651,11 +651,11 @@ public:
 
     void setLocalRow( const hmemo::HArray<ValueType>& row,
                       const IndexType localRowIndex,
-                      const common::binary::BinaryOp op  );
+                      const common::BinaryOp op  );
 
     void setLocalColumn( const hmemo::HArray<ValueType>& column,
                          const IndexType colIndex,
-                         const common::binary::BinaryOp op  );
+                         const common::BinaryOp op  );
 
     /** Copy a dense matrix with different data type; inherits sizes and distributions */
 

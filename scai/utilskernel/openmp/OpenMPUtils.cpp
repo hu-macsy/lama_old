@@ -57,8 +57,9 @@
 namespace scai
 {
 
-using common::binary;
-using common::unary;
+using common::BinaryOp;
+using common::CompareOp;
+using common::UnaryOp;
 using common::TypeTraits;
 
 namespace utilskernel
@@ -210,7 +211,7 @@ ValueType OpenMPUtils::reduceBinOp(
     const ValueType array[],
     const IndexType n,
     const ValueType zero,
-    const binary::BinaryOp op )
+    const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.reduceBinOp" )
 
@@ -280,7 +281,7 @@ ValueType OpenMPUtils::reduce(
     const ValueType array[],
     const IndexType n,
     const ValueType zero,
-    const binary::BinaryOp op )
+    const BinaryOp op )
 {
     SCAI_LOG_INFO ( logger, "reduce # array<" << TypeTraits<ValueType>::id() << ">[" << n << "], op = " << op )
 
@@ -289,16 +290,16 @@ ValueType OpenMPUtils::reduce(
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
             return reduceSum( array, n, zero );
 
-        case binary::MIN :
+        case BinaryOp::MIN :
             return reduceMinVal( array, n, zero );
 
-        case binary::MAX :
+        case BinaryOp::MAX :
             return reduceMaxVal( array, n, zero );
 
-        case binary::ABS_MAX :
+        case BinaryOp::ABS_MAX :
             return reduceAbsMaxVal( array, n, zero );
 
         default:
@@ -311,7 +312,7 @@ ValueType OpenMPUtils::reduce(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const binary::BinaryOp op )
+void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType val, const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.setVal" )
     SCAI_LOG_INFO( logger, "setVal<" << TypeTraits<ValueType>::id() << ">: " << "array[" << n << "] = "
@@ -320,7 +321,7 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
 
     switch ( op )
     {
-        case binary::COPY :
+        case BinaryOp::COPY :
         {
             #pragma omp parallel
             {
@@ -334,9 +335,9 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             break;
         }
 
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
-            if ( val == common::constants::ZERO )
+            if ( val == common::Constants::ZERO )
             {
                 return;
             }
@@ -351,9 +352,9 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             break;
         }
 
-        case binary::SUB :
+        case BinaryOp::SUB :
         {
-            if ( val == common::constants::ZERO )
+            if ( val == common::Constants::ZERO )
             {
                 return;
             }
@@ -368,16 +369,16 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             // scale all values of the array
-            if ( val == common::constants::ONE )
+            if ( val == common::Constants::ONE )
             {
                 // skip it
             }
-            else if ( val == common::constants::ZERO )
+            else if ( val == common::Constants::ZERO )
             {
-                setVal( array, n, ValueType( 0 ), binary::COPY );
+                setVal( array, n, ValueType( 0 ), BinaryOp::COPY );
             }
             else
             {
@@ -392,14 +393,14 @@ void OpenMPUtils::setVal( ValueType array[], const IndexType n, const ValueType 
             break;
         }
 
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
         {
             // scale all values of the array
-            if ( val == common::constants::ONE )
+            if ( val == common::Constants::ONE )
             {
                 // skip it
             }
-            else if ( val == common::constants::ZERO )
+            else if ( val == common::Constants::ZERO )
             {
                 COMMON_THROWEXCEPTION( "DIVIDE by ZERO, val = " << val )
             }
@@ -537,11 +538,11 @@ ValueType OpenMPUtils::reduce2(
     const ValueType array1[],
     const ValueType array2[],
     const IndexType n,
-    const binary::BinaryOp binOp,
+    const BinaryOp binOp,
     const ValueType zero,
-    const binary::BinaryOp redOp )
+    const BinaryOp redOp )
 {
-    if ( binOp == binary::SUB && redOp == binary::ABS_MAX )
+    if ( binOp == BinaryOp::SUB && redOp == BinaryOp::ABS_MAX )
     {
         return absMaxDiffVal( array1, array2, n );
     }
@@ -579,7 +580,7 @@ bool OpenMPUtils::allCompare(
     const ValueType array1[],
     const ValueType array2[],
     const IndexType n,
-    const common::binary::CompareOp op )
+    const CompareOp op )
 {
     bool val = true;
  
@@ -611,7 +612,7 @@ bool OpenMPUtils::allCompareScalar(
     const ValueType array[],
     const ValueType scalar,
     const IndexType n,
-    const common::binary::CompareOp op )
+    const CompareOp op )
 {
     bool val = true;
 
@@ -659,7 +660,7 @@ void OpenMPUtils::setInversePerm( IndexType inversePerm[], const IndexType perm[
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, const binary::CompareOp op )
+bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, const CompareOp op )
 {
     SCAI_REGION( "OpenMP.Utils.isSorted" )
     SCAI_LOG_INFO( logger,
@@ -681,7 +682,7 @@ bool OpenMPUtils::isSorted( const ValueType array[], const IndexType n, const bi
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType1, typename ValueType2>
-void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const binary::BinaryOp op )
+void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType n, const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.set" )
 
@@ -691,7 +692,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
 
     switch ( op )
     {
-        case binary::COPY :
+        case BinaryOp::COPY :
         {
             if ( in != reinterpret_cast<ValueType2*> ( out ) )
             {
@@ -706,7 +707,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             break;
         }
 
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             #pragma omp parallel for 
 
@@ -718,7 +719,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             break;
         }
 
-        case binary::SUB :
+        case BinaryOp::SUB :
         {
             #pragma omp parallel for 
 
@@ -730,7 +731,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             break;
         }
 
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
         {
             #pragma omp parallel for 
 
@@ -742,7 +743,7 @@ void OpenMPUtils::set( ValueType1 out[], const ValueType2 in[], const IndexType 
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             #pragma omp parallel for 
 
@@ -777,7 +778,7 @@ void OpenMPUtils::setSection(
     const ValueType2 in[],
     const IndexType inc2,
     const IndexType n,
-    const binary::BinaryOp op )
+    const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.setSection" )
 
@@ -787,7 +788,7 @@ void OpenMPUtils::setSection(
 
     switch ( op )
     {
-        case binary::COPY :
+        case BinaryOp::COPY :
         {
             if ( in != reinterpret_cast<ValueType2*> ( out ) )
             {
@@ -802,7 +803,7 @@ void OpenMPUtils::setSection(
             break;
         }
 
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             #pragma omp parallel for 
 
@@ -814,7 +815,7 @@ void OpenMPUtils::setSection(
             break;
         }
 
-        case binary::SUB :
+        case BinaryOp::SUB :
         {
             #pragma omp parallel for 
 
@@ -826,7 +827,7 @@ void OpenMPUtils::setSection(
             break;
         }
 
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
         {
             #pragma omp parallel for 
 
@@ -838,7 +839,7 @@ void OpenMPUtils::setSection(
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             #pragma omp parallel for 
 
@@ -889,11 +890,11 @@ void floorOp( IndexType out[], const IndexType in[], const IndexType n )
 }
 
 template<typename ValueType>
-void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const unary::UnaryOp op )
+void OpenMPUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.unaryOp" )
+    SCAI_REGION( "OpenMP.Utils.UnaryOpOp" )
 
-    SCAI_LOG_DEBUG( logger, "unaryOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
+    SCAI_LOG_DEBUG( logger, "UnaryOpOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
 
     if ( n <= 0 )
     {
@@ -902,7 +903,7 @@ void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexTyp
 
     switch ( op )
     {
-        case unary::MINUS :
+        case UnaryOp::MINUS :
         {
             {
                 #pragma omp parallel for 
@@ -916,7 +917,7 @@ void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexTyp
             break;
         }
 
-        case unary::ABS :
+        case UnaryOp::ABS :
         {
             {
                 #pragma omp parallel for 
@@ -930,7 +931,7 @@ void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexTyp
             break;
         }
 
-        case unary::FLOOR :
+        case UnaryOp::FLOOR :
         {
             floorOp( out, in, n );
 
@@ -957,7 +958,7 @@ void OpenMPUtils::binaryOpScalar(
     const ValueType in[],
     const ValueType value,
     const IndexType n,
-    const binary::BinaryOp op,
+    const BinaryOp op,
     bool swapScalar )
 {
     SCAI_REGION( "OpenMP.Utils.binOpScalar" )
@@ -971,7 +972,7 @@ void OpenMPUtils::binaryOpScalar(
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             // ignore swapScalar, does not matter here
 
@@ -985,7 +986,7 @@ void OpenMPUtils::binaryOpScalar(
             break;
         }
 
-        case binary::SUB :
+        case BinaryOp::SUB :
         {
             if ( swapScalar )
             {
@@ -1006,17 +1007,17 @@ void OpenMPUtils::binaryOpScalar(
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
-            if ( value == common::constants::ZERO )
+            if ( value == common::Constants::ZERO )
             {
                 // Important : in might be undefined
 
-                setVal( out, n, value, binary:: COPY );
+                setVal( out, n, value, BinaryOp:: COPY );
             }
-            else if ( value == common::constants::ONE )
+            else if ( value == common::Constants::ONE )
             {
-                set( out, in, n, binary:: COPY );
+                set( out, in, n, BinaryOp:: COPY );
             }
             else
             {
@@ -1031,7 +1032,7 @@ void OpenMPUtils::binaryOpScalar(
             break;
         }
 
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
         {
             if ( swapScalar )
             {
@@ -1080,7 +1081,7 @@ void OpenMPUtils::binaryOpScalar(
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const binary::BinaryOp op )
+void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueType in2[], const IndexType n, const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.binOp" )
 
@@ -1097,7 +1098,7 @@ void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueT
 
     switch ( op )
     {
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             #pragma omp parallel for 
 
@@ -1109,7 +1110,7 @@ void OpenMPUtils::binaryOp( ValueType out[], const ValueType in1[], const ValueT
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             #pragma omp parallel for 
 
@@ -1173,7 +1174,7 @@ void OpenMPUtils::setGather(
     ValueType1 out[],
     const ValueType2 in[],
     const IndexType indexes[],
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setGather" )
@@ -1184,7 +1185,7 @@ void OpenMPUtils::setGather(
 
     switch ( op )
     {
-        case binary::COPY :
+        case BinaryOp::COPY :
         {
             #pragma omp parallel for 
 
@@ -1196,7 +1197,7 @@ void OpenMPUtils::setGather(
             break;
         }
 
-        case binary::ADD :
+        case BinaryOp::ADD :
         {
             #pragma omp parallel for 
 
@@ -1208,7 +1209,7 @@ void OpenMPUtils::setGather(
             break;
         }
 
-        case binary::SUB :
+        case BinaryOp::SUB :
         {
             #pragma omp parallel for 
 
@@ -1220,7 +1221,7 @@ void OpenMPUtils::setGather(
             break;
         }
 
-        case binary::MULT :
+        case BinaryOp::MULT :
         {
             #pragma omp parallel for 
 
@@ -1232,7 +1233,7 @@ void OpenMPUtils::setGather(
             break;
         }
 
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
         {
             #pragma omp parallel for 
 
@@ -1293,7 +1294,7 @@ void OpenMPUtils::setGatherSparse(
     const IndexType sourceNonZeroIndexes[],
     const IndexType sourceNNZ,
     const IndexType indexes[],
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setGatherSparse" )
@@ -1348,7 +1349,7 @@ void OpenMPUtils::setScatter(
     const IndexType indexes[],
     const bool unique,
     const ValueType2 in[],
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "OpenMP.Utils.setScatter" )
@@ -1359,7 +1360,7 @@ void OpenMPUtils::setScatter(
 
     SCAI_LOG_DEBUG( logger, "addresses: out = " << out << ", indexes = " << indexes << ", in = " << in )
 
-    if ( op == binary::COPY )
+    if ( op == BinaryOp::COPY )
     {
         #pragma omp parallel for 
 
@@ -1368,7 +1369,7 @@ void OpenMPUtils::setScatter(
             out[indexes[i]] = static_cast<ValueType1>( in[i] );
         }
     }
-    else if ( op == binary::ADD )
+    else if ( op == BinaryOp::ADD )
     {
         #pragma omp parallel for 
 
@@ -1377,7 +1378,7 @@ void OpenMPUtils::setScatter(
             atomicAdd( out[indexes[i]], static_cast<ValueType1>( in[i] ) );
         }
     }
-    else if ( op == binary::SUB )
+    else if ( op == BinaryOp::SUB )
     {
         #pragma omp parallel for 
 
@@ -1571,7 +1572,7 @@ void OpenMPUtils::sortValues(
 {
     if ( outValues != inValues )
     {
-        set( outValues, inValues, n, binary::COPY );
+        set( outValues, inValues, n, BinaryOp::COPY );
         sortValues( outValues, outValues, n, ascending );
         return;
     }
@@ -1658,12 +1659,12 @@ void OpenMPUtils::sort(
     if ( outValues == inValues )
     {
         std::unique_ptr<ValueType[]> tmp( new ValueType[n] );
-        set( tmp.get(), inValues, n, binary::COPY );
-        setGather( outValues, tmp.get(), perm, binary::COPY, n );
+        set( tmp.get(), inValues, n, BinaryOp::COPY );
+        setGather( outValues, tmp.get(), perm, BinaryOp::COPY, n );
     }
     else if ( outValues != NULL )
     {
-        setGather( outValues, inValues, perm, binary::COPY, n );
+        setGather( outValues, inValues, perm, BinaryOp::COPY, n );
     }
 }
 
@@ -2059,7 +2060,7 @@ IndexType OpenMPUtils::binopSparse(
     const ValueType values2[],
     const ValueType zero2,
     const IndexType n2,
-    const binary::BinaryOp op )
+    const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.binopSparse" )
 
@@ -2137,7 +2138,7 @@ IndexType OpenMPUtils::allCompareSparse(
     const ValueType values2[],
     const ValueType zero2,
     const IndexType n2,
-    const binary::CompareOp op )
+    const CompareOp op )
 {
     SCAI_REGION( "OpenMP.Utils.binopSparse" )
 
@@ -2203,7 +2204,7 @@ IndexType OpenMPUtils::allCompareSparse(
 template<typename ValueType>
 static inline
 void appendSparse( IndexType indexes[], ValueType values[], IndexType& n,
-                   const IndexType ia, const ValueType v, const binary::BinaryOp op )
+                   const IndexType ia, const ValueType v, const BinaryOp op )
 {
     if ( n > 0 && ( indexes[n - 1] == ia ) )
     {
@@ -2227,7 +2228,7 @@ IndexType OpenMPUtils::mergeSparse(
     const IndexType indexes2[],
     const ValueType values2[],
     const IndexType n2,
-    const binary::BinaryOp op )
+    const BinaryOp op )
 {
     SCAI_REGION( "OpenMP.Utils.mergeSparse" )
 
@@ -2315,7 +2316,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<SparseKernelTrait::allCompareSparse<ValueType> >( allCompareSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::mergeSparse<ValueType> >( mergeSparse, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::UnaryOpOp<ValueType> >( UnaryOpOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
 }

@@ -193,6 +193,7 @@ set ( COMMON_CLASSES
 set ( COMMON_HEADERS 
         config
         BinaryOp
+        CompareOp
         Constants
         Factory
         Factory1

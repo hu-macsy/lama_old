@@ -103,7 +103,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType2 oldValues[],
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setCSRValues */
 
@@ -124,7 +124,7 @@ public:
         const IndexType numRows,
         const IndexType numColumns,
         const DenseValueType val,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** OpenMP implementation for DenseKernelTrait::setDiagonalValue::FuncType */
 

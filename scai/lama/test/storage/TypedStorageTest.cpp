@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setRowTest, ValueType, scai_numeric_test_types )
         for ( IndexType i = 0; i < storage.getNumRows(); ++i )
         {
             storage.getRow( row, i );
-            storage.setRow( row, i, common::binary::SUB );
+            storage.setRow( row, i, common::BinaryOp::SUB );
         }
 
         BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setColumnTest, ValueType, scai_numeric_test_types
         for ( IndexType j = 0; j < storage.getNumColumns(); ++j )
         {
             storage.getColumn( column, j );
-            storage.setColumn( column, j, common::binary::SUB );
+            storage.setColumn( column, j, common::BinaryOp::SUB );
         }
 
         BOOST_CHECK( storage.maxNorm() < AbsType( 0.0001 ) );
@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE( matrixTimesVectorTest )
     denseStorage.matrixTimesVector( denseResult1, alpha, x, beta, y );
     denseStorage.matrixTimesVector( denseResult2, alpha, x, 0, yDummy );
     denseStorage.matrixTimesVector( denseResult3, alpha, x, 1, denseResult3 );
-    utilskernel::HArrayUtils::compute( denseResult4, beta, common::binary::MULT, y );
+    utilskernel::HArrayUtils::compute( denseResult4, beta, common::BinaryOp::MULT, y );
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();
     SCAI_LOG_INFO( logger, "matrixTimesVectorTest<" << common::TypeTraits<ValueType>::id() << "> @ " << *context )
     TypedStorages<ValueType> allMatrixStorages( context );    // storage for each storage format

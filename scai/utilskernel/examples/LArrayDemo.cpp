@@ -63,7 +63,7 @@ int main()
 
     y += x *= 2;
 
-    // unary operations
+    // UnaryOp operations
 
     x.invert();      // x[i] = 1.0 / x[i]
     y.conj();        // y[i] = conj( y[i] )

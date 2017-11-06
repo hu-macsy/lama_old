@@ -197,14 +197,14 @@ private:
         const IndexType numColumns,
         const IndexType numValues,
         const Symmetry symmetry,
-        const common::scalar::ScalarType dataType );
+        const common::ScalarType dataType );
 
     void readMMHeader(
         class IOStream& inFile,
         IndexType& numRows,
         IndexType& numColumns,
         IndexType& numValues,
-        common::scalar::ScalarType& dataType,
+        common::ScalarType& dataType,
         bool& isVector,
         Symmetry& symmetry );
 
@@ -239,7 +239,7 @@ private:
         class IOStream& inFile,
         const IndexType numValues,
         const bool isVector,
-        common::scalar::ScalarType mmType );
+        common::ScalarType mmType );
 
     template<typename ValueType>
     void writeDenseMatrix(

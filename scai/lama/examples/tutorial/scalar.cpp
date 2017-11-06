@@ -61,7 +61,7 @@ int main()
     a *= b;
     a /= b;
     //
-    // unary operator '-'
+    // UnaryOp operator '-'
     //
     c = -c;
     //

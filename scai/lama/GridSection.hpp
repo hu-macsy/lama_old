@@ -109,7 +109,7 @@ public:
     template<typename OtherValueType>
     GridSection& operator= ( const GridSection<OtherValueType>& other )
     {
-        unaryOp( other, common::unary::COPY );
+        UnaryOpOp( other, common::UnaryOp::COPY );
         return *this;
     }
 
@@ -117,7 +117,7 @@ public:
     template<typename OtherValueTyper>
     GridSection& operator= ( const GridVector<OtherValueType>& other )
     {
-        unaryOp( static_cast<GridSection<OtherValueType> >( other ), common::unary::COPY );
+        UnaryOpOp( static_cast<GridSection<OtherValueType> >( other ), common::UnaryOp::COPY );
         return *this;
     }
     */
@@ -184,12 +184,12 @@ public:
      */
     IndexType getDopeVector( IndexType& offset, IndexType sizes[], IndexType distances[] ) const;
 
-    void binOp( const GridSection<ValueType>& other, common::binary::BinaryOp, bool swap );
+    void binOp( const GridSection<ValueType>& other, common::BinaryOp, bool swap );
 
-    void binOpScalar( const ValueType other, common::binary::BinaryOp, bool swap );
+    void binOpScalar( const ValueType other, common::BinaryOp, bool swap );
 
     template<typename OtherValueType>
-    void unaryOp( const GridSection<OtherValueType>& other, common::unary::UnaryOp op );
+    void UnaryOpOp( const GridSection<OtherValueType>& other, common::UnaryOp op );
 
     void localize();
 };

@@ -235,7 +235,7 @@ public:
     /**
      * @brief Implementation of pure method.
      */
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /**
      * @brief reserve a certain amount of data at a specific context
@@ -253,12 +253,12 @@ public:
      *  the _HArray factory.
      */
 
-    static common::scalar::ScalarType createValue()
+    static common::ScalarType createValue()
     {
         return common::TypeTraits<ValueType>::stype;
     }
 
-    static HArray<ValueType>* create( common::scalar::ScalarType key );
+    static HArray<ValueType>* create( common::ScalarType key );
 
     using _HArray::resize;
 
@@ -439,7 +439,7 @@ HArray<ValueType>* HArray<ValueType>::newArray() const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-common::scalar::ScalarType HArray<ValueType>::getValueType() const
+common::ScalarType HArray<ValueType>::getValueType() const
 {
     // Note: this is implementation of the pure method of base class _HArray.
     return common::TypeTraits<ValueType>::stype;
@@ -658,7 +658,7 @@ void HArray<ValueType>::writeAt( std::ostream& stream ) const
 /* ---------------------------------------------------------------------------------*/
 
 template<typename ValueType>
-HArray<ValueType>* HArray<ValueType>::create( common::scalar::ScalarType key )
+HArray<ValueType>* HArray<ValueType>::create( common::ScalarType key )
 {
     if ( key == createValue() )
     {

@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     // For copy we just take one arithmetic type to reduce number of test cases
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
     Matrices allMatrices( stype, context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for copy method" )
 
@@ -274,8 +274,8 @@ BOOST_AUTO_TEST_CASE( transposeTest )
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     // For transpose we just take one arithmetic type to reduce number of test cases
     // we also take same type
-    common::scalar::ScalarType stype1 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    common::scalar::ScalarType stype2 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype1 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype2 = common::TypeTraits<SCAI_TEST_TYPE>::stype;
     Matrices allMatrices1( stype1, context );    // is created by factory
     Matrices allMatrices2( stype2, context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices1.size() << "  matrices for assignTranpose method" )
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE( selfTransposeTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
     // For transpose we just take one arithmetic type to reduce number of test cases
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
     Matrices allMatrices( stype, context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for assignTranpose method" )
 
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE( assignAddTest )
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices( stype, context );    // is created by factory
 
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    common::scalar::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
+    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
 
     Matrices allMatrices( stype, context );    // is created by factory
 
@@ -633,7 +633,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
                     matrix.getRow( *row, iRow );
                     // BOOST_REQUIRE_EQUAL( nCols, row->size() );
                     // BOOST_REQUIRE( row->isConsistent() );
-                    matrix.setRow( *row, iRow, common::binary::SUB );
+                    matrix.setRow( *row, iRow, common::BinaryOp::SUB );
                 }
 
                 // the final matrix should be zero
@@ -656,8 +656,8 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     CSRSparseMatrix<RealType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
-    common::binary::BinaryOp reduceOp = common::binary::ADD;
-    common::unary::UnaryOp   elemOp   = common::unary::SQR;
+    common::BinaryOp reduceOp = common::BinaryOp::ADD;
+    common::UnaryOp   elemOp   = common::UnaryOp::SQR;
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
@@ -762,7 +762,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
                 for ( IndexType iCol = 0; iCol < matrix.getNumColumns(); ++iCol )
                 {
                     matrix.getColumn( *col, iCol );
-                    matrix.setColumn( *col, iCol, common::binary::SUB );
+                    matrix.setColumn( *col, iCol, common::BinaryOp::SUB );
                 }
 
                 // the final matrix should be zero
@@ -863,7 +863,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
                     continue;
                 }
 
-                if ( matrix.getValueType() != common::scalar::FLOAT )
+                if ( matrix.getValueType() != common::ScalarType::FLOAT )
                 {
                     continue;
                 }
@@ -882,7 +882,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                         if ( s != Scalar( 0 ) )
                         {
-                            matrix.setValue( iRow, jCol, s, common::binary::SUB );
+                            matrix.setValue( iRow, jCol, s, common::BinaryOp::SUB );
                         }
                     }
                 }

@@ -188,7 +188,7 @@ void PETScIO::readArrayInfo( IndexType& size, const std::string& fileName )
 
     utilskernel::LArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+    inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
     IndexType classid = headerVals[0];
 
@@ -221,7 +221,7 @@ void PETScIO::readArrayImpl(
 
     utilskernel::LArray<IndexType> headerVals;
 
-    inFile.readBinary( headerVals, 2, common::scalar::INDEX_TYPE );
+    inFile.readBinary( headerVals, 2, common::ScalarType::INDEX_TYPE );
 
     IndexType classid = headerVals[0];
     IndexType size    = headerVals[1];
@@ -260,7 +260,7 @@ void PETScIO::readArrayImpl(
         SCAI_LOG_DEBUG( logger, "read block first = " << first << ", n = " << nEntries << " from array " << array )
 
         IndexType inc = 1;
-        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::binary::COPY, ctx );
+        utilskernel::HArrayUtils::setArraySection( block, 0, inc, array, first, inc, nEntries, common::BinaryOp::COPY, ctx );
 
         array.swap( block );
     }
@@ -351,7 +351,7 @@ void PETScIO::writeStorageImpl(
 
     // output of values is skipped for PATTERN
 
-    if ( mScalarTypeData != common::scalar::PATTERN )
+    if ( mScalarTypeData != common::ScalarType::PATTERN )
     {
         outFile.writeBinary( csrValues, mScalarTypeData );
     }
@@ -427,7 +427,7 @@ void PETScIO::readStorageImpl(
     inFile.readBinary( csrSizes, numRows, mScalarTypeIndex );
     inFile.readBinary( csrJA, nnz, mScalarTypeIndex );
 
-    if ( mScalarTypeData != common::scalar::PATTERN )
+    if ( mScalarTypeData != common::ScalarType::PATTERN )
     {
         inFile.readBinary( csrValues, nnz, mScalarTypeData );
     }

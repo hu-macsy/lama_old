@@ -183,7 +183,7 @@ public:
 
     /** Set this grid vector by another grid vector that is reduced in one dimension */
 
-    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::binary::BinaryOp redOp );
+    void reduce( const GridVector<ValueType>& other, IndexType dim, const common::BinaryOp redOp );
 
     /** Matrix-matrix multiplication : this += alpha * v1 * v2
      *
@@ -235,7 +235,7 @@ public:
     virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
     /** Override of Vector::readLocalFromFile 

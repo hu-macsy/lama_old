@@ -142,7 +142,7 @@ public:
 
     /** Getter routine for the data type of the elements. */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /** Getter routine for the enum value that stands for this format. */
 
@@ -217,7 +217,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for dense storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const common::binary::BinaryOp op = common::binary::COPY );
+                   const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
@@ -355,7 +355,7 @@ public:
 
     template<typename OtherType>
     void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const common::binary::BinaryOp op );
+                     const common::BinaryOp op );
 
     /** Implementation of pure method MatrixStorage::getColumn */
 
@@ -365,7 +365,7 @@ public:
 
     template<typename OtherType>
     void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const common::binary::BinaryOp op );
+                        const common::BinaryOp op );
 
     /** Template method for getting diagonal. */
 

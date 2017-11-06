@@ -83,7 +83,7 @@ using utilskernel::OpenMPUtils;
 using sparsekernel::CSRKernelTrait;
 using sparsekernel::OpenMPCSRUtils;
 
-using common::binary;
+using common::BinaryOp;
 
 namespace lama
 {
@@ -236,7 +236,7 @@ IndexType _MatrixStorage::getNumValues() const
     ContextPtr loc = sizes.getValidContext();
     reduce.getSupportedContext( loc );
     ReadAccess<IndexType> csrSizes( sizes, loc );
-    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, binary::ADD );
+    IndexType numValues = reduce[ loc ]( csrSizes.get(), mNumRows, 0, BinaryOp::ADD );
     return numValues;
 }
 
@@ -408,7 +408,7 @@ MatrixStorage<ValueType>::~MatrixStorage()
 /* --------------------------------------------------------------------------- */
 
 template<typename ValueType>
-common::scalar::ScalarType MatrixStorage<ValueType>::getValueType() const
+common::ScalarType MatrixStorage<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -501,7 +501,7 @@ void MatrixStorage<ValueType>::getFirstColumnIndexes( hmemo::HArray<IndexType>& 
     SCAI_CONTEXT_ACCESS( loc )
     ReadAccess<IndexType> ja( csrJA, loc );
     ReadAccess<IndexType> ia( csrIA, loc );
-    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), binary::COPY, mNumRows );
+    setGather[loc] ( wColIndexes.get(), ja.get(), ia.get(), BinaryOp::COPY, mNumRows );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -531,7 +531,7 @@ void MatrixStorage<ValueType>::assign( const _MatrixStorage& other )
     // If the size of other value type is smaller that this value type, it might be better
     // to use the other value type.
 
-    if ( other.getValueType() == common::scalar::FLOAT && getValueType() == common::scalar::DOUBLE )
+    if ( other.getValueType() == common::ScalarType::FLOAT && getValueType() == common::ScalarType::DOUBLE )
     {
         other.copyTo( *this );
         return;
@@ -595,10 +595,10 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
     // copy out the corresponding sections, ia needs a shifting to zero
 
     LArray<IndexType> blockIA( n + 1 );
-    HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockIA, 0, 1, csrIA, first, 1, n +  1, BinaryOp::COPY, loc );
 
     IndexType offset = blockIA[0];  // gives shifting, as blockIA[0] must be 0
-    HArrayUtils::compute( blockIA, blockIA, binary::SUB, offset, loc );
+    HArrayUtils::compute( blockIA, blockIA, BinaryOp::SUB, offset, loc );
 
     IndexType numBlockValues = blockIA[n];
 
@@ -607,8 +607,8 @@ void MatrixStorage<ValueType>::copyBlockTo( _MatrixStorage& other, const IndexTy
     LArray<IndexType> blockJA( numBlockValues );
     LArray<ValueType> blockValues( numBlockValues );
 
-    HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, binary::COPY, loc );
-    HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, binary::COPY, loc );
+    HArrayUtils::setArraySection( blockJA, 0, 1, csrJA, offset, 1, numBlockValues, BinaryOp::COPY, loc );
+    HArrayUtils::setArraySection( blockValues, 0, 1, csrValues, offset, 1, numBlockValues, BinaryOp::COPY, loc );
 
     other.setCSRData( n, mNumColumns, numBlockValues, blockIA, blockJA, blockValues );
 }
@@ -688,9 +688,9 @@ void MatrixStorage<ValueType>::vcat( const _MatrixStorage* others[], const Index
 
         otherIA += offset;  // add elementwise the latest offset
 
-        HArrayUtils::setArraySection( csrIA, lb, 1, otherIA, 0, 1, n, binary::COPY, ctx );
-        HArrayUtils::setArraySection( csrJA, offset, 1, otherJA, 0, 1, nnz, binary::COPY, ctx );
-        HArrayUtils::setArraySection( csrValues, offset, 1, otherValues, 0, 1, nnz, binary::COPY, ctx );
+        HArrayUtils::setArraySection( csrIA, lb, 1, otherIA, 0, 1, n, BinaryOp::COPY, ctx );
+        HArrayUtils::setArraySection( csrJA, offset, 1, otherJA, 0, 1, nnz, BinaryOp::COPY, ctx );
+        HArrayUtils::setArraySection( csrValues, offset, 1, otherValues, 0, 1, nnz, BinaryOp::COPY, ctx );
 
         lb += n;
         offset += nnz;
@@ -799,7 +799,7 @@ void MatrixStorage<ValueType>::joinRows(
     {
         WriteOnlyAccess<IndexType> offsets( IA, numLocalRows + 1 );
         ReadAccess<IndexType> sizes( outSizes );
-        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, binary::COPY );
+        OpenMPUtils::set( offsets.get(), sizes.get(), numLocalRows, BinaryOp::COPY );
         OpenMPCSRUtils::sizes2offsets( offsets.get(), numLocalRows );
     }
     WriteAccess<IndexType> tmpIA( IA );
@@ -1098,8 +1098,8 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::reduce(
     hmemo::HArray<ValueType>& array, 
     const IndexType dim, 
-    const common::binary::BinaryOp reduceOp,
-    const common::unary::UnaryOp elemOp )
+    const common::BinaryOp reduceOp,
+    const common::UnaryOp elemOp )
 {
     HArray<IndexType> csrIA;
     HArray<IndexType> csrJA;
@@ -1566,8 +1566,8 @@ template<typename ValueType>
 void MatrixStorage<ValueType>::writeToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType valuesType,
-    const common::scalar::ScalarType indexType,
+    const common::ScalarType valuesType,
+    const common::ScalarType indexType,
     const FileIO::FileMode mode ) const
 {
     writeToFile( 1, 0, fileName, fileType, valuesType, indexType, mode );
@@ -1579,8 +1579,8 @@ void MatrixStorage<ValueType>::writeToFile(
     const PartitionId /* rank */,
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType indexType,
+    const common::ScalarType dataType,
+    const common::ScalarType indexType,
     const FileIO::FileMode mode ) const
 {
     std::string suffix = fileType;
@@ -1596,12 +1596,12 @@ void MatrixStorage<ValueType>::writeToFile(
 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
-        if ( dataType != common::scalar::UNKNOWN )
+        if ( dataType != common::ScalarType::UNKNOWN )
         {
             fileIO->setDataType( dataType );
         }
 
-        if ( indexType != common::scalar::UNKNOWN )
+        if ( indexType != common::ScalarType::UNKNOWN )
         {
             fileIO->setIndexType( indexType );
         }
@@ -1642,7 +1642,7 @@ void MatrixStorage<ValueType>::readFromFile( const std::string& fileName, const 
         std::unique_ptr<FileIO> fileIO( FileIO::create( suffix ) );
 
         // We do not set data type, take it from environment variable SCAI_IO_TYPE_DATA
-        // fileIO->setDataType( common::scalar::INTERNAL );
+        // fileIO->setDataType( common::ScalarType::INTERNAL );
 
         SCAI_LOG_INFO( logger, "Got from factory: " << *fileIO )
 

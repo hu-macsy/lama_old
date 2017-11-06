@@ -105,7 +105,7 @@ virtual bool isConsistent() const;
      * @throw  common::Exception if no dense vector of this type is registered in factory.
      */
 
-    static _SparseVector* create( common::scalar::ScalarType type );
+    static _SparseVector* create( common::ScalarType type );
 
     // make operators and methods of Vector visible for _SparseVector
 
@@ -428,7 +428,7 @@ public:
 
     /** Implementation of Vector::getValueType */
 
-    virtual common::scalar::ScalarType getValueType() const;
+    virtual common::ScalarType getValueType() const;
 
     /**
      * @brief Implementation of pure method Vector::buildLocalValues.
@@ -438,7 +438,7 @@ public:
      */
     virtual void buildLocalValues(
         hmemo::_HArray& localValues,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /**
@@ -450,7 +450,7 @@ public:
     virtual void gatherLocalValues(
         hmemo::_HArray& localValues,
         const hmemo::HArray<IndexType>& localIndexes,
-        const common::binary::BinaryOp op = common::binary::COPY,
+        const common::BinaryOp op = common::BinaryOp::COPY,
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const;
 
     /** Implementation of _SpaseVector::getNonZeroValues */
@@ -472,7 +472,7 @@ public:
     virtual void fillSparseData( 
         const hmemo::HArray<IndexType>& nonZeroIndexes, 
         const hmemo::_HArray& nonZeroValues,
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /**
      * Setting sparse values with raw data 
@@ -535,11 +535,11 @@ public:
 
     /** Implementation of pure method Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const Scalar value ) const;
+    virtual bool all( common::CompareOp op, const Scalar value ) const;
 
     /** Implementation of pure method Vector::all */
 
-    virtual bool all( common::binary::CompareOp op, const Vector& other ) const;
+    virtual bool all( common::CompareOp op, const Vector& other ) const;
 
     virtual void swap( Vector& other );
 
@@ -572,15 +572,15 @@ public:
 
     /** Implementation of pure method Vector::setVector */
 
-    virtual void setVector( const Vector& other, const common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setVector( const Vector& other, const common::BinaryOp op, const bool swapArgs = false );
 
     /** Implementation of pure method Vector::setScalar */
 
-    virtual void setScalar( const Scalar value, common::binary::BinaryOp op, const bool swapArgs = false );
+    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapArgs = false );
 
     /** Implementation of pure method Vector::applyUnary */
 
-    virtual void applyUnary( common::unary::UnaryOp op );
+    virtual void applyUnary( common::UnaryOp op );
 
     using Vector::prefetch; // prefetch() with no arguments
 
@@ -604,7 +604,7 @@ protected:
 
     /** Help routine for binary operation of two sparse vectors */
 
-    void binOpSparse( const _SparseVector& other, const common::binary::BinaryOp op, bool swapArgs );
+    void binOpSparse( const _SparseVector& other, const common::BinaryOp op, bool swapArgs );
 
 private:
 
@@ -622,7 +622,7 @@ private:
     virtual void writeLocalToFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
+        const common::ScalarType dataType,
         const FileIO::FileMode fileMode ) const;
 
     /** Implementation of Vector::readLocalFromFile */
@@ -687,7 +687,7 @@ void SparseVector<ValueType>::setSparseValues(
 
     // values at same index will be replaced
 
-    fillSparseData( indexes, values, common::binary::COPY );
+    fillSparseData( indexes, values, common::BinaryOp::COPY );
 }
 
 Vector::VectorKind _SparseVector::getVectorKind() const

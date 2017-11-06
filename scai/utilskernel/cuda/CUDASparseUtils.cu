@@ -194,7 +194,7 @@ void setKernelPow( ValueType* out, const SourceValueType* in, const IndexType n 
 }
 
 template<typename ValueType, typename SourceValueType>
-void CUDASparseUtils::set( ValueType out[], const SourceValueType in[], const IndexType n, const binary::BinaryOp op )
+void CUDASparseUtils::set( ValueType out[], const SourceValueType in[], const IndexType n, const BinaryOp op )
 {   
     SCAI_REGION( "CUDA.Utils.set" )
     
@@ -214,23 +214,23 @@ void CUDASparseUtils::set( ValueType out[], const SourceValueType in[], const In
     
     switch ( op )
     {   
-        case binary::COPY :
+        case BinaryOp::COPY :
             setKernelCopy <<< dimGrid, dimBlock>>>( out, in, n );
             break;
         
-        case binary::ADD :
+        case BinaryOp::ADD :
             setKernelAdd <<< dimGrid, dimBlock>>>( out, in, n );
             break;
         
-        case binary::SUB :
+        case BinaryOp::SUB :
             setKernelSub <<< dimGrid, dimBlock>>>( out, in, n );
             break;
         
-        case binary::MULT :
+        case BinaryOp::MULT :
             setKernelMult <<< dimGrid, dimBlock>>>( out, in, n );
             break;
         
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
             setKernelDivide <<< dimGrid, dimBlock>>>( out, in, n );
             break;
         
@@ -311,7 +311,7 @@ void setKernelDivideSection( ValueType* out, const IndexType inc1,
 template<typename ValueType, typename SourceValueType>
 void CUDASparseUtils::setSection( ValueType out[], const IndexType inc1,
                                   const SourceValueType in[], const IndexType inc2,
-                                  const IndexType n, const binary::BinaryOp op )
+                                  const IndexType n, const BinaryOp op )
 {
     SCAI_REGION( "CUDA.Utils.setSection" )
 
@@ -333,23 +333,23 @@ void CUDASparseUtils::setSection( ValueType out[], const IndexType inc1,
 
     switch ( op )
     {   
-        case binary::COPY :
+        case BinaryOp::COPY :
             setKernelCopySection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
             break;
         
-        case binary::ADD :
+        case BinaryOp::ADD :
             setKernelAddSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
             break;
         
-        case binary::SUB :
+        case BinaryOp::SUB :
             setKernelSubSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
             break;
         
-        case binary::MULT :
+        case BinaryOp::MULT :
             setKernelMultSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
             break;
         
-        case binary::DIVIDE :
+        case BinaryOp::DIVIDE :
             setKernelDivideSection <<< dimGrid, dimBlock>>>( out, inc1, in, inc2, n );
             break;
         
@@ -370,7 +370,7 @@ void gatherKernel(
     ValueType1 out[],
     const ValueType2 in[],
     const IndexType indexes[],
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const IndexType n )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
@@ -398,7 +398,7 @@ void CUDASparseUtils::setGather(
     ValueType1 out[],
     const ValueType2 in[],
     const IndexType indexes[],
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const IndexType n )
 {   
     SCAI_REGION( "CUDA.Utils.setGather" )
@@ -414,7 +414,7 @@ void CUDASparseUtils::setGather(
     
     switch ( op )
     {   
-        case binary::COPY :
+        case BinaryOp::COPY :
             gatherCopyKernel <<< dimGrid, dimBlock>>>( out, in, indexes, n );
             break;
         
@@ -465,7 +465,7 @@ void scatter_sub_kernel( ValueType out[], const IndexType indexes[], const Sourc
 
 template<typename ValueType, typename SourceValueType>
 __global__
-void scatter_op_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n, const binary::BinaryOp op )
+void scatter_op_kernel( ValueType* out, const IndexType* indexes, const SourceValueType* in, const IndexType n, const BinaryOp op )
 {
     const IndexType i = threadId( gridDim, blockIdx, blockDim, threadIdx );
 
@@ -481,7 +481,7 @@ void CUDASparseUtils::setScatter(
     const IndexType indexes[],
     const bool unique,
     const ValueType2 in[],
-    const binary::BinaryOp op,
+    const BinaryOp op,
     const IndexType n )
 {
     SCAI_REGION( "CUDA.Utils.setScatter" )
@@ -496,15 +496,15 @@ void CUDASparseUtils::setScatter(
         dim3 dimBlock( blockSize, 1, 1 );
         dim3 dimGrid = makeGrid( n, dimBlock.x );
 
-        if ( op == binary::COPY )
+        if ( op == BinaryOp::COPY )
         {
             scatter_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
         }
-        else if ( op == binary::ADD )
+        else if ( op == BinaryOp::ADD )
         {
             scatter_add_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
         }
-        else if ( op == binary::SUB )
+        else if ( op == BinaryOp::SUB )
         {
             scatter_sub_kernel <<< dimGrid, dimBlock>>>( out, indexes, in, n );
         }

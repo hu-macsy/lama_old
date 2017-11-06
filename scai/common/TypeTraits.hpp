@@ -80,7 +80,7 @@ public:
     /**
      * @brief Corresponding type value of enum ScalarType.
     */
-    static const scalar::ScalarType stype = scalar::UNKNOWN;
+    static const ScalarType stype = ScalarType::UNKNOWN;
 };
 
 /** Type specific traits for int */
@@ -122,11 +122,11 @@ public:
         return - std::numeric_limits<int>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::INT;
+    static const ScalarType stype = ScalarType::INT;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::INT );
+        return scalarType2str( ScalarType::INT );
     }
 };
 
@@ -169,11 +169,11 @@ public:
         return static_cast<char> ( - std::numeric_limits<char>::max() );
     }
 
-    static const scalar::ScalarType stype = scalar::CHAR;
+    static const ScalarType stype = ScalarType::CHAR;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::CHAR );
+        return scalarType2str( ScalarType::CHAR );
     }
 };
 
@@ -215,11 +215,11 @@ public:
         return - std::numeric_limits<long>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::LONG;
+    static const ScalarType stype = ScalarType::LONG;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::LONG );
+        return scalarType2str( ScalarType::LONG );
     }
 };
 
@@ -261,11 +261,11 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::UNSIGNED_INT;
+    static const ScalarType stype = ScalarType::UNSIGNED_INT;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::UNSIGNED_INT );
+        return scalarType2str( ScalarType::UNSIGNED_INT );
     }
 };
 
@@ -307,11 +307,11 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::UNSIGNED_LONG;
+    static const ScalarType stype = ScalarType::UNSIGNED_LONG;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::UNSIGNED_LONG );
+        return scalarType2str( ScalarType::UNSIGNED_LONG );
     }
 };
 
@@ -353,11 +353,11 @@ public:
         return - std::numeric_limits<long double>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::LONG_DOUBLE;
+    static const ScalarType stype = ScalarType::LONG_DOUBLE;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::LONG_DOUBLE );
+        return scalarType2str( ScalarType::LONG_DOUBLE );
     }
 };
 
@@ -399,11 +399,11 @@ public:
         return - std::numeric_limits<double>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::DOUBLE;
+    static const ScalarType stype = ScalarType::DOUBLE;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::DOUBLE );
+        return scalarType2str( ScalarType::DOUBLE );
     }
 };
 
@@ -444,7 +444,7 @@ public:
         return - std::numeric_limits<float>::max();
     }
 
-    static const scalar::ScalarType stype = scalar::FLOAT;
+    static const ScalarType stype = ScalarType::FLOAT;
 
     static inline const char* id()
     {
@@ -492,7 +492,7 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::COMPLEX;
+    static const ScalarType stype = ScalarType::COMPLEX;
 
     static inline const char* id()
     {
@@ -538,11 +538,11 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::DOUBLE_COMPLEX;
+    static const ScalarType stype = ScalarType::DOUBLE_COMPLEX;
 
     static inline const char* id()
     {
-        return scalarType2str( scalar::DOUBLE_COMPLEX );
+        return scalarType2str( ScalarType::DOUBLE_COMPLEX );
     }
 };
 
@@ -584,7 +584,7 @@ public:
         return 0;
     }
 
-    static const scalar::ScalarType stype = scalar::LONG_DOUBLE_COMPLEX;
+    static const ScalarType stype = ScalarType::LONG_DOUBLE_COMPLEX;
 
     static inline const char* id()
     {
@@ -596,7 +596,7 @@ public:
 
 /** For convenience and for compatibility make own routine of getScalarType */
 
-template<typename ValueType> inline scalar::ScalarType getScalarType()
+template<typename ValueType> inline ScalarType getScalarType()
 {
     return TypeTraits<ValueType>::stype;
 }

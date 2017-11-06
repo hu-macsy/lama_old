@@ -71,8 +71,8 @@ int main()
     }
 
     std::cout << "Create finished" << std::endl;
-    std::shared_ptr<_HArray> lamaArray2( _HArray::create( scai::common::scalar::FLOAT ) );
+    std::shared_ptr<_HArray> lamaArray2( _HArray::create( scai::common::ScalarType::FLOAT ) );
     std::cout << "lamaArray2 = " << *lamaArray2 << std::endl;
-    std::shared_ptr<_HArray> lamaArray3( _HArray::create( scai::common::scalar::DOUBLE ) );
+    std::shared_ptr<_HArray> lamaArray3( _HArray::create( scai::common::ScalarType::DOUBLE ) );
     std::cout << "lamaArray3 = " << *lamaArray3 << std::endl;
 }

@@ -48,35 +48,32 @@ namespace scai
 namespace common
 {
 
-/** Own struct for the enum type ConstantType and its values. */
+/** Own struct for the enum type Constants and its values. */
 
-struct constants
+enum class Constants
 {
 
     /** Enumeration type for constants for which type-specific values are provided */
 
-    typedef enum
-    {
-        ZERO,  //!< stands for value 0
-        ONE    //!< stands for value 1
-    } ConstantType;
+    ZERO,  //!< stands for value 0
+    ONE    //!< stands for value 1
 
-}; /* struct constants */
+};
 
 /** This method returns the type specific value for each constant */
 
 template<typename ValueType>
-inline ValueType getConstant( const constants::ConstantType& c )
+inline ValueType getConstant( const Constants& c )
 {
     ValueType val( 0 );
 
     switch ( c )
     {
-        case constants::ONE:
+        case Constants::ONE:
             val = ValueType( 1 );
             break;
 
-        case constants::ZERO:
+        case Constants::ZERO:
             val = ValueType( 0 );
             break;
     }
@@ -87,11 +84,11 @@ inline ValueType getConstant( const constants::ConstantType& c )
 /** Comparison against constant ZERO or ONE uses machine-specific EPS */
 
 template<typename ValueType>
-inline bool operator==( const ValueType& x, const constants::ConstantType& c )
+inline bool operator==( const ValueType& x, const Constants& c )
 {
     typedef typename TypeTraits<ValueType>::AbsType AbsType;
 
-    if ( constants::ZERO == c )
+    if ( Constants::ZERO == c )
     {
         AbsType r = Math::real( x );
 
@@ -138,9 +135,9 @@ inline bool operator==( const ValueType& x, const constants::ConstantType& c )
 // Use template specialization for IndexType as real/imag might not be available
 
 template<>
-inline bool operator==( const IndexType& x, const constants::ConstantType& c )
+inline bool operator==( const IndexType& x, const Constants& c )
 {
-    if ( constants::ZERO == c )
+    if ( Constants::ZERO == c )
     {
         return x == 0;
     }
@@ -151,7 +148,7 @@ inline bool operator==( const IndexType& x, const constants::ConstantType& c )
 }
 
 template<typename ValueType>
-bool operator==( const constants::ConstantType& c, const ValueType& x )
+bool operator==( const Constants& c, const ValueType& x )
 {
     return operator==( x, c );
 }
@@ -159,13 +156,13 @@ bool operator==( const constants::ConstantType& c, const ValueType& x )
 /** Operator not equal also provided for convenience */
 
 template<typename ValueType>
-bool operator!=( const ValueType& x, const constants::ConstantType& c )
+bool operator!=( const ValueType& x, const Constants& c )
 {
     return !operator==( x, c );
 }
 
 template<typename ValueType>
-bool operator!=( const constants::ConstantType& c, const ValueType& x )
+bool operator!=( const Constants& c, const ValueType& x )
 {
     return !operator==( x, c );
 }

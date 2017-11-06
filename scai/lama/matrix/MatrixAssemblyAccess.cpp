@@ -54,7 +54,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MatrixAssemblyAccess
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix, const common::binary::BinaryOp op ) : 
+MatrixAssemblyAccess<ValueType>::MatrixAssemblyAccess( Matrix& matrix, const common::BinaryOp op ) : 
 
     mMatrix( matrix ),
     mIsReleased( false ),
@@ -99,9 +99,9 @@ void MatrixAssemblyAccess<ValueType>::exchangeCOO(
     HArray<IndexType> sendJA;
     HArray<ValueType> sendValues;
 
-    HArrayUtils::gather( sendIA, inIA, perm, common::binary::COPY );
-    HArrayUtils::gather( sendJA, inJA, perm, common::binary::COPY );
-    HArrayUtils::gather( sendValues, inValues, perm, common::binary::COPY );
+    HArrayUtils::gather( sendIA, inIA, perm, common::BinaryOp::COPY );
+    HArrayUtils::gather( sendJA, inJA, perm, common::BinaryOp::COPY );
+    HArrayUtils::gather( sendValues, inValues, perm, common::BinaryOp::COPY );
 
     HArrayUtils::unscan( offsets );  // now we have size
 

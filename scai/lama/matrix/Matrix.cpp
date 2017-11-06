@@ -67,7 +67,7 @@ SCAI_LOG_DEF_LOGGER( Matrix::logger, "Matrix" )
 /*    Factory to create a matrix                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-Matrix* Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::scalar::ScalarType valueType )
+Matrix* Matrix::getMatrix( const Format::MatrixStorageFormat format, const common::ScalarType valueType )
 {
     MatrixCreateKeyType mattype( format, valueType );
     return Matrix::create( mattype );
@@ -544,8 +544,8 @@ Matrix& Matrix::operator=( const Expression_SM_SM& exp )
 void Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
-    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
     const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
@@ -579,8 +579,8 @@ void Matrix::writeToSingleFile(
 void Matrix::writeToPartitionedFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType /* = UNKNOWN for DEFAULT */,
-    const common::scalar::ScalarType indexType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType dataType /* = UNKNOWN for DEFAULT */,
+    const common::ScalarType indexType /* = UNKNOWN for DEFAULT */,
     const FileIO::FileMode fileMode /* = DEFAULT_MODE */ ) const
 {
     SCAI_LOG_INFO( logger,
@@ -605,8 +605,8 @@ void Matrix::writeToPartitionedFile(
 void Matrix::writeToFile(
     const std::string& fileName,
     const std::string& fileType,
-    const common::scalar::ScalarType dataType,
-    const common::scalar::ScalarType indexType,
+    const common::ScalarType dataType,
+    const common::ScalarType indexType,
     const FileIO::FileMode fileMode ) const
 {
     SCAI_LOG_INFO( logger,
@@ -824,7 +824,7 @@ void Matrix::resetRowDistributionByFirstColumn()
 
         // if storage has not the global column index of diagonal first, this test is likely to fail
 
-        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::binary::LE ),
+        SCAI_ASSERT_DEBUG( utilskernel::HArrayUtils::isSorted( myGlobalIndexes, common::CompareOp::LE ),
                            "first column indexes are not sorted, cannot be global indexes" )
 
         // otherwise building the distribution will fail

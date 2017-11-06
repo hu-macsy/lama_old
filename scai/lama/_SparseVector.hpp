@@ -94,7 +94,7 @@ public:
      * @throw  common::Exception if no dense vector of this type is registered in factory.
      */
 
-    static _SparseVector* create( common::scalar::ScalarType );
+    static _SparseVector* create( common::ScalarType );
 
     // make operators and methods of Vector visible for _SparseVector
 

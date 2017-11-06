@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
-    common::scalar::ScalarType stype = common::TypeTraits<ValueType>::stype;
+    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     VectorPtr v( Vector::getDenseVector( stype, dist, ctx ) );
 
@@ -756,11 +756,11 @@ BOOST_AUTO_TEST_CASE( allTest )
 
         v1->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
 
-        BOOST_CHECK( v1->all( common::binary::GE, 0 ) );
+        BOOST_CHECK( v1->all( common::CompareOp::GE, 0 ) );
 
         v1->setRawData( 5, denseData );
 
-        BOOST_CHECK( v1->all( common::binary::GE, 0 ) );
+        BOOST_CHECK( v1->all( common::CompareOp::GE, 0 ) );
 
         for ( size_t j = 0; j < vectors2.size(); ++j )
         {
@@ -768,7 +768,7 @@ BOOST_AUTO_TEST_CASE( allTest )
 
             v2->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
 
-            BOOST_CHECK( v1->all( common::binary::EQ, *v2 ) );
+            BOOST_CHECK( v1->all( common::CompareOp::EQ, *v2 ) );
         }
     }
 }
