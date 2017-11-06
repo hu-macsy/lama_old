@@ -53,7 +53,9 @@ static const int N_THREADS = 15;
 
 static int thread_cnt = 0;
 
-thread_local int threadArg;
+// THREAD_PRIVATE variable
+
+thread_local int threadArg;   // each thread stores here global its running argument
 
 static void barrier()
 {
