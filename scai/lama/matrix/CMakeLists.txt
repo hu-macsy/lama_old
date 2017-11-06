@@ -57,7 +57,7 @@ scai_project (
         all 
         MatrixKind 
         SyncKind 
-        AbstractMatrix
+        OperatorMatrix
 
     ADD_PARENT_SCOPE
 )
