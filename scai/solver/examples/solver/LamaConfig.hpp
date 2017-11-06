@@ -96,7 +96,7 @@ public:
 
     /** Getter for the value type to be used */
 
-    scai::common::scalar::ScalarType getValueType() const;
+    scai::common::ScalarType getValueType() const;
 
     /** Getter for the solver id */
 
@@ -194,7 +194,7 @@ private:
 
     scai::lama::Matrix::SyncKind     mCommunicationKind;
 
-    scai::common::scalar::ScalarType   mValueType;          // value type to use
+    scai::common::ScalarType   mValueType;          // value type to use
 
     scai::dmemo::CommunicatorPtr      mComm;
 
@@ -335,9 +335,9 @@ LamaConfig::LamaConfig()
 
     if ( scai::common::Settings::getEnvironment( val, "SCAI_TYPE" ) )
     {
-        scai::common::scalar::ScalarType type = scai::common::str2ScalarType( val.c_str() );
+        scai::common::ScalarType type = scai::common::str2ScalarType( val.c_str() );
 
-        if ( type == scai::common::scalar::UNKNOWN )
+        if ( type == scai::common::ScalarType::UNKNOWN )
         {
             CONFIG_ERROR( "SCAI_TYPE=" << val << " illegal, is not a scalar type" )
         }
@@ -487,7 +487,7 @@ scai::lama::Matrix::MatrixStorageFormat LamaConfig::getFormat( ) const
     return mMatrixFormat;
 }
 
-scai::common::scalar::ScalarType LamaConfig::getValueType() const
+scai::common::ScalarType LamaConfig::getValueType() const
 {
     return mValueType;
 }

@@ -68,7 +68,7 @@ public:
         }
     }
 
-    Matrices( scai::common::scalar::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    Matrices( scai::common::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values

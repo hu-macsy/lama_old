@@ -101,18 +101,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
     LArray<ValueType> data( n );
     data.setRandom( randomRange );  // random value between 0 and 100
 
-    // scalar::ScalarType type = TypeTraits<ValueType>::stype;
+    // ScalarType type = TypeTraits<ValueType>::stype;
 
     IOStream outFile( testFileName, std::ios::out | std::ios::binary );
 
-    scalar::ScalarType stype = scalar::PATTERN;   // that should throw an exception
+    ScalarType stype = ScalarType::PATTERN;   // that should throw an exception
 
     BOOST_CHECK_THROW(
     {
         outFile.writeBinary( data, stype );
     }, common::Exception );
 
-    stype = scalar::INTERNAL;  // use the same type as data
+    stype = ScalarType::INTERNAL;  // use the same type as data
 
     outFile.writeBinary( data, stype );
     outFile.close();
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
     LArray<ValueType> data( n );
     data.setRandom( 1 );
 
-    scalar::ScalarType stype = TypeTraits<ScalarRepType>::stype;
+    ScalarType stype = TypeTraits<ScalarRepType>::stype;
 
     IOStream outFile( testFileName, std::ios::out | std::ios::binary );
     outFile.writeBinary( data, stype );

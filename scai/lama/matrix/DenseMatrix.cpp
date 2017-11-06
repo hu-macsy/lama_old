@@ -1414,7 +1414,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalRow(
     const hmemo::HArray<ValueType>& row,
     const IndexType localRowIndex,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_REGION( "Mat.Dense.setLocalRow" )
 
@@ -1438,7 +1438,7 @@ void DenseMatrix<ValueType>::setLocalRow(
 
     HArray<ValueType> rowResorted;   // row resorted according to the owners
 
-    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, common::binary::COPY );
+    utilskernel::HArrayUtils::gatherImpl( rowResorted, row, perm, common::BinaryOp::COPY );
 
     ReadAccess<IndexType> rOffsets( offsets );
 
@@ -1470,7 +1470,7 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::setLocalColumn(
     const hmemo::HArray<ValueType>& column,
     const IndexType globalColIndex,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     SCAI_REGION( "Mat.Dense.setLocalColumn" )
 
@@ -1571,8 +1571,8 @@ template<typename ValueType>
 void DenseMatrix<ValueType>::reduce(
     Vector& v, 
     const IndexType dim, 
-    const common::binary::BinaryOp reduceOp, 
-    const common::unary::UnaryOp elemOp ) const
+    const common::BinaryOp reduceOp, 
+    const common::UnaryOp elemOp ) const
 {
     SCAI_REGION( "Mat.Dense.reduce" )
 
@@ -1617,7 +1617,7 @@ void DenseMatrix<ValueType>::reduce(
 
         if ( np == 1 )
         {
-             SCAI_ASSERT_EQ_ERROR( reduceOp, common::binary::ADD, "only add supported" )
+             SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
 
              mData[0]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
              getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
@@ -1738,7 +1738,7 @@ void DenseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
     const Scalar val,
-    const common::binary::BinaryOp op )
+    const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
 
@@ -1806,7 +1806,7 @@ void DenseMatrix<ValueType>::matrixTimesVectorImpl(
     // It makes no sense to prefetch denseX because, if a transfer is started
     // the halo update needs to wait for this transfer to finish
 
-    if ( betaValue != common::constants::ZERO )
+    if ( betaValue != common::Constants::ZERO )
     {
         denseY.prefetch( localContext );
     }
@@ -2380,13 +2380,13 @@ void DenseMatrix<ValueType>::resetDiagonalProperty()
 template<typename ValueType>
 void DenseMatrix<ValueType>::writeAt( std::ostream& stream ) const
 {
-    common::scalar::ScalarType type = common::getScalarType<ValueType>();
+    common::ScalarType type = common::getScalarType<ValueType>();
     stream << "DenseMatrix<" << type << ">( size = " << getNumRows() << " x " << getNumColumns() << ", rowdist = "
            << getRowDistribution() << ", coldist = " << getColDistribution() << " )";
 }
 
 template<typename ValueType>
-common::scalar::ScalarType DenseMatrix<ValueType>::getValueType() const
+common::ScalarType DenseMatrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
 }
@@ -2443,7 +2443,7 @@ Matrix* DenseMatrix<ValueType>::create()
 template<typename ValueType>
 MatrixCreateKeyType DenseMatrix<ValueType>::createValue()
 {
-    common::scalar::ScalarType skind = common::getScalarType<ValueType>();
+    common::ScalarType skind = common::getScalarType<ValueType>();
     return MatrixCreateKeyType ( Format::DENSE, skind );
 }
 

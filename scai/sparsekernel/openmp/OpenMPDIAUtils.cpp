@@ -363,7 +363,7 @@ void OpenMPDIAUtils::normalGEMV(
 
     // result := alpha * A * x + beta * y -> result:= beta * y; result += alpha * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numRows, common::binary::MULT, false );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numRows, common::BinaryOp::MULT, false );
 
     #pragma omp parallel
     {
@@ -443,7 +443,7 @@ void OpenMPDIAUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
     #pragma omp parallel
     {

@@ -87,7 +87,7 @@ _DenseVector::_DenseVector( const Vector& other ) :
 {
 }
 
-_DenseVector* _DenseVector::create( common::scalar::ScalarType type )
+_DenseVector* _DenseVector::create( common::ScalarType type )
 {
     // There is only one factor for all vectors
 

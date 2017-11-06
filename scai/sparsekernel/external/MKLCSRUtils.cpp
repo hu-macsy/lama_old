@@ -109,9 +109,9 @@ void MKLCSRUtils::normalGEMV(
         // ToDo: workaround required as boost::bind supports only up to 9 arguments
     }
 
-    if ( y != result && beta != common::constants::ZERO )
+    if ( y != result && beta != common::Constants::ZERO )
     {
-        OpenMPUtils::set( result, y, numRows, common::binary::COPY );
+        OpenMPUtils::set( result, y, numRows, common::BinaryOp::COPY );
     }
 
     // performs y = alpha * A * x + beta * y

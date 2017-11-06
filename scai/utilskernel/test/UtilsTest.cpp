@@ -51,7 +51,8 @@
 using namespace scai;
 using namespace utilskernel;
 using namespace hmemo;
-using common::binary;
+using common::BinaryOp;
+using common::CompareOp;
 
 /* --------------------------------------------------------------------- */
 
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_array_test_types )
     {
         WriteAccess<ValueType> wValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        setVal[loc]( wValues.get(), nValues, mult, binary::MULT );
+        setVal[loc]( wValues.get(), nValues, mult, BinaryOp::MULT );
     }
     ReadAccess<ValueType> rValues( values );
 
@@ -111,7 +112,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values( nValues, valuesValues );
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), binary::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), nValues, ValueType( 0 ), BinaryOp::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
     {
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( sumTest, ValueType, scai_array_test_types )
         LArray<ValueType> values;
         ReadAccess<ValueType> rValues( values, loc );
         SCAI_CONTEXT_ACCESS( loc );
-        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), binary::ADD );
+        const ValueType resultSum = reduce[loc]( rValues.get(), values.size(), ValueType( 0 ), BinaryOp::ADD );
         BOOST_CHECK_EQUAL( expectedSum, resultSum );
     }
 }
@@ -152,8 +153,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reduce2Test, ValueType, scai_array_test_types )
 
         SCAI_CONTEXT_ACCESS( loc );
 
-        binary::BinaryOp binop = binary::MULT;
-        binary::BinaryOp redop = binary::MAX;
+        BinaryOp binop = BinaryOp::MULT;
+        BinaryOp redop = BinaryOp::MAX;
 
         ValueType zero = 0;
 
@@ -178,9 +179,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, 3 * n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), 3 * n, 0, binary::COPY );
+            setVal[loc]( wValues.get(), 3 * n, 0, BinaryOp::COPY );
             // overwrite in the middle to check that there is no out-of-range set
-            setVal[loc]( wValues.get() + n, n, 10, binary::COPY );
+            setVal[loc]( wValues.get() + n, n, 10, BinaryOp::COPY );
         }
         ReadAccess<ValueType> rValues( values );
 
@@ -197,7 +198,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( setValTest, ValueType, scai_array_test_types )
         {
             WriteOnlyAccess<ValueType> wValues( values, loc, n );
             SCAI_CONTEXT_ACCESS( loc );
-            setVal[loc]( wValues.get(), n, 7, binary::COPY );
+            setVal[loc]( wValues.get(), n, 7, BinaryOp::COPY );
         }
     }
 }
@@ -229,20 +230,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isSortedTest, ValueType, scai_array_test_types )
         ReadAccess<ValueType> rValues3( valueArray3, loc );
         SCAI_CONTEXT_ACCESS( loc );
         // values1 are sorted, operator = LE
-        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, binary::LE ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, binary::GE ) );
+        BOOST_CHECK( isSorted[loc]( rValues1.get(), nValues1, CompareOp::LE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues1.get(), nValues1, CompareOp::GE ) );
         // values2 are sorted, ascending = false
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, binary::GE ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, binary::LE ) );
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), nValues2, CompareOp::GE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues2.get(), nValues2, CompareOp::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 0, CompareOp::LE ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 1, CompareOp::LE ) );
         // only first two values are sorted
-        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, binary::LE ) );
+        BOOST_CHECK( isSorted[loc]( rValues2.get(), 2, CompareOp::LE ) );
         // only first two values are sorted
         // values3 are not sorted, neither ascending nor descending
-        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, binary::GE ) );
-        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, binary::LE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, CompareOp::GE ) );
+        BOOST_CHECK( ! isSorted[loc]( rValues3.get(), nValues3, CompareOp::LE ) );
     }
 }
 
@@ -298,7 +299,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( binaryOpScalar1Test, ValueType, scai_numeric_test
         {
             WriteAccess<ValueType> wValues( values, loc );
             SCAI_CONTEXT_ACCESS( loc );
-            binop[loc]( wValues.get(), wValues.get(), ValueType( 1 ), nValues, binary::DIVIDE, true );
+            binop[loc]( wValues.get(), wValues.get(), ValueType( 1 ), nValues, BinaryOp::DIVIDE, true );
         }
 
         ReadAccess<ValueType> rValues( values );
@@ -572,7 +573,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fullSortTest, ValueType, scai_array_test_types )
     SCAI_CONTEXT_ACCESS( loc );
 
     sort[loc]( wPerm.get(), wValues.get(), wValues.get(), n, ascending );
-    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending ? binary::LE : binary::GE );
+    bool valuesSorted = isSorted[loc]( wValues.get(), n, ascending ? CompareOp::LE : CompareOp::GE );
 
     BOOST_CHECK( valuesSorted );
 }

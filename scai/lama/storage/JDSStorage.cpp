@@ -100,7 +100,7 @@ JDSStorage<ValueType>::JDSStorage( const IndexType numRows, const IndexType numC
     ContextPtr prefLoc = this->getContextPtr();
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, IndexType( 0 ), common::binary::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, IndexType( 0 ), common::BinaryOp::COPY, prefLoc );
     HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
 }
 
@@ -150,10 +150,10 @@ void JDSStorage<ValueType>::setJDSData(
     mNumDiagonals = numDiagonals;
     mNumValues = numValues;
     ContextPtr loc = getContextPtr();
-    HArrayUtils::setArray( mDlg, dlg, common::binary::COPY, loc );
-    HArrayUtils::setArray( mIlg, ilg, common::binary::COPY, loc );
-    HArrayUtils::setArray( mPerm, perm, common::binary::COPY, loc );
-    HArrayUtils::setArray( mJa, ja, common::binary::COPY, loc );
+    HArrayUtils::setArray( mDlg, dlg, common::BinaryOp::COPY, loc );
+    HArrayUtils::setArray( mIlg, ilg, common::BinaryOp::COPY, loc );
+    HArrayUtils::setArray( mPerm, perm, common::BinaryOp::COPY, loc );
+    HArrayUtils::setArray( mJa, ja, common::BinaryOp::COPY, loc );
     HArrayUtils::assign( mValues, values, loc ); // supports type conversion
     // check is expensive, so do it only if ASSERT_LEVEL is on DEBUG mode
 #ifdef SCAI_ASSERT_LEVEL_DEBUG
@@ -285,7 +285,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const ValueType value )
     // values[i] = scalar
     WriteAccess<ValueType> wValues( mValues, loc );
     SCAI_CONTEXT_ACCESS( loc )
-    setVal[loc]( wValues.get(), numDiagonalValues, value, common::binary::COPY );
+    setVal[loc]( wValues.get(), numDiagonalValues, value, common::BinaryOp::COPY );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -306,7 +306,7 @@ void JDSStorage<ValueType>::setDiagonalImpl( const HArray<OtherValueType>& diago
     WriteAccess<ValueType> wValues( mValues, loc );
     // diagonal is first column in JDS data
     // values[i] = diagonal[ ja[ i ] ]
-    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), common::binary::COPY, numDiagonal );
+    setGather[loc]( wValues.get(), rDiagonal.get(), rJa.get(), common::BinaryOp::COPY, numDiagonal );
     // Still problem to use HArrayUtils::gather, as only part of the array is used
 }
 
@@ -371,8 +371,8 @@ void JDSStorage<ValueType>::getSparseRow( hmemo::HArray<IndexType>& jA, hmemo::_
 
     // with entries in pos we can gather the column indexes and the values from jdsJA, jdsValues
  
-    HArrayUtils::gatherImpl( jA, mJa, pos, common::binary::COPY, loc );
-    HArrayUtils::gather( values, mValues, pos, common::binary::COPY, loc );
+    HArrayUtils::gatherImpl( jA, mJa, pos, common::BinaryOp::COPY, loc );
+    HArrayUtils::gather( values, mValues, pos, common::BinaryOp::COPY, loc );
 
     SCAI_LOG_DEBUG( logger, "getSparseRow( " << i << " ) : jA = " << jA << ", values = " << values )
 }
@@ -414,7 +414,7 @@ void JDSStorage<ValueType>::getSparseColumn( hmemo::HArray<IndexType>& iA, hmemo
         wValuePos.resize( cnt );
     }
 
-    HArrayUtils::gather( values, mValues, valuePos, common::binary::COPY, loc );
+    HArrayUtils::gather( values, mValues, valuePos, common::BinaryOp::COPY, loc );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -437,7 +437,7 @@ void JDSStorage<ValueType>::getColumn( _HArray& column, const IndexType j ) cons
 template<typename ValueType>
 template<typename OtherType>
 void JDSStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const IndexType i,
-                                        const common::binary::BinaryOp op )
+                                        const common::BinaryOp op )
 {
     SCAI_REGION( "Storage.JDS.setRow" )
 
@@ -466,7 +466,7 @@ void JDSStorage<ValueType>::setRowImpl( const HArray<OtherType>& row, const Inde
 template<typename ValueType>
 template<typename OtherType>
 void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, const IndexType j,
-        const common::binary::BinaryOp op )
+        const common::BinaryOp op )
 {
     SCAI_LOG_INFO( logger, "setColumn( " << j << " ) of : " << *this << " with column " << column )
 
@@ -507,7 +507,7 @@ void JDSStorage<ValueType>::setColumnImpl( const HArray<OtherType>& column, cons
 
     //  mValues[ pos ] op= column[row]
 
-    HArrayUtils::gatherImpl( colValues, column, rowIndexes, common::binary::COPY, loc );
+    HArrayUtils::gatherImpl( colValues, column, rowIndexes, common::BinaryOp::COPY, loc );
     HArrayUtils::scatterImpl( mValues, valuePos, true, colValues, op, loc );
 }
 
@@ -529,7 +529,7 @@ void JDSStorage<ValueType>::getDiagonalImpl( HArray<OtherValueType>& diagonal ) 
     ReadAccess<ValueType> rValues( mValues, loc );
     // diagonal is first column in JDS data
     // wDiagonal[ rJa[ i ] ] = rValues[ i ];
-    setScatter[loc]( wDiagonal.get(), rPerm.get(), true, rValues.get(), common::binary::COPY, numDiagonal );
+    setScatter[loc]( wDiagonal.get(), rPerm.get(), true, rValues.get(), common::BinaryOp::COPY, numDiagonal );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -538,7 +538,7 @@ template<typename ValueType>
 void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 {
     SCAI_LOG_INFO( logger, "scaleImpl with value = " << value )
-    HArrayUtils::compute( mValues, mValues, common::binary::MULT, value, this->getContextPtr() );
+    HArrayUtils::compute( mValues, mValues, common::BinaryOp::MULT, value, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -547,7 +547,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::conj()
 {
-    HArrayUtils::unaryOp( mValues, mValues, common::unary::CONJ, this->getContextPtr() );
+    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -633,9 +633,9 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), mNumRows, common::binary::GE ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rIlg.get(), mNumRows, common::CompareOp::GE ),
                            *this << " @ " << msg << ": not decreasing values in ILG" )
-        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), mNumDiagonals, common::binary::GE ),
+        SCAI_ASSERT_ERROR( isSorted[ loc ]( rDlg.get(), mNumDiagonals, common::CompareOp::GE ),
                            *this << " @ " << msg << ": not decreasing values in DLG" )
     }
     // both, ILG and DLG, must sum up to mNumValues
@@ -646,8 +646,8 @@ void JDSStorage<ValueType>::check( const char* msg ) const
         ReadAccess<IndexType> rIlg( mIlg, loc );
         ReadAccess<IndexType> rDlg( mDlg, loc );
         SCAI_CONTEXT_ACCESS( loc )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, 0, common::binary::ADD ), mNumValues )
-        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, 0, common::binary::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rIlg.get(), mNumRows, 0, common::BinaryOp::ADD ), mNumValues )
+        SCAI_ASSERT_EQUAL_ERROR( reduce[loc]( rDlg.get(), mNumDiagonals, 0, common::BinaryOp::ADD ), mNumValues )
     }
 
     // check index values in Perm for out of range
@@ -693,15 +693,15 @@ void JDSStorage<ValueType>::setIdentity( const IndexType size )
     ContextPtr prefLoc = this->getContextPtr();
     mValues.clear();  // invalidate all values
     mValues.resize( mNumValues );
-    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::binary::COPY, prefLoc );
+    HArrayUtils::setScalar( mValues, ValueType( 1 ), common::BinaryOp::COPY, prefLoc );
     HArrayUtils::setOrder( mPerm, mNumRows, prefLoc );
     HArrayUtils::setOrder( mJa,  mNumRows, prefLoc );
     mDlg.clear();
     mDlg.resize( mNumDiagonals );
-    HArrayUtils::setScalar( mDlg, mNumRows, common::binary::COPY, prefLoc );
+    HArrayUtils::setScalar( mDlg, mNumRows, common::BinaryOp::COPY, prefLoc );
     mIlg.clear();
     mIlg.resize( mNumRows );
-    HArrayUtils::setScalar( mIlg, IndexType( 1 ), common::binary::COPY, prefLoc );
+    HArrayUtils::setScalar( mIlg, IndexType( 1 ), common::BinaryOp::COPY, prefLoc );
     mDiagonalProperty = true;
 }
 
@@ -745,7 +745,7 @@ void JDSStorage<ValueType>::sortRows( ContextPtr context )
     WriteAccess<IndexType> perm( mPerm, loc );
     SCAI_CONTEXT_ACCESS( loc )
     // reduce with ABS_MAX returns 0 ( instead of -max ) for mNumRows == 0
-    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, 0, common::binary::ABS_MAX );
+    mNumDiagonals = reduce[loc]( ilg.get(), mNumRows, 0, common::BinaryOp::ABS_MAX );
     SCAI_LOG_INFO( logger, *this << "sortRows on " << *loc << ", #jagged diagonals = " << mNumDiagonals )
     bool descending = false;
     sortRows[loc]( perm.get(), ilg.get(), ilg.get(), mNumRows, descending );
@@ -778,7 +778,7 @@ void JDSStorage<ValueType>::buildCSR(
     WriteOnlyAccess<IndexType> wCsrIA( ia, loc, mNumRows + 1 );
     SCAI_CONTEXT_ACCESS( loc )
     // rowValues[ perm[i] ] = ilg[i]
-    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), true, rJdsILG.get(), common::binary::COPY, mNumRows );
+    setScatter[loc]( wCsrIA.get(), rJdsPerm.get(), true, rJdsILG.get(), common::BinaryOp::COPY, mNumRows );
 
     if ( ja == NULL || values == NULL )
     {
@@ -931,7 +931,7 @@ void JDSStorage<ValueType>::allocate( IndexType numRows, IndexType numColumns )
         SCAI_CONTEXT_ACCESS( loc )
         WriteOnlyAccess<IndexType> ilg( mIlg, loc, mNumRows );
         WriteOnlyAccess<IndexType> perm( mPerm, loc, mNumRows );
-        setVal[loc]( ilg.get(), mNumRows, 0, common::binary::COPY );
+        setVal[loc]( ilg.get(), mNumRows, 0, common::BinaryOp::COPY );
         setOrder[loc]( perm.get(), mNumRows );
     }
 
@@ -989,7 +989,7 @@ template<typename ValueType>
 void JDSStorage<ValueType>::setValue( const IndexType i,
                                       const IndexType j,
                                       const ValueType val,
-                                      const common::binary::BinaryOp op )
+                                      const common::BinaryOp op )
 {
     SCAI_ASSERT_VALID_INDEX_DEBUG( i, mNumRows, "row index out of range" )
     SCAI_ASSERT_VALID_INDEX_DEBUG( j, mNumColumns, "column index out of range" )
@@ -1033,16 +1033,16 @@ void JDSStorage<ValueType>::matrixTimesVector(
     SCAI_LOG_DEBUG( logger,
                     "Computing z = " << alpha << " * A * x + " << beta << " * y, with A = " << *this << ", x = " << x << ", y = " << y << ", z = " << result )
 
-    if ( alpha == common::constants::ZERO )
+    if ( alpha == common::Constants::ZERO )
     {
         // so we just have result = beta * y, will be done synchronously
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, this->getContextPtr() );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, this->getContextPtr() );
         return;
     }
 
     SCAI_ASSERT_EQUAL_ERROR( x.size(), mNumColumns )
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         SCAI_ASSERT_EQUAL( y.size(), mNumRows, "size mismatch y, beta = " << beta )
     }
@@ -1061,7 +1061,7 @@ void JDSStorage<ValueType>::matrixTimesVector(
 
     // this call will finish the computation, syncToken == NULL
 
-    if ( beta != common::constants::ZERO )
+    if ( beta != common::Constants::ZERO )
     {
         ReadAccess<ValueType> rY( y, loc );
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumRows );
@@ -1094,17 +1094,17 @@ void JDSStorage<ValueType>::vectorTimesMatrix(
 
     // Step 1: result = beta * y
 
-    if ( beta == common::constants::ZERO )
+    if ( beta == common::Constants::ZERO )
     {
         result.clear();
         result.resize( mNumColumns );
-        HArrayUtils::setScalar( result, ValueType( 0 ), common::binary::COPY, loc );
+        HArrayUtils::setScalar( result, ValueType( 0 ), common::BinaryOp::COPY, loc );
     }
     else
     {
         // Note: assignScaled will deal with
         SCAI_ASSERT_EQUAL( y.size(), mNumColumns, "size mismatch y, beta = " << beta )
-        HArrayUtils::compute( result, beta, common::binary::MULT, y, loc );
+        HArrayUtils::compute( result, beta, common::BinaryOp::MULT, y, loc );
     }
 
     // Step 2: result = alpha * x * this + 1 * result
@@ -1203,7 +1203,7 @@ tasking::SyncToken* JDSStorage<ValueType>::vectorTimesMatrixAsync(
     ReadAccess<ValueType> jdsValues( mValues, loc );
     ReadAccess<ValueType> rX( x, loc );
 
-    if ( beta == scai::common::constants::ZERO )
+    if ( beta == scai::common::Constants::ZERO )
     {
         // alias of result and y handled by correct order
         WriteOnlyAccess<ValueType> wResult( result, loc, mNumColumns );
@@ -1655,9 +1655,9 @@ SCAI_COMMON_INST_CLASS( JDSStorage, SCAI_NUMERIC_TYPES_HOST )
             const hmemo::HArray<OtherValueType>&, const hmemo::ContextPtr );                                               \
     template void JDSStorage<ValueType>::getRowImpl( hmemo::HArray<OtherValueType>&, const IndexType ) const;              \
     template void JDSStorage<ValueType>::setRowImpl( const hmemo::HArray<OtherValueType>&, const IndexType,                \
-            const common::binary::BinaryOp );                          \
+            const common::BinaryOp );                          \
     template void JDSStorage<ValueType>::setColumnImpl( const hmemo::HArray<OtherValueType>&, const IndexType,             \
-            const common::binary::BinaryOp );                       \
+            const common::BinaryOp );                       \
     template void JDSStorage<ValueType>::getDiagonalImpl( hmemo::HArray<OtherValueType>& ) const;                          \
     template void JDSStorage<ValueType>::setDiagonalImpl( const hmemo::HArray<OtherValueType>& );                          \
     template void JDSStorage<ValueType>::scaleImpl( const hmemo::HArray<OtherValueType>& );                                \

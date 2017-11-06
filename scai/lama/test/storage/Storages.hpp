@@ -94,7 +94,7 @@ public:
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scalar::ScalarType stype = values[i].second;
+            ScalarType stype = values[i].second;
 
             if ( stype == TypeTraits<ValueType>::stype )
             {

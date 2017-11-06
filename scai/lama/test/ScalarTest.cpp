@@ -63,13 +63,13 @@ BOOST_AUTO_TEST_CASE( ScalarGetTypeTest )
 {
     // Challenge: some of these types were not defined in module common but later in lama
     using namespace scai::common;
-    BOOST_CHECK_EQUAL( getScalarType<float>(), scalar::FLOAT );
-    BOOST_CHECK_EQUAL( getScalarType<double>(), scalar::DOUBLE );
-    BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), scalar::LONG_DOUBLE );
+    BOOST_CHECK_EQUAL( getScalarType<float>(), ScalarType::FLOAT );
+    BOOST_CHECK_EQUAL( getScalarType<double>(), ScalarType::DOUBLE );
+    BOOST_CHECK_EQUAL( getScalarType<LongDouble>(), ScalarType::LONG_DOUBLE );
 #ifdef SCAI_COMPLEX_SUPPORTED
-    BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), scalar::COMPLEX );
-    BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), scalar::DOUBLE_COMPLEX );
-    BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), scalar::LONG_DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexFloat>(), ScalarType::COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexDouble>(), ScalarType::DOUBLE_COMPLEX );
+    BOOST_CHECK_EQUAL( getScalarType<ComplexLongDouble>(), ScalarType::LONG_DOUBLE_COMPLEX );
 #endif
 }
 
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE( writeAtTest )
 
 /* --------------------------------------------------------------------- */
 
-void printtestmethod( std::string string, scalar::ScalarType type )
+void printtestmethod( std::string string, ScalarType type )
 {
     std::stringstream mStream;
     mStream << type;
@@ -196,12 +196,12 @@ void printtestmethod( std::string string, scalar::ScalarType type )
 
 BOOST_AUTO_TEST_CASE( printTest )
 {
-    printtestmethod( "float", scalar::FLOAT );
-    printtestmethod( "double", scalar::DOUBLE );
-    printtestmethod( "LongDouble", scalar::LONG_DOUBLE );
-    printtestmethod( "ComplexFloat", scalar::COMPLEX );
-    printtestmethod( "ComplexDouble", scalar::DOUBLE_COMPLEX );
-    printtestmethod( "ComplexLongDouble", scalar::LONG_DOUBLE_COMPLEX );
+    printtestmethod( "float", ScalarType::FLOAT );
+    printtestmethod( "double", ScalarType::DOUBLE );
+    printtestmethod( "LongDouble", ScalarType::LONG_DOUBLE );
+    printtestmethod( "ComplexFloat", ScalarType::COMPLEX );
+    printtestmethod( "ComplexDouble", ScalarType::DOUBLE_COMPLEX );
+    printtestmethod( "ComplexLongDouble", ScalarType::LONG_DOUBLE_COMPLEX );
 }
 
 /* --------------------------------------------------------------------- */

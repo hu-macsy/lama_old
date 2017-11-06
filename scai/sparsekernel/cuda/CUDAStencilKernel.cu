@@ -78,7 +78,7 @@ __constant__ common::Grid::BorderType gridBordersD[ 2 * SCAI_GRID_MAX_DIMENSION 
 
 /* --------------------------------------------------------------------------- */
 
-/** Help routine to determine the left position in a dimension with a certain bounary type. */
+/** Help routine to determine the left position in a dimension with a certain boUnaryOp type. */
 
 __inline__ __device__ 
 bool getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size, const Grid::BorderType border )
@@ -105,7 +105,7 @@ bool getBorderPosL( IndexType& pos, const IndexType offset, const IndexType size
     return valid;
 }
 
-/** Help routine to determine the right position in a dimension with a certain bounary type. */
+/** Help routine to determine the right position in a dimension with a certain boUnaryOp type. */
 
 __inline__ __device__ 
 bool getBorderPosR( IndexType& pos, const IndexType offset, const IndexType size, const Grid::BorderType border )

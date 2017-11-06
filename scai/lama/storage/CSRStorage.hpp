@@ -314,7 +314,7 @@ public:
 
     template<typename OtherType>
     void setRowImpl( const hmemo::HArray<OtherType>& row, const IndexType i,
-                     const common::binary::BinaryOp op );
+                     const common::BinaryOp op );
 
     /** Implementation of pure method MatrixStorage::getColumn */
 
@@ -324,7 +324,7 @@ public:
 
     template<typename OtherType>
     void setColumnImpl( const hmemo::HArray<OtherType>& column, const IndexType j,
-                        const common::binary::BinaryOp op );
+                        const common::BinaryOp op );
 
     /** Typed version of getDiagonal
      *
@@ -374,7 +374,7 @@ public:
     /** Implementation of pure method MatrixStorage<ValueType>::setValue for CSR storage */
 
     void setValue( const IndexType i, const IndexType j, const ValueType val,
-                   const common::binary::BinaryOp op = common::binary::COPY );
+                   const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Initiate an asynchronous data transfer to a specified location. */
 
@@ -568,11 +568,11 @@ public:
      *  @param a, b are the two CSR storages to which the operation is applied to
      *  @param op specifies the binary operator this is applied to entries at same position
      *
-     *  Note: op == common::binary::ADD stands for summing elements up, 
-     *        op == common::binary::COPY for replacing
-     *        op == common::binary::MIN  for minimal values
+     *  Note: op == common::BinaryOp::ADD stands for summing elements up, 
+     *        op == common::BinaryOp::COPY for replacing
+     *        op == common::BinaryOp::MIN  for minimal values
      */
-    void binaryOpCSR( const CSRStorage<ValueType>& a, const CSRStorage<ValueType>& b, common::binary::BinaryOp op );
+    void binaryOpCSR( const CSRStorage<ValueType>& a, const CSRStorage<ValueType>& b, common::BinaryOp op );
 
     /** solution = xxx */
 

@@ -97,7 +97,7 @@ public:
 
     /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
      */
-    static Matrix* getMatrix( const MatrixStorageFormat format, const common::scalar::ScalarType valueType );
+    static Matrix* getMatrix( const MatrixStorageFormat format, const common::ScalarType valueType );
 
     /**
      * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
@@ -130,8 +130,8 @@ public:
     void writeToFile(
         const std::string& fileName,
         const std::string& fileType = "",
-        const common::scalar::ScalarType dataType = common::scalar::UNKNOWN,
-        const common::scalar::ScalarType indexType = common::scalar::UNKNOWN,
+        const common::ScalarType dataType = common::ScalarType::UNKNOWN,
+        const common::ScalarType indexType = common::ScalarType::UNKNOWN,
         const FileIO::FileMode fileMode = FileIO::DEFAULT_MODE  ) const;
 
     /**
@@ -515,7 +515,7 @@ public:
      */
     virtual void setRow( const Vector& row,
                          const IndexType globalRowIndex,
-                         const common::binary::BinaryOp op ) = 0;
+                         const common::BinaryOp op ) = 0;
 
     /** @brief Pure method to set one column of the matrix.
      *
@@ -531,7 +531,7 @@ public:
     virtual void setColumn(
         const Vector& column,
         const IndexType globalColIndex,
-        const common::binary::BinaryOp op ) = 0;
+        const common::BinaryOp op ) = 0;
 
     /** @brief This method returns the diagonal.
      *
@@ -567,16 +567,16 @@ public:
      *
      *  \code
      *     const Matrix& m; Vector& v;
-     *     m.reduce( v, dim = 0, common::binary::ADD, common::binary::SQR );  // builds row sums 
-     *     m.reduce( v, dim = 1, common::binary::ADD, common::binary::SQR );  // builds diagonal of m' m 
+     *     m.reduce( v, dim = 0, common::BinaryOp::ADD, common::BinaryOp::SQR );  // builds row sums 
+     *     m.reduce( v, dim = 1, common::BinaryOp::ADD, common::BinaryOp::SQR );  // builds diagonal of m' m 
      *  \endcode
      */
 
     virtual void reduce( 
         Vector& v, 
         const IndexType dim, 
-        const common::binary::BinaryOp reduceOp, 
-        const common::unary::UnaryOp elemOp ) const = 0;
+        const common::BinaryOp reduceOp, 
+        const common::UnaryOp elemOp ) const = 0;
 
     /** @brief This method scales all values with a vector.
      *
@@ -632,7 +632,7 @@ public:
         const IndexType i,
         const IndexType j,
         const Scalar val,
-        const common::binary::BinaryOp op = common::binary::COPY ) = 0;
+        const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -1090,7 +1090,7 @@ public:
     /**
      * @brief Queries the value type of the matrix elements, e.g. DOUBLE or FLOAT.
      */
-    virtual common::scalar::ScalarType getValueType() const = 0;
+    virtual common::ScalarType getValueType() const = 0;
 
     /**
      * @brief Query the storage format of the used matrix format, e.g. CSR or ELL.
@@ -1267,15 +1267,15 @@ private:
     void writeToSingleFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
-        const common::scalar::ScalarType indexType,
+        const common::ScalarType dataType,
+        const common::ScalarType indexType,
         const FileIO::FileMode fileMode ) const;
 
     void writeToPartitionedFile(
         const std::string& fileName,
         const std::string& fileType,
-        const common::scalar::ScalarType dataType,
-        const common::scalar::ScalarType indexType,
+        const common::ScalarType dataType,
+        const common::ScalarType indexType,
         const FileIO::FileMode fileMode ) const;
 };
 

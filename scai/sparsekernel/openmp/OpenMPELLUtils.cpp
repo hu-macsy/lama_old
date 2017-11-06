@@ -980,7 +980,7 @@ void OpenMPELLUtils::jacobi(
                 temp -= ellValues[pos] * oldSolution[ellJA[pos]];
             }
 
-            if ( omega == scai::common::constants::ONE )
+            if ( omega == scai::common::Constants::ONE )
             {
                 solution[i] = temp / diag;
             }
@@ -1123,12 +1123,12 @@ void OpenMPELLUtils::normalGEMV(
 
             SCAI_LOG_TRACE( logger, "row = " << i << ", temp = " << temp )
 
-            if ( beta == scai::common::constants::ZERO )
+            if ( beta == scai::common::Constants::ZERO )
             {
                 // must be handled separately as y[i] might be uninitialized
                 result[i] = alpha * temp;
             }
-            else if ( alpha == scai::common::constants::ONE )
+            else if ( alpha == scai::common::Constants::ONE )
             {
                 result[i] = temp + beta * y[i];
             }
@@ -1203,7 +1203,7 @@ void OpenMPELLUtils::sparseGEMV(
                 temp += ellValues[pos] * x[j];
             }
 
-            if ( alpha == scai::common::constants::ONE )
+            if ( alpha == scai::common::Constants::ONE )
             {
                 result[i] += temp;
             }
@@ -1242,7 +1242,7 @@ void OpenMPELLUtils::normalGEVM(
 
     // result := alpha * x * A + beta * y -> result:= beta * y; result += alpha * x * A
 
-    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
+    utilskernel::OpenMPUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
     #pragma  omp parallel
     {

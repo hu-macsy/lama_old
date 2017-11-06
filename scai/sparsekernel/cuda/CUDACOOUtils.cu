@@ -209,7 +209,7 @@ void CUDACOOUtils::normalGEMV(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    if ( beta == scai::common::constants::ONE && result == y )
+    if ( beta == scai::common::Constants::ONE && result == y )
     {
         SCAI_LOG_DEBUG( logger, "normalGEMV is sparse, no init of result needed" )
     }
@@ -240,7 +240,7 @@ void CUDACOOUtils::normalGEMV(
     {
         vectorBindTexture( x );
 
-        if ( alpha == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE )
         {
             cooGemvKernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock>>>
             ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -253,7 +253,7 @@ void CUDACOOUtils::normalGEMV(
     }
     else
     {
-        if ( alpha == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE )
         {
             cooGemvKernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock>>>
             ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -320,7 +320,7 @@ void CUDACOOUtils::normalGEVM(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    if ( beta == scai::common::constants::ONE && result == y )
+    if ( beta == scai::common::Constants::ONE && result == y )
     {
         SCAI_LOG_DEBUG( logger, "normalGEVM is sparse, no init of result needed" )
     }
@@ -348,7 +348,7 @@ void CUDACOOUtils::normalGEVM(
     {
         vectorBindTexture( x );
 
-        if ( alpha == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE )
         {
             cooGevmKernel_alpha_one<ValueType, true> <<< dimGrid, dimBlock>>>
             ( result, x, numValues, cooIA, cooJA, cooValues );
@@ -361,7 +361,7 @@ void CUDACOOUtils::normalGEVM(
     }
     else
     {
-        if ( alpha == scai::common::constants::ONE )
+        if ( alpha == scai::common::Constants::ONE )
         {
             cooGevmKernel_alpha_one<ValueType, false> <<< dimGrid, dimBlock>>>
             ( result, x, numValues, cooIA, cooJA, cooValues );

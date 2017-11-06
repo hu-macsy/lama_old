@@ -35,6 +35,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/common/BinaryOp.hpp>
+#include <scai/common/CompareOp.hpp>
 #include <scai/common/test/TestMacros.hpp>
 #include <sstream>
 
@@ -45,13 +46,13 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 {
     // arithmetic binary operations
 
-    for ( int type = binary::COPY; type < binary::MAX_BINARY_OP; ++type )
+    for ( int type = 0; type < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++type )
     {
         std::ostringstream s;
-        s << binary::BinaryOp( type );
+        s << BinaryOp( type );
         BOOST_CHECK( s.str().length() > 0 );
 
-        if ( type == binary::COPY )
+        if ( BinaryOp( type ) == BinaryOp::COPY )
         {
             BOOST_CHECK_EQUAL( s.str(), "COPY" );
         }
@@ -59,10 +60,10 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
 
     // comparison binary operations
 
-    for ( int type = binary::LT; type < binary::MAX_COMPARE_OP; ++type )
+    for ( int type = 0; type < static_cast<int>( CompareOp::MAX_COMPARE_OP ); ++type )
     {
         std::ostringstream s;
-        s << binary::BinaryOp( type );
+        s << CompareOp( type );
         BOOST_CHECK( s.str().length() > 0 );
     }
 }
@@ -71,7 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
 {
     // we do not check here the results but make sure that all ops are supported
 
-    for ( int op = binary::COPY; op < binary::MAX_BINARY_OP; ++op )
+    for ( int op = 0; op < static_cast<int>( BinaryOp::MAX_BINARY_OP ); ++op )
     {
         T x = 5;
         T y = 2;
@@ -79,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
 
         if ( common::TypeTraits<T>::stype == common::TypeTraits<IndexType>::stype )
         {
-            if ( op == binary::POW || op == binary::COPY_SIGN )
+            if ( BinaryOp( op ) == BinaryOp::POW || BinaryOp( op ) == BinaryOp::COPY_SIGN )
             {
                 // ToDo: we could check that an exception is thrown
 
@@ -87,7 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
             }
         }
 
-        binary::BinaryOp binop = binary::BinaryOp( op );
+        BinaryOp binop = BinaryOp( op );
 
         z = applyBinary( x, binop, y );
 
@@ -96,11 +97,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ApplyBinOpTest, T, scai_array_test_types )
 
     // test compare operations
 
-    BOOST_CHECK( applyBinary<T>( T( 2 ), binary::LT, T( 3 ) ) );
-    BOOST_CHECK( !applyBinary<T>( T( 3 ), binary::LT, T( 3 ) ) );
-    BOOST_CHECK( applyBinary<T>( T( 3 ), binary::LE, T( 3 ) ) );
-    BOOST_CHECK( applyBinary<T>( T( 3 ), binary::GE, T( 3 ) ) );
-    BOOST_CHECK( !applyBinary<T>( T( 3 ), binary::GT, T( 3 ) ) );
-    BOOST_CHECK( applyBinary<T>( T( 3 ), binary::GT, T( 2 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 2 ), CompareOp::LT, T( 3 ) ) );
+    BOOST_CHECK( !applyBinary<T>( T( 3 ), CompareOp::LT, T( 3 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 3 ), CompareOp::LE, T( 3 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 3 ), CompareOp::GE, T( 3 ) ) );
+    BOOST_CHECK( !applyBinary<T>( T( 3 ), CompareOp::GT, T( 3 ) ) );
+    BOOST_CHECK( applyBinary<T>( T( 3 ), CompareOp::GT, T( 2 ) ) );
 }
 

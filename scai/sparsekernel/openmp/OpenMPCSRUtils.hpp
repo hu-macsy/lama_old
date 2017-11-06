@@ -177,8 +177,8 @@ public:
         const ValueType csrValues[],
         const IndexType numRows,
         const IndexType dim,
-        const common::binary::BinaryOp reduceOp,
-        const common::unary::UnaryOp elemOp );
+        const common::BinaryOp reduceOp,
+        const common::UnaryOp elemOp );
 
     /** Implementation for CSRKernelTrait::normalGEMV  */
 
@@ -370,7 +370,7 @@ public:
         const IndexType bIA[],
         const IndexType bJA[],
         const ValueType bValues[],
-        common::binary::BinaryOp op );
+        common::BinaryOp op );
 
     /** Implementation for CSRKernelTrait::Mult::matrixMultiply */
 

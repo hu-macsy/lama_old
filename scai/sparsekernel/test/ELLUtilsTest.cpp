@@ -1695,7 +1695,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( compressTest, ValueType, scai_numeric_test_types 
             WriteOnlyAccess<IndexType> wNewELLIa( newEllIa, loc, numRows );
             SCAI_CONTEXT_ACCESS( loc );
             compressIA[loc]( rELLIa.get(), rELLJa.get(), rELLValues.get(), numRows, numValuesPerRow, eps, wNewELLIa.get() );
-            newNumValuesPerRow_calc = reduce[loc]( wNewELLIa.get(), numRows, 0, common::binary::MAX );
+            newNumValuesPerRow_calc = reduce[loc]( wNewELLIa.get(), numRows, 0, common::BinaryOp::MAX );
         }
         ReadAccess<IndexType> rNewELLIa( newEllIa );
 

@@ -46,50 +46,50 @@ namespace scai
 namespace common
 {
 
-const char* scalarType2str( const scalar::ScalarType stype )
+const char* scalarType2str( const ScalarType stype )
 {
     switch ( stype )
     {
-        case scalar::INT:
+        case ScalarType::INT:
             return "int";
 
-        case scalar::LONG:
+        case ScalarType::LONG:
             return "long";
 
-        case scalar::FLOAT:
+        case ScalarType::FLOAT:
             return "float";
 
-        case scalar::DOUBLE:
+        case ScalarType::DOUBLE:
             return "double";
 
-        case scalar::LONG_DOUBLE:
+        case ScalarType::LONG_DOUBLE:
             return "LongDouble";
 
-        case scalar::COMPLEX:
+        case ScalarType::COMPLEX:
             return "ComplexFloat";
 
-        case scalar::DOUBLE_COMPLEX:
+        case ScalarType::DOUBLE_COMPLEX:
             return "ComplexDouble";
 
-        case scalar::LONG_DOUBLE_COMPLEX:
+        case ScalarType::LONG_DOUBLE_COMPLEX:
             return "ComplexLongDouble";
 
-        case scalar::CHAR:
+        case ScalarType::CHAR:
             return "char";
 
-        case scalar::UNSIGNED_INT:
+        case ScalarType::UNSIGNED_INT:
             return "uint";
 
-        case scalar::UNSIGNED_LONG:
+        case ScalarType::UNSIGNED_LONG:
             return "ulong";
 
-        case scalar::INDEX_TYPE:
+        case ScalarType::INDEX_TYPE:
             return "IndexType";
 
-        case scalar::INTERNAL:
+        case ScalarType::INTERNAL:
             return "_Internal";
 
-        case scalar::PATTERN:
+        case ScalarType::PATTERN:
             return "_Pattern";
 
         default:
@@ -99,22 +99,22 @@ const char* scalarType2str( const scalar::ScalarType stype )
 
 /*************************************************************************/
 
-scalar::ScalarType str2ScalarType( const char* str )
+ScalarType str2ScalarType( const char* str )
 {
-    for ( int stype = scalar::INT; stype < scalar::UNKNOWN; ++stype )
+    for ( int stype = 0; stype < static_cast<int>( ScalarType::UNKNOWN ); ++stype )
     {
-        if ( strcmp( scalarType2str( scalar::ScalarType( stype ) ), str ) == 0 )
+        if ( strcmp( scalarType2str( ScalarType( stype ) ), str ) == 0 )
         {
-            return scalar::ScalarType( stype );
+            return ScalarType( stype );
         }
     }
 
-    return scalar::UNKNOWN;
+    return ScalarType::UNKNOWN;
 }
 
 /*************************************************************************/
 
-std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object )
+std::ostream& operator<<( std::ostream& stream, const ScalarType& object )
 {
     stream << scalarType2str( object );
     return stream;
@@ -122,14 +122,14 @@ std::ostream& operator<<( std::ostream& stream, const scalar::ScalarType& object
 
 /*************************************************************************/
 
-bool isComplex( const scalar::ScalarType stype )
+bool isComplex( const ScalarType stype )
 {
     return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isComplex( stype );
 }
 
 /*************************************************************************/
 
-bool isNumeric( const scalar::ScalarType stype )
+bool isNumeric( const ScalarType stype )
 {
     return common::mepr::ScalarTypeHelper<SCAI_ALL_TYPES_LIST>::isNumeric( stype );
 }
@@ -137,11 +137,11 @@ bool isNumeric( const scalar::ScalarType stype )
 /*************************************************************************/
 
 
-int precision( const scalar::ScalarType stype )
+int precision( const ScalarType stype )
 {
     // call with INTERNAL not allowed, replace it at call site with precision( TypeTraits<ValueType>::sid )
 
-    SCAI_ASSERT( stype != scalar::INTERNAL, "precision of INTERNAL unknown" )
+    SCAI_ASSERT( stype != ScalarType::INTERNAL, "precision of INTERNAL unknown" )
 
     // loop over all supported types and query its precision
 
@@ -150,18 +150,18 @@ int precision( const scalar::ScalarType stype )
 
 /*************************************************************************/
 
-size_t typeSize( const scalar::ScalarType stype )
+size_t typeSize( const ScalarType stype )
 {
     // call with INTERNAL not allowed, replace it at cal size with typeSize( TypeTraits<ValueType>::sid )
 
-    SCAI_ASSERT( stype != scalar::INTERNAL, "typeSize of INTERNAL unknown" )
+    SCAI_ASSERT( stype != ScalarType::INTERNAL, "typeSize of INTERNAL unknown" )
 
-    if ( stype == scalar::PATTERN )
+    if ( stype == ScalarType::PATTERN )
     {
         return 0;      // allowed, stands for a dummy type
     }
 
-    if ( stype == scalar::INDEX_TYPE )
+    if ( stype == ScalarType::INDEX_TYPE )
     {
         return sizeof( IndexType );   // must be handled separately here
     }

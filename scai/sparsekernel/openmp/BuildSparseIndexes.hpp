@@ -128,7 +128,7 @@ class COMMON_DLL_IMPORTEXPORT BuildSparseVector : public BuildSparseIndexes
 {
 public:
 
-    BuildSparseVector( const IndexType n, const common::binary::BinaryOp op ) :
+    BuildSparseVector( const IndexType n, const common::BinaryOp op ) :
 
         BuildSparseIndexes( n ),
         mValueList( new ValueType[n] ),
@@ -163,7 +163,7 @@ private:
 
     ValueType mZero;
 
-    common::binary::BinaryOp mOp;
+    common::BinaryOp mOp;
 };
 
 

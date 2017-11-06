@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         try
         {
-            csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::FORMATTED );
+            csrStorage.writeToFile( fileName, "", ScalarType::INTERNAL, ScalarType::INDEX_TYPE, FileIO::FORMATTED );
         } 
         catch( common::UnsupportedException& )
         {
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         try
         {
-            csrStorage.writeToFile( fileName, "", scalar::INTERNAL, scalar::INDEX_TYPE, FileIO::BINARY );
+            csrStorage.writeToFile( fileName, "", ScalarType::INTERNAL, ScalarType::INDEX_TYPE, FileIO::BINARY );
         } 
         catch( common::UnsupportedException& )
         {
@@ -1031,7 +1031,7 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
             continue;
         }
 
-        fileIO->setDataType( common::scalar::PATTERN );
+        fileIO->setDataType( common::ScalarType::PATTERN );
 
         std::string fileName = "outStoragePattern" + fileSuffix;
 
@@ -1076,7 +1076,7 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
         // If we want to read a full matrix, the read operation must throw an exception
 
-        fileIO->setDataType( common::scalar::INTERNAL );
+        fileIO->setDataType( common::ScalarType::INTERNAL );
 
         SCAI_LOG_INFO( logger, *fileIO << ": read matrix pattern -> " << fileName
                        << ", matrix = " << csrStorage );

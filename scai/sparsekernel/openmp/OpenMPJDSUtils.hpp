@@ -97,7 +97,7 @@ public:
         const IndexType dlg[],
         const IndexType ja[],
         const OtherValueType row[],
-        const common::binary::BinaryOp op );
+        const common::BinaryOp op );
 
     /** Implementation for JDSKernelTrait::getValuePos */
 

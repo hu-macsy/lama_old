@@ -249,9 +249,9 @@ scai::lama::CSRSparseMatrix<ValueType> TestSolverMatrices::complexSymmNotHermitI
 
     switch ( scai::common::TypeTraits<ValueType>::stype )
     {
-        case scai::common::scalar::DOUBLE_COMPLEX:
-        case scai::common::scalar::COMPLEX:
-        case scai::common::scalar::LONG_DOUBLE_COMPLEX :
+        case scai::common::ScalarType::DOUBLE_COMPLEX:
+        case scai::common::ScalarType::COMPLEX:
+        case scai::common::ScalarType::LONG_DOUBLE_COMPLEX :
             isComplex = true;
             break;
 

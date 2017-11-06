@@ -93,7 +93,7 @@ void BiCG::initialize( const Matrix& coefficients )
     BiCGRuntime& runtime = getRuntime();
     runtime.mPScalar2 = 0.0;
     runtime.mTransposeA.reset( coefficients.newMatrix() );
-    common::scalar::ScalarType type = coefficients.getValueType();
+    common::ScalarType type = coefficients.getValueType();
     runtime.mP2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
     runtime.mQ2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
     runtime.mZ2.reset( Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );

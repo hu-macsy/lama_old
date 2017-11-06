@@ -130,13 +130,13 @@ public:
         MAT_UINT64_CLASS   = 15
     } MATClass;
 
-    static common::scalar::ScalarType matlabType2ScalarType( uint32_t dataType );
+    static common::ScalarType matlabType2ScalarType( uint32_t dataType );
 
-    static uint32_t scalarType2MatlabType( common::scalar::ScalarType dataType );
+    static uint32_t scalarType2MatlabType( common::ScalarType dataType );
 
-    static common::scalar::ScalarType class2ScalarType( uint32_t dataType );
+    static common::ScalarType class2ScalarType( uint32_t dataType );
 
-    static MATClass scalarType2Class( common::scalar::ScalarType stype );
+    static MATClass scalarType2Class( common::ScalarType stype );
 
     template<typename ValueType>
     uint32_t writeData( const ValueType* data, uint32_t size, bool dryRun );
@@ -172,7 +172,7 @@ public:
         const IndexType shape[],
         const IndexType nDims,
         const uint32_t nBytes,
-        common::scalar::ScalarType stype,
+        common::ScalarType stype,
         bool dryRun );
 
     static uint32_t getMatrixInfo( MATClass& matClass, IndexType dims[], const IndexType maxDims, IndexType& ndims,
@@ -189,7 +189,7 @@ private:
 template<typename ValueType>
 uint32_t MATIOStream::writeData( const ValueType* data, uint32_t size, bool dryRun )
 {
-    common::scalar::ScalarType stype = common::getScalarType<ValueType>();
+    common::ScalarType stype = common::getScalarType<ValueType>();
 
     uint32_t dataType  = scalarType2MatlabType( stype );
     uint32_t nBytes    = size * sizeof( ValueType );
