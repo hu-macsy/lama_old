@@ -350,10 +350,10 @@ void OpenMPDIAUtils::normalGEMV(
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
         syncToken->run( std::bind( normalGEMV_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
         return;
     }
 
@@ -434,10 +434,10 @@ void OpenMPDIAUtils::normalGEVM(
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
         syncToken->run( std::bind( normalGEVM_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numRows, numColumns, numDiagonals, diaOffsets, diaValues ) );
         return;
     }
 

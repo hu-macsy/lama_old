@@ -53,28 +53,30 @@ static const int N_THREADS = 15;
 
 static int thread_cnt = 0;
 
-SCAI_THREAD_PRIVATE_PTR( int, threadArg )
+// THREAD_PRIVATE variable
+
+thread_local int threadArg;   // each thread stores here global its running argument
 
 static void barrier()
 {
-    std::cout << "Thread " << *threadArg.get() << " before lock" << std::endl;
+    std::cout << "Thread " << threadArg << " before lock" << std::endl;
     Thread::ScopedLock lock( barrierMutex );
-    std::cout << "Thread " << *threadArg.get() << " after lock" << std::endl;
+    std::cout << "Thread " << threadArg << " after lock" << std::endl;
     thread_cnt ++;
-    std::cout << "Thread " << *threadArg.get() << " thread_cnt = " << thread_cnt << std::endl;
+    std::cout << "Thread " << threadArg << " thread_cnt = " << thread_cnt << std::endl;
 
     if ( thread_cnt != N_THREADS )
     {
         // Some others not at barrier so wait
-        std::cout << "Thread " << *threadArg.get() << " before wait" << std::endl;
+        std::cout << "Thread " << threadArg << " before wait" << std::endl;
         barrierCondition.wait( lock );
-        std::cout << "Thread " << *threadArg.get() << " after wait" << std::endl;
+        std::cout << "Thread " << threadArg << " after wait" << std::endl;
     }
     else
     {
         // Now all threads have reached
         thread_cnt = 0;
-        std::cout << "Thread " << *threadArg.get() << " notifies all" << std::endl;
+        std::cout << "Thread " << threadArg << " notifies all" << std::endl;
         barrierCondition.notifyAll();
     }
 }
@@ -86,10 +88,10 @@ static int sharedArray[ N_THREADS ];
 static void threadRoutine( int& arg )
 {
     std::cout << "Thread " << scai::common::Thread::getSelf() << " runs, arg = " << arg << std::endl;
-    threadArg.set( &arg );
+    threadArg = arg;
     // sleep a little bit so if threadArg is not thread private it will be overwritten
     scai::common::Walltime::sleep( 100 );
-    sharedArray[arg] = *threadArg.get();
+    sharedArray[arg] = threadArg;
     barrier();
     std::cout << "Thread " << arg << " after barrier" << std::endl;
     int sum = 0;

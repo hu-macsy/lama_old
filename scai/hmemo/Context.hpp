@@ -246,7 +246,7 @@ private:
 
     typedef std::stack<const Context*> ContextStack;
 
-    static SCAI_THREAD_PRIVATE_PTR( ContextStack, contextStack )
+    static thread_local ContextStack contextStack;
 };
 
 /* ======================================================================== */

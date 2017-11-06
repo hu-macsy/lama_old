@@ -306,10 +306,10 @@ void OpenMPCOOUtils::normalGEMV(
         SCAI_LOG_INFO( logger,
                        "normalGEMV<" << TypeTraits<ValueType>::id() << "> launch it asynchronously" )
         syncToken->run( std::bind( normalGEMV_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numValues, cooIA, cooJA, cooValues ) );
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numRows, numValues, cooIA, cooJA, cooValues ) );
         return;
     }
 
@@ -379,10 +379,10 @@ void OpenMPCOOUtils::normalGEVM(
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in pair structs
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
         syncToken->run( std::bind( normalGEVM_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numColumns, numValues, cooIA, cooJA, cooValues ) );
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numColumns, numValues, cooIA, cooJA, cooValues ) );
         return;
     }
 

@@ -827,7 +827,7 @@ void OpenMPCSRUtils::normalGEMV(
     if ( syncToken )
     {
         syncToken->run( std::bind( normalGEMV_s<ValueType>, result, alpha, x, beta, y,
-                                      numRows, csrIA, csrJA, csrValues ) );
+                                   numRows, csrIA, csrJA, csrValues ) );
     }
     else
     {
@@ -874,9 +874,9 @@ void OpenMPCSRUtils::normalGEVM(
         // bind takes maximal 9 arguments, so we put (alpha, x) and (beta, y) in a struct
         SCAI_LOG_INFO( logger, "normalGEVM<" << TypeTraits<ValueType>::id() << ", launch it as an asynchronous task" )
         syncToken->run( std::bind( normalGEVM_s<ValueType>, result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      numRows, numColumns, csrIA, csrJA, csrValues ) );
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   numRows, numColumns, csrIA, csrJA, csrValues ) );
         return;
     }
 
@@ -927,7 +927,7 @@ void OpenMPCSRUtils::sparseGEMV(
     if ( syncToken )
     {
         syncToken->run( std::bind( sparseGEMV<ValueType>, result, alpha,
-                                      x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
+                                   x, numNonZeroRows, rowIndexes, csrIA, csrJA, csrValues ) );
         return;
     }
 

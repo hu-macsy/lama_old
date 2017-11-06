@@ -46,6 +46,9 @@ using std::bind;
 using namespace scai::common;
 using namespace scai::tasking;
 
+using std::bind;
+using std::ref;
+
 static const int WORKLOAD = 1000000;
 
 /* ----------------------------------------------------------------------- */

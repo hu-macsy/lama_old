@@ -540,13 +540,13 @@ void OpenMPJDSUtils::normalGEMV(
     if ( syncToken )
     {
         syncToken->run( std::bind( normalGEMV_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
-                                      perm,
-                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
-                                      jdsJA, jdsValues ) );
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   std::pair<IndexType, const IndexType*>( numRows, jdsILG ),
+                                   perm,
+                                   std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                   jdsJA, jdsValues ) );
         return;
     }
 
@@ -631,13 +631,13 @@ void OpenMPJDSUtils::normalGEVM(
     if ( syncToken )
     {
         syncToken->run( std::bind( normalGEVM_a<ValueType>,
-                                      result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*>( beta, y ),
-                                      std::pair<IndexType, const IndexType*>( numColumns, jdsILG ),
-                                      perm,
-                                      std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
-                                      jdsJA, jdsValues ) );
+                                   result,
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*>( beta, y ),
+                                   std::pair<IndexType, const IndexType*>( numColumns, jdsILG ),
+                                   perm,
+                                   std::pair<IndexType, const IndexType*>( ndlg, jdsDLG ),
+                                   jdsJA, jdsValues ) );
         return;
     }
 

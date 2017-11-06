@@ -45,6 +45,7 @@ using namespace scai::tasking;
 
 using std::shared_ptr;
 using std::bind;
+using std::ref;
 
 /** Maximal number of threads in the pool. */
 

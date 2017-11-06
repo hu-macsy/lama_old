@@ -1092,9 +1092,9 @@ void OpenMPELLUtils::normalGEMV(
     {
         // combine the vectors with their scaling factors to reduze number of args
         syncToken->run( std::bind( normalGEMV_a<ValueType>, result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      std::pair<ValueType, const ValueType*> ( beta, y ),
-                                      numRows, numValuesPerRow, ellSizes, ellJA, ellValues ) );
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   std::pair<ValueType, const ValueType*> ( beta, y ),
+                                   numRows, numValuesPerRow, ellSizes, ellJA, ellValues ) );
         return;
     }
 
@@ -1175,10 +1175,10 @@ void OpenMPELLUtils::sparseGEMV(
     if ( syncToken )
     {
         syncToken->run( std::bind( sparseGEMV_a<ValueType>, result,
-                                      std::pair<ValueType, const ValueType*>( alpha, x ),
-                                      numRows, numValuesPerRow,
-                                      std::pair<IndexType, const IndexType*>( numNonZeroRows, rowIndexes ),
-                                      ellSizes, ellJA, ellValues ) );
+                                   std::pair<ValueType, const ValueType*>( alpha, x ),
+                                   numRows, numValuesPerRow,
+                                   std::pair<IndexType, const IndexType*>( numNonZeroRows, rowIndexes ),
+                                   ellSizes, ellJA, ellValues ) );
         return;
     }
 

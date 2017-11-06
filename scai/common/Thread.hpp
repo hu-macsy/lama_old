@@ -217,42 +217,7 @@ private:
     Id mId;
 };
 
-/** Encapsulation class of a pointer to restrict its use for thread private pointers */
-
-template<typename T>
-class Pointer : common::NonCopyable
-{
-public:
-    Pointer()
-    {
-    }
-
-    ~Pointer()
-    {
-    }
-
-    T* get()
-    {
-        return mObj;
-    }
-
-    void set( T* obj )
-    {
-        mObj = obj;
-    }
-
-    T* mObj;
-};
-
 } /* end namespace common */
 
 } /* end namespace scai */
-
-/** This macro defines a thread private pointer variable
- *
- *  C++11 standard has keyword thread_local for it.
- */
-
-#define SCAI_THREAD_PRIVATE_PTR( type, var )  \
-    thread_local scai::common::Pointer<type> var;
 

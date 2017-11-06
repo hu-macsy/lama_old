@@ -39,10 +39,10 @@
 
 #include <functional>
 
-using std::bind;
-
-using namespace scai::common;
 using namespace scai::tasking;
+using scai::common::Walltime;
+using scai::common::Settings;
+using std::bind;
 
 /** For demo purpose we take a work routine that sleeps for a certain time. */
 
