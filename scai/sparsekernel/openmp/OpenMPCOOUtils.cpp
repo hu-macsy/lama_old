@@ -47,6 +47,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/OpenMP.hpp>
 
+#include <functional>
+
 namespace scai
 {
 

@@ -59,6 +59,7 @@
 #include <set>
 #include <map>
 #include <memory>
+#include <functional>
 
 namespace scai
 {

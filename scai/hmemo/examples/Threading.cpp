@@ -39,6 +39,8 @@
 #include <scai/tasking/ThreadPool.hpp>
 #include <scai/tasking/Task.hpp>
 
+#include <functional>
+
 using namespace scai::hmemo;
 using namespace scai::tasking;
 

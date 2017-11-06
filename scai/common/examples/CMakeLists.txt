@@ -54,7 +54,6 @@ set ( EXECUTABLE_FILES ${EXECUTABLE_FILES}
           CriticalRegion
           DemoFactory
           DemoFactory1
-          DemoFunction 
           DemoGrid
           DemoLoopMacro
           DemoMath

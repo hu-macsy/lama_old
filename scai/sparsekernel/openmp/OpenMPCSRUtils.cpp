@@ -58,6 +58,7 @@
 // std
 #include <vector>
 #include <memory>
+#include <functional>
 
 using std::unique_ptr;
 

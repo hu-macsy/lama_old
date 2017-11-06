@@ -40,6 +40,7 @@
 #include <scai/common/safer_memcpy.hpp>
 
 #include <memory>
+#include <functional>
 
 /** Exampes of a new memory class that implements all relevant routines. */
 

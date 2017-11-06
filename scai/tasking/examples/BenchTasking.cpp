@@ -39,6 +39,7 @@
 #include <scai/common/macros/throw.hpp>
 
 #include <memory>
+#include <functional>
 
 using namespace std;
 using namespace scai;

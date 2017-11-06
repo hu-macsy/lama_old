@@ -38,8 +38,10 @@
 #include <scai/common/Settings.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::shared_ptr;
+using std::bind;
 
 using namespace scai::common;
 using namespace scai::tasking;

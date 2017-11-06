@@ -51,6 +51,8 @@
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/TypeTraits.hpp>
 
+#include <functional>
+
 namespace scai
 {
 

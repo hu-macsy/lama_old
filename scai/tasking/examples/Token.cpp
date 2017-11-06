@@ -38,6 +38,7 @@
 #include <scai/logging.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::shared_ptr;
 

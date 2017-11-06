@@ -55,6 +55,7 @@
 
 // std
 #include <memory>
+#include <functional>
 
 namespace scai
 {

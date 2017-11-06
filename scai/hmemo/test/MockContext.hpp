@@ -42,6 +42,7 @@
 #include <scai/common/macros/assert.hpp>
 
 #include <memory>
+#include <functional>
 
 /** Exampes of a new context class that implements all relevant routines. */
 

@@ -60,6 +60,7 @@
 #include <scai/common/macros/instantiate.hpp>
 
 #include <memory>
+#include <functional>
 
 using std::unique_ptr;
 using std::shared_ptr;

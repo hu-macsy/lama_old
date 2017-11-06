@@ -44,6 +44,7 @@
 #include <scai/common/test/cuda/CUDAKernel.hpp>
 
 #include <iostream>
+#include <functional>
 
 using namespace scai;
 using namespace common;

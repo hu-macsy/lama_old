@@ -42,6 +42,7 @@
 #include <scai/common/Thread.hpp>
 
 #include <iostream>
+#include <functional>
 
 using namespace scai;
 using namespace common;

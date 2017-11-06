@@ -56,6 +56,7 @@
 #include <scai/common/macros/instantiate.hpp>
 
 #include <memory>
+#include <functional>
 
 using namespace scai::hmemo;
 

@@ -77,6 +77,11 @@ using namespace scai::dmemo;
 
 using std::shared_ptr;
 using std::function;
+using std::bind;
+using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
+
 
 namespace scai
 {
@@ -1941,7 +1946,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
         const MatrixStorage<ValueType>* haloMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& haloX ) > haloF =
-            // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, cref( localResult ) );
+            // bind( matrixTimesVector, _1, _2, alphaValue, _3, one, std::cref( localResult ) );
             bind( matrixTimesVector, _1, _2, alphaValue, _3, ValueType( 1 ), _2 );
 
     if ( Matrix::SYNCHRONOUS == getCommunicationKind() )
@@ -1951,7 +1956,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             const MatrixStorage<ValueType>* localMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX ) > localF =
-                bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+                bind( matrixTimesVector, _1, _2, alphaValue, _3, betaValue, std::cref( localY ) );
 
         haloOperationSync( localResult, localX, haloX, localF, haloF );
     }
@@ -1962,7 +1967,7 @@ void SparseMatrix<ValueType>::matrixTimesVectorImpl(
             const MatrixStorage<ValueType>* localMatrix,
             HArray<ValueType>& localResult,
             const HArray<ValueType>& localX ) > localAsyncF =
-                bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+                bind( matrixTimesVectorAsync, _1, _2, alphaValue, _3, betaValue, std::cref( localY ) );
         haloOperationAsync( localResult, localX, haloX, localAsyncF, haloF );
     }
 }
@@ -2001,7 +2006,7 @@ void SparseMatrix<ValueType>::vectorTimesMatrixImpl(
         const MatrixStorage<ValueType>* localMatrix,
         HArray<ValueType>& localResult,
         const HArray<ValueType>& localX ) > localF =
-            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, betaValue, cref( localY ) );
+            bind( vectorTimesMatrix, _1, _2, alphaValue, _3, betaValue, std::cref( localY ) );
 
     // haloF: localResult = alpha * haloX * haloMatrix
 

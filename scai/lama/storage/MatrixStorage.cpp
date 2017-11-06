@@ -65,6 +65,8 @@
 #include <scai/common/macros/instantiate.hpp>
 #include <scai/common/macros/loop.hpp>
 
+#include <functional>
+
 namespace scai
 {
 

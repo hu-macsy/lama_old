@@ -39,6 +39,7 @@
 #include <scai/common/macros/assert.hpp>
 
 #include <map>
+#include <functional>
 
 namespace scai
 {

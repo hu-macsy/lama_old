@@ -50,6 +50,7 @@
 
 // std
 #include <cmath>
+#include <functional>
 
 namespace scai
 {

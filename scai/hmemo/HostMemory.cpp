@@ -52,6 +52,7 @@
 
 // std
 #include <cstring>
+#include <functional>
 
 using scai::common::safer_memcpy;
 

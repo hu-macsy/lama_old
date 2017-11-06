@@ -53,6 +53,7 @@
 // std
 #include <cmath>
 #include <complex>
+#include <functional>
 
 namespace scai
 {

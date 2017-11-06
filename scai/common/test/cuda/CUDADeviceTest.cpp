@@ -42,6 +42,7 @@
 #include <scai/common/test/cuda/CUDAKernel.hpp>
 
 #include <iostream>
+#include <functional>
 
 
 static void inc( int* val )

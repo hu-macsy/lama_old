@@ -51,6 +51,7 @@
 #include <scai/common/Math.hpp>
 
 #include <memory>
+#include <functional>
 
 namespace scai
 {

@@ -51,6 +51,7 @@
 // std
 #include <cstring> // import ::memcpy
 #include <memory>
+#include <functional>
 
 namespace scai
 {

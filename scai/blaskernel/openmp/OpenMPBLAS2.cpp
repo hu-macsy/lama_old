@@ -46,6 +46,8 @@
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/Math.hpp>
 
+#include <functional>
+
 namespace scai
 {
 
