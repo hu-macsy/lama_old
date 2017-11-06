@@ -203,7 +203,6 @@ set ( COMMON_HEADERS
         UnaryOp
         Utils
         safer_memcpy
-        bind
 )
 
 if ( ${USE_COMPLEX} )
