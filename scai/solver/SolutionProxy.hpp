@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
 namespace scai
 {
@@ -72,7 +72,7 @@ public:
      *
      * @param[in] solution   The pointer to the vector which the proxy will wrap.
      */
-    SolutionProxy( lama::Vector* const solution );
+    SolutionProxy( lama::_Vector* const solution );
 
     /**
      * @brief SolutionProxy destructor.
@@ -86,7 +86,7 @@ public:
      *
      * @return constant reference to the underlying vector.
      */
-    const lama::Vector& getConstReference() const;
+    const lama::_Vector& getConstReference() const;
 
     /**
      * @brief Returns a reference to the underlying vector.
@@ -97,7 +97,7 @@ public:
      *
      * @return Reference to the underlying vector.
      */
-    lama::Vector& operator*();
+    lama::_Vector& operator*();
 
     /**
      * @brief Associates the given Vector Pointer with this SolutionProxy.
@@ -106,7 +106,7 @@ public:
      *
      * @param[in] newVector the Vector to which the SolutionProxy shall point to.
      */
-    void operator=( lama::Vector* const newVector );
+    void operator=( lama::_Vector* const newVector );
 
     /**
      * @brief Determines if the proxy is dirty and the residual needs to be
@@ -130,14 +130,14 @@ public:
      *
      * @return Reference to the underlying vector.
      */
-    lama::Vector& getReference();
+    lama::_Vector& getReference();
 
 private:
 
     /**
      * @brief The underlying solution vector.
      */
-    lama::Vector* mSolution;
+    lama::_Vector* mSolution;
 
     /**
      * @brief Flag which determines, if the Proxy is dirty or not.

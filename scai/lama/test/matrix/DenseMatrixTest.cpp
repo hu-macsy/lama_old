@@ -46,6 +46,7 @@
 #include <scai/lama/matrix/JDSSparseMatrix.hpp>
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
 #include <scai/lama/matrix/COOSparseMatrix.hpp>
+#include <scai/lama/expression/all.hpp>
 
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
@@ -84,9 +85,9 @@ typedef boost::mpl::list < CSRSparseMatrix<ValueType>,
 
 /* ------------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes )
+BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, _MatrixType, SparseMatrixTypes )
 {
-    // Test vector = Matrix * vector, where vector stands for multiple vectors
+    // Test vector = _Matrix * vector, where vector stands for multiple vectors
     // i.e. vector is a dense matrix
     // Note: not yet available for distributed matrix
 
@@ -94,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( matrixTimesVectorN, MatrixType, SparseMatrixTypes
 
     const IndexType n = 20;  // size of the square matrix
 
-    MatrixType matrix( 20, 20 );
+    _MatrixType matrix( 20, 20 );
 
     MatrixCreator::fillRandom( matrix, 0.2f );
 

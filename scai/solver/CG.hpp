@@ -82,7 +82,7 @@ public:
 
     virtual ~CG();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -97,9 +97,9 @@ public:
         CGRuntime();
         virtual ~CGRuntime();
 
-        lama::VectorPtr mP;
-        lama::VectorPtr mQ;
-        lama::VectorPtr mZ;
+        lama::_VectorPtr mP;
+        lama::_VectorPtr mQ;
+        lama::_VectorPtr mZ;
         lama::Scalar mPScalar;
     };
 

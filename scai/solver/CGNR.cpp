@@ -53,8 +53,8 @@ namespace scai
 namespace solver
 {
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 SCAI_LOG_DEF_LOGGER( CGNR::logger, "Solver.CGNR" )
@@ -79,7 +79,7 @@ CGNR::~CGNR() {}
 CGNR::CGNRRuntime::~CGNRRuntime() {}
 
 
-void CGNR::initialize( const Matrix& coefficients )
+void CGNR::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -95,7 +95,7 @@ void CGNR::initialize( const Matrix& coefficients )
     runtime.mTransposedMat->conj();
 }
 
-void CGNR::solveInit( Vector& solution, const Vector& rhs )
+void CGNR::solveInit( _Vector& solution, const _Vector& rhs )
 {
     CGNRRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -126,21 +126,21 @@ void CGNR::solveInit( Vector& solution, const Vector& rhs )
 void CGNR::iterate()
 {
     CGNRRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposedMat;
-    Vector& vecW = *runtime.mVecW;
-    Vector& vecD = *runtime.mVecD;
-    Vector& vecZ = *runtime.mVecZ;
-    Vector& residual = *runtime.mResidual;
-    Vector& residual2 = *runtime.mResidual2;
-    Vector& solution = *runtime.mSolution;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transposedA = *runtime.mTransposedMat;
+    _Vector& vecW = *runtime.mVecW;
+    _Vector& vecD = *runtime.mVecD;
+    _Vector& vecZ = *runtime.mVecZ;
+    _Vector& residual = *runtime.mResidual;
+    _Vector& residual2 = *runtime.mResidual2;
+    _Vector& solution = *runtime.mSolution;
     Scalar alpha;
     Scalar beta;
     lama::L2Norm norm;
     const Scalar& eps = runtime.mEps;
     vecW = A * vecD;
     Scalar normVecW = norm.apply( vecW );
-    Scalar scalarProduct = vecZ.dotProduct( residual2 );
+    Scalar scalarProduct = vecZ._dotProduct( residual2 );
 
     if ( normVecW < eps || 1.0 / normVecW < eps )         //norm is small
     {
@@ -171,7 +171,7 @@ void CGNR::iterate()
     }
     else
     {
-        beta = vecZ.dotProduct( residual2 ) / scalarProduct;
+        beta = vecZ._dotProduct( residual2 ) / scalarProduct;
     }
 
     vecD = vecZ + beta * vecD;

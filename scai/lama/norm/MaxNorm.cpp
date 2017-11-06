@@ -73,12 +73,12 @@ Scalar MaxNorm::apply( const Scalar& scalar ) const
     return maxNorm( scalar );
 }
 
-Scalar MaxNorm::apply( const Vector& vector ) const
+Scalar MaxNorm::apply( const _Vector& vector ) const
 {
     return maxNorm( vector );
 }
 
-Scalar MaxNorm::apply( const Matrix& matrix ) const
+Scalar MaxNorm::apply( const _Matrix& matrix ) const
 {
     return maxNorm( matrix );
 }
@@ -88,14 +88,14 @@ Scalar maxNorm( const Scalar& scalar )
     return abs( scalar );
 }
 
-Scalar maxNorm( const Vector& vector )
+Scalar maxNorm( const _Vector& vector )
 {
-    return vector.maxNorm();
+    return vector._maxNorm();
 }
 
-Scalar maxNorm( const Matrix& matrix )
+Scalar maxNorm( const _Matrix& matrix )
 {
-    return matrix.maxNorm();
+    return matrix._maxNorm();
 }
 
 } /* end namespace lama */

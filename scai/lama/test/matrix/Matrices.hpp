@@ -42,22 +42,22 @@
  *  matrix storage format and each supported arithmetic type.
  */
 
-class Matrices : public std::vector<scai::lama::MatrixPtr>
+class _Matrices : public std::vector<scai::lama::_MatrixPtr>
 {
 
 public:
 
     /** Constructor creates already the list with all matrix pointers. */
 
-    Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
-        Matrix::getCreateValues( values );
+        _Matrix::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::MatrixPtr matrixPtr( scai::lama::Matrix::create( values[i] ) );
+            scai::lama::_MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
             if ( ctx )
             {
@@ -68,15 +68,15 @@ public:
         }
     }
 
-    Matrices( scai::common::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    _Matrices( scai::common::ScalarType stype, scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
     {
         using namespace scai::lama;
         std::vector<MatrixCreateKeyType> values;  //  all create values
-        Matrix::getCreateValues( values );
+        _Matrix::getCreateValues( values );
 
         for ( size_t i = 0; i < values.size(); ++i )
         {
-            scai::lama::MatrixPtr matrixPtr( scai::lama::Matrix::create( values[i] ) );
+            scai::lama::_MatrixPtr matrixPtr( scai::lama::_Matrix::create( values[i] ) );
 
             if ( values[i].second != stype )
             {
@@ -93,4 +93,48 @@ public:
     }
 
     // Destructor will free all matrices due to use of shared pointers
+};
+
+/**
+ *  @brief Derived class for a vector of matrix pointers
+ *
+ *  The constructor of this class generates a vector/set of matrices of the
+ *  given value type. These matrices are all initialized as zero matrices.
+ */
+template<typename ValueType>
+class Matrices : public std::vector<typename scai::lama::MatrixPtr<ValueType> >
+{
+
+public:
+    
+    /** Constructor allocates a set of typed matrices, one for each supported format */
+    
+    Matrices( scai::hmemo::ContextPtr ctx = scai::hmemo::ContextPtr() )
+    {   
+        using namespace scai;
+        using namespace lama;
+
+        common::ScalarType stype = common::TypeTraits<ValueType>::stype;
+
+        std::vector<MatrixCreateKeyType> values;  //  all create values
+
+        _Matrix::getCreateValues( values );
+        
+        for ( size_t i = 0; i < values.size(); ++i )
+        {   
+            if ( values[i].second != stype )
+            {
+                continue;
+            }
+            
+            MatrixPtr<ValueType> matrixPtr( Matrix<ValueType>::getMatrix( values[i].first ) );
+
+            if ( ctx )
+            {
+                matrixPtr->setContextPtr( ctx );
+            }
+
+            this->push_back( matrixPtr );
+        }
+    }
 };

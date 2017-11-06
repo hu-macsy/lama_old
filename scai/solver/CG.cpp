@@ -53,8 +53,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 CG::CG( const std::string& id )
@@ -85,7 +85,7 @@ CG::CGRuntime::~CGRuntime()
 {
 }
 
-void CG::initialize( const Matrix& coefficients )
+void CG::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.CG.initialize" )
     IterativeSolver::initialize( coefficients );
@@ -109,12 +109,12 @@ void CG::iterate()
         this->getResidual();
     }
 
-    Vector& residual = *runtime.mResidual;
-    const Matrix& A = *runtime.mCoefficients;
-    Vector& x = *runtime.mSolution;
-    Vector& p = *runtime.mP;
-    Vector& q = *runtime.mQ;
-    Vector& z = *runtime.mZ;
+    _Vector& residual = *runtime.mResidual;
+    const _Matrix& A = *runtime.mCoefficients;
+    _Vector& x = *runtime.mSolution;
+    _Vector& p = *runtime.mP;
+    _Vector& q = *runtime.mQ;
+    _Vector& z = *runtime.mZ;
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
     //CG implementation start
@@ -131,7 +131,7 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = z.dotProduct( residual );
+    pScalar = z._dotProduct( residual );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -162,18 +162,18 @@ void CG::iterate()
 
         p = z + beta * p;
 
-        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p._l2Norm() )
     }
 
     {
         SCAI_REGION( "Solver.CG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q._l2Norm() )
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = q.dotProduct( p );
+    const Scalar pqProd = q._dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
 /*    if ( pqProd == Scalar( 0.0 ) )
@@ -189,13 +189,13 @@ void CG::iterate()
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x._l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
         SCAI_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual._l2Norm() )
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );

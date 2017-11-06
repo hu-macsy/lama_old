@@ -1,5 +1,5 @@
 /**
- * @file MatrixWithT.hpp
+ * @file _MatrixWithT.hpp
  *
  * @license
  * Copyright (c) 2009-2015
@@ -25,7 +25,7 @@
  * SOFTWARE.
  * @endlicense
  *
- * @brief Abstract Matrix class that encapsulates A and an explicit transposed A
+ * @brief Abstract _Matrix class that encapsulates A and an explicit transposed A
  * @author Thomas Brandes
  * @date 27.07.2017
  */
@@ -50,12 +50,12 @@ namespace lama
  *  multiplication A' * x.
  */
 
-class MatrixWithT : public AbstractMatrix 
+class _MatrixWithT : public AbstractMatrix 
 {
 
 public:
 
-    MatrixWithT ( const Matrix& A, const Matrix& AT ) :
+    _MatrixWithT ( const _Matrix& A, const _Matrix& AT ) :
 
         AbstractMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() ),
         mA( A ), 
@@ -64,7 +64,7 @@ public:
     {
     }
 
-    MatrixWithT ( const Matrix& A ) :
+    _MatrixWithT ( const _Matrix& A ) :
 
         AbstractMatrix( A.getRowDistributionPtr(), A.getColDistributionPtr() ),
         mATPtr( A.newMatrix() ),
@@ -105,7 +105,7 @@ public:
         Vector& v,
         const IndexType dim,
         const common::BinaryOp reduceOp,
-        const common::UnaryOp elemOp ) const
+        const common::unary::UnaryOp elemOp ) const
     {
         if ( dim == 1 )
         {
@@ -135,10 +135,10 @@ public:
 
 private:
 
-    MatrixPtr mATPtr;   // transposed matrix might also be allocated here
+    _MatrixPtr mATPtr;   // transposed matrix might also be allocated here
 
-    const Matrix& mA;
-    const Matrix& mAT;
+    const _Matrix& mA;
+    const _Matrix& mAT;
 };
 
 }

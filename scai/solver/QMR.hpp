@@ -42,8 +42,7 @@
 #include <scai/solver/IterativeSolver.hpp>
 
 // scai internal libraries
-#include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
 // logging
@@ -90,7 +89,7 @@ public:
 
     virtual ~QMR();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -105,22 +104,22 @@ public:
         QMRRuntime();
         virtual ~QMRRuntime();
 
-        lama::MatrixPtr mTransposeA;
-        lama::VectorPtr mInitialRes;
-        lama::VectorPtr mVecV;
-        lama::VectorPtr mVecW;
-        lama::VectorPtr mVecY;      /*preconditioning 1*/
-        lama::VectorPtr mVecZ;
+        lama::_MatrixPtr mTransposeA;
+        lama::_VectorPtr mInitialRes;
+        lama::_VectorPtr mVecV;
+        lama::_VectorPtr mVecW;
+        lama::_VectorPtr mVecY;      /*preconditioning 1*/
+        lama::_VectorPtr mVecZ;
 
-        lama::VectorPtr mVecWT;
-        lama::VectorPtr mVecVT;
-        lama::VectorPtr mVecYT;
-        lama::VectorPtr mVecZT;
-        lama::VectorPtr mVecP;
-        lama::VectorPtr mVecQ;
-        lama::VectorPtr mVecPT;
-        lama::VectorPtr mVecS;
-        lama::VectorPtr mVecD;
+        lama::_VectorPtr mVecWT;
+        lama::_VectorPtr mVecVT;
+        lama::_VectorPtr mVecYT;
+        lama::_VectorPtr mVecZT;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecQ;
+        lama::_VectorPtr mVecPT;
+        lama::_VectorPtr mVecS;
+        lama::_VectorPtr mVecD;
 
         lama::Scalar mGamma;
         lama::Scalar mTheta;
@@ -139,7 +138,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
      * @brief Returns the complete configuration of the derived class

@@ -73,13 +73,13 @@ public:
 
     /** Implementation of pure method Partitioning::partitionIt */
 
-    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, float weight ) const;
+    virtual dmemo::DistributionPtr partitionIt( const dmemo::CommunicatorPtr comm, const lama::_Matrix& matrix, float weight ) const;
 
     /** Implementation of pure method Partitioning::rectangularPartitioning */
 
     virtual void rectangularPartitioning( hmemo::HArray<PartitionId>& rowMapping, 
                                           hmemo::HArray<PartitionId>& colMapping, 
-                                          const lama::Matrix& matrix, 
+                                          const lama::_Matrix& matrix, 
                                           const hmemo::HArray<float>& processorWeights ) const;
 
     /* Partitioning of square matrix 
@@ -88,7 +88,7 @@ public:
      *  @param[in]  processorWeights specifies the weight for load on each processor, must be same on all procs
      *  @param[out] mapping defines the mapping of the rows to np processors, np = processorWeights.size()
     virtual squarePartitioning( HArray<PartitionId>& mapping, 
-                                const lama::Matrix& matrix, 
+                                const lama::_Matrix& matrix, 
                                 const HArray<float>& processorWeights );
 
     */
@@ -96,12 +96,12 @@ public:
     /*
     virtual rowPartitioning( HArray<PartitionId>& rowMapping, 
                              const HArray<PartitionId>& colMapping,
-                             const lama::Matrix& matrix, 
+                             const lama::_Matrix& matrix, 
                              const HArray<float>& processorWeights );
 
     virtual colPartitioning( HArray<PartitionId>& colMapping, 
                              const HArray<PartitionId>& rowMapping,
-                             const lama::Matrix& matrix, 
+                             const lama::_Matrix& matrix, 
                              const HArray<float>& processorWeights );
     */
 
@@ -119,7 +119,7 @@ public:
 
 private:
 
-    dmemo::DistributionPtr computeIt( const dmemo::CommunicatorPtr comm, const lama::Matrix& matrix, std::vector<float>& weights ) const;
+    dmemo::DistributionPtr computeIt( const dmemo::CommunicatorPtr comm, const lama::_Matrix& matrix, std::vector<float>& weights ) const;
 
     template<typename weightType>
     void callPartitioning(
@@ -128,7 +128,7 @@ private:
         IndexType& parts,
         std::vector<weightType>& tpwgts,
         const dmemo::CommunicatorPtr comm,
-        const lama::Matrix& matrix ) const;
+        const lama::_Matrix& matrix ) const;
 
     template<typename weightType>
     void checkAndMapWeights(

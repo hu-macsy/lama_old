@@ -40,6 +40,7 @@
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
+#include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
 #include <scai/solver/Solver.hpp>
 #include <scai/solver/test/TestMacros.hpp>

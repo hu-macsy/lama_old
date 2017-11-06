@@ -139,10 +139,10 @@ BOOST_AUTO_TEST_CASE( testSetAndGetOmega )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-template<typename MatrixType>
+template<typename _MatrixType>
 void testSolveMethod( std::string solverId, ContextPtr context )
 {
-    typedef typename MatrixType::MatrixValueType ValueType;
+    typedef typename _MatrixType::MatrixValueType ValueType;
     typedef typename common::TypeTraits<ValueType>::AbsType AbsType;
 
     CommunicatorPtr comm = Communicator::getCommunicatorPtr();
@@ -152,7 +152,7 @@ void testSolveMethod( std::string solverId, ContextPtr context )
     Jacobi jacobiSolver( "JacobiTest"/*, slogger*/ );
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
     CSRSparseMatrix<ValueType> matrix( system.coefficients );
-    MatrixType coefficients( matrix );
+    _MatrixType coefficients( matrix );
     coefficients.setContextPtr( context );
     DistributionPtr dist( new BlockDistribution( coefficients.getNumRows(), comm ) );
     coefficients.redistribute( dist, dist );

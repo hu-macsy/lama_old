@@ -87,7 +87,7 @@ public:
      *
      * @param[in] coefficients  The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Solves the equation system with the given rhs and stores the

@@ -285,7 +285,7 @@ int main( int argc, char* argv[] )
         // w already stores (D-1 * W)
         labelsMatrixNew = affinityMatrix * labelsMatrix;
         int nnzOld = labelsMatrix.getNumValues();
-        ValueType maxDiff = labelsMatrix.maxDiffNorm( labelsMatrixNew ).getValue<ValueType>();
+        ValueType maxDiff = labelsMatrix.maxDiffNorm( labelsMatrixNew );
         // use more efficient swap instead of: labelsMatrix = labelsMatrixNew;
         // Note: works only for same matrix type
         labelsMatrix.swap( labelsMatrixNew );

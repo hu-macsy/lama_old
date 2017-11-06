@@ -72,12 +72,12 @@ Scalar L1Norm::apply( const Scalar& scalar ) const
     return l1Norm( scalar );
 }
 
-Scalar L1Norm::apply( const Vector& vector ) const
+Scalar L1Norm::apply( const _Vector& vector ) const
 {
     return l1Norm( vector );
 }
 
-Scalar L1Norm::apply( const Matrix& matrix ) const
+Scalar L1Norm::apply( const _Matrix& matrix ) const
 {
     return l1Norm( matrix );
 }
@@ -87,14 +87,14 @@ Scalar l1Norm( const Scalar& scalar )
     return abs( scalar );
 }
 
-Scalar l1Norm( const Vector& vector )
+Scalar l1Norm( const _Vector& vector )
 {
-    return vector.l1Norm();
+    return vector._l1Norm();
 }
 
-Scalar l1Norm( const Matrix& matrix )
+Scalar l1Norm( const _Matrix& matrix )
 {
-    return matrix.l1Norm();
+    return matrix._l1Norm();
 }
 
 } /* end namespace lama */

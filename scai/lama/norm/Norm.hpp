@@ -38,8 +38,8 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/common/Factory.hpp>
@@ -95,17 +95,17 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    Scalar operator()( const Vector& vector ) const;
+    Scalar operator()( const _Vector& vector ) const;
 
     /**
-     * @brief Calculates the norm of the passed Matrix.
+     * @brief Calculates the norm of the passed _Matrix.
      *
      * To call this is equivalent to call apply with the same argument.
      *
-     * @param[in] matrix    the Matrix to caluclate the norm for.
+     * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    Scalar operator()( const Matrix& matrix ) const;
+    Scalar operator()( const _Matrix& matrix ) const;
 
     /**
      * @brief Calculates the norm of the passed Scalar.
@@ -121,15 +121,15 @@ public:
      * @param[in] vector    the Vector to caluclate the norm for.
      * @return              the norm of vector.
      */
-    virtual Scalar apply( const Vector& vector ) const = 0;
+    virtual Scalar apply( const _Vector& vector ) const = 0;
 
     /**
-     * @brief Calculates the norm of the passed Matrix.
+     * @brief Calculates the norm of the passed _Matrix.
      *
-     * @param[in] matrix    the Matrix to caluclate the norm for.
+     * @param[in] matrix    the _Matrix to caluclate the norm for.
      * @return              the norm of matrix.
      */
-    virtual Scalar apply( const Matrix& matrix ) const = 0;
+    virtual Scalar apply( const _Matrix& matrix ) const = 0;
 };
 
 } /* end namespace lama */

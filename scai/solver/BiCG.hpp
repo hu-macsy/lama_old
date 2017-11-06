@@ -81,7 +81,7 @@ public:
 
     virtual ~BiCG();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -96,15 +96,15 @@ public:
         BiCGRuntime();
         virtual ~BiCGRuntime();
 
-        std::shared_ptr<lama::Matrix> mTransposeA;
-        std::shared_ptr<lama::Vector> mP2;
-        std::shared_ptr<lama::Vector> mQ2;
-        std::shared_ptr<lama::Vector> mZ2;
+        lama::_MatrixPtr mTransposeA;
+        lama::_VectorPtr mP2;
+        lama::_VectorPtr mQ2;
+        lama::_VectorPtr mZ2;
         lama::Scalar mPScalar2;
-        mutable std::shared_ptr<lama::Vector> mResidual2;
+        mutable lama::_VectorPtr mResidual2;
     };
 
-    const lama::Vector& getResidual2() const;
+    const lama::_Vector& getResidual2() const;
 
     /**
      * @brief Returns the complete configuration of the derived class
@@ -132,7 +132,7 @@ protected:
 
     virtual void iterate();
 
-    void print( lama::Vector& vec, size_t n );
+    void print( lama::_Vector& vec, size_t n );
 
     /**
      *  @brief own implementation of Printable::writeAt

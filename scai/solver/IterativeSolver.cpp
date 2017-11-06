@@ -49,8 +49,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( IterativeSolver::logger, "Solver.IterativeSolver" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 IterativeSolver::IterativeSolver( const std::string& id )
@@ -99,7 +99,7 @@ IterativeSolver::IterativeSolverRuntime::~IterativeSolverRuntime()
 {
 }
 
-void IterativeSolver::initialize( const Matrix& coefficients )
+void IterativeSolver::initialize( const _Matrix& coefficients )
 {
     Solver::initialize( coefficients );
 
@@ -127,7 +127,7 @@ void IterativeSolver::solveImpl()
     {
         COMMON_THROWEXCEPTION(
             "Solver " + this->getId()
-            + " has not been initialized. Call solveInit( Vector& solution, const Vector& rhs ) before solving "
+            + " has not been initialized. Call solveInit( _Vector& solution, const _Vector& rhs ) before solving "
             + this->getId() )
     }
 

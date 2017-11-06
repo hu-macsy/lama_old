@@ -50,8 +50,8 @@
 namespace scai
 {
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 namespace solver
@@ -78,7 +78,7 @@ TFQMR::~TFQMR() {}
 
 TFQMR::TFQMRRuntime::~TFQMRRuntime() {}
 
-void TFQMR::initialize( const Matrix& coefficients )
+void TFQMR::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -100,7 +100,7 @@ void TFQMR::initialize( const Matrix& coefficients )
     runtime.mVecVT.reset( coefficients.newVector( dist ) );
 }
 
-void TFQMR::solveInit( Vector& solution, const Vector& rhs )
+void TFQMR::solveInit( _Vector& solution, const _Vector& rhs )
 {
     TFQMRRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -111,7 +111,7 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
     SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
     // Initialize
     this->getResidual();
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
     *runtime.mInitialR = *runtime.mResidual;
     *runtime.mVecVEven = *runtime.mResidual;
 
@@ -139,13 +139,13 @@ void TFQMR::solveInit( Vector& solution, const Vector& rhs )
 void TFQMR::iterationEven()
 {
     TFQMRRuntime& runtime = getRuntime();
-    const Vector& vecZ = *runtime.mVecZ;
-    const Vector& initialR = *runtime.mInitialR;
-    const Vector& vecVEven = *runtime.mVecVEven;
-    Vector& vecVOdd = *runtime.mVecVOdd;
+    const _Vector& vecZ = *runtime.mVecZ;
+    const _Vector& initialR = *runtime.mInitialR;
+    const _Vector& vecVEven = *runtime.mVecVEven;
+    _Vector& vecVOdd = *runtime.mVecVOdd;
     const Scalar& rho = runtime.mRhoOld;
     const Scalar& eps = runtime.mEps;
-    const Scalar dotProduct = initialR.dotProduct( vecZ );
+    const Scalar dotProduct = initialR._dotProduct( vecZ );
     Scalar& alpha = runtime.mAlpha;
 
     if ( abs( dotProduct ) < eps ) // scalar is small
@@ -163,18 +163,18 @@ void TFQMR::iterationEven()
 void TFQMR::iterationOdd()
 {
     TFQMRRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Vector& initialR = *runtime.mInitialR;
-    const Vector& vecW = *runtime.mVecW;
-    const Vector& vecVOdd = *runtime.mVecVOdd;
-    Vector& vecVEven = *runtime.mVecVEven;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Vector& initialR = *runtime.mInitialR;
+    const _Vector& vecW = *runtime.mVecW;
+    const _Vector& vecVOdd = *runtime.mVecVOdd;
+    _Vector& vecVEven = *runtime.mVecVEven;
     Scalar& rhoOld = runtime.mRhoOld;
     Scalar& rhoNew = runtime.mRhoNew;
     Scalar& beta = runtime.mBeta;
-    Vector& vecZ = *runtime.mVecZ;
-    Vector& vecVT = *runtime.mVecVT;
+    _Vector& vecZ = *runtime.mVecZ;
+    _Vector& vecVT = *runtime.mVecVT;
     const Scalar& eps = runtime.mEps;
-    rhoNew  = initialR.dotProduct( vecW );
+    rhoNew  = initialR._dotProduct( vecW );
 
     if ( abs( rhoOld ) < eps )          // scalar is small
     {
@@ -209,17 +209,17 @@ void TFQMR::iterate()
     TFQMRRuntime& runtime = getRuntime();
     const IndexType& iteration = runtime.mIterations;
     lama::L2Norm norm;
-    const Matrix& A = *runtime.mCoefficients;
-    Vector& vecW = *runtime.mVecW;
-    Vector& vecD = *runtime.mVecD;
-    Vector& solution = *runtime.mSolution;
+    const _Matrix& A = *runtime.mCoefficients;
+    _Vector& vecW = *runtime.mVecW;
+    _Vector& vecD = *runtime.mVecD;
+    _Vector& solution = *runtime.mSolution;
     const Scalar& alpha = runtime.mAlpha;
     Scalar& c = runtime.mC;
     Scalar& eta = runtime.mEta;
     Scalar& theta = runtime.mTheta;
     Scalar& tau = runtime.mTau;
     Scalar& eps = runtime.mEps;
-    const Vector* vecVp;
+    const _Vector* vecVp;
 
     // if iteration = even -> need mVecVEven, else need mVecVOdd
     if ( ( iteration % 2 ) == 0 )
@@ -231,7 +231,7 @@ void TFQMR::iterate()
         vecVp = &( *runtime.mVecVOdd );
     }
 
-    const Vector& vecV = *vecVp;
+    const _Vector& vecV = *vecVp;
 
     if ( ( iteration % 2 ) == 0 )
     {

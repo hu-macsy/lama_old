@@ -68,7 +68,7 @@ void BlockPartitioning::writeAt( std::ostream& stream ) const
     stream << "BlockPartitioning";
 }
 
-DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, const Matrix& matrix, float weight ) const
+DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, const _Matrix& matrix, float weight ) const
 {
     IndexType globalSize = matrix.getRowDistribution().getGlobalSize();
 
@@ -83,7 +83,7 @@ DistributionPtr BlockPartitioning::partitionIt( const CommunicatorPtr comm, cons
 void BlockPartitioning::rectangularPartitioning( 
     HArray<PartitionId>& rowMapping,
     HArray<PartitionId>& colMapping,
-    const Matrix& matrix,
+    const _Matrix& matrix,
     const HArray<float>& processorWeights ) const
 {
     IndexType npart = processorWeights.size();
@@ -122,7 +122,7 @@ void BlockPartitioning::rectangularPartitioning(
 
 /* ---------------------------------------------------------------------------------*/
 
-void BlockPartitioning::rectangularRedistribute( Matrix& matrix, const float weight ) const
+void BlockPartitioning::rectangularRedistribute( _Matrix& matrix, const float weight ) const
 {
     CommunicatorPtr comm = matrix.getRowDistribution().getCommunicatorPtr();
 

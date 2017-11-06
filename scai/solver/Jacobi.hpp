@@ -63,9 +63,9 @@ public:
 
     virtual ~Jacobi();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -76,8 +76,7 @@ public:
         JacobiRuntime();
         virtual ~JacobiRuntime();
 
-        //TODO: HArray?
-        std::shared_ptr<lama::Vector> mOldSolution;
+        lama::_VectorPtr mOldSolution;
         SolutionProxy mProxyOldSolution;
         std::shared_ptr<hmemo::_HArray> mDiagonal;
     };

@@ -160,14 +160,14 @@ int main( int argc, const char* argv[] )
 
     common::ScalarType stype = getType();
 
-    std::unique_ptr<Matrix> matrixPtr( Matrix::getMatrix( Matrix::CSR, stype ) );
+    _MatrixPtr matrixPtr( _Matrix::getMatrix( Format::CSR, stype ) );
 
-    Matrix& m = *matrixPtr;
+    _Matrix& m = *matrixPtr;
 
     m.allocate( nrows, ncols );
 
     {
-        MatrixAssemblyAccess<RealType> access( m, common::BinaryOp::COPY );
+        MatrixAssemblyAccess<double> access( m, common::BinaryOp::COPY );
 
         for ( IndexType i = 0; i < nrows; ++i )
         {
@@ -177,18 +177,18 @@ int main( int argc, const char* argv[] )
 
                 if ( takeIt )
                 {
-                    RealType val = common::Math::random<RealType>( 1 );
+                    double val = common::Math::random<double>( 1 );
                     access.push( i, j, val );
                 }
             }
         }
     }
 
-    std::unique_ptr<Vector> xPtr( Vector::getVector( Vector::DENSE, stype ) );
-    std::unique_ptr<Vector> bPtr( Vector::getVector( Vector::DENSE, stype ) );
+    std::unique_ptr<_Vector> xPtr( _Vector::getVector( VectorKind::DENSE, stype ) );
+    std::unique_ptr<_Vector> bPtr( _Vector::getVector( VectorKind::DENSE, stype ) );
 
-    Vector& x = *xPtr;
-    Vector& b = *bPtr;
+    _Vector& x = *xPtr;
+    _Vector& b = *bPtr;
 
     x.setRandom( m.getColDistributionPtr(), 1 );
     b = m * x;

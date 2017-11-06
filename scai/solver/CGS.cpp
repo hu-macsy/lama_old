@@ -55,8 +55,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( CGS::logger, "Solver.CGS" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 CGS::CGS( const std::string& id )
@@ -78,7 +78,7 @@ CGS::~CGS() {}
 
 CGS::CGSRuntime::~CGSRuntime() {}
 
-void CGS::initialize( const Matrix& coefficients )
+void CGS::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -97,7 +97,7 @@ void CGS::initialize( const Matrix& coefficients )
 }
 
 
-void CGS::solveInit( Vector& solution, const Vector& rhs )
+void CGS::solveInit( _Vector& solution, const _Vector& rhs )
 {
     CGSRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -124,7 +124,7 @@ void CGS::solveInit( Vector& solution, const Vector& rhs )
     }
 
     //initial <res,res> inner product;
-    runtime.mInnerProdRes = ( *runtime.mRes0 ).dotProduct( *runtime.mRes0 );
+    runtime.mInnerProdRes = ( *runtime.mRes0 )._dotProduct( *runtime.mRes0 );
     SCAI_LOG_INFO( logger, "solveInit, mInnerProdRes = " << runtime.mInnerProdRes )
     runtime.mSolveInit = true;
 }
@@ -132,17 +132,17 @@ void CGS::solveInit( Vector& solution, const Vector& rhs )
 void CGS::iterate()
 {
     CGSRuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecQ = *runtime.mVecQ;
-    Vector& vecU = *runtime.mVecU;
-    Vector& vecT = *runtime.mVecT;
-    Vector& vecPT = *runtime.mVecPT;
-    Vector& vecUT = *runtime.mVecUT;
-    Vector& vecTemp = *runtime.mVecTemp;
-    Vector& solution = *runtime.mSolution;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Vector& res0 = *runtime.mRes0;
+    _Vector& res = *runtime.mResidual;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& vecQ = *runtime.mVecQ;
+    _Vector& vecU = *runtime.mVecU;
+    _Vector& vecT = *runtime.mVecT;
+    _Vector& vecPT = *runtime.mVecPT;
+    _Vector& vecUT = *runtime.mVecUT;
+    _Vector& vecTemp = *runtime.mVecTemp;
+    _Vector& solution = *runtime.mSolution;
     Scalar& innerProdRes = runtime.mInnerProdRes;
     Scalar alpha;
     Scalar beta;
@@ -150,7 +150,7 @@ void CGS::iterate()
     Scalar& normRes = runtime.mNormRes;
     lama::L2Norm norm;
     vecT = A * vecPT;
-    Scalar innerProduct = res0.dotProduct( vecT );
+    Scalar innerProduct = res0._dotProduct( vecT );
 
     if ( normRes < eps || innerProduct < eps ) //innerProduct is small
     {
@@ -182,7 +182,7 @@ void CGS::iterate()
     solution = solution + alpha * vecUT;
     Scalar innerProdResOld = innerProdRes;
     res = res - alpha * A * vecUT;
-    innerProdRes = res0.dotProduct( res );
+    innerProdRes = res0._dotProduct( res );
     normRes = norm.apply( res );
 
     if ( normRes < eps || innerProdResOld < eps )            // innerProdResOld is small

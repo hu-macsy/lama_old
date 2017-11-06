@@ -106,7 +106,7 @@ public:
      * @brief This abstract method is used by derived solvers to initialize a
      *        omega solver.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Sets the omega parameter of this.

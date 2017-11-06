@@ -79,7 +79,7 @@ public:
 
     virtual ~Kaczmarz();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -95,7 +95,7 @@ public:
 
         virtual ~KaczmarzRuntime();
 
-        lama::VectorPtr mRow;
+        lama::_VectorPtr mRow;
     };
 
     /**

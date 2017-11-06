@@ -42,9 +42,9 @@
 #include <scai/common/Printable.hpp>
 
 // local library
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <scai/solver/SolutionProxy.hpp>
 #include <scai/solver/logger/SolverLogger.hpp>
@@ -118,7 +118,7 @@ public:
      *
      * @param coefficients The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
      * @brief Solves the equation system based on the given rhs.
@@ -133,7 +133,7 @@ public:
      * @param solution  The solution from A*u=f. Mostly used as starting
      *                  solution for an IterativeSolver.
      */
-    virtual void solve( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solve( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
      * @brief Initializes the solver with rhs and solution.
@@ -141,7 +141,7 @@ public:
      * @param[in]  rhs      The right hand side of the system of equations
      * @param[out] solution The allocated memory and starting solution for the system
      */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -179,14 +179,14 @@ public:
      *
      * @return The current residual
      */
-    const lama::Vector& getResidual() const;
+    const lama::_Vector& getResidual() const;
 
     /**
      * @brief Gets the matrix A from A*u=f.
      *
      * @return The coefficient matrix A.
      */
-    const lama::Matrix& getCoefficients() const;
+    const lama::_Matrix& getCoefficients() const;
 
     /**
      * @brief Redefines mLogger
@@ -220,12 +220,12 @@ public:
         /**
          * @brief The coefficient matrix A.
          */
-        const lama::Matrix* mCoefficients;
+        const lama::_Matrix* mCoefficients;
 
         /**
          * @brief The right-hand-side f.
          */
-        const lama::Vector* mRhs;
+        const lama::_Vector* mRhs;
 
         /**
          * @brief The solution u (using the SolutionProxy).
@@ -235,7 +235,7 @@ public:
         /**
          * @brief The residual.
          */
-        mutable std::shared_ptr<lama::Vector> mResidual;
+        mutable lama::_VectorPtr mResidual;
 
         /**
          * @brief Flag for initialization status of solver.

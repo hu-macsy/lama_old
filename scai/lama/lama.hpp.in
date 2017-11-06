@@ -40,8 +40,8 @@ extern "C" inline const char* lama_get_version()
 }
 
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/SparseVector.hpp>
 #include <scai/lama/Scalar.hpp>
-#include <scai/lama/Vector.hpp>
 
 // Expressions
 #include <scai/lama/expression/all.hpp>

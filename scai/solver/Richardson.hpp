@@ -59,7 +59,7 @@ public:
 
     Richardson( const std::string& id, LoggerPtr logger );
 
-    Richardson( const std::string& id, const lama::Scalar omega ); //2nd param Matrix.Scalar
+    Richardson( const std::string& id, const lama::Scalar omega ); //2nd param _Matrix.Scalar
 
     Richardson( const std::string& id, const lama::Scalar omega, LoggerPtr logger );
 
@@ -84,9 +84,9 @@ public:
      *if there is no initialized omega.
     */
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -103,8 +103,9 @@ public:
         RichardsonRuntime();
         virtual ~RichardsonRuntime();
 
-        std::unique_ptr<lama::Vector> mOldSolution;
-        std::unique_ptr<lama::Vector> mX;
+        lama::_VectorPtr mOldSolution;
+        lama::_VectorPtr mX;
+
         SolutionProxy mProxyOldSolution;
     };
     /**
@@ -126,7 +127,7 @@ protected:
     using OmegaSolver::mOmega;
 
     /**
-     * @brief Performs one Richardson iteration based on Matrix/Vector operations
+     * @brief Performs one Richardson iteration based on _Matrix/Vector operations
      *
      *
      */

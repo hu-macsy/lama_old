@@ -67,7 +67,7 @@ public:
 
     virtual ~SimpleAMG();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     virtual void iterate();
 
@@ -77,12 +77,12 @@ public:
 
     unsigned int getNumLevels();
 
-    const lama::Matrix& getGalerkin( unsigned int level );
-    const lama::Matrix& getRestriction( unsigned int level );
-    const lama::Matrix& getInterpolation( unsigned int level );
+    const lama::_Matrix& getGalerkin( unsigned int level );
+    const lama::_Matrix& getRestriction( unsigned int level );
+    const lama::_Matrix& getInterpolation( unsigned int level );
 
-    lama::Vector& getSolutionVector( unsigned int level );
-    lama::Vector& getRhsVector( unsigned int level );
+    lama::_Vector& getSolutionVector( unsigned int level );
+    lama::_Vector& getRhsVector( unsigned int level );
 
     Solver& getSmoother( unsigned int level );
     Solver& getCoarseLevelSolver();

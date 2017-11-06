@@ -89,7 +89,6 @@ class COMMON_DLL_IMPORTEXPORT CSRStorage:
 public:
 
     typedef ValueType StorageValueType;
-    typedef typename common::TypeTraits<ValueType>::AbsType StorageAbsType;
 
     /** get typename of the matrix storage format. */
 
@@ -176,7 +175,7 @@ public:
 
     /** Getter routine for the enum value that stands for this format. */
 
-    virtual Format::MatrixStorageFormat getFormat() const;
+    virtual Format getFormat() const;
 
     /** Implementation of pure method.  */
 
@@ -598,23 +597,23 @@ public:
 
     /** Implementation for MatrixStorage::l1Norm */
 
-    virtual ValueType l1Norm() const;
+    virtual NormType<ValueType> l1Norm() const;
 
     /** Implementation for MatrixStorage::l2Norm */
 
-    virtual ValueType l2Norm() const;
+    virtual NormType<ValueType> l2Norm() const;
 
     /** Implementation for MatrixStorage::maxNorm */
 
-    virtual StorageAbsType maxNorm() const;
+    virtual NormType<ValueType> maxNorm() const;
 
     /** Implementation for MatrixStorage::maxDiffNorm */
 
-    virtual StorageAbsType maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const MatrixStorage<ValueType>& other ) const;
 
     /** Implementation of maxDiffNorm for CSR matrices */
 
-    virtual StorageAbsType maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
+    virtual NormType<ValueType> maxDiffNormImpl( const CSRStorage<ValueType>& other ) const;
 
     /** Implemenation of pure method of class MatrixStorage. */
 
@@ -674,7 +673,7 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    /** Matrix times Matrix for CSR only */
+    /** _Matrix times _Matrix for CSR only */
 
     void    matrixAddMatrixCSR( const ValueType alpha,
                                 const CSRStorage<ValueType>& a,
@@ -682,7 +681,7 @@ private:
                                 const CSRStorage<ValueType>& b,
                                 const hmemo::ContextPtr loc );
 
-    /** Matrix times Matrix for CSR only */
+    /** _Matrix times _Matrix for CSR only */
 
     void matrixTimesMatrixCSR( const ValueType alpha,
                                const CSRStorage<ValueType>& a,

@@ -53,8 +53,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( Kaczmarz::logger, "Solver.IterativeSolver.Kaczmarz" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 Kaczmarz::Kaczmarz( const std::string& id )
@@ -86,7 +86,7 @@ Kaczmarz::KaczmarzRuntime::~KaczmarzRuntime()
 {
 }
 
-void Kaczmarz::initialize( const Matrix& coefficients )
+void Kaczmarz::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.Kaczmarz.initialize" )
     IterativeSolver::initialize( coefficients );
@@ -107,13 +107,13 @@ void Kaczmarz::iterate()
         this->getResidual();
     }
 
-    const Matrix& A = *runtime.mCoefficients;
+    const _Matrix& A = *runtime.mCoefficients;
 
-    const Vector& b = *runtime.mRhs;
+    const _Vector& b = *runtime.mRhs;
 
-    Vector& x = *runtime.mSolution;
+    _Vector& x = *runtime.mSolution;
 
-    Vector& z = *runtime.mRow;
+    _Vector& z = *runtime.mRow;
 
     SCAI_LOG_INFO( logger, "Iteration " << iter )
 
@@ -129,7 +129,7 @@ void Kaczmarz::iterate()
 
         Scalar bi = b( iRow );
 
-        Scalar p = ( bi - z.dotProduct( x ) ) / z.dotProduct( z );
+        Scalar p = ( bi - z._dotProduct( x ) ) / z._dotProduct( z );
 
         x = x + p * z;
     }

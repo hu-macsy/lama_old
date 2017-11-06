@@ -36,7 +36,7 @@
 
 #include <scai/lama.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <vector>
 
@@ -59,7 +59,7 @@ public:
 
     /** Construct an access */
 
-    MatrixAssemblyAccess( Matrix& matrix, const common::BinaryOp op = common::BinaryOp::COPY );
+    MatrixAssemblyAccess( _Matrix& matrix, const common::BinaryOp op = common::BinaryOp::COPY );
 
     /** Destructor of the access, also inserts the assembled entries into the matrix. */
 
@@ -146,7 +146,7 @@ private:
 
     void addCOO( CSRStorage<ValueType>& localStorage );
 
-    Matrix& mMatrix;
+    _Matrix& mMatrix;
 
     // for pushing the assembled data we use the C++ vector class
 

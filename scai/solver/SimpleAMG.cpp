@@ -62,8 +62,8 @@ namespace solver
 SCAI_LOG_DEF_LOGGER( SimpleAMG::logger, "Solver.IterativeSolver.SimpleAMG" )
 SCAI_LOG_DEF_LOGGER( SimpleAMG::SimpleAMGRuntime::logger, "Solver.IterativeSolver.SimpleAMG.SimpleAMGRuntime" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 SimpleAMG::SimpleAMG( const std::string& id )
@@ -114,7 +114,7 @@ void SimpleAMG::loadSetupLibs()
     }
 }
 
-void SimpleAMG::initialize( const Matrix& coefficients )
+void SimpleAMG::initialize( const _Matrix& coefficients )
 {
     SCAI_REGION( "Solver.SimpleAMG.initialize" )
     SCAI_LOG_DEBUG( logger, "initialize AMG, coefficients matrix = " << coefficients )
@@ -214,27 +214,27 @@ void SimpleAMG::setMinVarsCoarseLevel( unsigned int vars )
     mMinVarsCoarseLevel = vars;
 }
 
-const Matrix& SimpleAMG::getGalerkin( unsigned int level )
+const _Matrix& SimpleAMG::getGalerkin( unsigned int level )
 {
     return getRuntime().mSetup->getGalerkin( level );
 }
 
-const Matrix& SimpleAMG::getRestriction( unsigned int level )
+const _Matrix& SimpleAMG::getRestriction( unsigned int level )
 {
     return getRuntime().mSetup->getRestriction( level );
 }
 
-const Matrix& SimpleAMG::getInterpolation( unsigned int level )
+const _Matrix& SimpleAMG::getInterpolation( unsigned int level )
 {
     return getRuntime().mSetup->getInterpolation( level );
 }
 
-Vector& SimpleAMG::getSolutionVector( unsigned int level )
+_Vector& SimpleAMG::getSolutionVector( unsigned int level )
 {
     return getRuntime().mSetup->getSolutionVector( level );
 }
 
-Vector& SimpleAMG::getRhsVector( unsigned int level )
+_Vector& SimpleAMG::getRhsVector( unsigned int level )
 {
     return getRuntime().mSetup->getRhsVector( level );
 }
@@ -288,8 +288,8 @@ void SimpleAMG::cycle()
     SCAI_REGION_N( "Solver.SimpleAMG.cycle", runtime.mCurrentLevel )
     // dereferences to current level solution + rhs
     std::shared_ptr<AMGSetup>& amgSetup = runtime.mSetup;
-    const Vector* curRhsPtr = runtime.mRhs;
-    Vector* curSolutionPtr = 0;
+    const _Vector* curRhsPtr = runtime.mRhs;
+    _Vector* curSolutionPtr = 0;
 
     if ( runtime.mCurrentLevel == 0 )
     {
@@ -301,8 +301,8 @@ void SimpleAMG::cycle()
         curRhsPtr = &( amgSetup->getRhsVector( runtime.mCurrentLevel ) );
     }
 
-    Vector& curSolution = ( *curSolutionPtr );
-    const Vector& curRhs = ( *curRhsPtr );
+    _Vector& curSolution = ( *curSolutionPtr );
+    const _Vector& curRhs = ( *curRhsPtr );
 
     //no more Smoothers we are on the coareste level
     if ( runtime.mCurrentLevel >= amgSetup->getNumLevels() - 1 )
@@ -311,12 +311,12 @@ void SimpleAMG::cycle()
     }
     else
     {
-        const Matrix& curGalerkin = amgSetup->getGalerkin( runtime.mCurrentLevel );
-        const Matrix& curRestriction = amgSetup->getRestriction( runtime.mCurrentLevel );
-        const Matrix& curInterpolation = amgSetup->getInterpolation( runtime.mCurrentLevel );
-        Vector& curTmpRhs = amgSetup->getTmpResVector( runtime.mCurrentLevel );
-        Vector& curCoarseSolution = amgSetup->getSolutionVector( runtime.mCurrentLevel + 1 );
-        Vector& curCoarseRhs = amgSetup->getRhsVector( runtime.mCurrentLevel + 1 );
+        const _Matrix& curGalerkin = amgSetup->getGalerkin( runtime.mCurrentLevel );
+        const _Matrix& curRestriction = amgSetup->getRestriction( runtime.mCurrentLevel );
+        const _Matrix& curInterpolation = amgSetup->getInterpolation( runtime.mCurrentLevel );
+        _Vector& curTmpRhs = amgSetup->getTmpResVector( runtime.mCurrentLevel );
+        _Vector& curCoarseSolution = amgSetup->getSolutionVector( runtime.mCurrentLevel + 1 );
+        _Vector& curCoarseRhs = amgSetup->getRhsVector( runtime.mCurrentLevel + 1 );
         Solver& curSmoother = amgSetup->getSmoother( runtime.mCurrentLevel );
         // PreSmoothing
         SCAI_LOG_DEBUG( logger, "Pre smoothing on level " << runtime.mCurrentLevel )
@@ -404,7 +404,7 @@ void SimpleAMG::logSetupInfo()
         if ( i == 0 )
         {
             std::stringstream output1;
-            output1 << "Operator Matrix Hierarchy:\n";
+            output1 << "Operator _Matrix Hierarchy:\n";
             mLogger->logMessage( LogLevel::advancedInformation, output1.str() );
             std::stringstream output2;
             output2 << "Lvl    #Rows    #Cols  #Entries Average\n";
@@ -428,7 +428,7 @@ void SimpleAMG::logSetupInfo()
         if ( i == 0 )
         {
             std::stringstream output1;
-            output1 << "Interpolation Matrix Hierarchy:\n";
+            output1 << "Interpolation _Matrix Hierarchy:\n";
             mLogger->logMessage( LogLevel::advancedInformation, output1.str() );
             std::stringstream output2;
             output2 << "Lvl    #Rows    #Cols  #Entries Average\n";

@@ -68,7 +68,7 @@ public:
      * TODO[doxy] param in or out?
      *
      * @param      norm The norm which shall be used to check the criterion.
-     *             Has to be compatible with the Matrix/Vector types of
+     *             Has to be compatible with the _Matrix/Vector types of
      *             the solver.
      */
     ResidualStagnation( lama::NormPtr norm );
@@ -78,7 +78,7 @@ public:
      * TODO[doxy] params in or out?
      *
      * @param      norm The norm which shall be used to check the criterion.
-     *             Has to be compatible with the Matrix/Vector types of
+     *             Has to be compatible with the _Matrix/Vector types of
      *             the solver.
      * @param      lookback The amount of residual-norm-calculation results used
      *             for the criterion check.

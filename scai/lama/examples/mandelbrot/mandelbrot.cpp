@@ -41,10 +41,9 @@
 #include <GL/glut.h>
 #endif
 
-#include <scai/lama.hpp>
-
-#include <scai/lama/matrix/Matrix.hpp>
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/expression/VectorExpressions.hpp>
 
 #include <scai/hmemo/WriteAccess.hpp>
 #include <scai/hmemo/ReadAccess.hpp>

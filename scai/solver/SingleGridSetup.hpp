@@ -59,7 +59,7 @@ public:
     SingleGridSetup();
     virtual ~SingleGridSetup();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     virtual Solver& getCoarseLevelSolver();
 
@@ -67,17 +67,17 @@ public:
 
     virtual Solver& getSmoother( const unsigned int level );
 
-    virtual const lama::Matrix& getGalerkin( const unsigned int level );
+    virtual const lama::_Matrix& getGalerkin( const unsigned int level );
 
-    virtual const lama::Matrix& getRestriction( const unsigned int level );
+    virtual const lama::_Matrix& getRestriction( const unsigned int level );
 
-    virtual const lama::Matrix& getInterpolation( const unsigned int level );
+    virtual const lama::_Matrix& getInterpolation( const unsigned int level );
 
-    virtual lama::Vector& getSolutionVector( const unsigned int level );
+    virtual lama::_Vector& getSolutionVector( const unsigned int level );
 
-    virtual lama::Vector& getRhsVector( const unsigned int level );
+    virtual lama::_Vector& getRhsVector( const unsigned int level );
 
-    virtual lama::Vector& getTmpResVector( const unsigned int level );
+    virtual lama::_Vector& getTmpResVector( const unsigned int level );
 
     virtual std::string getCouplingPredicateInfo() const;
 
@@ -123,11 +123,12 @@ private:
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
     SolverPtr    mSolver;
-    std::unique_ptr<lama::Matrix> mIdentity;
 
-    std::unique_ptr<lama::Vector> mSolutionVector;
-    std::unique_ptr<lama::Vector> mRhsVector;
-    std::unique_ptr<lama::Vector> mTmpResVector;
+    std::unique_ptr<lama::_Matrix> mIdentity;
+
+    std::unique_ptr<lama::_Vector> mSolutionVector;
+    std::unique_ptr<lama::_Vector> mRhsVector;
+    std::unique_ptr<lama::_Vector> mTmpResVector;
 
 };
 

@@ -53,7 +53,7 @@ public:
 
     MyJacobi( const std::string& id, scai::solver::LoggerPtr logger );
 
-    MyJacobi( const std::string& id, const scai::lama::Scalar omega ); //2nd param Matrix.Scalar
+    MyJacobi( const std::string& id, const scai::lama::Scalar omega ); //2nd param _Matrix.Scalar
 
     MyJacobi( const std::string& id, const scai::lama::Scalar omega, scai::solver::LoggerPtr logger );
 
@@ -68,16 +68,16 @@ public:
      * @brief Initializes the solver by calculating D^(-1)*C from A = D + C.
      *
      * This specialized initialization for the Jacobi solver does the
-     * one-time calculation of D^(-1)*C where D is the diagonal Matrix
+     * one-time calculation of D^(-1)*C where D is the diagonal _Matrix
      * of A and C is the rest (A = D + C).
      *
      * @param coefficients The matrix A from A*u=f
      */
-    virtual void initialize( const scai::lama::Matrix& coefficients );
+    virtual void initialize( const scai::lama::_Matrix& coefficients );
 
-    virtual void solve( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
+    virtual void solve( scai::lama::_Vector& solution, const scai::lama::_Vector& rhs );
 
-    virtual void solveInit( scai::lama::Vector& solution, const scai::lama::Vector& rhs );
+    virtual void solveInit( scai::lama::_Vector& solution, const scai::lama::_Vector& rhs );
 
     virtual void solveFinalize();
 
@@ -94,10 +94,11 @@ public:
         MyJacobiRuntime();
         virtual ~MyJacobiRuntime();
 
-        std::shared_ptr<scai::lama::Matrix> mDiagonalTimesLU;
-        std::shared_ptr<scai::lama::Matrix> mDiagonalInverted;
-        std::shared_ptr<scai::lama::Vector> mDiagonalTimesRhs;
-        std::shared_ptr<scai::lama::Vector> mOldSolution;
+        scai::lama::_MatrixPtr mDiagonalTimesLU;
+        scai::lama::_MatrixPtr mDiagonalInverted;
+        scai::lama::_VectorPtr mDiagonalTimesRhs;
+        scai::lama::_VectorPtr mOldSolution;
+
         scai::solver::SolutionProxy mProxyOldSolution;
     };
 
@@ -118,7 +119,7 @@ protected:
     MyJacobiRuntime mMyJacobiRuntime;
 
     /**
-     * @brief Performs one Jacobi iteration based on Matrix/Vector operations
+     * @brief Performs one Jacobi iteration based on _Matrix/Vector operations
      *
      * In addition to the Jacobi iteration the term D^(-1)*f from A=u*f and
      * A = D + C is evaluated before the first iteration.
@@ -135,7 +136,7 @@ protected:
 private:
 
     template<typename ValueType>
-    void initialize( const scai::lama::Matrix& coefficients );
+    void initialize( const scai::lama::_Matrix& coefficients );
 
     template<typename ValueType>
     void iterate();

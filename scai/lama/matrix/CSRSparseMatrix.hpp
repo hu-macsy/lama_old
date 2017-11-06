@@ -63,12 +63,12 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CSRSparseMatrix:
 
     public SparseMatrix<ValueType>,
-    public Matrix::Register<CSRSparseMatrix<ValueType> >    // register at factory
+    public _Matrix::Register<CSRSparseMatrix<ValueType> >    // register at factory
 {
 
 public:
 
-    typedef ValueType MatrixValueType; //!< This is the type of the matrix values.
+    typedef ValueType _MatrixValueType; //!< This is the type of the matrix values.
 
     /** Type definition of the storage type for this sparse matrix. */
 
@@ -96,7 +96,7 @@ public:
 
     /** Most general copy constrcuctor with possibility of transpose. */
 
-    CSRSparseMatrix( const Matrix& other, bool transposeFlag = false );
+    CSRSparseMatrix( const _Matrix& other, bool transposeFlag = false );
 
     /** Constructor of a sparse matrix by another input matrix with redistribution.
      *
@@ -104,7 +104,7 @@ public:
      * @param[in] rowDist   row distribution of the new matrix
      * @param[in] colDist   column distribution of the new matrix
      */
-    CSRSparseMatrix( const Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
+    CSRSparseMatrix( const _Matrix& other, dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist );
 
     /** Constructor of a (replicated) sparse matrix by global storage.
      *
@@ -186,7 +186,7 @@ public:
     /** Redefine assignment operator to get the correct return value; implementation is same as for base classes. */
 
     /*
-     CSRSparseMatrix& operator=( const Matrix& matrix );
+     CSRSparseMatrix& operator=( const _Matrix& matrix );
 
      CSRSparseMatrix& operator=( const Expression<Matrix,Matrix,Times>& expression );
 
@@ -217,22 +217,22 @@ public:
 
     virtual void swapLocalStorage( StorageType& localStorage );
 
-    /* Implementation of pure method Matrix::newMatrix with covariant return type */
+    /* Implementation of pure method _Matrix::newMatrix with covariant return type */
 
     virtual CSRSparseMatrix<ValueType>* newMatrix() const;
 
-    /* Implementation of pure method Matrix::copy with covariant return type */
+    /* Implementation of pure method _Matrix::copy with covariant return type */
 
     virtual CSRSparseMatrix<ValueType>* copy() const;
 
-    /* Implementation of pure method Matrix::getFormat */
+    /* Implementation of pure method _Matrix::getFormat */
 
-    virtual Format::MatrixStorageFormat getFormat() const
+    virtual Format getFormat() const
     {
         return Format::CSR;
     }
 
-    /* Implementation of pure method of class Matrix. */
+    /* Implementation of pure method of class _Matrix. */
 
     virtual const char* getTypeName() const;
 
@@ -258,9 +258,9 @@ private:
 
 public:
 
-    // static create method that will be used to register at Matrix factory
+    // static create method that will be used to register at _Matrix factory
 
-    static Matrix* create();
+    static _Matrix* create();
 
     // key for factory
 
@@ -295,7 +295,7 @@ CSRSparseMatrix<ValueType>::CSRSparseMatrix(
     dmemo::DistributionPtr dist( new dmemo::GeneralDistribution( numGlobalRows, myIndexes, communicator ) );
     // Halo is already splitted, but still contains the global indexes
     mHaloData->buildHalo( mHalo, *dist ); // build halo, maps global indexes to halo indexes
-    Matrix::setDistributedMatrix( dist, dist );
+    _Matrix::setDistributedMatrix( dist, dist );
 }
 
 } /* end namespace lama */

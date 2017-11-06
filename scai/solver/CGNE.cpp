@@ -53,8 +53,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( CGNE::logger, "Solver.CGNE" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 CGNE::CGNE( const std::string& id )
@@ -85,7 +85,7 @@ CGNE::~CGNE()
 CGNE::CGNERuntime::~CGNERuntime() {}
 
 
-void CGNE::initialize( const Matrix& coefficients )
+void CGNE::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -101,7 +101,7 @@ void CGNE::initialize( const Matrix& coefficients )
 }
 
 
-void CGNE::solveInit( Vector& solution, const Vector& rhs )
+void CGNE::solveInit( _Vector& solution, const _Vector& rhs )
 {
     CGNERuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -132,17 +132,17 @@ void CGNE::solveInit( Vector& solution, const Vector& rhs )
 void CGNE::iterate()
 {
     CGNERuntime& runtime = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposedMat;
-    Vector& vecP = *runtime.mVecP;
-    Vector& residual = *runtime.mResidual;
-    Vector& solution = *runtime.mSolution;
-    Vector& vecZ = *runtime.mVecZ;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transposedA = *runtime.mTransposedMat;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& residual = *runtime.mResidual;
+    _Vector& solution = *runtime.mSolution;
+    _Vector& vecZ = *runtime.mVecZ;
     Scalar alpha;
     Scalar beta;
     Scalar eps = runtime.mEps;
-    Scalar scalarProductP = vecP.dotProduct( vecP );
-    Scalar scalarProductZR = vecZ.dotProduct( residual );
+    Scalar scalarProductP = vecP._dotProduct( vecP );
+    Scalar scalarProductZR = vecZ._dotProduct( residual );
 
     SCAI_LOG_INFO( logger, "scalarProductP = " << scalarProductP << ", scalarProductZR = " << scalarProductZR )
 
@@ -182,7 +182,7 @@ void CGNE::iterate()
     }
     else
     {
-        beta = vecZ.dotProduct( residual ) / scalarProductZR;
+        beta = vecZ._dotProduct( residual ) / scalarProductZR;
 
         SCAI_LOG_INFO( logger, "beta = " << beta )
     }

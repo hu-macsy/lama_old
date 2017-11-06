@@ -262,7 +262,7 @@ public:
         COMMON_THROWEXCEPTION( "unsupported" )
     }
 
-	virtual void applyUnary(scai::common::UnaryOp)
+	virtual void applyUnary(scai::common::unary::UnaryOp)
     {
         COMMON_THROWEXCEPTION( "unsupported" )
     }
@@ -331,8 +331,8 @@ private:
 
     // joined vector might be owner of the individual parts
 
-    VectorPtr pV1;
-    VectorPtr pV2;
+    _VectorPtr pV1;
+    _VectorPtr pV2;
 };
 
 }

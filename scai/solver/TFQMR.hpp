@@ -84,7 +84,7 @@ public:
 
     virtual ~TFQMR();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -99,13 +99,13 @@ public:
         TFQMRRuntime();
         virtual ~TFQMRRuntime();
 
-        std::shared_ptr<lama::Vector> mVecD;
-        std::shared_ptr<lama::Vector> mInitialR;
-        std::shared_ptr<lama::Vector> mVecVEven;
-        std::shared_ptr<lama::Vector> mVecVOdd;
-        std::shared_ptr<lama::Vector> mVecVT;
-        std::shared_ptr<lama::Vector> mVecW;
-        std::shared_ptr<lama::Vector> mVecZ;
+        lama::_VectorPtr mVecD;
+        lama::_VectorPtr mInitialR;
+        lama::_VectorPtr mVecVEven;
+        lama::_VectorPtr mVecVOdd;
+        lama::_VectorPtr mVecVT;
+        lama::_VectorPtr mVecW;
+        lama::_VectorPtr mVecZ;
 
         lama::Scalar mEps;
         lama::Scalar mAlpha;
@@ -124,7 +124,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
@@ -138,7 +138,7 @@ protected:
 
     TFQMRRuntime mTFQMRRuntime;
     /**
-     * @brief Performs one TFQMR iteration based on Matrix/Vector operations.
+     * @brief Performs one TFQMR iteration based on _Matrix/Vector operations.
      * iterationOdd() and iterationEven() is some update for iterate() based on
      * the number of iterations (even, odd).
      */

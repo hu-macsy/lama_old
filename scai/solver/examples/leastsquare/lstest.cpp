@@ -84,7 +84,7 @@ int main( int, char** )
 
     m.setDenseData( rowDist, colDist, data, 0.0 );
 
-    GramianMatrix mTm( m );
+    GramianMatrix<ValueType> mTm( m );
 
     DenseVector<ValueType> b;
     b.setRawData( numRows, rawB );
@@ -132,7 +132,7 @@ int main( int, char** )
     solver1.setStoppingCriterion( criterion );
     solver1.setLogger( logger );
 
-    x0 = 0;  
+    x0 = 0; 
     solver1.initialize( m );
     solver1.solve( x0, b );
 

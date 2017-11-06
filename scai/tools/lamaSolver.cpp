@@ -163,18 +163,18 @@ int main( int argc, const char* argv[] )
 
         // use auto pointer so that matrix will be deleted at program exit
 
-        std::unique_ptr<Matrix> matrixPtr( lamaconf.getMatrix() );
-        std::unique_ptr<Vector> rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
-        std::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        _MatrixPtr matrixPtr( lamaconf.getMatrix() );
+        _VectorPtr rhsPtr( matrixPtr->newVector( matrixPtr->getRowDistributionPtr() ) );
+        _VectorPtr solutionPtr( rhsPtr->newVector() );
 
-        Matrix& matrix   = *matrixPtr;
-        Vector& rhs      = *rhsPtr;
-        Vector& solution = *solutionPtr;
+        _Matrix& matrix   = *matrixPtr;
+        _Vector& rhs      = *rhsPtr;
+        _Vector& solution = *solutionPtr;
 
         // input matrix will be CSR format
 
-        std::unique_ptr<Matrix> inMatrixPtr( Matrix::getMatrix( Matrix::CSR, lamaconf.getValueType() ) );
-        Matrix& inMatrix = *inMatrixPtr;
+        _MatrixPtr in_MatrixPtr( _Matrix::getMatrix( Format::CSR, lamaconf.getValueType() ) );
+        _Matrix& inMatrix = *in_MatrixPtr;
 
         // Here each processor should print its configuration
 
@@ -248,14 +248,14 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                std::unique_ptr<Vector> xPtr( rhs.newVector() );
-                Vector& x = *xPtr;
+                _VectorPtr xPtr( rhs.newVector() );
+                _Vector& x = *xPtr;
 
                 x.setSameValue( inMatrix.getColDistributionPtr(), 1 );
 
                 rhs = inMatrix * x;
 
-                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( _Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )
@@ -499,12 +499,14 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                std::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
-                Vector& compSolution = *compSolutionPtr;
+
+                _VectorPtr compSolutionPtr( rhs.newVector() );
+                _Vector& compSolution = *compSolutionPtr;
+
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution.maxNorm();
+                Scalar maxDiff = compSolution._maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else

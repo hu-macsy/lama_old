@@ -57,7 +57,7 @@ public:
 
     virtual ~TrivialPreconditioner();
 
-    void initialize( const lama::Matrix& coefficients );
+    void initialize( const lama::_Matrix& coefficients );
 
     virtual void solveImpl();
 

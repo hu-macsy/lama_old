@@ -58,8 +58,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( BiCGstab::logger, "Solver.BiCGstab" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 BiCGstab::BiCGstab( const std::string& id )
@@ -81,7 +81,7 @@ BiCGstab::~BiCGstab() {}
 
 BiCGstab::BiCGstabRuntime::~BiCGstabRuntime() {}
 
-void BiCGstab::initialize( const Matrix& coefficients )
+void BiCGstab::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -103,7 +103,7 @@ void BiCGstab::initialize( const Matrix& coefficients )
     runtime.mVecTT.reset( coefficients.newVector( rowDist ) );
 }
 
-void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
+void BiCGstab::solveInit( _Vector& solution, const _Vector& rhs )
 {
     BiCGstabRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -135,17 +135,17 @@ void BiCGstab::solveInit( Vector& solution, const Vector& rhs )
 void BiCGstab::iterate()
 {
     BiCGstabRuntime& runtime    = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Vector& res0 = *runtime.mRes0;
-    Vector& res = *runtime.mResidual;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecS = *runtime.mVecS;
-    Vector& vecT = *runtime.mVecT;
-    Vector& solution = *runtime.mSolution;
-    Vector& vecPT = *runtime.mVecPT;
-    Vector& vecST = *runtime.mVecST;
-    Vector& vecTT = *runtime.mVecTT;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Vector& res0 = *runtime.mRes0;
+    _Vector& res = *runtime.mResidual;
+    _Vector& vecV = *runtime.mVecV;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& vecS = *runtime.mVecS;
+    _Vector& vecT = *runtime.mVecT;
+    _Vector& solution = *runtime.mSolution;
+    _Vector& vecPT = *runtime.mVecPT;
+    _Vector& vecST = *runtime.mVecST;
+    _Vector& vecTT = *runtime.mVecTT;
     Scalar& alpha = runtime.mAlpha;
     Scalar& beta = runtime.mBeta;
     Scalar& omega = runtime.mOmega;
@@ -154,7 +154,7 @@ void BiCGstab::iterate()
     const Scalar& eps = runtime.mEps;
     Scalar& resNorm = runtime.mResNorm;
     lama::L2Norm norm;
-    rhoNew = res0.dotProduct( res );
+    rhoNew = res0._dotProduct( res );
 
     if ( resNorm < eps || rhoOld < eps || omega < eps ) // scalars are small
     {
@@ -181,7 +181,7 @@ void BiCGstab::iterate()
     }
 
     vecV = A * vecPT;
-    Scalar innerProd = res0.dotProduct( vecV );
+    Scalar innerProd = res0._dotProduct( vecV );
 
     if ( resNorm < eps || innerProd < eps ) // scalar is small
     {
@@ -210,7 +210,7 @@ void BiCGstab::iterate()
         vecTT = vecT;
     }
 
-    innerProd = vecTT.dotProduct( vecTT );
+    innerProd = vecTT._dotProduct( vecTT );
 
     if ( resNorm < eps || innerProd < eps ) //scalar is small
     {
@@ -218,7 +218,7 @@ void BiCGstab::iterate()
     }
     else
     {
-        omega = vecTT.dotProduct( vecST ) / innerProd;
+        omega = vecTT._dotProduct( vecST ) / innerProd;
     }
 
     solution = solution + alpha * vecP;

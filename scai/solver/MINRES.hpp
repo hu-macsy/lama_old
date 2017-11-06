@@ -79,7 +79,7 @@ public:
 
     virtual ~MINRES();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -94,12 +94,12 @@ public:
         MINRESRuntime();
         virtual ~MINRESRuntime();
 
-        std::shared_ptr<lama::Vector> mVecV;
-        std::shared_ptr<lama::Vector> mVecVOld;
-        std::shared_ptr<lama::Vector> mVecVNew;
-        std::shared_ptr<lama::Vector> mVecP;
-        std::shared_ptr<lama::Vector> mVecPOld;
-        std::shared_ptr<lama::Vector> mVecPNew;
+        lama::_VectorPtr mVecV;
+        lama::_VectorPtr mVecVOld;
+        lama::_VectorPtr mVecVNew;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecPOld;
+        lama::_VectorPtr mVecPNew;
 
         lama::Scalar mAlpha;
         lama::Scalar mBetaNew;
@@ -121,7 +121,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
@@ -135,7 +135,7 @@ protected:
 
     MINRESRuntime mMINRESRuntime;
     /**
-     * @brief Performs one MINRES iteration based on Matrix/Vector operations
+     * @brief Performs one MINRES iteration based on _Matrix/Vector operations
      */
     virtual void iterate();
     void Lanczos();

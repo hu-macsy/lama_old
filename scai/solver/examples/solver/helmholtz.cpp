@@ -295,7 +295,7 @@ void testSameVector( const DenseVector<ValueType>& v1, const DenseVector<ValueTy
     }
 }
 
-void solveIt( const std::string name, Vector& sol, const Matrix& mat, const Vector& rhs )
+void solveIt( const std::string name, Vector& sol, const _Matrix& mat, const Vector& rhs )
 {
     cout << "solveIt, matrix = " << mat << ", rhs = " << rhs << endl;
     LoggerPtr logger( new CommonLogger ( name,
@@ -378,7 +378,7 @@ int main( int argc, char* argv[] )
     dMatrix.setContextPtr( ctx );
     checkSolVector.setContextPtr( ctx );
     rhsVector.setContextPtr( ctx );
-    dMatrix.setCommunicationKind( Matrix::SYNCHRONOUS );
+    dMatrix.setCommunicationKind( _Matrix::SYNCHRONOUS );
     solveIt( argv[1], checkSolVector, dMatrix, rhsVector );
     cout << "Solution available, check for correctness." << endl;
     // testSameVector( checkSolVector, solVector );

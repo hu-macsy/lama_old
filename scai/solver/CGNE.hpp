@@ -91,7 +91,7 @@ public:
 
     virtual ~CGNE();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -106,9 +106,9 @@ public:
         CGNERuntime();
         virtual ~CGNERuntime();
 
-        std::shared_ptr<lama::Matrix> mTransposedMat;
-        std::shared_ptr<lama::Vector> mVecP;
-        std::shared_ptr<lama::Vector> mVecZ;
+        lama::_MatrixPtr mTransposedMat;
+        lama::_VectorPtr mVecP;
+        lama::_VectorPtr mVecZ;
 
         lama::Scalar mEps;
     };
@@ -119,7 +119,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
@@ -133,7 +133,7 @@ protected:
 
     CGNERuntime mCGNERuntime;
     /**
-     * @brief Performs one CGNE iteration based on Matrix/Vector operations.
+     * @brief Performs one CGNE iteration based on _Matrix/Vector operations.
      */
     virtual void iterate();
 

@@ -92,7 +92,7 @@ public:
 
     virtual ~CGNR();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -107,11 +107,11 @@ public:
         CGNRRuntime();
         virtual ~CGNRRuntime();
 
-        std::shared_ptr<lama::Matrix> mTransposedMat;
-        std::shared_ptr<lama::Vector> mVecD;
-        std::shared_ptr<lama::Vector> mVecW;
-        std::shared_ptr<lama::Vector> mVecZ;
-        std::shared_ptr<lama::Vector> mResidual2;
+        lama::_MatrixPtr mTransposedMat;
+        lama::_VectorPtr mVecD;
+        lama::_VectorPtr mVecW;
+        lama::_VectorPtr mVecZ;
+        lama::_VectorPtr mResidual2;
 
         lama::Scalar mEps;
     };
@@ -122,7 +122,7 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::Vector& solution, const lama::Vector& rhs );
+    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
@@ -141,7 +141,7 @@ protected:
 
     CGNRRuntime mCGNRRuntime;
     /**
-     * @brief Performs one CGNR iteration based on Matrix/Vector operations.
+     * @brief Performs one CGNR iteration based on _Matrix/Vector operations.
      */
     virtual void iterate();
 

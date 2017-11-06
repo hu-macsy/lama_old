@@ -42,10 +42,6 @@
 
 #include <scai/lama/norm/L2Norm.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
-
-#include <scai/lama/Vector.hpp>
-
 // std
 #include <limits>
 #include <cstddef>
@@ -58,8 +54,8 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( QMR::logger, "Solver.QMR" )
 
-using lama::Matrix;
-using lama::Vector;
+using lama::_Matrix;
+using lama::_Vector;
 using lama::Scalar;
 
 QMR::QMR( const std::string& id )
@@ -91,7 +87,7 @@ QMR::QMRRuntime::~QMRRuntime()
 {
 }
 
-void QMR::initialize( const Matrix& coefficients )
+void QMR::initialize( const _Matrix& coefficients )
 {
     SCAI_LOG_DEBUG( logger, "Initialization started for coefficients = " << coefficients )
     IterativeSolver::initialize( coefficients );
@@ -116,7 +112,7 @@ void QMR::initialize( const Matrix& coefficients )
     runtime.mVecZT.reset( coefficients.newVector( rowDist ) );
 }
 
-void QMR::solveInit( Vector& solution, const Vector& rhs )
+void QMR::solveInit( _Vector& solution, const _Vector& rhs )
 {
     QMRRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -135,23 +131,23 @@ void QMR::solveInit( Vector& solution, const Vector& rhs )
 void QMR::iterate()
 {
     QMRRuntime& runtime    = getRuntime();
-    const Matrix& A = *runtime.mCoefficients;
-    const Matrix& transposedA = *runtime.mTransposeA;
-    Vector& solution = *runtime.mSolution;
-    Vector& residual = *runtime.mResidual;
-    Vector& vecV = *runtime.mVecV;
-    Vector& vecW = *runtime.mVecW;
-    Vector& vecP = *runtime.mVecP;
-    Vector& vecQ = *runtime.mVecQ;
-    Vector& vecS = *runtime.mVecS;
-    Vector& vecD = *runtime.mVecD;
-    Vector& vecY = *runtime.mVecY;      /*preconditioning*/
-    Vector& vecZ = *runtime.mVecZ;
-    Vector& vecVT = *runtime.mVecVT;
-    Vector& vecYT = *runtime.mVecYT;
-    Vector& vecZT = *runtime.mVecZT;
-    Vector& vecWT = *runtime.mVecWT;
-    Vector& vecPT = *runtime.mVecPT;
+    const _Matrix& A = *runtime.mCoefficients;
+    const _Matrix& transposedA = *runtime.mTransposeA;
+    _Vector& solution = *runtime.mSolution;
+    _Vector& residual = *runtime.mResidual;
+    _Vector& vecV = *runtime.mVecV;
+    _Vector& vecW = *runtime.mVecW;
+    _Vector& vecP = *runtime.mVecP;
+    _Vector& vecQ = *runtime.mVecQ;
+    _Vector& vecS = *runtime.mVecS;
+    _Vector& vecD = *runtime.mVecD;
+    _Vector& vecY = *runtime.mVecY;      /*preconditioning*/
+    _Vector& vecZ = *runtime.mVecZ;
+    _Vector& vecVT = *runtime.mVecVT;
+    _Vector& vecYT = *runtime.mVecYT;
+    _Vector& vecZT = *runtime.mVecZT;
+    _Vector& vecWT = *runtime.mVecWT;
+    _Vector& vecPT = *runtime.mVecPT;
     Scalar& gamma = runtime.mGamma;
     Scalar& theta = runtime.mTheta;
     Scalar& psi = runtime.mPsi;
@@ -193,7 +189,7 @@ void QMR::iterate()
     vecY = vecY / rho;
     vecW = vecWT / psi;
     vecZ = vecZ / psi;
-    Scalar delta = vecZ.dotProduct( vecY );
+    Scalar delta = vecZ._dotProduct( vecY );
 
     if ( abs( delta ) < eps )
     {
@@ -240,7 +236,7 @@ void QMR::iterate()
     }
 
     vecPT = A * vecP;
-    epsilon = vecQ.dotProduct( vecPT );
+    epsilon = vecQ._dotProduct( vecPT );
 
     if ( abs( epsilon ) < eps || abs( 1.0 / eps ) < eps )
     {

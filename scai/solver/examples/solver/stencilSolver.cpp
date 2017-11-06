@@ -169,7 +169,7 @@ int main( int argc, const char* argv[] )
 
         stencilSpecification >> nDims >> nPoints >> n1;
 
-        std::unique_ptr<Matrix> matrixPtr;
+        _MatrixPtr matrixPtr;
 
         switch ( nDims )
         {
@@ -206,12 +206,12 @@ int main( int argc, const char* argv[] )
 
         std::cout << "Stencil matrix = " << *matrixPtr << std::endl;
 
-        std::unique_ptr<Vector> rhsPtr( matrixPtr->newVector() );
-        std::unique_ptr<Vector> solutionPtr( rhsPtr->newVector() );
+        _VectorPtr rhsPtr( matrixPtr->newVector() );
+        _VectorPtr solutionPtr( rhsPtr->newVector() );
 
-        Matrix& matrix   = *matrixPtr;
-        Vector& rhs      = *rhsPtr;
-        Vector& solution = *solutionPtr;
+        _Matrix& matrix   = *matrixPtr;
+        _Vector& rhs      = *rhsPtr;
+        _Vector& solution = *solutionPtr;
 
         HOST_PRINT( 0, "Setup matrix, rhs, initial solution" )
 
@@ -237,13 +237,14 @@ int main( int argc, const char* argv[] )
             {
                 // build default rhs as rhs = A * x with x = 1
 
-                std::unique_ptr<Vector> xPtr( rhs.newVector() );
-                Vector& x = *xPtr;
+                _VectorPtr xPtr( rhs.newVector() );
+                _Vector& x = *xPtr;
+
                 x.allocate( matrix.getColDistributionPtr() );
                 x = Scalar( 1 );
                 rhs = matrix * x;
 
-                HOST_PRINT( myRank, "Set rhs = sum( Matrix, 2) : " << rhs )
+                HOST_PRINT( myRank, "Set rhs = sum( _Matrix, 2) : " << rhs )
             }
 
             if ( isNumeric( val, startSolutionFilename ) )
@@ -447,12 +448,12 @@ int main( int argc, const char* argv[] )
             {
                 HOST_PRINT( myRank, "Compare solution with vector in " << finalSolutionFilename )
                 LamaTiming timer( comm, "Comparing solution" );
-                std::unique_ptr<Vector> compSolutionPtr( rhs.newVector() );
-                Vector& compSolution = *compSolutionPtr;
+                std::unique_ptr<_Vector> compSolutionPtr( rhs.newVector() );
+                _Vector& compSolution = *compSolutionPtr;
                 compSolution.readFromFile( finalSolutionFilename );
                 compSolution.redistribute( solution.getDistributionPtr() );
                 compSolution -= solution;
-                Scalar maxDiff = compSolution.maxNorm();
+                Scalar maxDiff = compSolution._maxNorm();
                 HOST_PRINT( myRank, "Maximal difference between solution in " << finalSolutionFilename << ": " << maxDiff )
             }
             else

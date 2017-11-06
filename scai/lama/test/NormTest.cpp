@@ -39,7 +39,6 @@
 #include <scai/lama/Scalar.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
-#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/matrix/DenseMatrix.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>

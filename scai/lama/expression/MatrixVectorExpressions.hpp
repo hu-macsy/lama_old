@@ -1,5 +1,5 @@
 /**
- * @file MatrixVectorExpressions.hpp
+ * @file _MatrixVectorExpressions.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,15 +27,15 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Operators to form symbolic expressions Scalar * Matrix * Vector + Scalar * Vector
+ * @brief Operators to form symbolic expressions Scalar * _Matrix * Vector + Scalar * Vector
  * @author Thomas Brandes
  * @date 28.03.2011
  */
 #pragma once
 
-#include <scai/lama/matrix/Matrix.hpp>
+#include <scai/lama/matrix/_Matrix.hpp>
 
-#include <scai/lama/Vector.hpp>
+#include <scai/lama/_Vector.hpp>
 #include <scai/lama/Scalar.hpp>
 
 #include <scai/lama/expression/Expression.hpp>
@@ -47,12 +47,12 @@ namespace lama
 {
 
 /* ------------------------------------------------------------------------- */
-/*  Expressions return 'Scalar * Matrix * Vector'                            */
+/*  Expressions return 'Scalar * _Matrix * Vector'                            */
 /* ------------------------------------------------------------------------- */
 
 /**
  * @brief This times operator creates an expression that represents the product
- *        of a Matrix and a Vector.
+ *        of a _Matrix and a Vector.
  *
  * The times operator creates an Expression that represents the product of the
  * a matrix and a vector. To give an example this Expression is
@@ -63,12 +63,12 @@ namespace lama
  * @param[in] vector  The input vector.
  * @return            The expression representing this product.
  */
-inline Expression_SMV operator*( const Matrix& matrix, const Vector& vector )
+inline Expression_SMV operator*( const _Matrix& matrix, const _Vector& vector )
 {
     return Expression_SMV( Scalar( 1.0 ), Expression_MV( matrix, vector ) );
 }
 
-inline Expression_SVM operator*( const Vector& vector, const Matrix& matrix )
+inline Expression_SVM operator*( const _Vector& vector, const _Matrix& matrix )
 {
     return Expression_SVM( Scalar( 1.0 ), Expression_VM( vector, matrix ) );
 }
@@ -123,13 +123,13 @@ inline Expression_SVM operator*( const Expression_SVM& exp, const Scalar& scalar
 
 /**
  * @brief This times operator creates an expression that represents the product
- *        of a Matrix, Vector and Scalar.
+ *        of a _Matrix, Vector and Scalar.
  *
  * @param[in] matrix  The matrix.
  * @param[in] exp     The expression a*x
  * @return            The expression representing this product.
  */
-inline Expression_SMV operator*( const Matrix& matrix, const Expression_SV& exp )
+inline Expression_SMV operator*( const _Matrix& matrix, const Expression_SV& exp )
 {
     return Expression_SMV( exp.getArg1(), Expression_MV( matrix, exp.getArg2() ) );
 }
@@ -142,7 +142,7 @@ inline Expression_SMV operator*( const Matrix& matrix, const Expression_SV& exp 
  * @param[in] matrix  The matrix.
  * @return            The expression representing this product.
  */
-inline Expression_SVM operator*( const Expression_SV& exp, const Matrix& matrix )
+inline Expression_SVM operator*( const Expression_SV& exp, const _Matrix& matrix )
 {
     return Expression_SVM( exp.getArg1(), Expression_VM( exp.getArg2(), matrix ) );
 }
@@ -152,21 +152,21 @@ inline Expression_SVM operator*( const Expression_SV& exp, const Matrix& matrix 
  *        x is vector, A and B are matrices.
  *
  * @param[in] exp     The expression a*A
- * @param[in] vector  The Vector.
+ * @param[in] vector  The vector.
  * @return            The expression representing this product.
  */
-inline Expression_SMV operator*( const Expression_SM& exp, const Vector& vector )
+inline Expression_SMV operator*( const Expression_SM& exp, const _Vector& vector )
 {
     return Expression_SMV( exp.getArg1(), Expression_MV( exp.getArg2(), vector ) );
 }
 
-inline Expression_SVM operator*( const Vector& vector, const Expression_SM& exp )
+inline Expression_SVM operator*( const _Vector& vector, const Expression_SM& exp )
 {
     return Expression_SVM( exp.getArg1(), Expression_VM( vector, exp.getArg2() ) );
 }
 
 /* ------------------------------------------------------------------------- */
-/*  Expressions 'Scalar * Matrix * Vector' +/- vector                        */
+/*  Expressions 'Scalar * _Matrix * Vector' +/- vector                        */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -177,7 +177,7 @@ inline Expression_SVM operator*( const Vector& vector, const Expression_SM& exp 
  * @param[in] exp     The expression a * A * x.
  * @return            The expression representing this sum.
  */
-inline Expression_SMV_SV operator-( const Expression_SMV& exp, const Vector& vector )
+inline Expression_SMV_SV operator-( const Expression_SMV& exp, const _Vector& vector )
 {
     return Expression_SMV_SV( exp, Expression_SV( Scalar( -1.0 ), vector ) );
 }
@@ -190,7 +190,7 @@ inline Expression_SMV_SV operator-( const Expression_SMV& exp, const Vector& vec
  * @param[in] exp     The expression a * x * A.
  * @return            The expression representing this sum.
  */
-inline Expression_SVM_SV operator-( const Expression_SVM& exp, const Vector& vector )
+inline Expression_SVM_SV operator-( const Expression_SVM& exp, const _Vector& vector )
 {
     return Expression_SVM_SV( exp, Expression_SV( Scalar( -1.0 ), vector ) );
 }
@@ -203,7 +203,7 @@ inline Expression_SVM_SV operator-( const Expression_SVM& exp, const Vector& vec
  * @param[in] exp     The expression A * x.
  * @return            The expression representing this sum.
  */
-inline Expression_SMV_SV operator-( const Vector& vector, const Expression_SMV& exp )
+inline Expression_SMV_SV operator-( const _Vector& vector, const Expression_SMV& exp )
 {
     Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
     return Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1.0 ), vector ) );
@@ -217,7 +217,7 @@ inline Expression_SMV_SV operator-( const Vector& vector, const Expression_SMV& 
  * @param[in] exp     The expression x * A .
  * @return            The expression representing this sum.
  */
-inline Expression_SVM_SV operator-( const Vector& vector, const Expression_SVM& exp )
+inline Expression_SVM_SV operator-( const _Vector& vector, const Expression_SVM& exp )
 {
     Expression_SVM minusExp( -exp.getArg1(), exp.getArg2() );
     return Expression_SVM_SV( minusExp, Expression_SV( Scalar( 1.0 ), vector ) );
@@ -231,7 +231,7 @@ inline Expression_SVM_SV operator-( const Vector& vector, const Expression_SVM& 
  * @param[in] exp     The expression A * x.
  * @return            The expression representing this addition.
  */
-inline Expression_SMV_SV operator+( const Vector& vector, const Expression_SMV& exp )
+inline Expression_SMV_SV operator+( const _Vector& vector, const Expression_SMV& exp )
 {
     return Expression_SMV_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
@@ -244,7 +244,7 @@ inline Expression_SMV_SV operator+( const Vector& vector, const Expression_SMV& 
  * @param[in] exp     The expression x * A.
  * @return            The expression representing this addition.
  */
-inline Expression_SVM_SV operator+( const Vector& vector, const Expression_SVM& exp )
+inline Expression_SVM_SV operator+( const _Vector& vector, const Expression_SVM& exp )
 {
     return Expression_SVM_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
@@ -257,7 +257,7 @@ inline Expression_SVM_SV operator+( const Vector& vector, const Expression_SVM& 
  * @param[in] exp     The expression a * A * y.
  * @return            The expression representing this addition.
  */
-inline Expression_SMV_SV operator+( const Expression_SMV& exp, const Vector& vector )
+inline Expression_SMV_SV operator+( const Expression_SMV& exp, const _Vector& vector )
 {
     return Expression_SMV_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
@@ -270,13 +270,13 @@ inline Expression_SMV_SV operator+( const Expression_SMV& exp, const Vector& vec
  * @param[in] exp     The expression a * y * A.
  * @return            The expression representing this addition.
  */
-inline Expression_SVM_SV operator+( const Expression_SVM& exp, const Vector& vector )
+inline Expression_SVM_SV operator+( const Expression_SVM& exp, const _Vector& vector )
 {
     return Expression_SVM_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
 }
 
 /* ------------------------------------------------------------------------- */
-/*  Expressions 'Scalar * Matrix * Vector' +/- 'Scalar * Vector'             */
+/*  Expressions 'Scalar * _Matrix * Vector' +/- 'Scalar * Vector'             */
 /* ------------------------------------------------------------------------- */
 
 /**

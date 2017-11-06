@@ -81,7 +81,7 @@ public:
 
     virtual ~GMRES();
 
-    virtual void initialize( const lama::Matrix& coefficients );
+    virtual void initialize( const lama::_Matrix& coefficients );
 
     void setKrylovDim( unsigned int krylovDim );
 
@@ -114,15 +114,15 @@ public:
         std::unique_ptr<double[]> mHd;
 
         // krylov space
-        std::vector<lama::Vector*>* mV;
+        std::vector<lama::_Vector*>* mV;
 
         // temp-arrays
-        lama::Vector* mW;
-        lama::Vector* mT;
+        lama::_Vector* mW;
+        lama::_Vector* mT;
 
         // remember starting solution
         // only needed if x is modified within krylov loop
-        lama::Vector* mX0;
+        lama::_Vector* mX0;
     };
 
     /**

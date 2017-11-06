@@ -92,7 +92,7 @@ DecompositionSolver::DecompositionSolverRuntime::~DecompositionSolverRuntime()
 
 /* --------------------------------------------------------------------------- */
 
-void DecompositionSolver::initialize( const lama::Matrix& coefficients )
+void DecompositionSolver::initialize( const lama::_Matrix& coefficients )
 {
     SCAI_REGION( "Solver.DecompositionSolver.intialize" )
     SCAI_LOG_INFO( logger, "Initializing with " << coefficients )
