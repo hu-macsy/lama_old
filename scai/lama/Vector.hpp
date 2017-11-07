@@ -264,6 +264,17 @@ protected:
 template<typename ValueType>
 using VectorPtr = std::shared_ptr<Vector<ValueType> >;
 
+/** 
+ * Definiton of corresponding unique pointer type for the class Vector<ValueType> by a type alias.
+ *
+ *  \code
+ *      VectorPtr1<ValueType> x( Vector<ValueType>::getVector( VectorKind::SPARSE ) );
+ *      std::unique_ptr<Vector<ValueType> > x( Vector<ValueType>::getVector( VectorKind::DENSE ) );
+ *  \endcode
+*/
+template<typename ValueType>
+using VectorPtr1 = std::unique_ptr<Vector<ValueType> >;
+
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */

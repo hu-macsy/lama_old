@@ -92,10 +92,8 @@ void Julia()
     DenseVector<ValueType> aReal( DIMx * DIMy, -0.8 );
     DenseVector<ValueType> aImag( DIMx * DIMy, 0.156 );
 
-    DenseVector<ValueType> yreal;
-    yreal.setRange( DIMy, 0.0, 1.0 );
-    DenseVector<ValueType> xreal;
-    xreal.setRange( DIMx, 0.0, 1.0 );
+    DenseVector<ValueType> yreal = linearValuesVector( DIMy, ValueType( 0 ), ValueType( 1 ) );
+    DenseVector<ValueType> xreal = linearValuesVector( DIMx, ValueType( 0 ), ValueType( 1 ) );
 
     DenseVector<ValueType> eye1( DIMx, 1.0 );
     DenseVector<ValueType> eye2( DIMy, 1.0 );

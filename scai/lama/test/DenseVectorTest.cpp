@@ -217,9 +217,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
     IndexType n = 16;
 
-    DenseVector<ValueType> repV( ctx );  // just a sequence: 0, 1, ...
-
-    repV.setRange( n, 0, 1 ); 
+    DenseVector<ValueType> repV = linearValuesVector<ValueType>( n, 0, 1, ctx );  // just a sequence: 0, 1, ...
 
     BOOST_CHECK_EQUAL( n, repV.getLocalValues().size() );
 
@@ -240,9 +238,7 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
         // distV1 = [ 0, ..., n-1] distributed, must be same
 
-        DenseVector<ValueType> distV1( ctx );
-
-        distV1.setRange( dist, 0, 1 );
+        DenseVector<ValueType> distV1 = linearValuesVector<ValueType>( dist, 0, 1, ctx );
 
         BOOST_CHECK_EQUAL( 0, distV1.getLocalValues().maxDiffNorm( distV.getLocalValues() ) );
     }
@@ -291,9 +287,7 @@ BOOST_AUTO_TEST_CASE( ScanTest )
     {
         dmemo::DistributionPtr dist = dists[i];
 
-        DenseVector<ValueType> distV( ctx );
-
-        distV.setRange( dist, 1, 1 );  // set vector elements as sequence 1, 2, ... 
+        DenseVector<ValueType> distV = linearValuesVector<ValueType>( dist, 1, 1, ctx );
 
         try
         {

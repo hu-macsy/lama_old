@@ -1294,8 +1294,8 @@ ValueType SparseVector<ValueType>::dotProduct( const _Vector& other ) const
     {
          utilskernel::LArray<ValueType> multValues;
 
-         buildLocalValues( multValues, common::BinaryOp::COPY, mContext );
-         other.buildLocalValues( multValues, common::BinaryOp::MULT, mContext );
+         buildLocalValues( multValues, common::BinaryOp::COPY, getContextPtr() );
+         other.buildLocalValues( multValues, common::BinaryOp::MULT, getContextPtr() );
          localDotProduct = multValues.sum();
     }
 
@@ -1332,7 +1332,7 @@ void SparseVector<ValueType>::binOpSparse( const SparseVector<ValueType>& other,
     {
         HArrayUtils::binaryOpSparse( resultIndexes, resultValues,
                                      mNonZeroIndexes, mNonZeroValues, mZeroValue,
-                                     otherIndexes, otherValues, otherZero, op, mContext );
+                                     otherIndexes, otherValues, otherZero, op, getContextPtr() );
     
         mZeroValue = common::applyBinary( mZeroValue, op, otherZero );
     }
@@ -1341,7 +1341,7 @@ void SparseVector<ValueType>::binOpSparse( const SparseVector<ValueType>& other,
         HArrayUtils::binaryOpSparse( resultIndexes, resultValues,
                                      otherIndexes, otherValues, otherZero, 
                                      mNonZeroIndexes, mNonZeroValues, mZeroValue,
-                                     op, mContext );
+                                     op, getContextPtr() );
     
         mZeroValue = common::applyBinary( otherZero, op, mZeroValue );
     }
@@ -1446,7 +1446,7 @@ void SparseVector<ValueType>::setScalar( const Scalar value, common::BinaryOp op
         mZeroValue = common::applyBinary( mZeroValue, op, val );
     }
 
-    HArrayUtils::binaryOpScalar( mNonZeroValues, mNonZeroValues, val, op, swapScalar, mContext );
+    HArrayUtils::binaryOpScalar( mNonZeroValues, mNonZeroValues, val, op, swapScalar, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1471,7 +1471,7 @@ template<typename ValueType>
 void SparseVector<ValueType>::applyUnary( common::UnaryOp op )
 {
     mZeroValue = common::applyUnary( op, mZeroValue );
-    HArrayUtils::UnaryOpOp( mNonZeroValues, mNonZeroValues, op, mContext );
+    HArrayUtils::UnaryOpOp( mNonZeroValues, mNonZeroValues, op, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------ */

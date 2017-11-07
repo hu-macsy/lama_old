@@ -86,10 +86,14 @@ public:
     using _Vector::logger;
     using _Vector::getDistribution;
     using _Vector::getContextPtr;
+    using _Vector::getContext;
     using _Vector::readFromFile;
     using _Vector::setDistributionPtr;
     using _Vector::getDistributionPtr;
     using _Vector::size;
+    using _Vector::assign;
+
+    using Vector<ValueType>::operator=;
     using Vector<ValueType>::getValueType;
 
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
@@ -323,32 +327,6 @@ public:
 
     /* --------------------------------------------------------------------- */
 
-    /**
-     * @brief allocate a replicated vector and fill it with range values
-     *
-     * @param[in] n becomes the size of the vector
-     * @param[in] startValue value for the first element, $vector[0] = startValue$
-     * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
-     */
-    void setRange( const IndexType n, const Scalar startValue, const Scalar inc )
-    {
-        allocate( n );
-        fillRange( startValue, inc );
-    }
-
-    /**
-     * This method initializes a (distributed) dense vector with a sequence of values
-     *
-     * @param[in] distribution determines global/local size of the vector
-     * @param[in] startValue value for the first elemen
-     * @param[in] inc increment between the element
-     */
-    void setRange( dmemo::DistributionPtr distribution, const Scalar startValue, const Scalar inc )
-    {
-        allocate( distribution );
-        fillRange( startValue, inc );
-    }
-
     /** Implememenation of pure routine _Vector::allocate. */
 
     virtual void allocate( dmemo::DistributionPtr distribution );
@@ -366,9 +344,6 @@ public:
     DenseVector& operator=( const Scalar );
 
     // All other assignment operators are inherited from class Vector, but using is required
-
-    using _Vector::operator=;
-    using _Vector::assign;
 
     /** Implementation of pure method _Vector::asign 
      *
@@ -404,7 +379,7 @@ public:
      * @param[in] inc increment between the elements
      *
      */
-    void fillRange( const Scalar startValue, const Scalar inc );
+    void fillLinearValues( const ValueType startValue, const ValueType inc );
 
     /** Implemenation of pure method _Vector::cat */
 
@@ -643,10 +618,6 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
-protected:
-
-    using _Vector::mContext;
-
 private:
 
     /** Allocate local values array with correct size at right context */
@@ -695,6 +666,52 @@ public:
 
     virtual VectorCreateKeyType getCreateValue() const;
 };
+
+/* ------------------------------------------------------------------------- */
+/*  Functions that return a DenseVector                                      */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief create a replicated vector and fill it with linear values
+ *
+ * @param[in] n becomes the size of the vector
+ * @param[in] startValue value for the first element, $vector[0] = startValue$
+ * @param[in] inc increment between two elements, i.e. $vector[i+1] - vector[i] = inc$
+ * @param[in] ctx specifies the context of the vector.
+ *
+ * Note: if ctx is specified, the vector will be allocated in its memory.
+ */
+template<typename ValueType>
+DenseVector<ValueType> linearValuesVector( 
+    const IndexType n,
+    const ValueType startValue, 
+    const ValueType inc, 
+    hmemo::ContextPtr ctx = hmemo::ContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.allocate( n );
+    result.fillLinearValues( startValue, inc );
+    return result;
+}
+/**
+ * @brief create a distributed vector and fill it with linear values
+ *
+ * @param[in] distribution determines global/local size of the vector
+ * @param[in] startValue value for the first elemen
+ * @param[in] inc increment between the element
+ */
+template<typename ValueType>
+DenseVector<ValueType> linearValuesVector( 
+    dmemo::DistributionPtr dist, 
+    const ValueType startValue, 
+    const ValueType inc, 
+    hmemo::ContextPtr ctx = hmemo::ContextPtr() )
+{
+    DenseVector<ValueType> result( ctx );
+    result.allocate( dist );
+    result.fillLinearValues( startValue, inc );
+    return result;
+}
 
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */

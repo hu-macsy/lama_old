@@ -242,6 +242,17 @@ protected:
 template<typename ValueType>
 using MatrixPtr = std::shared_ptr<Matrix<ValueType> >;
 
+/** 
+ * Definiton of corresponding unique pointer type for the class Matrix<ValueType> by a type alias.
+ *
+ *  \code
+ *      MatrixPtr1<ValueType> x( Matrix<ValueType>::getMatrix( Format::COO ) );
+ *      std::unique_ptr<Matrix<ValueType> > x( Matrix<ValueType>::getMatrix( Format::COO ) );
+ *  \endcode
+*/
+template<typename ValueType>
+using MatrixPtr1 = std::unique_ptr<Matrix<ValueType> >;
+
 } /* end namespace lama */
 
 } /* end namespace scai */

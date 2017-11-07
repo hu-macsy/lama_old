@@ -125,7 +125,7 @@ DenseVector<ValueType>::DenseVector( const IndexType size, ContextPtr context ) 
 
 {
     SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( size = " 
-                            << size << " ), undefined values, @ctx = " << *mContext )
+                            << size << " ), undefined values, @ctx = " << getContext() )
 }
 
 template<typename ValueType>
@@ -136,7 +136,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, ContextPtr co
 
 {
     SCAI_LOG_INFO( logger, "DenseVector<" << common::TypeTraits<ValueType>::id() << ">( dist = " 
-                   << *distribution << "), undefined values, @ctx = " << *mContext )
+                   << *distribution << "), undefined values, @ctx = " << getContext() )
 }
 
 template<typename ValueType>
@@ -161,7 +161,7 @@ DenseVector<ValueType>::DenseVector( DistributionPtr distribution, const ValueTy
 }
 
 template <typename ValueType>
-void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar inc )
+void DenseVector<ValueType>::fillLinearValues( const ValueType startValue, const ValueType inc )
 {
     const Distribution& dist = getDistribution();
 
@@ -169,7 +169,7 @@ void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar in
     {
         SCAI_ASSERT_EQ_DEBUG( dist.getGlobalSize(), dist.getLocalSize(), dist << " not replicated" );
 
-        HArrayUtils::setSequence( mLocalValues, startValue.getValue<ValueType>(), inc.getValue<ValueType>(), dist.getGlobalSize() );
+        HArrayUtils::setSequence( mLocalValues, startValue, inc, dist.getGlobalSize() );
         return;
     }
 
@@ -186,8 +186,8 @@ void DenseVector<ValueType>::fillRange( const Scalar startValue, const Scalar in
     // localValues[] =  indexes[] * inc + startValue
 
     HArrayUtils::assign( mLocalValues, myGlobalIndexes, context );
-    HArrayUtils::assignScalar( mLocalValues, inc.getValue<ValueType>(), common::BinaryOp::MULT, context );
-    HArrayUtils::assignScalar( mLocalValues, startValue.getValue<ValueType>(), common::BinaryOp::ADD, context );
+    HArrayUtils::assignScalar( mLocalValues, inc, common::BinaryOp::MULT, context );
+    HArrayUtils::assignScalar( mLocalValues, startValue, common::BinaryOp::ADD, context );
 }
 
 template<typename ValueType>
@@ -1197,7 +1197,7 @@ void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const _Vec
     {
         SCAI_LOG_INFO( logger, "this = " << alpha << " * x -> this = x;  this *= " << alpha )
         assign( x );
-        HArrayUtils::setScalar( mLocalValues, alphaV, common::BinaryOp::MULT, mContext );
+        HArrayUtils::setScalar( mLocalValues, alphaV, common::BinaryOp::MULT, getContextPtr() );
         return;
     }
 
@@ -1220,7 +1220,7 @@ void DenseVector<ValueType>::assignScaledVector( const Scalar& alpha, const _Vec
 
     ValueType betaV = 0;
 
-    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseX.mLocalValues, mContext );
+    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseX.mLocalValues, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1259,7 +1259,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
 
             HArray<ValueType> xDenseValues;
             sparseX.buildLocalValues( xDenseValues);
-            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, mContext );
+            utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xDenseValues, getContextPtr() );
         }
         else if ( alphaV == common::Constants::ONE )
         {
@@ -1270,8 +1270,8 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
             // ToDo: if there is scatter with scaling factor for the scattered values, employ it here
 
             HArray<ValueType> tmpValues;
-            HArrayUtils::compute( tmpValues, nonZeroValues, common::BinaryOp::MULT, alphaV, mContext );
-            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, tmpValues, common::BinaryOp::ADD, mContext );
+            HArrayUtils::compute( tmpValues, nonZeroValues, common::BinaryOp::MULT, alphaV, getContextPtr() );
+            HArrayUtils::scatter( mLocalValues, nonZeroIndexes, unique, tmpValues, common::BinaryOp::ADD, getContextPtr() );
         }
     }
     else
@@ -1282,7 +1282,7 @@ void DenseVector<ValueType>::axpy( const Scalar& alpha, const _Vector& x )
 
         const LArray<ValueType>& xValues = denseX.getLocalValues();
 
-        utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xValues, mContext );
+        utilskernel::HArrayUtils::axpy( mLocalValues, alphaV, xValues, getContextPtr() );
     }
 }
 
@@ -1363,7 +1363,7 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vecto
     }
 
     SCAI_LOG_DEBUG( logger, "call arrayPlusArray" )
-    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseY.mLocalValues, mContext );
+    utilskernel::HArrayUtils::arrayPlusArray( mLocalValues, alphaV, denseX.mLocalValues, betaV, denseY.mLocalValues, getContextPtr() );
 }
 
 template<typename ValueType>
@@ -1407,7 +1407,7 @@ void DenseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const _Vect
 
     ValueType alphaV = alpha.getValue<ValueType>();
 
-    utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alphaV, denseX.mLocalValues, denseY.mLocalValues, mContext );
+    utilskernel::HArrayUtils::arrayTimesArray( mLocalValues, alphaV, denseX.mLocalValues, denseY.mLocalValues, getContextPtr() );
 }
 
 template<typename ValueType>
@@ -1444,7 +1444,7 @@ void DenseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const _Vecto
 
     SCAI_LOG_DEBUG( logger, "call arrayPlusScalar" )
 
-    utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alphaV, denseX.mLocalValues, betaV, mContext );
+    utilskernel::HArrayUtils::arrayPlusScalar( mLocalValues, alphaV, denseX.mLocalValues, betaV, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1728,7 +1728,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::allocate()
 {
     // allocate local dense values with correct local size, touch on its context
-    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, mContext, getDistribution().getLocalSize() );
+    WriteOnlyAccess<ValueType> dummyWAccess( mLocalValues, getContextPtr(), getDistribution().getLocalSize() );
 }
 
 template<typename ValueType>
@@ -1752,7 +1752,7 @@ void DenseVector<ValueType>::assign( const Scalar value )
 {
     SCAI_LOG_DEBUG( logger, *this << ": assign " << value )
     // assign the scalar value on the home of this dense vector.
-    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::BinaryOp::COPY, mContext );
+    HArrayUtils::setScalar( mLocalValues, value.getValue<ValueType>(), common::BinaryOp::COPY, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1837,7 +1837,7 @@ void DenseVector<ValueType>::setScalar( const Scalar value, common::BinaryOp op,
 
     ValueType val = value.getValue<ValueType>();
 
-    HArrayUtils::binaryOpScalar( mLocalValues, mLocalValues, val, op, swapScalar, mContext );
+    HArrayUtils::binaryOpScalar( mLocalValues, mLocalValues, val, op, swapScalar, getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1890,7 +1890,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::applyUnary( const common::UnaryOp op )
 {
     // myValues = op ( myValues )
-    HArrayUtils::UnaryOpOp( mLocalValues, mLocalValues, op, mContext );
+    HArrayUtils::UnaryOpOp( mLocalValues, mLocalValues, op, getContextPtr() );
 }
 
 template<typename ValueType>

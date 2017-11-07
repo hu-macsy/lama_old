@@ -86,6 +86,10 @@ public:
     using _Vector::setDistributionPtr;
     using _Vector::getDistributionPtr;
     using _Vector::size;
+    using _Vector::assign;
+    using _Vector::prefetch; // prefetch() with no arguments
+
+    using Vector<ValueType>::operator=;
     using Vector<ValueType>::getValueType;
 
     /** Default constructor, creates zero-sized replicated vector */
@@ -357,11 +361,6 @@ public:
     template<typename OtherValueType>
     void assignImpl( const DenseVector<OtherValueType>& other );
 
-    // All other assignment operators are inherited from class Vector, but using is required
-
-    using _Vector::operator=;
-    using _Vector::assign;
-
     /** Implemenation of pure method _Vector::concatenate */
 
     virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors );
@@ -535,8 +534,6 @@ public:
 
     virtual void applyUnary( common::UnaryOp op );
 
-    using _Vector::prefetch; // prefetch() with no arguments
-
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
     virtual void wait() const;
@@ -552,8 +549,6 @@ public:
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
 private:
-
-    using _Vector::mContext;
 
     /** Help routine for binary operation of two sparse vectors */
 

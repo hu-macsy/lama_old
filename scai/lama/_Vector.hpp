@@ -1161,11 +1161,11 @@ protected:
      */
     void swapVector( _Vector& other );
 
-    hmemo::ContextPtr mContext; //!< decides about location of vector operations
-
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
 private:
+
+    hmemo::ContextPtr mContext; //!< decides about location of vector operations
 
     /** write only the local data to a file, no communication here */
 
