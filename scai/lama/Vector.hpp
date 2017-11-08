@@ -143,17 +143,10 @@ public:
         return *this;
     }
 
-    /**
-     * @brief Divides the passed value with all elements of this.
-     *
-     * @param[in] value   the value to divide all elements of this with.
-     * @return            a reference to this.
-     */
-    void divide( const ValueType val );
-
     Vector& operator/=( const ValueType value )
     {
-        this->divide( value );
+        SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
+        this->scale( ValueType( 1 ) / value );
         return *this;
     }
 

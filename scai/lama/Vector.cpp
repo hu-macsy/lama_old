@@ -133,13 +133,6 @@ void Vector<ValueType>::scale( ValueType value )
     setScalar( value, common::BinaryOp::MULT, noSwapArgs );
 }
 
-template<typename ValueType>
-void Vector<ValueType>::divide( const ValueType value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::DIVIDE, noSwapArgs );
-}
-
 /* ========================================================================= */
 
 template<typename ValueType>
