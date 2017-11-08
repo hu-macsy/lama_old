@@ -130,6 +130,64 @@ public:
     }
 
     /**
+     * @brief Multiplies the passed value with all elements of this.
+     *
+     * @param[in] value   the value to multiply all elements of this with.
+     * @return            a reference to this.
+     */
+    void scale( const ValueType val );
+
+    Vector& operator*=( const ValueType value )
+    {
+        this->scale( value );
+        return *this;
+    }
+
+    /**
+     * @brief Divides the passed value with all elements of this.
+     *
+     * @param[in] value   the value to divide all elements of this with.
+     * @return            a reference to this.
+     */
+    void divide( const ValueType val );
+
+    Vector& operator/=( const ValueType value )
+    {
+        this->divide( value );
+        return *this;
+    }
+
+    /**
+     * @brief Elementwise multiplication with another vector (same size), i.e. this[i] = this[i] * other[i]
+     *
+     * @param[in] other   the vector to multiply to do the multiplication per element
+     *
+     * Note: the other vector can be any type, no temporary is created here
+     */
+    void cwiseProduct( const _Vector& other );
+
+    Vector& operator*=( const _Vector& other )
+    {
+        this->cwiseProduct( other );
+        return *this;
+    }
+
+    /**
+     * @brief Elementwise division with another vector (same size), i.e. this[i] = this[i] / other[i]
+     *
+     * @param[in] other   the vector used for elementwise division
+     *
+     * Note: the other vector can be any type, no temporary is created here
+     */
+    void cwiseDivision( const _Vector& other );
+
+    Vector& operator/=( const _Vector& other )
+    {
+        this->cwiseDivision( other );
+        return *this;
+    }
+
+    /**
      * @brief Returns the L1 norm of this.
      *
      * @return the L1 norm of this.

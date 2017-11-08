@@ -280,7 +280,7 @@ int main( int argc, const char* argv[] )
 
         // scale random numbers from 0 .. 1 with options.value
 
-        *v *= options.value;
+        v->_scale( options.value );
     }
 
     cout << "Vector generated: " << *v << endl;

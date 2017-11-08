@@ -237,38 +237,6 @@ public:
     _Vector& operator=( const _Vector& other );
 
     /**
-     * @brief Multiplies the passed value with all elements of this.
-     *
-     * @param[in] value   the value to multiply all elements of this with.
-     * @return            a reference to this.
-     */
-    _Vector& operator*=( const Scalar value );
-
-    /**
-     * @brief Multiplies the passed value with all elements of this.
-     *
-     * @param[in] other   the vector to multiply to do the multiplication per element
-     * @return            a reference to this.
-     */
-    _Vector& operator*=( const _Vector& other );
-
-    /**
-     * @brief Divides the passed value with all elements of this.
-     *
-     * @param[in] value   the value to divide all elements of this with.
-     * @return            a reference to this.
-     */
-    _Vector& operator/=( const Scalar value );
-
-    /**
-     * @brief Divide this vector by another vector element-wise
-     *
-     * @param[in] other   the vector to multiply to do the multiplication per element
-     * @return            a reference to this.
-     */
-    _Vector& operator/=( const _Vector& other );
-
-    /**
      * @brief Returns the addition of this and other.
      *
      * @param[in] other the vector to do the addition with.
@@ -584,6 +552,32 @@ public:
      * \endcode
      */
     void setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound );
+
+    /** @brief This method scales all vector values with a scalar.
+     *
+     * @param[in] scaling   is the source value.
+     *
+     * \deprecated{Please use operator*= or operator/= of Vector<ValueType>}
+     */
+    virtual void _scale( const Scalar scaling );
+
+    /**
+     * @brief Elementwise multiplication with another vector (same size), i.e. this[i] = this[i] * other[i]
+     *
+     * @param[in] other   the vector to multiply to do the multiplication per element
+     *
+     * \deprecated{Please use Vector<ValueType>::cwiseProdouct}
+     */
+    virtual void _cwiseProduct( const _Vector& other );
+
+    /**
+     * @brief Elementwise disision with another vector (same size), i.e. this[i] = this[i] / other[i]
+     *
+     * @param[in] other   the vector used for elementwise division
+     *
+     * \deprecated{Please use Vector<ValueType>::cwiseDivision}
+     */
+    virtual void _cwiseDivision( const _Vector& other );
 
     /**
      * This method sets a vector by reading its values from one or multiple files.

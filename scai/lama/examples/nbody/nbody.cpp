@@ -144,13 +144,13 @@ void updateParticles( )
 
     // update velocities  v  = v + (dt * fx)/mass
     help = dt * fx;
-    help *= inversemass;
+    help *= inversemass;  // elementwise multiplication
     vx += help;
 
     help = 0.0;
 
     help = dt * fy;
-    help *= inversemass;
+    help *= inversemass;  
     vy += help;
 
     // update coordinates new-pos = old-pos + dt * velocity

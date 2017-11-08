@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
         v.conj();
 
-        v *= v1;  // ( a + b i ) ( a - b i )
+        v.cwiseProduct( v1 );  // ( a + b i ) ( a - b i ), elementwise multiplication
         
         ValueType s1 = v.sum();
         ValueType s2 = v1.dotProduct( v1 );
@@ -334,8 +334,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
 
         // v1 = v1 * v1 - v2 * v2 - 1
 
-        v1 *= v1;
-        v2 *= v2;
+        v1.cwiseProduct( v1 );
+        v2.cwiseProduct( v2 );
         v1 += v2;
         v1 -= ValueType( 1 );
 
@@ -672,13 +672,13 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( scaleTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 {
     using namespace hmemo;
 
     const IndexType n = 13;
 
-    _TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::TestDistributions dists( n );
 
@@ -686,49 +686,42 @@ BOOST_AUTO_TEST_CASE( scaleTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _VectorPtr v1 = vectors[i];
+        VectorPtr<ValueType> v1Ptr = vectors[i];
+        Vector<ValueType>& v1 = *v1Ptr;
 
-        if ( ! common::isNumeric( v1->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
+        HArray<ValueType> data1( n );
+        utilskernel::HArrayUtils::setRandom( data1, 1 );
 
-        std::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-        data1->resize( n );
-        utilskernel::HArrayUtils::setRandom( *data1, 1 );
-
-        v1->assign( *data1 );
+        v1.assign( data1 );
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
-            v1->redistribute( dists[j] );
+            v1.redistribute( dists[j] );
 
-            // CSRSparseMatrix<ValueType> m;
+            CSRSparseMatrix<ValueType> m;
 
-            _MatrixPtr m( _Matrix::getMatrix( Format::CSR, v1->getValueType() ) );
+            m.setIdentity( dists[j] );
+            m.setDiagonal( v1 );
 
-            m->setIdentity( dists[j] );
-            m->setDiagonal( *v1 );
+            VectorPtr<ValueType> v2Ptr( v1.newVector() );
+            Vector<ValueType>& v2 = *v2Ptr;
 
-            _VectorPtr v2( v1->newVector() );
+            v2 = v1;
+            v2 += v1;
+            v2 -= v1;
+            v2 *= 2;
+            v2 /= 2;
 
-            *v2 = *v1;
-            *v2 += *v1;
-            *v2 -= *v1;
-            *v2 *= 2;
-            *v2 /= 2;
+            v2.cwiseProduct( v2 );   // is v1 * v1 elementwise
 
-            *v2 *= *v2;   // is v1 * v1
+            VectorPtr<ValueType> v3Ptr( v1.newVector() );
+            Vector<ValueType>& v3 = *v3Ptr;
 
-            _VectorPtr v3( v1->newVector() );
+            v3 = 2 * m * v1 - v2;   // is v1 * v1
+            v3 -= v2;
 
-            *v3 = 2 * ( *m ) * ( *v1 ) - ( *v2 );   // is v1 * v1
-
-            // ToDO: Lauretta: v3 -= v1 * m
-
-            *v3 -= *v2;
-
-            BOOST_CHECK( v3->_maxNorm() < Scalar( 0.0001 ) );
+            NormType<ValueType> eps = 0.0001;
+            BOOST_CHECK( v3.maxNorm() < eps );
         }
     }
 }

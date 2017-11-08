@@ -108,6 +108,38 @@ common::ScalarType Vector<ValueType>::getValueType() const
     return TypeTraits<ValueType>::stype;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+/*   element-wise operations on vector                                                    */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::cwiseProduct( const _Vector& other )
+{
+    bool noSwapArgs = false;
+    setVector( other, common::BinaryOp::MULT, noSwapArgs );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::cwiseDivision( const _Vector& other )
+{
+    bool noSwapArgs = false;
+    setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::scale( ValueType value )
+{
+    bool noSwapArgs = false;
+    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::divide( const ValueType value )
+{
+    bool noSwapArgs = false;
+    setScalar( value, common::BinaryOp::DIVIDE, noSwapArgs );
+}
+
 /* ========================================================================= */
 
 template<typename ValueType>

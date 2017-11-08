@@ -575,35 +575,25 @@ _Vector& _Vector::operator=( const Scalar value )
 }
 
 /* ---------------------------------------------------------------------------------------*/
-/*   Compound assignments *=, /=                                                          */
+/*   element-wise operations on vector                                                    */
 /* ---------------------------------------------------------------------------------------*/
 
-_Vector& _Vector::operator*=( const Scalar value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
-    return *this;
-}
-
-_Vector& _Vector::operator*=( const _Vector& other )
+void _Vector::_cwiseProduct( const _Vector& other )
 {
     bool noSwapArgs = false;
     setVector( other, common::BinaryOp::MULT, noSwapArgs );
-    return *this;
 }
 
-_Vector& _Vector::operator/=( const Scalar value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::DIVIDE, noSwapArgs );
-    return *this;
-}
-
-_Vector& _Vector::operator/=( const _Vector& other )
+void _Vector::_cwiseDivision( const _Vector& other )
 {
     bool noSwapArgs = false;
     setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
-    return *this;
+}
+
+void _Vector::_scale( const Scalar value )
+{
+    bool noSwapArgs = false;
+    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
 }
 
 /* ---------------------------------------------------------------------------------------*/

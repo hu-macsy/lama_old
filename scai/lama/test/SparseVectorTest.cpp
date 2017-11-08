@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE( binOpSparseTest )
                      BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 + zero2 ) ) < Scalar( 0.0001 ) );
                      xD1 += xD2;
                      break;
-            case 1 : xS1 *= xS2; 
+            case 1 : xS1.cwiseProduct( xS2 );
                      BOOST_CHECK( xS1.getNonZeroIndexes().size() <= 4 );
                      BOOST_CHECK( abs( xS1.getZero() - Scalar( zero1 * zero2 ) ) < Scalar( 0.0001 ) );
                      xD1 *= xD2;
