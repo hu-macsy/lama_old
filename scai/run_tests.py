@@ -19,6 +19,11 @@ Test = collections.namedtuple('Test', ['name', 'args', 'is_boost_test'])
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TESTSUPPORT_DIR = os.path.join(SCRIPT_DIR, 'testsupport')
 
+class colors:
+    PASS = '\033[92m'
+    FAIL = '\033[91m'
+    NOCOLOR = '\033[0m'
+
 
 SERIAL_TESTS = [
     Test('commonTest', [ 'common/test/commonTest' ], is_boost_test=True),
@@ -38,9 +43,8 @@ SERIAL_TESTS = [
     Test('solverTest', [ 'solver/test/solverTest' ], is_boost_test=True)
 ]
 
-PASSED = " [ PASSED ] "
-FAILED = " [ FAILED ] "
-
+PASSED = " " + colors.PASS + "[ PASSED ]" + colors.NOCOLOR + " "
+FAILED = " " + colors.FAIL + "[ FAILED ]" + colors.NOCOLOR + " "
 
 def url_for_file_path(file_path):
     abs_path = os.path.abspath(file_path)
