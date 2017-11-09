@@ -39,9 +39,9 @@
 #define BOOST_TEST_MODULE dmemoTest
 #define BOOST_TEST_NO_MAIN
 
-#include "dmemoTestMain.hpp"
+#include <scai/testsupport/dmemoTestMain.hpp>
 
 int main( int argc, char* argv[] )
 {
-    return dmemoTestMain(argc, argv);
+    return scai::testsupport::dmemoTestMain(argc, argv);
 }
