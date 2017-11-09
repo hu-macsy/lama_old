@@ -699,16 +699,17 @@ DenseVector<ValueType> linearValuesVector(
  * @param[in] distribution determines global/local size of the vector
  * @param[in] startValue value for the first elemen
  * @param[in] inc increment between the element
+ * @param[in] ctx context where the vector is allocated
  */
 template<typename ValueType>
 DenseVector<ValueType> linearValuesVector( 
-    dmemo::DistributionPtr dist, 
+    dmemo::DistributionPtr distribution, 
     const ValueType startValue, 
     const ValueType inc, 
     hmemo::ContextPtr ctx = hmemo::ContextPtr() )
 {
     DenseVector<ValueType> result( ctx );
-    result.allocate( dist );
+    result.allocate( distribution );
     result.fillLinearValues( startValue, inc );
     return result;
 }

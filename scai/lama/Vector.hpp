@@ -135,13 +135,17 @@ public:
      * @param[in] value   the value to multiply all elements of this with.
      * @return            a reference to this.
      */
-    void scale( const ValueType val );
+    void scale( const ValueType value );
+
+    /** @brief Assignment 'vector *= value' is same as vector.scale( value ) */
 
     Vector& operator*=( const ValueType value )
     {
         this->scale( value );
         return *this;
     }
+
+    /** @brief Assignment 'vector /= value' is same as vector.scale( 1 / value ) */
 
     Vector& operator/=( const ValueType value )
     {
@@ -159,6 +163,8 @@ public:
      */
     void cwiseProduct( const _Vector& other );
 
+    /** @brief Assignment 'vector1 *= vector2' is same as vector1.cwiseProduct( vector2 ) */
+
     Vector& operator*=( const _Vector& other )
     {
         this->cwiseProduct( other );
@@ -173,6 +179,8 @@ public:
      * Note: the other vector can be any type, no temporary is created here
      */
     void cwiseDivision( const _Vector& other );
+
+    /** @brief Assignment 'vector1 /= vector2' is same as vector1.cwiseDivision( vector2 ) */
 
     Vector& operator/=( const _Vector& other )
     {

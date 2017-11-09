@@ -1,5 +1,5 @@
 /**
- * @file _MatrixVectorExpressions.hpp
+ * @file MatrixVectorExpressions.hpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,7 +27,7 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief Operators to form symbolic expressions Scalar * _Matrix * Vector + Scalar * Vector
+ * @brief Operators to form symbolic expressions Scalar * _Matrix * _Vector + Scalar * _Vector
  * @author Thomas Brandes
  * @date 28.03.2011
  */

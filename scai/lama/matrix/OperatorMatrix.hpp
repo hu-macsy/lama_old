@@ -75,7 +75,7 @@ public:
     {
     }
 
-    /** Linear mapping to be implemented: result = alpha * <opMatrix> * x + beta * y */
+    /** Linear mapping to be implemented: $result = alpha * this_matrix * x + beta * y$ */
 
     virtual void matrixTimesVectorImpl(
         DenseVector<ValueType>& result,

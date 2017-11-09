@@ -102,7 +102,7 @@ inline Expression_VV operator*( const _Vector& x, const _Vector& y )
  * @brief The times operator creates an expression that represents scaling a elementwise vector times
  *        vector expression.
  *
- * @param[in] alpha The scalar.
+ * @param[in] alpha factor used for multiplication
  * @param[in] exp   The vector times vector expression.
  * @return          The expression representing this SVV.
  */
@@ -145,7 +145,7 @@ inline Expression_SVV operator*( const _Vector& v, const Expression_SV exp )
  * @brief The plus operator creates an expression that represents the sum
  *        a vector adding a scalar to each vector element.
  *
- * @param[in] alpha The scalar.
+ * @param[in] alpha is the scalar value to be added.
  * @param[in] x     The vector.
  * @return          The expression representing this sum.
  */

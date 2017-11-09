@@ -1,5 +1,5 @@
 /**
- * @file _MatrixExpressions.hpp
+ * @file MatrixExpressions.hpp
  *
  * @license
  * Copyright (c) 2009-2017

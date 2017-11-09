@@ -44,8 +44,7 @@
 
 #include <memory>
 
-using std::shared_ptr;
-using std::function;
+using namespace std;
 
 namespace scai
 {
@@ -61,7 +60,7 @@ SCAI_LOG_DEF_LOGGER( ThreadPool::logger, "ThreadPool" )
 
 /* ------------------------------------------------------------------------- */
 
-shared_ptr<ThreadPoolTask> ThreadPoolTask::create(
+std::shared_ptr<ThreadPoolTask> ThreadPoolTask::create(
     function<void()> work,
     unsigned int taskId,
     int numOmpThreads /* = 0 */ )
@@ -112,7 +111,7 @@ ThreadPool::ThreadPool( int size )
 
 /* ------------------------------------------------------------------------- */
 
-shared_ptr<ThreadPoolTask> ThreadPool::schedule( function<void()> work, int numOmpThreads /* = 0 */ )
+std::shared_ptr<ThreadPoolTask> ThreadPool::schedule( std::function<void()> work, int numOmpThreads /* = 0 */ )
 {
     SCAI_REGION( "ThreadPool::schedule" )
     Thread::Id thisThread = Thread::getSelf();
@@ -148,7 +147,7 @@ shared_ptr<ThreadPoolTask> ThreadPool::schedule( function<void()> work, int numO
 
 /* ------------------------------------------------------------------------- */
 
-void ThreadPool::wait( shared_ptr<ThreadPoolTask> task )
+void ThreadPool::wait( std::shared_ptr<ThreadPoolTask> task )
 {
     if ( !task )
     {
