@@ -37,8 +37,6 @@ SERIAL_TESTS = [
     Test('sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True),
 ]
 
-MPI_PROCS = [1, 2, 3, 4 ]
-
 MPI_TESTS = [
     Test('dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True),
     Test('lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True),
@@ -137,13 +135,13 @@ def run_tests(tests, output_dir, prepend_args = []):
     return (successful_tests, failed_tests)
 
 
-def run_mpi_tests(tests, output_dir):
+def run_mpi_tests(tests, output_dir, np):
     failed_tests = []
     passed_tests = []
 
-    for np in MPI_PROCS:
-        print("Running {} MPI tests ({} processors) ...".format(len(MPI_TESTS), np))
-        mpi_args = [ "mpirun", "-np", str(np), "--tag-output" ]
+    for n in np:
+        print("Running {} MPI tests ({} processors) ...".format(len(MPI_TESTS), n))
+        mpi_args = [ "mpirun", "-np", str(n), "--tag-output" ]
         (passed, failed) = run_tests(tests, output_dir, prepend_args=mpi_args)
         print()
         passed_tests += passed
@@ -155,7 +153,10 @@ def main():
     parser = argparse.ArgumentParser(description='Run LAMA tests.')
     parser.add_argument('--output_dir', dest='output_dir', required=True,
                         help='The directory in which to store the standard output, test logs and test reports.')
-    parser.add_argument('--mpi', dest='mpi', action='store_true')
+    parser.add_argument('--mpi', dest='mpi', action='store_true',
+                        help='Whether or not to use MPI for MPI-enabled tests.')
+    parser.add_argument('--np', dest='np', type=int, nargs='+', required=False, default=[ 1 ],
+                        help='The number of processors to use for MPI. Can supply multiple arguments (e.g. --np 1 2 3)')
     args = parser.parse_args()
     output_dir = args.output_dir
 
@@ -170,7 +171,7 @@ def main():
     mpi_passed = []
     mpi_failed = []
     if args.mpi:
-        (mpi_passed, mpi_failed) = run_mpi_tests(MPI_TESTS, output_dir)
+        (mpi_passed, mpi_failed) = run_mpi_tests(MPI_TESTS, output_dir, args.np)
     else:
         print("MPI tests not requested. Skipping ...")
 
