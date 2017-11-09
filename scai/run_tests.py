@@ -78,12 +78,12 @@ def ensure_directory_exists(dir_path):
             raise
 
 
-def run_test(test, output_dir):
+def run_test(test, output_dir, prepend_args = []):
     # Note: we are implicitly assuming unique test names here
     stdout_path = os.path.join(output_dir, "{}_stdout.txt".format(test.name))
     stderr_path = os.path.join(output_dir, "{}_stderr.txt".format(test.name))
 
-    args = deepcopy(test.args)
+    args = prepend_args + deepcopy(test.args)
 
     if test.is_boost_test:
         args +=  [
@@ -100,14 +100,12 @@ def run_test(test, output_dir):
         return retcode == 0
 
 
-def run_serial_tests(tests, output_dir):
+def run_tests(tests, output_dir, prepend_args = []):
     failed_tests = []
     successful_tests = []
     status_messages = [ "  Running test #{} {} ... ".format(index + 1, test.name)
                        for (index, test) in enumerate(tests) ]
     longest_message = max(status_messages, key=len)
-
-    print("Running {} serial tests ...".format(len(tests)))
 
     for (message, test) in zip(status_messages, tests):
         padding = ' ' * ( len(longest_message) - len(message) )
@@ -115,7 +113,7 @@ def run_serial_tests(tests, output_dir):
         sys.stdout.flush()
 
         try:
-            passed = run_test(test, output_dir)
+            passed = run_test(test, output_dir, prepend_args=prepend_args)
         except Exception as e:
             passed = False;
             print("\nException when running test {}:\n{}\n".format(test.name, e))
@@ -127,19 +125,7 @@ def run_serial_tests(tests, output_dir):
             failed_tests.append(test)
             print(FAILED)
 
-    all_tests_passed = len(failed_tests) == 0
-    result_label = PASSED if all_tests_passed else FAILED
-    print("\nSerial tests completed. Results:")
-    print("{}    {} tests run. {} successful tests. {} failed tests."
-            .format(result_label, len(tests), len(successful_tests), len(failed_tests)))
-
-    print("Generating test report...")
-    html_report_path = combine_reports(output_dir)
-    print("Report successfully generated. Path to report:\n")
-    print(url_for_file_path(html_report_path))
-    print()
-
-    return len(failed_tests) == 0
+    return (successful_tests, failed_tests)
 
 
 def main():
@@ -147,14 +133,31 @@ def main():
     parser.add_argument('--output_dir', dest='output_dir', required=True,
                         help='The directory in which to store the standard output, test logs and test reports.')
     args = parser.parse_args()
+    output_dir = args.output_dir
 
     print("Running LAMA tests.")
     print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the provided output directory.")
-    print("Output directory: {}\n".format(args.output_dir))
-    serial_result = run_serial_tests(SERIAL_TESTS, args.output_dir)
+    print("Output directory: {}\n".format(output_dir))
+
+    print("Running {} serial tests ...".format(len(SERIAL_TESTS)))
+    (serial_passed, serial_failed) = run_tests(SERIAL_TESTS, output_dir)
+
+    all_tests = deepcopy(SERIAL_TESTS)
+    passed = deepcopy(serial_passed)
+    failed = deepcopy(serial_failed)
+    all_tests_passed = len(failed) == 0
+    result_label = PASSED if all_tests_passed else FAILED
+    print("\nTests completed. Results:")
+    print("{}    {} tests run. {} successful tests. {} failed tests."
+            .format(result_label, len(all_tests), len(passed), len(failed)))
+
+    print("Generating test report...")
+    html_report_path = combine_reports(output_dir)
+    print("Report successfully generated. Path to report:\n")
+    print(url_for_file_path(html_report_path))
     print()
 
-    return 0 if serial_result else 1
+    return len(failed)
 
 if __name__ == '__main__':
     return_code = main()
