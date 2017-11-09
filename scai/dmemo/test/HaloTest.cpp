@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( buildHaloTest )
         BOOST_CHECK_EQUAL( n, static_cast<IndexType>( 1 ) );
         PartitionId neighbor = providesPlan[p].partitionId;
         BOOST_CHECK( neighbor == leftNeighbor || neighbor == rightNeighbor );
-        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck );
+        BOOST_CHECK_EQUAL( providesPlan[p].offset, offsetCheck + 1);
         offsetCheck += n;
     }
 

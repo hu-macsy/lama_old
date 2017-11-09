@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE( CtorTest )
 
 BOOST_AUTO_TEST_CASE( isLocalTest )
 {
-    BOOST_CHECK( dist->isLocal( 0 ) );
+    BOOST_CHECK( dist->isLocal( 2 ) );
 }
 
 /* --------------------------------------------------------------------- */
