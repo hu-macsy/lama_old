@@ -6,11 +6,6 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:output method="html" indent="yes" />
 
 <xsl:template match="TestOutput">
-<!--     <xsl:for-each select="TestResult"> -->
-    <!--<xsl:copy>
-        <xsl:apply-templates select="@*|node()" />
-    </xsl:copy>-->
-<!--     </xsl:for-each> -->
     <html>
     <head>
     <style>
