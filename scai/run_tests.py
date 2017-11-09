@@ -35,6 +35,11 @@ SERIAL_TESTS = [
     Test('blaskernelTest', [ 'blaskernel/test/blaskernelTest' ], is_boost_test=True),
     Test('utilskernelTest', [ 'utilskernel/test/utilskernelTest' ], is_boost_test=True),
     Test('sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True),
+]
+
+MPI_PROCS = [1, 2, 3, 4 ]
+
+MPI_TESTS = [
     Test('dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True),
     Test('lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True),
     Test('lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True),
@@ -132,6 +137,20 @@ def run_tests(tests, output_dir, prepend_args = []):
     return (successful_tests, failed_tests)
 
 
+def run_mpi_tests(tests, output_dir):
+    failed_tests = []
+    passed_tests = []
+
+    for np in MPI_PROCS:
+        print("Running {} MPI tests ({} processors) ...".format(len(MPI_TESTS), np))
+        mpi_args = [ "mpirun", "-np", str(np), "--tag-output" ]
+        (passed, failed) = run_tests(tests, output_dir, prepend_args=mpi_args)
+        print()
+        passed_tests += passed
+        failed_tests += failed
+    return (passed_tests, failed_tests)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Run LAMA tests.')
     parser.add_argument('--output_dir', dest='output_dir', required=True,
@@ -145,19 +164,23 @@ def main():
 
     print("Running {} serial tests ...".format(len(SERIAL_TESTS)))
     (serial_passed, serial_failed) = run_tests(SERIAL_TESTS, output_dir)
+    print()
+    (mpi_passed, mpi_failed) = run_mpi_tests(MPI_TESTS, output_dir)
 
-    all_tests = deepcopy(SERIAL_TESTS)
-    passed = deepcopy(serial_passed)
-    failed = deepcopy(serial_failed)
+    all_tests = serial_passed + serial_failed + mpi_passed + mpi_failed
+    passed = serial_passed + mpi_passed
+    failed = serial_failed + mpi_failed
     all_tests_passed = len(failed) == 0
     result_label = PASSED if all_tests_passed else FAILED
-    print("\nTests completed. Results:")
+    print()
+    print("Tests completed. Results:")
     print("{}    {} tests run. {} successful tests. {} failed tests."
             .format(result_label, len(all_tests), len(passed), len(failed)))
 
+    print()
     print("Generating test report...")
     html_report_path = combine_reports(output_dir)
-    print("Report successfully generated. Path to report:\n")
+    print("Report successfully generated. URL:\n")
     print(url_for_file_path(html_report_path))
     print()
 
