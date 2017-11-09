@@ -155,6 +155,7 @@ def main():
     parser = argparse.ArgumentParser(description='Run LAMA tests.')
     parser.add_argument('--output_dir', dest='output_dir', required=True,
                         help='The directory in which to store the standard output, test logs and test reports.')
+    parser.add_argument('--mpi', dest='mpi', action='store_true')
     args = parser.parse_args()
     output_dir = args.output_dir
 
@@ -165,7 +166,13 @@ def main():
     print("Running {} serial tests ...".format(len(SERIAL_TESTS)))
     (serial_passed, serial_failed) = run_tests(SERIAL_TESTS, output_dir)
     print()
-    (mpi_passed, mpi_failed) = run_mpi_tests(MPI_TESTS, output_dir)
+
+    mpi_passed = []
+    mpi_failed = []
+    if args.mpi:
+        (mpi_passed, mpi_failed) = run_mpi_tests(MPI_TESTS, output_dir)
+    else:
+        print("MPI tests not requested. Skipping ...")
 
     all_tests = serial_passed + serial_failed + mpi_passed + mpi_failed
     passed = serial_passed + mpi_passed
