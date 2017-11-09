@@ -7,6 +7,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/dmemo.hpp>
 #include <scai/testsupport/detail/common.hpp>
+#include <scai/testsupport/detail/common_hmemo.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -28,25 +29,27 @@ namespace detail
  * related tests. For example, all MPI tests which have a certain number of processors
  * should appear clustered when test suite names are sorted.
  */
-std::string adaptTestSuiteNameToEnv(const std::string & name, const scai::dmemo::Communicator & comm)
+std::string adaptTestSuiteNameToEnv(const std::string & name,
+                                    const scai::hmemo::Context & context,
+                                    const scai::dmemo::Communicator & comm)
 {
     // TODO: Context
     std::stringstream newTestName;
     if (comm.getType() == scai::dmemo::_Communicator::MPI)
     {
-        newTestName << "_MPI (" << comm.getSize() << " procs, rank: " << comm.getRank() << ") ";
+        newTestName << "~~MPI " << comm.getSize() << ":" << comm.getRank() << " ";
     }
 
-    newTestName << name;
+    newTestName << adaptTestSuiteNameToEnv(name, context);
     return newTestName.str();
 }
 
 std::string suiteNameForFile(const std::string & suiteName,
+                             const scai::hmemo::Context & context,
                              const scai::dmemo::Communicator & comm)
 {
-    // TODO: Context
     std::stringstream filename;
-    filename << suiteName;
+    filename << suiteNameForFile(suiteName, context);
     if (comm.getType() == scai::dmemo::_Communicator::MPI)
     {
         filename << "_mpi_" << comm.getSize() << "_" << comm.getRank();
@@ -63,8 +66,18 @@ bool dmemo_test_init()
         omp_set_num_threads( nThreads );
     }
 
-    scai::dmemo::CommunicatorPtr comm;
+    scai::hmemo::ContextPtr ctx;
+    try
+    {
+        ctx = scai::hmemo::Context::getContextPtr();
+    }
+    catch ( scai::common::Exception& ex )
+    {
+        std::cerr << "Could not get context for test: " << ex.what() << std::endl;
+        return false;
+    }
 
+    scai::dmemo::CommunicatorPtr comm;
     try
     {
         comm = scai::dmemo::Communicator::getCommunicatorPtr();
@@ -76,8 +89,8 @@ bool dmemo_test_init()
     }
 
     auto & master_suite = boost::unit_test::framework::master_test_suite();
-    const auto suiteName = std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
-    const auto newTestName = adaptTestSuiteNameToEnv(suiteName, *comm);
+    const auto suiteName = boostTestModuleName();
+    const auto newTestName = adaptTestSuiteNameToEnv(suiteName, *ctx, *comm);
     master_suite.p_name.value = newTestName;
 
     return true;
@@ -95,9 +108,10 @@ int dmemoTestMain( int argc, char* argv[] )
 
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
+    const auto ctx = scai::hmemo::Context::getContextPtr();
     const auto comm = scai::dmemo::Communicator::getCommunicatorPtr();
     const auto boostTestModuleName = std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
-    const auto testSuiteName = suiteNameForFile(boostTestModuleName, *comm);
+    const auto testSuiteName = suiteNameForFile(boostTestModuleName, *ctx, *comm);
 
     // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
     auto newArgs = rebuildArgs(argc, argv, testSuiteName);

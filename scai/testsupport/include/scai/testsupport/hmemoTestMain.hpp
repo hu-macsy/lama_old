@@ -7,6 +7,7 @@
 #include <scai/common/OpenMP.hpp>
 #include <scai/hmemo.hpp>
 #include <scai/testsupport/detail/common.hpp>
+#include <scai/testsupport/detail/common_hmemo.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -20,54 +21,6 @@ namespace testsupport
 
 namespace detail
 {
-
-/**
- * Find a suitable name for a test suite which describes
- * the context/communicator used. Note that the naming is chosen such that
- * related environments are collected when sorted, rather than
- * related tests. For example, all MPI tests which have a certain number of processors
- * should appear clustered when test suite names are sorted.
- */
-std::string adaptTestSuiteNameToEnv(const std::string & name, const scai::hmemo::Context & context)
-{
-    std::string prefix;
-    switch (context.getType())
-    {
-        case scai::common::context::Host:
-            prefix = "Host ";
-            break;
-        case scai::common::context::CUDA:
-            prefix = "CUDA ";
-            break;
-        default:
-            std::cerr << "Unsupported context type. Can not create appropriate test suite name." << std::endl;
-            throw std::runtime_error("Unsupported context type.");
-    }
-
-    return prefix + name;
-}
-
-std::string suiteNameForFile(const std::string & name, const scai::hmemo::Context & context)
-{
-    // TODO: Context
-    std::stringstream filename;
-    filename << name;
-
-    switch (context.getType())
-    {
-        case scai::common::context::Host:
-            filename << "_host";
-            break;
-        case scai::common::context::CUDA:
-            filename << "_cuda";
-            break;
-        default:
-            std::cerr << "Unsupported context type. Can not create appropriate test filename." << std::endl;
-            throw std::runtime_error("Unsupported context type.");
-    }
-
-    return filename.str();
-}
 
 bool hmemo_test_init()
 {
