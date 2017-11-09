@@ -80,7 +80,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         </thead>
         <tbody>
             <xsl:for-each select="TestResult/TestSuite">
-                <xsl:sort select="@name"/>
+                <xsl:sort select="@result"/>
+                <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
                 <tr>
                     <xsl:choose>
                         <xsl:when test="@result = 'passed'">
@@ -188,7 +189,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                     <tbody>
                         <xsl:for-each select="TestSuite">
                             <xsl:sort select="@result"/>
-                            <xsl:sort select="@name"/>
+                            <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
                             <tr>
                                 <xsl:choose>
                                     <xsl:when test="@result = 'passed'">
@@ -232,7 +233,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                     <tbody>
                         <xsl:for-each select="TestCase">
                             <xsl:sort select="@result"/>
-                            <xsl:sort select="@name"/>
+                            <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
                                 <tr>
                                     <xsl:choose>
                                         <xsl:when test="@result = 'passed'">
