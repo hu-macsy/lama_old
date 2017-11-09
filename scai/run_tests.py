@@ -46,8 +46,6 @@ def ensure_directory_exists(dir_path):
 
 def run_test(test, output_dir):
     # Note: we are implicitly assuming unique test names here
-    report_path = os.path.join(output_dir, "{}_report.txt".format(test.name))
-    log_path = os.path.join(output_dir, "{}_log.txt".format(test.name))
     stdout_path = os.path.join(output_dir, "{}_stdout.txt".format(test.name))
     stderr_path = os.path.join(output_dir, "{}_stderr.txt".format(test.name))
 
@@ -56,11 +54,9 @@ def run_test(test, output_dir):
     if test.is_boost_test:
         args +=  [
             "--report_level=detailed",
-            "--report_format=HRF",
-            "--report_sink={}".format(report_path),
-            "--log_level=all",
-            "--log_format=HRF",
-            "--log_sink={}".format(log_path)
+            "--log_level=message",
+            "--output_format=XML",
+            "--output_dir={}".format(output_dir)
         ]
 
     ensure_directory_exists(output_dir)
