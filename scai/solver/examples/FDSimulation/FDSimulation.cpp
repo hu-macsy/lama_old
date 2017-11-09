@@ -279,8 +279,8 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
     // this is for source[i] = AMP * ( 1.0 - 2.0 * tau[i] * tau[i] * exp( -tau[i] * tau[i] ) );
     lama::DenseVector<ValueType> one( source.size(), 1.0 );
     help = tau * tau;
-    tau = -1.0 * help;
-    tau.exp();
+    tau = -help;
+    tau = exp( tau );
     help = one - 2.0 * help;
     source = lama::Scalar( AMP ) * help * tau;
 }

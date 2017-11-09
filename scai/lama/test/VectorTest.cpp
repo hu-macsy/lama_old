@@ -246,14 +246,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
         VectorPtr<ValueType> v1Ptr( v.copy() );
         Vector<ValueType>& v1 = *v1Ptr;
 
-        v.conj();
+        v.applyUnary( common::UnaryOp::CONJ );
 
         v.cwiseProduct( v1 );  // ( a + b i ) ( a - b i ), elementwise multiplication
         
         ValueType s1 = v.sum();
         ValueType s2 = v1.dotProduct( v1 );
 
-        SCAI_LOG_DEBUG( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
+        SCAI_LOG_FATAL( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
 
         BOOST_CHECK( common::Math::abs( s1 - s2 ) < 0.0001 );
     }
@@ -261,46 +261,48 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( ExpLogTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ExpLogTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    _TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _Vector& v1 = *vectors[i];
+        Vector<ValueType>& v1 = *vectors[i];
 
-        if ( ! common::isNumeric( v1.getValueType() ) )
-        {
-            continue;   // this test will fail for IndexType
-        }
+        if ( v1.getVectorKind() == VectorKind::DENSE ) continue;
 
         float fillRate = 0.1f;
 
-        Scalar zero = 0;
+        ValueType zero = 0;
 
         v1.setSparseRandom( dist, zero, fillRate, 1 );
 
         v1 += 2;
 
-        _VectorPtr v2Ptr( v1.copy() );
-        const _Vector& v2 = *v2Ptr;
+        VectorPtr<ValueType> v2Ptr( v1.copy() );
+        const Vector<ValueType>& v2 = *v2Ptr;
 
-        v1.exp();
-        v1.log();
+        // v1 = exp( v1 );
+        v1.assign ( v1 );
+        v1.applyUnary( common::UnaryOp::EXP );
+        // v1 = log( v1 );
+        v1.assign( v1 );
+        v1.applyUnary( common::UnaryOp::LOG );
 
         v1 -= v2;
 
-        Scalar diff = v1._maxNorm();
+        NormType<ValueType> diff = v1.maxNorm();
+        NormType<ValueType> eps  = 0.0001;
 
         SCAI_LOG_DEBUG( logger, "v = " << v1 << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
     }
 }
 
@@ -329,8 +331,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
 
         // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
 
-        v1.sin();
-        v2.cos();
+        v1 = sin( v1 );
+        v2 = cos( v2 );
 
         // v1 = v1 * v1 - v2 * v2 - 1
 
@@ -388,7 +390,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
         ValueType e( common::Math::exp( ValueType( 0 ) ) );
 
         v1.powBase( e );  // v1[i] = 2 ** v1
-        v2.exp();
+        v2 = exp( v2 );
         v1 -= v2;
 
         BOOST_CHECK( diff < eps );

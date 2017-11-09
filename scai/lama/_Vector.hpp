@@ -1052,61 +1052,6 @@ public:
     void invert();
 
     /**
-     *  Build the conjugate vector in place.
-     */
-    void conj();
-
-    /**
-     *  Build the absolute in place.
-     */
-    void abs();
-
-    /**
-     *  Calculates the exponentional function of the vector elements in place.
-     */
-    void exp();
-
-    /**
-     *  Calculates the logarithm of the vector elements in place.
-     */
-    void log();
-
-    /**
-     *  Calculates the floor function of the vector elements in place.
-     */
-    void floor();
-
-    /**
-     *  Calculates the ceil function of the vector elements in place.
-     */
-    void ceil();
-
-    /**
-     *  Calculates the square root of the vector elements.
-     */
-    void sqrt();
-
-    /**
-     *  Calculates the sinus of the vector elements.
-     */
-    void sin();
-
-    /**
-     *  Calculates the cosinus of the vector elements.
-     */
-    void cos();
-
-    /**
-     *  Calculates the tangens of the vector elements.
-     */
-    void tan();
-
-    /**
-     *  Calculates the arcus tangens of the vector elements.
-     */
-    void atan();
-
-    /**
      *  Calculates the pow function for the vector elements with the elements of another vector.
      */
     void powBase( const _Vector& other );

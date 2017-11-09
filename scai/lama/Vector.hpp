@@ -35,8 +35,11 @@
 
 #include <scai/lama/_Vector.hpp>
 
-#include <memory>
+#include <scai/lama/expression/UnaryVectorExpression.hpp>
+
 #include <scai/common/TypeTraits.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -261,6 +264,12 @@ public:
      * @return            the dot product of this and other
      */
     virtual ValueType dotProduct( const _Vector& other ) const = 0;
+
+    void operator=( const UnaryVectorExpression<ValueType>& uv )
+    {
+        this->assign( uv.mV );
+        applyUnary( uv.mOp );
+    }
 
 protected:
 

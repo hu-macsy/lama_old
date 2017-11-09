@@ -824,61 +824,6 @@ void _Vector::powExp( const Scalar value )
     setScalar( value, common::BinaryOp::POW, swapArgs );
 }
 
-void _Vector::conj()
-{
-    applyUnary( common::UnaryOp::CONJ );
-}
-
-void _Vector::abs()
-{
-    applyUnary( common::UnaryOp::ABS );
-}
-
-void _Vector::exp()
-{
-    applyUnary( common::UnaryOp::EXP );
-}
-
-void _Vector::sqrt()
-{
-    applyUnary( common::UnaryOp::SQRT );
-}
-
-void _Vector::sin()
-{
-    applyUnary( common::UnaryOp::SIN );
-}
-
-void _Vector::cos()
-{
-    applyUnary( common::UnaryOp::COS );
-}
-
-void _Vector::tan()
-{
-    applyUnary( common::UnaryOp::TAN );
-}
-
-void _Vector::atan()
-{
-    applyUnary( common::UnaryOp::ATAN );
-}
-
-void _Vector::log()
-{
-    applyUnary( common::UnaryOp::LOG );
-}
-
-void _Vector::floor()
-{
-    applyUnary( common::UnaryOp::FLOOR );
-}
-
-void _Vector::ceil()
-{
-    applyUnary( common::UnaryOp::CEIL );
-}
-
 /* ---------------------------------------------------------------------------------------*/
 /*   Miscellaneous                                                                        */
 /* ---------------------------------------------------------------------------------------*/

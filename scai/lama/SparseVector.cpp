@@ -235,6 +235,11 @@ struct VectorWrapperT< ValueType, common::mepr::TypeList<H, Tail> >
 template<typename ValueType>
 void SparseVector<ValueType>::assign( const _Vector& other )
 {
+    if ( &other == this )
+    {
+        return;
+    } 
+
     VectorWrapperT<ValueType, SCAI_ARRAY_TYPES_HOST_LIST>::assign( *this, other );
 }
 
@@ -242,6 +247,9 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignImpl( const SparseVector<OtherValueType>& other )
 {
+    SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
+                        << "sparseVector<" << common::TypeTraits<OtherValueType>::id() )
+
     allocate( other.getDistributionPtr() );
     assign( other.getZero() );
     fillSparseData( other.getNonZeroIndexes(), other.getNonZeroValues(), common::BinaryOp::COPY );
@@ -251,6 +259,9 @@ template<typename ValueType>
 template<typename OtherValueType>
 void SparseVector<ValueType>::assignImpl( const DenseVector<OtherValueType>& other )
 {   
+    SCAI_LOG_INFO( logger, "sparseVector<" << common::TypeTraits<ValueType>::id() << "> = "
+                        << "denseVector<" << common::TypeTraits<OtherValueType>::id() )
+
     allocate( other.getDistributionPtr() );
     setDenseValues( other.getLocalValues() );
 }
