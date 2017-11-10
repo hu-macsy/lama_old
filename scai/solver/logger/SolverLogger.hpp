@@ -59,7 +59,7 @@ namespace scai
 namespace solver
 {
 
-class Solver;
+template<typename ValueType> class Solver;
 class SolverLogger;
 
 typedef std::shared_ptr<SolverLogger> LoggerPtr;
@@ -208,9 +208,10 @@ public:
      * @param[in] norm              The Norm used to calculate the residual
      * @param[in] iterationPrefix   A Prefix to put in front of the generated log message (Default: "" )
      */
+    template<typename ValueType>
     void logResidual(
         LogLevel::LogLevel level,
-        const Solver& solver,
+        const Solver<ValueType>& solver,
         const lama::Norm& norm,
         const std::string iterationPrefix = "" );
 

@@ -72,11 +72,11 @@ public:
 
     virtual void initialize( const lama::_Matrix& coefficients ) = 0;
 
-    virtual Solver& getCoarseLevelSolver() = 0;
+    virtual _Solver& getCoarseLevelSolver() = 0;
 
     virtual unsigned int getNumLevels() = 0;
 
-    virtual Solver& getSmoother( const unsigned int level ) = 0;
+    virtual _Solver& getSmoother( const unsigned int level ) = 0;
 
     virtual const lama::_Matrix& getGalerkin( const unsigned int level ) = 0;
 
@@ -110,12 +110,12 @@ public:
 
     virtual void setReplicatedLevel( IndexType replicatedLevel );
 
-    virtual void setCoarseLevelSolver( SolverPtr solver ) = 0;
+    virtual void setCoarseLevelSolver( _SolverPtr solver ) = 0;
 
     /**
      * @brief Sets smoother for all level
      */
-    virtual void setSmoother( SolverPtr solver ) = 0;
+    virtual void setSmoother( _SolverPtr solver ) = 0;
 
 protected:
 

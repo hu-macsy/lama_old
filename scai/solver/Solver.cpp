@@ -39,10 +39,14 @@
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/logger/Timer.hpp>
 
+// internal scai libraries
+
+#include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
 
-// internal scai libraries
 #include <scai/tracing.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -50,49 +54,55 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( Solver::logger, "Solver" )
+SCAI_LOG_DEF_LOGGER( _Solver::logger, "Solver" )
 
-using lama::_Matrix;
-using lama::_Vector;
-using lama::Scalar;
+using lama::Matrix;
+using lama::Vector;
 
-Solver::Solver( const std::string& id )
+template<typename ValueType>
+Solver<ValueType>::Solver( const std::string& id )
     : mId( id ), mLogger(
         new CommonLogger( "dummyLog", LogLevel::noLogging,
                           LoggerWriteBehaviour::toConsoleOnly,
                           std::shared_ptr<Timer>( new Timer() ) ) )
 {
-    SCAI_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, dummy log" )
+    SCAI_LOG_INFO( _Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }
 
-Solver::Solver( const std::string& id, LoggerPtr logger )
+template<typename ValueType>
+Solver<ValueType>::Solver( const std::string& id, LoggerPtr logger )
     : mId( id ), mLogger( logger )
 {
-    SCAI_LOG_INFO( Solver::logger, "Solver id = " << mId << " created, with logger" )
+    SCAI_LOG_INFO( _Solver::logger, "Solver id = " << mId << " created, with logger" )
 }
 
-Solver::Solver( const Solver& other )
+template<typename ValueType>
+Solver<ValueType>::Solver( const Solver& other )
     : mId( other.mId ), mLogger( other.mLogger )
 {
 }
 
-Solver::SolverRuntime::SolverRuntime()
+template<typename ValueType>
+Solver<ValueType>::SolverRuntime::SolverRuntime()
     : mCoefficients( 0 ), mRhs( 0 ), mResidual(), mInitialized( false ), mSolveInit( false )
 {
 }
 
-Solver::~Solver()
+template<typename ValueType>
+Solver<ValueType>::~Solver()
 {
     // mRhs, mCoefficents are used as 'dynamic' references, no free
-    SCAI_LOG_INFO( Solver::logger, "~Solver " << mId )
+    SCAI_LOG_INFO( _Solver::logger, "~Solver " << mId )
 }
 
-Solver::SolverRuntime::~SolverRuntime()
+template<typename ValueType>
+Solver<ValueType>::SolverRuntime::~SolverRuntime()
 {
     SCAI_LOG_INFO( logger, "~SolverRuntime" )
 }
 
-void Solver::initialize( const _Matrix& coefficients )
+template<typename ValueType>
+void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     if ( getConstRuntime().mInitialized )
     {
@@ -105,7 +115,8 @@ void Solver::initialize( const _Matrix& coefficients )
     mLogger->logMessage( LogLevel::solverInformation, "Solver initialized\n" );
 }
 
-void Solver::solve( _Vector& solution, const _Vector& rhs )
+template<typename ValueType>
+void Solver<ValueType>::solve( _Vector& solution, const _Vector& rhs )
 {
     SCAI_REGION( "Solver.solve" )
     SCAI_ASSERT( getConstRuntime().mInitialized, "Solver not initialized, solve cannot be called" )
@@ -120,7 +131,8 @@ void Solver::solve( _Vector& solution, const _Vector& rhs )
     solveFinalize();
 }
 
-void Solver::solveInit( _Vector& solution, const _Vector& rhs )
+template<typename ValueType>
+void Solver<ValueType>::solveInit( _Vector& solution, const _Vector& rhs )
 {
     SolverRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -132,17 +144,20 @@ void Solver::solveInit( _Vector& solution, const _Vector& rhs )
     runtime.mSolveInit = true;
 }
 
-void Solver::solveFinalize()
+template<typename ValueType>
+void Solver<ValueType>::solveFinalize()
 {
 }
 
-const std::string& Solver::getId() const
+template<typename ValueType>
+const std::string& Solver<ValueType>::getId() const
 {
     SCAI_LOG_TRACE( logger, "Returning Solver Id " << mId )
     return mId;
 }
 
-const _Vector& Solver::getResidual() const
+template<typename ValueType>
+const _Vector& Solver<ValueType>::getResidual() const
 {
     const SolverRuntime& runtime = getConstRuntime();
 
@@ -189,26 +204,36 @@ const _Vector& Solver::getResidual() const
     return *runtime.mResidual;
 }
 
-const _Matrix& Solver::getCoefficients() const
+template<typename ValueType>
+const Matrix<ValueType>& Solver<ValueType>::getCoefficients() const
 {
     SCAI_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" )
     return *getConstRuntime().mCoefficients;
 }
 
-void Solver::setLogger( LoggerPtr logger )
+template<typename ValueType>
+void Solver<ValueType>::setLogger( LoggerPtr logger )
 {
     mLogger = logger;
 }
 
-void Solver::setLogLevel( LogLevel::LogLevel level )
+template<typename ValueType>
+void Solver<ValueType>::setLogLevel( LogLevel::LogLevel level )
 {
     mLogger->setLogLevel( level );
 }
 
-void Solver::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void Solver<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "Solver ( id = " << mId << " )";
+    stream << "Solver ( id = " << getId() << " )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( Solver, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

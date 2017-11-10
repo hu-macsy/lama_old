@@ -44,20 +44,24 @@
 namespace scai
 {
 
+namespace lama
+{
+    template<typename ValueType> class Matrix;
+    template<typename ValueType> class DenseVector;
+}
+
 namespace solver
 {
 
 /**
  * @brief The class CG represents a IterativeSolver which uses the krylov subspace CG method
  *        to solve a system of linear equations iteratively.
- *
- * Remark:
- * The scalars in the algorithm are set to zero if they are smaller than machine precision
- * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<class ValueType>
 class COMMON_DLL_IMPORTEXPORT CG:
-    public IterativeSolver,
-    public Solver::Register<CG>
+
+    public IterativeSolver<ValueType>
+
 {
 public:
     /**
@@ -82,25 +86,25 @@ public:
 
     virtual ~CG();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
-     * @brief Copies the status independent solver informations to create a new instance of the same
-     * type
-     *
-     * @return shared pointer of the copied solver
+     * @brief Copies the status independent solver informations to create a new instance of the same type
      */
-    virtual SolverPtr copy();
+    virtual CG<ValueType>* copy();
 
-    struct CGRuntime: IterativeSolverRuntime
+    using IterativeSolver<ValueType>::IterativeSolverRuntime;
+
+    struct CGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
         CGRuntime();
+
         virtual ~CGRuntime();
 
-        lama::_VectorPtr mP;
-        lama::_VectorPtr mQ;
-        lama::_VectorPtr mZ;
-        lama::Scalar mPScalar;
+        lama::DenseVector<ValueType> mP;
+        lama::DenseVector<ValueType> mQ;
+        lama::DenseVector<ValueType> mZ;
+        ValueType mPScalar;
     };
 
     /**
@@ -114,7 +118,7 @@ public:
     virtual const CGRuntime& getConstRuntime() const;
 
     static std::string createValue();
-    static Solver* create( const std::string name );
+    static Solver<ValueType>* create( const std::string name );
 
 protected:
 

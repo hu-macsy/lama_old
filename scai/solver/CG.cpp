@@ -37,6 +37,7 @@
 
 // internal scai libraries
 #include <scai/lama/DenseVector.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/lama/expression/VectorExpressions.hpp>
 #include <scai/lama/expression/MatrixVectorExpressions.hpp>
@@ -44,6 +45,7 @@
 #include <scai/tracing.hpp>
 
 #include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -51,74 +53,92 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( CG::logger, "Solver.IterativeSolver.CG" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CG<ValueType>::logger, "Solver.IterativeSolver.CG" )
 
-using lama::_Matrix;
-using lama::_Vector;
-using lama::Scalar;
+using lama::Matrix;
+using lama::Vector;
 
-CG::CG( const std::string& id )
-    : IterativeSolver( id )
+template<typename ValueType>
+CG<ValueType>::CG( const std::string& id ) : 
+
+    IterativeSolver<ValueType>( id )
 {
 }
 
-CG::CG( const std::string& id, LoggerPtr logger )
-    : IterativeSolver( id, logger )
+template<typename ValueType>
+CG<ValueType>::CG( const std::string& id, LoggerPtr logger ) : 
+
+    IterativeSolver<ValueType>( id, logger )
 {
 }
 
-CG::CG( const CG& other )
-    : IterativeSolver( other )
+template<typename ValueType>
+CG<ValueType>::CG( const CG& other ) : 
+
+    IterativeSolver<ValueType>( other )
 {
 }
 
-CG::~CG()
+template<typename ValueType>
+CG<ValueType>::~CG()
 {
 }
 
-CG::CGRuntime::CGRuntime()
-    : IterativeSolverRuntime(), mPScalar( 0.0 )
+template<typename ValueType>
+CG<ValueType>::CGRuntime::CGRuntime() : 
+
+    mPScalar( ValueType( 0 ) )
 {
 }
 
-CG::CGRuntime::~CGRuntime()
+template<typename ValueType>
+CG<ValueType>::CGRuntime::~CGRuntime()
 {
 }
 
-void CG::initialize( const _Matrix& coefficients )
+template<typename ValueType>
+void CG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.CG.initialize" )
-    IterativeSolver::initialize( coefficients );
+    IterativeSolver<ValueType>::initialize( coefficients );
     CGRuntime& runtime = getRuntime();
-    runtime.mPScalar = 0.0;
+    runtime.mPScalar = ValueType( 0 );
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    runtime.mP.reset( coefficients.newVector( dist ) );
-    runtime.mQ.reset( coefficients.newVector( dist ) );
-    runtime.mZ.reset( coefficients.newVector( dist ) );
+    hmemo::ContextPtr ctx = coefficients.getContextPtr();
+    runtime.mP.setContextPtr( ctx );
+    runtime.mP.allocate( dist );
+    runtime.mQ.setContextPtr( ctx );
+    runtime.mQ.allocate( dist );
+    runtime.mZ.setContextPtr( ctx );
+    runtime.mZ.allocate( dist );
 }
 
-void CG::iterate()
+template<typename ValueType>
+void CG<ValueType>::iterate()
 {
     SCAI_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
-    Scalar lastPScalar( runtime.mPScalar );
-    Scalar& pScalar = runtime.mPScalar;
+	ValueType lastPScalar = runtime.mPScalar;
+    ValueType& pScalar = runtime.mPScalar;
 
     if ( this->getIterationCount() == 0 )
     {
         this->getResidual();
     }
 
-    _Vector& residual = *runtime.mResidual;
-    const _Matrix& A = *runtime.mCoefficients;
-    _Vector& x = *runtime.mSolution;
-    _Vector& p = *runtime.mP;
-    _Vector& q = *runtime.mQ;
-    _Vector& z = *runtime.mZ;
+    Vector<ValueType>& residual = runtime.mResidual;
+
+    const Matrix<ValueType>& A = *runtime.mCoefficients;  // coefficient matrix is pointer
+
+    Vector<ValueType>& x = runtime.mSolution;
+    Vector<ValueType>& p = runtime.mP;
+    Vector<ValueType>& q = runtime.mQ;
+    Vector<ValueType>& z = runtime.mZ;
+
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
-    //CG implementation start
-    if ( !mPreconditioner )
+    // CG implementation start
+    if ( !this->mPreconditioner )
     {
         SCAI_REGION( "Solver.CG.setZ" )
         z = residual;
@@ -127,11 +147,11 @@ void CG::iterate()
     {
         SCAI_REGION( "Solver.CG.solvePreconditioner" )
         z.setSameValue( A.getRowDistributionPtr(), 0 );
-        mPreconditioner->solve( z, residual );
+        this->mPreconditioner->solve( z, residual );
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = z._dotProduct( residual );
+    pScalar = z.dotProduct( residual );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -145,9 +165,9 @@ void CG::iterate()
 
         // Note: lastPScalar can be very close to 0, e.g. 1e-100, is okay if pScalar is 1e-98
 
-        Scalar beta = pScalar / lastPScalar;
+        ValueType beta = pScalar / lastPScalar;
 
-        if ( Scalar( 0 ) == beta )
+        if ( ValueType( 0 ) == beta )
         {
             // ToDo: solver should terminate
 
@@ -173,15 +193,15 @@ void CG::iterate()
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = q._dotProduct( p );
+    const ValueType pqProd = q.dotProduct( p );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-/*    if ( pqProd == Scalar( 0.0 ) )
+    /*    if ( pqProd == Scalar( 0.0 ) )
     {
         COMMON_THROWEXCEPTION( "Diverging due to indefinite matrix. You might try another start solution, better an adequate solver." )
     }*/
 
-    Scalar alpha = pScalar / pqProd;
+    ValueType alpha = pScalar / pqProd;
 
     SCAI_LOG_DEBUG( logger, "alpha = " << alpha << ", is p = " << pScalar << " / pq = " << pqProd )
 
@@ -201,41 +221,55 @@ void CG::iterate()
     mCGRuntime.mSolution.setDirty( false );
 }
 
-SolverPtr CG::copy()
+template<typename ValueType>
+CG<ValueType>* CG<ValueType>::copy()
 {
-    return SolverPtr( new CG( *this ) );
+    return new CG<ValueType>( *this );    // copy by using the copy constructor
 }
 
-CG::CGRuntime& CG::getRuntime()
-{
-    return mCGRuntime;
-}
-
-const CG::CGRuntime& CG::getConstRuntime() const
+template<typename ValueType>
+typename CG<ValueType>::CGRuntime& CG<ValueType>::getRuntime()
 {
     return mCGRuntime;
 }
 
-std::string CG::createValue()
+template<typename ValueType>
+const typename CG<ValueType>::CGRuntime& CG<ValueType>::getConstRuntime() const
+{
+    return mCGRuntime;
+}
+
+template<typename ValueType>
+std::string CG<ValueType>::createValue()
 {
     return "CG";
 }
 
-Solver* CG::create( const std::string name )
+template<typename ValueType>
+Solver<ValueType>* CG<ValueType>::create( const std::string name )
 {
     return new CG( name );
 }
 
-void CG::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void CG<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "CG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "CG ( id = " << Solver<ValueType>::getId() << ", #iter = " << getConstRuntime().mIterations << " )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( CG, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 
 // add the register guard might be needed for some compilers
 
+/*
 template solver::Solver::Register<solver::CG>::RegisterGuard
          solver::Solver::Register<solver::CG>::registerGuard;
+*/
 
 } /* end namespace scai */

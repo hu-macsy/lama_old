@@ -56,29 +56,29 @@ scai_project (
 
     CLASSES                  # .cpp, .hpp
 
-        AMGSetup
-        BiCG
-        BiCGstab
+#       AMGSetup
+#       BiCG
+#       BiCGstab
         CG
-        CGNE
-        CGNR
-        CGS
-        DecompositionSolver
-        GMRES
-        InverseSolver
+#       CGNE
+#       CGNR
+#       CGS
+#       DecompositionSolver
+#       GMRES
+#       InverseSolver
         IterativeSolver
-        Jacobi
-        Kaczmarz
-        MINRES
-        OmegaSolver
-        QMR
-        Richardson
-        SimpleAMG
-        SingleGridSetup
-        SolutionProxy
+#       Jacobi
+#       Kaczmarz
+#       MINRES
+#       OmegaSolver
+#       QMR
+#       Richardson
+#       SimpleAMG
+#       SingleGridSetup
+#       SolutionProxy
         Solver
-        TFQMR
-        TrivialPreconditioner
+#       TFQMR
+#       TrivialPreconditioner
 
     )
 

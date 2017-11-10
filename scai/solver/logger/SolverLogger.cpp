@@ -162,9 +162,10 @@ void SolverLogger::logNewLine( LogLevel::LogLevel level )
     logString( level, "\n" );
 }
 
+template<typename ValueType>
 void SolverLogger::logResidual(
     LogLevel::LogLevel level,
-    const Solver& solver,
+    const Solver<ValueType>& solver,
     const lama::Norm& norm,
     const std::string iterationPrefix )
 {

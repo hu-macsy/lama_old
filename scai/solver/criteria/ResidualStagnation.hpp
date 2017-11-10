@@ -50,7 +50,7 @@ namespace scai
 namespace solver
 {
 
-class IterativeSolver;
+template<typename ValueType> class IterativeSolver;
 
 /**
  * @brief Stagnation stopping criterion.
@@ -58,7 +58,8 @@ class IterativeSolver;
  * @param IterativeSolver The type solver in which this criterion is used.
  *        Most commonly this is the abstract sblas::IterativeSolver type.
  */
-class COMMON_DLL_IMPORTEXPORT ResidualStagnation: public Criterion
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT ResidualStagnation: public Criterion<ValueType>
 {
 
 public:
@@ -84,7 +85,7 @@ public:
      *             for the criterion check.
      * @param      precision TODO[doxy] Complete Description.
      */
-    ResidualStagnation( lama::NormPtr norm, IndexType lookback, lama::Scalar precision );
+    ResidualStagnation( lama::NormPtr norm, IndexType lookback, ValueType precision );
 
     /**
      * @brief Creates a copy of the passed ResidualStagnation object.
@@ -102,7 +103,7 @@ public:
      *
      * @return   TODO[doxy] Complete Description.
      */
-    virtual Criterion* copy() const;
+    virtual Criterion<ValueType>* copy() const;
 
     /**
      * @brief Checks if the criterion is satisfied.
@@ -118,7 +119,7 @@ public:
      * @return   Boolean value which determines if the criterion is
      *           satisfied or not.
      */
-    virtual bool isSatisfied( const IterativeSolver& solver );
+    virtual bool isSatisfied( const IterativeSolver<ValueType>& solver );
 
     /**
      * @brief Gets the amount of calculations used for the criterion check.
@@ -139,7 +140,7 @@ public:
      *
      * @return   The precision given in a Scalar object.
      */
-    const lama::Scalar getPrecision() const;
+    const ValueType getPrecision() const;
 
     /**
      * @brief Sets the amount of calculations used for the criterion check.
@@ -151,9 +152,9 @@ public:
     /**
      * @brief Sets the precision for floating point number calculations related to the Norm.
      *
-     * @param[in] precision   The precision given in a Scalar object.
+     * @param[in] precision   should be real value
      */
-    void setPrecision( const lama::Scalar precision );
+    void setPrecision( const ValueType precision );
 
     virtual void writeAt( std::ostream& stream ) const;
 
@@ -172,7 +173,7 @@ private:
     /**
      * @brief Stores the results of the residual-norm-calculations.
      */
-    std::vector<lama::Scalar> mLastResidualNorms;
+    std::vector<ValueType> mLastResidualNorms;
 
     /**
      * @brief Index. Needed for circular use of the vector.
@@ -188,7 +189,7 @@ private:
     /**
      * @brief The precision used for the stagnation check.
      */
-    lama::Scalar mPrecision;
+    ValueType mPrecision;
 };
 
 } /* end namespace solver */

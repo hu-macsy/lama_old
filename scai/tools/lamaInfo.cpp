@@ -163,8 +163,8 @@ void normInfo()
 void solverInfo()
 {
     using namespace scai::solver;
-    vector<string> values;  // string is create type for the factory
-    Solver::getCreateValues( values );
+    vector<SolverCreateKeyType> values;  // string is create type for the factory
+    _Solver::getCreateValues( values );
     cout << endl;
     cout << "Factory of Solver: " << values.size() << " entries" << endl;
     cout << "=============================" << endl;
@@ -173,7 +173,7 @@ void solverInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
-        SolverPtr solver( Solver::create( values[i], "TestSolver" ) );
+        std::shared_ptr<_Solver> solver( _Solver::create( values[i] ) );
         cout << "      Solver: " << *solver << endl;
     }
 

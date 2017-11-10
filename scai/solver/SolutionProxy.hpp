@@ -38,7 +38,7 @@
 #include <scai/common/config.hpp>
 
 // local library
-#include <scai/lama/_Vector.hpp>
+#include <scai/lama/Vector.hpp>
 
 namespace scai
 {
@@ -54,6 +54,7 @@ namespace solver
  * access to the underlying vector marks the proxy as dirty and by that signals
  * the solver to recalculate the residual.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SolutionProxy
 {
 public:
@@ -72,7 +73,7 @@ public:
      *
      * @param[in] solution   The pointer to the vector which the proxy will wrap.
      */
-    SolutionProxy( lama::_Vector* const solution );
+    SolutionProxy( lama::Vector<ValueType>* const solution );
 
     /**
      * @brief SolutionProxy destructor.
@@ -86,7 +87,7 @@ public:
      *
      * @return constant reference to the underlying vector.
      */
-    const lama::_Vector& getConstReference() const;
+    const lama::Vector<ValueType>& getConstReference() const;
 
     /**
      * @brief Returns a reference to the underlying vector.
@@ -97,7 +98,7 @@ public:
      *
      * @return Reference to the underlying vector.
      */
-    lama::_Vector& operator*();
+    lama::Vector<ValueType>& operator*();
 
     /**
      * @brief Associates the given Vector Pointer with this SolutionProxy.
@@ -106,7 +107,7 @@ public:
      *
      * @param[in] newVector the Vector to which the SolutionProxy shall point to.
      */
-    void operator=( lama::_Vector* const newVector );
+    void operator=( const lama::Vector<ValueType>* const newVector );
 
     /**
      * @brief Determines if the proxy is dirty and the residual needs to be

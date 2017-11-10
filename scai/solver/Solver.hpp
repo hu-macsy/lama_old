@@ -29,7 +29,7 @@
  *
  * @brief Solver superclass. Direct solvers can be derived from here,
  *        iterative sovlers should use the IterativeSolver class.
- * @author Matthias Makulla
+ * @author The LAMA Team
  * @date 06.04.2011
  */
 
@@ -40,11 +40,6 @@
 
 // base classes
 #include <scai/common/Printable.hpp>
-
-// local library
-#include <scai/lama/_Vector.hpp>
-
-#include <scai/lama/matrix/_Matrix.hpp>
 
 #include <scai/solver/SolutionProxy.hpp>
 #include <scai/solver/logger/SolverLogger.hpp>
@@ -59,13 +54,38 @@
 namespace scai
 {
 
+namespace lama
+{
+    template<typename ValueType> class Matrix;
+    template<typename ValueType> class Vector;
+    template<typename ValueType> class DenseVector;
+}
+
 /** @brief Namespace for all solver classes, used for all stuff of project solver */
 
 namespace solver
 {
 
-class Solver;
-typedef std::shared_ptr<Solver> SolverPtr;
+class _Solver;
+
+typedef std::pair<common::ScalarType, std::string> SolverCreateKeyType;
+
+/** Common base class for all typed Solver classes. 
+ *
+ *  This class is helpful for dynamic creation of solver objects where the value type
+ *  is only available at runtime.
+ */
+class COMMON_DLL_IMPORTEXPORT _Solver : 
+
+    public common::Printable,
+    public common::Factory<SolverCreateKeyType, _Solver*>
+{
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
+
+typedef std::shared_ptr<_Solver> _SolverPtr;
 
 /**
  * @brief Superclass for all solvers.
@@ -74,9 +94,9 @@ typedef std::shared_ptr<Solver> SolverPtr;
  * functionality for coefficient, rhs and solution storing, provides
  * a custom ID for a solver and a residual calculation capabilities.
  */
-class COMMON_DLL_IMPORTEXPORT Solver:
-    public common::Printable,
-    public common::Factory1<std::string, std::string, Solver*>
+
+template<typename ValueType>
+class COMMON_DLL_IMPORTEXPORT Solver: public _Solver
 {
 public:
     /**
@@ -118,7 +138,7 @@ public:
      *
      * @param coefficients The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Solves the equation system based on the given rhs.
@@ -133,7 +153,7 @@ public:
      * @param solution  The solution from A*u=f. Mostly used as starting
      *                  solution for an IterativeSolver.
      */
-    virtual void solve( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solve( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Initializes the solver with rhs and solution.
@@ -141,7 +161,7 @@ public:
      * @param[in]  rhs      The right hand side of the system of equations
      * @param[out] solution The allocated memory and starting solution for the system
      */
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( const lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -164,11 +184,17 @@ public:
     virtual void solveFinalize();
 
     /**
-     * @brief Returns the ID of this solver
-     *
-     * @return The ID of this solver.
+     * @brief Get the id of this solver
      */
     const std::string& getId() const;
+
+    /**
+     * @brief reset the id of this solver
+     */
+    void setId( const std::string& id )
+    {
+        mId = id;
+    }
 
     /**
      * @brief Contingently calculates the current residual based on the
@@ -179,14 +205,14 @@ public:
      *
      * @return The current residual
      */
-    const lama::_Vector& getResidual() const;
+    const lama::Vector<ValueType>& getResidual() const;
 
     /**
      * @brief Gets the matrix A from A*u=f.
      *
      * @return The coefficient matrix A.
      */
-    const lama::_Matrix& getCoefficients() const;
+    const lama::Matrix<ValueType>& getCoefficients() const;
 
     /**
      * @brief Redefines mLogger
@@ -207,7 +233,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy() = 0;
+    virtual Solver<ValueType>* copy() = 0;
 
     /**
      * @brief Status independent solver informations
@@ -218,24 +244,26 @@ public:
         virtual ~SolverRuntime();
 
         /**
-         * @brief The coefficient matrix A.
+         * @brief The coefficient matrix A, here a pointer reference
+         *
+         * Note: A solver assumes that the matrix is not changed during the lifetime of the solver
          */
-        const lama::_Matrix* mCoefficients;
+        const lama::Matrix<ValueType>* mCoefficients;
 
         /**
          * @brief The right-hand-side f.
          */
-        const lama::_Vector* mRhs;
+        const lama::Vector<ValueType>* mRhs;
 
         /**
          * @brief The solution u (using the SolutionProxy).
          */
-        mutable SolutionProxy mSolution;
+        mutable SolutionProxy<ValueType> mSolution;
 
         /**
          * @brief The residual.
          */
-        mutable lama::_VectorPtr mResidual;
+        mutable lama::DenseVector<ValueType> mResidual;
 
         /**
          * @brief Flag for initialization status of solver.
@@ -261,11 +289,6 @@ public:
 protected:
 
     /**
-     * @brief The ID of this solver.
-     */
-    std::string mId;
-
-    /**
      * @brief The solver logger.
      *
      * May be the NullLogger if no logger has been specified.
@@ -278,7 +301,25 @@ protected:
     virtual void writeAt( std::ostream& stream ) const;
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
+
+private:
+
+    /**
+     * @brief The ID of this solver.
+     */
+    std::string mId;
 };
+
+/** 
+ * Definiton of corresponding shared pointer type for the class Solver<ValueType> by a type alias.
+ *
+ *  \code
+ *      SolverPtr<ValueType> x( Solver<ValueType>::getSolver( SolverKind::SPARSE ) );
+ *      std::shared_ptr<Solver<ValueType> > x( Solver<ValueType>::getSolver( SolverKind::DENSE ) );
+ *  \endcode
+*/
+template<typename ValueType>
+using SolverPtr = std::shared_ptr<Solver<ValueType> >;
 
 } /* end namespace solver */
 

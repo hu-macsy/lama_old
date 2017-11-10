@@ -41,39 +41,50 @@
 // internal scai libraries
 #include <scai/lama/norm/L2Norm.hpp>
 
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( IterativeSolver::logger, "Solver.IterativeSolver" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, IterativeSolver<ValueType>::logger, "Solver.IterativeSolver" )
 
 using lama::_Matrix;
 using lama::_Vector;
 using lama::Scalar;
 
-IterativeSolver::IterativeSolver( const std::string& id )
-    : Solver( id ), mCriterionRootComponent( new IterationCount( 1 ) )
+template<typename ValueType>
+IterativeSolver<ValueType>::IterativeSolver( const std::string& id ) : 
+
+    Solver<ValueType>( id ), 
+    mCriterionRootComponent( new IterationCount<ValueType>( 1 ) )
 {
 }
 
-IterativeSolver::IterativeSolver( const std::string& id, LoggerPtr logger )
-    : Solver( id, logger ), mCriterionRootComponent( new IterationCount( 1 ) )
+template<typename ValueType>
+IterativeSolver<ValueType>::IterativeSolver( const std::string& id, LoggerPtr logger ) : 
+
+    Solver<ValueType>( id, logger ), 
+    mCriterionRootComponent( new IterationCount<ValueType>( 1 ) )
 {
 }
 
-IterativeSolver::IterativeSolver( const IterativeSolver& other )
-    : Solver( other )
+template<typename ValueType>
+IterativeSolver<ValueType>::IterativeSolver( const IterativeSolver& other ) : 
+
+    Solver<ValueType>( other )
+
 {
     if ( mCriterionRootComponent )
     {
-        mCriterionRootComponent.reset( new Criterion( *other.mCriterionRootComponent ) );
+        mCriterionRootComponent.reset( new Criterion<ValueType>( *other.mCriterionRootComponent ) );
     }
     else
     {
         SCAI_LOG_INFO( logger, other << " has no conditions, that can be copied." )
-        mCriterionRootComponent.reset( new IterationCount( 1 ) );
+        mCriterionRootComponent.reset( new IterationCount<ValueType>( 1 ) );
     }
 
     if ( other.getPreconditioner() )
@@ -86,22 +97,27 @@ IterativeSolver::IterativeSolver( const IterativeSolver& other )
     }
 }
 
-IterativeSolver::IterativeSolverRuntime::IterativeSolverRuntime()
-    : SolverRuntime(), mIterations( 0 )
+template<typename ValueType>
+IterativeSolver<ValueType>::IterativeSolverRuntime::IterativeSolverRuntime() : 
+ 
+    mIterations( 0 )
 {
 }
 
-IterativeSolver::~IterativeSolver()
+template<typename ValueType>
+IterativeSolver<ValueType>::~IterativeSolver()
 {
 }
 
-IterativeSolver::IterativeSolverRuntime::~IterativeSolverRuntime()
+template<typename ValueType>
+IterativeSolver<ValueType>::IterativeSolverRuntime::~IterativeSolverRuntime()
 {
 }
 
-void IterativeSolver::initialize( const _Matrix& coefficients )
+template<typename ValueType>
+void IterativeSolver<ValueType>::initialize( const _Matrix& coefficients )
 {
-    Solver::initialize( coefficients );
+    Solver<ValueType>::initialize( coefficients );
 
     if ( mPreconditioner )
     {
@@ -119,7 +135,8 @@ void IterativeSolver::initialize( const _Matrix& coefficients )
     }
 }
 
-void IterativeSolver::solveImpl()
+template<typename ValueType>
+void IterativeSolver<ValueType>::solveImpl()
 {
     getRuntime().mIterations = 0;
 
@@ -144,14 +161,16 @@ void IterativeSolver::solveImpl()
     logEndSolve();
 }
 
-void IterativeSolver::setStoppingCriterion( const CriterionPtr criterion )
+template<typename ValueType>
+void IterativeSolver<ValueType>::setStoppingCriterion( const CriterionPtr<ValueType> criterion )
 {
     SCAI_ASSERT_ERROR( criterion, "Criterion defined is NULL." )
     SCAI_LOG_INFO( logger, "Criteria " << *criterion << " defined." )
     mCriterionRootComponent = criterion;
 }
 
-bool IterativeSolver::criteriaAreSatisfied() const
+template<typename ValueType>
+bool IterativeSolver<ValueType>::criteriaAreSatisfied() const
 {
     if ( mCriterionRootComponent.get() == 0 )
     {
@@ -161,23 +180,27 @@ bool IterativeSolver::criteriaAreSatisfied() const
     return mCriterionRootComponent->isSatisfied( *this );
 }
 
-void IterativeSolver::setPreconditioner( SolverPtr const conditioner )
+template<typename ValueType>
+void IterativeSolver<ValueType>::setPreconditioner( SolverPtr<ValueType> const conditioner )
 {
     SCAI_LOG_INFO( logger, "Preconditioner " << conditioner->getId() << " defined." )
     mPreconditioner = conditioner;
 }
 
-const SolverPtr IterativeSolver::getPreconditioner() const
+template<typename ValueType>
+const SolverPtr<ValueType> IterativeSolver<ValueType>::getPreconditioner() const
 {
     return mPreconditioner;
 }
 
-IndexType IterativeSolver::getIterationCount() const
+template<typename ValueType>
+IndexType IterativeSolver<ValueType>::getIterationCount() const
 {
-    return getConstRuntime().mIterations;
+    return this->getConstRuntime().mIterations;
 }
 
-void IterativeSolver::logStartSolve()
+template<typename ValueType>
+void IterativeSolver<ValueType>::logStartSolve()
 {
     mLogger->logNewLine( LogLevel::solverInformation );
     mLogger->logNewLine( LogLevel::solverInformation );
@@ -187,7 +210,8 @@ void IterativeSolver::logStartSolve()
     mLogger->startTimer( "SolutionTimer" );
 }
 
-void IterativeSolver::logIterationEndAndResidual()
+template<typename ValueType>
+void IterativeSolver<ValueType>::logIterationEndAndResidual()
 {
     IterativeSolverRuntime& runtime = getRuntime();
     mLogger->stopTimer( "IterationTimer" );
@@ -201,7 +225,8 @@ void IterativeSolver::logIterationEndAndResidual()
     mLogger->logResidual( LogLevel::convergenceHistory, *this, l2Norm, iterationPrefix.str() );
 }
 
-void IterativeSolver::logEndSolve()
+template<typename ValueType>
+void IterativeSolver<ValueType>::logEndSolve()
 {
     mLogger->logNewLine( LogLevel::solverInformation );
     mLogger->logMessage( LogLevel::solverInformation, "-------------------------\n" );
@@ -211,18 +236,20 @@ void IterativeSolver::logEndSolve()
     mLogger->logNewLine( LogLevel::solverInformation );
 }
 
-void IterativeSolver::logIterationStart()
+template<typename ValueType>
+void IterativeSolver<ValueType>::logIterationStart()
 {
     mLogger->logNewLine( LogLevel::completeInformation );
     mLogger->logType( LogLevel::completeInformation, "Beginning iteration #", getRuntime().mIterations + 1 );
     mLogger->startTimer( "IterationTimer" );
 }
 
-IterativeSolver* IterativeSolver::create( const std::string type, const std::string name )
+template<typename ValueType>
+IterativeSolver<ValueType>* IterativeSolver<ValueType>::create( const std::string type, const std::string name )
 {
-    IterativeSolver* sov = dynamic_cast<IterativeSolver*>( Solver::create( type, name ) );
+    IterativeSolver* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( Solver<ValueType>::create( type, name ) );
 
-    if ( !sov )
+    if ( !itSolver )
     {
         COMMON_THROWEXCEPTION( "requested Solver is not inherited from IterativeSolver" )
     }
@@ -230,10 +257,17 @@ IterativeSolver* IterativeSolver::create( const std::string type, const std::str
     return sov;
 }
 
-void IterativeSolver::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void IterativeSolver<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "IterativeSolver ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "IterativeSolver ( id = " << this->getId() << ", #iter = " << getConstRuntime().mIterations << " )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( Solver, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 
