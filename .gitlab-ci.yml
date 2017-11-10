@@ -49,8 +49,13 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
-    - ctest --output-on-failure
+    - python run_tests.py --output_dir testoutput
     - make install
+  artifacts:
+    paths:
+    - testoutput/report.html
+    - testoutput/
+    expire_in: 1 week
 
 ###############################################################
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
@@ -65,7 +70,7 @@ common basic build serial gcc 4.9.1 (debug):
   stage: basic build test
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module load gcc/4.9.1
     - module load libs/boost/1.56
   variables:
@@ -86,7 +91,7 @@ serial gcc 4.9.1 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module load gcc/4.9.1
     - module load libs/boost/1.56
   variables:
@@ -106,7 +111,7 @@ serial gcc 4.9.1 (debug):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     - module load gcc/4.9.1
     - module load libs/boost/1.56
   variables:
@@ -126,7 +131,7 @@ parallel gcc 6.3.0 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     # Need to use more recent Boost version, because the precompiled 1.56 version
     # is not compatible with GCC 6.3.0
     - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
@@ -156,7 +161,7 @@ parallel gcc 5.4.0 (release):
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     # Need to use more recent Boost version, because the precompiled 1.56 version
     # is not compatible with GCC 6.3.0
     - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
@@ -183,7 +188,7 @@ sanitized parallel gcc 6.3.0:
   stage: build test install
   before_script:
     - *before_every_job
-    - module load tools/cmake/3.5.2
+    - module load tools/cmake/3.5.2 tools/python/2.7.14
     # Need to use more recent Boost version, because the precompiled 1.56 version
     # is not compatible with GCC 6.3.0
     - module load libs/boost/1.62.0-gcc-5.4.0-ompi-2.0.1-python-3.5.2
