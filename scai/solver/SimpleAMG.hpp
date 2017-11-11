@@ -53,9 +53,10 @@ namespace scai
 namespace solver
 {
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SimpleAMG:
-    public IterativeSolver,
-    public Solver::Register<SimpleAMG>
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<SimpleAMG<ValueType> >
 {
 public:
 
@@ -133,7 +134,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual SimpleAMG<ValueType>& copy();
 
     double getAverageSmootherTime() const;
     double getAverageTransferTime() const;

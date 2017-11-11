@@ -72,7 +72,7 @@ public:
      *             Has to be compatible with the _Matrix/Vector types of
      *             the solver.
      */
-    ResidualStagnation( lama::NormPtr norm );
+    ResidualStagnation( lama::NormPtr<ValueType> norm );
 
     /**
      * @brief Creates a new Stagnation based stopping criterion.
@@ -85,7 +85,7 @@ public:
      *             for the criterion check.
      * @param      precision TODO[doxy] Complete Description.
      */
-    ResidualStagnation( lama::NormPtr norm, IndexType lookback, ValueType precision );
+    ResidualStagnation( lama::NormPtr<ValueType> norm, IndexType lookback, ValueType precision );
 
     /**
      * @brief Creates a copy of the passed ResidualStagnation object.
@@ -133,7 +133,7 @@ public:
      *
      * @return   The Norm used.
      */
-    const lama::NormPtr getNorm() const;
+    const lama::NormPtr<ValueType> getNorm() const;
 
     /**
      * @brief Returns the precision for floating point number calculations related to the Norm.
@@ -163,7 +163,7 @@ private:
     /**
      * @brief The norm used in the residual-norm-calculation.
      */
-    const lama::NormPtr mNorm;
+    const lama::NormPtr<ValueType> mNorm;
 
     /**
      * @brief The amount of calculations used for the criterion check.

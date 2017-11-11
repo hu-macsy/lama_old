@@ -60,7 +60,8 @@ namespace solver
 template<class ValueType>
 class COMMON_DLL_IMPORTEXPORT CG:
 
-    public IterativeSolver<ValueType>
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<CG<ValueType> >    // register at solver factory
 
 {
 public:
@@ -101,6 +102,10 @@ public:
 
         virtual ~CGRuntime();
 
+        /** Initialize the runtime with target space of the matrix to be solved */
+
+        void initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx );
+
         lama::DenseVector<ValueType> mP;
         lama::DenseVector<ValueType> mQ;
         lama::DenseVector<ValueType> mZ;
@@ -115,10 +120,15 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const CGRuntime& getConstRuntime() const;
+    virtual const CGRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver<ValueType>* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 

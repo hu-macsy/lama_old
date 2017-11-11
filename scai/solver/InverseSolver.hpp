@@ -55,9 +55,10 @@ namespace solver
 /**
  * @brief Solver class that uses matrix inverse to solve an equation system.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT InverseSolver:
-    public Solver,
-    public Solver::Register<InverseSolver>
+    public Solver<ValueType>,
+    public _Solver::Register<InverseSolver<ValueType> >
 {
 public:
     /**
@@ -112,7 +113,7 @@ public:
         lama::_MatrixPtr mInverse;
     };
 
-    virtual SolverPtr copy();
+    virtual InverseSolver<ValueType>* copy();
 
     /**
      * @brief Returns the complete configuration of the derived class

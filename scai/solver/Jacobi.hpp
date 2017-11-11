@@ -97,7 +97,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual Jacobi<ValueType>* copy();
 
     static std::string createValue();
     static Solver* create( const std::string name );

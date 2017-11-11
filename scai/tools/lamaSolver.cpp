@@ -376,20 +376,20 @@ int main( int argc, const char* argv[] )
 
         CriterionPtr<ValueType> crit;
 
-        NormPtr norm( Norm::create( lamaconf.getNorm() ) );   // Norm from factory
+        NormPtr<ValueType> norm( Norm<ValueType>::create( lamaconf.getNorm() ) );   // Norm from factory
 
         double eps = lamaconf.getAbsoluteTolerance();
 
         if ( eps > 0.0 )
         {
-            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualThresholdCheckMode::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         eps = lamaconf.getRelativeTolerance();
 
         if ( eps > 0.0 )
         {
-            CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualThresholdCheckMode::Relative ) );
+            CriterionPtr<ValueType> rt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Relative ) );
 
             orCriterion( crit, rt );
         }
@@ -398,7 +398,7 @@ int main( int argc, const char* argv[] )
 
         if ( eps > 0.0 )
         {
-            CriterionPtr<ValueType> dt( new ResidualThreshold<ValueType>( norm, eps, ResidualThresholdCheckMode::Divergence ) );
+            CriterionPtr<ValueType> dt( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Divergence ) );
 
             orCriterion( crit, dt );
         }
@@ -416,7 +416,7 @@ int main( int argc, const char* argv[] )
 
             eps = 0.001;
 
-            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualThresholdCheckMode::Absolute ) );
+            crit.reset( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
         }
 
         // Stopping criterion can ony be set for an iterative solver

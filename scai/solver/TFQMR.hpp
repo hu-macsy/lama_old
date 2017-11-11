@@ -58,9 +58,10 @@ namespace solver
  * precision (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
 
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT TFQMR:
-    public IterativeSolver,
-    public Solver::Register<TFQMR>
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<TFQMR<ValueType> >
 {
 public:
     /**
@@ -92,7 +93,7 @@ public:
     *
     * @return shared pointer of the copied solver
     */
-    virtual SolverPtr copy();
+    virtual TFQMR<ValueType>* copy();
 
     struct TFQMRRuntime: IterativeSolverRuntime
     {

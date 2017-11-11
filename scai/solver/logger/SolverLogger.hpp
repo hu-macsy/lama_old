@@ -212,7 +212,7 @@ public:
     void logResidual(
         LogLevel::LogLevel level,
         const Solver<ValueType>& solver,
-        const lama::Norm& norm,
+        const lama::Norm<ValueType>& norm,
         const std::string iterationPrefix = "" );
 
     /**

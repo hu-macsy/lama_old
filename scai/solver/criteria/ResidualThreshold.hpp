@@ -51,12 +51,16 @@ namespace solver
 /**
  * @brief The possible check modes for the residue threshold
  */
-enum class ResidualThresholdCheckMode
+enum class ResidualCheck
 {
     Absolute, //!< stands for an absolute residue reduction
     Relative, //!< stands for an relative residue reduction
     Divergence //!< stands for an relative residue increase
 };
+
+/** @brief Provide output operator<< to print enum values. */
+
+std::ostream& operator<<( std::ostream& stream, const ResidualCheck checkMode );
 
 /**
  * @brief ResidualThreshold is a stopping criterion of a solver which checks the
@@ -81,7 +85,7 @@ public:
      *
      * @param[in] norm      the norm to use for residue calculation
      */
-    ResidualThreshold( const lama::NormPtr norm );
+    ResidualThreshold( const lama::NormPtr<ValueType> norm );
 
     /**
      * @brief Creates a RedisualThreshold stopping criteria from the passed parameters.
@@ -91,7 +95,7 @@ public:
      * @param[in] checkMode if the residue should be check for an absolute or a relative
      *                      reduction.
      */
-    ResidualThreshold( const lama::NormPtr norm, ValueType precision, ResidualThresholdCheckMode checkMode );
+    ResidualThreshold( const lama::NormPtr<ValueType> norm, const ValueType precision, const ResidualCheck checkMode );
 
     /**
      * @brief Creates a copy of the passed ResidualThreshold.
@@ -111,13 +115,13 @@ public:
 
     bool isSatisfied( const IterativeSolver<ValueType>& solver );
 
-    ResidualThresholdCheckMode getCheckMode() const;
+    ResidualCheck getCheckMode() const;
     IndexType getIterationExtrema() const;
     ValueType getFirstNormResult() const;
-    const lama::NormPtr getNorm() const;
+    const lama::NormPtr<ValueType> getNorm() const;
     ValueType getPrecision() const;
 
-    void setCheckMode( ResidualThresholdCheckMode mCheckMode );
+    void setCheckMode( ResidualCheck mCheckMode );
     void setFirstNormResult( ValueType firstNormResult );
     void setPrecision( ValueType precision );
 
@@ -129,10 +133,11 @@ protected:
 
 private:
 
-    const lama::NormPtr mNorm;
-    ResidualThresholdCheckMode mCheckMode;
-    ValueType mPrecision;
-    ValueType mFirstNormResult;
+    const lama::NormPtr<ValueType> mNorm;
+
+    ResidualCheck mCheckMode;
+    NormType<ValueType> mPrecision;
+    NormType<ValueType> mFirstNormResult;
 };
 
 } /* end namespace solver */

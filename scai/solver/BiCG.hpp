@@ -51,10 +51,11 @@ namespace solver
  * @brief The class BiCG represents a IterativeSolver which uses the krylov subspace BiCG method
  *        to solve a system of linear equations iteratively.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT BiCG:
 
-    public CG,
-    public Solver::Register<BiCG>
+    public CG<ValueType>,
+    public _Solver::Register<BiCG<ValueType> >
 
 {
 public:
@@ -89,7 +90,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual BiCG<ValueType>* copy();
 
     struct BiCGRuntime: CGRuntime
     {

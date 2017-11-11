@@ -393,7 +393,7 @@ LamaConfig::LamaConfig()
 
     scai::common::Settings::getEnvironment( mNorm, "SCAI_NORM" );
 
-    if ( ! scai::lama::Norm::canCreate( mNorm ) )
+    if ( ! scai::lama::Norm<RealType>::canCreate( mNorm ) )
     {
         CONFIG_ERROR( "norm " << mNorm << " not available" )
     }

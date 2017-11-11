@@ -49,30 +49,51 @@ namespace scai
 namespace solver
 {
 
+std::ostream& operator<<( std::ostream& stream, const ResidualCheck checkMode )
+{
+    switch ( checkMode )
+    {
+        case ResidualCheck::Relative:
+            stream << "Realitve";
+            break;
+        case ResidualCheck::Absolute:
+            stream << "Absolute";
+            break;
+        case ResidualCheck::Divergence:
+            stream << "Divergence";
+            break;
+        default:
+            stream << "<unknown_residual_threshold_check_mode";
+    }
+
+    return stream;
+}
+
 template<typename ValueType>
 ResidualThreshold<ValueType>::ResidualThreshold() : 
 
     Criterion<ValueType>(), 
-    mNorm( lama::NormPtr( new lama::L2Norm() ) ), 
-    mCheckMode( ResidualThresholdCheckMode::Relative ), 
+    mNorm( new lama::L2Norm<ValueType>() ),
+    mCheckMode( ResidualCheck::Relative ), 
     mPrecision( ValueType( 1e-5 ) ), 
     mFirstNormResult( ValueType( -1 ) )
 {
 }
 
 template<typename ValueType>
-ResidualThreshold<ValueType>::ResidualThreshold( const lama::NormPtr norm ) : 
+ResidualThreshold<ValueType>::ResidualThreshold( const lama::NormPtr<ValueType> norm ) : 
 
     Criterion<ValueType>(), 
     mNorm( norm ), 
-    mCheckMode( ResidualThresholdCheckMode::Relative ), 
+    mCheckMode( ResidualCheck::Relative ), 
     mPrecision( ValueType( 1e-5 ) ), 
     mFirstNormResult( ValueType( -1 ) )
 {
+    SCAI_ASSERT_ERROR( mNorm, "norm must not be NULL pointer" )
 }
 
 template<typename ValueType>
-ResidualThreshold<ValueType>::ResidualThreshold( const lama::NormPtr norm, ValueType precision, ResidualThresholdCheckMode checkMode ) : 
+ResidualThreshold<ValueType>::ResidualThreshold( const lama::NormPtr<ValueType> norm, ValueType precision, ResidualCheck checkMode ) : 
 
     Criterion<ValueType>(), 
     mNorm( norm ), 
@@ -80,6 +101,7 @@ ResidualThreshold<ValueType>::ResidualThreshold( const lama::NormPtr norm, Value
     mPrecision( precision ), 
     mFirstNormResult( -1.0 )
 {
+    SCAI_ASSERT_ERROR( mNorm, "norm must not be NULL pointer" )
 }
 
 template<typename ValueType>
@@ -114,14 +136,14 @@ inline bool ResidualThreshold<ValueType>::isSatisfied( const IterativeSolver<Val
 
     switch ( mCheckMode )
     {
-        case ResidualThresholdCheckMode::Absolute:
+        case ResidualCheck::Absolute:
             SCAI_LOG_DEBUG( logger,
                             "Absolute residual in iteration " << solver.getIterationCount() 
                             << " is " << normResult << " should become smaller than precision " << mPrecision )
-            ;
+
             return normResult < mPrecision;
 
-        case ResidualThresholdCheckMode::Relative:
+        case ResidualCheck::Relative:
         {
             if ( mFirstNormResult == ValueType( -1 ) )
             {
@@ -138,7 +160,7 @@ inline bool ResidualThreshold<ValueType>::isSatisfied( const IterativeSolver<Val
             return ( normResult / mFirstNormResult ) < mPrecision;
         }
 
-        case ResidualThresholdCheckMode::Divergence:
+        case ResidualCheck::Divergence:
         {
             if ( mFirstNormResult == -1.0 )
             {
@@ -156,7 +178,7 @@ inline bool ResidualThreshold<ValueType>::isSatisfied( const IterativeSolver<Val
 }
 
 template<typename ValueType>
-ResidualThresholdCheckMode ResidualThreshold<ValueType>::getCheckMode() const
+ResidualCheck ResidualThreshold<ValueType>::getCheckMode() const
 {
     return mCheckMode;
 }
@@ -168,7 +190,7 @@ ValueType ResidualThreshold<ValueType>::getFirstNormResult() const
 }
 
 template<typename ValueType>
-const lama::NormPtr ResidualThreshold<ValueType>::getNorm() const
+const lama::NormPtr<ValueType> ResidualThreshold<ValueType>::getNorm() const
 {
     return mNorm;
 }
@@ -180,7 +202,7 @@ ValueType ResidualThreshold<ValueType>::getPrecision() const
 }
 
 template<typename ValueType>
-void ResidualThreshold<ValueType>::setCheckMode( ResidualThresholdCheckMode checkMode )
+void ResidualThreshold<ValueType>::setCheckMode( ResidualCheck checkMode )
 {
     mCheckMode = checkMode;
 }

@@ -75,10 +75,10 @@ scai_project (
 #       Richardson
 #       SimpleAMG
 #       SingleGridSetup
-#       SolutionProxy
+        SolutionProxy
         Solver
 #       TFQMR
-#       TrivialPreconditioner
+        TrivialPreconditioner
 
     )
 

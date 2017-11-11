@@ -33,6 +33,7 @@
  */
 
 #include <scai/solver/SolutionProxy.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -46,7 +47,7 @@ SolutionProxy<ValueType>::SolutionProxy() : mIsDirty( true )
 }
 
 template<typename ValueType>
-SolutionProxy<ValueType>::SolutionProxy( lama::_Vector* const solution ) : 
+SolutionProxy<ValueType>::SolutionProxy( lama::Vector<ValueType>* solution ) : 
 
     mSolution( solution ), 
     mIsDirty( true )
@@ -61,40 +62,40 @@ SolutionProxy<ValueType>::~SolutionProxy()
 template<typename ValueType>
 const lama::Vector<ValueType>& SolutionProxy<ValueType>::getConstReference() const
 {
-    return ( *mSolution );
+    return *mSolution;
 }
 
 template<typename ValueType>
-lama::Vector<ValueType>& SolutionProxy::operator*()
-{
-    return getReference();
-}
-
-template<typename ValueType>
-void SolutionProxy::operator=( const lama::Vector<ValueType>* newVector )
+void SolutionProxy<ValueType>::operator=( lama::Vector<ValueType>* newVector )
 {
     setDirty( true );
     mSolution = newVector;
 }
 
 template<typename ValueType>
-bool SolutionProxy::isDirty() const
+bool SolutionProxy<ValueType>::isDirty() const
 {
     return mIsDirty;
 }
 
 template<typename ValueType>
-void SolutionProxy::setDirty( bool isDirty )
+void SolutionProxy<ValueType>::setDirty( bool isDirty )
 {
     mIsDirty = isDirty;
 }
 
 template<typename ValueType>
-lama::Vector<ValueType>& SolutionProxy::getReference()
+lama::Vector<ValueType>& SolutionProxy<ValueType>::getReference()
 {
-    setDirty( true );
+    this->setDirty( true );
     return *mSolution;
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( SolutionProxy, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

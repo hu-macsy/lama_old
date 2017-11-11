@@ -49,7 +49,7 @@ namespace solver
 {
 
 template<typename ValueType>
-ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr norm ) : 
+ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr<ValueType> norm ) : 
 
     Criterion<ValueType>(), 
     mNorm( norm ), 
@@ -62,7 +62,7 @@ ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr norm ) :
 }
 
 template<typename ValueType>
-ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr norm, IndexType lookback, ValueType precision ) : 
+ResidualStagnation<ValueType>::ResidualStagnation( lama::NormPtr<ValueType> norm, IndexType lookback, ValueType precision ) : 
 
     Criterion<ValueType>(), 
     mNorm( norm ), 
@@ -129,7 +129,7 @@ IndexType ResidualStagnation<ValueType>::getLookback() const
 }
 
 template<typename ValueType>
-const lama::NormPtr ResidualStagnation<ValueType>::getNorm() const
+const lama::NormPtr<ValueType> ResidualStagnation<ValueType>::getNorm() const
 {
     return mNorm;
 }

@@ -55,9 +55,10 @@ namespace solver
 /**
  * @brief Solver class that uses matrix inverse to solve an equation system.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DecompositionSolver:
-    public Solver,
-    public Solver::Register<DecompositionSolver>
+    public Solver<ValueType>,
+    public _Solver::Register<DecompositionSolver<ValueType> >
 {
 public:
     /**
@@ -108,7 +109,7 @@ public:
         bool mIsSymmetric;
     };
 
-    virtual SolverPtr copy();
+    virtual DecompositonSolver<ValueType>* copy();
 
     /**
      * @brief Returns the complete configuration of the derived class

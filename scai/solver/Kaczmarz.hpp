@@ -52,6 +52,7 @@ namespace solver
  *        to solve a system of linear equations iteratively.
  *
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Kaczmarz:
     public IterativeSolver,
     public Solver::Register<Kaczmarz>
@@ -87,7 +88,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual Kaczmarz<ValueType>* copy();
 
     struct KaczmarzRuntime: IterativeSolverRuntime
     {

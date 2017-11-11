@@ -37,7 +37,6 @@
 #include "scai/lama.hpp"
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/norm/Norm.hpp>
@@ -144,7 +143,7 @@ void normInfo()
 {
     using namespace scai::lama;
     vector<string> values;  // string is create type for the factory
-    Norm::getCreateValues( values );
+    Norm<RealType>::getCreateValues( values );
     cout << endl;
     cout << "Factory of Norm: " << values.size() << " entries" << endl;
     cout << "===========================" << endl;
@@ -153,7 +152,7 @@ void normInfo()
     for ( size_t i = 0; i < values.size(); ++i )
     {
         cout << "   Registered values[" << i << "] = " << values[i] << endl;
-        NormPtr norm( Norm::create( values[i] ) );
+        NormPtr<RealType> norm( Norm<RealType>::create( values[i] ) );
         cout << "      Norm: " << *norm << endl;
     }
 

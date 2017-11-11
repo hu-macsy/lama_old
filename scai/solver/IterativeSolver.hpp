@@ -101,7 +101,7 @@ public:
      *
      * @param coefficients The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -171,16 +171,22 @@ public:
     };
 
     /**
-     * @brief Returns the complete configuration of the derived class
+     * @brief Redefine pure method of base class with covariant return type
      */
     virtual IterativeSolverRuntime& getRuntime() = 0;
 
     /**
-     * @brief Returns the complete const configuration of the derived class
+     * @brief Redefine pure method of base class with covariant return type
      */
-    virtual const IterativeSolverRuntime& getConstRuntime() const = 0;
+    virtual const IterativeSolverRuntime& getRuntime() const = 0;
 
-    static IterativeSolver<ValueType>* create( const std::string type, const std::string name );
+    /**
+     * @brief get a new 'iterative' solver of a certain solver type, e.g. "CG", "MINRES", ...
+     *
+     * This method throws an exception if the solver type is unknown or if the solver is not 
+     * an iterative solver.
+     */
+    static IterativeSolver<ValueType>* getSolver( const std::string& solverType );
 
 protected:
 

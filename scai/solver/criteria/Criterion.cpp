@@ -48,6 +48,23 @@ namespace scai
 namespace solver
 {
 
+std::ostream& operator<<( std::ostream& stream, const BooleanOp op )
+{
+    switch ( op )
+    {
+        case BooleanOp::AND :
+            stream << "AND";
+            break;
+        case BooleanOp::OR :
+            stream << "OR";
+            break;
+        default:
+            stream << "<unknown_boolean_op>";
+    }
+
+    return stream;
+}
+
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, Criterion<ValueType>::logger, "Criterion" );
 
 template<typename ValueType>

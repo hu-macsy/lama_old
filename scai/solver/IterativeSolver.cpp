@@ -51,9 +51,7 @@ namespace solver
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, IterativeSolver<ValueType>::logger, "Solver.IterativeSolver" )
 
-using lama::_Matrix;
-using lama::_Vector;
-using lama::Scalar;
+using lama::Matrix;
 
 template<typename ValueType>
 IterativeSolver<ValueType>::IterativeSolver( const std::string& id ) : 
@@ -89,7 +87,7 @@ IterativeSolver<ValueType>::IterativeSolver( const IterativeSolver& other ) :
 
     if ( other.getPreconditioner() )
     {
-        mPreconditioner = other.getPreconditioner()->copy();
+        mPreconditioner.reset( other.getPreconditioner()->copy() );
     }
     else
     {
@@ -115,13 +113,13 @@ IterativeSolver<ValueType>::IterativeSolverRuntime::~IterativeSolverRuntime()
 }
 
 template<typename ValueType>
-void IterativeSolver<ValueType>::initialize( const _Matrix& coefficients )
+void IterativeSolver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     Solver<ValueType>::initialize( coefficients );
 
     if ( mPreconditioner )
     {
-        if ( mPreconditioner->getConstRuntime().mInitialized )
+        if ( mPreconditioner->getRuntime().mInitialized )
         {
             SCAI_LOG_INFO( logger, "Preconditioner already initialized, skipping recursive init." )
             mLogger->logMessage( LogLevel::solverInformation,
@@ -140,11 +138,11 @@ void IterativeSolver<ValueType>::solveImpl()
 {
     getRuntime().mIterations = 0;
 
-    if ( !getConstRuntime().mSolveInit )
+    if ( !getRuntime().mSolveInit )
     {
         COMMON_THROWEXCEPTION(
             "Solver " + this->getId()
-            + " has not been initialized. Call solveInit( _Vector& solution, const _Vector& rhs ) before solving "
+            + " has not been initialized. Call solveInit( Vector<T>& solution, const Vector<T>& rhs ) before solving "
             + this->getId() )
     }
 
@@ -196,7 +194,7 @@ const SolverPtr<ValueType> IterativeSolver<ValueType>::getPreconditioner() const
 template<typename ValueType>
 IndexType IterativeSolver<ValueType>::getIterationCount() const
 {
-    return this->getConstRuntime().mIterations;
+    return this->getRuntime().mIterations;
 }
 
 template<typename ValueType>
@@ -205,7 +203,7 @@ void IterativeSolver<ValueType>::logStartSolve()
     mLogger->logNewLine( LogLevel::solverInformation );
     mLogger->logNewLine( LogLevel::solverInformation );
     mLogger->logMessage( LogLevel::solverInformation, "Beginning solve.\n" );
-    lama::L2Norm l2Norm;
+    lama::L2Norm<ValueType> l2Norm;
     mLogger->logResidual( LogLevel::convergenceHistory, *this, l2Norm, "Start " );
     mLogger->startTimer( "SolutionTimer" );
 }
@@ -219,7 +217,7 @@ void IterativeSolver<ValueType>::logIterationEndAndResidual()
     iterationPrefix << "Iteration #" << runtime.mIterations << " Duration [s]: ";
     mLogger->logTime( "IterationTimer", LogLevel::advancedInformation, iterationPrefix.str() );
     mLogger->stopAndResetTimer( "IterationTimer" );
-    lama::L2Norm l2Norm;
+    lama::L2Norm<ValueType> l2Norm;
     iterationPrefix.str( "" );
     iterationPrefix << "Iteration #" << runtime.mIterations << " ";
     mLogger->logResidual( LogLevel::convergenceHistory, *this, l2Norm, iterationPrefix.str() );
@@ -245,29 +243,33 @@ void IterativeSolver<ValueType>::logIterationStart()
 }
 
 template<typename ValueType>
-IterativeSolver<ValueType>* IterativeSolver<ValueType>::create( const std::string type, const std::string name )
+IterativeSolver<ValueType>* IterativeSolver<ValueType>::getSolver( const std::string& solverType )
 {
-    IterativeSolver* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( Solver<ValueType>::create( type, name ) );
+    // use of unique_ptr makes sure that the generated solver will be deleted if an exception is thrown
+
+    std::unique_ptr<Solver<ValueType> > newSolver( Solver<ValueType>::getSolver( solverType ) );
+    
+    IterativeSolver<ValueType>* itSolver = dynamic_cast<IterativeSolver<ValueType>*>( newSolver.get() );
 
     if ( !itSolver )
     {
         COMMON_THROWEXCEPTION( "requested Solver is not inherited from IterativeSolver" )
     }
 
-    return sov;
+    return reinterpret_cast<IterativeSolver<ValueType>*>( newSolver.release() );
 }
 
 template<typename ValueType>
 void IterativeSolver<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "IterativeSolver ( id = " << this->getId() << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "IterativeSolver ( id = " << this->getId() << ", #iter = " << getRuntime().mIterations << " )";
 }
 
 /* ========================================================================= */
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( Solver, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_INST_CLASS( IterativeSolver, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

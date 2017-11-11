@@ -65,9 +65,10 @@ namespace solver
  * precision to avoid division by zero. In this case the solution doesn't change anymore.
  *
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CGNE:
-    public IterativeSolver,
-    public Solver::Register<CGNE>
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<CGNE<ValueType> >
 {
 public:
     /**
@@ -99,7 +100,7 @@ public:
     *
     * @return shared pointer of the copied solver
     */
-    virtual SolverPtr copy();
+    virtual GGNE<ValueType>* copy();
 
     struct CGNERuntime: IterativeSolverRuntime
     {

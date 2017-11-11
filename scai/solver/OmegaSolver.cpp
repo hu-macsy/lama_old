@@ -43,9 +43,6 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( OmegaSolver::logger, "Solver.IterativeSolver.OmegaSolver" )
 
-using lama::_Matrix;
-using lama::_Vector;
-
 OmegaSolver::OmegaSolver( const std::string& id )
     : IterativeSolver( id ), mOmega( 0.5 )
 {
@@ -84,17 +81,12 @@ OmegaSolver::OmegaSolverRuntime::~OmegaSolverRuntime()
 {
 }
 
-void OmegaSolver::initialize( const _Matrix& coefficients )
-{
-    IterativeSolver::initialize( coefficients );
-}
-
-void OmegaSolver::setOmega( const lama::Scalar omega )
+void OmegaSolver::setOmega( const ValueType omega )
 {
     mOmega = omega;
 }
 
-lama::Scalar OmegaSolver::getOmega() const
+ValueType OmegaSolver::getOmega() const
 {
     return mOmega;
 }

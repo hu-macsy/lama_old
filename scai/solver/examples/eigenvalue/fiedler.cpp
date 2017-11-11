@@ -174,11 +174,11 @@ int main( int argc, const char* argv[] )
     
     // set up the CG solver that is used for the inverse power method
 
-    CG cgSolver( "InversePowerMethodSolver" );
-    CriterionPtr criterion1( new IterationCount( 50 ) );
-    NormPtr norm( Norm::create( "L2" ) );   // Norm from factory
-    CriterionPtr criterion2( new ResidualThreshold( norm, eps, ResidualThreshold::Absolute ) );
-    CriterionPtr criterion( new Criterion( criterion1, criterion2, Criterion::OR ) );
+    CG<ValueType> cgSolver( "InversePowerMethodSolver" );
+    CriterionPtr<ValueType> criterion1( new IterationCount<ValueType>( 50 ) );
+    NormPtr<ValueType> norm( Norm<ValueType>::create( "L2" ) );   // Norm from factory
+    CriterionPtr<ValueType> criterion2( new ResidualThreshold<ValueType>( norm, eps, ResidualCheck::Absolute ) );
+    CriterionPtr<ValueType> criterion( new Criterion<ValueType>( criterion1, criterion2, BooleanOp::OR ) );
 
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( HLH );

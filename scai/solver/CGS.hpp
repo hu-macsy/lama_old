@@ -58,9 +58,10 @@ namespace solver
  * 2. The scalars in the algorithm are set to zero if they are smaller than machine precision
  * (3*eps) to avoid devision by zero. In this case the solution doesn't change anymore.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT CGS:
-    public IterativeSolver,
-    public Solver::Register<CGS>
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<CGS<ValueType> >
 {
 public:
     /**
@@ -93,7 +94,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual CGS<ValueType>* copy();
 
     struct CGSRuntime: IterativeSolverRuntime
     {

@@ -53,9 +53,11 @@ namespace solver
  * @brief The class GMRES represents a IterativeSolver which uses the krylov subspace GMRES method
  *        to solve a system of linear equations iteratively.
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT GMRES:
-    public IterativeSolver,
-    public Solver::Register<GMRES>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<GMRES>
 {
 public:
 
@@ -91,7 +93,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual GMRES<ValueType>* copy();
 
     struct GMRESRuntime: IterativeSolverRuntime
     {

@@ -58,6 +58,26 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CG<ValueType>::logge
 using lama::Matrix;
 using lama::Vector;
 
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* CG<ValueType>::create()
+{
+    return new CG<ValueType>( "_genByFactory" );
+}
+
+template<typename ValueType>
+SolverCreateKeyType CG<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "CG" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
 template<typename ValueType>
 CG<ValueType>::CG( const std::string& id ) : 
 
@@ -89,6 +109,7 @@ CG<ValueType>::CGRuntime::CGRuntime() :
 
     mPScalar( ValueType( 0 ) )
 {
+    // Note: allocation of runtime vectors done @ initialize
 }
 
 template<typename ValueType>
@@ -97,20 +118,31 @@ CG<ValueType>::CGRuntime::~CGRuntime()
 }
 
 template<typename ValueType>
+void CG<ValueType>::CGRuntime::initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx )
+{
+    mPScalar = ValueType( 0 );
+
+    mP.setContextPtr( ctx );
+    mP.allocate( dist );
+    mQ.setContextPtr( ctx );
+    mQ.allocate( dist );
+    mZ.setContextPtr( ctx );
+    mZ.allocate( dist );
+}
+
+template<typename ValueType>
 void CG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.CG.initialize" )
+
     IterativeSolver<ValueType>::initialize( coefficients );
-    CGRuntime& runtime = getRuntime();
-    runtime.mPScalar = ValueType( 0 );
+
+    // allocate runtime vectors p, q, z with target space + context of matrix
+
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
     hmemo::ContextPtr ctx = coefficients.getContextPtr();
-    runtime.mP.setContextPtr( ctx );
-    runtime.mP.allocate( dist );
-    runtime.mQ.setContextPtr( ctx );
-    runtime.mQ.allocate( dist );
-    runtime.mZ.setContextPtr( ctx );
-    runtime.mZ.allocate( dist );
+
+    getRuntime().initialize( dist, ctx );
 }
 
 template<typename ValueType>
@@ -118,8 +150,9 @@ void CG<ValueType>::iterate()
 {
     SCAI_REGION( "Solver.CG.iterate" )
     CGRuntime& runtime = getRuntime();
-	ValueType lastPScalar = runtime.mPScalar;
-    ValueType& pScalar = runtime.mPScalar;
+
+    ValueType& pScalar    = runtime.mPScalar;   // keep ref for vallue p that is kept between it
+    ValueType lastPScalar = pScalar;            // copy of last p 
 
     if ( this->getIterationCount() == 0 )
     {
@@ -130,7 +163,7 @@ void CG<ValueType>::iterate()
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;  // coefficient matrix is pointer
 
-    Vector<ValueType>& x = runtime.mSolution;
+    Vector<ValueType>& x = runtime.mSolution.getReference();  // will be updated
     Vector<ValueType>& p = runtime.mP;
     Vector<ValueType>& q = runtime.mQ;
     Vector<ValueType>& z = runtime.mZ;
@@ -182,14 +215,14 @@ void CG<ValueType>::iterate()
 
         p = z + beta * p;
 
-        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
     }
 
     {
         SCAI_REGION( "Solver.CG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
@@ -209,13 +242,13 @@ void CG<ValueType>::iterate()
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.CG.update_x" )
         x = x + alpha * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
         SCAI_REGION( "Solver.CG.update_res" )
         residual = residual - alpha * q;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
     }
     //CG implementation end
     mCGRuntime.mSolution.setDirty( false );
@@ -234,27 +267,16 @@ typename CG<ValueType>::CGRuntime& CG<ValueType>::getRuntime()
 }
 
 template<typename ValueType>
-const typename CG<ValueType>::CGRuntime& CG<ValueType>::getConstRuntime() const
+const typename CG<ValueType>::CGRuntime& CG<ValueType>::getRuntime() const
 {
     return mCGRuntime;
 }
 
 template<typename ValueType>
-std::string CG<ValueType>::createValue()
-{
-    return "CG";
-}
-
-template<typename ValueType>
-Solver<ValueType>* CG<ValueType>::create( const std::string name )
-{
-    return new CG( name );
-}
-
-template<typename ValueType>
 void CG<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "CG ( id = " << Solver<ValueType>::getId() << ", #iter = " << getConstRuntime().mIterations << " )";
+    stream << "CG<" << common::TypeTraits<ValueType>::id() << "> ( id = " << Solver<ValueType>::getId() 
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
 /* ========================================================================= */

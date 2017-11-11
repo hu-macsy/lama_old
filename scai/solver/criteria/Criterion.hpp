@@ -62,14 +62,18 @@ template<typename ValueType> class Criterion;
 template<typename ValueType>
 using CriterionPtr = std::shared_ptr<Criterion<ValueType> >;
 
-    /**
-     * @brief Defines the operators which can be used to connect Criterions with.
-     */
-    enum class BooleanOp
-    {
-        AND, //!< stands for logical and composition
-        OR //!< stands for logical or composition
-    };
+/**
+ * @brief Defines the operators which can be used to connect Criterions with.
+ */
+enum class BooleanOp
+{
+    AND, //!< stands for logical and composition
+    OR //!< stands for logical or composition
+};
+
+/** @brief Provide output operator<< to print enum values. */
+
+std::ostream& operator<<( std::ostream& stream, const BooleanOp op );
 
 /**
  * @brief The class Criterion is the base class for all stopping criterions

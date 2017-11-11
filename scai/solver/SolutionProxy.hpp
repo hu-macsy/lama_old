@@ -73,7 +73,7 @@ public:
      *
      * @param[in] solution   The pointer to the vector which the proxy will wrap.
      */
-    SolutionProxy( lama::Vector<ValueType>* const solution );
+    SolutionProxy( lama::Vector<ValueType>* solution );
 
     /**
      * @brief SolutionProxy destructor.
@@ -83,22 +83,11 @@ public:
     ~SolutionProxy();
 
     /**
-     * @brief Returns a constant reference to the underlying vector.
+     * @brief Returns a constant reference to the underlying vector, dirty flag remains unchanged
      *
      * @return constant reference to the underlying vector.
      */
     const lama::Vector<ValueType>& getConstReference() const;
-
-    /**
-     * @brief Returns a reference to the underlying vector.
-     *
-     * This call is equivalent to SolutionProxy::getReference(). It was
-     * introduced to use the SolutionProxy in the same manner a pointer can
-     * be used.
-     *
-     * @return Reference to the underlying vector.
-     */
-    lama::Vector<ValueType>& operator*();
 
     /**
      * @brief Associates the given Vector Pointer with this SolutionProxy.
@@ -107,7 +96,7 @@ public:
      *
      * @param[in] newVector the Vector to which the SolutionProxy shall point to.
      */
-    void operator=( const lama::Vector<ValueType>* const newVector );
+    void operator=( lama::Vector<ValueType>* newVector );
 
     /**
      * @brief Determines if the proxy is dirty and the residual needs to be
@@ -125,20 +114,18 @@ public:
     void setDirty( bool isDirty );
 
     /**
-     * @brief Returns a reference to the underlying vector.
-     *
-     * Returns a reference to the underlying vector. One may also use the * operator.
+     * @brief Returns a reference to the underlying vector, marks it as dirty
      *
      * @return Reference to the underlying vector.
      */
-    lama::_Vector& getReference();
+    lama::Vector<ValueType>& getReference();
 
 private:
 
     /**
      * @brief The underlying solution vector.
      */
-    lama::_Vector* mSolution;
+    lama::Vector<ValueType>* mSolution;
 
     /**
      * @brief Flag which determines, if the Proxy is dirty or not.

@@ -59,32 +59,68 @@ SCAI_LOG_DEF_LOGGER( _Solver::logger, "Solver" )
 using lama::Matrix;
 using lama::Vector;
 
+_Solver* _Solver::getSolver( const common::ScalarType scalarType, const std::string& solverType )
+{
+    return create( SolverCreateKeyType( scalarType, solverType ) );
+}
+
 template<typename ValueType>
-Solver<ValueType>::Solver( const std::string& id )
-    : mId( id ), mLogger(
-        new CommonLogger( "dummyLog", LogLevel::noLogging,
-                          LoggerWriteBehaviour::toConsoleOnly,
-                          std::shared_ptr<Timer>( new Timer() ) ) )
+Solver<ValueType>::Solver( const std::string& id ) : 
+
+    mLogger( new CommonLogger( "dummyLog", LogLevel::noLogging,
+                               LoggerWriteBehaviour::toConsoleOnly,
+                               std::shared_ptr<Timer>( new Timer() ) ) ),
+    mId( id )
+
 {
     SCAI_LOG_INFO( _Solver::logger, "Solver id = " << mId << " created, dummy log" )
 }
 
 template<typename ValueType>
-Solver<ValueType>::Solver( const std::string& id, LoggerPtr logger )
-    : mId( id ), mLogger( logger )
+Solver<ValueType>::Solver( const std::string& id, LoggerPtr logger ) : 
+
+    mLogger( logger ),
+    mId( id )
+
 {
     SCAI_LOG_INFO( _Solver::logger, "Solver id = " << mId << " created, with logger" )
 }
 
 template<typename ValueType>
-Solver<ValueType>::Solver( const Solver& other )
-    : mId( other.mId ), mLogger( other.mLogger )
+Solver<ValueType>::Solver( const Solver& other ) : 
+
+    mLogger( other.mLogger ),
+    mId( other.mId )
 {
 }
 
 template<typename ValueType>
-Solver<ValueType>::SolverRuntime::SolverRuntime()
-    : mCoefficients( 0 ), mRhs( 0 ), mResidual(), mInitialized( false ), mSolveInit( false )
+Solver<ValueType>* Solver<ValueType>::getSolver( const std::string& solverType )
+{
+    _Solver* solver = _Solver::getSolver( common::TypeTraits<ValueType>::stype, solverType );
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<Solver<ValueType>*>( solver ), "Illegal solver" )
+
+    return reinterpret_cast<Solver<ValueType>*>( solver );
+}
+
+
+template<typename ValueType>
+bool Solver<ValueType>::canCreate( const std::string& solverType )
+{
+    common::ScalarType valType = common::TypeTraits<ValueType>::stype;
+
+    return _Solver::canCreate( SolverCreateKeyType( valType, solverType ) );
+}
+
+template<typename ValueType>
+Solver<ValueType>::SolverRuntime::SolverRuntime() : 
+
+    mCoefficients( NULL ), 
+    mRhs(), 
+    mResidual(), 
+    mInitialized( false ), 
+    mSolveInit( false )
 {
 }
 
@@ -104,7 +140,7 @@ Solver<ValueType>::SolverRuntime::~SolverRuntime()
 template<typename ValueType>
 void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
-    if ( getConstRuntime().mInitialized )
+    if ( getRuntime().mInitialized )
     {
         SCAI_LOG_DEBUG( logger, "Previous initialization of solver found! Will be overridden!" )
         mLogger->logMessage( LogLevel::solverInformation, "Solver already initialized, will be overridden\n" );
@@ -112,16 +148,18 @@ void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     getRuntime().mCoefficients = &coefficients;
     getRuntime().mInitialized = true;
+    getRuntime().mResidual.setContextPtr( coefficients.getContextPtr() );           // IMPORTANT
+    getRuntime().mResidual.allocate( coefficients.getRowDistributionPtr() );
     mLogger->logMessage( LogLevel::solverInformation, "Solver initialized\n" );
 }
 
 template<typename ValueType>
-void Solver<ValueType>::solve( _Vector& solution, const _Vector& rhs )
+void Solver<ValueType>::solve( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     SCAI_REGION( "Solver.solve" )
-    SCAI_ASSERT( getConstRuntime().mInitialized, "Solver not initialized, solve cannot be called" )
+    SCAI_ASSERT( getRuntime().mInitialized, "Solver not initialized, solve cannot be called" )
 
-    if ( getConstRuntime().mSolveInit )
+    if ( getRuntime().mSolveInit )
     {
         SCAI_LOG_DEBUG( logger, "Previous initialization of 'solve'-process found! Will be overridden!" )
     }
@@ -132,15 +170,18 @@ void Solver<ValueType>::solve( _Vector& solution, const _Vector& rhs )
 }
 
 template<typename ValueType>
-void Solver<ValueType>::solveInit( _Vector& solution, const _Vector& rhs )
+void Solver<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     SolverRuntime& runtime = getRuntime();
+
+    const Matrix<ValueType>& m = *runtime.mCoefficients;
+
+    SCAI_ASSERT_EQ_ERROR( m.getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
+    SCAI_ASSERT_EQ_ERROR( m.getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
+
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumRows(), rhs.size(), "mismatch: #rows of matrix, rhs" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getNumColumns(), solution.size(), "mismatch: #cols of matrix, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
-    SCAI_ASSERT_EQUAL( runtime.mCoefficients->getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
+
     runtime.mSolveInit = true;
 }
 
@@ -157,58 +198,44 @@ const std::string& Solver<ValueType>::getId() const
 }
 
 template<typename ValueType>
-const _Vector& Solver<ValueType>::getResidual() const
+const Vector<ValueType>& Solver<ValueType>::getResidual() const
 {
-    const SolverRuntime& runtime = getConstRuntime();
-
-    if ( runtime.mResidual.get() )
-    {
-        SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", is dirty = " << runtime.mSolution.isDirty()
-                        << ", runtime.mResidual = " << *runtime.mResidual )
-    }
-    else
-    {
-        SCAI_LOG_DEBUG( logger, "getResidual of solver " << mId << ", residual not available yet" )
-    }
+    const SolverRuntime& runtime = getRuntime();
 
     // initialize and solveInit must have been called before
 
     SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
     SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
 
-    //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
+    // residual only computed if solution has changed in the meantime
 
-    if ( runtime.mSolution.isDirty() || !runtime.mResidual.get() )
+    if ( runtime.mSolution.isDirty() )
     {
         SCAI_REGION( "Solver.computeResidual" )
-        SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
 
-        if ( !runtime.mResidual.get() )
-        {
-            // VERY IMPORTANT: newVector makes sure that residual has same context
-            //                 otherwise: many unnecessary data movements !!!
+        const Vector<ValueType>& x = runtime.mSolution.getConstReference();  // solution not modified here
 
-            runtime.mResidual.reset( runtime.mRhs->newVector() );
-            SCAI_LOG_INFO( logger, "Residual vector = " << *runtime.mResidual << ", mRhs = " << *runtime.mRhs )
-        }
+        SCAI_LOG_DEBUG( logger, "calculating residual current solution = " << x )
 
-        //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
+        const Matrix<ValueType>& A = *runtime.mCoefficients;
+        const Vector<ValueType>& y = *runtime.mRhs;
+
         mLogger->startTimer( "ResidualTimer" );
-        *runtime.mResidual = ( *runtime.mRhs ) - ( *runtime.mCoefficients ) * ( runtime.mSolution.getConstReference() );
+        runtime.mResidual = y - A  * x;
         mLogger->stopTimer( "ResidualTimer" );
         mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
         mLogger->stopAndResetTimer( "ResidualTimer" );
         runtime.mSolution.setDirty( false );
     }
 
-    return *runtime.mResidual;
+    return runtime.mResidual;
 }
 
 template<typename ValueType>
 const Matrix<ValueType>& Solver<ValueType>::getCoefficients() const
 {
-    SCAI_ASSERT_DEBUG( getConstRuntime().mCoefficients, "mCoefficents == NULL" )
-    return *getConstRuntime().mCoefficients;
+    SCAI_ASSERT_DEBUG( getRuntime().mCoefficients, "mCoefficents == NULL" )
+    return *getRuntime().mCoefficients;
 }
 
 template<typename ValueType>

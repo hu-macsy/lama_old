@@ -80,10 +80,20 @@ class COMMON_DLL_IMPORTEXPORT _Solver :
     public common::Printable,
     public common::Factory<SolverCreateKeyType, _Solver*>
 {
+public:
+
+    /**
+     *  Provide a more convenient interface to the create method of the factory.
+     */
+
+    static _Solver* getSolver( const common::ScalarType scalarType, const std::string& solverType );
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
+
+/** Define the shared pointer class for Solver */
 
 typedef std::shared_ptr<_Solver> _SolverPtr;
 
@@ -125,6 +135,18 @@ public:
     virtual ~Solver();
 
     /**
+     * @brief Create a new solver of a certain type.
+     *
+     */
+    static Solver* getSolver( const std::string& solverType );
+
+    /**
+     * @brief Query if a solver can be generated
+     *
+     */
+    static bool canCreate( const std::string& solverType );
+     
+    /**
      * @brief Used to initialize a solver with a certain matrix A
      *        from A*u=f.
      *
@@ -149,11 +171,11 @@ public:
      * This method is abstract. It has to be implemented by a class which inherits
      * from this class.
      *
-     * @param rhs       The right hand side of A*u=f.
-     * @param solution  The solution from A*u=f. Mostly used as starting
-     *                  solution for an IterativeSolver.
+     * @param[in,out] solution  The solution from A * solution = rhs. Also used as starting
+     *                          solution for an IterativeSolver.
+     * @param[in,out] rhs       The right hand side 
      */
-    virtual void solve( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
+    void solve( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Initializes the solver with rhs and solution.
@@ -161,7 +183,7 @@ public:
      * @param[in]  rhs      The right hand side of the system of equations
      * @param[out] solution The allocated memory and starting solution for the system
      */
-    virtual void solveInit( const lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -211,6 +233,7 @@ public:
      * @brief Gets the matrix A from A*u=f.
      *
      * @return The coefficient matrix A.
+     * @throws Exception if solve
      */
     const lama::Matrix<ValueType>& getCoefficients() const;
 
@@ -284,7 +307,7 @@ public:
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const SolverRuntime& getConstRuntime() const = 0;
+    virtual const SolverRuntime& getRuntime() const = 0;
 
 protected:
 
@@ -300,8 +323,6 @@ protected:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-
 private:
 
     /**
@@ -314,8 +335,8 @@ private:
  * Definiton of corresponding shared pointer type for the class Solver<ValueType> by a type alias.
  *
  *  \code
- *      SolverPtr<ValueType> x( Solver<ValueType>::getSolver( SolverKind::SPARSE ) );
- *      std::shared_ptr<Solver<ValueType> > x( Solver<ValueType>::getSolver( SolverKind::DENSE ) );
+ *      SolverPtr<ValueType> x( Solver<ValueType>::getSolver( "CG" ) );
+ *      std::shared_ptr<Solver<ValueType> > x( Solver<ValueType>::getSolver( "CG" ) );
  *  \endcode
 */
 template<typename ValueType>

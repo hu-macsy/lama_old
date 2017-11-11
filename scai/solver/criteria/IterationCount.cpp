@@ -108,7 +108,7 @@ void IterationCount<ValueType>::writeAt( std::ostream& stream ) const
 /*       Template instantiations                                             */
 /* ========================================================================= */
 
-SCAI_COMMON_INST_CLASS( Criterion, SCAI_NUMERIC_TYPES_HOST )
+SCAI_COMMON_INST_CLASS( IterationCount, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

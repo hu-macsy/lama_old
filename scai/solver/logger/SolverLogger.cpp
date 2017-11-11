@@ -40,6 +40,8 @@
 #include <scai/solver/logger/FileLogger.hpp>
 #include <scai/solver/Solver.hpp>
 
+#include <scai/common/macros/loop.hpp>
+
 // std
 #include <iostream>
 
@@ -166,7 +168,7 @@ template<typename ValueType>
 void SolverLogger::logResidual(
     LogLevel::LogLevel level,
     const Solver<ValueType>& solver,
-    const lama::Norm& norm,
+    const lama::Norm<ValueType>& norm,
     const std::string iterationPrefix )
 {
     if ( level <= mLogLevel )
@@ -212,6 +214,19 @@ void SolverLogger::stopAndResetTimer( const std::string& timerId )
     SCAI_ASSERT_DEBUG( mTimer.get(), "mTimer == NULL" );
     mTimer->stopAndReset( timerId );
 }
+
+/* ========================================================================= */
+/*       Template method instantiation                                       */
+/* ========================================================================= */
+
+#define SOLVER_LOGGER_SPECIFIER( ValueType )             \
+     template void SolverLogger::logResidual(            \
+        LogLevel::LogLevel level,                        \
+        const Solver<ValueType>& solver,                 \
+        const lama::Norm<ValueType>&,                    \
+        const std::string );                             \
+
+SCAI_COMMON_LOOP( SOLVER_LOGGER_SPECIFIER, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

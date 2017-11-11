@@ -96,7 +96,7 @@ public:
      *
      * @return shared pointer of the copied solver
      */
-    virtual SolverPtr copy();
+    virtual Richardson<ValueType>* copy();
 
     struct RichardsonRuntime: OmegaSolverRuntime
     {
