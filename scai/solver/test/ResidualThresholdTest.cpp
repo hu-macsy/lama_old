@@ -59,23 +59,25 @@ using namespace scai::solver;
 using namespace scai::lama;
 using namespace scai::hmemo;
 
+typedef SCAI_TEST_TYPE ValueType;
+
 /* --------------------------------------------------------------------- */
 
 struct ResidualThresholdTestConfig
 {
     ResidualThresholdTestConfig()
     {
-        NormPtr mNorm = NormPtr( new MaxNorm() );
-        mCriterionDouble = new ResidualThreshold( mNorm, Scalar( 1.0e-6 ), ResidualThreshold::Absolute );
-        mCriterionFloat = new ResidualThreshold( mNorm, Scalar( 1.0e-4f ), ResidualThreshold::Relative );
+        NormPtr<ValueType> mNorm( new MaxNorm<ValueType>() );
+        mCriterionDouble = new ResidualThreshold<ValueType>( mNorm, ValueType( 1e-6 ), ResidualCheck::Absolute );
+        mCriterionFloat = new ResidualThreshold<ValueType>( mNorm, ValueType( 1e-4 ), ResidualCheck::Relative );
     }
 
     ~ResidualThresholdTestConfig()
     {
     }
 
-    ResidualThreshold* mCriterionDouble;
-    ResidualThreshold* mCriterionFloat;
+    ResidualThreshold<ValueType>* mCriterionDouble;
+    ResidualThreshold<ValueType>* mCriterionFloat;
 };
 
 BOOST_FIXTURE_TEST_SUITE( ResidualThresholdTest, ResidualThresholdTestConfig )
@@ -86,35 +88,40 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.ResidualThresholdTest" )
 
 BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
-    BOOST_CHECK_EQUAL( mCriterionDouble->getPrecision().getValue<double>(), 1.0e-6 );
-    BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualThreshold::Absolute );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getPrecision().getValue<float>(), 1.0e-4f );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualThreshold::Relative );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getPrecision(), ValueType( 1e-6 ) );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualCheck::Absolute );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getPrecision(), ValueType( 1e-4 ) );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualCheck::Relative );
+
     const ResidualThreshold* testcriterion1 = new ResidualThreshold();
     BOOST_CHECK_EQUAL( testcriterion1->getPrecision().getValue<float>(), 1.0e-5f );
-    BOOST_CHECK_EQUAL( testcriterion1->getCheckMode(), ResidualThreshold::Relative );
+    BOOST_CHECK_EQUAL( testcriterion1->getCheckMode(), ResidualCheck::Relative );
     BOOST_CHECK_EQUAL( testcriterion1->getFirstNormResult(), -1.0 );
+
     NormPtr testnorm = NormPtr( new MaxNorm() );
-    ResidualThreshold* testcriterion2 = new ResidualThreshold( testnorm );
+    std::unique_ptr<ResidualThreshold<ValueType> > testcriterion2( new ResidualThreshold<ValueType>( testnorm ) );
     BOOST_CHECK_EQUAL( testcriterion2->getFirstNormResult(), -1.0 );
-    BOOST_CHECK_EQUAL( testcriterion2->getPrecision().getValue<float>(), 1.0e-5f );
-    BOOST_CHECK_EQUAL( testcriterion2->getCheckMode(), ResidualThreshold::Relative );
-    ResidualThreshold* testcriterion3 = new ResidualThreshold( *testcriterion1 );
-    BOOST_CHECK_EQUAL( testcriterion3->getFirstNormResult(), -1.0 );
-    BOOST_CHECK_CLOSE( testcriterion3->getPrecision().getValue<float>(), 1.0e-5f, 1 );
-    BOOST_CHECK_EQUAL( testcriterion3->getCheckMode(), ResidualThreshold::Relative );
+    BOOST_CHECK_EQUAL( testcriterion2->getPrecision(), ValueType( 1e-5 ) );
+    BOOST_CHECK_EQUAL( testcriterion2->getCheckMode(), ResidualCheck::Relative );
+
+    // verify copy constructor
+
+    std::unique_ptr<ResidualThreshold<ValueType> > testcriterion3 = new ResidualThreshold<ValueType>( *testcriterion1 );
+    BOOST_CHECK_EQUAL( testcriterion3->getFirstNormResult(), ValueType( -1 ) );
+    BOOST_CHECK_CLOSE( testcriterion3->getPrecision(), ValueType( 1e-5) );
+    BOOST_CHECK_EQUAL( testcriterion3->getCheckMode(), ResidualCheck::Relative );
 }
 
 /* --------------------------------------------------------------------- */
 
 BOOST_AUTO_TEST_CASE( SetAndGetCheckModeTest )
 {
-    BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualThreshold::Absolute );
-    mCriterionDouble->setCheckMode( ResidualThreshold::Relative );
-    BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualThreshold::Relative );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualThreshold::Relative );
-    mCriterionFloat->setCheckMode( ResidualThreshold::Absolute );
-    BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualThreshold::Absolute );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualCheck::Absolute );
+    mCriterionDouble->setCheckMode( ResidualCheck::Relative );
+    BOOST_CHECK_EQUAL( mCriterionDouble->getCheckMode(), ResidualCheck::Relative );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualCheck::Relative );
+    mCriterionFloat->setCheckMode( ResidualCheck::Absolute );
+    BOOST_CHECK_EQUAL( mCriterionFloat->getCheckMode(), ResidualCheck::Absolute );
 }
 
 /* --------------------------------------------------------------------- */
@@ -137,7 +144,7 @@ BOOST_AUTO_TEST_CASE( copyTest )
     testcriterion1 = ( ResidualThreshold* ) mCriterionFloat->copy();
     BOOST_CHECK_EQUAL( testcriterion1->getFirstNormResult(), -1.0 );
     BOOST_CHECK_CLOSE( testcriterion1->getPrecision().getValue<float>(), 1.0e-4f, 2 );
-    BOOST_CHECK_EQUAL( testcriterion1->getCheckMode(), ResidualThreshold::Relative );
+    BOOST_CHECK_EQUAL( testcriterion1->getCheckMode(), ResidualCheck::Relative );
 }
 
 /* --------------------------------------------------------------------- */
@@ -155,14 +162,24 @@ BOOST_AUTO_TEST_CASE( SetAndGetFirstNormResultTest )
 
 BOOST_AUTO_TEST_CASE( NormPtrTest )
 {
-    NormPtr norm = mCriterionFloat->getNorm();
-    //TODO: Check if this norm is really a L2Norm.
+    NormPtr<ValueType> norm = mCriterionFloat->getNorm();
+
+    // Check if this norm is really a L2Norm.
+
+    DenseVector<ValueType> v( 2 );
+    v[0] = 3;
+    v[1] = 4;
+
+    NormType<ValueType> computed = norm->apply( v );
+    NormType<ValueType> expected = 5;
+
+    BOOST_CHECK_CLOSE( computed, expected, 0.001 )
 }
 
 /* --------------------------------------------------------------------- */
 
 template<typename ValueType>
-void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
+void testIsSatisfied( ResidualCheck checkMode )
 {
     IndexType n = 3;
     EquationHelper::EquationSystem<ValueType> system = EquationHelper::get3x3SystemA<ValueType>();
@@ -186,8 +203,8 @@ void testIsSatisfied( ResidualThreshold::ResidualThresholdCheckMode checkMode )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_types )
 {
-    testIsSatisfied<ValueType>( ResidualThreshold::Absolute );
-    testIsSatisfied<ValueType>( ResidualThreshold::Relative );
+    testIsSatisfied<ValueType>( ResidualCheck::Absolute );
+    testIsSatisfied<ValueType>( ResidualCheck::Relative );
 }
 
 /* --------------------------------------------------------------------- */

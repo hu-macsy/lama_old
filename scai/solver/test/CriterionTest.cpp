@@ -59,16 +59,15 @@ struct CriterionTestConfig
     CriterionTestConfig()
     {
         mIterationCountCriterion1 = new IterationCount<ValueType>( 10 );
-        // mIterationCountCriterion1Ptr( mIterationCountCriterion1 );
+        mIterationCountCriterion1Ptr.reset( mIterationCountCriterion1 );
         mIterationCountCriterion2 = new IterationCount<ValueType>( 8 );
-        // mIterationCountCriterion2Ptr( mIterationCountCriterion2 );
+        mIterationCountCriterion2Ptr.reset( mIterationCountCriterion2 );
     }
 
     ~CriterionTestConfig()
     {
     }
 
-    CriterionPtr<ValueType> mCriterionRoot;
     IterationCount<ValueType>* mIterationCountCriterion1;
     CriterionPtr<ValueType> mIterationCountCriterion1Ptr;
     IterationCount<ValueType>* mIterationCountCriterion2;
@@ -125,6 +124,7 @@ void testCheckCriterion( CriterionPtr<ValueType> bcp, BooleanOp boperator )
 
 BOOST_AUTO_TEST_CASE( ConditionTest )
 {
+    CriterionPtr<ValueType> mCriterionRoot;
     mCriterionRoot = mIterationCountCriterion1Ptr && mIterationCountCriterion2Ptr;
     testCheckCriterion( mCriterionRoot, BooleanOp::AND );
     mCriterionRoot = mIterationCountCriterion1Ptr || mIterationCountCriterion2Ptr;

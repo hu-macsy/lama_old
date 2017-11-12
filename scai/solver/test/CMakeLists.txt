@@ -56,7 +56,7 @@ scai_project (
 #       InverseSolverTest
 #       IterationCountTest
         IterativeSolverTest
-#       JacobiTest
+        JacobiTest
 #       KaczmarzTest
 #       MINRESTest
 #       QMRTest

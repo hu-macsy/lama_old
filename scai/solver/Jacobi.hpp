@@ -43,6 +43,7 @@
 
 // local library
 #include <scai/lama/matrix/SparseMatrix.hpp>
+#include <scai/lama/DenseVector.hpp>
 
 namespace scai
 {
@@ -50,35 +51,37 @@ namespace scai
 namespace solver
 {
 
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Jacobi:
-    public OmegaSolver,
-    public Solver::Register<Jacobi>
+    public OmegaSolver<ValueType>,
+    public _Solver::Register<Jacobi<ValueType> >
 {
 public:
+
     Jacobi( const std::string& id );
-    Jacobi( const std::string& id, lama::Scalar omega );
+
+    Jacobi( const std::string& id, ValueType omega );
+
     Jacobi( const std::string& id, LoggerPtr logger );
-    Jacobi( const std::string& id, lama::Scalar omega, LoggerPtr logger );
+
+    Jacobi( const std::string& id, ValueType omega, LoggerPtr logger );
+
     Jacobi( const Jacobi& other );
 
     virtual ~Jacobi();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
-    virtual void solveFinalize();
+    /** Implementation of pure method IterativeSolver<ValueType>::iterate */
 
     void iterate();
 
-    struct JacobiRuntime: OmegaSolverRuntime
+    struct JacobiRuntime: OmegaSolver<ValueType>::IterativeSolverRuntime
     {
-        JacobiRuntime();
-        virtual ~JacobiRuntime();
-
-        lama::_VectorPtr mOldSolution;
-        SolutionProxy mProxyOldSolution;
-        std::shared_ptr<hmemo::_HArray> mDiagonal;
+        lama::DenseVector<ValueType> mDiagonal;     //!< stores the diagonal of matrix to solve
+        lama::DenseVector<ValueType> mOldSolution;  //!< temporary, reused in each iteration
     };
 
     /**
@@ -89,7 +92,7 @@ public:
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const JacobiRuntime& getConstRuntime() const;
+    virtual const JacobiRuntime& getRuntime() const;
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -99,8 +102,9 @@ public:
      */
     virtual Jacobi<ValueType>* copy();
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    static SolverCreateKeyType createValue();
+
+    static _Solver* create();
 
 protected:
 
@@ -111,27 +115,7 @@ protected:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-private:
-    template<typename ValueType>
-    void iterateTyped( const lama::SparseMatrix<ValueType>& );
-
-    template<typename ValueType>
-    void iterateSync(
-        hmemo::HArray<ValueType>& solution,
-        const lama::SparseMatrix<ValueType>& coefficients,
-        const hmemo::HArray<ValueType>& localOldSolution,
-        hmemo::HArray<ValueType>& haloOldSolution,
-        const hmemo::HArray<ValueType>& rhs,
-        const ValueType omega );
-
-    template<typename ValueType>
-    void iterateAsync(
-        hmemo::HArray<ValueType>& solution,
-        const lama::SparseMatrix<ValueType>& coefficients,
-        const hmemo::HArray<ValueType>& localOldSolution,
-        hmemo::HArray<ValueType>& haloOldSolution,
-        const hmemo::HArray<ValueType>& rhs,
-        const ValueType omega );
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
 };
 
 } /* end namespace solver */

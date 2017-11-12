@@ -353,9 +353,7 @@ int main( int argc, const char* argv[] )
 
         string solverName = "<" + lamaconf.getSolverName() + ">";
 
-        // std::unique_ptr<Solver<ValueType> > mySolver( Solver::create( lamaconf.getSolverName(), solverName ) );
-
-        std::unique_ptr<Solver<ValueType> > mySolver( new CG<ValueType>( solverName ) );
+        std::unique_ptr<Solver<ValueType> > mySolver( Solver<ValueType>::getSolver( lamaconf.getSolverName() ) );
 
         // setting up a common logger, prints also rank of communicator
 

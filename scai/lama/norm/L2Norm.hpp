@@ -144,7 +144,7 @@ inline NormType<ValueType> l2Norm( const Vector<ValueType>& vector )
  * @return              the l2 norm of the _Matrix matrix.
  */
 template<typename ValueType>
-NormType<ValueType> l2Norm( const Matrix<ValueType>& matrix )
+inline NormType<ValueType> l2Norm( const Matrix<ValueType>& matrix )
 {
     return matrix.l2Norm();
 }

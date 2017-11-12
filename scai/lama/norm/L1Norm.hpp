@@ -87,7 +87,7 @@ inline NormType<ValueType> l1Norm( const Vector<ValueType>& vector )
 }
 
 template<typename ValueType>
-NormType<ValueType> l1Norm( const Matrix<ValueType>& matrix )
+inline NormType<ValueType> l1Norm( const Matrix<ValueType>& matrix )
 {
     return matrix.l1Norm();
 }

@@ -67,7 +67,7 @@ scai_project (
 #       GMRES
 #       InverseSolver
         IterativeSolver
-#       Jacobi
+        Jacobi
 #       Kaczmarz
 #       MINRES
 #       OmegaSolver

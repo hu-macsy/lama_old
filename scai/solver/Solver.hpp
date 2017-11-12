@@ -260,6 +260,9 @@ public:
 
     /**
      * @brief Status independent solver informations
+     *
+     * The runtime will contain all that data that is never copied when
+     * a solver is copied.
      */
     struct SolverRuntime: public common::NonCopyable
     {
