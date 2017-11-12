@@ -61,7 +61,7 @@ scai_project (
 #       MINRESTest
 #       QMRTest
 #       ResidualStagnationTest
-#       ResidualThresholdTest
+        ResidualThresholdTest
 #       RichardsonTest
 #       SimpleAMGTest
 #       SolutionProxyTest
