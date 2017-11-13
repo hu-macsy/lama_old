@@ -49,12 +49,14 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
-    - eval python run_tests.py --output_dir testoutput "$RUN_TESTS_ARGS"
+    - eval python run_tests.py --output_dir $BUILD_DIR/testoutput "$RUN_TESTS_ARGS"
+    - mv $BUILD_DIR/testoutput $CI_PROJECT_DIR/testoutput
+    - cp $CI_PROJECT_DIR/testoutput/report.html $CI_PROJECT_DIR/test_report.html
     - make install
   artifacts:
     paths:
-    - $BUILD_DIR/testoutput/report.html
-    - $BUILD_DIR/testoutput/
+    - testoutput/
+    - test_report.html
     expire_in: 1 week
 
 ###############################################################
