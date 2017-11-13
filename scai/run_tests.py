@@ -112,7 +112,7 @@ def run_tests(tests, output_dir, prepend_args = []):
     successful_tests = []
     status_messages = [ "  Running test #{} {} ... ".format(index + 1, test.name)
                        for (index, test) in enumerate(tests) ]
-    longest_message = max(status_messages, key=len)
+    longest_message = max(status_messages or [ '' ], key=len)
 
     for (message, test) in zip(status_messages, tests):
         padding = ' ' * ( len(longest_message) - len(message) )
