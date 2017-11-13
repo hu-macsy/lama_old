@@ -128,8 +128,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </html>
 </xsl:template>
 
-<xsl:template match="TestSuite|TestCase" mode="fullName">
-    <xsl:if test="local-name(..) = 'TestSuite' or local-name(..) = 'TestCase'">
+<xsl:template match="*" mode="fullName">
+    <xsl:if test="../@name">
         <xsl:apply-templates select=".." mode="fullName"/><xsl:text> :: </xsl:text>
     </xsl:if>
     <xsl:value-of select="@name"/>
