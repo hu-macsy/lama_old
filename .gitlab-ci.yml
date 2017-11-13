@@ -59,6 +59,7 @@ variables:
     - test_report.html
     - make_install_output.txt
     expire_in: 1 week
+    when: always
   # By default, artifacts from the previous stage are passed through. We don't want this!
   dependencies: []
 
