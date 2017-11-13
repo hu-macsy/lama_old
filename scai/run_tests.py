@@ -10,6 +10,7 @@ import subprocess
 import collections
 import shutil
 import urlparse, urllib
+import time
 from glob import glob
 from copy import deepcopy
 
@@ -119,18 +120,24 @@ def run_tests(tests, output_dir, prepend_args = []):
         print(message + padding, end="")
         sys.stdout.flush()
 
+        start = time.time()
+
         try:
             passed = run_test(test, output_dir, prepend_args=prepend_args)
         except Exception as e:
             passed = False;
             print("\nException when running test {}:\n{}\n".format(test.name, e))
 
+        duration = time.time() - start
+
         if passed:
             successful_tests.append(test)
-            print(PASSED)
+            print(PASSED, end="")
         else:
             failed_tests.append(test)
-            print(FAILED)
+            print(FAILED, end="")
+
+        print("( {:.2f} s )".format(duration))
 
     return (successful_tests, failed_tests)
 
