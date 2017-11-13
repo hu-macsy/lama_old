@@ -8,6 +8,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:template match="TestOutput">
     <html>
     <head>
+    <title>Test results</title>
     <style>
         body {
             font-family: "Helvetica";
