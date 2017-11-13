@@ -58,11 +58,15 @@ def url_for_file_path(file_path):
 
 def combine_reports(output_dir):
     report_glob = os.path.join(output_dir, '*_report.xml')
+    log_glob = os.path.join(output_dir, '*_log.xml')
     report_path = os.path.join(output_dir, 'report.xml')
     with open(report_path, 'w') as output_file:
         output_file.write('<TestOutput>')
         for report_file in glob(report_glob):
             with open(report_file, 'r') as input_file:
+                shutil.copyfileobj(input_file, output_file)
+        for log_file in glob(log_glob):
+            with open(log_file, 'r') as input_file:
                 shutil.copyfileobj(input_file, output_file)
         output_file.write('</TestOutput>')
 
@@ -97,7 +101,7 @@ def run_test(test, output_dir, prepend_args = []):
     if test.is_boost_test:
         args +=  [
             "--report_level=detailed",
-            "--log_level=message",
+            "--log_level=test_suite",
             "--output_format=XML",
             "--output_dir={}".format(output_dir)
         ]

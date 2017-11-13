@@ -39,6 +39,13 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             border: 1px solid black;
         }
 
+        .test_case {
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border: 1px solid black;
+        }
+
         .suite_anchor, .suite_anchor:visited {
             text-decoration: none;
             color: white;
@@ -107,20 +114,28 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         </table>
 
         <h1>Test suite details</h1>
-        <xsl:apply-templates select="//TestSuite"/>
+        <xsl:apply-templates select="//TestSuite[ancestor::TestResult]"/>
+
+        <h1>Test suite logs</h1>
+        <xsl:apply-templates select="//TestCase[ancestor::TestLog]">
+            <!-- Make sure most relevant messages (i.e. errors) come first -->
+            <xsl:sort select="Error" order="descending"/>
+            <xsl:sort select="Warning" order="descending"/>
+            <xsl:sort select="Message" order="descending"/>
+        </xsl:apply-templates>
     </body>
     </html>
 </xsl:template>
 
-<xsl:template match="TestSuite" mode="fullName">
-    <xsl:if test="not(local-name(..) = 'TestResult')">
+<xsl:template match="TestSuite|TestCase" mode="fullName">
+    <xsl:if test="local-name(..) = 'TestSuite' or local-name(..) = 'TestCase'">
         <xsl:apply-templates select=".." mode="fullName"/><xsl:text> :: </xsl:text>
     </xsl:if>
     <xsl:value-of select="@name"/>
 </xsl:template>
 
-<xsl:template match="TestSuite">
-    <div class="test_suite" style="float: left; clear: both;">
+<xsl:template match="TestSuite[ancestor::TestResult]">
+    <div class="test_suite" style="clear: both;">
         <xsl:attribute name="id"><xsl:apply-templates select="current()" mode="fullName"/></xsl:attribute>
         <table class="summary" style="clear: both;">
             <tr>
@@ -136,7 +151,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                 <td><xsl:value-of select="@result"/></td>
             </tr>
         </table>
-        <div style="float: left">
+        <div>
             <h4>Summary</h4>
             <table class="summary">
                 <tr>
@@ -175,7 +190,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         </div>
 
         <xsl:if test="TestSuite">
-            <div style="float: left">
+            <div>
                 <h4>Test suites</h4>
                 <table class="summary">
                     <thead>
@@ -237,12 +252,18 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                                 <tr>
                                     <xsl:choose>
                                         <xsl:when test="@result = 'passed'">
-                                            <xsl:attribute name="class">passed</xsl:attribute>
+                                            <xsl:attribute name="class">passed passed-link</xsl:attribute>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:attribute name="class">failed</xsl:attribute>
+                                            <xsl:attribute name="class">failed failed-link</xsl:attribute>
                                         </xsl:otherwise>
                                     </xsl:choose>
+                                    <xsl:attribute name="onclick">
+                                        <xsl:text>window.document.location='#</xsl:text>
+                                        <xsl:apply-templates select="current()" mode="fullName"/>
+                                        <xsl:text>'</xsl:text>
+                                    </xsl:attribute>
+
                                     <td><xsl:value-of select="@name"/></td>
                                     <td><xsl:value-of select="@result"/></td>
                                     <td class="number"><xsl:value-of select="@assertions_passed"/></td>
@@ -255,6 +276,34 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                 </table>
             </div>
         </xsl:if>
+    </div>
+</xsl:template>
+
+<xsl:template match="TestCase[ancestor::TestLog]">
+    <div class="test_case">
+        <xsl:attribute name="id"><xsl:apply-templates select="current()" mode="fullName"/></xsl:attribute>
+
+        <h4><xsl:apply-templates select="." mode="fullName"/></h4>
+
+        <table class="summary">
+            <thead>
+
+            </thead>
+                <th>File</th>
+                <th>Line</th>
+                <th>Type</th>
+                <th>Log message</th>
+            <tbody>
+                <xsl:for-each select="Error|Warning|Message">
+                    <tr>
+                        <td><xsl:value-of select="@file"/></td>
+                        <td><xsl:value-of select="@line"/></td>
+                        <td><xsl:value-of select="local-name(.)"/></td>
+                        <td><xsl:value-of select="."/></td>
+                    </tr>
+                </xsl:for-each>
+            </tbody>
+        </table>
     </div>
 </xsl:template>
 
