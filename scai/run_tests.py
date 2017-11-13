@@ -149,6 +149,12 @@ def run_mpi_tests(tests, output_dir, np):
     return (passed_tests, failed_tests)
 
 
+def test_exists(name):
+    all_tests = SERIAL_TESTS + MPI_TESTS
+    all_test_names = [ test.name for test in all_tests ]
+    return name in all_test_names
+
+
 def main():
     parser = argparse.ArgumentParser(description='Run LAMA tests.')
     parser.add_argument('--output_dir', dest='output_dir', required=True,
@@ -157,6 +163,8 @@ def main():
                         help='Whether or not to use MPI for MPI-enabled tests.')
     parser.add_argument('--np', dest='np', type=int, nargs='+', required=False, default=[ 1 ],
                         help='The number of processors to use for MPI. Can supply multiple arguments (e.g. --np 1 2 3)')
+    parser.add_argument('--tests', dest='tests', nargs='+', type=str, required=False,default=None,
+                        help='A list of tests to run. If not specified, all tests are run.')
     args = parser.parse_args()
     output_dir = args.output_dir
 
@@ -164,14 +172,25 @@ def main():
     print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the provided output directory.")
     print("Output directory: {}\n".format(output_dir))
 
-    print("Running {} serial tests ...".format(len(SERIAL_TESTS)))
-    (serial_passed, serial_failed) = run_tests(SERIAL_TESTS, output_dir)
+    if args.tests:
+        for name in args.tests:
+            if not test_exists(name):
+                print("ERROR: User requested to run test '{}', which does not exist. Aborting...".format(name))
+                return -1
+
+        print("Note: Only running the following requested tests:\n  {}\n".format(", ".join(args.tests)))
+
+    filtered_serial_tests = [ test for test in SERIAL_TESTS if test.name in args.tests ] if args.tests else SERIAL_TESTS
+    filtered_mpi_tests = [ test for test in MPI_TESTS if test.name in args.tests ] if args.tests else MPI_TESTS
+
+    print("Running {} serial tests ...".format(len(filtered_serial_tests)))
+    (serial_passed, serial_failed) = run_tests(filtered_serial_tests, output_dir)
     print()
 
     mpi_passed = []
     mpi_failed = []
     if args.mpi:
-        (mpi_passed, mpi_failed) = run_mpi_tests(MPI_TESTS, output_dir, args.np)
+        (mpi_passed, mpi_failed) = run_mpi_tests(filtered_mpi_tests, output_dir, args.np)
     else:
         print("MPI tests not requested. Skipping ...")
 
