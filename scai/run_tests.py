@@ -11,6 +11,7 @@ import collections
 import shutil
 import urlparse, urllib
 import time
+import tempfile
 from glob import glob
 from copy import deepcopy
 
@@ -164,7 +165,7 @@ def test_exists(name):
 
 def main():
     parser = argparse.ArgumentParser(description='Run LAMA tests.')
-    parser.add_argument('--output_dir', dest='output_dir', required=True,
+    parser.add_argument('--output_dir', dest='output_dir', default=None,
                         help='The directory in which to store the standard output, test logs and test reports.')
     parser.add_argument('--mpi', dest='mpi', action='store_true',
                         help='Whether or not to use MPI for MPI-enabled tests.')
@@ -173,10 +174,10 @@ def main():
     parser.add_argument('--tests', dest='tests', nargs='+', type=str, required=False,default=None,
                         help='A list of tests to run. If not specified, all tests are run.')
     args = parser.parse_args()
-    output_dir = args.output_dir
+    output_dir = args.output_dir if args.output_dir else tempfile.mkdtemp(suffix='testoutput')
 
     print("Running LAMA tests.")
-    print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the provided output directory.")
+    print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the following output directory.")
     print("Output directory: {}\n".format(output_dir))
 
     if args.tests:
