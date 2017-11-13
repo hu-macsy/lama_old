@@ -52,11 +52,12 @@ variables:
     - eval python run_tests.py --output_dir $BUILD_DIR/testoutput "$RUN_TESTS_ARGS"
     - mv $BUILD_DIR/testoutput $CI_PROJECT_DIR/testoutput
     - cp $CI_PROJECT_DIR/testoutput/report.html $CI_PROJECT_DIR/test_report.html
-    - make install
+    - make install > $CI_PROJECT_DIR/make_install_output.txt
   artifacts:
     paths:
     - testoutput/
     - test_report.html
+    - make_install_output.txt
     expire_in: 1 week
   # By default, artifacts from the previous stage are passed through. We don't want this!
   dependencies: []
