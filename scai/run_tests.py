@@ -180,7 +180,9 @@ def main():
 
         print("Note: Only running the following requested tests:\n  {}\n".format(", ".join(args.tests)))
 
-    filtered_normal_tests = [ test for test in NORMAL_TESTS if test.name in args.tests ] if args.tests else NORMAL_TESTS
+    # If MPI is not requested, run "mpi tests" as normal tests (e.g. without mpirun).
+    normal_tests = deepcopy(NORMAL_TESTS) if args.mpi else NORMAL_TESTS + MPI_TESTS
+    filtered_normal_tests = [ test for test in normal_tests if test.name in args.tests ] if args.tests else normal_tests
     filtered_mpi_tests = [ test for test in MPI_TESTS if test.name in args.tests ] if args.tests else MPI_TESTS
 
     print("Running {} normal tests ...".format(len(filtered_normal_tests)))
