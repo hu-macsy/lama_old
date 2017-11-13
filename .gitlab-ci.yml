@@ -58,6 +58,8 @@ variables:
     - testoutput/
     - test_report.html
     expire_in: 1 week
+  # By default, artifacts from the previous stage are passed through. We don't want this!
+  dependencies: []
 
 ###############################################################
 # CONFIGURATIONS INTENDED TO RUN ON EVERY COMMIT TO ANY BRANCH
