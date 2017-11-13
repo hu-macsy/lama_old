@@ -25,7 +25,7 @@ class colors:
     NOCOLOR = '\033[0m'
 
 
-SERIAL_TESTS = [
+NORMAL_TESTS = [
     Test('commonTest', [ 'common/test/commonTest' ], is_boost_test=True),
     Test('loggingTest', [ 'logging/test/test.sh' ], is_boost_test=False),
     Test('tracingTest', [ 'tracing/test/test.sh' ], is_boost_test=False),
@@ -150,7 +150,7 @@ def run_mpi_tests(tests, output_dir, np):
 
 
 def test_exists(name):
-    all_tests = SERIAL_TESTS + MPI_TESTS
+    all_tests = NORMAL_TESTS + MPI_TESTS
     all_test_names = [ test.name for test in all_tests ]
     return name in all_test_names
 
@@ -180,11 +180,11 @@ def main():
 
         print("Note: Only running the following requested tests:\n  {}\n".format(", ".join(args.tests)))
 
-    filtered_serial_tests = [ test for test in SERIAL_TESTS if test.name in args.tests ] if args.tests else SERIAL_TESTS
+    filtered_normal_tests = [ test for test in NORMAL_TESTS if test.name in args.tests ] if args.tests else NORMAL_TESTS
     filtered_mpi_tests = [ test for test in MPI_TESTS if test.name in args.tests ] if args.tests else MPI_TESTS
 
-    print("Running {} serial tests ...".format(len(filtered_serial_tests)))
-    (serial_passed, serial_failed) = run_tests(filtered_serial_tests, output_dir)
+    print("Running {} normal tests ...".format(len(filtered_normal_tests)))
+    (normal_passed, normal_failed) = run_tests(filtered_normal_tests, output_dir)
     print()
 
     mpi_passed = []
@@ -194,9 +194,9 @@ def main():
     else:
         print("MPI tests not requested. Skipping ...")
 
-    all_tests = serial_passed + serial_failed + mpi_passed + mpi_failed
-    passed = serial_passed + mpi_passed
-    failed = serial_failed + mpi_failed
+    all_tests = normal_passed + normal_failed + mpi_passed + mpi_failed
+    passed = normal_passed + mpi_passed
+    failed = normal_failed + mpi_failed
     all_tests_passed = len(failed) == 0
     result_label = PASSED if all_tests_passed else FAILED
     print()
