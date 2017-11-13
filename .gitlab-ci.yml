@@ -53,8 +53,8 @@ variables:
     - make install
   artifacts:
     paths:
-    - testoutput/report.html
-    - testoutput/
+    - $BUILD_DIR/testoutput/report.html
+    - $BUILD_DIR/testoutput/
     expire_in: 1 week
 
 ###############################################################
