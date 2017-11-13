@@ -49,7 +49,7 @@ variables:
         "$EXTRA_CMAKE_OPTS"
     - make -j$BUILD_THREADS
     - make -j$BUILD_THREADS examples tests
-    - python run_tests.py --output_dir testoutput
+    - eval python run_tests.py --output_dir testoutput "$RUN_TESTS_ARGS"
     - make install
   artifacts:
     paths:
@@ -81,6 +81,7 @@ common basic build serial gcc 4.9.1 (debug):
     BOOST_ROOT: /scaihome/lama/boost_test_1_65_1_gcc_4_9_1
     # Note the SCAI_MODULES definition
     EXTRA_CMAKE_OPTS: -DBoost_NO_BOOST_CMAKE=1 -DSCAI_MODULES=common
+    RUN_TESTS_ARGS: --tests commonTest
   tags:
     - draco
 
