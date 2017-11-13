@@ -141,6 +141,11 @@ public:
     static Solver* getSolver( const std::string& solverType );
 
     /**
+     *  Get all solver types available for this value type by using _Solver::createValues 
+     */
+    static void getCreateValues( std::vector<std::string>& values );
+
+    /**
      * @brief Query if a solver can be generated
      *
      */

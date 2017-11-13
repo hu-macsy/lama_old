@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( SetAndGetFirstNormResultTest )
     BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), ValueType(-1) );
     NormType<ValueType> s = 1;
     testcriterion->setFirstNormResult( s );
-    BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), 1.0 );
+    BOOST_CHECK_EQUAL( testcriterion->getFirstNormResult(), s );
 }
 
 /* --------------------------------------------------------------------- */
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( NormPtrTest )
     NormType<ValueType> computed = norm->apply( v );
     NormType<ValueType> expected = 5;
 
-    SCAI_LOG_ERROR( logger, "v = " << v << ", Norm = " << *norm 
+    SCAI_LOG_INFO( logger, "v = " << v << ", Norm = " << *norm 
                            << ", computed = " << computed << ", expected = " << expected )
 
     BOOST_CHECK_CLOSE( computed, expected, 0.001 );

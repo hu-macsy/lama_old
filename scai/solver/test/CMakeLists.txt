@@ -60,12 +60,12 @@ scai_project (
 #       KaczmarzTest
 #       MINRESTest
 #       QMRTest
-#       ResidualStagnationTest
+        ResidualStagnationTest
         ResidualThresholdTest
 #       RichardsonTest
 #       SimpleAMGTest
 #       SolutionProxyTest
-#       AllSolverTest
+        AllSolverTest
 #       TFQMRTest
         TimerTest
         VersionTest

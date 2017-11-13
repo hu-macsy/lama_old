@@ -65,6 +65,25 @@ _Solver* _Solver::getSolver( const common::ScalarType scalarType, const std::str
 }
 
 template<typename ValueType>
+void Solver<ValueType>::getCreateValues( std::vector<std::string>& values )
+{
+    std::vector<SolverCreateKeyType> createValues;
+
+    _Solver::getCreateValues( createValues );  // all solvers ( valueType, solvertype )
+
+    values.clear();
+ 
+    for ( size_t i = 0; i < createValues.size(); ++i )
+    {
+        if ( createValues[i].first == common::TypeTraits<ValueType>::stype )
+        {
+            // Solver for this value type
+            values.push_back( createValues[i].second );
+        }
+    }
+}
+
+template<typename ValueType>
 Solver<ValueType>::Solver( const std::string& id ) : 
 
     mLogger( new CommonLogger( "dummyLog", LogLevel::noLogging,

@@ -99,11 +99,9 @@ public:
     virtual ~ResidualStagnation();
 
     /**
-     * @brief TODO[doxy] Complete Description.
-     *
-     * @return   TODO[doxy] Complete Description.
+     * @brief Implement pure method but return with the covariant return type
      */
-    virtual Criterion<ValueType>* copy() const;
+    virtual ResidualStagnation<ValueType>* copy() const;
 
     /**
      * @brief Checks if the criterion is satisfied.
@@ -173,7 +171,7 @@ private:
     /**
      * @brief Stores the results of the residual-norm-calculations.
      */
-    std::vector<ValueType> mLastResidualNorms;
+    std::vector<NormType<ValueType> > mLastResidualNorms;
 
     /**
      * @brief Index. Needed for circular use of the vector.
@@ -189,7 +187,7 @@ private:
     /**
      * @brief The precision used for the stagnation check.
      */
-    ValueType mPrecision;
+    NormType<ValueType> mPrecision;
 };
 
 } /* end namespace solver */

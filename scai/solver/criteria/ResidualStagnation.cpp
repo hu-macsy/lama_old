@@ -37,6 +37,7 @@
 
 // local library
 #include <scai/solver/IterativeSolver.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 // std
 #include <iostream>
@@ -93,7 +94,7 @@ ResidualStagnation<ValueType>::~ResidualStagnation()
 }
 
 template<typename ValueType>
-Criterion<ValueType>* ResidualStagnation<ValueType>::copy() const
+ResidualStagnation<ValueType>* ResidualStagnation<ValueType>::copy() const
 {
     return new ResidualStagnation<ValueType>( *this );
 }
@@ -111,12 +112,12 @@ bool ResidualStagnation<ValueType>::isSatisfied( const IterativeSolver<ValueType
 
     if ( mEntriesReady )
     {
-        ValueType min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-        ValueType max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
-        min = std::max( std::numeric_limits<ValueType>::min(), min );
+        NormType<ValueType> min = *std::min_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
+        NormType<ValueType> max = *std::max_element( mLastResidualNorms.begin(), mLastResidualNorms.end() );
+        min = std::max( std::numeric_limits<NormType<ValueType> >::min(), min );
         //std::cout<< " max ="<<max<<"       min = "<<min<<"      max/min = "<<max/min<<"1+p = "<<(1.0+mPrecision)<<std::endl;
         mEntriesReady = false;
-        return ( ( max / min ) < ( 1.0 + mPrecision ) );
+        return ( ( max / min ) < ( NormType<ValueType>( 1 ) + mPrecision ) );
     }
 
     return false;
@@ -157,6 +158,12 @@ void ResidualStagnation<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "ResidualStagnation<" << getPrecision() << ", " << getLookback() << ">";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( ResidualStagnation, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 
