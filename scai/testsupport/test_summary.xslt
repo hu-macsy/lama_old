@@ -55,7 +55,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             margin-top: 0;
         }
 
-        .suite_anchor, .suite_anchor:visited {
+        .suite_anchor, .suite_anchor:visited, #nav-pane a, #nav-pane a:visited {
             text-decoration: none;
             color: #6489c4;
         }
@@ -88,47 +88,75 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             background-color: #eeeeee;
         }
 
+        #nav-pane {
+            position: fixed;
+            width: 200px;
+            height: 100%;
+        }
+
+        #nav-pane ul {
+            list-style-type: none;
+            margin: 0.2em;
+            margin-left: 0.4em;
+            padding: 0;
+        }
+
+        #main-content {
+            margin-left: 220px;
+        }
+
     </style>
     </head>
     <body>
-        <h1>Test summary</h1>
-        <h4>Top-level test suite results</h4>
-        <table class="summary">
-        <thead>
-            <tr>
-                <th>Test suite name</th>
-                <th>Status</th>
-                <th>Passed tests</th>
-                <th>Failed tests</th>
-            </tr>
-        </thead>
-        <tbody>
-            <xsl:for-each select="TestResult/TestSuite">
-                <xsl:sort select="@result"/>
-                <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
+        <div id="nav-pane">
+            <h4>Quick navigation</h4>
+            <ul>
+                <li><a href="#test_summary">Top-level summary</a></li>
+                <li><a href="#test_suite_details">Test suite details</a></li>
+                <li><a href="#test_case_logs">Test case logs</a></li>
+            </ul>
+        </div>
+
+        <div id="main-content">
+            <h1 id="test_summary">Test summary</h1>
+            <h4>Top-level test suite results</h4>
+            <table class="summary">
+            <thead>
                 <tr>
-                    <xsl:call-template name="applyPassedOrFailed"/>
-                    <xsl:call-template name="fullNameOnClick"/>
-
-                    <td><xsl:value-of select="@name"/></td>
-                    <td><xsl:value-of select="@result"/></td>
-                    <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
-                    <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
+                    <th>Test suite name</th>
+                    <th>Status</th>
+                    <th>Passed tests</th>
+                    <th>Failed tests</th>
                 </tr>
-            </xsl:for-each>
-            </tbody>
-        </table>
+            </thead>
+            <tbody>
+                <xsl:for-each select="TestResult/TestSuite">
+                    <xsl:sort select="@result"/>
+                    <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
+                    <tr>
+                        <xsl:call-template name="applyPassedOrFailed"/>
+                        <xsl:call-template name="fullNameOnClick"/>
 
-        <h1>Test suite details</h1>
-        <xsl:apply-templates select="//TestSuite[ancestor::TestResult]"/>
+                        <td><xsl:value-of select="@name"/></td>
+                        <td><xsl:value-of select="@result"/></td>
+                        <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
+                        <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
+                    </tr>
+                </xsl:for-each>
+                </tbody>
+            </table>
 
-        <h1>Test suite logs</h1>
-        <xsl:apply-templates select="//TestCase[ancestor::TestLog]">
-            <!-- Make sure most relevant messages (i.e. errors) come first -->
-            <xsl:sort select="Error" order="descending"/>
-            <xsl:sort select="Warning" order="descending"/>
-            <xsl:sort select="Message" order="descending"/>
-        </xsl:apply-templates>
+            <h1 id="test_suite_details">Test suite details</h1>
+            <xsl:apply-templates select="//TestSuite[ancestor::TestResult]"/>
+
+            <h1 id="test_case_logs">Test suite logs</h1>
+            <xsl:apply-templates select="//TestCase[ancestor::TestLog]">
+                <!-- Make sure most relevant messages (i.e. errors) come first -->
+                <xsl:sort select="Error" order="descending"/>
+                <xsl:sort select="Warning" order="descending"/>
+                <xsl:sort select="Message" order="descending"/>
+            </xsl:apply-templates>
+        </div>
     </body>
     </html>
 </xsl:template>
