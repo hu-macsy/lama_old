@@ -49,7 +49,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
         .suite_anchor, .suite_anchor:visited {
             text-decoration: none;
-            color: white;
+            color: #6489c4;
         }
 
         tr.passed {
@@ -146,6 +146,15 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             <tr>
                 <td>Full name</td>
                 <td><xsl:apply-templates select="current()" mode="fullName"/></td>
+            </tr>
+            <tr>
+                <td>Parent suite</td>
+                <td>
+                    <a class="suite_anchor">
+                        <xsl:attribute name="href">#<xsl:apply-templates select=".." mode="fullName"/></xsl:attribute>
+                        <xsl:apply-templates select=".." mode="fullName"/>
+                    </a>
+                </td>
             </tr>
             <tr>
                 <td>Status</td>
