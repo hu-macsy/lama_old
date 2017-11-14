@@ -4,22 +4,17 @@ import sys
 import argparse
 import os
 import os.path
-import errno
 import random
 import subprocess
 import collections
-import shutil
-import urlparse, urllib
 import time
 import tempfile
-from glob import glob
 from copy import deepcopy
+from testsupport import testsupport
 
 
 Test = collections.namedtuple('Test', ['name', 'args', 'is_boost_test'])
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-TESTSUPPORT_DIR = os.path.join(SCRIPT_DIR, 'testsupport')
 
 class colors:
     PASS = '\033[92m'
@@ -51,45 +46,6 @@ MPI_TESTS = [
 PASSED = " " + colors.PASS + "[ PASSED ]" + colors.NOCOLOR + " "
 FAILED = " " + colors.FAIL + "[ FAILED ]" + colors.NOCOLOR + " "
 
-def url_for_file_path(file_path):
-    abs_path = os.path.abspath(file_path)
-    return urlparse.urljoin('file:', urllib.pathname2url(abs_path))
-
-
-def combine_reports(output_dir):
-    report_glob = os.path.join(output_dir, '*_report.xml')
-    log_glob = os.path.join(output_dir, '*_log.xml')
-    report_path = os.path.join(output_dir, 'report.xml')
-    with open(report_path, 'w') as output_file:
-        output_file.write('<TestOutput>')
-        for report_file in glob(report_glob):
-            with open(report_file, 'r') as input_file:
-                shutil.copyfileobj(input_file, output_file)
-        for log_file in glob(log_glob):
-            with open(log_file, 'r') as input_file:
-                shutil.copyfileobj(input_file, output_file)
-        output_file.write('</TestOutput>')
-
-    stylesheet_path = os.path.join(TESTSUPPORT_DIR, 'test_summary.xslt')
-    report_html_path = os.path.join(output_dir, 'report.html')
-
-    xsltproc_args = [
-        "xsltproc",
-        "-o",
-        report_html_path,
-        stylesheet_path,
-        report_path
-    ]
-    subprocess.check_call(xsltproc_args)
-    return report_html_path
-
-def ensure_directory_exists(dir_path):
-    try:
-        os.makedirs(dir_path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
 
 def run_test(test, output_dir, prepend_args = []):
     # Note: we are implicitly assuming unique test names here
@@ -106,7 +62,7 @@ def run_test(test, output_dir, prepend_args = []):
             "--output_dir={}".format(output_dir)
         ]
 
-    ensure_directory_exists(output_dir)
+    testsupport.ensure_directory_exists(output_dir)
 
     with open(stdout_path, 'w') as stdout, open(stderr_path, 'w') as stderr:
         retcode = subprocess.call(args, stdout=stdout, stderr=stderr)
@@ -152,7 +108,7 @@ def run_mpi_tests(tests, output_dir, np):
     passed_tests = []
 
     for n in np:
-        print("Running {} MPI tests ({} processors) ...".format(len(MPI_TESTS), n))
+        print("Running {} MPI tests ({} processors) ...".format(len(tests), n))
         mpi_args = [ "mpirun", "-np", str(n), "--tag-output" ]
         (passed, failed) = run_tests(tests, output_dir, prepend_args=mpi_args)
         print()
@@ -220,9 +176,9 @@ def main():
 
     print()
     print("Generating test report...")
-    html_report_path = combine_reports(output_dir)
+    html_report_path = testsupport.combine_reports(output_dir)
     print("Report successfully generated. URL:\n")
-    print(url_for_file_path(html_report_path))
+    print(testsupport.url_for_file_path(html_report_path))
     print()
 
     return len(failed)
