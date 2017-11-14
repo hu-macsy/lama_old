@@ -119,32 +119,34 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
         <div id="main-content">
             <h1 id="test_summary">Test summary</h1>
-            <h4>Top-level test suite results</h4>
-            <table class="summary">
-            <thead>
-                <tr>
-                    <th>Test suite name</th>
-                    <th>Status</th>
-                    <th>Passed tests</th>
-                    <th>Failed tests</th>
-                </tr>
-            </thead>
-            <tbody>
-                <xsl:for-each select="TestResult/TestSuite">
-                    <xsl:sort select="@result"/>
-                    <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
+            <div class="test_summary">
+                <h2 class="summary_header">Top-level test suite results</h2>
+                <table class="summary">
+                <thead>
                     <tr>
-                        <xsl:call-template name="applyPassedOrFailed"/>
-                        <xsl:call-template name="fullNameOnClick"/>
-
-                        <td><xsl:value-of select="@name"/></td>
-                        <td><xsl:value-of select="@result"/></td>
-                        <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
-                        <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
+                        <th>Test suite name</th>
+                        <th>Status</th>
+                        <th>Passed tests</th>
+                        <th>Failed tests</th>
                     </tr>
-                </xsl:for-each>
-                </tbody>
-            </table>
+                </thead>
+                <tbody>
+                    <xsl:for-each select="TestResult/TestSuite">
+                        <xsl:sort select="@result"/>
+                        <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
+                        <tr>
+                            <xsl:call-template name="applyPassedOrFailed"/>
+                            <xsl:call-template name="fullNameOnClick"/>
+
+                            <td><xsl:value-of select="@name"/></td>
+                            <td><xsl:value-of select="@result"/></td>
+                            <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
+                            <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
+                        </tr>
+                    </xsl:for-each>
+                    </tbody>
+                </table>
+            </div>
 
             <h1 id="test_suite_details">Test suite details</h1>
             <xsl:apply-templates select="//TestSuite[ancestor::TestResult]"/>
