@@ -84,6 +84,10 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             width: 1em;
         }
 
+        table.log_table tr:nth-child(odd) td {
+            background-color: #eeeeee;
+        }
+
     </style>
     </head>
     <body>
@@ -298,32 +302,60 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </div>
 </xsl:template>
 
+<xsl:template name="fullNameOnClick">
+    <xsl:attribute name="onclick">
+            <xsl:text>window.document.location='#</xsl:text>
+            <xsl:apply-templates select="current()" mode="fullName"/>
+            <xsl:text>'</xsl:text>
+    </xsl:attribute>
+</xsl:template>
+
 <xsl:template match="TestCase[ancestor::TestLog]">
-    <div class="test_case">
-        <xsl:attribute name="id"><xsl:apply-templates select="current()" mode="fullName"/></xsl:attribute>
+    <xsl:if test="Error|Warning|Message">
+        <div class="test_summary">
+            <xsl:attribute name="id"><xsl:apply-templates select="current()" mode="fullName"/></xsl:attribute>
+            <h2 class="summary_header">Test case log summary</h2>
 
-        <h4><xsl:apply-templates select="." mode="fullName"/></h4>
+            <table class="summary section">
+                <tr>
+                    <td>Test case name</td>
+                    <td><xsl:value-of select="@name"/></td>
+                </tr>
+                <tr>
+                    <td>Full name</td>
+                    <td><xsl:apply-templates select="current()" mode="fullName"/></td>
+                </tr>
+                <tr>
+                    <td>Parent suite</td>
+                    <td>
+                        <a class="suite_anchor">
+                            <xsl:attribute name="href">#<xsl:apply-templates select=".." mode="fullName"/></xsl:attribute>
+                            <xsl:apply-templates select=".." mode="fullName"/>
+                        </a>
+                    </td>
+                </tr>
+            </table>
 
-        <table class="summary">
-            <thead>
-
-            </thead>
-                <th>File</th>
-                <th>Line</th>
-                <th>Type</th>
-                <th>Log message</th>
-            <tbody>
-                <xsl:for-each select="Error|Warning|Message">
-                    <tr>
-                        <td><xsl:value-of select="@file"/></td>
-                        <td><xsl:value-of select="@line"/></td>
-                        <td><xsl:value-of select="local-name(.)"/></td>
-                        <td><xsl:value-of select="."/></td>
-                    </tr>
-                </xsl:for-each>
-            </tbody>
-        </table>
-    </div>
+            <table class="summary section log_table">
+                <thead>
+                    <th>File</th>
+                    <th>Line</th>
+                    <th>Type</th>
+                    <th>Log message</th>
+                </thead>
+                <tbody>
+                    <xsl:for-each select="Error|Warning|Message">
+                        <tr>
+                            <td><xsl:value-of select="@file"/></td>
+                            <td><xsl:value-of select="@line"/></td>
+                            <td><xsl:value-of select="local-name(.)"/></td>
+                            <td><xsl:value-of select="."/></td>
+                        </tr>
+                    </xsl:for-each>
+                </tbody>
+            </table>
+        </div>
+    </xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>
