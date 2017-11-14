@@ -107,19 +107,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                 <xsl:sort select="@result"/>
                 <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
                 <tr>
-                    <xsl:choose>
-                        <xsl:when test="@result = 'passed'">
-                            <xsl:attribute name="class">passed passed-link</xsl:attribute>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:attribute name="class">failed failed-link</xsl:attribute>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                    <xsl:attribute name="onclick">
-                        <xsl:text>window.document.location='#</xsl:text>
-                        <xsl:apply-templates select="current()" mode="fullName"/>
-                        <xsl:text>'</xsl:text>
-                    </xsl:attribute>
+                    <xsl:call-template name="applyPassedOrFailed"/>
+                    <xsl:call-template name="fullNameOnClick"/>
 
                     <td><xsl:value-of select="@name"/></td>
                     <td><xsl:value-of select="@result"/></td>
@@ -230,19 +219,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                         <xsl:sort select="@result"/>
                         <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
                         <tr>
-                            <xsl:choose>
-                                <xsl:when test="@result = 'passed'">
-                                    <xsl:attribute name="class">passed passed-link</xsl:attribute>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:attribute name="class">failed failed-link</xsl:attribute>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            <xsl:attribute name="onclick">
-                                <xsl:text>window.document.location='#</xsl:text>
-                                <xsl:apply-templates select="current()" mode="fullName"/>
-                                <xsl:text>'</xsl:text>
-                            </xsl:attribute>
+                            <xsl:call-template name="applyPassedOrFailed"/>
+                            <xsl:call-template name="fullNameOnClick"/>
 
                             <td><xsl:value-of select="@name"/></td>
                             <td><xsl:value-of select="@result"/></td>
@@ -273,19 +251,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                             <xsl:sort select="@result"/>
                             <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
                                 <tr>
-                                    <xsl:choose>
-                                        <xsl:when test="@result = 'passed'">
-                                            <xsl:attribute name="class">passed passed-link</xsl:attribute>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="class">failed failed-link</xsl:attribute>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:attribute name="onclick">
-                                        <xsl:text>window.document.location='#</xsl:text>
-                                        <xsl:apply-templates select="current()" mode="fullName"/>
-                                        <xsl:text>'</xsl:text>
-                                    </xsl:attribute>
+                                    <xsl:call-template name="applyPassedOrFailed"/>
+                                    <xsl:call-template name="fullNameOnClick"/>
 
                                     <td><xsl:value-of select="@name"/></td>
                                     <td><xsl:value-of select="@result"/></td>
@@ -300,6 +267,17 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             </div>
         </xsl:if>
     </div>
+</xsl:template>
+
+<xsl:template name="applyPassedOrFailed">
+    <xsl:choose>
+        <xsl:when test="@result = 'passed'">
+            <xsl:attribute name="class">passed passed-link</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:attribute name="class">failed failed-link</xsl:attribute>
+        </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <xsl:template name="fullNameOnClick">
