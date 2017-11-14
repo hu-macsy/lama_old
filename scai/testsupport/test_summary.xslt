@@ -21,8 +21,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
         .summary td, .summary th {
             padding: 0.3em;
-            padding-right: 0.5em;
-            padding-left: 0.5em;
+            padding-right: 0.7em;
+            padding-left: 0.7em;
         }
 
         .summary td {
@@ -33,18 +33,26 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             text-align: right;
         }
 
-        .test_suite {
+        .test_summary {
             padding: 20px;
             margin-top: 20px;
             margin-bottom: 20px;
             border: 1px solid black;
         }
 
-        .test_case {
+        .test_summary {
             padding: 20px;
             margin-top: 20px;
             margin-bottom: 20px;
             border: 1px solid black;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .summary_header {
+            margin-top: 0;
         }
 
         .suite_anchor, .suite_anchor:visited {
@@ -52,24 +60,28 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
             color: #6489c4;
         }
 
-        tr.passed {
+        .passed {
             background-color: #5cb85c;
             color: white;
         }
 
-        tr.passed-link:hover {
+        .passed-link:hover {
             background-color: #92D092;
             cursor: pointer;
         }
 
-        tr.failed {
+        .failed {
             background-color: #d9534f;
             color: white;
         }
 
-        tr.failed-link:hover {
+        .failed-link:hover {
             background-color: #E68D78;
             cursor: pointer;
+        }
+
+        .indicator {
+            width: 1em;
         }
 
     </style>
@@ -136,10 +148,21 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 </xsl:template>
 
 <xsl:template match="TestSuite[ancestor::TestResult]">
-    <div class="test_suite" style="clear: both;">
+    <div class="test_summary" style="clear: both;">
         <xsl:attribute name="id"><xsl:apply-templates select="current()" mode="fullName"/></xsl:attribute>
-        <table class="summary" style="clear: both;">
+        <h2 class="summary_header">Test suite summary</h2>
+        <table class="summary section">
             <tr>
+                <td class="indicator" rowspan="4">
+                    <xsl:choose>
+                        <xsl:when test="@result = 'passed'">
+                            <xsl:attribute name="class">indicator passed</xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="class">indicator failed</xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </td>
                 <td>Suite name</td>
                 <td><xsl:value-of select="@name"/></td>
             </tr>
@@ -161,86 +184,72 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                 <td><xsl:value-of select="@result"/></td>
             </tr>
         </table>
-        <div>
-            <h4>Summary</h4>
-            <table class="summary">
+        <table class="summary section">
+            <thead>
                 <tr>
-                    <td>Passed tests</td>
+                    <th>Passed tests</th>
+                    <th>Failed tests</th>
+                    <th>Assertions failed</th>
+                    <th>Warnings failed</th>
+                    <th>Expected failures</th>
+                    <th>Passed with warning</th>
+                    <th>Skipped tests</th>
+                    <th>Aborted tests</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
                     <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
-                </tr>
-                <tr>
-                    <td>Failed tests</td>
                     <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
-                </tr>
-                <tr>
-                    <td>Assertions failed</td>
                     <td class="number"><xsl:value-of select="@assertions_failed"/></td>
-                </tr>
-                <tr>
-                    <td>Warnings failed</td>
                     <td class="number"><xsl:value-of select="@warnings_failed"/></td>
-                </tr>
-                <tr>
-                    <td>Expected failures</td>
                     <td class="number"><xsl:value-of select="@expected_failures"/></td>
-                </tr>
-                <tr>
-                    <td>Passed with warning</td>
                     <td class="number"><xsl:value-of select="@test_cases_passed_with_warnings"/></td>
-                </tr>
-                <tr>
-                    <td>Skipped tests</td>
                     <td class="number"><xsl:value-of select="@test_cases_skipped"/></td>
-                </tr>
-                <tr>
-                    <td>Aborted tests</td>
                     <td class="number"><xsl:value-of select="@test_cases_aborted"/></td>
                 </tr>
-            </table>
-        </div>
+            </tbody>
+        </table>
 
         <xsl:if test="TestSuite">
-            <div>
-                <h4>Test suites</h4>
-                <table class="summary">
-                    <thead>
-                        <th>Suite name</th>
-                        <th>Status</th>
-                        <th>Passed</th>
-                        <th>Failed</th>
-                        <th>Skipped</th>
-                        <th>Aborted</th>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="TestSuite">
-                            <xsl:sort select="@result"/>
-                            <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
-                            <tr>
-                                <xsl:choose>
-                                    <xsl:when test="@result = 'passed'">
-                                        <xsl:attribute name="class">passed passed-link</xsl:attribute>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:attribute name="class">failed failed-link</xsl:attribute>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                <xsl:attribute name="onclick">
-                                    <xsl:text>window.document.location='#</xsl:text>
-                                    <xsl:apply-templates select="current()" mode="fullName"/>
-                                    <xsl:text>'</xsl:text>
-                                </xsl:attribute>
+            <table class="summary section">
+                <thead>
+                    <th>Suite name</th>
+                    <th>Status</th>
+                    <th>Passed</th>
+                    <th>Failed</th>
+                    <th>Skipped</th>
+                    <th>Aborted</th>
+                </thead>
+                <tbody>
+                    <xsl:for-each select="TestSuite">
+                        <xsl:sort select="@result"/>
+                        <xsl:sort select="translate(@name, 'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ')" order="ascending" />
+                        <tr>
+                            <xsl:choose>
+                                <xsl:when test="@result = 'passed'">
+                                    <xsl:attribute name="class">passed passed-link</xsl:attribute>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="class">failed failed-link</xsl:attribute>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:attribute name="onclick">
+                                <xsl:text>window.document.location='#</xsl:text>
+                                <xsl:apply-templates select="current()" mode="fullName"/>
+                                <xsl:text>'</xsl:text>
+                            </xsl:attribute>
 
-                                <td><xsl:value-of select="@name"/></td>
-                                <td><xsl:value-of select="@result"/></td>
-                                <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
-                                <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
-                                <td class="number"><xsl:value-of select="@test_cases_skipped"/></td>
-                                <td class="number"><xsl:value-of select="@test_cases_aborted"/></td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </div>
+                            <td><xsl:value-of select="@name"/></td>
+                            <td><xsl:value-of select="@result"/></td>
+                            <td class="number"><xsl:value-of select="@test_cases_passed"/></td>
+                            <td class="number"><xsl:value-of select="@test_cases_failed"/></td>
+                            <td class="number"><xsl:value-of select="@test_cases_skipped"/></td>
+                            <td class="number"><xsl:value-of select="@test_cases_aborted"/></td>
+                        </tr>
+                    </xsl:for-each>
+                </tbody>
+            </table>
         </xsl:if>
 
         <xsl:if test="TestCase">
