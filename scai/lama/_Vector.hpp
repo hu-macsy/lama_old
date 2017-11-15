@@ -1016,6 +1016,18 @@ public:
     virtual void allocate( dmemo::DistributionPtr distributionPtr ) = 0;
 
     /**
+     *  @brief Set distribution and context in one method for convenience
+     *
+     *  Note: vector itself remains uninitialized.
+     */
+    void setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
+    {
+        // set the context before the allocate so it will be allocated at the right place
+        setContextPtr( ctx );
+        allocate( distributionPtr );
+    }
+
+    /**
      *  @brief Allocates or reallocates this vector as replicted with the given size.
      *
      *  All elements of the vector are undefined after this operation.

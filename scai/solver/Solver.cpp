@@ -54,10 +54,14 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( _Solver::logger, "Solver" )
-
 using lama::Matrix;
 using lama::Vector;
+
+/* ========================================================================= */
+/*    Implementation of methods for _Solver                                  */
+/* ========================================================================= */
+
+SCAI_LOG_DEF_LOGGER( _Solver::logger, "Solver" )
 
 _Solver* _Solver::getSolver( const common::ScalarType scalarType, const std::string& solverType )
 {
@@ -82,6 +86,10 @@ void Solver<ValueType>::getCreateValues( std::vector<std::string>& values )
         }
     }
 }
+
+/* ========================================================================= */
+/*    Constructor / Destructor of Solver<ValueType>                          */
+/* ========================================================================= */
 
 template<typename ValueType>
 Solver<ValueType>::Solver( const std::string& id ) : 
@@ -112,6 +120,16 @@ Solver<ValueType>::Solver( const Solver& other ) :
     mId( other.mId )
 {
 }
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+common::ScalarType Solver<ValueType>::getValueType() const
+{
+    return common::TypeTraits<ValueType>::stype;
+}
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 Solver<ValueType>* Solver<ValueType>::getSolver( const std::string& solverType )
@@ -156,6 +174,10 @@ Solver<ValueType>::SolverRuntime::~SolverRuntime()
     SCAI_LOG_INFO( logger, "~SolverRuntime" )
 }
 
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
+
 template<typename ValueType>
 void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
@@ -167,6 +189,7 @@ void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 
     getRuntime().mCoefficients = &coefficients;
     getRuntime().mInitialized = true;
+    getRuntime().mSolveInit = false;
     getRuntime().mResidual.setContextPtr( coefficients.getContextPtr() );           // IMPORTANT
     getRuntime().mResidual.allocate( coefficients.getRowDistributionPtr() );
     mLogger->logMessage( LogLevel::solverInformation, "Solver initialized\n" );
@@ -176,15 +199,19 @@ template<typename ValueType>
 void Solver<ValueType>::solve( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
 {
     SCAI_REGION( "Solver.solve" )
-    SCAI_ASSERT( getRuntime().mInitialized, "Solver not initialized, solve cannot be called" )
 
-    if ( getRuntime().mSolveInit )
-    {
-        SCAI_LOG_DEBUG( logger, "Previous initialization of 'solve'-process found! Will be overridden!" )
-    }
+    const SolverRuntime& runtime = getRuntime();
+
+    SCAI_ASSERT( runtime.mInitialized, "Solver not initialized, solve cannot be called" )
 
     solveInit( solution, rhs );
+
+    // check to guarantee that derived classes have called also solveInit of this base class
+
+    SCAI_ASSERT_ERROR( runtime.mSolveInit, "Solver::solveInit not called by derived class." )
+
     solveImpl();
+
     solveFinalize();
 }
 

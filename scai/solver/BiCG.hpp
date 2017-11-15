@@ -82,7 +82,7 @@ public:
 
     virtual ~BiCG();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -92,20 +92,16 @@ public:
      */
     virtual BiCG<ValueType>* copy();
 
-    struct BiCGRuntime: CGRuntime
+    struct BiCGRuntime: CG<ValueType>::CGRuntime
     {
-        BiCGRuntime();
-        virtual ~BiCGRuntime();
-
-        lama::_MatrixPtr mTransposeA;
-        lama::_VectorPtr mP2;
-        lama::_VectorPtr mQ2;
-        lama::_VectorPtr mZ2;
-        lama::Scalar mPScalar2;
-        mutable lama::_VectorPtr mResidual2;
+        lama::DenseVector<ValueType> mP2;
+        lama::DenseVector<ValueType> mQ2;
+        lama::DenseVector<ValueType> mZ2;
+        ValueType mPScalar2;
+        mutable lama::DenseVector<ValueType> mResidual2;
     };
 
-    const lama::_Vector& getResidual2() const;
+    const lama::Vector<ValueType>& getResidual2() const;
 
     /**
      * @brief Returns the complete configuration of the derived class
@@ -115,25 +111,23 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const BiCGRuntime& getConstRuntime() const;
+    virtual const BiCGRuntime& getRuntime() const;
 
-    /**
-     * @brief returns value used for registration of this solver
-     */
-    static std::string createValue();
+    // static method that delivers the key for registration in solver factor
 
-    /**
-     * @brief create a new BiCG solver with the corresponding name
-     *
-     * This method is used as create routine in the Solver factory.
-     */
-    static Solver* create( const std::string name );
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
+    using IterativeSolver<ValueType>::mPreconditioner;
+
     virtual void iterate();
 
-    void print( lama::_Vector& vec, size_t n );
+    void print( lama::Vector<ValueType>& vec, size_t n );
 
     /**
      *  @brief own implementation of Printable::writeAt

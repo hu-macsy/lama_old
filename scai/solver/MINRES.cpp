@@ -109,6 +109,10 @@ MINRES<ValueType>::~MINRES()
 {
 }
 
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
+
 template<typename ValueType>
 void MINRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
@@ -161,18 +165,18 @@ void MINRES<ValueType>::Lanczos()
     DenseVector<ValueType>& vecVOld = runtime.mVecVOld;
     DenseVector<ValueType>& vecVNew = runtime.mVecVNew;
     ValueType& alpha = runtime.mAlpha;
-    ValueType& betaNew = runtime.mBetaNew;
-    ValueType& beta = runtime.mBeta;
-    ValueType& eps = runtime.mEps;
+    NormType<ValueType>& betaNew = runtime.mBetaNew;
+    NormType<ValueType>& beta = runtime.mBeta;
+    NormType<ValueType>& eps = runtime.mEps;
     beta = betaNew;
     vecVOld.swap( vecV );
     vecV.swap( vecVNew );
     vecVNew = A * vecV - beta * vecVOld;
-    alpha = vecV._dotProduct( vecVNew );
+    alpha = vecV.dotProduct( vecVNew );
     vecVNew = vecVNew - alpha * vecV;
     betaNew = vecVNew.l2Norm();
 
-    if ( abs( betaNew ) < eps || 1.0 / abs( betaNew ) < eps )
+    if ( common::Math::abs( betaNew ) < eps || 1 / common::Math::abs( betaNew ) < eps )
     {
         vecVNew = ValueType( 0 );
     }
@@ -193,8 +197,8 @@ void MINRES<ValueType>::applyGivensRotation()
     ValueType& sOld = runtime.mSOld;
     ValueType& sNew = runtime.mSNew;
     ValueType& alpha = runtime.mAlpha;
-    ValueType& beta = runtime.mBeta;
-    ValueType& betaNew = runtime.mBetaNew;
+    NormType<ValueType>& beta = runtime.mBeta;
+    NormType<ValueType>& betaNew = runtime.mBetaNew;
 
     NormType<ValueType>& eps = runtime.mEps;
 
@@ -215,7 +219,7 @@ void MINRES<ValueType>::applyGivensRotation()
 
     ValueType nu;
 
-    if ( abs( tau ) < eps || 1.0 / abs( tau ) < eps )
+    if ( common::Math::abs( tau ) < eps || 1.0 / common::Math::abs( tau ) < eps )
     {
         nu = 1.0;
         rho3 = 1.0;
@@ -230,11 +234,11 @@ void MINRES<ValueType>::applyGivensRotation()
         rho3 = nu;
     }
 
-    DenseVector<ValueType>& vecP = *runtime.mVecP;
-    DenseVector<ValueType>& vecPOld = *runtime.mVecPOld;
-    DenseVector<ValueType>& vecPNew = *runtime.mVecPNew;
+    DenseVector<ValueType>& vecP = runtime.mVecP;
+    DenseVector<ValueType>& vecPOld = runtime.mVecPOld;
+    DenseVector<ValueType>& vecPNew = runtime.mVecPNew;
 
-    const DenseVector<ValueType>& vecV = *runtime.mVecV;
+    const DenseVector<ValueType>& vecV = runtime.mVecV;
 
     // update P(new) -> P -> POld
 
@@ -251,17 +255,20 @@ void MINRES<ValueType>::iterate()
 {
     MINRESRuntime& runtime = getRuntime();
 
-    const Vector<ValueType>& vecPNew = *runtime.mVecPNew;
+    Lanczos();
+    applyGivensRotation();
+
+    const Vector<ValueType>& vecPNew = runtime.mVecPNew;
     Vector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
+
     ValueType& cNew = runtime.mCNew;
     ValueType& sNew = runtime.mSNew;
     ValueType& zeta = runtime.mZeta;
-    Lanczos();
-    applyGivensRotation();
-    //New approximation
+
+    // New approximation
+
     solution = solution + cNew * zeta * vecPNew;
     zeta = -sNew * zeta;
-    //MINRES Implementation End
 }
 
 template<typename ValueType>

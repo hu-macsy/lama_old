@@ -50,24 +50,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.BiCGTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<BiCG>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    BiCG bicgSolver( "BiCGTestSolver", slogger );
-    BOOST_CHECK_EQUAL( bicgSolver.getId(), "BiCGTestSolver" );
-    BiCG bicgSolver2( "BiCGTestSolver2" );
-    BOOST_CHECK_EQUAL( bicgSolver2.getId(), "BiCGTestSolver2" );
-    BiCG bicgSolver3( bicgSolver2 );
-    BOOST_CHECK_EQUAL( bicgSolver3.getId(), "BiCGTestSolver2" );
-    BOOST_CHECK( bicgSolver3.getPreconditioner() == 0 );
-    BiCG bicgSolver4( "BiCGTestSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    bicgSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    bicgSolver4.setStoppingCriterion( criterion );
-    BiCG bicgSolver5( bicgSolver4 );
-    BOOST_CHECK_EQUAL( bicgSolver5.getId(), bicgSolver4.getId() );
-    BOOST_CHECK_EQUAL( bicgSolver5.getPreconditioner()->getId(), bicgSolver4.getPreconditioner()->getId() );
+    BiCG<ValueType> solver( "BiCGTestSolver", slogger );
+    BOOST_CHECK_EQUAL( solver.getId(), "BiCGTestSolver" );
+    BiCG<ValueType> solver2( "BiCGTestSolver2" );
+    BOOST_CHECK_EQUAL( solver2.getId(), "BiCGTestSolver2" );
+    BiCG<ValueType> solver3( solver2 );
+    BOOST_CHECK_EQUAL( solver3.getId(), "BiCGTestSolver2" );
+    BOOST_CHECK( solver3.getPreconditioner() == 0 );
+    BiCG<ValueType> solver4( "solver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    solver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    solver4.setStoppingCriterion( criterion );
+    BiCG<ValueType> solver5( solver4 );
+    BOOST_CHECK_EQUAL( solver5.getId(), solver4.getId() );
+    BOOST_CHECK_EQUAL( solver5.getPreconditioner()->getId(), solver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

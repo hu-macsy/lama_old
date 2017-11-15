@@ -42,31 +42,29 @@ scai_project (
 
 	SOURCES
 
-#   	BiCGstabTest
-#   	BiCGTest
+    	BiCGstabTest
+    	BiCGTest
         CGTest
-#       CGNETest # here may be problems in convergence ?!
-#       CGNRTest
-#       CGSTest
+        CGSTest
         CommonLoggerTest
         CriterionTest
-#       DecompositionSolverTest
+        DecompositionSolverTest
         FileLoggerTest
-#       GMRESTest
-#       InverseSolverTest
-#       IterationCountTest
+        GMRESTest
+        InverseSolverTest
+        IterationCountTest
         IterativeSolverTest
         JacobiTest
-#       KaczmarzTest
-#       MINRESTest
-#       QMRTest
+        KaczmarzTest
+        MINRESTest
+        QMRTest
         ResidualStagnationTest
         ResidualThresholdTest
-#       RichardsonTest
-#       SimpleAMGTest
-#       SolutionProxyTest
+        RichardsonTest
+        SimpleAMGTest
+        SolutionProxyTest
         AllSolverTest
-#       TFQMRTest
+        TFQMRTest
         TimerTest
         VersionTest
 

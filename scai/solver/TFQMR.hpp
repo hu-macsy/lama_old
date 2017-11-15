@@ -60,8 +60,10 @@ namespace solver
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT TFQMR:
+
     public IterativeSolver<ValueType>,
     public _Solver::Register<TFQMR<ValueType> >
+
 {
 public:
     /**
@@ -85,7 +87,7 @@ public:
 
     virtual ~TFQMR();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
     * @brief Copies the status independent solver informations to create a new instance of the same
@@ -95,28 +97,25 @@ public:
     */
     virtual TFQMR<ValueType>* copy();
 
-    struct TFQMRRuntime: IterativeSolverRuntime
+    struct TFQMRRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        TFQMRRuntime();
-        virtual ~TFQMRRuntime();
+        lama::DenseVector<ValueType> mVecD;
+        lama::DenseVector<ValueType> mInitialR;
+        lama::DenseVector<ValueType> mVecVEven;
+        lama::DenseVector<ValueType> mVecVOdd;
+        lama::DenseVector<ValueType> mVecVT;
+        lama::DenseVector<ValueType> mVecW;
+        lama::DenseVector<ValueType> mVecZ;
 
-        lama::_VectorPtr mVecD;
-        lama::_VectorPtr mInitialR;
-        lama::_VectorPtr mVecVEven;
-        lama::_VectorPtr mVecVOdd;
-        lama::_VectorPtr mVecVT;
-        lama::_VectorPtr mVecW;
-        lama::_VectorPtr mVecZ;
-
-        lama::Scalar mEps;
-        lama::Scalar mAlpha;
-        lama::Scalar mBeta;
-        lama::Scalar mC;
-        lama::Scalar mEta;
-        lama::Scalar mTheta;
-        lama::Scalar mTau;
-        lama::Scalar mRhoNew;
-        lama::Scalar mRhoOld;
+        NormType<ValueType> mEps;
+        ValueType mAlpha;
+        ValueType mBeta;
+        ValueType mC;
+        ValueType mEta;
+        ValueType mTheta;
+        ValueType mTau;
+        ValueType mRhoNew;
+        ValueType mRhoOld;
     };
     /**
     * @brief Returns the complete configuration of the derived class
@@ -125,27 +124,34 @@ public:
     /**
     * @brief Initializes vectors and values of the runtime
     */
-    virtual void solveInit( lama::_Vector& solution, const lama::_Vector& rhs );
+    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
 
     /**
     * @brief Returns the complete const configuration of the derived class
     */
-    virtual const TFQMRRuntime& getConstRuntime() const;
+    virtual const TFQMRRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
     TFQMRRuntime mTFQMRRuntime;
     /**
-     * @brief Performs one TFQMR iteration based on _Matrix/Vector operations.
+     * @brief Performs one TFQMR iteration based on Matrix/Vector operations.
      * iterationOdd() and iterationEven() is some update for iterate() based on
      * the number of iterations (even, odd).
      */
     virtual void iterate();
     void iterationOdd();
     void iterationEven();
+
+    using IterativeSolver<ValueType>::mPreconditioner;
 
     /**
      *  @brief own implementation of Printable::writeAt

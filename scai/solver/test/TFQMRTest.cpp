@@ -52,24 +52,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.TFQMRTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<TFQMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    TFQMR TFQMRSolver( "TFQMRTestSolver", slogger );
-    BOOST_CHECK_EQUAL( TFQMRSolver.getId(), "TFQMRTestSolver" );
-    TFQMR TFQMRSolver2( "TFQMRTestSolver2" );
-    BOOST_CHECK_EQUAL( TFQMRSolver2.getId(), "TFQMRTestSolver2" );
-    TFQMR TFQMRSolver3( TFQMRSolver2 );
-    BOOST_CHECK_EQUAL( TFQMRSolver3.getId(), "TFQMRTestSolver2" );
-    BOOST_CHECK( TFQMRSolver3.getPreconditioner() == 0 );
-    TFQMR TFQMRSolver4( "TFQMRSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    TFQMRSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    TFQMRSolver4.setStoppingCriterion( criterion );
-    TFQMR TFQMRSolver5( TFQMRSolver4 );
-    BOOST_CHECK_EQUAL( TFQMRSolver5.getId(), TFQMRSolver4.getId() );
-    BOOST_CHECK_EQUAL( TFQMRSolver5.getPreconditioner()->getId(), TFQMRSolver4.getPreconditioner()->getId() );
+    TFQMR<ValueType> cgSolver( "TFQMR", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "TFQMR" );
+    TFQMR<ValueType> cgSolver2( "TFQMR" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "TFQMR" );
+    TFQMR<ValueType> cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "TFQMR" );
+    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    TFQMR<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    cgSolver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    cgSolver4.setStoppingCriterion( criterion );
+    TFQMR<ValueType> cgSolver5( cgSolver4 );
+    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
+    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------

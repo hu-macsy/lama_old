@@ -57,7 +57,7 @@ template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT GMRES:
 
     public IterativeSolver<ValueType>,
-    public _Solver::Register<GMRES>
+    public _Solver::Register<GMRES<ValueType> >
 {
 public:
 
@@ -83,9 +83,9 @@ public:
 
     virtual ~GMRES();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    void setKrylovDim( unsigned int krylovDim );
+    void setKrylovDim( IndexType krylovDim );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -95,36 +95,38 @@ public:
      */
     virtual GMRES<ValueType>* copy();
 
-    struct GMRESRuntime: IterativeSolverRuntime
+    /** Runtime data for the GMRES solver.
+     *
+     *  Most data strucures are arrays of size krylovDim + 1, all are implemented
+     *  via unique_ptr to guarantee correct delete in the destructor.
+     */
+    struct GMRESRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        GMRESRuntime();
-        virtual ~GMRESRuntime();
-
         // arrays to store rotations
-        std::unique_ptr<double[]> mCC;
-        std::unique_ptr<double[]> mSS;
+        std::unique_ptr<ValueType[]> mCC;
+        std::unique_ptr<ValueType[]> mSS;
 
         // array for Hessenberg equation
         // H*y=g
-        std::unique_ptr<double[]> mG;
-        std::unique_ptr<double[]> mY;
+        std::unique_ptr<ValueType[]> mG;
+        std::unique_ptr<ValueType[]> mY;
 
         // Hessenberg matrix
         // mH:  Upper triangular (columnwise)
         // mHd: diagonal band h(i+1,i)
-        std::unique_ptr<double[]> mH;
-        std::unique_ptr<double[]> mHd;
+        std::unique_ptr<ValueType[]> mH;
+        std::unique_ptr<ValueType[]> mHd;
 
         // krylov space
-        std::vector<lama::_Vector*>* mV;
+        std::unique_ptr<lama::DenseVector<ValueType>[]> mV;
 
         // temp-arrays
-        lama::_Vector* mW;
-        lama::_Vector* mT;
+        lama::DenseVector<ValueType> mW;
+        lama::DenseVector<ValueType> mT;
 
         // remember starting solution
         // only needed if x is modified within krylov loop
-        lama::_Vector* mX0;
+        lama::DenseVector<ValueType> mX0;
     };
 
     /**
@@ -135,13 +137,15 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const GMRESRuntime& getConstRuntime() const;
+    virtual const GMRESRuntime& getRuntime() const;
 
-    double getAverageIterationTime() const;
-    double getAveragePreconditionerTime() const;
+    // static method that delivers the key for registration in solver factor
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
@@ -151,6 +155,8 @@ protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
+    using IterativeSolver<ValueType>::mPreconditioner;
+
 private:
 
     /**
@@ -158,13 +164,10 @@ private:
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-    void updateX( unsigned int i );
+    void updateX( IndexType i );
 
     // krylov dimension
-    unsigned int mKrylovDim;
-
-    double totalIterationTime;
-    double totalPreconditionerTime;
+    IndexType mKrylovDim;
 };
 
 } /* end namespace solver */

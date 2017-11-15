@@ -55,6 +55,7 @@ namespace solver
 
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT SimpleAMG:
+
     public IterativeSolver<ValueType>,
     public _Solver::Register<SimpleAMG<ValueType> >
 {
@@ -68,7 +69,7 @@ public:
 
     virtual ~SimpleAMG();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     virtual void iterate();
 
@@ -78,15 +79,15 @@ public:
 
     unsigned int getNumLevels();
 
-    const lama::_Matrix& getGalerkin( unsigned int level );
-    const lama::_Matrix& getRestriction( unsigned int level );
-    const lama::_Matrix& getInterpolation( unsigned int level );
+    const lama::Matrix<ValueType>& getGalerkin( unsigned int level );
+    const lama::Matrix<ValueType>& getRestriction( unsigned int level );
+    const lama::Matrix<ValueType>& getInterpolation( unsigned int level );
 
-    lama::_Vector& getSolutionVector( unsigned int level );
-    lama::_Vector& getRhsVector( unsigned int level );
+    lama::Vector<ValueType>& getSolutionVector( unsigned int level );
+    lama::Vector<ValueType>& getRhsVector( unsigned int level );
 
-    Solver& getSmoother( unsigned int level );
-    Solver& getCoarseLevelSolver();
+    Solver<ValueType>& getSmoother( unsigned int level );
+    Solver<ValueType>& getCoarseLevelSolver();
 
     void setSmootherContext( hmemo::ContextPtr smootherContext );
 
@@ -96,19 +97,18 @@ public:
 
     void setReplicatedLevel( IndexType replicatedLevel );
 
-    void setCoarseLevelSolver( SolverPtr solver );
+    void setCoarseLevelSolver( SolverPtr<ValueType> solver );
 
     /**
      * @brief Sets the smoother for all level
      */
-    void setSmoother( SolverPtr solver );
+    void setSmoother( SolverPtr<ValueType> solver );
 
-    struct SimpleAMGRuntime: IterativeSolverRuntime
+    struct SimpleAMGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
         SimpleAMGRuntime();
-        virtual ~SimpleAMGRuntime();
 
-        std::shared_ptr<AMGSetup> mSetup;
+        std::shared_ptr<AMGSetup<ValueType> > mSetup;
         unsigned int mCurrentLevel;
         void* mLibHandle;
         IndexType mHostOnlyLevel;
@@ -126,22 +126,26 @@ public:
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const SimpleAMGRuntime& getConstRuntime() const;
+    virtual const SimpleAMGRuntime& getRuntime() const;
 
     /**
-     * @brief Copies the status independent solver informations to create a new instance of the same
-     * type
+     * @brief Copies the status independent solver informations to create a new instance of the same type
      *
      * @return shared pointer of the copied solver
      */
-    virtual SimpleAMG<ValueType>& copy();
+    virtual SimpleAMG<ValueType>* copy();
 
     double getAverageSmootherTime() const;
     double getAverageTransferTime() const;
     double getAverageResidualTime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
@@ -149,8 +153,10 @@ protected:
 
     unsigned int mMaxLevels;
     unsigned int mMinVarsCoarseLevel;
-    SolverPtr mCoarseLevelSolver;
-    SolverPtr mSmoother;
+    SolverPtr<ValueType> mCoarseLevelSolver;
+    SolverPtr<ValueType> mSmoother;
+
+    using Solver<ValueType>::mLogger;
 
     /**
      *  @brief own implementation of Printable::writeAt

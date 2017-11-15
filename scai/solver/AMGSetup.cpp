@@ -35,41 +35,75 @@
 // hpp
 #include <scai/solver/AMGSetup.hpp>
 
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
+
 namespace scai
 {
 
 namespace solver
 {
 
-AMGSetup::AMGSetup()
-    : mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), mHostOnlyVars( 0 ), mReplicatedLevel(
-        std::numeric_limits<IndexType>::max() )
+SCAI_LOG_DEF_LOGGER( _AMGSetup::logger, "AMGSetup" )
+
+_AMGSetup* _AMGSetup::getAMGSetup( const common::ScalarType scalarType, const std::string& setupType )
+{
+    return create( AMGSetupCreateKeyType( scalarType, setupType ) );
+}
+
+template<typename ValueType>
+AMGSetup<ValueType>::AMGSetup() : 
+
+    mHostOnlyLevel( std::numeric_limits<IndexType>::max() ), 
+    mHostOnlyVars( 0 ), 
+    mReplicatedLevel( std::numeric_limits<IndexType>::max() )
 {
 }
 
-AMGSetup::~AMGSetup()
+template<typename ValueType>
+AMGSetup<ValueType>::~AMGSetup()
 {
 }
 
-void AMGSetup::setHostOnlyLevel( IndexType hostOnlyLevel )
+template<typename ValueType>
+AMGSetup<ValueType>* AMGSetup<ValueType>::getAMGSetup( const std::string& setupType )
+{
+    _AMGSetup* setup = _AMGSetup::getAMGSetup( common::TypeTraits<ValueType>::stype, setupType );
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<AMGSetup<ValueType>*>( setup ), "Illegal setup" )
+
+    return reinterpret_cast<AMGSetup<ValueType>*>( setup );
+}
+
+template<typename ValueType>
+void AMGSetup<ValueType>::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
     mHostOnlyLevel = hostOnlyLevel;
 }
 
-void AMGSetup::setHostOnlyVars( IndexType hostOnlyVars )
+template<typename ValueType>
+void AMGSetup<ValueType>::setHostOnlyVars( IndexType hostOnlyVars )
 {
     mHostOnlyLevel = hostOnlyVars;
 }
 
-void AMGSetup::setReplicatedLevel( IndexType replicatedLevel )
+template<typename ValueType>
+void AMGSetup<ValueType>::setReplicatedLevel( IndexType replicatedLevel )
 {
     mReplicatedLevel = replicatedLevel;
 }
 
-void AMGSetup::writeAt( std::ostream& stream ) const
+template<typename ValueType>
+void AMGSetup<ValueType>::writeAt( std::ostream& stream ) const
 {
     stream << "AMGSetup( ... )";
 }
+
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
+
+SCAI_COMMON_INST_CLASS( AMGSetup, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

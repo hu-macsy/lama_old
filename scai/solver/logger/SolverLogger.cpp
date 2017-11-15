@@ -173,9 +173,10 @@ void SolverLogger::logResidual(
 {
     if ( level <= mLogLevel )
     {
+        const char* typeId = common::TypeTraits<ValueType>::id();
         std::stringstream residualStream;
         residualStream << iterationPrefix;
-        residualStream << "Residual: ";
+        residualStream << "Residual<" << typeId << "> : ";
         residualStream << norm( solver.getResidual() );
         residualStream << "\n";
         logString( level, residualStream.str() );

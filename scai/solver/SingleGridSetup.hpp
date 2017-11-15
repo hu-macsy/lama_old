@@ -49,35 +49,38 @@ namespace scai
 namespace solver
 {
 
+template<typename ValueType>
 class SingleGridSetup:
 
-    public AMGSetup,
-    public AMGSetup::Register<SingleGridSetup>    // register at factory
+    public AMGSetup<ValueType>,
+    public _AMGSetup::Register<SingleGridSetup<ValueType> >   // register at factory
 
 {
 public:
+
     SingleGridSetup();
+
     virtual ~SingleGridSetup();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    virtual Solver& getCoarseLevelSolver();
+    virtual Solver<ValueType>& getCoarseLevelSolver();
 
     virtual unsigned int getNumLevels();
 
-    virtual Solver& getSmoother( const unsigned int level );
+    virtual Solver<ValueType>& getSmoother( const unsigned int level );
 
-    virtual const lama::_Matrix& getGalerkin( const unsigned int level );
+    virtual const lama::Matrix<ValueType>& getGalerkin( const unsigned int level );
 
-    virtual const lama::_Matrix& getRestriction( const unsigned int level );
+    virtual const lama::Matrix<ValueType>& getRestriction( const unsigned int level );
 
-    virtual const lama::_Matrix& getInterpolation( const unsigned int level );
+    virtual const lama::Matrix<ValueType>& getInterpolation( const unsigned int level );
 
-    virtual lama::_Vector& getSolutionVector( const unsigned int level );
+    virtual lama::Vector<ValueType>& getSolutionVector( const unsigned int level );
 
-    virtual lama::_Vector& getRhsVector( const unsigned int level );
+    virtual lama::Vector<ValueType>& getRhsVector( const unsigned int level );
 
-    virtual lama::_Vector& getTmpResVector( const unsigned int level );
+    virtual lama::Vector<ValueType>& getTmpResVector( const unsigned int level );
 
     virtual std::string getCouplingPredicateInfo() const;
 
@@ -89,12 +92,12 @@ public:
 
     virtual std::string getCoarseLevelSolverInfo() const;
 
-    virtual void setCoarseLevelSolver( SolverPtr solver );
+    virtual void setCoarseLevelSolver( SolverPtr<ValueType> solver );
 
     /**
      * @brief Usually sets smoother for all level, for this case overwrites the coarse level solver
      */
-    virtual void setSmoother( SolverPtr solver );
+    virtual void setSmoother( SolverPtr<ValueType> solver );
 
     // just a dummy function
     virtual void setMaxLevels( const unsigned int )
@@ -107,11 +110,11 @@ public:
 
     // Get the key used for registration in factory
 
-    static std::string createValue();
+    static AMGSetupCreateKeyType createValue();
 
     // Create routine used for factory
 
-    static AMGSetup* create();
+    static _AMGSetup* create();
 
 private:
 
@@ -122,14 +125,13 @@ private:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
 
-    SolverPtr    mSolver;
+    SolverPtr<ValueType>   mSolver;
 
-    std::unique_ptr<lama::_Matrix> mIdentity;
+    std::unique_ptr<lama::Matrix<ValueType>> mIdentity;
 
-    std::unique_ptr<lama::_Vector> mSolutionVector;
-    std::unique_ptr<lama::_Vector> mRhsVector;
-    std::unique_ptr<lama::_Vector> mTmpResVector;
-
+    std::unique_ptr<lama::Vector<ValueType> > mSolutionVector;
+    std::unique_ptr<lama::Vector<ValueType> > mRhsVector;
+    std::unique_ptr<lama::Vector<ValueType> > mTmpResVector;
 };
 
 } /* end namespace solver */

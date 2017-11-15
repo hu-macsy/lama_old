@@ -101,13 +101,6 @@ public:
     virtual ~OmegaSolver();
 
     /**
-     *  Omega solver has no new components as omega is solver data
-     */
-    struct OmegaRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
-    {
-    };
-
-    /**
      * @brief Sets the omega parameter of this.
      *
      * @param[in] omega The omega parameter of the omega solver.

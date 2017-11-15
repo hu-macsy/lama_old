@@ -73,6 +73,10 @@ namespace solver
 
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, Jacobi<ValueType>::logger, "Solver.IterativeSolver.Jacobi" )
 
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
 template<typename ValueType>
 Jacobi<ValueType>::Jacobi( const std::string& id ) : 
 
@@ -113,6 +117,10 @@ Jacobi<ValueType>::~Jacobi()
 {
     SCAI_LOG_INFO( logger, "~Jacobi" )
 }
+
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
 template<typename ValueType>
 void Jacobi<ValueType>::initialize( const Matrix<ValueType>& coefficients )

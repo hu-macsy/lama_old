@@ -41,7 +41,7 @@
 #include <scai/solver/Solver.hpp>
 
 // internal scai libraries
-#include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/common/Factory.hpp>
 
 namespace scai
@@ -50,7 +50,29 @@ namespace scai
 namespace solver
 {
 
-typedef std::shared_ptr<class AMGSetup> AMGSetupPtr;
+class _AMGSetup;
+
+// typedef std::shared_ptr<class AMGSetup> AMGSetupPtr;
+
+typedef std::pair<common::ScalarType, std::string> AMGSetupCreateKeyType;
+
+class COMMON_DLL_IMPORTEXPORT _AMGSetup :
+
+    public common::Printable,
+    public common::Factory<AMGSetupCreateKeyType, _AMGSetup*>
+{
+public:
+
+    /**
+     *  Provide a more convenient interface to the create method of the factory.
+     */
+
+    static _AMGSetup* getAMGSetup( const common::ScalarType scalarType, const std::string& setupType );
+
+protected:
+
+    SCAI_LOG_DECL_STATIC_LOGGER( logger )
+};
 
 /**
  * @brief The class AMGSetup should describe the Interace to an AMG Setup.
@@ -58,10 +80,10 @@ typedef std::shared_ptr<class AMGSetup> AMGSetupPtr;
  * @todo The current Interface of AMGSetup is just for evaluation so this should be changed to meet all requirements.
  *       (e.g. Pre and Post Smoothing)
  */
+template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT AMGSetup :
 
-    public common::Factory<std::string, AMGSetup*>,
-    public common::Printable
+    public _AMGSetup
 
 {
 public:
@@ -70,25 +92,39 @@ public:
 
     virtual ~AMGSetup();
 
-    virtual void initialize( const lama::_Matrix& coefficients ) = 0;
+    /**
+     * @brief Create a new AMGSetup of a certain type.
+     *
+     */
+    static AMGSetup* getAMGSetup( const std::string& setupType );
 
-    virtual _Solver& getCoarseLevelSolver() = 0;
+    /**
+     *  Provide a more convenient interface to query for a setup type if value type is known. 
+     */
+    static inline bool canCreate( const std::string& setupType )
+    {
+        return _AMGSetup::canCreate( AMGSetupCreateKeyType( common::TypeTraits<ValueType>::stype, setupType ) );
+    }
+
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients ) = 0;
+
+    virtual Solver<ValueType>& getCoarseLevelSolver() = 0;
 
     virtual unsigned int getNumLevels() = 0;
 
-    virtual _Solver& getSmoother( const unsigned int level ) = 0;
+    virtual Solver<ValueType>& getSmoother( const unsigned int level ) = 0;
 
-    virtual const lama::_Matrix& getGalerkin( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getGalerkin( const unsigned int level ) = 0;
 
-    virtual const lama::_Matrix& getRestriction( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getRestriction( const unsigned int level ) = 0;
 
-    virtual const lama::_Matrix& getInterpolation( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getInterpolation( const unsigned int level ) = 0;
 
-    virtual lama::_Vector& getSolutionVector( const unsigned int level ) = 0;
+    virtual lama::Vector<ValueType>& getSolutionVector( const unsigned int level ) = 0;
 
-    virtual lama::_Vector& getRhsVector( const unsigned int level ) = 0;
+    virtual lama::Vector<ValueType>& getRhsVector( const unsigned int level ) = 0;
 
-    virtual lama::_Vector& getTmpResVector( const unsigned int level ) = 0;
+    virtual lama::Vector<ValueType>& getTmpResVector( const unsigned int level ) = 0;
 
     virtual std::string getCouplingPredicateInfo() const = 0;
 
@@ -110,12 +146,12 @@ public:
 
     virtual void setReplicatedLevel( IndexType replicatedLevel );
 
-    virtual void setCoarseLevelSolver( _SolverPtr solver ) = 0;
+    virtual void setCoarseLevelSolver( SolverPtr<ValueType> solver ) = 0;
 
     /**
      * @brief Sets smoother for all level
      */
-    virtual void setSmoother( _SolverPtr solver ) = 0;
+    virtual void setSmoother( SolverPtr<ValueType> solver ) = 0;
 
 protected:
 

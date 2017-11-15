@@ -45,12 +45,18 @@
 #include <scai/partitioning/Partitioning.hpp>
 #include <scai/lama/norm/Norm.hpp>
 
-// #include <scai/solver/GMRES.hpp>
-// #include <scai/solver/SimpleAMG.hpp>
 #include <scai/solver/logger/CommonLogger.hpp>
 #include <scai/solver/criteria/ResidualThreshold.hpp>
 #include <scai/solver/criteria/IterationCount.hpp>
 #include <scai/solver/CG.hpp>
+#include <scai/solver/SimpleAMG.hpp>
+#include <scai/solver/GMRES.hpp>
+#include <scai/solver/Kaczmarz.hpp>
+#include <scai/solver/Richardson.hpp>
+#include <scai/solver/BiCGstab.hpp>
+#include <scai/solver/DecompositionSolver.hpp>
+#include <scai/solver/QMR.hpp>
+#include <scai/solver/TFQMR.hpp>
 
 #include <scai/tracing.hpp>
 

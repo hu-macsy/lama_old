@@ -57,6 +57,7 @@ namespace solver
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT DecompositionSolver:
+
     public Solver<ValueType>,
     public _Solver::Register<DecompositionSolver<ValueType> >
 {
@@ -88,7 +89,7 @@ public:
      *
      * @param[in] coefficients  The matrix A from A*u=f.
      */
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Solves the equation system with the given rhs and stores the
@@ -98,18 +99,14 @@ public:
      */
     virtual void solveImpl();
 
-    template <typename ValueType>
     void solveImplTyped( const lama::SparseMatrix<ValueType>& coefficients );
 
-    struct DecompositionSolverRuntime: SolverRuntime
+    struct DecompositionSolverRuntime: Solver<ValueType>::SolverRuntime
     {
-        DecompositionSolverRuntime();
-        virtual ~DecompositionSolverRuntime();
-
         bool mIsSymmetric;
     };
 
-    virtual DecompositonSolver<ValueType>* copy();
+    virtual DecompositionSolver<ValueType>* copy();
 
     /**
      * @brief Returns the complete configuration of the derived class
@@ -119,10 +116,15 @@ public:
     /**
      * @brief Returns the complete const configuration of the derived class
      */
-    virtual const DecompositionSolverRuntime& getConstRuntime() const;
+    virtual const DecompositionSolverRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 
@@ -132,6 +134,8 @@ protected:
      *  @brief own implementation of Printable::writeAt
      */
     virtual void writeAt( std::ostream& stream ) const;
+
+    using Solver<ValueType>::mLogger;
 
 private:
 

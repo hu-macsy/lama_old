@@ -104,18 +104,9 @@ CG<ValueType>::~CG()
 {
 }
 
-template<typename ValueType>
-CG<ValueType>::CGRuntime::CGRuntime() : 
-
-    mPScalar( ValueType( 0 ) )
-{
-    // Note: allocation of runtime vectors done @ initialize
-}
-
-template<typename ValueType>
-CG<ValueType>::CGRuntime::~CGRuntime()
-{
-}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
 template<typename ValueType>
 void CG<ValueType>::CGRuntime::initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx )

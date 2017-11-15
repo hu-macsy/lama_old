@@ -70,6 +70,10 @@ class _Solver;
 
 typedef std::pair<common::ScalarType, std::string> SolverCreateKeyType;
 
+/* ========================================================================= */
+/*     _Solver : Helper class as common base class for all typed solvers     */
+/* ========================================================================= */
+
 /** Common base class for all typed Solver classes. 
  *
  *  This class is helpful for dynamic creation of solver objects where the value type
@@ -88,6 +92,22 @@ public:
 
     static _Solver* getSolver( const common::ScalarType scalarType, const std::string& solverType );
 
+    /**
+     * @brief Queries the value type of the solver 
+     *
+     * This method allows a safe reinterpret_cast of untyped solvers to typed solvers.
+     *
+     * \code
+     *    _Solver& s = ...
+     *    if ( s.getValueType() == ScalarType::DOUBLE )
+     *    {
+     *        Solver<double>& sd = reinterpret_cast<Solver<double>&>( s );
+     *        ...
+     *    }
+     * \endcode
+     */
+    virtual common::ScalarType getValueType() const = 0;
+
 protected:
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )
@@ -97,8 +117,12 @@ protected:
 
 typedef std::shared_ptr<_Solver> _SolverPtr;
 
+/* ========================================================================= */
+/*     Solver<ValueType>                                                     */
+/* ========================================================================= */
+
 /**
- * @brief Superclass for all solvers.
+ * @brief Base class for all typed solvers.
  *
  * This class acts as a superclass for all solver. It offers basic
  * functionality for coefficient, rhs and solution storing, provides
@@ -133,6 +157,10 @@ public:
      * @brief Solver destructor.
      */
     virtual ~Solver();
+
+    /** Implementation of pure method _Solver::getValueType */
+
+    virtual common::ScalarType getValueType() const;
 
     /**
      * @brief Create a new solver of a certain type.

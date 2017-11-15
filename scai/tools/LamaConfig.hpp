@@ -528,8 +528,8 @@ static std::string getLoggers()
 {
     std::ostringstream loggerNames;
 
-    std::vector<scai::solver::SolverCreateKeyType> vals;
-    scai::solver::_Solver::getCreateValues( vals );
+    std::vector<std::string> vals;
+    scai::solver::Solver<RealType>::getCreateValues( vals );
 
     for ( size_t i = 0; i < vals.size(); ++i )
     {

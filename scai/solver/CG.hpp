@@ -98,10 +98,6 @@ public:
 
     struct CGRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        CGRuntime();
-
-        virtual ~CGRuntime();
-
         /** Initialize the runtime with target space of the matrix to be solved */
 
         void initialize( dmemo::DistributionPtr dist, hmemo::ContextPtr ctx );

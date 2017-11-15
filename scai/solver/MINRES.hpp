@@ -80,11 +80,13 @@ public:
 
     virtual ~MINRES();
 
+    /** @brief Initialize the solver specific runtime data when a matrix is set.  */
+
     virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
-    * @brief Copies the status independent solver informations to create a new instance of the same
-    * type
+    * @brief Implementation of pure method to create a copy of this solver 
+    *        (without copying the runtime data).
     *
     * @return raw pointer of the copied solver, caller takes ownership
     */
@@ -101,7 +103,7 @@ public:
 
         ValueType mAlpha;
         NormType<ValueType> mBetaNew;
-        ValueType mBeta;
+        NormType<ValueType> mBeta;
         ValueType mC;
         ValueType mCOld;
         ValueType mCNew;
@@ -138,10 +140,14 @@ protected:
 
     MINRESRuntime mMINRESRuntime;
     /**
-     * @brief Performs one MINRES iteration based on Matrix/Vector operations
+     * @brief Implementation of pure method IterativeSolver<ValueType>::iterate
+     * 
+     * Performs one MINRES iteration based on Matrix/Vector operations
      */
     virtual void iterate();
+
     void Lanczos();
+
     void applyGivensRotation();
 
     SCAI_LOG_DECL_STATIC_LOGGER( logger )

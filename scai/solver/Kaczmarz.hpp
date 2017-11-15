@@ -54,8 +54,10 @@ namespace solver
  */
 template<typename ValueType>
 class COMMON_DLL_IMPORTEXPORT Kaczmarz:
-    public IterativeSolver,
-    public Solver::Register<Kaczmarz>
+
+    public IterativeSolver<ValueType>,
+    public _Solver::Register<Kaczmarz<ValueType> >
+
 {
 public:
     /**
@@ -80,7 +82,7 @@ public:
 
     virtual ~Kaczmarz();
 
-    virtual void initialize( const lama::_Matrix& coefficients );
+    virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -90,13 +92,9 @@ public:
      */
     virtual Kaczmarz<ValueType>* copy();
 
-    struct KaczmarzRuntime: IterativeSolverRuntime
+    struct KaczmarzRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
-        KaczmarzRuntime();
-
-        virtual ~KaczmarzRuntime();
-
-        lama::_VectorPtr mRow;
+        lama::VectorPtr<ValueType> mRow;   // temporary for row, might be sparse or dense
     };
 
     /**
@@ -107,10 +105,15 @@ public:
     /**
      * @brief Returns the complete configuration of the derived class
      */
-    virtual const KaczmarzRuntime& getConstRuntime() const;
+    virtual const KaczmarzRuntime& getRuntime() const;
 
-    static std::string createValue();
-    static Solver* create( const std::string name );
+    // static method that delivers the key for registration in solver factor
+
+    static SolverCreateKeyType createValue();
+
+    // static method for create by factory
+
+    static _Solver* create();
 
 protected:
 

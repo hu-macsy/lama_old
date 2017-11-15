@@ -44,7 +44,10 @@
 #include <scai/lama/storage/MatrixStorage.hpp>
 
 #include <scai/tracing.hpp>
+
 #include <scai/common/ScalarType.hpp>
+#include <scai/common/SCAITypes.hpp>
+#include <scai/common/macros/instantiate.hpp>
 
 namespace scai
 {
@@ -52,67 +55,90 @@ namespace scai
 namespace solver
 {
 
-SCAI_LOG_DEF_LOGGER( BiCG::logger, "Solver.IterativeSolver.BiCG" )
+SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, BiCG<ValueType>::logger, "Solver.IterativeSolver.BiCG" )
 
-using lama::_Matrix;
-using lama::_Vector;
-using lama::Scalar;
+using lama::Matrix;
+using lama::Vector;
 
-BiCG::BiCG( const std::string& id )
-    : CG( id )
+/* ========================================================================= */
+/*    static methods (for factory)                                           */
+/* ========================================================================= */
+
+template<typename ValueType>
+_Solver* BiCG<ValueType>::create()
+{
+    return new BiCG<ValueType>( "_genByFactory" );
+}
+
+template<typename ValueType>
+SolverCreateKeyType BiCG<ValueType>::createValue()
+{
+    return SolverCreateKeyType( common::getScalarType<ValueType>(), "BiCG" );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
+
+template<typename ValueType>
+BiCG<ValueType>::BiCG( const std::string& id ) : 
+
+    CG<ValueType>( id )
 {
 }
 
-BiCG::BiCG( const std::string& id, LoggerPtr logger )
-    : CG( id, logger )
+template<typename ValueType>
+BiCG<ValueType>::BiCG( const std::string& id, LoggerPtr logger ) : 
+
+    CG<ValueType>( id, logger )
 {
 }
 
-BiCG::BiCG( const BiCG& other )
-    : CG( other )
+template<typename ValueType>
+BiCG<ValueType>::BiCG( const BiCG<ValueType>& other ) : 
+
+    CG<ValueType>( other )
 {
 }
 
-BiCG::~BiCG()
+template<typename ValueType>
+BiCG<ValueType>::~BiCG()
 {
 }
 
-BiCG::BiCGRuntime::BiCGRuntime()
-    : CGRuntime(), mPScalar2( 0.0 ), mResidual2()
-{
-}
+/* ========================================================================= */
+/*    Initializaition                                                        */
+/* ========================================================================= */
 
-BiCG::BiCGRuntime::~BiCGRuntime()
-{
-}
-
-void BiCG::initialize( const _Matrix& coefficients )
+template<typename ValueType>
+void BiCG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 {
     SCAI_REGION( "Solver.BiCG.initialize" )
-    CG::initialize( coefficients );
+
+    CG<ValueType>::initialize( coefficients );
+
     BiCGRuntime& runtime = getRuntime();
     runtime.mPScalar2 = 0.0;
-    runtime.mTransposeA.reset( coefficients.newMatrix() );
-    common::ScalarType type = coefficients.getValueType();
-    runtime.mP2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mQ2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mZ2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mResidual2.reset( _Vector::getDenseVector( type, coefficients.getRowDistributionPtr() ) );
-    runtime.mTransposeA->assignTranspose( coefficients );
-    runtime.mTransposeA->conj();
-    // 'force' vector operations to be computed at the same location where coefficients reside
-    runtime.mP2->setContextPtr( coefficients.getContextPtr() );
-    runtime.mQ2->setContextPtr( coefficients.getContextPtr() );
-    runtime.mZ2->setContextPtr( coefficients.getContextPtr() );
-    runtime.mResidual2->setContextPtr( coefficients.getContextPtr() );
+
+    hmemo::ContextPtr ctx = coefficients.getContextPtr();
+
+    runtime.mP2.setContextPtr( ctx );
+    runtime.mQ2.setContextPtr( ctx );
+    runtime.mZ2.setContextPtr( ctx );
+    runtime.mResidual2.setContextPtr( ctx );
+
+    // temporary vectors will be allocated at their use
 }
 
-void BiCG::iterate()
+template<typename ValueType>
+void BiCG<ValueType>::iterate()
 {
     SCAI_REGION( "Solver.BiCG.iterate" )
+
     BiCGRuntime& runtime = getRuntime();
-    Scalar lastPScalar( runtime.mPScalar );
-    Scalar& pScalar = runtime.mPScalar;
+
+    ValueType  lastPScalar = runtime.mPScalar;
+    ValueType& pScalar = runtime.mPScalar;
 
     if ( this->getIterationCount() == 0 )
     {
@@ -120,20 +146,21 @@ void BiCG::iterate()
         this->getResidual2();
     }
 
-    _Vector& residual = *runtime.mResidual;
-    _Vector& residual2 = *runtime.mResidual2;
-    const _Matrix& A = *runtime.mCoefficients;
-    const _Matrix& transA = *runtime.mTransposeA;
-    _Vector& x = *runtime.mSolution;
-    _Vector& p = *runtime.mP;
-    _Vector& p2 = *runtime.mP2;
-    _Vector& q = *runtime.mQ;
-    _Vector& q2 = *runtime.mQ2;
-    _Vector& z = *runtime.mZ;
-    _Vector& z2 = *runtime.mZ2;
+    Vector<ValueType>& residual = runtime.mResidual;
+    Vector<ValueType>& residual2 = runtime.mResidual2;
+
+    const Matrix<ValueType>& A = *runtime.mCoefficients;
+
+    Vector<ValueType>& x = runtime.mSolution.getReference(); // ->dirty
+    Vector<ValueType>& p = runtime.mP;
+    Vector<ValueType>& p2 = runtime.mP2;
+    Vector<ValueType>& q = runtime.mQ;
+    Vector<ValueType>& q2 = runtime.mQ2;
+    Vector<ValueType>& z = runtime.mZ;
+    Vector<ValueType>& z2 = runtime.mZ2;
+
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 
-    //BiCG implementation start
     if ( !mPreconditioner )
     {
         z = residual;
@@ -144,16 +171,16 @@ void BiCG::iterate()
         z.setSameValue( residual.getDistributionPtr(), 0 );
         mPreconditioner->solve( z, residual );
         z2.setSameValue( residual2.getDistributionPtr(), 0 );
-// THIS IS WRONG!!
-// Instead of solving P * z2 = residual2 we need to solve P^H * z2 = residual2
-// where P is the preconditioner
+        // THIS IS WRONG!!
+        // Instead of solving P * z2 = residual2 we need to solve P^H * z2 = residual2
+        // where P is the preconditioner
         mPreconditioner->solve( z2, residual2 );
         // print(residual,4);
         // print(residual2,4);
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
-    pScalar = z2._dotProduct( z );
+    pScalar = z2.dotProduct( z );
     SCAI_LOG_DEBUG( logger, "pScalar = " << pScalar )
     SCAI_LOG_INFO( logger, "Calculating p." )
 
@@ -164,35 +191,35 @@ void BiCG::iterate()
     }
     else
     {
-        Scalar beta =  pScalar / lastPScalar;
+        ValueType beta =  pScalar / lastPScalar;
 
         SCAI_LOG_DEBUG( logger, "beta = " << beta << ", is p = " << pScalar << " / p_old = " << lastPScalar )
 
         p = z + beta * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p._l2Norm() )
-        p2 = z2 + conj( beta ) * p2;
-        SCAI_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( p ) = " << p.l2Norm() )
+        p2 = z2 + common::Math::conj( beta ) * p2;
+        SCAI_LOG_TRACE( logger, "l2Norm( p2 ) = " << p2.l2Norm() )
     }
 
     {
         SCAI_REGION( "Solver.BiCG.calc_q" )
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q._l2Norm() )
-        q2 = transA * p2; //p2 * A;
-        SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
+        q2 = p2 * A; // transpose( A ) * p2 
+        SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
     }
 
     SCAI_LOG_INFO( logger, "Calculating pqProd." )
-    const Scalar pqProd = p2._dotProduct( q );
+    const ValueType pqProd = p2.dotProduct( q );
     SCAI_LOG_DEBUG( logger, "pqProd = " << pqProd )
 
-/*    if ( pqProd == Scalar( 0.0 ) )
+    /*    if ( pqProd == Scalar( 0.0 ) )
     {
         COMMON_THROWEXCEPTION( "Diverging due to indefinite matrix. You might try another start solution, better an adequate solver." )
     }*/
 
-    Scalar alpha = pScalar / pqProd;
+    ValueType alpha = pScalar / pqProd;
 
     SCAI_LOG_DEBUG( logger, "alpha = " << alpha << ", is p = " << pScalar << " / pq = " << pqProd )
 
@@ -201,80 +228,85 @@ void BiCG::iterate()
         SCAI_LOG_INFO( logger, "Calculating x." )
         SCAI_REGION( "Solver.BiCG.update_x" )
         x = x + alpha * p;
-        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( x ) = " << x.l2Norm() )
     }
     {
         SCAI_LOG_INFO( logger, "Updating residual." )
         SCAI_REGION( "Solver.BiCG.update_res" )
         residual = residual - alpha * q;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual._l2Norm() )
-        residual2 = residual2 - conj( alpha ) * q2;
+        SCAI_LOG_TRACE( logger, "l2Norm( residual ) = " << residual.l2Norm() )
+        residual2 = residual2 - common::Math::conj( alpha ) * q2;
         //residual2 = residual2 - alpha * q2;
-        SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual._l2Norm() )
+        SCAI_LOG_TRACE( logger, "l2Norm( residual2 ) = " << residual.l2Norm() )
     }
     //BiCG implementation end
     mBiCGRuntime.mSolution.setDirty( false );
 }
 
-const _Vector& BiCG::getResidual2() const
+template<typename ValueType>
+const Vector<ValueType>& BiCG<ValueType>::getResidual2() const
 {
-    SCAI_LOG_DEBUG( logger, "getResidual2 of solver " << mId )
-    const BiCGRuntime& runtime = getConstRuntime();
-    SCAI_ASSERT_DEBUG( runtime.mCoefficients, "mCoefficients == NULL" )
-    SCAI_ASSERT_DEBUG( runtime.mRhs, "mRhs == NULL" )
-    //mLogger->logMessage(LogLevel::completeInformation,"Request for residual received.\n");
+    SCAI_LOG_DEBUG( logger, "getResidual2 of solver " << *this )
+
+    const BiCGRuntime& runtime = getRuntime();
+
+    SCAI_ASSERT_DEBUG( runtime.mSolveInit, "no residual for unintialized solver." )
+
     SCAI_LOG_DEBUG( logger, "calculating residual of = " << runtime.mSolution.getConstReference() )
-    //mLogger->logMessage(LogLevel::completeInformation,"Residual needs revaluation.\n");
-    mLogger->startTimer( "ResidualTimer" );
-    *runtime.mResidual2 = *runtime.mRhs;
-    *runtime.mResidual2 -= ( *runtime.mTransposeA ) * runtime.mSolution.getConstReference() ;
-    mLogger->stopTimer( "ResidualTimer" );
-    mLogger->logTime( "ResidualTimer", LogLevel::completeInformation, "Revaluation of residual took [s]: " );
-    mLogger->stopAndResetTimer( "ResidualTimer" );
-    return ( *runtime.mResidual2 );
+
+    const Vector<ValueType>& solution = runtime.mSolution.getConstReference(); // only read
+    const Vector<ValueType>& rhs = *runtime.mRhs;
+    const Matrix<ValueType>& A   = *runtime.mCoefficients;
+
+    runtime.mResidual2 = rhs - solution * A;   // rhs - transpose( A ) * solution
+
+    return runtime.mResidual2;
 }
 
-void BiCG::print( lama::_Vector& vec, size_t n )
+template<typename ValueType>
+void BiCG<ValueType>::print( lama::Vector<ValueType>& vec, size_t n )
 {
     std::cout << "\n";
 
     for ( size_t i = 0; i < n; ++i )
     {
-        std::cout << vec.getValue( i ) << " ";
+        ValueType val = vec[i];
+        std::cout << val << " ";
     }
 
     std::cout << "\n";
 }
 
-SolverPtr BiCG::copy()
+template<typename ValueType>
+BiCG<ValueType>* BiCG<ValueType>::copy()
 {
-    return SolverPtr( new BiCG( *this ) );
+    return new BiCG( *this );
 }
 
-BiCG::BiCGRuntime& BiCG::getRuntime()
+template<typename ValueType>
+typename BiCG<ValueType>::BiCGRuntime& BiCG<ValueType>::getRuntime()
 {
     return mBiCGRuntime;
 }
 
-const BiCG::BiCGRuntime& BiCG::getConstRuntime() const
+template<typename ValueType>
+const typename BiCG<ValueType>::BiCGRuntime& BiCG<ValueType>::getRuntime() const
 {
     return mBiCGRuntime;
 }
 
-std::string BiCG::createValue()
+template<typename ValueType>
+void BiCG<ValueType>::writeAt( std::ostream& stream ) const
 {
-    return "BiCG";
+    stream << "CG<" << this->getValueType() << "> ( id = " << this->getId()
+           << ", #iter = " << getRuntime().mIterations << " )";
 }
 
-Solver* BiCG::create( const std::string name )
-{
-    return new BiCG( name );
-}
+/* ========================================================================= */
+/*       Template instantiations                                             */
+/* ========================================================================= */
 
-void BiCG::writeAt( std::ostream& stream ) const
-{
-    stream << "BiCG ( id = " << mId << ", #iter = " << getConstRuntime().mIterations << " )";
-}
+SCAI_COMMON_INST_CLASS( BiCG, SCAI_NUMERIC_TYPES_HOST )
 
 } /* end namespace solver */
 

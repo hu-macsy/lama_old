@@ -52,24 +52,24 @@ SCAI_LOG_DEF_LOGGER( logger, "Test.QMRTest" )
 
 // ---------------------------------------------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE( ConstructorTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConstructorTest, ValueType, scai_numeric_test_types )
 {
     LoggerPtr slogger( new CommonLogger( "<QMR>: ", LogLevel::noLogging, LoggerWriteBehaviour::toConsoleOnly ) );
-    QMR QMRSolver( "QMRTestSolver", slogger );
-    BOOST_CHECK_EQUAL( QMRSolver.getId(), "QMRTestSolver" );
-    QMR QMRSolver2( "QMRTestSolver2" );
-    BOOST_CHECK_EQUAL( QMRSolver2.getId(), "QMRTestSolver2" );
-    QMR QMRSolver3( QMRSolver2 );
-    BOOST_CHECK_EQUAL( QMRSolver3.getId(), "QMRTestSolver2" );
-    BOOST_CHECK( QMRSolver3.getPreconditioner() == 0 );
-    QMR QMRSolver4( "QMRSolver4" );
-    SolverPtr preconditioner( new TrivialPreconditioner( "Trivial preconditioner" ) );
-    QMRSolver4.setPreconditioner( preconditioner );
-    CriterionPtr criterion( new IterationCount( 10 ) );
-    QMRSolver4.setStoppingCriterion( criterion );
-    QMR QMRSolver5( QMRSolver4 );
-    BOOST_CHECK_EQUAL( QMRSolver5.getId(), QMRSolver4.getId() );
-    BOOST_CHECK_EQUAL( QMRSolver5.getPreconditioner()->getId(), QMRSolver4.getPreconditioner()->getId() );
+    QMR<ValueType> cgSolver( "QMR", slogger );
+    BOOST_CHECK_EQUAL( cgSolver.getId(), "QMR" );
+    QMR<ValueType> cgSolver2( "QMR" );
+    BOOST_CHECK_EQUAL( cgSolver2.getId(), "QMR" );
+    QMR<ValueType> cgSolver3( cgSolver2 );
+    BOOST_CHECK_EQUAL( cgSolver3.getId(), "QMR" );
+    BOOST_CHECK( cgSolver3.getPreconditioner() == 0 );
+    QMR<ValueType> cgSolver4( "cgSolver4" );
+    SolverPtr<ValueType> preconditioner( new TrivialPreconditioner<ValueType>( "Trivial preconditioner" ) );
+    cgSolver4.setPreconditioner( preconditioner );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType>( 10 ) );
+    cgSolver4.setStoppingCriterion( criterion );
+    QMR<ValueType> cgSolver5( cgSolver4 );
+    BOOST_CHECK_EQUAL( cgSolver5.getId(), cgSolver4.getId() );
+    BOOST_CHECK_EQUAL( cgSolver5.getPreconditioner()->getId(), cgSolver4.getPreconditioner()->getId() );
 }
 
 // ---------------------------------------------------------------------------------------------------------------
