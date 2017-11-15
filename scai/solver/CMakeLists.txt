@@ -79,6 +79,11 @@ scai_project (
         TFQMR
         TrivialPreconditioner
 
+    HEADERS
+
+        OmegaSolver
+        MatrixWithT
+
     )
 
 ## add subdirectories

@@ -106,6 +106,11 @@ public:
         return _AMGSetup::canCreate( AMGSetupCreateKeyType( common::TypeTraits<ValueType>::stype, setupType ) );
     }
 
+    /**
+     *  Get all setup types available for this value type by using _AMGSetup::createValues 
+     */
+    static void getCreateValues( std::vector<std::string>& values );
+
     virtual void initialize( const lama::Matrix<ValueType>& coefficients ) = 0;
 
     virtual Solver<ValueType>& getCoarseLevelSolver() = 0;

@@ -46,10 +46,51 @@ namespace solver
 
 SCAI_LOG_DEF_LOGGER( _AMGSetup::logger, "AMGSetup" )
 
+/* ========================================================================= */
+/*    static methods (for _AMGSetup - Factory, untyped )                     */
+/* ========================================================================= */
+
 _AMGSetup* _AMGSetup::getAMGSetup( const common::ScalarType scalarType, const std::string& setupType )
 {
     return create( AMGSetupCreateKeyType( scalarType, setupType ) );
 }
+
+/* ========================================================================= */
+/*    static methods (for AMGSetup<ValueType> - Factory                      */
+/* ========================================================================= */
+
+template<typename ValueType>
+void AMGSetup<ValueType>::getCreateValues( std::vector<std::string>& values )
+{
+    std::vector<AMGSetupCreateKeyType> createValues;
+
+    _AMGSetup::getCreateValues( createValues );  // all solvers ( valueType, solvertype )
+
+    values.clear();
+
+    for ( size_t i = 0; i < createValues.size(); ++i )
+    {
+        if ( createValues[i].first == common::TypeTraits<ValueType>::stype )
+        {
+            // AMGSetup for this value type
+            values.push_back( createValues[i].second );
+        }
+    }
+}
+
+template<typename ValueType>
+AMGSetup<ValueType>* AMGSetup<ValueType>::getAMGSetup( const std::string& setupType )
+{
+    _AMGSetup* setup = _AMGSetup::getAMGSetup( common::TypeTraits<ValueType>::stype, setupType );
+
+    SCAI_ASSERT_DEBUG( dynamic_cast<AMGSetup<ValueType>*>( setup ), "Illegal setup" )
+
+    return reinterpret_cast<AMGSetup<ValueType>*>( setup );
+}
+
+/* ========================================================================= */
+/*    Constructor/Destructor                                                 */
+/* ========================================================================= */
 
 template<typename ValueType>
 AMGSetup<ValueType>::AMGSetup() : 
@@ -63,16 +104,6 @@ AMGSetup<ValueType>::AMGSetup() :
 template<typename ValueType>
 AMGSetup<ValueType>::~AMGSetup()
 {
-}
-
-template<typename ValueType>
-AMGSetup<ValueType>* AMGSetup<ValueType>::getAMGSetup( const std::string& setupType )
-{
-    _AMGSetup* setup = _AMGSetup::getAMGSetup( common::TypeTraits<ValueType>::stype, setupType );
-
-    SCAI_ASSERT_DEBUG( dynamic_cast<AMGSetup<ValueType>*>( setup ), "Illegal setup" )
-
-    return reinterpret_cast<AMGSetup<ValueType>*>( setup );
 }
 
 template<typename ValueType>
