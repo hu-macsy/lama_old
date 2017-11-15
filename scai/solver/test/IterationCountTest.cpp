@@ -44,7 +44,7 @@
 #include <scai/solver/test/EquationHelper.hpp>
 #include <scai/solver/test/TestMacros.hpp>
 
-#include <scai/common/unique_ptr.hpp>
+#include <memory>
 
 using namespace scai;
 using namespace solver;
@@ -65,8 +65,8 @@ struct IterationCountTestConfig
     {
     }
 
-    common::unique_ptr<IterationCount> mCriterionDouble;
-    common::unique_ptr<IterationCount> mCriterionFloat;
+    std::unique_ptr<IterationCount> mCriterionDouble;
+    std::unique_ptr<IterationCount> mCriterionFloat;
 };
 
 BOOST_FIXTURE_TEST_SUITE( IterationCountTest, IterationCountTestConfig )
@@ -79,9 +79,9 @@ BOOST_AUTO_TEST_CASE( ConstructorTest )
 {
     BOOST_CHECK_EQUAL( mCriterionDouble->getIterationExtrema(), IndexType( 5 ) );
     BOOST_CHECK_EQUAL( mCriterionFloat->getIterationExtrema(), IndexType( 10 ) );
-    common::unique_ptr<IterationCount> testcriterion( new IterationCount() );
+    std::unique_ptr<IterationCount> testcriterion( new IterationCount() );
     BOOST_CHECK_EQUAL( testcriterion->getIterationExtrema(), IndexType( 1 ) );
-    common::unique_ptr<IterationCount> testcriterion2( new IterationCount( *testcriterion ) );
+    std::unique_ptr<IterationCount> testcriterion2( new IterationCount( *testcriterion ) );
     BOOST_CHECK_EQUAL( testcriterion2->getIterationExtrema(), IndexType( 1 ) );
 }
 

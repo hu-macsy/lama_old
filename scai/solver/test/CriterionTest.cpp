@@ -41,10 +41,11 @@
 #include <scai/lama/DenseVector.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
-#include <scai/common/unique_ptr.hpp>
 #include <scai/solver/CG.hpp>
 
 #include <scai/solver/test/TestMacros.hpp>
+
+#include <memory>
 
 using namespace scai;
 using namespace solver;
@@ -180,29 +181,29 @@ BOOST_AUTO_TEST_CASE ( isSatisfiedTest )
     cgsolver.solve( solution, rhs );
     bool test;
     // isSatisfied for BooleanCondition ( noChildren, returns mModifier )
-    common::unique_ptr<Criterion> condition1( new Criterion() );
+    std::unique_ptr<Criterion> condition1( new Criterion() );
     test = condition1->isSatisfied( cgsolver );
     BOOST_CHECK ( test );
     // isSatisfied for BooleanCondition ( noChildren, returns mModifier )
-    common::unique_ptr<Criterion> condition2( new Criterion( false ) );
+    std::unique_ptr<Criterion> condition2( new Criterion( false ) );
     test = condition2->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left
-    common::unique_ptr<Criterion> condition3( new Criterion( false ) );
+    std::unique_ptr<Criterion> condition3( new Criterion( false ) );
     condition3->setLeftChild( mIterationCountCriterion1Ptr );
     test = condition3->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left
-    common::unique_ptr<Criterion> condition4( new Criterion( false ) );
+    std::unique_ptr<Criterion> condition4( new Criterion( false ) );
     condition4->setRightChild( mIterationCountCriterion1Ptr );
     test = condition4->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left AND right child
-    common::unique_ptr<Criterion> condition5( new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::AND ) );
+    std::unique_ptr<Criterion> condition5( new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::AND ) );
     test = condition5->isSatisfied( cgsolver );
     BOOST_CHECK ( !test );
     // isSatisfied for Criterion with left OR right child
-    common::unique_ptr<Criterion> condition6( new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::OR ) );
+    std::unique_ptr<Criterion> condition6( new Criterion( mIterationCountCriterion1Ptr, mIterationCountCriterion2Ptr, Criterion::OR ) );
     test = condition6->isSatisfied( cgsolver );
     BOOST_CHECK ( test );
 }

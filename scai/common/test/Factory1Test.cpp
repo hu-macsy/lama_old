@@ -36,7 +36,8 @@
 
 #include <scai/common/Factory1.hpp>
 #include <scai/common/Printable.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 using namespace scai::common;
 
@@ -130,16 +131,16 @@ BOOST_AUTO_TEST_CASE( Factory1Test )
     BOOST_CHECK( !Base::canCreate( "F" ) );
     BOOST_CHECK( Base::canCreate( typeid( int ).name() ) );
     BOOST_CHECK( !Base::canCreate( typeid( double ).name() ) );
-    BOOST_CHECK_THROW( { unique_ptr<Base>(Base::create( "e", 1 )); }, Exception );
+    BOOST_CHECK_THROW( { std::unique_ptr<Base>(Base::create( "e", 1 )); }, Exception );
 
-    unique_ptr<Base> base ( Base::create( "D", 5 ) );
+    std::unique_ptr<Base> base ( Base::create( "D", 5 ) );
     {
         const Derived* derivedObj = dynamic_cast<const Derived*>( base.get() );
         BOOST_REQUIRE( derivedObj );
         BOOST_CHECK_EQUAL( 5, derivedObj->getVal() );
     }
 
-    unique_ptr<Base> intBase ( Base::create( typeid( int ).name(), 0 ) );
+    std::unique_ptr<Base> intBase ( Base::create( typeid( int ).name(), 0 ) );
     const TDerived<int>* intObj = dynamic_cast<const TDerived<int>*>( intBase.get() );
     const TDerived<float>* floatObj = dynamic_cast<const TDerived<float>*>( intBase.get() );
     const TDerived<double>* doubleObj = dynamic_cast<const TDerived<double>*>( intBase.get() );

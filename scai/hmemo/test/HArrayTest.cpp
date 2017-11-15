@@ -43,12 +43,12 @@
 #include <scai/hmemo/ReadAccess.hpp>
 
 #include <scai/common/TypeTraits.hpp>
-#include <scai/common/unique_ptr.hpp>
+
+#include <memory>
 
 using namespace boost;
 using namespace scai;
 using namespace scai::hmemo;
-using scai::common::unique_ptr;
 
 /* --------------------------------------------------------------------- */
 
@@ -327,8 +327,8 @@ BOOST_AUTO_TEST_CASE( createTest )
     BOOST_CHECK( _HArray::canCreate( ScalarType::FLOAT ) );
     BOOST_CHECK( _HArray::canCreate( ScalarType::DOUBLE ) );
     BOOST_CHECK( _HArray::canCreate( TypeTraits<IndexType>::stype ) );
-    BOOST_CHECK( !_HArray::canCreate( scalar::INTERNAL ) );
-    unique_ptr<_HArray> ca1 ( _HArray::create( scalarType::FLOAT ) );
+    BOOST_CHECK( !_HArray::canCreate( ScalarType::INTERNAL ) );
+    std::unique_ptr<_HArray> ca1 ( _HArray::create( ScalarType::FLOAT ) );
     BOOST_REQUIRE( ca1 );
     const HArray<double>* da1 = dynamic_cast<const HArray<double>*>( ca1.get() );
     const HArray<float>* fa1 = dynamic_cast<const HArray<float>*>( ca1.get() );
