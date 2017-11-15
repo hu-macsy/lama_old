@@ -118,9 +118,14 @@ void BiCG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     CG<ValueType>::initialize( coefficients );
 
     BiCGRuntime& runtime = getRuntime();
-    runtime.mPScalar2 = 0.0;
+
+    runtime.mPScalar2 = ValueType( 0 );
 
     hmemo::ContextPtr ctx = coefficients.getContextPtr();
+
+    runtime.mConjTransposeA.reset( coefficients.newMatrix() );
+    runtime.mConjTransposeA->assignTranspose( coefficients );
+    runtime.mConjTransposeA->conj();
 
     runtime.mP2.setContextPtr( ctx );
     runtime.mQ2.setContextPtr( ctx );
@@ -150,6 +155,7 @@ void BiCG<ValueType>::iterate()
     Vector<ValueType>& residual2 = runtime.mResidual2;
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
+    const Matrix<ValueType>& Act = *runtime.mConjTransposeA;  
 
     Vector<ValueType>& x = runtime.mSolution.getReference(); // ->dirty
     Vector<ValueType>& p = runtime.mP;
@@ -206,7 +212,7 @@ void BiCG<ValueType>::iterate()
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
         SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
-        q2 = p2 * A; // transpose( A ) * p2 
+        q2 = Act * p2; // conjTranspose( A ) * p2 
         SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
     }
 
@@ -256,9 +262,9 @@ const Vector<ValueType>& BiCG<ValueType>::getResidual2() const
 
     const Vector<ValueType>& solution = runtime.mSolution.getConstReference(); // only read
     const Vector<ValueType>& rhs = *runtime.mRhs;
-    const Matrix<ValueType>& A   = *runtime.mCoefficients;
+    const Matrix<ValueType>& Act = *runtime.mConjTransposeA;
 
-    runtime.mResidual2 = rhs - solution * A;   // rhs - transpose( A ) * solution
+    runtime.mResidual2 = rhs - Act * solution;   // rhs - conjTranspose( A ) * solution
 
     return runtime.mResidual2;
 }

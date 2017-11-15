@@ -94,6 +94,8 @@ public:
 
     struct BiCGRuntime: CG<ValueType>::CGRuntime
     {
+        lama::MatrixPtr<ValueType> mConjTransposeA;
+
         lama::DenseVector<ValueType> mP2;
         lama::DenseVector<ValueType> mQ2;
         lama::DenseVector<ValueType> mZ2;

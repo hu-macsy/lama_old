@@ -126,6 +126,10 @@ void QMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     dmemo::DistributionPtr rowDist = coefficients.getRowDistributionPtr();
     hmemo::ContextPtr ctx = coefficients.getContextPtr();
 
+    runtime.mConjTransposeA.reset( coefficients.newMatrix() );
+    runtime.mConjTransposeA->assignTranspose( coefficients );
+    runtime.mConjTransposeA->conj();
+
     runtime.mVecD.setSpace( rowDist, ctx );
     runtime.mVecP.setSpace( rowDist, ctx );
     runtime.mVecQ.setSpace( rowDist, ctx );
@@ -168,6 +172,7 @@ void QMR<ValueType>::iterate()
     QMRRuntime& runtime    = getRuntime();
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
+    const Matrix<ValueType>& Act = *runtime.mConjTransposeA;
 
     Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
     Vector<ValueType>& residual = runtime.mResidual;
@@ -306,7 +311,7 @@ void QMR<ValueType>::iterate()
 
     rho1 = rho;
     rho = l2Norm( vecY );
-    vecWT = vecQ * A;  // transpose( A ) * vecQ
+    vecWT = Act * vecQ;  // conjTranspose( A ) * vecQ
     vecWT = vecWT - common::Math::conj( beta ) * vecW;
     vecZ = vecWT;
     psi = l2Norm( vecZ );

@@ -108,6 +108,8 @@ public:
 
     struct QMRRuntime: IterativeSolver<ValueType>::IterativeSolverRuntime
     {
+        lama::MatrixPtr<ValueType> mConjTransposeA;
+
         lama::DenseVector<ValueType> mInitialRes;
         lama::DenseVector<ValueType> mVecV;
         lama::DenseVector<ValueType> mVecW;
