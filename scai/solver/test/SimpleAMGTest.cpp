@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE ( SolveTest )
 
     simpleAMGSolver.initialize( coefficients );
 
-    for ( unsigned int i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
+    for ( IndexType i = 0; i < simpleAMGSolver.getNumLevels(); ++i )
     {
         const Matrix<ValueType>& galerkin    = simpleAMGSolver.getGalerkin( i );
         const Matrix<ValueType>& restriction = simpleAMGSolver.getRestriction( i );

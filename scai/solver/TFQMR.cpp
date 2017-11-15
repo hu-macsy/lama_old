@@ -57,7 +57,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, TFQMR<ValueType>::logger, "Solver.IterativeSolver.TFQMR" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -144,7 +144,7 @@ void TFQMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void TFQMR<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void TFQMR<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -187,10 +187,10 @@ void TFQMR<ValueType>::iterationEven()
 {
     TFQMRRuntime& runtime = getRuntime();
 
-    const Vector<ValueType>& vecZ = runtime.mVecZ;
-    const Vector<ValueType>& initialR = runtime.mInitialR;
-    const Vector<ValueType>& vecVEven = runtime.mVecVEven;
-    Vector<ValueType>& vecVOdd = runtime.mVecVOdd;
+    const DenseVector<ValueType>& vecZ = runtime.mVecZ;
+    const DenseVector<ValueType>& initialR = runtime.mInitialR;
+    const DenseVector<ValueType>& vecVEven = runtime.mVecVEven;
+    DenseVector<ValueType>& vecVOdd = runtime.mVecVOdd;
     const ValueType& rho = runtime.mRhoOld;
     const NormType<ValueType>& eps = runtime.mEps;
     const ValueType dotProduct = initialR.dotProduct( vecZ );
@@ -213,15 +213,15 @@ void TFQMR<ValueType>::iterationOdd()
 {
     TFQMRRuntime& runtime = getRuntime();
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    const Vector<ValueType>& initialR = runtime.mInitialR;
-    const Vector<ValueType>& vecW = runtime.mVecW;
-    const Vector<ValueType>& vecVOdd = runtime.mVecVOdd;
-    Vector<ValueType>& vecVEven = runtime.mVecVEven;
+    const DenseVector<ValueType>& initialR = runtime.mInitialR;
+    const DenseVector<ValueType>& vecW = runtime.mVecW;
+    const DenseVector<ValueType>& vecVOdd = runtime.mVecVOdd;
+    DenseVector<ValueType>& vecVEven = runtime.mVecVEven;
     ValueType& rhoOld = runtime.mRhoOld;
     ValueType& rhoNew = runtime.mRhoNew;
     ValueType& beta = runtime.mBeta;
-    Vector<ValueType>& vecZ = runtime.mVecZ;
-    Vector<ValueType>& vecVT = runtime.mVecVT;
+    DenseVector<ValueType>& vecZ = runtime.mVecZ;
+    DenseVector<ValueType>& vecVT = runtime.mVecVT;
     const NormType<ValueType>& eps = runtime.mEps;
 
     rhoNew  = initialR.dotProduct( vecW );
@@ -261,9 +261,9 @@ void TFQMR<ValueType>::iterate()
     TFQMRRuntime& runtime = getRuntime();
     const IndexType& iteration = runtime.mIterations;
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    Vector<ValueType>& vecW = runtime.mVecW;
-    Vector<ValueType>& vecD = runtime.mVecD;
-    Vector<ValueType>& solution = runtime.mSolution.getReference();  // dirty
+    DenseVector<ValueType>& vecW = runtime.mVecW;
+    DenseVector<ValueType>& vecD = runtime.mVecD;
+    DenseVector<ValueType>& solution = runtime.mSolution.getReference();  // dirty
     const ValueType& alpha = runtime.mAlpha;
     ValueType& c = runtime.mC;
     ValueType& eta = runtime.mEta;
@@ -274,7 +274,7 @@ void TFQMR<ValueType>::iterate()
 
     bool isEven = ( iteration % 2 ) == 0;
 
-    const Vector<ValueType>& vecV = isEven ? runtime.mVecVEven : runtime.mVecVOdd;
+    const DenseVector<ValueType>& vecV = isEven ? runtime.mVecVEven : runtime.mVecVOdd;
 
     if ( isEven )
     {

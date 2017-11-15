@@ -47,7 +47,7 @@ SolutionProxy<ValueType>::SolutionProxy() : mIsDirty( true )
 }
 
 template<typename ValueType>
-SolutionProxy<ValueType>::SolutionProxy( lama::Vector<ValueType>* solution ) : 
+SolutionProxy<ValueType>::SolutionProxy( lama::DenseVector<ValueType>* solution ) : 
 
     mSolution( solution ), 
     mIsDirty( true )
@@ -60,13 +60,13 @@ SolutionProxy<ValueType>::~SolutionProxy()
 }
 
 template<typename ValueType>
-const lama::Vector<ValueType>& SolutionProxy<ValueType>::getConstReference() const
+const lama::DenseVector<ValueType>& SolutionProxy<ValueType>::getConstReference() const
 {
     return *mSolution;
 }
 
 template<typename ValueType>
-void SolutionProxy<ValueType>::operator=( lama::Vector<ValueType>* newVector )
+void SolutionProxy<ValueType>::operator=( lama::DenseVector<ValueType>* newVector )
 {
     setDirty( true );
     mSolution = newVector;
@@ -85,7 +85,7 @@ void SolutionProxy<ValueType>::setDirty( bool isDirty )
 }
 
 template<typename ValueType>
-lama::Vector<ValueType>& SolutionProxy<ValueType>::getReference()
+lama::DenseVector<ValueType>& SolutionProxy<ValueType>::getReference()
 {
     this->setDirty( true );
     return *mSolution;

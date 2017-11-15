@@ -62,6 +62,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, BiCGstab<ValueType>:
 
 using lama::Matrix;
 using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -150,7 +151,7 @@ void BiCGstab<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void BiCGstab<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void BiCGstab<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -177,15 +178,15 @@ void BiCGstab<ValueType>::iterate()
     const Matrix<ValueType>& A = *runtime.mCoefficients;
     const Vector<ValueType>& res0 = runtime.mRes0;
 
-    Vector<ValueType>& res = runtime.mResidual;
-    Vector<ValueType>& vecV = runtime.mVecV;
-    Vector<ValueType>& vecP = runtime.mVecP;
-    Vector<ValueType>& vecS = runtime.mVecS;
-    Vector<ValueType>& vecT = runtime.mVecT;
+    DenseVector<ValueType>& res = runtime.mResidual;
+    DenseVector<ValueType>& vecV = runtime.mVecV;
+    DenseVector<ValueType>& vecP = runtime.mVecP;
+    DenseVector<ValueType>& vecS = runtime.mVecS;
+    DenseVector<ValueType>& vecT = runtime.mVecT;
     Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
-    Vector<ValueType>& vecPT = runtime.mVecPT;
-    Vector<ValueType>& vecST = runtime.mVecST;
-    Vector<ValueType>& vecTT = runtime.mVecTT;
+    DenseVector<ValueType>& vecPT = runtime.mVecPT;
+    DenseVector<ValueType>& vecST = runtime.mVecST;
+    DenseVector<ValueType>& vecTT = runtime.mVecTT;
 
     ValueType& alpha = runtime.mAlpha;
     ValueType& beta = runtime.mBeta;

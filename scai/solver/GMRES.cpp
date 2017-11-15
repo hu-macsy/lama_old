@@ -62,7 +62,6 @@ using utilskernel::LAMAKernel;
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, GMRES<ValueType>::logger, "Solver.IterativeSolver.GMRES" )
 
 using lama::Matrix;
-using lama::Vector;
 using lama::DenseVector;
 using lama::Scalar;
 
@@ -196,7 +195,7 @@ void GMRES<ValueType>::iterate()
     SCAI_LOG_INFO( logger, "GMRES( krylov dim = " << mKrylovDim << " ): iter = " << this->getIterationCount()
                            << ", inner step = " << krylovIndex )
 
-    Vector<ValueType>& vCurrent = runtime.mV[krylovIndex];
+    DenseVector<ValueType>& vCurrent = runtime.mV[krylovIndex];
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
 
@@ -210,7 +209,7 @@ void GMRES<ValueType>::iterate()
 
         this->getResidual();
 
-        Vector<ValueType>& residual = runtime.mResidual;
+        DenseVector<ValueType>& residual = runtime.mResidual;
 
         // store old solution
 
@@ -247,8 +246,8 @@ void GMRES<ValueType>::iterate()
 
     // precondition next search direction
 
-    Vector<ValueType>& w   = runtime.mW;
-    Vector<ValueType>& tmp = runtime.mT;
+    DenseVector<ValueType>& w   = runtime.mW;
+    DenseVector<ValueType>& tmp = runtime.mT;
 
 
     if ( !mPreconditioner )
@@ -276,7 +275,7 @@ void GMRES<ValueType>::iterate()
     {
         SCAI_REGION( "Solver.GMRES.orthogonalization" )
 
-        const Vector<ValueType>& Vk = runtime.mV[k];
+        const DenseVector<ValueType>& Vk = runtime.mV[k];
 
         runtime.mH[hIdxStart + k] = w.dotProduct( Vk );
         w = w - runtime.mH[hIdxStart + k] * Vk;
@@ -288,7 +287,7 @@ void GMRES<ValueType>::iterate()
 
     SCAI_LOG_DEBUG( logger, "Normalizing vNext." )
 
-    Vector<ValueType>& vNext = runtime.mV[krylovIndex + 1];
+    DenseVector<ValueType>& vNext = runtime.mV[krylovIndex + 1];
 
     ValueType scal = 1.0 / runtime.mHd[krylovIndex];
 
@@ -374,7 +373,7 @@ void GMRES<ValueType>::updateX( IndexType i )
 
     // Update of solution vector
 
-    Vector<ValueType>& x = runtime.mSolution.getReference();  // -> dirty
+    DenseVector<ValueType>& x = runtime.mSolution.getReference();  // -> dirty
 
     // reset x to x0
 

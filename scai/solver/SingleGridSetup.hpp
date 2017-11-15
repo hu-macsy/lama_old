@@ -76,11 +76,11 @@ public:
 
     virtual const lama::Matrix<ValueType>& getInterpolation( const IndexType level );
 
-    virtual lama::Vector<ValueType>& getSolutionVector( const IndexType level );
+    virtual lama::DenseVector<ValueType>& getSolutionVector( const IndexType level );
 
-    virtual lama::Vector<ValueType>& getRhsVector( const IndexType level );
+    virtual lama::DenseVector<ValueType>& getRhsVector( const IndexType level );
 
-    virtual lama::Vector<ValueType>& getTmpResVector( const IndexType level );
+    virtual lama::DenseVector<ValueType>& getTmpResVector( const IndexType level );
 
     virtual std::string getCouplingPredicateInfo() const;
 
@@ -129,9 +129,9 @@ private:
 
     std::unique_ptr<lama::Matrix<ValueType>> mIdentity;
 
-    std::unique_ptr<lama::Vector<ValueType> > mSolutionVector;
-    std::unique_ptr<lama::Vector<ValueType> > mRhsVector;
-    std::unique_ptr<lama::Vector<ValueType> > mTmpResVector;
+    std::unique_ptr<lama::DenseVector<ValueType> > mSolutionVector;
+    std::unique_ptr<lama::DenseVector<ValueType> > mRhsVector;
+    std::unique_ptr<lama::DenseVector<ValueType> > mTmpResVector;
 };
 
 } /* end namespace solver */

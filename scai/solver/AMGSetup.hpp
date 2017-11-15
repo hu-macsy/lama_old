@@ -125,11 +125,11 @@ public:
 
     virtual const lama::Matrix<ValueType>& getInterpolation( const IndexType level ) = 0;
 
-    virtual lama::Vector<ValueType>& getSolutionVector( const IndexType level ) = 0;
+    virtual lama::DenseVector<ValueType>& getSolutionVector( const IndexType level ) = 0;
 
-    virtual lama::Vector<ValueType>& getRhsVector( const IndexType level ) = 0;
+    virtual lama::DenseVector<ValueType>& getRhsVector( const IndexType level ) = 0;
 
-    virtual lama::Vector<ValueType>& getTmpResVector( const IndexType level ) = 0;
+    virtual lama::DenseVector<ValueType>& getTmpResVector( const IndexType level ) = 0;
 
     virtual std::string getCouplingPredicateInfo() const = 0;
 

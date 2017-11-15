@@ -142,7 +142,7 @@ void Richardson<ValueType>::initialize( const lama::Matrix<ValueType>& coefficie
 /* ========================================================================= */
 
 template<typename ValueType>
-void Richardson<ValueType>::solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs )
+void Richardson<ValueType>::solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs )
 {
     if ( solution.getVectorKind() != lama::VectorKind::DENSE )
     {

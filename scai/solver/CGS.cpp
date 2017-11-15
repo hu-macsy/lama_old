@@ -60,7 +60,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CGS<ValueType>::logger, "Solver.IterativeSolver.CGS" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -144,7 +144,7 @@ void CGS<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void CGS<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void CGS<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -185,16 +185,17 @@ void CGS<ValueType>::iterate()
     CGSRuntime& runtime = getRuntime();
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    const Vector<ValueType>& res0 = runtime.mRes0;
-    Vector<ValueType>& res = runtime.mResidual;
-    Vector<ValueType>& vecP = runtime.mVecP;
-    Vector<ValueType>& vecQ = runtime.mVecQ;
-    Vector<ValueType>& vecU = runtime.mVecU;
-    Vector<ValueType>& vecT = runtime.mVecT;
-    Vector<ValueType>& vecPT = runtime.mVecPT;
-    Vector<ValueType>& vecUT = runtime.mVecUT;
-    Vector<ValueType>& vecTemp = runtime.mVecTemp;
-    Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
+
+    const DenseVector<ValueType>& res0 = runtime.mRes0;
+    DenseVector<ValueType>& res = runtime.mResidual;
+    DenseVector<ValueType>& vecP = runtime.mVecP;
+    DenseVector<ValueType>& vecQ = runtime.mVecQ;
+    DenseVector<ValueType>& vecU = runtime.mVecU;
+    DenseVector<ValueType>& vecT = runtime.mVecT;
+    DenseVector<ValueType>& vecPT = runtime.mVecPT;
+    DenseVector<ValueType>& vecUT = runtime.mVecUT;
+    DenseVector<ValueType>& vecTemp = runtime.mVecTemp;
+    DenseVector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
 
     ValueType& innerProdRes = runtime.mInnerProdRes;
     ValueType alpha;

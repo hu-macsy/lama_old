@@ -90,7 +90,7 @@ public:
 
     virtual void initialize( const lama::Matrix<ValueType>& coefficients );
 
-    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same

@@ -59,7 +59,6 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, MINRES<ValueType>::logger, "Solver.IterativeSolver.MINRES" )
 
 using lama::Matrix;
-using lama::Vector;
 using lama::DenseVector;
 
 /* ========================================================================= */
@@ -136,7 +135,7 @@ void MINRES<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 }
 
 template<typename ValueType>
-void MINRES<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void MINRES<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     MINRESRuntime& runtime = getRuntime();
     runtime.mRhs = &rhs;
@@ -160,14 +159,18 @@ template<typename ValueType>
 void MINRES<ValueType>::Lanczos()
 {
     MINRESRuntime& runtime = getRuntime();
+
     const Matrix<ValueType>& A = *runtime.mCoefficients;
+
     DenseVector<ValueType>& vecV = runtime.mVecV;
     DenseVector<ValueType>& vecVOld = runtime.mVecVOld;
     DenseVector<ValueType>& vecVNew = runtime.mVecVNew;
+
     ValueType& alpha = runtime.mAlpha;
     NormType<ValueType>& betaNew = runtime.mBetaNew;
     NormType<ValueType>& beta = runtime.mBeta;
     NormType<ValueType>& eps = runtime.mEps;
+
     beta = betaNew;
     vecVOld.swap( vecV );
     vecV.swap( vecVNew );
@@ -258,8 +261,8 @@ void MINRES<ValueType>::iterate()
     Lanczos();
     applyGivensRotation();
 
-    const Vector<ValueType>& vecPNew = runtime.mVecPNew;
-    Vector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
+    const DenseVector<ValueType>& vecPNew = runtime.mVecPNew;
+    DenseVector<ValueType>& solution = runtime.mSolution.getReference(); // dirty
 
     ValueType& cNew = runtime.mCNew;
     ValueType& sNew = runtime.mSNew;

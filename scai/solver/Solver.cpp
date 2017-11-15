@@ -55,7 +55,7 @@ namespace solver
 {
 
 using lama::Matrix;
-using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    Implementation of methods for _Solver                                  */
@@ -196,7 +196,7 @@ void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 }
 
 template<typename ValueType>
-void Solver<ValueType>::solve( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void Solver<ValueType>::solve( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     SCAI_REGION( "Solver.solve" )
 
@@ -216,7 +216,7 @@ void Solver<ValueType>::solve( Vector<ValueType>& solution, const Vector<ValueTy
 }
 
 template<typename ValueType>
-void Solver<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void Solver<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     SolverRuntime& runtime = getRuntime();
 
@@ -244,7 +244,7 @@ const std::string& Solver<ValueType>::getId() const
 }
 
 template<typename ValueType>
-const Vector<ValueType>& Solver<ValueType>::getResidual() const
+const DenseVector<ValueType>& Solver<ValueType>::getResidual() const
 {
     const SolverRuntime& runtime = getRuntime();
 
@@ -259,12 +259,12 @@ const Vector<ValueType>& Solver<ValueType>::getResidual() const
     {
         SCAI_REGION( "Solver.computeResidual" )
 
-        const Vector<ValueType>& x = runtime.mSolution.getConstReference();  // solution not modified here
+        const DenseVector<ValueType>& x = runtime.mSolution.getConstReference();  // solution not modified here
 
         SCAI_LOG_DEBUG( logger, "calculating residual current solution = " << x )
 
         const Matrix<ValueType>& A = *runtime.mCoefficients;
-        const Vector<ValueType>& y = *runtime.mRhs;
+        const DenseVector<ValueType>& y = *runtime.mRhs;
 
         mLogger->startTimer( "ResidualTimer" );
         runtime.mResidual = y - A  * x;

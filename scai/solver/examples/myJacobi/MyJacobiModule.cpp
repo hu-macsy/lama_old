@@ -130,7 +130,7 @@ void MyJacobi<ValueType>::initialize( const lama::Matrix<ValueType>& coefficient
 }
 
 template<typename ValueType>
-void MyJacobi<ValueType>::solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs )
+void MyJacobi<ValueType>::solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs )
 {
     solver::Solver<ValueType>::solveInit( solution, rhs );
 
@@ -148,8 +148,8 @@ void MyJacobi<ValueType>::iterate()
 
     // swap old solution and solution, solution is marked as dirty
 
-    lama::Vector<ValueType>& solution    = runtime.mSolution.getReference();
-    lama::Vector<ValueType>& oldSolution = runtime.mOldSolution;
+    lama::DenseVector<ValueType>& solution    = runtime.mSolution.getReference();
+    lama::DenseVector<ValueType>& oldSolution = runtime.mOldSolution;
 
     solution.swap( oldSolution );
 

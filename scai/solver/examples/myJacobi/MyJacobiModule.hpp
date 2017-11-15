@@ -81,7 +81,7 @@ public:
      */
     virtual void initialize( const scai::lama::Matrix<ValueType>& coefficients );
 
-    virtual void solveInit( scai::lama::Vector<ValueType>& solution, const scai::lama::Vector<ValueType>& rhs );
+    virtual void solveInit( scai::lama::DenseVector<ValueType>& solution, const scai::lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Implementation of pure copy method with covariant return type.

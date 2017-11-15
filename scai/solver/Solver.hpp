@@ -208,7 +208,7 @@ public:
      *                          solution for an IterativeSolver.
      * @param[in,out] rhs       The right hand side 
      */
-    void solve( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
+    void solve( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Initializes the solver with rhs and solution.
@@ -216,7 +216,7 @@ public:
      * @param[in]  rhs      The right hand side of the system of equations
      * @param[out] solution The allocated memory and starting solution for the system
      */
-    virtual void solveInit( lama::Vector<ValueType>& solution, const lama::Vector<ValueType>& rhs );
+    virtual void solveInit( lama::DenseVector<ValueType>& solution, const lama::DenseVector<ValueType>& rhs );
 
     /**
      * @brief Solves the equation system. Rhs and starting solution have to
@@ -260,7 +260,7 @@ public:
      *
      * @return The current residual
      */
-    const lama::Vector<ValueType>& getResidual() const;
+    const lama::DenseVector<ValueType>& getResidual() const;
 
     /**
      * @brief Gets the matrix A from A*u=f.
@@ -312,7 +312,7 @@ public:
         /**
          * @brief The right-hand-side f.
          */
-        const lama::Vector<ValueType>* mRhs;
+        const lama::DenseVector<ValueType>* mRhs;
 
         /**
          * @brief The solution u (using the SolutionProxy).

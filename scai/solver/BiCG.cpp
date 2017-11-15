@@ -59,6 +59,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, BiCG<ValueType>::log
 
 using lama::Matrix;
 using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -151,19 +152,20 @@ void BiCG<ValueType>::iterate()
         this->getResidual2();
     }
 
-    Vector<ValueType>& residual = runtime.mResidual;
-    Vector<ValueType>& residual2 = runtime.mResidual2;
+    DenseVector<ValueType>& residual = runtime.mResidual;
+    DenseVector<ValueType>& residual2 = runtime.mResidual2;
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
     const Matrix<ValueType>& Act = *runtime.mConjTransposeA;  
 
     Vector<ValueType>& x = runtime.mSolution.getReference(); // ->dirty
-    Vector<ValueType>& p = runtime.mP;
-    Vector<ValueType>& p2 = runtime.mP2;
-    Vector<ValueType>& q = runtime.mQ;
-    Vector<ValueType>& q2 = runtime.mQ2;
-    Vector<ValueType>& z = runtime.mZ;
-    Vector<ValueType>& z2 = runtime.mZ2;
+
+    DenseVector<ValueType>& p = runtime.mP;
+    DenseVector<ValueType>& p2 = runtime.mP2;
+    DenseVector<ValueType>& q = runtime.mQ;
+    DenseVector<ValueType>& q2 = runtime.mQ2;
+    DenseVector<ValueType>& z = runtime.mZ;
+    DenseVector<ValueType>& z2 = runtime.mZ2;
 
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 

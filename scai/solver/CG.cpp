@@ -57,6 +57,7 @@ SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, CG<ValueType>::logge
 
 using lama::Matrix;
 using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -136,6 +137,10 @@ void CG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     getRuntime().initialize( dist, ctx );
 }
 
+/* ========================================================================= */
+/*    solve : one iteration                                                  */
+/* ========================================================================= */
+
 template<typename ValueType>
 void CG<ValueType>::iterate()
 {
@@ -150,14 +155,14 @@ void CG<ValueType>::iterate()
         this->getResidual();
     }
 
-    Vector<ValueType>& residual = runtime.mResidual;
+    DenseVector<ValueType>& residual = runtime.mResidual;
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;  // coefficient matrix is pointer
 
-    Vector<ValueType>& x = runtime.mSolution.getReference();  // will be updated
-    Vector<ValueType>& p = runtime.mP;
-    Vector<ValueType>& q = runtime.mQ;
-    Vector<ValueType>& z = runtime.mZ;
+    DenseVector<ValueType>& x = runtime.mSolution.getReference();  // will be updated
+    DenseVector<ValueType>& p = runtime.mP;
+    DenseVector<ValueType>& q = runtime.mQ;
+    DenseVector<ValueType>& z = runtime.mZ;
 
     SCAI_LOG_INFO( logger, "Doing preconditioning." )
 

@@ -64,7 +64,6 @@ using utilskernel::HArrayUtils;
 using lama::Matrix;
 using lama::MatrixKind;
 using lama::SparseMatrix;
-using lama::Vector;
 using lama::VectorKind;
 using lama::DenseVector;
 
@@ -153,7 +152,7 @@ void Jacobi<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 }
 
 template<typename ValueType>
-void Jacobi<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void Jacobi<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -191,7 +190,7 @@ void Jacobi<ValueType>::iterate()
         return;
     }
 
-    Vector<ValueType>& solutionV = runtime.mSolution.getReference();   // mark solution as dirty
+    DenseVector<ValueType>& solutionV = runtime.mSolution.getReference();   // mark solution as dirty
 
     // Note: reinterpret casts are safe as already verified in initialize, solveInit
 

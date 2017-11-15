@@ -54,7 +54,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, SingleGridSetup<ValueType>::logger, "AMGSetup.SingleGridSetup" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -163,19 +163,19 @@ const Matrix<ValueType>& SingleGridSetup<ValueType>::getInterpolation( const Ind
 }
 
 template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
+DenseVector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
 {
     return *mSolutionVector;
 }
 
 template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
+DenseVector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
 {
     return *mRhsVector;
 }
 
 template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
+DenseVector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
 {
     return *mTmpResVector;
 }

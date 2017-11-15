@@ -58,7 +58,7 @@ namespace solver
 SCAI_LOG_DEF_TEMPLATE_LOGGER( template<typename ValueType>, QMR<ValueType>::logger, "Solver.IterativeSolver.QMR" )
 
 using lama::Matrix;
-using lama::Vector;
+using lama::DenseVector;
 
 /* ========================================================================= */
 /*    static methods (for factory)                                           */
@@ -150,7 +150,7 @@ void QMR<ValueType>::initialize( const Matrix<ValueType>& coefficients )
 /* ========================================================================= */
 
 template<typename ValueType>
-void QMR<ValueType>::solveInit( Vector<ValueType>& solution, const Vector<ValueType>& rhs )
+void QMR<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
     IterativeSolver<ValueType>::solveInit( solution, rhs );
 
@@ -174,22 +174,22 @@ void QMR<ValueType>::iterate()
     const Matrix<ValueType>& A = *runtime.mCoefficients;
     const Matrix<ValueType>& Act = *runtime.mConjTransposeA;
 
-    Vector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
-    Vector<ValueType>& residual = runtime.mResidual;
+    DenseVector<ValueType>& solution = runtime.mSolution.getReference(); // -> dirty
+    DenseVector<ValueType>& residual = runtime.mResidual;
 
-    Vector<ValueType>& vecV = runtime.mVecV;
-    Vector<ValueType>& vecW = runtime.mVecW;
-    Vector<ValueType>& vecP = runtime.mVecP;
-    Vector<ValueType>& vecQ = runtime.mVecQ;
-    Vector<ValueType>& vecS = runtime.mVecS;
-    Vector<ValueType>& vecD = runtime.mVecD;
-    Vector<ValueType>& vecY = runtime.mVecY;      /*preconditioning*/
-    Vector<ValueType>& vecZ = runtime.mVecZ;
-    Vector<ValueType>& vecVT = runtime.mVecVT;
-    Vector<ValueType>& vecYT = runtime.mVecYT;
-    Vector<ValueType>& vecZT = runtime.mVecZT;
-    Vector<ValueType>& vecWT = runtime.mVecWT;
-    Vector<ValueType>& vecPT = runtime.mVecPT;
+    DenseVector<ValueType>& vecV = runtime.mVecV;
+    DenseVector<ValueType>& vecW = runtime.mVecW;
+    DenseVector<ValueType>& vecP = runtime.mVecP;
+    DenseVector<ValueType>& vecQ = runtime.mVecQ;
+    DenseVector<ValueType>& vecS = runtime.mVecS;
+    DenseVector<ValueType>& vecD = runtime.mVecD;
+    DenseVector<ValueType>& vecY = runtime.mVecY;      /*preconditioning*/
+    DenseVector<ValueType>& vecZ = runtime.mVecZ;
+    DenseVector<ValueType>& vecVT = runtime.mVecVT;
+    DenseVector<ValueType>& vecYT = runtime.mVecYT;
+    DenseVector<ValueType>& vecZT = runtime.mVecZT;
+    DenseVector<ValueType>& vecWT = runtime.mVecWT;
+    DenseVector<ValueType>& vecPT = runtime.mVecPT;
 
     ValueType& gamma = runtime.mGamma;
     ValueType& theta = runtime.mTheta;
