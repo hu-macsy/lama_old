@@ -32,12 +32,12 @@ NORMAL_TESTS = [
     Test('blaskernelTest', [ 'blaskernel/test/blaskernelTest' ], is_boost_test=True),
     Test('utilskernelTest', [ 'utilskernel/test/utilskernelTest' ], is_boost_test=True),
     Test('sparsekernelTest', [ 'sparsekernel/test/sparsekernelTest' ], is_boost_test=True),
+    Test('lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True)
 ]
 
 MPI_TESTS = [
     Test('dmemoTest', [ 'dmemo/test/dmemoTest' ], is_boost_test=True),
     Test('lamaTest', [ 'lama/test/lamaTest' ], is_boost_test=True),
-    Test('lamaStorageTest', [ 'lama/test/storage/lamaStorageTest' ], is_boost_test=True),
     Test('lamaMatrixTest', [ 'lama/test/matrix/lamaMatrixTest' ], is_boost_test=True),
     Test('partitioningTest', [ 'partitioning/test/partitioningTest' ], is_boost_test=True),
     Test('solverTest', [ 'solver/test/solverTest' ], is_boost_test=True)
