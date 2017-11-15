@@ -11,15 +11,10 @@ import time
 import tempfile
 from copy import deepcopy
 from testsupport import testsupport
+from testsupport.testsupport import colors
 
 
 Test = collections.namedtuple('Test', ['name', 'args', 'is_boost_test'])
-
-
-class colors:
-    PASS = '\033[92m'
-    FAIL = '\033[91m'
-    NOCOLOR = '\033[0m'
 
 
 NORMAL_TESTS = [
@@ -134,7 +129,14 @@ def main():
     parser.add_argument('--tests', dest='tests', nargs='+', type=str, required=False,default=None,
                         help='A list of tests to run. If not specified, all tests are run.')
     args = parser.parse_args()
-    output_dir = args.output_dir if args.output_dir else tempfile.mkdtemp(suffix='testoutput')
+
+    # This needs to happen before we assign to output_dir, otherwise tempfile will
+    # cause the warning to be displayed.
+    if args.output_dir and os.path.isdir(args.output_dir):
+        testsupport.warning("Output directory already exists. Note that this may cause the test report to contain "
+                            "information from old tests. You may wish to delete the output directory before continuing.")
+
+    output_dir = args.output_dir if args.output_dir else tempfile.mkdtemp(suffix='_lama_testoutput')
 
     print("Running LAMA tests.")
     print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the following output directory.")

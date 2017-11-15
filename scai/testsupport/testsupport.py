@@ -1,13 +1,27 @@
+from __future__ import print_function
 import urlparse, urllib
 import errno
 import os
 import subprocess
 import shutil
+import sys
 from glob import glob
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 TESTSUPPORT_DIR = SCRIPT_DIR
+
+
+class colors:
+    PASS = '\033[92m'
+    FAIL = '\033[91m'
+    WARNING = '\033[93m'
+    NOCOLOR = '\033[0m'
+
+
+def warning(message):
+    print(colors.WARNING + "WARNING: " + message + colors.NOCOLOR)
+    sys.stdout.flush()
 
 
 def ensure_directory_exists(dir_path):
