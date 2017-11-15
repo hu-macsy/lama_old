@@ -115,21 +115,21 @@ public:
 
     virtual Solver<ValueType>& getCoarseLevelSolver() = 0;
 
-    virtual unsigned int getNumLevels() = 0;
+    virtual IndexType getNumLevels() = 0;
 
-    virtual Solver<ValueType>& getSmoother( const unsigned int level ) = 0;
+    virtual Solver<ValueType>& getSmoother( const IndexType level ) = 0;
 
-    virtual const lama::Matrix<ValueType>& getGalerkin( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getGalerkin( const IndexType level ) = 0;
 
-    virtual const lama::Matrix<ValueType>& getRestriction( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getRestriction( const IndexType level ) = 0;
 
-    virtual const lama::Matrix<ValueType>& getInterpolation( const unsigned int level ) = 0;
+    virtual const lama::Matrix<ValueType>& getInterpolation( const IndexType level ) = 0;
 
-    virtual lama::Vector<ValueType>& getSolutionVector( const unsigned int level ) = 0;
+    virtual lama::Vector<ValueType>& getSolutionVector( const IndexType level ) = 0;
 
-    virtual lama::Vector<ValueType>& getRhsVector( const unsigned int level ) = 0;
+    virtual lama::Vector<ValueType>& getRhsVector( const IndexType level ) = 0;
 
-    virtual lama::Vector<ValueType>& getTmpResVector( const unsigned int level ) = 0;
+    virtual lama::Vector<ValueType>& getTmpResVector( const IndexType level ) = 0;
 
     virtual std::string getCouplingPredicateInfo() const = 0;
 
@@ -141,9 +141,9 @@ public:
 
     virtual std::string getCoarseLevelSolverInfo() const = 0;
 
-    virtual void setMaxLevels( const unsigned int level ) = 0;
+    virtual void setMaxLevels( const IndexType level ) = 0;
 
-    virtual void setMinVarsCoarseLevel( const unsigned int vars ) = 0;
+    virtual void setMinVarsCoarseLevel( const IndexType vars ) = 0;
 
     virtual void setHostOnlyLevel( IndexType hostOnlyLevel );
 

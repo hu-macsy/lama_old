@@ -73,20 +73,20 @@ public:
 
     virtual void iterate();
 
-    void setMaxLevels( unsigned int levels );
+    void setMaxLevels( IndexType levels );
 
-    void setMinVarsCoarseLevel( unsigned int vars );
+    void setMinVarsCoarseLevel( IndexType vars );
 
-    unsigned int getNumLevels();
+    IndexType getNumLevels();
 
-    const lama::Matrix<ValueType>& getGalerkin( unsigned int level );
-    const lama::Matrix<ValueType>& getRestriction( unsigned int level );
-    const lama::Matrix<ValueType>& getInterpolation( unsigned int level );
+    const lama::Matrix<ValueType>& getGalerkin( IndexType level );
+    const lama::Matrix<ValueType>& getRestriction( IndexType level );
+    const lama::Matrix<ValueType>& getInterpolation( IndexType level );
 
-    lama::Vector<ValueType>& getSolutionVector( unsigned int level );
-    lama::Vector<ValueType>& getRhsVector( unsigned int level );
+    lama::Vector<ValueType>& getSolutionVector( IndexType level );
+    lama::Vector<ValueType>& getRhsVector( IndexType level );
 
-    Solver<ValueType>& getSmoother( unsigned int level );
+    Solver<ValueType>& getSmoother( IndexType level );
     Solver<ValueType>& getCoarseLevelSolver();
 
     void setSmootherContext( hmemo::ContextPtr smootherContext );
@@ -109,7 +109,7 @@ public:
         SimpleAMGRuntime();
 
         std::shared_ptr<AMGSetup<ValueType> > mSetup;
-        unsigned int mCurrentLevel;
+        IndexType mCurrentLevel;
         void* mLibHandle;
         IndexType mHostOnlyLevel;
         IndexType mHostOnlyVars;
@@ -151,8 +151,8 @@ protected:
 
     SimpleAMGRuntime mSimpleAMGRuntime;
 
-    unsigned int mMaxLevels;
-    unsigned int mMinVarsCoarseLevel;
+    IndexType mMaxLevels;
+    IndexType mMinVarsCoarseLevel;
     SolverPtr<ValueType> mCoarseLevelSolver;
     SolverPtr<ValueType> mSmoother;
 

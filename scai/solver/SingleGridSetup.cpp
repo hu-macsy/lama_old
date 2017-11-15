@@ -133,49 +133,49 @@ Solver<ValueType>& SingleGridSetup<ValueType>::getCoarseLevelSolver()
 }
 
 template<typename ValueType>
-unsigned int SingleGridSetup<ValueType>::getNumLevels()
+IndexType SingleGridSetup<ValueType>::getNumLevels()
 {
     return 2;
 }
 
 template<typename ValueType>
-Solver<ValueType>& SingleGridSetup<ValueType>::getSmoother( const unsigned int )
+Solver<ValueType>& SingleGridSetup<ValueType>::getSmoother( const IndexType )
 {
     return *mSolver;
 }
 
 template<typename ValueType>
-const Matrix<ValueType>& SingleGridSetup<ValueType>::getGalerkin( const unsigned int )
+const Matrix<ValueType>& SingleGridSetup<ValueType>::getGalerkin( const IndexType )
 {
     return mSolver->getCoefficients();
 }
 
 template<typename ValueType>
-const Matrix<ValueType>& SingleGridSetup<ValueType>::getRestriction( const unsigned int )
+const Matrix<ValueType>& SingleGridSetup<ValueType>::getRestriction( const IndexType )
 {
     return *mIdentity;
 }
 
 template<typename ValueType>
-const Matrix<ValueType>& SingleGridSetup<ValueType>::getInterpolation( const unsigned int )
+const Matrix<ValueType>& SingleGridSetup<ValueType>::getInterpolation( const IndexType )
 {
     return *mIdentity;
 }
 
 template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const unsigned int )
+Vector<ValueType>& SingleGridSetup<ValueType>::getSolutionVector( const IndexType )
 {
     return *mSolutionVector;
 }
 
 template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const unsigned int )
+Vector<ValueType>& SingleGridSetup<ValueType>::getRhsVector( const IndexType )
 {
     return *mRhsVector;
 }
 
 template<typename ValueType>
-Vector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const unsigned int )
+Vector<ValueType>& SingleGridSetup<ValueType>::getTmpResVector( const IndexType )
 {
     return *mTmpResVector;
 }

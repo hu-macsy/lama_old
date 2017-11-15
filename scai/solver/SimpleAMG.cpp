@@ -255,49 +255,49 @@ double SimpleAMG<ValueType>::getAverageResidualTime() const
 }
 
 template<typename ValueType>
-void SimpleAMG<ValueType>::setMaxLevels( unsigned int levels )
+void SimpleAMG<ValueType>::setMaxLevels( IndexType levels )
 {
     mMaxLevels = levels;
 }
 
 template<typename ValueType>
-void SimpleAMG<ValueType>::setMinVarsCoarseLevel( unsigned int vars )
+void SimpleAMG<ValueType>::setMinVarsCoarseLevel( IndexType vars )
 {
     mMinVarsCoarseLevel = vars;
 }
 
 template<typename ValueType>
-const Matrix<ValueType>& SimpleAMG<ValueType>::getGalerkin( unsigned int level )
+const Matrix<ValueType>& SimpleAMG<ValueType>::getGalerkin( IndexType level )
 {
     return getRuntime().mSetup->getGalerkin( level );
 }
 
 template<typename ValueType>
-const Matrix<ValueType>& SimpleAMG<ValueType>::getRestriction( unsigned int level )
+const Matrix<ValueType>& SimpleAMG<ValueType>::getRestriction( IndexType level )
 {
     return getRuntime().mSetup->getRestriction( level );
 }
 
 template<typename ValueType>
-const Matrix<ValueType>& SimpleAMG<ValueType>::getInterpolation( unsigned int level )
+const Matrix<ValueType>& SimpleAMG<ValueType>::getInterpolation( IndexType level )
 {
     return getRuntime().mSetup->getInterpolation( level );
 }
 
 template<typename ValueType>
-Vector<ValueType>& SimpleAMG<ValueType>::getSolutionVector( unsigned int level )
+Vector<ValueType>& SimpleAMG<ValueType>::getSolutionVector( IndexType level )
 {
     return getRuntime().mSetup->getSolutionVector( level );
 }
 
 template<typename ValueType>
-Vector<ValueType>& SimpleAMG<ValueType>::getRhsVector( unsigned int level )
+Vector<ValueType>& SimpleAMG<ValueType>::getRhsVector( IndexType level )
 {
     return getRuntime().mSetup->getRhsVector( level );
 }
 
 template<typename ValueType>
-Solver<ValueType>& SimpleAMG<ValueType>::getSmoother( unsigned int level )
+Solver<ValueType>& SimpleAMG<ValueType>::getSmoother( IndexType level )
 {
     return getRuntime().mSetup->getSmoother( level );
 }
@@ -341,7 +341,7 @@ void SimpleAMG<ValueType>::setSmoother( SolverPtr<ValueType> solver )
 }
 
 template<typename ValueType>
-unsigned int SimpleAMG<ValueType>::getNumLevels()
+IndexType SimpleAMG<ValueType>::getNumLevels()
 {
     return getRuntime().mSetup->getNumLevels();
 }
@@ -467,7 +467,7 @@ void SimpleAMG<ValueType>::logSetupInfo()
         return;
     }
 
-    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
     {
         if ( i == 0 )
         {
@@ -491,7 +491,7 @@ void SimpleAMG<ValueType>::logSetupInfo()
 
     mLogger->logNewLine( LogLevel::advancedInformation );
 
-    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
+    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels() - 1; ++i )
     {
         if ( i == 0 )
         {
@@ -556,7 +556,7 @@ void SimpleAMG<ValueType>::logSetupDetails()
     double sizeRestrictionCSR = 0.0;
     double sizeGalerkinCSR = 0.0;
 
-    for ( unsigned int i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
+    for ( IndexType i = 0; i < getRuntime().mSetup->getNumLevels(); ++i )
     {
         // Vector
         if ( i == 0 )
