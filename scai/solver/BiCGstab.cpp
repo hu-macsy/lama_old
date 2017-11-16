@@ -308,7 +308,9 @@ BiCGstab<ValueType>* BiCGstab<ValueType>::copy()
 template<typename ValueType>
 void BiCGstab<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "BiCG<" << this->getValueType() << "> ( id = " << this->getId()
+    const char* typeId = common::TypeTraits<ValueType>::id();
+
+    stream << "BiCGstab<" << typeId << "> ( id = " << this->getId()
            << ", #iter = " << getRuntime().mIterations << " )";
 }
 

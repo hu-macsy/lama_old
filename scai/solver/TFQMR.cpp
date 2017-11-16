@@ -297,7 +297,7 @@ void TFQMR<ValueType>::iterate()
 
     vecD = vecV + tempScal * vecD;
 
-    if ( abs( tau ) < eps ) // scalar is small
+    if ( common::Math::abs( tau ) < eps ) // scalar is small
     {
         theta = 0.0;
     }
@@ -306,7 +306,7 @@ void TFQMR<ValueType>::iterate()
         theta = l2Norm( vecW ) / tau;
     }
 
-    c = 1.0 / sqrt( 1.0 + theta * theta );
+    c = ValueType( 1 ) / common::Math::sqrt( ValueType( 1 ) + theta * theta );
     tau = tau * theta * c;
     eta = c * c * alpha;
     solution = solution + eta * vecD;

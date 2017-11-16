@@ -255,8 +255,8 @@ BOOST_AUTO_TEST_CASE( l1NormTest )
 BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
-    const ValueType scale( 2 );
-    const NormType<ValueType> expectedNorm = common::Math::sqrt( N * scale * scale );
+    const ValueType scale = 2;
+    const NormType<ValueType> expectedNorm = common::Math::sqrt( ValueType( N ) * scale * scale );
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 

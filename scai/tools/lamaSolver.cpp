@@ -519,6 +519,8 @@ int main( int argc, const char* argv[] )
                 solution.writeToFile( finalSolutionFilename );
             }
         }
+
+        HOST_PRINT( myRank, "lamaSolver finished, solver = " << *mySolver << ", A = " << matrix )
     }
     catch ( common::Exception& e )
     {

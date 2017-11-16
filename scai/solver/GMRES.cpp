@@ -237,7 +237,7 @@ void GMRES<ValueType>::iterate()
 
         runtime.mG[0] = vCurrent.l2Norm();
 
-        ValueType scal = 1.0 / runtime.mG[0];
+        ValueType scal = ValueType( 1 ) / runtime.mG[0];
 
         SCAI_LOG_DEBUG( logger, "Normalizing vCurrent with start residual " << runtime.mG[0] << "." )
 
@@ -289,7 +289,7 @@ void GMRES<ValueType>::iterate()
 
     DenseVector<ValueType>& vNext = runtime.mV[krylovIndex + 1];
 
-    ValueType scal = 1.0 / runtime.mHd[krylovIndex];
+    ValueType scal = ValueType( 1 ) / runtime.mHd[krylovIndex];
 
     vNext = scal * w;
 
@@ -330,7 +330,7 @@ void GMRES<ValueType>::iterate()
     {
         SCAI_REGION( "Solver.GMRES.updateHessenbergSystem" )
         SCAI_LOG_DEBUG( logger, "Update Hessenberg-System." )
-        runtime.mG[krylovIndex + 1] = -1.0 * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
+        runtime.mG[krylovIndex + 1] = ValueType( -1 ) * runtime.mSS[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mG[krylovIndex] = runtime.mCC[krylovIndex] * runtime.mG[krylovIndex];
         runtime.mH[hIdxDiag] = runtime.mCC[krylovIndex] * runtime.mH[hIdxDiag]
                                + runtime.mSS[krylovIndex] * runtime.mHd[krylovIndex];
