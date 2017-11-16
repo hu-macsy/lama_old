@@ -75,6 +75,7 @@ scai_project (
         SimpleAMG
         SingleGridSetup
         SolutionProxy
+        _Solver
         Solver
         TFQMR
         TrivialPreconditioner
