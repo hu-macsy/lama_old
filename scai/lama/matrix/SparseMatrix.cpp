@@ -1194,6 +1194,7 @@ void SparseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
 
     if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
     {
+        SCAI_UNSUPPORTED( "getDiagonal: diagonal not DenseVector<" << getValueType() << ">, temporary + conversion needed" )
         DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
         getDiagonal( tmpDiagonal );
         diagonal.assign( tmpDiagonal );   // does the correct type / kind conversion
@@ -1225,7 +1226,7 @@ void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
 
     if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
     {
-        SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
+        SCAI_UNSUPPORTED( "setDiagonal: diagonal not DenseVector<" << getValueType() << ">, temporary + conversion needed" )
         DenseVector<ValueType> tmpDiagonal( diagonal );
         setDiagonal( tmpDiagonal );
         return;
