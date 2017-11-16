@@ -47,7 +47,6 @@
 // internal scai libraries
 #include <scai/logging.hpp>
 
-#include <stack>
 #include <memory>
 
 namespace scai
@@ -241,12 +240,6 @@ private:
      *  Current Context will be no more current one.
      */
     void unsetCurrent() const;
-
-    /** thread-private variable where the current context of a thread can be asked for */
-
-    typedef std::stack<const Context*> ContextStack;
-
-    static thread_local ContextStack contextStack;
 };
 
 /* ======================================================================== */

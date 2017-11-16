@@ -45,6 +45,13 @@
 // std
 #include <map>
 #include <cctype>
+#include <stack>
+
+namespace {
+    
+thread_local std::stack<const scai::hmemo::Context *> contextStack;
+
+}
 
 namespace scai
 {
@@ -197,45 +204,39 @@ ContextPtr Context::getContextPtr()
 /* ---------------------------------------------------------------------------------*/
 
 void Context::setCurrent() const
-{
-    contextStack.push( this );
+{  
+    contextStack.push(this);
 }
 
 void Context::unsetCurrent() const
 {
     if ( contextStack.empty() )
     {
-        SCAI_LOG_WARN( logger, "unset this context " << *this << " but not set before" )
+        // TODO: See below: perhaps rather  throw exception here?
+        SCAI_LOG_WARN( logger, "attempt to unset context " << *this << "as current context, but context is not current" )
         return;
-    }
-
-    const Context* current = contextStack.top();
-
-    if ( current != this )
-    {
-        SCAI_LOG_WARN( logger, "unset this context " << *this << " but was: " << *current )
-    }
+    } 
     else
     {
-        SCAI_LOG_INFO( logger, "unset this context " << *this << " was current" )
-    }
+        const Context * current = contextStack.top();
 
-    contextStack.pop();
+        if ( current != this )
+        {
+            // TODO: This seems to be a sufficiently big enough problem to warrant throwing an exception instead of a warning, doesn't it...?
+            SCAI_LOG_WARN( logger, "attempt to unset context " << *this << ", but context is not current. Current context is: " << *current )
+        }
+        else
+        {
+            contextStack.pop();
+            SCAI_LOG_INFO( logger, "unset current context " << *this )
+        }
+    }
 }
 
 const Context* Context::getCurrentContext()
 {
-    if ( contextStack.empty() )
-    {
-        return NULL;
-    }
-
-    return contextStack.top();
+    return contextStack.empty() ? nullptr : contextStack.top();
 }
-
-/** Important: Each thread has its own context stack */
-
-thread_local Context::ContextStack Context::contextStack;
 
 /* ----------------------------------------------------------------------- */
 
