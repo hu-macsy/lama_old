@@ -385,7 +385,7 @@ void GMRES<ValueType>::updateX( IndexType i )
     // update x
     // TODO: Add linar combination method
 
-    for ( int k = 0; k <= i; ++k )
+    for ( IndexType k = 0; k <= i; ++k )
     {
         x += runtime.mY[k] * runtime.mV[k];   // axpy calls
     }
