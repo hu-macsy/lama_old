@@ -58,78 +58,14 @@ using lama::Matrix;
 using lama::DenseVector;
 
 /* ========================================================================= */
-/*    Implementation of methods for _Solver                                  */
+/*    Solver<ValueType>:  static methods for factory                         */
 /* ========================================================================= */
-
-SCAI_LOG_DEF_LOGGER( _Solver::logger, "Solver" )
-
-_Solver* _Solver::getSolver( const common::ScalarType scalarType, const std::string& solverType )
-{
-    return create( SolverCreateKeyType( scalarType, solverType ) );
-}
 
 template<typename ValueType>
 void Solver<ValueType>::getCreateValues( std::vector<std::string>& values )
 {
-    std::vector<SolverCreateKeyType> createValues;
-
-    _Solver::getCreateValues( createValues );  // all solvers ( valueType, solvertype )
-
-    values.clear();
- 
-    for ( size_t i = 0; i < createValues.size(); ++i )
-    {
-        if ( createValues[i].first == common::TypeTraits<ValueType>::stype )
-        {
-            // Solver for this value type
-            values.push_back( createValues[i].second );
-        }
-    }
+    _Solver::getTypedCreateValues( values, common::TypeTraits<ValueType>::stype );
 }
-
-/* ========================================================================= */
-/*    Constructor / Destructor of Solver<ValueType>                          */
-/* ========================================================================= */
-
-template<typename ValueType>
-Solver<ValueType>::Solver( const std::string& id ) : 
-
-    mLogger( new CommonLogger( "dummyLog", LogLevel::noLogging,
-                               LoggerWriteBehaviour::toConsoleOnly,
-                               std::shared_ptr<Timer>( new Timer() ) ) ),
-    mId( id )
-
-{
-    SCAI_LOG_INFO( _Solver::logger, "Solver id = " << mId << " created, dummy log" )
-}
-
-template<typename ValueType>
-Solver<ValueType>::Solver( const std::string& id, LoggerPtr logger ) : 
-
-    mLogger( logger ),
-    mId( id )
-
-{
-    SCAI_LOG_INFO( _Solver::logger, "Solver id = " << mId << " created, with logger" )
-}
-
-template<typename ValueType>
-Solver<ValueType>::Solver( const Solver& other ) : 
-
-    mLogger( other.mLogger ),
-    mId( other.mId )
-{
-}
-
-/* ------------------------------------------------------------------------- */
-
-template<typename ValueType>
-common::ScalarType Solver<ValueType>::getValueType() const
-{
-    return common::TypeTraits<ValueType>::stype;
-}
-
-/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 Solver<ValueType>* Solver<ValueType>::getSolver( const std::string& solverType )
@@ -141,6 +77,41 @@ Solver<ValueType>* Solver<ValueType>::getSolver( const std::string& solverType )
     return reinterpret_cast<Solver<ValueType>*>( solver );
 }
 
+/* ========================================================================= */
+/*    Constructor / Destructor of Solver<ValueType>                          */
+/* ========================================================================= */
+
+template<typename ValueType>
+Solver<ValueType>::Solver( const std::string& id ) : _Solver( id )
+{
+    // Note: solver runtime calls his own constructor
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Solver<ValueType>::Solver( const std::string& id, LoggerPtr logger ) : _Solver( id, logger )
+{
+    // Note: solver runtime calls his own constructor
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Solver<ValueType>::Solver( const Solver& other ) : _Solver( other )
+{
+    // does not copy any runtime stuff here
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+common::ScalarType Solver<ValueType>::getValueType() const
+{
+    return common::TypeTraits<ValueType>::stype;
+}
+
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 bool Solver<ValueType>::canCreate( const std::string& solverType )
@@ -164,8 +135,8 @@ Solver<ValueType>::SolverRuntime::SolverRuntime() :
 template<typename ValueType>
 Solver<ValueType>::~Solver()
 {
-    // mRhs, mCoefficents are used as 'dynamic' references, no free
-    SCAI_LOG_INFO( _Solver::logger, "~Solver " << mId )
+    // mRhs, mCoefficents are used as 'dynamic' references, no ownership here
+    SCAI_LOG_INFO( _Solver::logger, "~Solver " << this->getId() )
 }
 
 template<typename ValueType>
@@ -237,13 +208,6 @@ void Solver<ValueType>::solveFinalize()
 }
 
 template<typename ValueType>
-const std::string& Solver<ValueType>::getId() const
-{
-    SCAI_LOG_TRACE( logger, "Returning Solver Id " << mId )
-    return mId;
-}
-
-template<typename ValueType>
 const DenseVector<ValueType>& Solver<ValueType>::getResidual() const
 {
     const SolverRuntime& runtime = getRuntime();
@@ -282,18 +246,6 @@ const Matrix<ValueType>& Solver<ValueType>::getCoefficients() const
 {
     SCAI_ASSERT_DEBUG( getRuntime().mCoefficients, "mCoefficents == NULL" )
     return *getRuntime().mCoefficients;
-}
-
-template<typename ValueType>
-void Solver<ValueType>::setLogger( LoggerPtr logger )
-{
-    mLogger = logger;
-}
-
-template<typename ValueType>
-void Solver<ValueType>::setLogLevel( LogLevel::LogLevel level )
-{
-    mLogger->setLogLevel( level );
 }
 
 template<typename ValueType>

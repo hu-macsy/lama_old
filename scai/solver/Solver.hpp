@@ -35,21 +35,10 @@
 
 #pragma once
 
-// for dll_import
-#include <scai/common/config.hpp>
-
 // base classes
-#include <scai/common/Printable.hpp>
 
+#include <scai/solver/_Solver.hpp>
 #include <scai/solver/SolutionProxy.hpp>
-#include <scai/solver/logger/SolverLogger.hpp>
-
-// logging
-#include <scai/logging.hpp>
-
-// std
-#include <string>
-#include <memory>
 
 namespace scai
 {
@@ -65,57 +54,6 @@ namespace lama
 
 namespace solver
 {
-
-class _Solver;
-
-typedef std::pair<common::ScalarType, std::string> SolverCreateKeyType;
-
-/* ========================================================================= */
-/*     _Solver : Helper class as common base class for all typed solvers     */
-/* ========================================================================= */
-
-/** Common base class for all typed Solver classes. 
- *
- *  This class is helpful for dynamic creation of solver objects where the value type
- *  is only available at runtime.
- */
-class COMMON_DLL_IMPORTEXPORT _Solver : 
-
-    public common::Printable,
-    public common::Factory<SolverCreateKeyType, _Solver*>
-{
-public:
-
-    /**
-     *  Provide a more convenient interface to the create method of the factory.
-     */
-
-    static _Solver* getSolver( const common::ScalarType scalarType, const std::string& solverType );
-
-    /**
-     * @brief Queries the value type of the solver 
-     *
-     * This method allows a safe reinterpret_cast of untyped solvers to typed solvers.
-     *
-     * \code
-     *    _Solver& s = ...
-     *    if ( s.getValueType() == ScalarType::DOUBLE )
-     *    {
-     *        Solver<double>& sd = reinterpret_cast<Solver<double>&>( s );
-     *        ...
-     *    }
-     * \endcode
-     */
-    virtual common::ScalarType getValueType() const = 0;
-
-protected:
-
-    SCAI_LOG_DECL_STATIC_LOGGER( logger )
-};
-
-/** Define the shared pointer class for Solver */
-
-typedef std::shared_ptr<_Solver> _SolverPtr;
 
 /* ========================================================================= */
 /*     Solver<ValueType>                                                     */
@@ -140,14 +78,8 @@ public:
      */
     Solver( const std::string& id );
 
-    /**
-     * @brief Create a solver with a given ID and a given logger.
-     *
-     * @param id        The ID of the solver.
-     * @param logger    The logger which shall be used by the solver
-     */
     Solver( const std::string& id, LoggerPtr logger );
-
+ 
     /**
      * @brief Copy constructor that copies the status independent solver information
      */
@@ -239,19 +171,6 @@ public:
     virtual void solveFinalize();
 
     /**
-     * @brief Get the id of this solver
-     */
-    const std::string& getId() const;
-
-    /**
-     * @brief reset the id of this solver
-     */
-    void setId( const std::string& id )
-    {
-        mId = id;
-    }
-
-    /**
      * @brief Contingently calculates the current residual based on the
      *        coefficients, rhs and solution currently associated with this.
      *
@@ -269,19 +188,6 @@ public:
      * @throws Exception if solve
      */
     const lama::Matrix<ValueType>& getCoefficients() const;
-
-    /**
-     * @brief Redefines mLogger
-     *
-     */
-    void setLogger( LoggerPtr logger );
-
-    /**
-     * @brief Switches the loglevel of mLogger
-     *
-     * @return
-     */
-    void setLogLevel( LogLevel::LogLevel level );
 
     /**
      * @brief Copies the status independent solver informations to create a new instance of the same
@@ -348,23 +254,10 @@ public:
 protected:
 
     /**
-     * @brief The solver logger.
-     *
-     * May be the NullLogger if no logger has been specified.
-     */
-    LoggerPtr mLogger;
-
-    /**
      *  @brief own implementation of Printable::writeAt
      */
     virtual void writeAt( std::ostream& stream ) const;
 
-private:
-
-    /**
-     * @brief The ID of this solver.
-     */
-    std::string mId;
 };
 
 /** 
