@@ -586,7 +586,7 @@ void SparseVector<ValueType>::buildLocalValues(
     {
         // temporary array needed for this operation
 
-        SCAI_LOG_WARN( logger, *this << ", is not ZERO element of " << op << ", temporary dense values are built" )
+        SCAI_UNSUPPORTED( *this << ", mZero = " << mZeroValue << " is not ZERO element of " << op << ", temporary dense values are built" )
 
         utilskernel::LArray<ValueType> myDenseValues( size, mZeroValue );
         HArrayUtils::scatterImpl( myDenseValues, mNonZeroIndexes, UNIQUE, mNonZeroValues, common::BinaryOp::COPY, loc );
@@ -1185,8 +1185,8 @@ void SparseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vect
 
     // just get it running: use DenseVector as temporary
 
-    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorPlusVector( " 
-                          << alpha << " * x + " << beta << " * y ) uses temporary dense vector" )
+    SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorPlusVector( " 
+                       << alpha << " * x + " << beta << " * y ) uses temporary dense vector" )
 
     DenseVector<ValueType> tmp;
     tmp.vectorPlusVector( alpha, x, beta, y );
@@ -1236,8 +1236,8 @@ void SparseVector<ValueType>::vectorTimesVector( const Scalar& alpha, const _Vec
 {
     // just get it running: use DenseVector as temporary
 
-    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorTimesVector( " 
-                          << alpha << " * x * y ) uses temporary dense vector" )
+    SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorTimesVector( " 
+                       << alpha << " * x * y ) uses temporary dense vector" )
 
     DenseVector<ValueType> tmp;
     tmp.vectorTimesVector( alpha, x, y );
@@ -1251,8 +1251,8 @@ void SparseVector<ValueType>::vectorPlusScalar( const Scalar& alpha, const _Vect
 {
     // just get it running: use DenseVector as temporary
 
-    SCAI_LOG_WARN( logger, "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorAddScalar( " 
-                          << alpha << " * x + " << beta << " ) uses temporary dense vector" )
+    SCAI_UNSUPPORTED( "SparseVector<" << common::TypeTraits<ValueType>::id() << ">::vectorAddScalar( " 
+                       << alpha << " * x + " << beta << " ) uses temporary dense vector" )
 
     DenseVector<ValueType> tmp;
     tmp.vectorPlusScalar( alpha, x, beta );

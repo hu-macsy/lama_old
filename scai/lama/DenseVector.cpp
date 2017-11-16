@@ -1322,7 +1322,7 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vecto
 
     if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != getValueType() )
     {
-        SCAI_LOG_WARN( logger, "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for x = " << x )
+        SCAI_UNSUPPORTED( "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for x = " << x )
         DenseVector<ValueType> xTmp( x );
         vectorPlusVector( alpha, xTmp, beta, y );
         return;
@@ -1330,7 +1330,7 @@ void DenseVector<ValueType>::vectorPlusVector( const Scalar& alpha, const _Vecto
 
     if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != getValueType() )
     {
-        SCAI_LOG_WARN( logger, "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for y = " << y )
+        SCAI_UNSUPPORTED( "vectorPlusVector: use temporary DenseVector<" << getValueType() << "> for y = " << y )
         DenseVector<ValueType> yTmp( y );
         vectorPlusVector( alpha, x, beta, yTmp );
         return;
