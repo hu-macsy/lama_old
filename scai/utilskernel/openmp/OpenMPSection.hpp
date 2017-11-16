@@ -84,10 +84,10 @@ public:
         const common::BinaryOp op,
         const bool swapOperands );
 
-    /** OpenMP implementation on host for SectionKernelTrait::UnaryOpOp */
+    /** OpenMP implementation on host for SectionKernelTrait::unaryOp */
 
     template<typename TargetValueType, typename SourceValueType>
-    static void UnaryOpOp( 
+    static void unaryOp( 
         TargetValueType targetSection[],
         const IndexType nDims,
         const IndexType sizes[],

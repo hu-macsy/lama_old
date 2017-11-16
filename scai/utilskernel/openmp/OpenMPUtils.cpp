@@ -890,11 +890,11 @@ void floorOp( IndexType out[], const IndexType in[], const IndexType n )
 }
 
 template<typename ValueType>
-void OpenMPUtils::UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
+void OpenMPUtils::unaryOp( ValueType out[], const ValueType in[], const IndexType n, const UnaryOp op )
 {
-    SCAI_REGION( "OpenMP.Utils.UnaryOpOp" )
+    SCAI_REGION( "OpenMP.Utils.unaryOp" )
 
-    SCAI_LOG_DEBUG( logger, "UnaryOpOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
+    SCAI_LOG_DEBUG( logger, "unaryOp<" << TypeTraits<ValueType>::id() << ", op = " << op << ">, n = " << n )
 
     if ( n <= 0 )
     {
@@ -2316,7 +2316,7 @@ void OpenMPUtils::ArrayKernels<ValueType>::registerKernels( kregistry::KernelReg
     KernelRegistry::set<SparseKernelTrait::allCompareSparse<ValueType> >( allCompareSparse, ctx, flag );
     KernelRegistry::set<SparseKernelTrait::mergeSparse<ValueType> >( mergeSparse, ctx, flag );
 
-    KernelRegistry::set<UtilKernelTrait::UnaryOpOp<ValueType> >( UnaryOpOp, ctx, flag );
+    KernelRegistry::set<UtilKernelTrait::unaryOp<ValueType> >( unaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOp<ValueType> >( binaryOp, ctx, flag );
     KernelRegistry::set<UtilKernelTrait::binaryOpScalar<ValueType> >( binaryOpScalar, ctx, flag );
 }

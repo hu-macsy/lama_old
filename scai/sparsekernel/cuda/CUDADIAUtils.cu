@@ -50,13 +50,14 @@
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/cuda/CUDATexVector.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 
 // thrust
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
+
+#include <functional>
 
 using namespace scai::tasking;
 
@@ -718,11 +719,11 @@ void CUDADIAUtils::normalGEMV(
         {
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
+            syncToken->pushRoutine( std::bind( unbindV, x ) );
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, diaOffsets ) );
+                syncToken->pushRoutine( std::bind( unbindI, diaOffsets ) );
             }
         }
     }
@@ -888,11 +889,11 @@ void CUDADIAUtils::normalGEVM(
         {
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
+            syncToken->pushRoutine( std::bind( unbindV, x ) );
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, diaOffsets ) );
+                syncToken->pushRoutine( std::bind( unbindI, diaOffsets ) );
             }
         }
     }

@@ -325,7 +325,7 @@ void DenseStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void DenseStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mData, mData, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mData, mData, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

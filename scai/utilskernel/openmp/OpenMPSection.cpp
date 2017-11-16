@@ -219,7 +219,7 @@ void OpenMPSection::assign(
 /* --------------------------------------------------------------------------- */
 
 template<typename TargetValueType, typename SourceValueType>
-void OpenMPSection::UnaryOpOp( 
+void OpenMPSection::unaryOp( 
     TargetValueType targetSection[],
     const IndexType nDims,
     const IndexType sizes[],
@@ -228,7 +228,7 @@ void OpenMPSection::UnaryOpOp(
     const IndexType sourceDistances[],
     const common::UnaryOp op )
 {
-    SCAI_LOG_INFO( logger, "UnaryOpOp<" << common::TypeTraits<TargetValueType>::id() 
+    SCAI_LOG_INFO( logger, "unaryOp<" << common::TypeTraits<TargetValueType>::id() 
                             << ", " << common::TypeTraits<SourceValueType>::id() 
                             << ">, #dims = " << nDims << ", op = " << op )
     if ( nDims == 0 )
@@ -507,7 +507,7 @@ void OpenMPSection::BinOpKernels<ValueType, OtherValueType>::registerKernels( kr
     SCAI_LOG_DEBUG( logger, "register SectionKernel OpenMP-routines for Host at kernel registry [" << flag
                     << " --> " << common::getScalarType<ValueType>() << ", " << common::getScalarType<OtherValueType>() << "]" )
 
-    KernelRegistry::set<SectionKernelTrait::UnaryOpOp<ValueType, OtherValueType> >( UnaryOpOp, ctx, flag );
+    KernelRegistry::set<SectionKernelTrait::unaryOp<ValueType, OtherValueType> >( unaryOp, ctx, flag );
 }
 
 /* --------------------------------------------------------------------------- */

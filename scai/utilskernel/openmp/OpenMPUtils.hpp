@@ -148,10 +148,10 @@ public:
         const IndexType n,
         const common::BinaryOp op );
 
-    /** OpenMP implementation for UtilKernelTrait::UnaryOpOp */
+    /** OpenMP implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const common::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::UnaryOp op );
 
     /** OpenMP implementation for UtilKernelTrait::binaryOp */
 

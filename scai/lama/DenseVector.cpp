@@ -1890,7 +1890,7 @@ template<typename ValueType>
 void DenseVector<ValueType>::applyUnary( const common::UnaryOp op )
 {
     // myValues = op ( myValues )
-    HArrayUtils::UnaryOpOp( mLocalValues, mLocalValues, op, getContextPtr() );
+    HArrayUtils::unaryOp( mLocalValues, mLocalValues, op, getContextPtr() );
 }
 
 template<typename ValueType>

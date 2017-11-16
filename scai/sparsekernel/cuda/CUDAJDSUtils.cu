@@ -52,7 +52,6 @@
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
 #include <scai/common/macros/assert.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
 
@@ -69,6 +68,8 @@
 #include <thrust/sort.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
+
+#include <functional>
 
 using scai::tasking::CUDAStreamSyncToken;
 
@@ -774,11 +775,11 @@ void CUDAJDSUtils::jacobi(
             // synchronize by syncToken, delay unbind texture
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, oldSolution ) );
+            syncToken->pushRoutine( std::bind( unbindV, oldSolution ) );
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
+                syncToken->pushRoutine( std::bind( unbindI, jdsDLG ) );
             }
         }
     }
@@ -1612,11 +1613,11 @@ void CUDAJDSUtils::normalGEMV(
             // synchronize by syncToken, delay unbind texture
             void ( *unbindV ) ( const ValueType* ) = &vectorUnbindTexture;
             void ( *unbindI ) ( const IndexType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
+            syncToken->pushRoutine( std::bind( unbindV, x ) );
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
+                syncToken->pushRoutine( std::bind( unbindI, jdsDLG ) );
             }
         }
     }
@@ -1787,7 +1788,7 @@ void CUDAJDSUtils::normalGEVM(
 
     // result = alpha * x * A + beta * y -> result = beta * y; result += alpha * x * A
 
-    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, true );
+    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, true );
 
     if ( ndlg == 0 )
     {
@@ -1905,10 +1906,10 @@ void CUDAJDSUtils::sparseGEMV(
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
+                syncToken->pushRoutine( std::bind( unbindI, jdsDLG ) );
             }
 
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
+            syncToken->pushRoutine( std::bind( unbindV, x ) );
         }
     }
     else // no use of Texture cache
@@ -2018,10 +2019,10 @@ void CUDAJDSUtils::sparseGEVM(
 
             if ( !useSharedMem )
             {
-                syncToken->pushRoutine( common::bind( unbindI, jdsDLG ) );
+                syncToken->pushRoutine( std::bind( unbindI, jdsDLG ) );
             }
 
-            syncToken->pushRoutine( common::bind( unbindV, x ) );
+            syncToken->pushRoutine( std::bind( unbindV, x ) );
         }
     }
     else // no use of Texture cache

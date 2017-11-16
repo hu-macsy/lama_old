@@ -73,10 +73,10 @@ public:
     template<typename ValueType>
     static ValueType getValue( const ValueType* array, const IndexType i );
 
-    /** CUDA implementation for UtilKernelTrait::UnaryOpOp */
+    /** CUDA implementation for UtilKernelTrait::unaryOp */
 
     template<typename ValueType>
-    static void UnaryOpOp( ValueType out[], const ValueType in[], const IndexType n, const common::UnaryOp op );
+    static void unaryOp( ValueType out[], const ValueType in[], const IndexType n, const common::UnaryOp op );
 
     /** CUDA implementation for UtilKernelTrait::binaryOp */
 
