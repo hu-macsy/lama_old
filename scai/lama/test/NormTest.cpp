@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE( writeTest )
         std::ostringstream outD;
 
         out << norm;
-        norm.Norm::writeAt( outB );
+        norm.Norm<ValueType>::writeAt( outB );
         norm.writeAt( outD );
 
         BOOST_CHECK( out.str().length() > 0 );

@@ -161,10 +161,14 @@ void Solver<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     getRuntime().mCoefficients = &coefficients;
     getRuntime().mInitialized = true;
     getRuntime().mSolveInit = false;
-    getRuntime().mResidual.setContextPtr( coefficients.getContextPtr() );           // IMPORTANT
+    getRuntime().mResidual.setContextPtr( coefficients.getContextPtr() );         // IMPORTANT
     getRuntime().mResidual.allocate( coefficients.getRowDistributionPtr() );
     mLogger->logMessage( LogLevel::solverInformation, "Solver initialized\n" );
 }
+
+/* ========================================================================= */
+/*    solve( solution, rhs )                                                 */
+/* ========================================================================= */
 
 template<typename ValueType>
 void Solver<ValueType>::solve( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
@@ -173,7 +177,7 @@ void Solver<ValueType>::solve( DenseVector<ValueType>& solution, const DenseVect
 
     const SolverRuntime& runtime = getRuntime();
 
-    SCAI_ASSERT( runtime.mInitialized, "Solver not initialized, solve cannot be called" )
+    SCAI_ASSERT_ERROR( runtime.mInitialized, "Solver not initialized, solve cannot be called" )
 
     solveInit( solution, rhs );
 
@@ -186,6 +190,10 @@ void Solver<ValueType>::solve( DenseVector<ValueType>& solution, const DenseVect
     solveFinalize();
 }
 
+/* ========================================================================= */
+/*    solve: init( solution, rhs )                                           */
+/* ========================================================================= */
+
 template<typename ValueType>
 void Solver<ValueType>::solveInit( DenseVector<ValueType>& solution, const DenseVector<ValueType>& rhs )
 {
@@ -193,8 +201,8 @@ void Solver<ValueType>::solveInit( DenseVector<ValueType>& solution, const Dense
 
     const Matrix<ValueType>& m = *runtime.mCoefficients;
 
-    SCAI_ASSERT_EQ_ERROR( m.getColDistribution(), solution.getDistribution(), "mismatch: matrix col dist, solution" )
-    SCAI_ASSERT_EQ_ERROR( m.getRowDistribution(), rhs.getDistribution(), "mismatch: matrix row dist, rhs dist" )
+    SCAI_ASSERT_EQ_ERROR( m.getColDistribution(), solution.getDistribution(), "mismatch source space" )
+    SCAI_ASSERT_EQ_ERROR( m.getRowDistribution(), rhs.getDistribution(), "mismatch target space" )
 
     runtime.mRhs = &rhs;
     runtime.mSolution = &solution;
@@ -206,6 +214,10 @@ template<typename ValueType>
 void Solver<ValueType>::solveFinalize()
 {
 }
+
+/* ========================================================================= */
+/*    getResidual() : only recompute if solution has been modified           */
+/* ========================================================================= */
 
 template<typename ValueType>
 const DenseVector<ValueType>& Solver<ValueType>::getResidual() const

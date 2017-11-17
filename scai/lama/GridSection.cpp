@@ -361,7 +361,7 @@ void GridSection<ValueType>::binOp ( const GridSection<ValueType>& other, common
 
 template<typename ValueType>
 template<typename OtherValueType>
-void GridSection<ValueType>::UnaryOpOp( const GridSection<OtherValueType>& other, common::UnaryOp op )
+void GridSection<ValueType>::unaryOp( const GridSection<OtherValueType>& other, common::UnaryOp op )
 {
     IndexType offsetSource = 0;
     IndexType offsetTarget = 0;
@@ -381,11 +381,11 @@ void GridSection<ValueType>::UnaryOpOp( const GridSection<OtherValueType>& other
         SCAI_ASSERT_EQ_ERROR( sizesSource[i], sizesTarget[i], "size mismatch for section dim = " << i )
     }
 
-    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::UnaryOpOp<ValueType, OtherValueType> > UnaryOpOp;
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::unaryOp<ValueType, OtherValueType> > unaryOp;
 
     hmemo::ContextPtr loc = mGridVector.getContextPtr();
 
-    UnaryOpOp.getSupportedContext( loc );
+    unaryOp.getSupportedContext( loc );
 
     {
         GridReadAccess<OtherValueType> rSource( other.mGridVector, loc );
@@ -396,7 +396,7 @@ void GridSection<ValueType>::UnaryOpOp( const GridSection<OtherValueType>& other
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        UnaryOpOp[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+        unaryOp[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
     }
 }
 
@@ -549,7 +549,7 @@ GridSection<ValueType>& GridSection<ValueType>::operator/= ( const ValueType oth
 template<typename ValueType>
 void GridSection<ValueType>::conj( const GridSection<ValueType>& other )
 {
-    UnaryOpOp( other, common::UnaryOp::CONJ );
+    unaryOp( other, common::UnaryOp::CONJ );
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -578,11 +578,11 @@ void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& othe
  
     std::swap( distancesSource[0], distancesSource[1] );
 
-    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::UnaryOpOp<ValueType, ValueType> > UnaryOpOp;
+    static utilskernel::LAMAKernel<utilskernel::SectionKernelTrait::unaryOp<ValueType, ValueType> > unaryOp;
 
     hmemo::ContextPtr loc = mGridVector.getContextPtr();
 
-    UnaryOpOp.getSupportedContext( loc );
+    unaryOp.getSupportedContext( loc );
 
     {
         GridReadAccess<ValueType> rSource( other.mGridVector, loc );
@@ -595,7 +595,7 @@ void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& othe
 
         SCAI_CONTEXT_ACCESS( loc )
 
-        UnaryOpOp[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
+        unaryOp[loc]( targetPtr, dimsSource, sizesSource, distancesTarget, sourcePtr, distancesSource, op );
     }
 }
 
@@ -604,7 +604,7 @@ void GridSection<ValueType>::assignTranspose( const GridSection<ValueType>& othe
 // template GridSection<double>& GridSection<double>::operator= ( const GridSection<float>& other );
 
 #define HARRAUTILS_SPECIFIER_LVL2( TargetType, SourceType )                          \
-    template void GridSection<TargetType>::UnaryOpOp(           \
+    template void GridSection<TargetType>::unaryOp(           \
             const GridSection<SourceType>& other, common::UnaryOp );           \
 
 #define HARRAYUTILS_SPECIFIER( ValueType )                                      \

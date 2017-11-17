@@ -323,7 +323,7 @@ void QMR<ValueType>::iterate()
 
     theta = rho / ( gamma * common::Math::abs( beta ) );
     gamma1 = gamma;
-    gamma = 1.0 / sqrt( 1.0 + theta * theta );
+    gamma = ValueType( 1 ) / common::Math::sqrt( ValueType( 1 ) + theta * theta );
 
     if ( common::Math::abs( gamma ) < eps )
     {

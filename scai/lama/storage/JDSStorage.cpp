@@ -547,7 +547,7 @@ void JDSStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void JDSStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

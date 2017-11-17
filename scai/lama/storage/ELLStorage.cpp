@@ -738,7 +738,7 @@ void ELLStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void ELLStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */
@@ -1265,6 +1265,10 @@ SyncToken* ELLStorage<ValueType>::normalGEMV(
     static LAMAKernel<ELLKernelTrait::normalGEMV<ValueType> > normalGEMV;
     ContextPtr loc = this->getContextPtr();
     normalGEMV.getSupportedContext( loc );
+    if ( loc != this->getContextPtr() )
+    {
+        SCAI_LOG_INFO( logger, "normalGEMV not on " << *this->getContextPtr() << " but on " << *loc )
+    }
     unique_ptr<SyncToken> syncToken;
 
     if ( async )

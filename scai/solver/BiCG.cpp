@@ -285,11 +285,9 @@ void BiCG<ValueType>::print( lama::Vector<ValueType>& vec, size_t n )
     std::cout << "\n";
 }
 
-template<typename ValueType>
-BiCG<ValueType>* BiCG<ValueType>::copy()
-{
-    return new BiCG( *this );
-}
+/* ========================================================================= */
+/*       Getter runtime                                                      */
+/* ========================================================================= */
 
 template<typename ValueType>
 typename BiCG<ValueType>::BiCGRuntime& BiCG<ValueType>::getRuntime()
@@ -303,10 +301,20 @@ const typename BiCG<ValueType>::BiCGRuntime& BiCG<ValueType>::getRuntime() const
     return mBiCGRuntime;
 }
 
+/* ========================================================================= */
+/*       Virtual methods                                                     */
+/* ========================================================================= */
+
+template<typename ValueType>
+BiCG<ValueType>* BiCG<ValueType>::copy()
+{
+    return new BiCG( *this );
+}
+
 template<typename ValueType>
 void BiCG<ValueType>::writeAt( std::ostream& stream ) const
 {
-    stream << "CG<" << this->getValueType() << "> ( id = " << this->getId()
+    stream << "BiCG<" << this->getValueType() << "> ( id = " << this->getId()
            << ", #iter = " << getRuntime().mIterations << " )";
 }
 

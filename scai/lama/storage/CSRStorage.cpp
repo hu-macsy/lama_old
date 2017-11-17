@@ -1184,7 +1184,7 @@ void CSRStorage<ValueType>::scaleImpl( const ValueType value )
 template<typename ValueType>
 void CSRStorage<ValueType>::conj()
 {
-    HArrayUtils::UnaryOpOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
+    HArrayUtils::unaryOp( mValues, mValues, common::UnaryOp::CONJ, this->getContextPtr() );
 }
 
 /* --------------------------------------------------------------------------- */

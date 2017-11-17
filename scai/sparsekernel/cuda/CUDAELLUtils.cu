@@ -40,6 +40,7 @@
 
 // internal scai library
 #include <scai/utilskernel/cuda/CUDAUtils.hpp>
+#include <scai/utilskernel/cuda/CUDAReduceUtils.hpp>
 #include <scai/tasking/cuda/CUDAStreamSyncToken.hpp>
 #include <scai/kregistry/KernelRegistry.hpp>
 #include <scai/tracing.hpp>
@@ -49,7 +50,6 @@
 #include <scai/common/cuda/CUDAError.hpp>
 #include <scai/common/cuda/CUDAUtils.hpp>
 #include <scai/common/cuda/launchHelper.hpp>
-#include <scai/common/bind.hpp>
 #include <scai/common/macros/unused.hpp>
 #include <scai/common/Constants.hpp>
 #include <scai/common/TypeTraits.hpp>
@@ -73,6 +73,8 @@
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 
+#include <functional>
+
 namespace scai
 {
 
@@ -80,6 +82,7 @@ using common::TypeTraits;
 using common::CUDASettings;
 using tasking::CUDAStreamSyncToken;
 using utilskernel::CUDAUtils;
+using utilskernel::CUDAReduceUtils;
 
 namespace sparsekernel
 {
@@ -370,7 +373,7 @@ void CUDAELLUtils::scaleValue(
     thrust::device_ptr<ValueType> ellValues_ptr( const_cast<ValueType*>( ellValues ) );
     thrust::device_ptr<OtherValueType> values_ptr( const_cast<OtherValueType*>( values ) );
 
-    IndexType maxCols = CUDAUtils::reduce( ia, numRows, IndexType( 0 ), common::binary::MAX );
+    IndexType maxCols = CUDAReduceUtils::reduce( ia, numRows, IndexType( 0 ), common::BinaryOp::MAX );
 
     // TODO: maybe find better implementation
 
@@ -984,7 +987,7 @@ void CUDAELLUtils::normalGEMV(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
@@ -1096,7 +1099,7 @@ void CUDAELLUtils::normalGEVM(
 
     // set result = beta * y, not needed if beta == 1 and y == result
 
-    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::binary::MULT, false );
+    CUDAUtils::binaryOpScalar( result, y, beta, numColumns, common::BinaryOp::MULT, false );
 
     SCAI_LOG_DEBUG( logger, "Launch normal_gevm_kernel<" << TypeTraits<ValueType>::id() << ">" );
 
@@ -1278,7 +1281,7 @@ void CUDAELLUtils::sparseGEMV(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, x ) );
+            syncToken->pushRoutine( std::bind( unbind, x ) );
         }
     }
 }
@@ -1445,7 +1448,7 @@ void CUDAELLUtils::jacobi(
         if ( useTexture )
         {
             void ( *unbind ) ( const ValueType* ) = &vectorUnbindTexture;
-            syncToken->pushRoutine( common::bind( unbind, oldSolution ) );
+            syncToken->pushRoutine( std::bind( unbind, oldSolution ) );
         }
     }
 }
