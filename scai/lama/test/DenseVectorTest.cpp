@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( SetGetValueTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = distV.getValue( k ).getValue<ValueType>();
+            data1[k] = distV.getValue( k );
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
@@ -731,9 +731,9 @@ BOOST_AUTO_TEST_CASE ( VectorPlusScalarExpressionTest )
     for ( IndexType i = 0; i < n; ++i )
     {
         ValueType erg = alpha * sourceVals[i] + beta;
-        BOOST_CHECK_EQUAL( erg, res1.getValue( i ).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg, res2.getValue( i ).getValue<ValueType>() );
-        BOOST_CHECK_EQUAL( erg,    x.getValue( i ).getValue<ValueType>() );
+        BOOST_CHECK_EQUAL( erg, res1.getValue( i ) );
+        BOOST_CHECK_EQUAL( erg, res2.getValue( i ) );
+        BOOST_CHECK_EQUAL( erg,    x.getValue( i ) );
     }
 }
 

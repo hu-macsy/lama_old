@@ -277,19 +277,6 @@ public:
     _Vector& operator=( const Scalar value );
 
     /**
-     * @brief Returns a copy of the value at the passed global index.
-     *
-     * @param[in] i    the global index to get the value at.
-     * @return         a copy of the value at the passed global position.
-     *
-     * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
-     */
-    Scalar operator()( const IndexType i ) const
-    {
-        return getValue( i );
-    }
-
-    /**
      * @brief Sets the local values of a vector by a dense array.
      *
      * @param[in] values    is the array with all local vector values.
@@ -629,25 +616,6 @@ public:
      * @brief Queries the value type of the vector elements, e.g. DOUBLE or FLOAT.
      */
     virtual common::ScalarType getValueType() const = 0;
-
-    /**
-     * @brief Returns the value at the passed global index.
-     *
-     * @param[in] globalIndex   the global index to get the value at.
-     * @return                  a copy of the value at the passed global position.
-     *
-     * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
-     * Therefore it is recommended to query values on the local vector data with local indexes.
-     */
-    virtual Scalar getValue( IndexType globalIndex ) const = 0;
-
-    /**
-     *
-     * @brief This methods sets/updates a value of a vector.
-     *
-     * Be careful: this method might throw an exception on a sparse vector, if the element is not available
-     */
-    virtual void setValue( const IndexType globalIndex, const Scalar value ) = 0;
 
     /**
      * @brief Concatenate multiple vectors to a new vector.

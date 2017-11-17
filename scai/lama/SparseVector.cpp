@@ -760,7 +760,7 @@ SparseVector<ValueType>* SparseVector<ValueType>::newVector() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::getValue( IndexType globalIndex ) const
+ValueType SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
@@ -790,13 +790,13 @@ Scalar SparseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
 
-    return Scalar( allValue );
+    return allValue;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
+void SparseVector<ValueType>::setValue( const IndexType globalIndex, const ValueType value )
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( globalIndex, size(), "illegal index" )
 
@@ -812,11 +812,9 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 
         IndexType pos = HArrayUtils::findPosInSortedIndexes( mNonZeroIndexes, localIndex );
 
-        ValueType typedValue = value.getValue<ValueType>();
-
         if ( pos != nIndex )
         {
-            mNonZeroValues[pos] = typedValue;
+            mNonZeroValues[pos] = value;
         }
         else
         {
@@ -824,7 +822,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Scala
 
             pos = HArrayUtils::insertSorted( mNonZeroIndexes, localIndex );
             SCAI_LOG_TRACE( logger, "setValue, local index = " << localIndex << " at pos = " << pos )
-            HArrayUtils::insertAtPos( mNonZeroValues, pos, typedValue );
+            HArrayUtils::insertAtPos( mNonZeroValues, pos, value );
         }
     }
 }

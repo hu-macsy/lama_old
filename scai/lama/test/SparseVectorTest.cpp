@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE( CopyConstructorTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+            data1[k] = sparseV.getValue( k );
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE( RedistributeTest )
 
         for ( IndexType k = 0; k < n; ++k )
         {
-            data1[k] = sparseV.getValue( k ).getValue<ValueType>();
+            data1[k] = sparseV.getValue( k );
         }
 
         BOOST_CHECK_EQUAL( 0, data.maxDiffNorm( data1 ) );

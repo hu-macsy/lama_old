@@ -112,6 +112,39 @@ public:
     };
 
     /**
+     * @brief Returns the value at the passed global index.
+     *
+     * @param[in] globalIndex   the global index to get the value at.
+     * @return                  a copy of the value at the passed global position.
+     *
+     * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
+     * Therefore it is recommended to query values on the local vector data with local indexes.
+     */
+    virtual ValueType getValue( IndexType globalIndex ) const = 0;
+
+    /**
+     * @brief Returns a copy of the value at the passed global index.
+     *
+     * @param[in] i    the global index to get the value at.
+     * @return         a copy of the value at the passed global position.
+     *
+     * As this operator requires communication ins SPMD mode it can be very inefficient in some situations.
+     */
+
+    ValueType operator()( const IndexType i ) const
+    {
+        return getValue( i );
+    }
+
+    /**
+     *
+     * @brief This methods sets/updates a value of a vector.
+     *
+     * Be careful: this method might throw an exception on a sparse vector, if the element is not available
+     */
+    virtual void setValue( const IndexType globalIndex, const ValueType value ) = 0;
+
+    /**
      *  Indexing of a distributed vector returns a proxy so that this operator can be used
      *  on lhs and rhs of an assignment.
      */
@@ -350,21 +383,20 @@ Vector<ValueType>::VectorElemProxy::VectorElemProxy( Vector<ValueType>& vector, 
 template<typename ValueType>
 Vector<ValueType>::VectorElemProxy::operator ValueType() const
 {
-    Scalar s = mVector.getValue( mIndex );
-    return s.getValue<ValueType>();
+    return mVector.getValue( mIndex );
 }
 
 template<typename ValueType>
 typename Vector<ValueType>::VectorElemProxy& Vector<ValueType>::VectorElemProxy::operator= ( ValueType val )
 {
-    mVector.setValue( mIndex, Scalar( val ) );
+    mVector.setValue( mIndex, val );
     return *this;
 }
 
 template<typename ValueType>
 typename Vector<ValueType>::VectorElemProxy& Vector<ValueType>::VectorElemProxy::operator= ( const Vector<ValueType>::VectorElemProxy& other )
 {
-    Scalar tmp = other.mVector.getValue( other.mIndex );
+    ValueType tmp = other.mVector.getValue( other.mIndex );
     mVector.setValue( mIndex, tmp );
     return *this;
 }

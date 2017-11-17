@@ -978,7 +978,7 @@ void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
+ValueType DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 {
     ValueType myValue = 0;
 
@@ -997,13 +997,13 @@ Scalar DenseVector<ValueType>::getValue( IndexType globalIndex ) const
 
     SCAI_LOG_TRACE( logger, "myValue = " << myValue << ", allValue = " << allValue )
 
-    return Scalar( allValue );
+    return allValue;
 }
 
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar value )
+void DenseVector<ValueType>::setValue( const IndexType globalIndex, const ValueType value )
 {
     SCAI_ASSERT_VALID_INDEX_ERROR( globalIndex, size(), "out of range index" )
 
@@ -1015,7 +1015,7 @@ void DenseVector<ValueType>::setValue( const IndexType globalIndex, const Scalar
 
     if ( localIndex != nIndex )
     {
-        mLocalValues[localIndex] = value.getValue<ValueType>();
+        mLocalValues[localIndex] = value;
     }
 }
 

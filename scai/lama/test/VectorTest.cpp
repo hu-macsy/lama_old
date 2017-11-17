@@ -84,13 +84,13 @@ BOOST_AUTO_TEST_CASE( WriteTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( AllocateTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( AllocateTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 13;
 
-    _TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
     dmemo::DistributionPtr dist1( new dmemo::BlockDistribution( n + 1, comm ) );
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _VectorPtr v = vectors[i];
+        VectorPtr<ValueType> v = vectors[i];
 
         size_t size0 = v->getMemoryUsage();
 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         *v = 1;
         v->redistribute( dist );
-        BOOST_CHECK_EQUAL( v->getValue( n - 1 ), Scalar( 1 ) );
+        BOOST_CHECK_EQUAL( v->getValue( n - 1 ), ValueType( 1 ) );
 
         BOOST_CHECK_THROW(
         {
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE( AllocateTest )
 
         continue;
 
-        BOOST_CHECK_EQUAL( v->getValue( n - 1 ), Scalar( 2 ) );
+        BOOST_CHECK_EQUAL( v->getValue( n - 1 ), ValueType( 2 ) );
     }
 }
 

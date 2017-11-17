@@ -463,9 +463,13 @@ public:
      */
     virtual SparseVector* newVector() const;
 
-    virtual Scalar getValue( IndexType globalIndex ) const;
+    /** @brief Implementation of pure method Vector<ValueType>::getValue */
 
-    virtual void setValue( const IndexType globalIndex, const Scalar value );
+    virtual ValueType getValue( IndexType globalIndex ) const;
+
+    /** @brief Implementation of pure method Vector<ValueType>::setValue */
+
+    virtual void setValue( const IndexType globalIndex, const ValueType value );
 
     virtual ValueType min() const;
 
