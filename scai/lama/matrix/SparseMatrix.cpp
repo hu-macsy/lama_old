@@ -2202,7 +2202,7 @@ IndexType SparseMatrix<ValueType>::getPartitialNumValues() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
     const Distribution& distributionRow = getRowDistribution();
     const Distribution& distributionCol = getColDistribution();
@@ -2239,7 +2239,8 @@ Scalar SparseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 
     SCAI_LOG_TRACE( logger, "myValue = " << myValue )
     myValue = distributionRow.getCommunicator().sum( myValue );
-    return Scalar( myValue );
+
+    return myValue; 
 }
 
 /* ------------------------------------------------------------------------- */
@@ -2248,7 +2249,7 @@ template<typename ValueType>
 void SparseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
-    const Scalar val,
+    const ValueType val,
     const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
@@ -2266,7 +2267,7 @@ void SparseMatrix<ValueType>::setValue(
 
     if ( nIndex != jLocal )
     {
-        mLocalData->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+        mLocalData->setValue( iLocal, jLocal, val, op );
     }
     else
     {
@@ -2274,7 +2275,7 @@ void SparseMatrix<ValueType>::setValue(
 
         if ( nIndex != jLocal )
         {
-            mHaloData->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+            mHaloData->setValue( iLocal, jLocal, val, op );
         }
         else
         {

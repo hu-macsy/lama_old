@@ -97,6 +97,44 @@ public:
 
     using _Matrix::operator=;
 
+    /**
+     * @brief Returns a copy of the value at the passed global indexes.
+     *
+     * @param[in] i   the global row index
+     * @param[in] j   the global column index
+     * @return        a copy of the value at the passed global position.
+     *
+     * As this operator requires communication in SPMD mode it can be very inefficient in some situations.
+     */
+    ValueType operator()( IndexType i, IndexType j ) const;
+
+    /**
+     * @brief Returns a copy of the value at the passed global indexes.
+     *
+     * @param[in] i   the global row index
+     * @param[in] j   the global column index
+     * @return        a copy of the value at the passed global position.
+     *
+     * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
+     */
+    virtual ValueType getValue( IndexType i, IndexType j ) const = 0;
+
+    /**
+     * @brief Update of an (existing ) element in a matrix
+     *
+     * @param[in] i   the global row index
+     * @param[in] j   the global column index
+     * @param[in] val value used for update
+     * @param[in] op  binary operation used to combine new and old value, default is COPY
+     *
+     * Note: this method will never change the pattern of a sparse matrix.
+     */
+    virtual void setValue(
+        const IndexType i,
+        const IndexType j,
+        const ValueType val,
+        const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
+
     /** 
      *  Implementation of pure method of _Matrix::getValueType 
      *
@@ -116,6 +154,13 @@ public:
     /** Implementation of pure method _Matrix::getValueTypeSize */
 
     virtual size_t getValueTypeSize() const;
+
+    /**
+     * @brief Returns whether the matrix is symmetric or not.
+     *
+     * @return a boolean pointing out whether the matrix is symmetric or not.
+     */
+    bool checkSymmetry() const;
 
     /** Implementation of _Matrix::matrixTimesVector */
 

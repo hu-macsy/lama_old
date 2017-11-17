@@ -225,11 +225,11 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual Scalar getValue(IndexType, IndexType) const
+    virtual ValueType getValue(IndexType, IndexType) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setValue(IndexType, IndexType, Scalar, common::BinaryOp)
+    virtual void setValue(IndexType, IndexType, ValueType, common::BinaryOp)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

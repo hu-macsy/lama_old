@@ -596,44 +596,6 @@ public:
 
     virtual void conj() = 0;
 
-    /**
-     * @brief Returns a copy of the value at the passed global indexes.
-     *
-     * @param[in] i   the global row index
-     * @param[in] j   the global column index
-     * @return        a copy of the value at the passed global position.
-     *
-     * As this operator requires communication in SPMD mode it can be very inefficient in some situations.
-     */
-    Scalar operator()( IndexType i, IndexType j ) const;
-
-    /**
-     * @brief Returns a copy of the value at the passed global indexes.
-     *
-     * @param[in] i   the global row index
-     * @param[in] j   the global column index
-     * @return        a copy of the value at the passed global position.
-     *
-     * As this operation requires communication in SPMD mode it can be very inefficient in some situations.
-     */
-    virtual Scalar getValue( IndexType i, IndexType j ) const = 0;
-
-    /**
-     * @brief Update of an (existing ) element in a matrix
-     *
-     * @param[in] i   the global row index
-     * @param[in] j   the global column index
-     * @param[in] val value used for update
-     * @param[in] op  binary operation used to combine new and old value, default is COPY
-     *
-     * Note: this method will never change the pattern of a sparse matrix.
-     */
-    virtual void setValue(
-        const IndexType i,
-        const IndexType j,
-        const Scalar val,
-        const common::BinaryOp op = common::BinaryOp::COPY ) = 0;
-
     virtual void writeAt( std::ostream& stream ) const;
 
     /**
@@ -669,13 +631,6 @@ public:
      * @return the sparsity rate ( numValues / (numRows * numColumns)) of the whole matrix.
      */
     double getSparsityRate() const;
-
-    /**
-     * @brief Returns whether the matrix is symmetric or not.
-     *
-     * @return a boolean pointing out whether the matrix is symmetric or not.
-     */
-    bool checkSymmetry() const;
 
     /**
      * @brief Computes result = alpha * this * x + beta * y.

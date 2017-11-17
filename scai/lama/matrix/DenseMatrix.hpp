@@ -433,14 +433,14 @@ public:
 
     /* Implementation of pure method of class _Matrix. */
 
-    virtual Scalar getValue( IndexType i, IndexType j ) const;
+    virtual ValueType getValue( IndexType i, IndexType j ) const;
 
     /** Implementation of pure method _Matrix::setValue */
 
     virtual void setValue(
         const IndexType i,
         const IndexType j,
-        const Scalar val,
+        const ValueType val,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
     /* Implemenation of pure method of class _Matrix */

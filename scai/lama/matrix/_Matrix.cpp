@@ -261,13 +261,6 @@ void _Matrix::setReplicatedMatrix( const IndexType numRows, const IndexType numC
 
 /* ---------------------------------------------------------------------------------*/
 
-Scalar _Matrix::operator()( IndexType i, IndexType j ) const
-{
-    return getValue( i, j );
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::setCommunicationKind( SyncKind communicationKind )
 {
     mCommunicationKind = communicationKind;
@@ -380,34 +373,6 @@ void _Matrix::swapMatrix( _Matrix& other )
 double _Matrix::getSparsityRate() const
 {
     return ( double ) getNumValues() / getNumRows() / getNumColumns();
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-bool _Matrix::checkSymmetry() const
-{
-    // check symmetry of matrix
-    IndexType n = getNumRows();
-
-    if ( n != getNumColumns() )
-    {
-        return false;
-    }
-
-    // Note: this solution is not very efficient
-
-    for ( IndexType i = 0; i < n; ++i )
-    {
-        for ( IndexType j = 0; j < i; ++j )
-        {
-            if ( getValue( i, j ) != getValue( j, i ) )
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
 }
 
 /* ---------------------------------------------------------------------------------*/

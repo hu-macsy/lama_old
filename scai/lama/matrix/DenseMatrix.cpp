@@ -1685,9 +1685,9 @@ void DenseMatrix<ValueType>::conj()
 }
 
 template<typename ValueType>
-Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
+ValueType DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
 {
-    ValueType myValue = static_cast<ValueType>( 0.0 );
+    ValueType myValue = 0;
     const Distribution& colDist = getColDistribution();
     const Distribution& rowDist = getRowDistribution();
     const Communicator& commRow = rowDist.getCommunicator();
@@ -1717,14 +1717,15 @@ Scalar DenseMatrix<ValueType>::getValue( IndexType i, IndexType j ) const
     }
 
     SCAI_LOG_TRACE( logger, "My value is " << myValue << " starting sum reduction to produce final result." )
-    return Scalar( commRow.sum( myValue ) );
+
+    return commRow.sum( myValue );
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::setValue(
     const IndexType i,
     const IndexType j,
-    const Scalar val,
+    const ValueType val,
     const common::BinaryOp op )
 {
     const Distribution& distributionRow = getRowDistribution();
@@ -1754,7 +1755,7 @@ void DenseMatrix<ValueType>::setValue(
 
     SCAI_ASSERT_ERROR( jLocal != nIndex, "non local column index" )
 
-    mData[owner]->setValue( iLocal, jLocal, val.getValue<ValueType>(), op );
+    mData[owner]->setValue( iLocal, jLocal, val, op );
 }
 
 template<typename ValueType>

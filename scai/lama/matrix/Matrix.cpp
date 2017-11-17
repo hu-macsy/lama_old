@@ -116,6 +116,14 @@ Matrix<ValueType>::~Matrix()
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
+ValueType Matrix<ValueType>::operator()( IndexType i, IndexType j ) const
+{
+    return getValue( i, j );
+}
+
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
 common::ScalarType Matrix<ValueType>::getValueType() const
 {
     return common::getScalarType<ValueType>();
@@ -127,6 +135,35 @@ template<typename ValueType>
 size_t Matrix<ValueType>::getValueTypeSize() const
 {
     return sizeof( ValueType );
+}
+
+/* ========================================================================= */
+
+template<typename ValueType>
+bool Matrix<ValueType>::checkSymmetry() const
+{
+    // check symmetry of matrix
+    IndexType n = getNumRows();
+
+    if ( n != getNumColumns() )
+    {
+        return false;
+    }
+
+    // Note: this solution is not very efficient
+
+    for ( IndexType i = 0; i < n; ++i )
+    {
+        for ( IndexType j = 0; j < i; ++j )
+        {
+            if ( getValue( i, j ) != getValue( j, i ) )
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 /* ========================================================================= */

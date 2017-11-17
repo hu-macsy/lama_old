@@ -85,8 +85,8 @@ int main( int argc, char* argv[] )
     DenseVector<ValueType> solution( size, 0 );
     solution.setContextPtr( cudaContext );
     std::cout << "Vector solution : " << solution << std::endl;
-    CG cgSolver( "CGTestSolver" );
-    CriterionPtr criterion( new IterationCount ( 10 ) );
+    CG<ValueType> cgSolver( "CGTestSolver" );
+    CriterionPtr<ValueType> criterion( new IterationCount<ValueType> ( 10 ) );
     cgSolver.setStoppingCriterion( criterion );
     cgSolver.initialize( m );
     cgSolver.solve( solution, rhs );

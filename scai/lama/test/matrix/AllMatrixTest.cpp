@@ -464,17 +464,17 @@ BOOST_AUTO_TEST_CASE( assignMultTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( checkSymmetryTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( checkSymmetryTest, ValueType, scai_numeric_test_types )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    _Matrices allMatrices( context );    // is created by factory
+    Matrices<ValueType> allMatrices( context );    // is created by factory
 
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for checkSymmetry" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices[s];
+        Matrix<ValueType>& matrix = *allMatrices[s];
 
         matrix.setIdentity( 5 );
         BOOST_CHECK( matrix.checkSymmetry() );
@@ -803,7 +803,7 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getTest, ValueType, scai_numeric_test_types )
 {
     const IndexType nRows = 10;
     const IndexType nCols = 8;
@@ -816,6 +816,8 @@ BOOST_AUTO_TEST_CASE( getTest )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
+    NormType<ValueType> eps = 0.0001;
+
     for ( size_t rd = 0; rd < rowDistributions.size(); ++rd )
     {
         DistributionPtr rowDist = rowDistributions[rd];
@@ -824,17 +826,17 @@ BOOST_AUTO_TEST_CASE( getTest )
         {
             DistributionPtr colDist = colDistributions[cd];
 
-            _Matrices allMatrices( context );    // is created by factory
+            Matrices<ValueType> allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                _Matrix& matrix = *allMatrices[s];
+                Matrix<ValueType>& matrix = *allMatrices[s];
 
                 matrix = csr;
 
                 matrix.redistribute( rowDist, colDist );
 
-                SCAI_LOG_DEBUG( logger, "getTest for this matrix: " << matrix << ", max = " << matrix._maxNorm() )
+                SCAI_LOG_DEBUG( logger, "getTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
 
                 // get each element and subract it
 
@@ -842,12 +844,12 @@ BOOST_AUTO_TEST_CASE( getTest )
                 {
                     for ( IndexType jCol = 0; jCol < matrix.getNumColumns(); ++jCol )
                     {
-                        Scalar s1 = matrix.getValue( iRow, jCol );
-                        Scalar s2 = csr.getValue( iRow, jCol );
+                        ValueType s1 = matrix.getValue( iRow, jCol );
+                        ValueType s2 = csr.getValue( iRow, jCol );
 
-                        Scalar diff = abs( s1 - s2 );
+                        NormType<ValueType> diff = common::Math::abs( s1 - s2 );
 
-                        BOOST_CHECK( diff < Scalar( 0.001 ) );
+                        BOOST_CHECK( diff < eps );
                     }
                 }
             }
@@ -857,14 +859,14 @@ BOOST_AUTO_TEST_CASE( getTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getSetTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getSetTest, ValueType, scai_numeric_test_types )
 {
     const IndexType nRows = 10;
     const IndexType nCols = 8;
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<RealType> csr( nRows, nCols );
+    CSRSparseMatrix<ValueType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     TestDistributions rowDistributions( nRows );
@@ -878,27 +880,17 @@ BOOST_AUTO_TEST_CASE( getSetTest )
         {
             DistributionPtr colDist = colDistributions[cd];
 
-            _Matrices allMatrices( context );    // is created by factory
+            Matrices<ValueType> allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                _Matrix& matrix = *allMatrices[s];
+                Matrix<ValueType>& matrix = *allMatrices[s];
 
                 matrix = csr;
 
-                if ( matrix.getMatrixKind() == MatrixKind::SPARSE )
-                {
-                    continue;
-                }
-
-                if ( matrix.getValueType() != common::ScalarType::FLOAT )
-                {
-                    continue;
-                }
-
                 matrix.redistribute( rowDist, colDist );
 
-                SCAI_LOG_DEBUG( logger, "getSetTest for this matrix: " << matrix << ", max = " << matrix._maxNorm() )
+                SCAI_LOG_DEBUG( logger, "getSetTest for this matrix: " << matrix << ", max = " << matrix.maxNorm() )
 
                 // get each element and subract it
 
@@ -906,9 +898,9 @@ BOOST_AUTO_TEST_CASE( getSetTest )
                 {
                     for ( IndexType jCol = 0; jCol < matrix.getNumColumns(); ++jCol )
                     {
-                        Scalar s = matrix.getValue( iRow, jCol );
+                        ValueType s = matrix.getValue( iRow, jCol );
 
-                        if ( s != Scalar( 0 ) )
+                        if ( s != ValueType( 0 ) )
                         {
                             matrix.setValue( iRow, jCol, s, common::BinaryOp::SUB );
                         }
@@ -917,7 +909,7 @@ BOOST_AUTO_TEST_CASE( getSetTest )
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix._maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
             }
         }
     }
