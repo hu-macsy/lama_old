@@ -136,6 +136,10 @@ void BiCG<ValueType>::initialize( const Matrix<ValueType>& coefficients )
     // temporary vectors will be allocated at their use
 }
 
+/* ========================================================================= */
+/*    solve: iterate()                                                       */
+/* ========================================================================= */
+
 template<typename ValueType>
 void BiCG<ValueType>::iterate()
 {
@@ -156,7 +160,7 @@ void BiCG<ValueType>::iterate()
     DenseVector<ValueType>& residual2 = runtime.mResidual2;
 
     const Matrix<ValueType>& A = *runtime.mCoefficients;
-    const Matrix<ValueType>& Act = *runtime.mConjTransposeA;  
+    const Matrix<ValueType>& ctA = *runtime.mConjTransposeA;  
 
     Vector<ValueType>& x = runtime.mSolution.getReference(); // ->dirty
 
@@ -212,7 +216,7 @@ void BiCG<ValueType>::iterate()
         SCAI_LOG_INFO( logger, "Calculating q." )
         q = A * p;
         SCAI_LOG_TRACE( logger, "l2Norm( q ) = " << q.l2Norm() )
-        q2 = Act * p2; // conjTranspose( A ) * p2 
+        q2 = ctA * p2; // conjTranspose( A ) * p2 
         SCAI_LOG_TRACE( logger, "l2Norm( q2 ) = " << q2.l2Norm() )
     }
 
@@ -262,9 +266,9 @@ const Vector<ValueType>& BiCG<ValueType>::getResidual2() const
 
     const Vector<ValueType>& solution = runtime.mSolution.getConstReference(); // only read
     const Vector<ValueType>& rhs = *runtime.mRhs;
-    const Matrix<ValueType>& Act = *runtime.mConjTransposeA;
+    const Matrix<ValueType>& ctA = *runtime.mConjTransposeA;
 
-    runtime.mResidual2 = rhs - Act * solution;   // rhs - conjTranspose( A ) * solution
+    runtime.mResidual2 = rhs - ctA * solution;   // rhs - conjTranspose( A ) * solution
 
     return runtime.mResidual2;
 }

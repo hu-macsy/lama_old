@@ -106,6 +106,10 @@ AMGSetup<ValueType>::~AMGSetup()
 {
 }
 
+/* ========================================================================= */
+/*    Methods                                                                */
+/* ========================================================================= */
+
 template<typename ValueType>
 void AMGSetup<ValueType>::setHostOnlyLevel( IndexType hostOnlyLevel )
 {
