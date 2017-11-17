@@ -57,11 +57,8 @@ scai_project (
     CLASSES                  # .cpp, .hpp
 
         AMGSetup
-        BiCG
         BiCGstab
         CG
-#       CGNE
-#       CGNR
         CGS
         DecompositionSolver
         GMRES

@@ -253,9 +253,7 @@ BOOST_AUTO_TEST_CASE( ConservativeTest )
         iterativeSolver.initialize( matrix );
         iterativeSolver.solve( solution, rhs );
 
-        Scalar res = maxNorm( iterativeSolver.getResidual() );
-
-        ValueType maxDiff = res.getValue<ValueType>();
+        ValueType maxDiff = maxNorm( iterativeSolver.getResidual() );
 
         SCAI_LOG_INFO( logger, "ConservativeTest: solver " << iterativeSolver << ", maxDiff = " << maxDiff )
 
@@ -277,11 +275,11 @@ BOOST_AUTO_TEST_CASE( SolveTest )
 
     SCAI_LOG_INFO( logger, "matrix = " << matrix );
 
-    const ValueType solutionInitValue = 1.0;
+    const ValueType solutionInitValue = 1;
     DenseVector<ValueType> solution( matrix.getColDistributionPtr(), solutionInitValue );
     // TODO: use constructor to set context
     solution.setContextPtr( matrix.getContextPtr() );
-    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + 1.0 );
+    DenseVector<ValueType> exactSolution( matrix.getColDistributionPtr(), solutionInitValue + ValueType( 1 ) );
     // TODO: use constructor to set context
     exactSolution.setContextPtr( matrix.getContextPtr() );
     DenseVector<ValueType> rhs( matrix * exactSolution );
@@ -301,10 +299,9 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         solution = solutionInitValue;
         iterativeSolver.solve( solution, rhs );
         DenseVector<ValueType> diff( solution - exactSolution );
-        Scalar s                  = maxNorm( diff );
-        ValueType realMaxNorm     = s.getValue<ValueType>();
-        ValueType expectedMaxNorm = 1E-4;
-        SCAI_LOG_INFO( logger, "maxNorm of diff = " << s << " = ( solution - exactSolution ) = " << realMaxNorm );
+        NormType<ValueType> realMaxNorm     = maxNorm( diff );
+        NormType<ValueType> expectedMaxNorm = 1E-4;
+        SCAI_LOG_INFO( logger, "maxNorm of diff = ( solution - exactSolution ) = " << realMaxNorm );
         BOOST_CHECK_MESSAGE( realMaxNorm < expectedMaxNorm,
                              "Solver: " << iterativeSolver << " max norm = " << realMaxNorm << " >= " << expectedMaxNorm );
         // Test solve with preconditioner
@@ -318,10 +315,10 @@ BOOST_AUTO_TEST_CASE( SolveTest )
         iterativeSolver.solve( solution, rhs );
         BOOST_CHECK_EQUAL( maxExpectedIterations, iterativeSolver.getIterationCount() );
         diff = solution - exactSolution;
-        s               = maxNorm( diff );
-        realMaxNorm     = s.getValue<ValueType>();
+        realMaxNorm     = maxNorm( diff );
         expectedMaxNorm = 1E-4;
         SCAI_LOG_INFO( logger, "maxNorm of diff = " << diff << " = ( solution - exactSolution ) = " << realMaxNorm );
+ 
         BOOST_CHECK_MESSAGE( realMaxNorm < expectedMaxNorm,
                              "Solver: " << iterativeSolver << " max norm = " << realMaxNorm << " >= " << expectedMaxNorm );
     }

@@ -43,7 +43,6 @@ scai_project (
 	SOURCES
 
     	BiCGstabTest
-    	BiCGTest
         CGTest
         CGSTest
         CommonLoggerTest

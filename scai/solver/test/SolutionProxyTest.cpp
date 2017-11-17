@@ -35,7 +35,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/Scalar.hpp>
 #include <scai/solver/SolutionProxy.hpp>
 
 using namespace scai::solver;

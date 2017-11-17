@@ -35,7 +35,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/Scalar.hpp>
 #include <scai/lama/DenseVector.hpp>
 
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
