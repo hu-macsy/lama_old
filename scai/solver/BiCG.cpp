@@ -183,8 +183,6 @@ void BiCG<ValueType>::iterate()
         // Instead of solving P * z2 = residual2 we need to solve P^H * z2 = residual2
         // where P is the preconditioner
         mPreconditioner->solve( z2, residual2 );
-        // print(residual,4);
-        // print(residual2,4);
     }
 
     SCAI_LOG_INFO( logger, "Calculating pScalar." )
@@ -269,20 +267,6 @@ const Vector<ValueType>& BiCG<ValueType>::getResidual2() const
     runtime.mResidual2 = rhs - Act * solution;   // rhs - conjTranspose( A ) * solution
 
     return runtime.mResidual2;
-}
-
-template<typename ValueType>
-void BiCG<ValueType>::print( lama::Vector<ValueType>& vec, size_t n )
-{
-    std::cout << "\n";
-
-    for ( size_t i = 0; i < n; ++i )
-    {
-        ValueType val = vec[i];
-        std::cout << val << " ";
-    }
-
-    std::cout << "\n";
 }
 
 /* ========================================================================= */

@@ -129,8 +129,6 @@ protected:
 
     virtual void iterate();
 
-    void print( lama::Vector<ValueType>& vec, size_t n );
-
     /**
      *  @brief own implementation of Printable::writeAt
      */
