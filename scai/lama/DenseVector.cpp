@@ -278,7 +278,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SV<ValueType>& expression 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a+x/x+a
@@ -290,7 +290,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SV_S<ValueType>& expressio
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: x*y
@@ -304,7 +304,7 @@ DenseVector<ValueType>::DenseVector( const Expression_VV<ValueType>& expression 
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( x * y )" )
     Expression_SVV<ValueType> tmpExp( ValueType( 1 ), expression );
-    _Vector::operator=( tmpExp );
+    Vector<ValueType>::operator=( tmpExp );
 }
 
 // linear algebra expression: s*x*y
@@ -316,7 +316,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SVV<ValueType>& expression
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
@@ -329,33 +329,29 @@ DenseVector<ValueType>::DenseVector( const Expression_SV_SV<ValueType>& expressi
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SMV_SV<ValueType>& expression ) :
-
-    Vector<ValueType>( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
-                  expression.getArg1().getArg2().getArg1().getContextPtr() )
+DenseVector<ValueType>::DenseVector( const Expression_SMV_SV<ValueType>& expression ) 
 {
-    allocate();
+    const Matrix<ValueType>& m = expression.getArg1().getArg2().getArg1();
+    this->setSpace( m.getRowDistributionPtr(), m.getContextPtr()  );
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SVM_SV<ValueType>& expression ) :
-
-    Vector<ValueType>( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
-            expression.getArg1().getArg2().getArg2().getContextPtr() )
+DenseVector<ValueType>::DenseVector( const Expression_SVM_SV<ValueType>& expression ) 
 {
-    allocate();
+    const Matrix<ValueType>& m = expression.getArg1().getArg2().getArg2();
+    this->setSpace( m.getColDistributionPtr(), m.getContextPtr()  );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
@@ -368,7 +364,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SMV<ValueType>& expression
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
@@ -382,7 +378,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SVM<ValueType>& expression
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */

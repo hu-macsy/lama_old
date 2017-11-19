@@ -72,14 +72,13 @@ public:
     typedef T1 Arg1Type;
     typedef T2 Arg2Type;
     typedef Expression ExpressionType;
-    typedef const ExpressionType ExpressionMemberType;
 
 private:
+
     const ExpressionTypes mExpressionType;
     const Arg1Type& mArg1;
     const Arg2Type& mArg2;
-    // typename Arg1Type::ExpressionMemberType mArg1;
-    // typename Arg2Type::ExpressionMemberType mArg2;
+
 public:
 
     /**

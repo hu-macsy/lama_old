@@ -80,6 +80,8 @@ public:
     using _Vector::getContext;
     using _Vector::getDistribution;
     using _Vector::operator=;
+    using _Vector::operator+=;
+    using _Vector::operator-=;
 
     /** Help class to observe the further use of operator[] for Vector */
 
@@ -294,6 +296,70 @@ public:
      * @return            the dot product of this and other
      */
     virtual ValueType dotProduct( const _Vector& other ) const = 0;
+
+    /* =========================================================== */
+    /*     this = <vector_expression>                              */
+    /* =========================================================== */
+
+    /** this = alpha * A * x */
+
+    Vector<ValueType>& operator=( const Expression_SMV<ValueType>& expression );
+
+    /** this = alpha * x * A */
+
+    Vector<ValueType>& operator=( const Expression_SVM<ValueType>& expression );
+
+    /** this = alpha * x + beta * y */
+
+    Vector<ValueType>& operator=( const Expression_SV_SV<ValueType>& expression );
+
+    /** this = alpha * A * x + beta * y */
+
+    Vector<ValueType>& operator=( const Expression_SMV_SV<ValueType>& expression );
+
+    /** this = alpha * x * A + beta * y */
+
+    Vector<ValueType>& operator=( const Expression_SVM_SV<ValueType>& expression );
+
+    /** this = alpha * x */
+
+    Vector<ValueType>& operator=( const Expression_SV<ValueType>& expression );
+
+    /** this = alpha * x + beta */
+
+    Vector<ValueType>& operator=( const Expression_SV_S<ValueType>& );
+
+    /** this = x * y */
+
+    Vector<ValueType>& operator=( const Expression_VV<ValueType>& );
+
+    /** this = alpha * x * y */
+
+    Vector<ValueType>& operator=( const Expression_SVV<ValueType>& );
+
+    /** this +=  alpha * A * x */
+
+    Vector<ValueType>& operator+=( const Expression_SMV<ValueType>& expression );
+
+    /** this +=  alpha * x * A */
+
+    Vector<ValueType>& operator+=( const Expression_SVM<ValueType>& expression );
+
+    /** this +=  alpha * x */
+
+    Vector<ValueType>& operator+=( const Expression_SV<ValueType>& expression );
+
+    /** this -=  alpha * A * x */
+
+    Vector<ValueType>& operator-=( const Expression_SMV<ValueType>& expression );
+
+    /** this -=  alpha * x * A */
+
+    Vector<ValueType>& operator-=( const Expression_SVM<ValueType>& expression );
+
+    /** this -=  alpha * x */
+
+    Vector<ValueType>& operator-=( const Expression_SV<ValueType>& expression );
 
 protected:
 

@@ -347,7 +347,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV<ValueType>& expressio
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a+x/x+a
@@ -358,7 +358,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV_S<ValueType>& express
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta)" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: x*y
@@ -368,7 +368,7 @@ SparseVector<ValueType>::SparseVector( const Expression_VV<ValueType>& expressio
     Vector<ValueType>( expression.getArg1() )
 
 {
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: s*x*y
@@ -379,7 +379,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVV<ValueType>& expressi
 
 {
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
@@ -392,7 +392,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV_SV<ValueType>& expres
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x + beta * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
@@ -405,7 +405,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SMV_SV<ValueType>& expre
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x + b * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
@@ -417,7 +417,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVM_SV<ValueType>& expre
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A + b * y )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
@@ -430,7 +430,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SMV<ValueType>& expressi
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * A * x )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
@@ -442,7 +442,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVM<ValueType>& expressi
 {
     allocate( getDistributionPtr() );
     SCAI_LOG_INFO( logger, "Constructor( alpha * x * A )" )
-    _Vector::operator=( expression );
+    Vector<ValueType>::operator=( expression );
 }
 
 /* ------------------------------------------------------------------------- */
