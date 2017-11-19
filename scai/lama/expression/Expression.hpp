@@ -76,8 +76,10 @@ public:
 
 private:
     const ExpressionTypes mExpressionType;
-    typename Arg1Type::ExpressionMemberType mArg1;
-    typename Arg2Type::ExpressionMemberType mArg2;
+    const Arg1Type& mArg1;
+    const Arg2Type& mArg2;
+    // typename Arg1Type::ExpressionMemberType mArg1;
+    // typename Arg2Type::ExpressionMemberType mArg2;
 public:
 
     /**
@@ -130,77 +132,95 @@ public:
     }
 };
 
-class Scalar;
-class _Vector;
-class _Matrix;
+template<typename ValueType> class Matrix;
+template<typename ValueType> class Vector;
 
 // Vector Expressions
 
-/** Symbolic expression 'Scalar * Vector' */
+/** Symbolic expression 'Scalar * Vector */
 
-typedef Expression<Scalar, _Vector, Times> Expression_SV;
+template<typename ValueType>
+using Expression_SV = Expression<ValueType, Vector<ValueType>, Times>;
 
-/** Symbolic expression 'Vector * Vector' */
+/** Symbolic expression 'Vector1 * Vector2 compWise */
 
-typedef Expression<_Vector, _Vector, Times> Expression_VV;
+template<typename ValueType>
+using Expression_VV = Expression<Vector<ValueType>, Vector<ValueType>, Times>;
 
 /** Symbolic expression 'Scalar * Vector * Vector' */
 
-typedef Expression<Scalar, Expression<_Vector, _Vector, Times>, Times> Expression_SVV;
+template<typename ValueType>
+using Expression_SVV = Expression<ValueType, Expression<Vector<ValueType>, Vector<ValueType>, Times>, Times>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar' */
 
-typedef Expression<Expression_SV, Scalar, Plus> Expression_SV_S;
+template<typename ValueType>
+using Expression_SV_S = Expression<Expression_SV<ValueType>, ValueType, Plus>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
-typedef Expression<Expression_SV, Expression_SV, Plus> Expression_SV_SV;
+template<typename ValueType>
+using Expression_SV_SV = Expression<Expression_SV<ValueType>, Expression_SV<ValueType>, Plus>;
 
-// _Matrix Expression
+/* ============================================================================ */
+/*    Matrix expressions                                                        */
+/* ============================================================================ */
 
-/** Symbolic expression 'Scalar * _Matrix' */
+/** Symbolic expression 'Scalar * Matrix' */
 
-typedef Expression<Scalar, _Matrix, Times> Expression_SM;
+template<typename ValueType>
+using Expression_SM = Expression<ValueType, Matrix<ValueType>, Times>;
 
-// _Matrix-Vector Expressions
+/* ============================================================================ */
+/*    Matrix - Vector expressions                                               */
+/* ============================================================================ */
 
 /** Symbolic expression 'Matrix * Vector' */
 
-typedef Expression<_Matrix, _Vector, Times> Expression_MV;
+template<typename ValueType>
+using Expression_MV = Expression<Matrix<ValueType>, Vector<ValueType>, Times>;
 
-/** Symbolic expression 'Vector * _Matrix' */
+/** Symbolic expression 'Vector * Matrix' */
 
-typedef Expression<_Vector, _Matrix, Times> Expression_VM;
+template<typename ValueType>
+using Expression_VM = Expression<Vector<ValueType>, Matrix<ValueType>, Times>;
 
-/** Symbolic expression 'Scalar * _Matrix * Vector' */
+/** Symbolic expression 'Scalar * Matrix * Vector' */
 
-typedef Expression<Scalar, Expression<_Matrix, _Vector, Times>, Times> Expression_SMV;
+template<typename ValueType>
+using Expression_SMV = Expression<ValueType, Expression<Matrix<ValueType>, Vector<ValueType>, Times>, Times>;
 
-/** Symbolic expression 'Scalar * Vector * _Matrix' */
+/** Symbolic expression 'Scalar * Vector * Matrix' */
 
-typedef Expression<Scalar, Expression<_Vector, _Matrix, Times>, Times> Expression_SVM;
+template<typename ValueType>
+using Expression_SVM = Expression<ValueType, Expression<Vector<ValueType>, Matrix<ValueType>, Times>, Times>;
 
-/** Symbolic expression 'Scalar * _Matrix * Vector + Scalar * Vector' */
+/** Symbolic expression 'Scalar * Matrix * Vector + Scalar * Vector' */
 
-typedef Expression<Expression_SMV, Expression_SV, Plus> Expression_SMV_SV;
+template<typename ValueType>
+using Expression_SMV_SV = Expression<Expression_SMV<ValueType>, Expression_SV<ValueType>, Plus>;
 
-/** Symbolic expression 'Scalar * Vector * _Matrix + Scalar * Vector' */
+/** Symbolic expression 'Scalar * Vector * Matrix + Scalar * Vector' */
 
-typedef Expression<Expression_SVM, Expression_SV, Plus> Expression_SVM_SV;
+template<typename ValueType>
+using Expression_SVM_SV = Expression<Expression_SVM<ValueType>, Expression_SV<ValueType>, Plus>;
 
-// _Matrix-Matrix Expressions
+// Matrix-Matrix Expressions
 
-/** Symbolic expression 'Scalar * _Matrix * _Matrix' */
+/** Symbolic expression 'Scalar * Matrix * Matrix' */
 
-typedef Expression<Expression_SM, _Matrix, Times> Expression_SMM;
+template<typename ValueType>
+using Expression_SMM = Expression<Expression_SM<ValueType>, Matrix<ValueType>, Times>;
 
-/** Symbolic expression 'Scalar * _Matrix + Scalar * _Matrix' */
+/** Symbolic expression 'Scalar * Matrix + Scalar * Matrix' */
 
-typedef Expression<Expression_SM, Expression_SM, Plus> Expression_SM_SM;
+template<typename ValueType>
+using Expression_SM_SM = Expression<Expression_SM<ValueType>, Expression_SM<ValueType>, Plus>;
 
-/** Symbolic expression 'Scalar * _Matrix * _Matrix + Scalar * _Matrix' */
+/** Symbolic expression 'Scalar * Matrix * Matrix + Scalar * Matrix' */
 
-typedef Expression<Expression_SMM, Expression_SM, Plus> Expression_SMM_SM;
+template<typename ValueType>
+using Expression_SMM_SM = Expression<Expression_SMM<ValueType>, Expression_SM<ValueType>, Plus>;
 
 } /* end namespace lama */
 

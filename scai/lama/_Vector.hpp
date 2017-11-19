@@ -170,63 +170,78 @@ public:
 
     /** this = alpha * A * x */
 
-    _Vector& operator=( const Expression_SMV& expression );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SMV<ValueType>& expression );
 
     /** this = alpha * x * A */
 
-    _Vector& operator=( const Expression_SVM& expression );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SVM<ValueType>& expression );
 
     /** this = alpha * x + beta * y */
 
-    _Vector& operator=( const Expression_SV_SV& expression );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SV_SV<ValueType>& expression );
 
     /** this = alpha * A * x + beta * y */
 
-    _Vector& operator=( const Expression_SMV_SV& expression );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SMV_SV<ValueType>& expression );
 
     /** this = alpha * x * A + beta * y */
 
-    _Vector& operator=( const Expression_SVM_SV& expression );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SVM_SV<ValueType>& expression );
 
     /** this = alpha * x */
 
-    _Vector& operator=( const Expression_SV& expression );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SV<ValueType>& expression );
 
     /** this = alpha * x + beta */
 
-    _Vector& operator=( const Expression_SV_S& );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SV_S<ValueType>& );
 
     /** this = x * y */
 
-    _Vector& operator=( const Expression_VV& );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_VV<ValueType>& );
 
     /** this = alpha * x * y */
 
-    _Vector& operator=( const Expression_SVV& );
+    template<typename ValueType>
+    _Vector& operator=( const Expression_SVV<ValueType>& );
 
     /** this +=  alpha * A * x */
 
-    _Vector& operator+=( const Expression_SMV& expression );
+    template<typename ValueType>
+    _Vector& operator+=( const Expression_SMV<ValueType>& expression );
 
     /** this +=  alpha * x * A */
 
-    _Vector& operator+=( const Expression_SVM& expression );
+    template<typename ValueType>
+    _Vector& operator+=( const Expression_SVM<ValueType>& expression );
 
     /** this +=  alpha * x */
 
-    _Vector& operator+=( const Expression_SV& expression );
+    template<typename ValueType>
+    _Vector& operator+=( const Expression_SV<ValueType>& expression );
 
     /** this -=  alpha * A * x */
 
-    _Vector& operator-=( const Expression_SMV& expression );
+    template<typename ValueType>
+    _Vector& operator-=( const Expression_SMV<ValueType>& expression );
 
     /** this -=  alpha * x * A */
 
-    _Vector& operator-=( const Expression_SVM& expression );
+    template<typename ValueType>
+    _Vector& operator-=( const Expression_SVM<ValueType>& expression );
 
     /** this -=  alpha * x */
 
-    _Vector& operator-=( const Expression_SV& expression );
+    template<typename ValueType>
+    _Vector& operator-=( const Expression_SV<ValueType>& expression );
 
     /**
      * @brief Assigns the values of other to the elements of this.

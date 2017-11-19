@@ -230,14 +230,14 @@ public:
      *
      * @param[in] expression    alpha * x
      */
-    explicit DenseVector( const Expression_SV& expression );
+    explicit DenseVector( const Expression_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha + x.
      *
      * @param[in] expression    alpha * x + beta
      */
-    explicit DenseVector( const Expression_SV_S& expression );
+    explicit DenseVector( const Expression_SV_S<ValueType>& expression );
 
     /**
      *  @brief creates a DenseVector with the Expression alpha * x * Y.
@@ -245,7 +245,7 @@ public:
      * @param[in] expression    x * y
      */
 
-    explicit DenseVector( const Expression_VV& expression );
+    explicit DenseVector( const Expression_VV<ValueType>& expression );
 
 
     /**
@@ -254,14 +254,14 @@ public:
      * @param[in] expression    alpha * x * y
      */
 
-    explicit DenseVector( const Expression_SVV& expression );
+    explicit DenseVector( const Expression_SVV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x + beta * y.
      *
      * @param[in] expression  is alpha * x + beta * y
      */
-    explicit DenseVector( const Expression_SV_SV& expression );
+    explicit DenseVector( const Expression_SV_SV<ValueType>& expression );
 
     /* --------------------------------------------------------------------- */
 
@@ -270,42 +270,42 @@ public:
      *
      * @param[in] expression     alpha * A * x + beta * y
      */
-    explicit DenseVector( const Expression_SMV_SV& expression );
+    explicit DenseVector( const Expression_SMV_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A + beta * y.
      *
      * @param[in] expression     alpha * x * A + beta * y
      */
-    explicit DenseVector( const Expression_SVM_SV& expression );
+    explicit DenseVector( const Expression_SVM_SV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * A * x.
      *
      * @param[in] expression     alpha * A * x
      */
-    explicit DenseVector( const Expression_SMV& expression );
+    explicit DenseVector( const Expression_SMV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    explicit DenseVector( const Expression_SVM& expression );
+    explicit DenseVector( const Expression_SVM<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    explicit DenseVector( const Expression_MV& expression );
+    explicit DenseVector( const Expression_MV<ValueType>& expression );
 
     /**
      * @brief creates a DenseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    explicit DenseVector( const Expression_VM& expression );
+    explicit DenseVector( const Expression_VM<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.

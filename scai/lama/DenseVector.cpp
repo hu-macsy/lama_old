@@ -271,7 +271,7 @@ DenseVector<ValueType>::DenseVector( const _HArray& values ) :
 
 // linear algebra expression: a*x
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SV& expression ):
+DenseVector<ValueType>::DenseVector( const Expression_SV<ValueType>& expression ):
 
     Vector<ValueType>( expression.getArg2() )
 
@@ -283,7 +283,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SV& expression ):
 
 // linear algebra expression: a+x/x+a
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SV_S& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_SV_S<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2() )
 
@@ -296,20 +296,20 @@ DenseVector<ValueType>::DenseVector( const Expression_SV_S& expression ) :
 // linear algebra expression: x*y
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_VV& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_VV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1() )
 
 {
     allocate();
     SCAI_LOG_INFO( logger, "Constructor( x * y )" )
-    Expression_SVV tmpExp( Scalar( 1 ), expression );
+    Expression_SVV<ValueType> tmpExp( ValueType( 1 ), expression );
     _Vector::operator=( tmpExp );
 }
 
 // linear algebra expression: s*x*y
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SVV& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_SVV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg2().getArg1() )
 
@@ -322,7 +322,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SVV& expression ) :
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SV_SV& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_SV_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2() )
 
@@ -335,7 +335,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SV_SV& expression ) :
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SMV_SV& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_SMV_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
                   expression.getArg1().getArg2().getArg1().getContextPtr() )
@@ -348,7 +348,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SMV_SV& expression ) :
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SVM_SV& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_SVM_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
             expression.getArg1().getArg2().getArg2().getContextPtr() )
@@ -361,7 +361,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SVM_SV& expression ) :
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SMV& expression ) : 
+DenseVector<ValueType>::DenseVector( const Expression_SMV<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg2().getArg1().getRowDistributionPtr(),
             expression.getArg2().getArg1().getContextPtr() )
@@ -374,7 +374,7 @@ DenseVector<ValueType>::DenseVector( const Expression_SMV& expression ) :
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
 
 template<typename ValueType>
-DenseVector<ValueType>::DenseVector( const Expression_SVM& expression ) :
+DenseVector<ValueType>::DenseVector( const Expression_SVM<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg2().getArg2().getColDistributionPtr(),
             expression.getArg2().getArg2().getContextPtr() )

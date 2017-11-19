@@ -185,7 +185,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -199,7 +199,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -213,7 +213,7 @@ JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SMM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM_SM& expression )
+JDSSparseMatrix<ValueType>::JDSSparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {

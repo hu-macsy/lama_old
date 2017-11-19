@@ -181,7 +181,7 @@ DenseMatrix<ValueType>::DenseMatrix(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM<ValueType>& expression )
 {
     // resolve expression in base class matrix
     _Matrix::operator=( expression );
@@ -190,7 +190,7 @@ DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM_SM& expression )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM<ValueType>& expression )
 {
     // resolve expression in base class matrix
     _Matrix::operator=( expression );
@@ -199,7 +199,7 @@ DenseMatrix<ValueType>::DenseMatrix( const Expression_SMM& expression )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM<ValueType>& expression )
 {
     // resolve expression in base class matrix, usually -> matrixPlusMatrix
     _Matrix::operator=( expression );
@@ -208,7 +208,7 @@ DenseMatrix<ValueType>::DenseMatrix( const Expression_SM_SM& expression )
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DenseMatrix<ValueType>::DenseMatrix( const Expression_SM& expression )
+DenseMatrix<ValueType>::DenseMatrix( const Expression_SM<ValueType>& expression )
 {
     // resolve expression in base class matrix
     _Matrix::operator=( expression );

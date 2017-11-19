@@ -386,14 +386,15 @@ void _Vector::setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroVa
 /*    Assignment operator                                                                 */
 /* ---------------------------------------------------------------------------------------*/
 
-_Vector& _Vector::operator=( const Expression_SV_SV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SV_SV<ValueType>& expression )
 {
     SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
 
-    const Scalar& alpha = expression.getArg1().getArg1();
-    const Scalar& beta  = expression.getArg2().getArg1();
-    const _Vector& x = expression.getArg1().getArg2();
-    const _Vector& y = expression.getArg2().getArg2();
+    const ValueType& alpha     = expression.getArg1().getArg1();
+    const ValueType& beta      = expression.getArg2().getArg1();
+    const Vector<ValueType>& x = expression.getArg1().getArg2();
+    const Vector<ValueType>& y = expression.getArg2().getArg2();
 
     // Note: all checks are done the vector specific implementations
 
@@ -402,20 +403,22 @@ _Vector& _Vector::operator=( const Expression_SV_SV& expression )
     return *this;
 }
 
-_Vector& _Vector::operator=( const Expression_SMV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SMV<ValueType>& expression )
 {
     SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
-    const Scalar beta( 0.0 );
-    Expression_SV exp2( beta, *this );
-    Expression_SMV_SV tmpExp( expression, exp2 );
-    const _Vector& vectorX = expression.getArg2().getArg2();
+
+    const ValueType beta = 0;
+    Expression_SV<ValueType> exp2( beta, *this );
+    Expression_SMV_SV<ValueType> tmpExp( expression, exp2 );
+    const Vector<ValueType>& vectorX = expression.getArg2().getArg2();
 
     if ( &vectorX != this )
     {
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
         // distribution is given by the row distribution of the matrix
-        const _Matrix& matrix = expression.getArg2().getArg1();
+        const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
         DistributionPtr dist = matrix.getRowDistributionPtr();
         allocate( dist );
         // values remain uninitialized as we assume that 0.0 * this (undefined) will
@@ -425,20 +428,21 @@ _Vector& _Vector::operator=( const Expression_SMV& expression )
     return operator=( tmpExp );
 }
 
-_Vector& _Vector::operator=( const Expression_SVM& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SVM<ValueType>& expression )
 {
     SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
-    const Scalar beta( 0.0 );
-    Expression_SV exp2( beta, *this );
-    Expression_SVM_SV tmpExp( expression, exp2 );
-    const _Vector& vectorX = expression.getArg2().getArg1();
+    const ValueType beta = 0;
+    Expression_SV<ValueType> exp2( beta, *this );
+    Expression_SVM_SV<ValueType> tmpExp( expression, exp2 );
+    const Vector<ValueType>& vectorX = expression.getArg2().getArg1();
 
     if ( &vectorX != this )
     {
         // so this is not aliased to the vector on the rhs
         // as this will be used on rhs we do allocate it here
         // distribution is given by the row distribution of the matrix
-        const _Matrix& matrix = expression.getArg2().getArg2();
+        const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
         DistributionPtr dist = matrix.getColDistributionPtr();
         allocate( dist );
         // values remain uninitialized as we assume that 0.0 * this (undefined) will
@@ -448,17 +452,19 @@ _Vector& _Vector::operator=( const Expression_SVM& expression )
     return operator=( tmpExp );
 }
 
-_Vector& _Vector::operator=( const Expression_SMV_SV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SMV_SV<ValueType>& expression )
 {
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
-    const Expression_SMV& exp1 = expression.getArg1();
-    const Expression_SV& exp2 = expression.getArg2();
-    const Scalar& alpha = exp1.getArg1();
-    const Expression<_Matrix, _Vector, Times>& matrixTimesVectorExp = exp1.getArg2();
-    const Scalar& beta = exp2.getArg1();
-    const _Vector& vectorY = exp2.getArg2();
-    const _Matrix& matrix = matrixTimesVectorExp.getArg1();
-    const _Vector& vectorX = matrixTimesVectorExp.getArg2();
+    const Expression_SMV<ValueType>& exp1 = expression.getArg1();
+    const Expression_SV<ValueType>& exp2 = expression.getArg2();
+    const ValueType& alpha = exp1.getArg1();
+    const Expression_MV<ValueType> matrixTimesVectorExp = exp1.getArg2();
+    const ValueType& beta = exp2.getArg1();
+    const Vector<ValueType>& vectorY = exp2.getArg2();
+    const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
+    const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
+
     _Vector* resultPtr = this;
     _VectorPtr tmpResult;
 
@@ -480,69 +486,62 @@ _Vector& _Vector::operator=( const Expression_SMV_SV& expression )
     return *this;
 }
 
-_Vector& _Vector::operator=( const Expression_SVM_SV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SVM_SV<ValueType>& expression )
+
 {
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SVM_SV )" )
-    const Expression_SVM& exp1 = expression.getArg1();
-    const Expression_SV& exp2 = expression.getArg2();
-    const Scalar& alpha = exp1.getArg1();
-    const Expression<_Vector, _Matrix, Times>& vectorTimesMatrixExp = exp1.getArg2();
-    const Scalar& beta = exp2.getArg1();
-    const _Vector& vectorY = exp2.getArg2();
-    const _Vector& vectorX = vectorTimesMatrixExp.getArg1();
-    const _Matrix& matrix = vectorTimesMatrixExp.getArg2();
-    _Vector* resultPtr = this;
-    _VectorPtr tmpResult;
+    const Expression_SVM<ValueType>& exp1 = expression.getArg1();
+    const Expression_SV<ValueType>& exp2 = expression.getArg2();
+    const Expression_VM<ValueType>& vectorTimesMatrixExp = exp1.getArg2();
 
-    if ( &vectorX == this )
-    {
-        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( _Vector::create( this->getCreateValue() ) );
-        resultPtr = tmpResult.get();
-    }
+    // resolve : result = alhpa * A * x + beta * y
 
-    SCAI_LOG_DEBUG( logger, "call vectorTimesMatrix with matrix = " << matrix )
-    matrix.vectorTimesMatrix( *resultPtr, alpha, vectorX, beta, vectorY );
+    const ValueType& alpha = exp1.getArg1();
+    const ValueType& beta = exp2.getArg1();
+    const Vector<ValueType>& vectorY = exp2.getArg2();
+    const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
+    const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
 
-    if ( resultPtr != this )
-    {
-        swap( *tmpResult );
-    }
+    matrix.vectorTimesMatrix( *this, alpha, vectorX, beta, vectorY );
 
     return *this;
 }
 
-_Vector& _Vector::operator=( const Expression_SV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SV<ValueType>& expression )
 {
-    const Scalar& alpha = expression.getArg1();
-    const _Vector& x = expression.getArg2();
+    const ValueType& alpha = expression.getArg1();
+    const Vector<ValueType>& x = expression.getArg2();
 
     vectorPlusVector( alpha, x, 0, x );
 
     return *this;
 }
 
-_Vector& _Vector::operator=( const Expression_VV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_VV<ValueType>& expression )
 {
     SCAI_LOG_DEBUG( logger, "operator=, SVV( alpha, x, y) -> x * y" )
 
-    const _Vector& x = expression.getArg1();
-    const _Vector& y = expression.getArg2();
+    const Vector<ValueType>& x = expression.getArg1();
+    const Vector<ValueType>& y = expression.getArg2();
 
-    Scalar alpha( 1 );
+    ValueType alpha = 1;
 
     vectorTimesVector( alpha, x, y );
 
     return *this;
 }
 
-_Vector& _Vector::operator=( const Expression_SVV& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SVV<ValueType>& expression )
 {
-    const Scalar& alpha = expression.getArg1();
+    const ValueType& alpha = expression.getArg1();
 
-    const Expression_VV& exp = expression.getArg2();
-    const _Vector& x = exp.getArg1();
-    const _Vector& y = exp.getArg2();
+    const Expression_VV<ValueType>& exp = expression.getArg2();
+    const Vector<ValueType>& x = exp.getArg1();
+    const Vector<ValueType>& y = exp.getArg2();
 
     vectorTimesVector( alpha, x, y );
 
@@ -556,12 +555,13 @@ _Vector& _Vector::operator=( const _Vector& other )
     return *this;
 }
 
-_Vector& _Vector::operator=( const Expression_SV_S& expression )
+template<typename ValueType>
+_Vector& _Vector::operator=( const Expression_SV_S<ValueType>& expression )
 {
-    const Expression_SV& exp = expression.getArg1();
-    const Scalar& alpha = exp.getArg1();
-    const _Vector& x = exp.getArg2();
-    const Scalar& beta = expression.getArg2();
+    const Expression_SV<ValueType>& exp = expression.getArg1();
+    const ValueType& alpha = exp.getArg1();
+    const Vector<ValueType>& x = exp.getArg2();
+    const ValueType& beta = expression.getArg2();
 
     vectorPlusScalar( alpha, x, beta );
 
@@ -600,12 +600,22 @@ void _Vector::_scale( const Scalar value )
 
 _Vector& _Vector::operator+=( const _Vector& other )
 {
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), other ), Expression_SV( Scalar( 1 ), *this ) ) );
+    Scalar alpha = 1;
+    Scalar beta  = 1;
+
+    vectorPlusVector( alpha, *this, beta, other );
+
+    return *this;
 }
 
 _Vector& _Vector::operator-=( const _Vector& other )
 {
-    return operator=( Expression_SV_SV( Expression_SV( Scalar( 1 ), *this ), Expression_SV( Scalar( -1 ), other ) ) );
+    Scalar alpha = 1;
+    Scalar beta  = -1;
+
+    vectorPlusVector( alpha, *this, beta, other );
+
+    return *this;
 }
 
 _Vector& _Vector::operator+=( const Scalar value )
@@ -622,11 +632,21 @@ _Vector& _Vector::operator-=( const Scalar value )
     return *this;
 }
 
-_Vector& _Vector::operator+=( const Expression_SV& exp )
+template<typename ValueType>
+_Vector& _Vector::operator+=( const Expression_SV<ValueType>& exp )
 {
-    return operator=( Expression_SV_SV( exp, Expression_SV( Scalar( 1 ), *this ) ) );
+    ValueType alpha = 1;
+    ValueType beta  = exp.getArg1();
+
+    const Vector<ValueType>& x = *this;
+    const Vector<ValueType>& y = exp.getArg2();
+
+    vectorPlusVector( alpha, x, beta, y );
+  
+    return *this;
 }
 
+/*
 _Vector& _Vector::operator-=( const Expression_SV& exp )
 {
     Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
@@ -648,6 +668,7 @@ _Vector& _Vector::operator-=( const Expression_SMV& exp )
     Expression_SMV minusExp( -exp.getArg1(), exp.getArg2() );
     return operator=( Expression_SMV_SV( minusExp, Expression_SV( Scalar( 1 ), *this ) ) );
 }
+*/
 
 void _Vector::assign( const _HArray& localValues, DistributionPtr dist )
 {

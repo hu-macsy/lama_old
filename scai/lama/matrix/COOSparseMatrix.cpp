@@ -185,7 +185,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -199,7 +199,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SMM& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -213,7 +213,7 @@ COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SMM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM_SM& expression )
+COOSparseMatrix<ValueType>::COOSparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {

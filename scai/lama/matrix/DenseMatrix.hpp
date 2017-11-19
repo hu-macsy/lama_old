@@ -212,28 +212,28 @@ public:
      *
      * @param[in] expression  matrix expression alpha * A * B + beta * C
      */
-    DenseMatrix( const Expression_SMM_SM& expression );
+    DenseMatrix( const Expression_SMM_SM<ValueType>& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alpha * A * B
      *
      * @param[in] expression   matrix espression alpha * A * B
      */
-    DenseMatrix( const Expression_SMM& expression );
+    DenseMatrix( const Expression_SMM<ValueType>& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alpha * A + beta * b
      *
      * @param[in] expression   matrix espression scalar * matrix + scalar * matrix
      */
-    DenseMatrix( const Expression_SM_SM& expression );
+    DenseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /**
      * Constructor of a dense matrix by matrix expression alpha * A
      *
      * @param[in] expression   matrix expression alpha * A where alpha is a Scalar and A a matrix
      */
-    DenseMatrix( const Expression_SM& expression );
+    DenseMatrix( const Expression_SM<ValueType>& expression );
 
     /** Constructor of a replicated dense matrix by reading the matrix
      *  data from a file.

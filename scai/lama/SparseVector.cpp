@@ -341,7 +341,7 @@ void SparseVector<ValueType>::fillSparseRandom( const float fillRate, const Inde
 
 // linear algebra expression: a*x
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SV& expression ) : 
+SparseVector<ValueType>::SparseVector( const Expression_SV<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg2() )
 
@@ -352,7 +352,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV& expression ) :
 
 // linear algebra expression: a+x/x+a
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SV_S& expression ) : 
+SparseVector<ValueType>::SparseVector( const Expression_SV_S<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg1().getArg2() )
 
@@ -363,7 +363,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV_S& expression ) :
 
 // linear algebra expression: x*y
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_VV& expression ) : 
+SparseVector<ValueType>::SparseVector( const Expression_VV<ValueType>& expression ) : 
 
     Vector<ValueType>( expression.getArg1() )
 
@@ -373,7 +373,7 @@ SparseVector<ValueType>::SparseVector( const Expression_VV& expression ) :
 
 // linear algebra expression: s*x*y
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SVV& expression ) :
+SparseVector<ValueType>::SparseVector( const Expression_SVV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg2().getArg1() )
 
@@ -385,7 +385,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVV& expression ) :
 // linear algebra expression: a*x+b*y, inherit distribution/context from vector x
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SV_SV& expression ) :
+SparseVector<ValueType>::SparseVector( const Expression_SV_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2() )
 
@@ -398,7 +398,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SV_SV& expression ) :
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SMV_SV& expression ) :
+SparseVector<ValueType>::SparseVector( const Expression_SMV_SV<ValueType>& expression ) :
 
     Vector<ValueType>( expression.getArg1().getArg2().getArg1().getRowDistributionPtr(),
             expression.getArg1().getArg2().getArg1().getContextPtr() )
@@ -411,7 +411,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SMV_SV& expression ) :
 // linear algebra expression: a*A*x+b*y, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SVM_SV& expression )
+SparseVector<ValueType>::SparseVector( const Expression_SVM_SV<ValueType>& expression )
     : Vector<ValueType>( expression.getArg1().getArg2().getArg2().getColDistributionPtr(),
               expression.getArg1().getArg2().getArg2().getContextPtr() )
 {
@@ -423,7 +423,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SVM_SV& expression )
 // linear algebra expression: a*A*x, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SMV& expression )
+SparseVector<ValueType>::SparseVector( const Expression_SMV<ValueType>& expression )
 
     : Vector<ValueType>( expression.getArg2().getArg1().getRowDistributionPtr(),
               expression.getArg2().getArg1().getContextPtr() )
@@ -436,7 +436,7 @@ SparseVector<ValueType>::SparseVector( const Expression_SMV& expression )
 // linear algebra expression: a*x*A, inherit distribution/context from matrix A
 
 template<typename ValueType>
-SparseVector<ValueType>::SparseVector( const Expression_SVM& expression )
+SparseVector<ValueType>::SparseVector( const Expression_SVM<ValueType>& expression )
     : Vector<ValueType>( expression.getArg2().getArg2().getColDistributionPtr(),
               expression.getArg2().getArg2().getContextPtr() )
 {

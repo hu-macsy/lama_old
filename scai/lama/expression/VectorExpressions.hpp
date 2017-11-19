@@ -51,9 +51,10 @@ namespace lama
  * @return              Symbolic expression alpha * vectorX
  */
 
-inline Expression_SV operator*( const Scalar& alpha, const _Vector& vectorX )
+template<typename ValueType>
+inline Expression_SV<ValueType> operator*( const ValueType& alpha, const Vector<ValueType>& vectorX )
 {
-    return Expression_SV( alpha, vectorX );
+    return Expression_SV<ValueType>( alpha, vectorX );
 }
 
 /**
@@ -66,9 +67,10 @@ inline Expression_SV operator*( const Scalar& alpha, const _Vector& vectorX )
  * Note: due to normalization the arguments are switched in the symbolic expression
  */
 
-inline Expression_SV operator*( const _Vector& vectorX, const Scalar& alpha )
+template<typename ValueType>
+inline Expression_SV<ValueType> operator*( const Vector<ValueType>& vectorX, const ValueType& alpha )
 {
-    return Expression_SV( alpha, vectorX );
+    return Expression_SV<ValueType>( alpha, vectorX );
 }
 
 /**
@@ -78,11 +80,11 @@ inline Expression_SV operator*( const _Vector& vectorX, const Scalar& alpha )
  * @param[in] alpha    The scalar.
  * @return             Symbolic expression [1.0/alpha] * x
  */
-
-inline Expression_SV operator/( const _Vector& vector, const Scalar& alpha )
+template<typename ValueType>
+inline Expression_SV<ValueType> operator/( const Vector<ValueType>& vector, const ValueType& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
-    return Expression_SV( Scalar( 1.0 ) / alpha, vector );
+    return Expression_SV<ValueType>( ValueType( 1 ) / alpha, vector );
 }
 
 /**
@@ -93,9 +95,10 @@ inline Expression_SV operator/( const _Vector& vector, const Scalar& alpha )
  * @param[in] y     The second vector.
  * @return          The expression representing this sum.
  */
-inline Expression_VV operator*( const _Vector& x, const _Vector& y )
+template<typename ValueType>
+inline Expression_VV<ValueType> operator*( const Vector<ValueType>& x, const Vector<ValueType>& y )
 {
-    return Expression_VV( x, y );
+    return Expression_VV<ValueType>( x, y );
 }
 
 /**
@@ -106,9 +109,10 @@ inline Expression_VV operator*( const _Vector& x, const _Vector& y )
  * @param[in] exp   The vector times vector expression.
  * @return          The expression representing this SVV.
  */
-inline Expression_SVV operator*( const Scalar& alpha, const Expression_VV& exp )
+template<typename ValueType>
+inline Expression_SVV<ValueType> operator*( const ValueType& alpha, const Expression_VV<ValueType>& exp )
 {
-    return Expression_SVV( Scalar( alpha ), exp );
+    return Expression_SVV<ValueType>( alpha, exp );
 }
 
 /**
@@ -119,9 +123,10 @@ inline Expression_SVV operator*( const Scalar& alpha, const Expression_VV& exp )
  * @param[in] v     the second multiplicator
  * @return          The expression representing this SVV.
  */
-inline Expression_SVV operator*( const Expression_SV exp, const _Vector& v )
+template<typename ValueType>
+inline Expression_SVV<ValueType> operator*( const Expression_SV<ValueType> exp, const Vector<ValueType>& v )
 {
-    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( exp.getArg2(), v ) );
+    return Expression_SVV<ValueType>( exp.getArg1(), Expression_VV<ValueType>( exp.getArg2(), v ) );
 }
 
 /**
@@ -132,9 +137,10 @@ inline Expression_SVV operator*( const Expression_SV exp, const _Vector& v )
  * @param[in] exp   an existing expression scalar * vector
  * @return          The expression representing this SVV.
  */
-inline Expression_SVV operator*( const _Vector& v, const Expression_SV exp )
+template<typename ValueType>
+inline Expression_SVV<ValueType> operator*( const Vector<ValueType>& v, const Expression_SV<ValueType> exp )
 {
-    return Expression_SVV( Scalar( exp.getArg1() ), Expression_VV( v, exp.getArg2() ) );
+    return Expression_SVV<ValueType>( exp.getArg1(), Expression_VV<ValueType>( v, exp.getArg2() ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -150,10 +156,10 @@ inline Expression_SVV operator*( const _Vector& v, const Expression_SV exp )
  * @return          The expression representing this sum.
  */
 
-inline Expression_SV_S operator+( const Scalar& alpha, const _Vector& x )
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator+( const ValueType& alpha, const Vector<ValueType>& x )
 {
-    // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), alpha );
 }
 
 /**
@@ -165,10 +171,11 @@ inline Expression_SV_S operator+( const Scalar& alpha, const _Vector& x )
  * @return          The expression representing this sum.
  */
 
-inline Expression_SV_S operator+( const _Vector& x, const Scalar& alpha )
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const ValueType& alpha )
 {
     // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S( Expression_SV( Scalar( 1.0 ), x ), alpha );
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), alpha );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -184,9 +191,10 @@ inline Expression_SV_S operator+( const _Vector& x, const Scalar& alpha )
  * @return          The expression representing this sum.
  */
 
-inline Expression_SV_S operator+( const Expression_SV& exp, const Scalar& beta )
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator+( const Expression_SV<ValueType>& exp, const ValueType& beta )
 {
-    return Expression_SV_S( exp, beta );
+    return Expression_SV_S<ValueType>( exp, beta );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -201,9 +209,11 @@ inline Expression_SV_S operator+( const Expression_SV& exp, const Scalar& beta )
  * @param[in] y     The second vector.
  * @return          The expression representing this sum.
  */
-inline Expression_SV_SV operator+( const _Vector& x, const _Vector& y )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator+( const Vector<ValueType>& x, const Vector<ValueType>& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), x ), Expression_SV( Scalar( 1.0 ), y ) );
+    return Expression_SV_SV<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), 
+                                        Expression_SV<ValueType>( ValueType( 1 ), y ) );
 }
 
 /**
@@ -213,10 +223,10 @@ inline Expression_SV_SV operator+( const _Vector& x, const _Vector& y )
  * @param[in] exp       The Vector times Scalar.
  * @return              The expression representing this difference.
  */
-
-inline Expression_SV_SV operator+( const _Vector& vector, const Expression_SV& exp )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator+( const Vector<ValueType>& vector, const Expression_SV<ValueType>& exp )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), vector ), exp );
+    return Expression_SV_SV<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), vector ), exp );
 }
 
 /**
@@ -226,10 +236,10 @@ inline Expression_SV_SV operator+( const _Vector& vector, const Expression_SV& e
  * @param[in] exp       Expression of Scalar times Vector.
  * @return              The expression representing this difference.
  */
-
-inline Expression_SV_SV operator+( const Expression_SV& exp, const _Vector& vector )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator+( const Expression_SV<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( Scalar( 1.0 ), vector ) );
+    return Expression_SV_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
 }
 
 /**
@@ -239,10 +249,10 @@ inline Expression_SV_SV operator+( const Expression_SV& exp, const _Vector& vect
  * @param[in] exp2      The vector times Scalar
  * @return              The expression representing this difference.
  */
-
-inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_SV& exp2 )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator+( const Expression_SV<ValueType>& exp1, const Expression_SV<ValueType>& exp2 )
 {
-    return Expression_SV_SV( exp1, exp2 );
+    return Expression_SV_SV<ValueType>( exp1, exp2 );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -257,10 +267,11 @@ inline Expression_SV_SV operator+( const Expression_SV& exp1, const Expression_S
  * @param[in] y     The second vector is subtrahend
  * @return          Normalized symbolic expression ' 1 * x + (-1) * y'
  */
-
-inline Expression_SV_SV operator-( const _Vector& x, const _Vector& y )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator-( const Vector<ValueType>& x, const Vector<ValueType>& y )
 {
-    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), x ), Expression_SV( Scalar( -1.0 ), y ) );
+    return Expression_SV_SV<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), 
+                                        Expression_SV<ValueType>( ValueType( -1 ), y ) );
 }
 
 /**
@@ -271,10 +282,10 @@ inline Expression_SV_SV operator-( const _Vector& x, const _Vector& y )
  * @return              The expression representing this difference.
  *
  */
-
-inline Expression_SV_SV operator-( const Expression_SV& exp, const _Vector& vector )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator-( const Expression_SV<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SV_SV( exp, Expression_SV( Scalar( -1.0 ), vector ) );
+    return Expression_SV_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( -1 ), vector ) );
 }
 
 /**
@@ -284,11 +295,11 @@ inline Expression_SV_SV operator-( const Expression_SV& exp, const _Vector& vect
  * @param[in] exp       Expression of Scalar times Vector.
  * @return              The expression representing this difference.
  */
-
-inline Expression_SV_SV operator-( const _Vector& vector, const Expression_SV& exp )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator-( const Vector<ValueType>& vector, const Expression_SV<ValueType>& exp )
 {
-    Expression_SV minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SV_SV( Expression_SV( Scalar( 1.0 ), vector ), minusExp );
+    return Expression_SV_SV<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), vector ),
+                                        Expression_SV<ValueType>( -exp.getArg1(), exp.getArg2() ) );
 }
 
 /**
@@ -299,11 +310,11 @@ inline Expression_SV_SV operator-( const _Vector& vector, const Expression_SV& e
  * @param[in] exp2     The subtranhend as symbolic 'scalar * vector'
  * @return             symoblic expression for the difference normed as 'scalar * vector + scalar * vector'
  */
-
-inline Expression_SV_SV operator-( const Expression_SV& exp1, const Expression_SV& exp2 )
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator-( const Expression_SV<ValueType>& exp1, const Expression_SV<ValueType>& exp2 )
 {
-    Expression_SV minusExp2( -exp2.getArg1(), exp2.getArg2() );
-    return Expression_SV_SV( exp1, minusExp2 );
+    Expression_SV<ValueType> minusExp2( -exp2.getArg1(), exp2.getArg2() );
+    return Expression_SV_SV<ValueType>( exp1, minusExp2 );
 }
 
 } /* end namespace lama */

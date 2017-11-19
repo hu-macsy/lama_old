@@ -185,7 +185,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -199,7 +199,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -213,7 +213,7 @@ DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SMM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM_SM& expression )
+DIASparseMatrix<ValueType>::DIASparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {

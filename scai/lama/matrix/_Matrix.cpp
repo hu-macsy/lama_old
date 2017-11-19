@@ -294,11 +294,12 @@ _Matrix& _Matrix::operator=( const _Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
-_Matrix& _Matrix::operator=( const Expression_SM& exp )
+template<typename ValueType>
+_Matrix& _Matrix::operator=( const Expression_SM<ValueType>& exp )
 {
     // exp is Expression object that stands for s * A
-    const _Matrix& A = exp.getArg2();
-    const Scalar& s = exp.getArg1();
+    const Matrix<ValueType>& A = exp.getArg2();
+    const ValueType& s = exp.getArg1();
     this->matrixTimesScalar( A, s );
     return *this;
 }
@@ -314,15 +315,19 @@ _Matrix& _Matrix::operator*=( const Scalar exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-_Matrix& _Matrix::operator+=( const Expression_SM& exp )
+/*
+template<typename ValueType>
+_Matrix& _Matrix::operator+=( const Expression_SM<ValueType>& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
-    *this = Expression_SM_SM( exp, Expression_SM( Scalar( 1.0 ), *this ) );
+    *this = Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), *this ) );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator-=( const Expression_SM& exp )
 {
     // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
@@ -330,27 +335,33 @@ _Matrix& _Matrix::operator-=( const Expression_SM& exp )
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), minusExp );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator+=( const _Matrix& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( 1.0 ), exp ) );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator-=( const _Matrix& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
     *this = Expression_SM_SM( Expression_SM( Scalar( 1.0 ), *this ), Expression_SM( Scalar( -1.0 ), exp ) );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 _Matrix& _Matrix::operator=( const Expression_SMM& exp )
 {
     // exp is Expression object that stands for A * B with matrices A * B
@@ -359,6 +370,7 @@ _Matrix& _Matrix::operator=( const Expression_SMM& exp )
     *this = Expression_SMM_SM( exp, exp2 );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -377,6 +389,7 @@ double _Matrix::getSparsityRate() const
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp )
 {
     // check sanity of matrix product exp = A * B
@@ -413,6 +426,7 @@ void _Matrix::sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const
         COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << B << ", ARG2 = " << C )
     }
 }
+*/
 
 void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
 {
@@ -438,18 +452,23 @@ void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
 /**
  * @brief the assignment operator for a GEMM expression.
  */
-_Matrix& _Matrix::operator=( const Expression_SMM_SM& exp )
+template<typename ValueType>
+_Matrix& _Matrix::operator=( const Expression_SMM_SM<ValueType>& exp )
 {
-    const Expression_SMM& arg1 = exp.getArg1();
-    const Expression_SM& arg11 = arg1.getArg1();
-    const Expression_SM& arg2 = exp.getArg2();
-    const _Matrix& A = arg11.getArg2();
-    const _Matrix& B = arg1.getArg2();
-    const _Matrix& C = arg2.getArg2();
-    const Scalar& alpha = arg11.getArg1();
-    const Scalar& beta = arg2.getArg1();
+    const Expression_SMM<ValueType>& arg1 = exp.getArg1();
+    const Expression_SM<ValueType>& arg11 = arg1.getArg1();
+    const Expression_SM<ValueType>& arg2 = exp.getArg2();
+
+    const Matrix<ValueType>& A = arg11.getArg2();
+    const Matrix<ValueType>& B = arg1.getArg2();
+    const Matrix<ValueType>& C = arg2.getArg2();
+
+    const ValueType& alpha = arg11.getArg1();
+    const ValueType& beta  = arg2.getArg1();
+
     SCAI_LOG_INFO( logger,
                    "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
+    /*
     const Scalar zero( 0 );
 
     if ( beta == zero )
@@ -460,6 +479,7 @@ _Matrix& _Matrix::operator=( const Expression_SMM_SM& exp )
     {
         sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ), C );
     }
+    */
 
     SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
     A.matrixTimesMatrix( *this, alpha, B, beta, C );
@@ -473,14 +493,15 @@ _Matrix& _Matrix::operator=( const Expression_SMM_SM& exp )
 /**
  * @brief the assignment operator for a MM addition.
  */
-_Matrix& _Matrix::operator=( const Expression_SM_SM& exp )
+template<typename ValueType>
+_Matrix& _Matrix::operator=( const Expression_SM_SM<ValueType>& exp )
 {
     SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
-    const _Matrix& A = exp.getArg1().getArg2();
-    const _Matrix& B = exp.getArg2().getArg2();
-    const Scalar& alpha = exp.getArg1().getArg1();
-    const Scalar& beta = exp.getArg2().getArg1();
-    const Scalar zero( 0.0 );
+    const Matrix<ValueType>& A = exp.getArg1().getArg2();
+    const Matrix<ValueType>& B = exp.getArg2().getArg2();
+    const ValueType& alpha = exp.getArg1().getArg1();
+    const ValueType& beta = exp.getArg2().getArg1();
+    const ValueType zero( 0.0 );
 
     if ( beta == zero )
     {

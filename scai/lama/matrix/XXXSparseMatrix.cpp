@@ -185,7 +185,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM& expression )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -199,7 +199,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SMM& expression )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -213,7 +213,7 @@ XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SMM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM_SM& expression )
+XXXSparseMatrix<ValueType>::XXXSparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {

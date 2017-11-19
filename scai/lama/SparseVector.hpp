@@ -243,14 +243,14 @@ public:
      *
      * @param[in] expression    alpha * x
      */
-    explicit SparseVector( const Expression_SV& expression );
+    explicit SparseVector( const Expression_SV<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression alpha + x.
      *
      * @param[in] expression    alpha * x + beta
      */
-    explicit SparseVector( const Expression_SV_S& expression );
+    explicit SparseVector( const Expression_SV_S<ValueType>& expression );
 
     /**
      *  @brief creates a SparseVector with the Expression alpha * x * Y.
@@ -258,7 +258,7 @@ public:
      * @param[in] expression    x * y
      */
 
-    explicit SparseVector( const Expression_VV& expression );
+    explicit SparseVector( const Expression_VV<ValueType>& expression );
 
     /**
      *  @brief creates a SparseVector with the Expression alpha * x * Y.
@@ -266,14 +266,14 @@ public:
      * @param[in] expression    alpha * x * y
      */
 
-    explicit SparseVector( const Expression_SVV& expression );
+    explicit SparseVector( const Expression_SVV<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression alpha * x + beta * y.
      *
      * @param[in] expression  is alpha * x + beta * y
      */
-    explicit SparseVector( const Expression_SV_SV& expression );
+    explicit SparseVector( const Expression_SV_SV<ValueType>& expression );
 
     /* --------------------------------------------------------------------- */
 
@@ -282,42 +282,42 @@ public:
      *
      * @param[in] expression     alpha * A * x + beta * y
      */
-    explicit SparseVector( const Expression_SMV_SV& expression );
+    explicit SparseVector( const Expression_SMV_SV<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression alpha * x * A + beta * y.
      *
      * @param[in] expression     alpha * x * A + beta * y
      */
-    explicit SparseVector( const Expression_SVM_SV& expression );
+    explicit SparseVector( const Expression_SVM_SV<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression alpha * A * x.
      *
      * @param[in] expression     alpha * A * x
      */
-    explicit SparseVector( const Expression_SMV& expression );
+    explicit SparseVector( const Expression_SMV<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression alpha * x * A.
      *
      * @param[in] expression     alpha * x * A
      */
-    explicit SparseVector( const Expression_SVM& expression );
+    explicit SparseVector( const Expression_SVM<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression A * x.
      *
      * @param[in] expression     A * x
      */
-    explicit SparseVector( const Expression_MV& expression );
+    explicit SparseVector( const Expression_MV<ValueType>& expression );
 
     /**
      * @brief creates a SparseVector with the Expression x * A.
      *
      * @param[in] expression     x * A
      */
-    explicit SparseVector( const Expression_VM& expression );
+    explicit SparseVector( const Expression_VM<ValueType>& expression );
 
     /**
      * @brief releases all allocated resources.

@@ -136,11 +136,11 @@ public:
 
     // Expression constructors
 
-    explicit ELLSparseMatrix( const Expression_SM& expression );
+    explicit ELLSparseMatrix( const Expression_SM<ValueType>& expression );
 
-    explicit ELLSparseMatrix( const Expression_SMM& expression );
+    explicit ELLSparseMatrix( const Expression_SMM<ValueType>& expression );
 
-    explicit ELLSparseMatrix( const Expression_SM_SM& expression );
+    explicit ELLSparseMatrix( const Expression_SM_SM<ValueType>& expression );
 
     /** @brief Constructor of a ELL sparse matrix with distributed ELL storage data.
      *

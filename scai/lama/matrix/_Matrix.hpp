@@ -830,28 +830,32 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    _Matrix& operator=( const Expression_SM& exp );
+    template<typename ValueType>
+    _Matrix& operator=( const Expression_SM<ValueType>& exp );
 
     /**
      * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
      *
      * @param[in] exp   representation of alpha * A * B as Expression object
      */
-    _Matrix& operator=( const Expression_SMM& exp );
+    template<typename ValueType>
+    _Matrix& operator=( const Expression_SMM<ValueType>& exp );
 
     /**
      * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
      *
      * @param[in] exp   representation of alpha * A * B + beta * C as Expression object
      */
-    _Matrix& operator=( const Expression_SMM_SM& exp );
+    template<typename ValueType>
+    _Matrix& operator=( const Expression_SMM_SM<ValueType>& exp );
 
     /**
      * @brief The assignment operator for alpha * A + beta * B
      *
      * @param[in] exp   expression of the form alpha * A + beta * B
      */
-    _Matrix& operator=( const Expression_SM_SM& exp );
+    template<typename ValueType>
+    _Matrix& operator=( const Expression_SM_SM<ValueType>& exp );
 
     /**
      * @brief The assignment operator this *= alpha
@@ -872,7 +876,8 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    _Matrix& operator+=( const Expression_SM& exp );
+    template<typename ValueType>
+    _Matrix& operator+=( const Expression_SM<ValueType>& exp );
 
     /**
      * @brief The assignment operator this -= A
@@ -886,7 +891,8 @@ public:
      *
      * @param[in] exp   representation of alpha * A as Expression object
      */
-    _Matrix& operator-=( const Expression_SM& exp );
+    template<typename ValueType>
+    _Matrix& operator-=( const Expression_SM<ValueType>& exp );
 
     /**
      * @brief Computes the inverse of a matrix.
@@ -1178,9 +1184,9 @@ private:
 
     using Distributed::getDistributionPtr;
 
-    void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp );
+    // void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp );
 
-    void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C );
+    // void sanityCheck( const Expression<_Matrix, _Matrix, Times>& exp, const _Matrix& C );
 
     void sanityCheck( const _Matrix& A, const _Matrix& B );
 

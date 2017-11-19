@@ -185,7 +185,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM& expression )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -199,7 +199,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SMM& expression )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SMM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 
@@ -213,7 +213,7 @@ ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SMM& expression )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM_SM& expression )
+ELLSparseMatrix<ValueType>::ELLSparseMatrix( const Expression_SM_SM<ValueType>& expression )
 
     : SparseMatrix<ValueType>( createStorage() )
 {
