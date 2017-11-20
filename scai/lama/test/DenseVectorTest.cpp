@@ -254,13 +254,14 @@ BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
 
     dmemo::TestDistributions dists( n );
 
-    for ( size_t i = 0; i < dists.size(); ++i )
+    // for ( size_t i = 0; i < dists.size(); ++i )
+    for ( size_t i = 0; i < 1; ++i )
     {
         dmemo::DistributionPtr dist = dists[i];
 
         DenseVector<ValueType> b( dist , 3 );
         DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a + b );
+        DenseVector<ValueType> c( 1 * a + 1 * b );
         DenseVector<ValueType> r( dist , 6 );
 
         // prove same distribution, same values of r and c

@@ -519,8 +519,11 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueTy
     const Matrix<ValueType>& B = arg1.getArg2();
     const Matrix<ValueType>& C = arg2.getArg2();
 
-    const ValueType& alpha = arg11.getArg1();
-    const ValueType& beta  = arg2.getArg1();
+    const Scalar& alphaS = arg11.getArg1();
+    const Scalar& betaS  = arg2.getArg1();
+
+    const ValueType& alpha = alphaS.getValue<ValueType>();
+    const ValueType& beta  = betaS.getValue<ValueType>();
 
     SCAI_LOG_INFO( logger,
                    "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
@@ -551,8 +554,10 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM_SM<ValueTyp
     SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
     const Matrix<ValueType>& A = exp.getArg1().getArg2();
     const Matrix<ValueType>& B = exp.getArg2().getArg2();
-    const ValueType& alpha = exp.getArg1().getArg1();
-    const ValueType& beta = exp.getArg2().getArg1();
+    const Scalar& alphaS = exp.getArg1().getArg1();
+    const Scalar& betaS = exp.getArg2().getArg1();
+    const ValueType& alpha = alphaS.getValue<ValueType>();
+    const ValueType& beta = betaS.getValue<ValueType>();
     const ValueType zero( 0.0 );
 
     if ( beta == zero )
@@ -582,12 +587,12 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM<ValueType>
 {
     // exp =  ( alpha * A ) * B
 
-    ValueType alpha = exp.getArg1().getArg1();
+    const Scalar& alpha = exp.getArg1().getArg1();
 
     const Matrix<ValueType>& A = exp.getArg1().getArg2();
     const Matrix<ValueType>& B = exp.getArg2();
 
-    A.matrixTimesMatrix( *this, alpha, B, ValueType( 0 ), *this );
+    A.matrixTimesMatrix( *this, alpha.getValue<ValueType>(), B, ValueType( 0 ), *this );
 
     return *this;
 }
@@ -599,8 +604,8 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM<ValueType>&
 {
     // exp is Expression object that stands for s * A
     const Matrix<ValueType>& A = exp.getArg2();
-    const ValueType& s = exp.getArg1();
-    this->matrixTimesScalar( A, s );
+    const Scalar& s = exp.getArg1();
+    this->matrixTimesScalar( A, s.getValue<ValueType>() );
     return *this;
 }
 
@@ -612,8 +617,8 @@ Matrix<ValueType>& Matrix<ValueType>::operator+=( const Matrix<ValueType>& exp )
 {
     // this += A  -> this = 1.0 * A + 1.0 * this
 
-    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), *this ), 
-                                         Expression_SM<ValueType>( ValueType( 1 ), exp ) );
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), *this ), 
+                                         Expression_SM<ValueType>( Scalar( 1 ), exp ) );
     return *this;
 }
 
@@ -624,8 +629,8 @@ Matrix<ValueType>& Matrix<ValueType>::operator-=( const Matrix<ValueType>& exp )
 {
     // this -= A  -> this = -1.0 * A + 1.0 * this
 
-    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), *this ), 
-                                         Expression_SM<ValueType>( ValueType( -1 ), exp ) );
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), *this ), 
+                                         Expression_SM<ValueType>( Scalar( -1 ), exp ) );
     return *this;
 }
 
@@ -635,7 +640,7 @@ template<typename ValueType>
 Matrix<ValueType>& Matrix<ValueType>::operator+=( const Expression_SM<ValueType>& exp )
 {
     // this += alpha * A  -> this = alpha * A + 1.0 * this
-    *this = Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), *this ) );
+    *this = Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), *this ) );
     return *this;
 }
 
@@ -646,7 +651,7 @@ Matrix<ValueType>& Matrix<ValueType>::operator-=( const Expression_SM<ValueType>
 {
     // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
     Expression_SM<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
-    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), *this ), minusExp );
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), *this ), minusExp );
     return *this;
 }
 

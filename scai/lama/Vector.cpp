@@ -191,12 +191,14 @@ Scalar Vector<ValueType>::_dotProduct( const _Vector& other ) const
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_SV<ValueType>& expression )
 {
-    SCAI_LOG_DEBUG( logger, "this = a * vector1 + b * vector2, check vector1.size() == vector2.size()" )
-
-    const ValueType& alpha     = expression.getArg1().getArg1();
-    const ValueType& beta      = expression.getArg2().getArg1();
+    const Scalar alphaS        = expression.getArg1().getArg1();
+    const Scalar betaS         = expression.getArg2().getArg1();
+    const ValueType alpha      = alphaS.getValue<ValueType>();
+    const ValueType beta       = betaS.getValue<ValueType>();
     const Vector<ValueType>& x = expression.getArg1().getArg2();
     const Vector<ValueType>& y = expression.getArg2().getArg2();
+
+    SCAI_LOG_DEBUG( logger, "this = " << alpha << " * x = " << x << " + " << beta << " * y = " << y )
 
     // Note: all checks are done the vector specific implementations
 
@@ -209,11 +211,11 @@ template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType>& expression )
 {
     const Expression_SV<ValueType>& exp = expression.getArg1();
-    const ValueType& alpha = exp.getArg1();
+    const Scalar& alpha = exp.getArg1();
     const Vector<ValueType>& x = exp.getArg2();
-    const ValueType& beta = expression.getArg2();
+    const Scalar& beta = expression.getArg2();
 
-    vectorPlusScalar( alpha, x, beta );
+    vectorPlusScalar( alpha.getValue<ValueType>(), x, beta.getValue<ValueType>() );
 
     return *this;
 }
@@ -273,9 +275,11 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
     SCAI_LOG_INFO( logger, "Vector::operator=( Expression_SMV_SV )" )
     const Expression_SMV<ValueType>& exp1 = expression.getArg1();
     const Expression_SV<ValueType>& exp2 = expression.getArg2();
-    const ValueType& alpha = exp1.getArg1();
+    Scalar alphaS = exp1.getArg1();
+    ValueType alpha = alphaS.getValue<ValueType>();
     const Expression_MV<ValueType> matrixTimesVectorExp = exp1.getArg2();
-    const ValueType& beta = exp2.getArg1();
+    const Scalar& betaS = exp2.getArg1();
+    const ValueType& beta = betaS.getValue<ValueType>();
     const Vector<ValueType>& vectorY = exp2.getArg2();
     const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
     const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
@@ -312,8 +316,10 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueTy
     
     // resolve : result = alhpa * A * x + beta * y
     
-    const ValueType& alpha = exp1.getArg1();
-    const ValueType& beta = exp2.getArg1();
+    const Scalar& alphaS  = exp1.getArg1();
+    const Scalar& betaS   = exp2.getArg1();
+    const ValueType alpha = alphaS.getValue<ValueType>();
+    const ValueType beta  = betaS.getValue<ValueType>();
     const Vector<ValueType>& vectorY = exp2.getArg2();
     const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
     const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
@@ -326,10 +332,10 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueTy
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV<ValueType>& expression )
 {
-    const ValueType& alpha = expression.getArg1();
+    const Scalar& alpha = expression.getArg1();
     const Vector<ValueType>& x = expression.getArg2();
 
-    vectorPlusVector( alpha, x, 0, x );
+    vectorPlusVector( alpha.getValue<ValueType>(), x, 0, x );
 
     return *this;
 }
@@ -350,13 +356,16 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_VV<ValueType>&
 }
 
 template<typename ValueType>
-Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>& expression )
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>& exp )
 {
-    const ValueType& alpha = expression.getArg1();
+    // extract componennts from alpha * ( x * y )
 
-    const Expression_VV<ValueType>& exp = expression.getArg2();
-    const Vector<ValueType>& x = exp.getArg1();
-    const Vector<ValueType>& y = exp.getArg2();
+    Scalar a = exp.getArg1();
+
+    const ValueType alpha = a.getValue<ValueType>();
+
+    const Vector<ValueType>& x = exp.getArg2().getArg1();
+    const Vector<ValueType>& y = exp.getArg2().getArg2();
 
     vectorTimesVector( alpha, x, y );
 
@@ -367,8 +376,10 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SV<ValueType>& exp )
 {
+    const Scalar b = exp.getArg1();
+
     ValueType alpha = 1;
-    ValueType beta  = exp.getArg1();
+    ValueType beta  = b.getValue<ValueType>();
 
     const Vector<ValueType>& x = *this;
     const Vector<ValueType>& y = exp.getArg2();
@@ -382,12 +393,12 @@ template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SV<ValueType>& exp )
 {
     ValueType alpha = 1;
-    ValueType beta  = exp.getArg1();
+    Scalar beta  = exp.getArg1();
 
     const Vector<ValueType>& x = *this;
     const Vector<ValueType>& y = exp.getArg2();
 
-    vectorPlusVector( alpha, x, -beta, y );
+    vectorPlusVector( alpha, x, -beta.getValue<ValueType>(), y );
 
     return *this;
 }

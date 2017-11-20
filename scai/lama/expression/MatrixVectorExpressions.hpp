@@ -66,13 +66,13 @@ namespace lama
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Matrix<ValueType>& matrix, const Vector<ValueType>& vector )
 {
-    return Expression_SMV<ValueType>( ValueType( 1 ), Expression_MV<ValueType>( matrix, vector ) );
+    return Expression_SMV<ValueType>( Scalar( 1 ), Expression_MV<ValueType>( matrix, vector ) );
 }
 
 template<typename ValueType>
 inline Expression_SVM<ValueType> operator*( const Vector<ValueType>& vector, const Matrix<ValueType>& matrix )
 {
-    return Expression_SVM<ValueType>( ValueType( 1 ), Expression_VM<ValueType>( vector, matrix ) );
+    return Expression_SVM<ValueType>( Scalar( 1 ), Expression_VM<ValueType>( vector, matrix ) );
 }
 
 /**
@@ -86,7 +86,7 @@ inline Expression_SVM<ValueType> operator*( const Vector<ValueType>& vector, con
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Scalar& scalar, const Expression_MV<ValueType>& exp )
 {
-    return Expression_SMV<ValueType>( scalar.getValue<ValueType>(), exp );
+    return Expression_SMV<ValueType>( scalar, exp );
 }
 
 /**
@@ -100,32 +100,32 @@ inline Expression_SMV<ValueType> operator*( const Scalar& scalar, const Expressi
 template<typename ValueType>
 inline Expression_SVM<ValueType> operator*( const Scalar& scalar, const Expression_VM<ValueType>& exp )
 {
-    return Expression_SVM<ValueType>( scalar.getValue<ValueType>(), exp );
+    return Expression_SVM<ValueType>( scalar, exp );
 }
 
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Scalar& scalar, const Expression_SMV<ValueType>& exp )
 {
-    return Expression_SMV<ValueType>( scalar.getValue<ValueType>() * exp.getArg1(), exp.getArg2() );
+    return Expression_SMV<ValueType>( scalar * exp.getArg1(), exp.getArg2() );
 }
 
 template<typename ValueType>
 inline Expression_SVM<ValueType> operator*( const Scalar& scalar, const Expression_SVM<ValueType>& exp )
 {
     const Expression_VM<ValueType>& vm = exp.getArg2();
-    return Expression_SVM<ValueType>( scalar.getValue<ValueType>() * exp.getArg1(), vm );
+    return Expression_SVM<ValueType>( scalar * exp.getArg1(), vm );
 }
 
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Expression_SMV<ValueType>& exp, const Scalar& scalar )
 {
-    return Expression_SMV<ValueType>( exp.getArg1() * scalar.getValue<ValueType>(), exp.getArg2() );
+    return Expression_SMV<ValueType>( exp.getArg1() * scalar, exp.getArg2() );
 }
 
 template<typename ValueType>
 inline Expression_SVM<ValueType> operator*( const Expression_SVM<ValueType>& exp, const Scalar& scalar )
 {
-    return Expression_SVM<ValueType>( exp.getArg1() * scalar.getValue<ValueType>(), exp.getArg2() );
+    return Expression_SVM<ValueType>( exp.getArg1() * scalar, exp.getArg2() );
 }
 
 /**
@@ -191,7 +191,7 @@ inline Expression_SVM<ValueType> operator*( const Vector<ValueType>& vector, con
 template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( -1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( -1 ), vector ) );
 }
 
 /**
@@ -205,7 +205,7 @@ inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV<ValueType>& 
 template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator-( const Expression_SVM<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( -1 ), vector ) );
+    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( -1 ), vector ) );
 }
 
 /**
@@ -220,7 +220,7 @@ template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator-( const Vector<ValueType>& vector, const Expression_SMV<ValueType>& exp )
 {
     Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -235,7 +235,7 @@ template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator-( const Vector<ValueType>& vector, const Expression_SVM<ValueType>& exp )
 {
     Expression_SVM<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SVM_SV<ValueType>( minusExp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
+    return Expression_SVM_SV<ValueType>( minusExp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -249,7 +249,7 @@ inline Expression_SVM_SV<ValueType> operator-( const Vector<ValueType>& vector, 
 template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator+( const Vector<ValueType>& vector, const Expression_SMV<ValueType>& exp )
 {
-    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -263,7 +263,7 @@ inline Expression_SMV_SV<ValueType> operator+( const Vector<ValueType>& vector, 
 template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator+( const Vector<ValueType>& vector, const Expression_SVM<ValueType>& exp )
 {
-    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
+    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -277,7 +277,7 @@ inline Expression_SVM_SV<ValueType> operator+( const Vector<ValueType>& vector, 
 template<typename ValueType>
 inline Expression_SMV_SV<ValueType> operator+( const Expression_SMV<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
+    return Expression_SMV_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /**
@@ -291,7 +291,7 @@ inline Expression_SMV_SV<ValueType> operator+( const Expression_SMV<ValueType>& 
 template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator+( const Expression_SVM<ValueType>& exp, const Vector<ValueType>& vector )
 {
-    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( ValueType( 1 ), vector ) );
+    return Expression_SVM_SV<ValueType>( exp, Expression_SV<ValueType>( Scalar( 1 ), vector ) );
 }
 
 /* ------------------------------------------------------------------------- */

@@ -72,12 +72,14 @@ public:
     typedef T1 Arg1Type;
     typedef T2 Arg2Type;
     typedef Expression ExpressionType;
+    typedef const ExpressionType ExpressionMemberType;
 
 private:
 
     const ExpressionTypes mExpressionType;
-    const Arg1Type& mArg1;
-    const Arg2Type& mArg2;
+
+    typename Arg1Type::ExpressionMemberType mArg1;
+    typename Arg2Type::ExpressionMemberType mArg2;
 
 public:
 
@@ -131,6 +133,7 @@ public:
     }
 };
 
+class Scalar;
 template<typename ValueType> class Matrix;
 template<typename ValueType> class Vector;
 
@@ -139,7 +142,7 @@ template<typename ValueType> class Vector;
 /** Symbolic expression 'Scalar * Vector */
 
 template<typename ValueType>
-using Expression_SV = Expression<ValueType, Vector<ValueType>, Times>;
+using Expression_SV = Expression<Scalar, Vector<ValueType>, Times>;
 
 /** Symbolic expression 'Vector1 * Vector2 compWise */
 
@@ -149,12 +152,12 @@ using Expression_VV = Expression<Vector<ValueType>, Vector<ValueType>, Times>;
 /** Symbolic expression 'Scalar * Vector * Vector' */
 
 template<typename ValueType>
-using Expression_SVV = Expression<ValueType, Expression<Vector<ValueType>, Vector<ValueType>, Times>, Times>;
+using Expression_SVV = Expression<Scalar, Expression<Vector<ValueType>, Vector<ValueType>, Times>, Times>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar' */
 
 template<typename ValueType>
-using Expression_SV_S = Expression<Expression_SV<ValueType>, ValueType, Plus>;
+using Expression_SV_S = Expression<Expression_SV<ValueType>, Scalar, Plus>;
 
 /** Symbolic expression 'Scalar * Vector + Scalar * Vector' */
 
@@ -168,7 +171,7 @@ using Expression_SV_SV = Expression<Expression_SV<ValueType>, Expression_SV<Valu
 /** Symbolic expression 'Scalar * Matrix' */
 
 template<typename ValueType>
-using Expression_SM = Expression<ValueType, Matrix<ValueType>, Times>;
+using Expression_SM = Expression<Scalar, Matrix<ValueType>, Times>;
 
 /* ============================================================================ */
 /*    Matrix - Vector expressions                                               */
@@ -187,12 +190,12 @@ using Expression_VM = Expression<Vector<ValueType>, Matrix<ValueType>, Times>;
 /** Symbolic expression 'Scalar * Matrix * Vector' */
 
 template<typename ValueType>
-using Expression_SMV = Expression<ValueType, Expression<Matrix<ValueType>, Vector<ValueType>, Times>, Times>;
+using Expression_SMV = Expression<Scalar, Expression<Matrix<ValueType>, Vector<ValueType>, Times>, Times>;
 
 /** Symbolic expression 'Scalar * Vector * Matrix' */
 
 template<typename ValueType>
-using Expression_SVM = Expression<ValueType, Expression<Vector<ValueType>, Matrix<ValueType>, Times>, Times>;
+using Expression_SVM = Expression<Scalar, Expression<Vector<ValueType>, Matrix<ValueType>, Times>, Times>;
 
 /** Symbolic expression 'Scalar * Matrix * Vector + Scalar * Vector' */
 

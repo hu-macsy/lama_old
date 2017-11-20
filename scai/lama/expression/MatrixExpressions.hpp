@@ -58,8 +58,8 @@ namespace lama
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator+( const Matrix<ValueType>& matrixA, const Matrix<ValueType>& matrixB )
 {
-    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), matrixA ), 
-                                        Expression_SM<ValueType>( ValueType( 1 ), matrixB ) );
+    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), matrixA ), 
+                                        Expression_SM<ValueType>( Scalar( 1 ), matrixB ) );
 }
 
 /**
@@ -72,8 +72,8 @@ inline Expression_SM_SM<ValueType> operator+( const Matrix<ValueType>& matrixA, 
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrixA, const Matrix<ValueType>& matrixB )
 {
-    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), matrixA ), 
-                                        Expression_SM<ValueType>( ValueType( -1 ), matrixB ) );
+    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), matrixA ), 
+                                        Expression_SM<ValueType>( Scalar( -1 ), matrixB ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -93,7 +93,7 @@ inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrixA, 
 template<typename ValueType>
 inline Expression_SM<ValueType> operator*( const Scalar& scalar, const Matrix<ValueType>& matrix )
 {
-    return Expression_SM<ValueType>( scalar.getValue<ValueType>(), matrix );
+    return Expression_SM<ValueType>( scalar, matrix );
 }
 
 /**
@@ -107,7 +107,7 @@ inline Expression_SM<ValueType> operator*( const Scalar& scalar, const Matrix<Va
 template<typename ValueType>
 inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, const Scalar& scalar )
 {
-    return Expression_SM<ValueType>( scalar.getValue<ValueType>(), matrix );
+    return Expression_SM<ValueType>( scalar, matrix );
 }
 
 /**
@@ -122,7 +122,7 @@ template<typename ValueType>
 inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
-    return Expression_SM<ValueType>( ValueType( 1 ) / alpha.getValue<ValueType>, matrix );
+    return Expression_SM<ValueType>( Scalar( 1 ) / alpha, matrix );
 }
 
 /* --------------------------------------------------------------- */
@@ -142,7 +142,7 @@ inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, cons
 template<typename ValueType>
 inline Expression_SMM<ValueType> operator*( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
 {
-    return Expression_SMM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), m1 ), m2 );
+    return Expression_SMM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), m1 ), m2 );
 }
 
 /**
@@ -287,7 +287,7 @@ inline Expression_SMM_SM<ValueType> operator-( const Expression_SM<ValueType>& e
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator+( const Expression_SMM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), matrix ) );
+    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
 }
 
 /**
@@ -300,7 +300,7 @@ inline Expression_SMM_SM<ValueType> operator+( const Expression_SMM<ValueType>& 
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator+( const Matrix<ValueType>& matrix, const Expression_SMM<ValueType>& exp )
 {
-    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), matrix ) );
+    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
 }
 
 /**
@@ -313,7 +313,7 @@ inline Expression_SMM_SM<ValueType> operator+( const Matrix<ValueType>& matrix, 
 template<typename ValueType>
 inline Expression_SMM_SM<ValueType> operator-( const Expression_SMM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( -1 ), matrix ) );
+    return Expression_SMM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( -1 ), matrix ) );
 }
 
 /**
@@ -329,7 +329,7 @@ inline Expression_SMM_SM<ValueType> operator-( const Matrix<ValueType>& matrix, 
     // Build temporary expression for -exp
     Expression_SM<ValueType> expSM = exp.getArg1();
     Expression_SMM<ValueType> minusExp( Expression_SM<ValueType>( -expSM.getArg1(), expSM.getArg2() ), exp.getArg2() );
-    return Expression_SMM_SM<ValueType>( minusExp, Expression_SM<ValueType>( ValueType( 1 ), matrix ) );
+    return Expression_SMM_SM<ValueType>( minusExp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
 }
 
 /* --------------------------------------------------------------- */
@@ -385,7 +385,7 @@ inline Expression_SM_SM<ValueType> operator-( const Expression_SM<ValueType>& ex
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator+( const Matrix<ValueType>& matrix, const Expression_SM<ValueType>& exp )
 {
-    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), matrix ), exp );
+    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), matrix ), exp );
 }
 
 /**
@@ -401,7 +401,7 @@ template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrix, const Expression_SM<ValueType>& exp )
 {
     Expression_SM<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
-    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), matrix ), minusExp );
+    return Expression_SM_SM<ValueType>( Expression_SM<ValueType>( Scalar( 1 ), matrix ), minusExp );
 }
 
 /**
@@ -415,7 +415,7 @@ inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrix, c
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator+( const Expression_SM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), matrix ) );
+    return Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( 1 ), matrix ) );
 }
 
 /**
@@ -429,7 +429,7 @@ inline Expression_SM_SM<ValueType> operator+( const Expression_SM<ValueType>& ex
 template<typename ValueType>
 inline Expression_SM_SM<ValueType> operator-( const Expression_SM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
-    return Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( -1 ), matrix ) );
+    return Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( -1 ), matrix ) );
 }
 
 } /* end namespace lama */

@@ -57,6 +57,11 @@ class COMMON_DLL_IMPORTEXPORT Vector: public _Vector
 {
 public:
 
+    /**
+     * @brief ExpressionMemberType is the type that is used the template Expression to store a _Vector.
+     */
+    typedef const Vector<ValueType>& ExpressionMemberType;
+
     /** Create a new vector of a certain kind but with same value type */
 
     static Vector<ValueType>* getVector( VectorKind kind );
