@@ -575,6 +575,25 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM_SM<ValueTyp
     return *this;
 }
 
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM<ValueType>& exp )
+{
+    // exp =  ( alpha * A ) * B
+
+    ValueType alpha = exp.getArg1().getArg1();
+
+    const Matrix<ValueType>& A = exp.getArg1().getArg2();
+    const Matrix<ValueType>& B = exp.getArg2();
+
+    A.matrixTimesMatrix( *this, alpha, B, ValueType( 0 ), *this );
+
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
 template<typename ValueType>
 Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM<ValueType>& exp )
 {
@@ -582,6 +601,31 @@ Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM<ValueType>&
     const Matrix<ValueType>& A = exp.getArg2();
     const ValueType& s = exp.getArg1();
     this->matrixTimesScalar( A, s );
+    return *this;
+}
+
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator+=( const Matrix<ValueType>& exp )
+{
+    // this += A  -> this = 1.0 * A + 1.0 * this
+
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), *this ), 
+                                         Expression_SM<ValueType>( ValueType( 1 ), exp ) );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator-=( const Matrix<ValueType>& exp )
+{
+    // this -= A  -> this = -1.0 * A + 1.0 * this
+
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), *this ), 
+                                         Expression_SM<ValueType>( ValueType( -1 ), exp ) );
     return *this;
 }
 

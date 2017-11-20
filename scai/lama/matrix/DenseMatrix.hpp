@@ -91,6 +91,9 @@ public:
 
     using _Matrix::redistribute;
 
+    using Matrix<ValueType>::operator=;
+    using Matrix<ValueType>::operator+=;
+    using Matrix<ValueType>::operator-=;
     using Matrix<ValueType>::getValueType;
 
     typedef ValueType MatrixValueType; //!< This is the type of the matrix values.

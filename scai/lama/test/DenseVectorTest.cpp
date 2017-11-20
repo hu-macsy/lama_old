@@ -448,8 +448,8 @@ BOOST_AUTO_TEST_CASE( scalarExpConstructorTest )
 
         DenseVector<ValueType> x( dist, 3 );
         SCAI_LOG_INFO( logger, "linear algebra expression: alpha + Vector" );
-        DenseVector<ValueType> y( 2 + x );
-        DenseVector<ValueType> z( x + 2 );
+        DenseVector<ValueType> y( ValueType( 2 ) + x );
+        DenseVector<ValueType> z( x + ValueType( 2 ) );
         DenseVector<ValueType> r( dist, 5 );
 
         // prove same distribution, same values of r and y/z
@@ -526,14 +526,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
     DenseVector<ValueType> y( ctx );
     x.setRandom( A.getColDistributionPtr(), 1 );
     y.setRandom( A.getRowDistributionPtr(), 1 );
-    DenseVector<ValueType> res( 2 * A * x - y );
+    DenseVector<ValueType> res( ValueType( 2 ) * A * x - y );
 
     // Now we do the same with all other matrices and all kind of distributions
 
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
-
-    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
 
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
@@ -543,11 +541,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            _Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            Matrices<ValueType> matrices( ctx );   // operations only with same ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                _Matrix& A1 = *matrices[k];
+                Matrix<ValueType>& A1 = *matrices[k];
 
                 A1.assign( A );
                 A1.redistribute( rowDist, colDist );
@@ -558,7 +556,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
 
                 SCAI_LOG_INFO( logger, "matrixTimesVector with this matrix: " << A1 )
 
-                res1 = 2 * A1 * x1 - y1;
+                res1 = ValueType( 2 ) * A1 * x1 - y1;
 
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
@@ -602,7 +600,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
     x.setRandom( A.getRowDistributionPtr(), bound );
     y.setRandom( A.getColDistributionPtr(), bound );
 
-    DenseVector<ValueType> res( 2 * x * A - y );
+    DenseVector<ValueType> res( ValueType( 2 ) * x * A - y );
 
     // Now we do the same with all distributed matrices/vectors and all kind of distributions
 
@@ -619,8 +617,6 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
-    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
-
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
         dmemo::DistributionPtr rowDist = rowDists[i];
@@ -629,11 +625,11 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         {
             dmemo::DistributionPtr colDist = colDists[j];
 
-            _Matrices matrices( stype, ctx );  // currently restricted, only of ValueType
+            Matrices<ValueType> matrices( ctx );  // currently restricted, only of ValueType
 
             for ( size_t k = 0; k < matrices.size(); ++k )
             {
-                _Matrix& A1 = *matrices[k];
+                Matrix<ValueType>& A1 = *matrices[k];
 
                 A1.setCommunicationKind( SyncKind::SYNCHRONOUS );
 
@@ -646,7 +642,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
 
                 SCAI_LOG_INFO( logger, "vectorTimesMatrix[" << i << "," << j << "," << k << "] with this matrix: " << A1 << ", y1 = " << y1 )
 
-                res1 = 2 * x1 * A1 - y1;
+                res1 = ValueType( 2 ) * x1 * A1 - y1;
 
                 SCAI_LOG_INFO( logger, "res1 = 2 * x1 * A1 - y1: " << res1 )
 
@@ -695,8 +691,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMult1Test )
 
     DenseMatrix<ValueType> At( A, true );
 
-    DenseVector<ValueType> res1( 2 * x * A - y );
-    DenseVector<ValueType> res2( 2 * At * x - y );
+    DenseVector<ValueType> res1( ValueType( 2 ) * x * A - y );
+    DenseVector<ValueType> res2( ValueType( 2 ) * At * x - y );
 
     const utilskernel::LArray<ValueType>& v1 = res1.getLocalValues();
     const utilskernel::LArray<ValueType>& v2 = res2.getLocalValues();

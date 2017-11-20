@@ -52,9 +52,9 @@ namespace lama
  */
 
 template<typename ValueType>
-inline Expression_SV<ValueType> operator*( const ValueType& alpha, const Vector<ValueType>& vectorX )
+inline Expression_SV<ValueType> operator*( const Scalar& alpha, const Vector<ValueType>& vectorX )
 {
-    return Expression_SV<ValueType>( alpha, vectorX );
+    return Expression_SV<ValueType>( alpha.getValue<ValueType>(), vectorX );
 }
 
 /**
@@ -68,9 +68,9 @@ inline Expression_SV<ValueType> operator*( const ValueType& alpha, const Vector<
  */
 
 template<typename ValueType>
-inline Expression_SV<ValueType> operator*( const Vector<ValueType>& vectorX, const ValueType& alpha )
+inline Expression_SV<ValueType> operator*( const Vector<ValueType>& vectorX, const Scalar& alpha )
 {
-    return Expression_SV<ValueType>( alpha, vectorX );
+    return Expression_SV<ValueType>( alpha.getValue<ValueType>(), vectorX );
 }
 
 /**
@@ -81,10 +81,10 @@ inline Expression_SV<ValueType> operator*( const Vector<ValueType>& vectorX, con
  * @return             Symbolic expression [1.0/alpha] * x
  */
 template<typename ValueType>
-inline Expression_SV<ValueType> operator/( const Vector<ValueType>& vector, const ValueType& alpha )
+inline Expression_SV<ValueType> operator/( const Vector<ValueType>& vector, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Vector
-    return Expression_SV<ValueType>( ValueType( 1 ) / alpha, vector );
+    return Expression_SV<ValueType>( ValueType( 1 ) / alpha.getValue<ValueType>(), vector );
 }
 
 /**
@@ -110,9 +110,9 @@ inline Expression_VV<ValueType> operator*( const Vector<ValueType>& x, const Vec
  * @return          The expression representing this SVV.
  */
 template<typename ValueType>
-inline Expression_SVV<ValueType> operator*( const ValueType& alpha, const Expression_VV<ValueType>& exp )
+inline Expression_SVV<ValueType> operator*( const Scalar& alpha, const Expression_VV<ValueType>& exp )
 {
-    return Expression_SVV<ValueType>( alpha, exp );
+    return Expression_SVV<ValueType>( alpha.getValue<ValueType>(), exp );
 }
 
 /**
@@ -157,9 +157,9 @@ inline Expression_SVV<ValueType> operator*( const Vector<ValueType>& v, const Ex
  */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const ValueType& alpha, const Vector<ValueType>& x )
+inline Expression_SV_S<ValueType> operator+( const Scalar& alpha, const Vector<ValueType>& x )
 {
-    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), alpha );
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), alpha.getValue<ValueType>() );
 }
 
 /**
@@ -172,10 +172,10 @@ inline Expression_SV_S<ValueType> operator+( const ValueType& alpha, const Vecto
  */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const ValueType& alpha )
+inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const Scalar& alpha )
 {
     // return Expression_S_V( alpha, vectorX );
-    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), alpha );
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( ValueType( 1 ), x ), alpha.getValue<ValueType>() );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -192,9 +192,9 @@ inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const V
  */
 
 template<typename ValueType>
-inline Expression_SV_S<ValueType> operator+( const Expression_SV<ValueType>& exp, const ValueType& beta )
+inline Expression_SV_S<ValueType> operator+( const Expression_SV<ValueType>& exp, const Scalar& beta )
 {
-    return Expression_SV_S<ValueType>( exp, beta );
+    return Expression_SV_S<ValueType>( exp, beta.getValue<ValueType>() );
 }
 
 /* ------------------------------------------------------------------------- */

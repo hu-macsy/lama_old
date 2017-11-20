@@ -451,41 +451,6 @@ void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
 
 /* ---------------------------------------------------------------------------------*/
 
-/**
- * @brief the assignment operator for a MM addition.
- */
-template<typename ValueType>
-_Matrix& _Matrix::operator=( const Expression_SM_SM<ValueType>& exp )
-{
-    SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
-    const Matrix<ValueType>& A = exp.getArg1().getArg2();
-    const Matrix<ValueType>& B = exp.getArg2().getArg2();
-    const ValueType& alpha = exp.getArg1().getArg1();
-    const ValueType& beta = exp.getArg2().getArg1();
-    const ValueType zero( 0.0 );
-
-    if ( beta == zero )
-    {
-        // second term not needed
-        this->matrixTimesScalar( A, alpha );
-        return *this;
-    }
-
-    if ( alpha == zero )
-    {
-        // first term not needed
-        this->matrixTimesScalar( B, beta );
-        return *this;
-    }
-
-    // Do sanity checks
-    sanityCheck( A, B );
-    this->matrixPlusMatrix( alpha, A, beta, B );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 void _Matrix::writeToSingleFile(
     const std::string& fileName,
     const std::string& fileType,

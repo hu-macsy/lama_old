@@ -91,9 +91,9 @@ inline Expression_SM_SM<ValueType> operator-( const Matrix<ValueType>& matrixA, 
  * @return            The expression representing this product.
  */
 template<typename ValueType>
-inline Expression_SM<ValueType> operator*( const ValueType& scalar, const Matrix<ValueType>& matrix )
+inline Expression_SM<ValueType> operator*( const Scalar& scalar, const Matrix<ValueType>& matrix )
 {
-    return Expression_SM<ValueType>( scalar, matrix );
+    return Expression_SM<ValueType>( scalar.getValue<ValueType>(), matrix );
 }
 
 /**
@@ -105,9 +105,9 @@ inline Expression_SM<ValueType> operator*( const ValueType& scalar, const Matrix
  * @return            The expression representing this product.
  */
 template<typename ValueType>
-inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, const ValueType& scalar )
+inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, const Scalar& scalar )
 {
-    return Expression_SM<ValueType>( scalar, matrix );
+    return Expression_SM<ValueType>( scalar.getValue<ValueType>(), matrix );
 }
 
 /**
@@ -119,10 +119,10 @@ inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, cons
  */
 
 template<typename ValueType>
-inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, const ValueType& alpha )
+inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
-    return Expression_SM<ValueType>( ValueType( 1 ) / alpha, matrix );
+    return Expression_SM<ValueType>( ValueType( 1 ) / alpha.getValue<ValueType>, matrix );
 }
 
 /* --------------------------------------------------------------- */
@@ -188,10 +188,9 @@ inline Expression_SMM<ValueType> operator*( const Expression_SM<ValueType>& exp,
  * @return            The expression representing this product.
  */
 template<typename ValueType>
-inline Expression_SMM<ValueType> operator*( const ValueType& scalar, const Expression_SMM<ValueType>& exp )
+inline Expression_SMM<ValueType> operator*( const Scalar& scalar, const Expression_SMM<ValueType>& exp )
 {
-    const Expression_SM<ValueType> sm = exp.getArg1();
-    return Expression_SMM<ValueType>( Expression_SM<ValueType>( scalar * sm.getArg1(), sm.getArg2() ), exp.getArg2() );
+    return Expression_SMM<ValueType>( scalar * exp.getArg1(), exp.getArg2() );
 }
 
 /**
@@ -203,10 +202,9 @@ inline Expression_SMM<ValueType> operator*( const ValueType& scalar, const Expre
  * @return            The expression representing this product.
  */
 template<typename ValueType>
-inline Expression_SMM<ValueType> operator*( const Expression_SMM<ValueType>& exp, const ValueType& scalar )
+inline Expression_SMM<ValueType> operator*( const Expression_SMM<ValueType>& exp, const Scalar& scalar )
 {
-    const Expression_SM<ValueType> sm = exp.getArg1();
-    return Expression_SMM<ValueType>( Expression_SM<ValueType>( sm.getArg1() * scalar, sm.getArg2() ), exp.getArg2() );
+    return Expression_SMM<ValueType>( scalar * exp.getArg1(), exp.getArg2() );
 }
 
 /* --------------------------------------------------------------- */

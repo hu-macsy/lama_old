@@ -126,6 +126,20 @@ public:
     Matrix<ValueType>& operator=( const Expression_SM_SM<ValueType>& exp );
 
     /**
+     * @brief The assignment operator this += A
+     *
+     * @param[in] exp   Matrix to be added, must have same type
+     */
+    Matrix& operator+=( const Matrix<ValueType>& exp );
+
+    /**
+     * @brief The assignment operator this -= A
+     *
+     * @param[in] exp   Matrix to be added, must have same type
+     */
+    Matrix& operator-=( const Matrix<ValueType>& exp );
+
+    /**
      * @brief The assignment operator this += alpha * A
      *
      * @param[in] exp   representation of alpha * A as Expression object

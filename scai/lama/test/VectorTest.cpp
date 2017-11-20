@@ -397,175 +397,150 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( assign_S_VV_Test )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assign_S_VV_Test, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 13;
 
-    _TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::TestDistributions dists( n );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _VectorPtr v1 = vectors[i];
+        Vector<ValueType>& v1 = *vectors[i];
 
-        if ( ! common::isNumeric( v1->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
-
-        SCAI_LOG_INFO( logger, "assign_SVV with " << *v1 )
+        SCAI_LOG_INFO( logger, "assign_SVV with " << v1 )
 
         for ( size_t j = 0; j < dists.size(); ++j )
         {
             dmemo::DistributionPtr dist = dists[j];
 
-            v1->allocate( dist );
+            v1.allocate( dist );
 
-            SCAI_LOG_DEBUG( logger, "dist " << j << " of " << dists.size() << ", v1 = " << *v1 )
+            SCAI_LOG_DEBUG( logger, "dist " << j << " of " << dists.size() << ", v1 = " << v1 )
 
-            *v1 = 3;
-            _VectorPtr v2( v1->copy() );
+            v1 = 3;
+            VectorPtr<ValueType> v2( v1.copy() );
             *v2 = 5;
-            _VectorPtr v3( v1->newVector() );
-            _VectorPtr v4( v1->newVector() );
-            *v3 = *v1 * *v2;
-            *v4 = 3 * *v1 * *v2;
+            VectorPtr<ValueType> v3( v1.newVector() );
+            VectorPtr<ValueType> v4( v1.newVector() );
+            *v3 = v1 * *v2;
+            *v4 = 3 * v1 * *v2;
             *v4 -= 2 * *v3;
 
             // Now v3 and v4 must be equal
 
             *v3 -= *v4;
 
-            BOOST_CHECK( v3->_maxNorm() < Scalar( 1e-4 ) );
+            NormType<ValueType> eps = 1e-4;
+
+            BOOST_CHECK( v3->maxNorm() < eps );
         }
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( assign_MV_Test )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assign_MV_Test, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 13;
 
-    _TestVectors vectors;
-
     dmemo::TestDistributions dists( n );
 
-    for ( size_t i = 0; i < vectors.size(); ++i )
+    DenseVector<ValueType> dV1;
+
+    for ( size_t j = 0; j < dists.size(); ++j )
     {
-        _VectorPtr v1 = vectors[i];
+        dmemo::DistributionPtr dist = dists[j];
 
-        if ( v1->getVectorKind() != VectorKind::DENSE )
-        {
-            break;
-        }
+        IndexType bound = 5;   // random values between 0 and 5
 
-        _Vector& dV1 = *v1;
+        dV1.setRandom( dist, bound );  
 
-        if ( ! common::isNumeric( v1->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
+        CSRSparseMatrix<ValueType> m;
 
-        for ( size_t j = 0; j < dists.size(); ++j )
-        {
-            dmemo::DistributionPtr dist = dists[j];
+        m.setIdentity( dist );
 
-            IndexType bound = 5;   // random values between 0 and 5
+        DenseVector<ValueType> v2;
 
-            dV1.setRandom( dist, bound );  
+        v2 = m * dV1;
 
-            _MatrixPtr m( _Matrix::getMatrix( Format::CSR, v1->getValueType() ) );
-            m->setIdentity( dist );
+        // Now v1 and v2 must be equal
 
-            _VectorPtr v2( dV1.newVector() );
+        v2 -= dV1;
 
-            *v2 = *m * dV1;
+        NormType<ValueType> eps = 1e-4;
 
-            // Now v1 and v2 must be equal
+        BOOST_CHECK( v2.maxNorm() < eps );
 
-            *v2 -= dV1;
+        v2 = 2 * m * dV1;
 
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
+        // Now v1 and v2 must be equal
 
-            *v2 = 2 * *m * dV1;
+        v2 -= 2 * dV1;
 
-            // Now v1 and v2 must be equal
+        BOOST_CHECK( v2.maxNorm() < eps );
 
-            *v2 -= 2 * dV1;
+        v2 = m * dV1 - dV1;
 
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
+        BOOST_CHECK( v2.maxNorm() < eps );
 
-            *v2 = *m * dV1 - dV1;
+        v2 = 2 * m * dV1 - 2 * dV1;
 
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
-
-            *v2 = 2 * *m * dV1 - 2 * dV1;
-
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
-        }
+        BOOST_CHECK( v2.maxNorm() < eps );
     }
 }
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( assign_VM_Test )
+BOOST_AUTO_TEST_CASE_TEMPLATE( assign_VM_Test, ValueType, scai_numeric_test_types )
 {
     const IndexType n = 13;
 
-    _TestVectors vectors;
+    DenseVector<ValueType> v1;
+
+    NormType<ValueType> eps = 1e-4;  // accuracy
 
     dmemo::TestDistributions dists( n );
 
-    for ( size_t i = 0; i < vectors.size(); ++i )
+    for ( size_t j = 0; j < dists.size(); ++j )
     {
-        _VectorPtr v1 = vectors[i];
+        dmemo::DistributionPtr dist = dists[j];
 
-        if ( ! common::isNumeric( v1->getValueType() ) )
-        {
-            continue;   // this test does not work for int, uint, ....
-        }
+        v1.allocate( dist );
 
-        for ( size_t j = 0; j < dists.size(); ++j )
-        {
-            dmemo::DistributionPtr dist = dists[j];
+        v1 = 3;
 
-            v1->allocate( dist );
-            *v1 = 3;
+        CSRSparseMatrix<ValueType> m;
 
-            _MatrixPtr m( _Matrix::getMatrix( Format::CSR, v1->getValueType() ) );
-            m->setIdentity( dist );
-            m->setCommunicationKind( SyncKind::ASYNCHRONOUS );
+        m.setIdentity( dist );
+        m.setCommunicationKind( SyncKind::ASYNCHRONOUS );
 
-            _VectorPtr v2( v1->newVector() );
+        VectorPtr<ValueType> v2( v1.newVector() );
 
-            *v2 = ( *v1 ) * ( *m );
+        *v2 = v1 * m;
 
-            // Now v1 and v2 must be equal
+        // Now v1 and v2 must be equal
 
-            *v2 -= *v1;
+        *v2 -= v1;
 
-            Scalar s = v2->_maxNorm();
+        BOOST_CHECK( v2->maxNorm() < eps );
 
-            BOOST_CHECK( s < Scalar( 1e-4 ) );
+        *v2 = 2 * v1 * m;
 
-            *v2 = 2 * *v1 * *m;
+        // Now 2 * v1 and v2 must be equal
 
-            // Now 2 * v1 and v2 must be equal
+        *v2 -= 2 * v1;
 
-            *v2 -= 2 * *v1;
+        BOOST_CHECK( v2->maxNorm() < eps );
 
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
+        *v2 = v1 * m - v1;
 
-            *v2 = *v1 * *m - *v1;
+        BOOST_CHECK( v2->maxNorm() < eps );
 
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
+        *v2 = 2 * v1 * m - 2 * v1;
 
-            *v2 = 2 * *v1 * *m - 2 * *v1;
-
-            BOOST_CHECK( v2->_maxNorm() < Scalar( 1e-4 ) );
-        }
+        BOOST_CHECK( v2->maxNorm() < eps );
     }
 }
 

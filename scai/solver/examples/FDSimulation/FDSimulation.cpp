@@ -282,7 +282,7 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
     tau = -1.0 * help;
     tau.exp();
     help = one - 2.0 * help;
-    source = lama::Scalar( AMP ) * help * tau;
+    source = ValueType( AMP ) * help * tau;
 }
 
 /*
@@ -292,10 +292,11 @@ void sourceFunction( lama::DenseVector<ValueType>& source, IndexType FC, IndexTy
  */
 template <typename ValueType>
 void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<ValueType>& source, lama::DenseVector<ValueType>& p,
-                lama::_Vector& vX, lama::_Vector& vY, lama::_Vector& vZ,
-                lama::_Matrix& A, lama::_Matrix& B, lama::_Matrix& C, lama::_Matrix& D, lama::_Matrix& E, lama::_Matrix& F,
-                lama::Scalar v_factor, lama::Scalar p_factor,
-                IndexType NT, lama::Scalar DH_INV, IndexType source_index, IndexType seismogram_index,
+                lama::Vector<ValueType>& vX, lama::Vector<ValueType>& vY, lama::Vector<ValueType>& vZ,
+                lama::Matrix<ValueType>& A, lama::Matrix<ValueType>& B, lama::Matrix<ValueType>& C, 
+                lama::Matrix<ValueType>& D, lama::Matrix<ValueType>& E, lama::Matrix<ValueType>& F,
+                ValueType v_factor, ValueType p_factor,
+                IndexType NT, ValueType DH_INV, IndexType source_index, IndexType seismogram_index,
                 dmemo::CommunicatorPtr comm, dmemo::DistributionPtr /*dist*/ )
 {
     SCAI_REGION( "timestep" )
@@ -315,14 +316,14 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         // velocity y: vY = vY + DT / ( DH * rho ) * C * p;
         vY += v_factor * C * p;
 
-        lama::Scalar znorm = vZ._l2Norm();
-        lama::Scalar xnorm = vX._l2Norm();
-        lama::Scalar ynorm = vY._l2Norm();
+        // ValueType znorm = vZ.l2Norm();
+        // ValueType xnorm = vX.l2Norm();
+        // ValueType ynorm = vY.l2Norm();
 
         // create new Vector(Pointer) with same configuration as vZ
-        std::unique_ptr<lama::_Vector> helpPtr( vZ.newVector() );
+        std::unique_ptr<lama::Vector<ValueType> > helpPtr( vZ.newVector() );
         // get Reference of VectorPointer
-        lama::_Vector& help = *helpPtr;
+        lama::Vector<ValueType>& help = *helpPtr;
 
         // pressure update
         help =  DH_INV * D * vZ;
@@ -330,8 +331,8 @@ void timesteps( lama::DenseVector<ValueType>& seismogram, lama::DenseVector<Valu
         help += DH_INV * F * vY;
         p += p_factor * help; // p_factor is 'DT * M'
 
-        lama::Scalar hnorm = help._l2Norm();
-        lama::Scalar pnorm = p.l2Norm();
+        // ValueType hnorm = help.l2Norm();
+        // ValueType pnorm = p.l2Norm();
 
         // update seismogram and pressure with source terms
         // CAUTION: elementwise access by setVal and getVal cause performace issues executed on CUDA
@@ -418,7 +419,7 @@ int main( int /*argc*/, char** /*argv[]*/ )
 
     start_t = common::Walltime::get();
     timesteps( seismogram, source, p, vX, vY, vZ, A, B, C, D, E, F,
-               config.getVfactor(), config.getPfactor(), config.getNT(), lama::Scalar( 1.0 / config.getDH() ),
+               config.getVfactor(), config.getPfactor(), config.getNT(), ValueType( 1 ) / config.getDH(),
                config.getSourceIndex(), config.getSeismogramIndex(), comm, dist );
     end_t = common::Walltime::get();
     HOST_PRINT( comm, "Finished time stepping in " << end_t - start_t << " sec.\n\n" );

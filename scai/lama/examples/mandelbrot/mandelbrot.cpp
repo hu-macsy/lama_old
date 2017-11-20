@@ -126,7 +126,7 @@ void Julia()
     {
         help = cReal * cReal;
         help2 = cImag * cImag;
-        cImag = 2.0 * cReal * cImag;
+        cImag = ValueType( 2 ) * cReal * cImag;
         cReal = help - help2;
         cReal += aReal;
         cImag += aImag;
