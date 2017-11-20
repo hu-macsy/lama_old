@@ -507,6 +507,107 @@ NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
 }
 
 /* ========================================================================= */
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SMM_SM<ValueType>& exp )
+{
+    const Expression_SMM<ValueType>& arg1 = exp.getArg1();
+    const Expression_SM<ValueType>& arg11 = arg1.getArg1();
+    const Expression_SM<ValueType>& arg2 = exp.getArg2();
+
+    const Matrix<ValueType>& A = arg11.getArg2();
+    const Matrix<ValueType>& B = arg1.getArg2();
+    const Matrix<ValueType>& C = arg2.getArg2();
+
+    const ValueType& alpha = arg11.getArg1();
+    const ValueType& beta  = arg2.getArg1();
+
+    SCAI_LOG_INFO( logger,
+                   "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
+    /*
+    const Scalar zero( 0 );
+
+    if ( beta == zero )
+    {
+        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ) );
+    }
+    else
+    {
+        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ), C );
+    }
+    */
+
+    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
+    A.matrixTimesMatrix( *this, alpha, B, beta, C );
+    SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
+    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
+    return *this;
+}
+
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM_SM<ValueType>& exp )
+{
+    SCAI_LOG_INFO( logger, "operator=:  A * alpha + B * beta " )
+    const Matrix<ValueType>& A = exp.getArg1().getArg2();
+    const Matrix<ValueType>& B = exp.getArg2().getArg2();
+    const ValueType& alpha = exp.getArg1().getArg1();
+    const ValueType& beta = exp.getArg2().getArg1();
+    const ValueType zero( 0.0 );
+
+    if ( beta == zero )
+    {
+        // second term not needed
+        this->matrixTimesScalar( A, alpha );
+        return *this;
+    }
+
+    if ( alpha == zero )
+    {
+        // first term not needed
+        this->matrixTimesScalar( B, beta );
+        return *this;
+    }
+
+    // Do sanity checks
+    sanityCheck( A, B );
+    this->matrixPlusMatrix( alpha, A, beta, B );
+    return *this;
+}
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator=( const Expression_SM<ValueType>& exp )
+{
+    // exp is Expression object that stands for s * A
+    const Matrix<ValueType>& A = exp.getArg2();
+    const ValueType& s = exp.getArg1();
+    this->matrixTimesScalar( A, s );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator+=( const Expression_SM<ValueType>& exp )
+{
+    // this += alpha * A  -> this = alpha * A + 1.0 * this
+    *this = Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( ValueType( 1 ), *this ) );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Matrix<ValueType>& Matrix<ValueType>::operator-=( const Expression_SM<ValueType>& exp )
+{
+    // this -= alpha * A  -> this = 1.0 * this + ( - alpha ) * A
+    Expression_SM<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
+    *this = Expression_SM_SM<ValueType>( Expression_SM<ValueType>( ValueType( 1 ), *this ), minusExp );
+    return *this;
+}
+
+
+/* ========================================================================= */
 /*       Template specializations and instantiations                         */
 /* ========================================================================= */
 

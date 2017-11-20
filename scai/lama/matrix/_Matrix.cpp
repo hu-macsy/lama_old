@@ -294,6 +294,7 @@ _Matrix& _Matrix::operator=( const _Matrix& other )
 
 /* ---------------------------------------------------------------------------------*/
 
+/*
 template<typename ValueType>
 _Matrix& _Matrix::operator=( const Expression_SM<ValueType>& exp )
 {
@@ -303,6 +304,7 @@ _Matrix& _Matrix::operator=( const Expression_SM<ValueType>& exp )
     this->matrixTimesScalar( A, s );
     return *this;
 }
+*/
 
 /* ---------------------------------------------------------------------------------*/
 
@@ -445,47 +447,6 @@ void _Matrix::sanityCheck( const _Matrix& A, const _Matrix& B )
     {
         COMMON_THROWEXCEPTION( "Size/distribution of cols do not match: " << "ARG1 = " << A << ", ARG2 = " << B )
     }
-}
-
-/* ---------------------------------------------------------------------------------*/
-
-/**
- * @brief the assignment operator for a GEMM expression.
- */
-template<typename ValueType>
-_Matrix& _Matrix::operator=( const Expression_SMM_SM<ValueType>& exp )
-{
-    const Expression_SMM<ValueType>& arg1 = exp.getArg1();
-    const Expression_SM<ValueType>& arg11 = arg1.getArg1();
-    const Expression_SM<ValueType>& arg2 = exp.getArg2();
-
-    const Matrix<ValueType>& A = arg11.getArg2();
-    const Matrix<ValueType>& B = arg1.getArg2();
-    const Matrix<ValueType>& C = arg2.getArg2();
-
-    const ValueType& alpha = arg11.getArg1();
-    const ValueType& beta  = arg2.getArg1();
-
-    SCAI_LOG_INFO( logger,
-                   "operator=:  " << alpha << " * A * B  + " << beta << " * C" " with A = " << A << ", B = " << B << ", C = " << C )
-    /*
-    const Scalar zero( 0 );
-
-    if ( beta == zero )
-    {
-        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ) );
-    }
-    else
-    {
-        sanityCheck( Expression<_Matrix, _Matrix, Times>( A, B ), C );
-    }
-    */
-
-    SCAI_LOG_INFO( logger, "Context of this before matrixTimesMatrix = " << *getContextPtr() )
-    A.matrixTimesMatrix( *this, alpha, B, beta, C );
-    SCAI_LOG_INFO( logger, "end operator=:  A * B * alpha + C * beta " )
-    SCAI_LOG_INFO( logger, "Context of this after matrixTimesMatrix = " << *getContextPtr() )
-    return *this;
 }
 
 /* ---------------------------------------------------------------------------------*/

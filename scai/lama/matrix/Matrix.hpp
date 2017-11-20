@@ -98,6 +98,48 @@ public:
     using _Matrix::operator=;
 
     /**
+     * @brief Assignment operator for alhpa * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix<ValueType>& operator=( const Expression_SM<ValueType>& exp );
+
+    /**
+     * @brief Assignment operator for alhpa * A * B with A and B matrices and scalar alpha
+     *
+     * @param[in] exp   representation of alpha * A * B as Expression object
+     */
+    Matrix<ValueType>& operator=( const Expression_SMM<ValueType>& exp );
+
+    /**
+     * @brief The assignment operator for a GEMM expression alpha * A * B + beta * C
+     *
+     * @param[in] exp   representation of alpha * A * B + beta * C as Expression object
+     */
+    Matrix<ValueType>& operator=( const Expression_SMM_SM<ValueType>& exp );
+
+    /**
+     * @brief The assignment operator for alpha * A + beta * B
+     *
+     * @param[in] exp   expression of the form alpha * A + beta * B
+     */
+    Matrix<ValueType>& operator=( const Expression_SM_SM<ValueType>& exp );
+
+    /**
+     * @brief The assignment operator this += alpha * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix<ValueType>& operator+=( const Expression_SM<ValueType>& exp );
+
+    /**
+     * @brief The assignment operator this -= alpha * A
+     *
+     * @param[in] exp   representation of alpha * A as Expression object
+     */
+    Matrix<ValueType>& operator-=( const Expression_SM<ValueType>& exp );
+
+    /**
      * @brief Returns a copy of the value at the passed global indexes.
      *
      * @param[in] i   the global row index
