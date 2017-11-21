@@ -380,6 +380,34 @@ inline Expression_SVM_SV<ValueType> operator+( const Expression_SVM<ValueType>& 
     return Expression_SVM_SV<ValueType>( exp1, exp2 );
 }
 
+/* ------------------------------------------------------------------------- */
+/*   unary operator -                                                        */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline Expression_SMV<ValueType> operator-( const Expression_SMV<ValueType>& exp )
+{
+    return Expression_SMV<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM<ValueType> operator-( const Expression_SVM<ValueType>& exp )
+{
+    return Expression_SVM<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV_SV<ValueType>& exp )
+{
+    return Expression_SMV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM_SV<ValueType> operator-( const Expression_SVM_SV<ValueType>& exp )
+{
+    return Expression_SMV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

@@ -398,22 +398,6 @@ protected:
     /** Override the default copy constructor */
 
     Vector( const Vector<ValueType>& other );
-
-    // Implementations of pure _Vector methods to guarantee upward compatibilty
-
-    Scalar _l1Norm() const;
-
-    Scalar _l2Norm() const;
-
-    Scalar _maxNorm() const;
-
-    Scalar _maxDiffNorm( const _Vector& other ) const;
-
-    Scalar _sum() const;
-    Scalar _min() const;
-    Scalar _max() const;
-
-    Scalar _dotProduct( const _Vector& other ) const;
 };
   
 /** 

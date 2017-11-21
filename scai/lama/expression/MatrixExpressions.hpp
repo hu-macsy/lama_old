@@ -432,6 +432,40 @@ inline Expression_SM_SM<ValueType> operator-( const Expression_SM<ValueType>& ex
     return Expression_SM_SM<ValueType>( exp, Expression_SM<ValueType>( Scalar( -1 ), matrix ) );
 }
 
+/* ------------------------------------------------------------------------- */
+/*   unary operator -                                                        */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator-( const Matrix<ValueType>& m )
+{
+    return Expression_SM<ValueType>( Scalar( -1 ), m );
+}
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator-( const Expression_SM<ValueType>& exp )
+{
+    return Expression_SM<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMM<ValueType> operator-( const Expression_SMM<ValueType>& exp )
+{
+    return Expression_SMM<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SM_SM<ValueType> operator-( const Expression_SM_SM<ValueType>& exp )
+{
+    return Expression_SM_SM<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMM_SM<ValueType> operator-( const Expression_SMM_SM<ValueType>& exp )
+{
+    return Expression_SMM_SM<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */

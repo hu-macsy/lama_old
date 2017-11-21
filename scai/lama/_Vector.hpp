@@ -141,11 +141,6 @@ public:
     virtual bool isConsistent() const = 0;
 
     /**
-     * @brief ExpressionMemberType is the type that is used the template Expression to store a _Vector.
-     */
-    typedef const _Vector& ExpressionMemberType;
-
-    /**
      * @brief Releases all allocated resources.
      */
     virtual ~_Vector();
@@ -565,98 +560,11 @@ public:
     virtual void cat( const _Vector& v1, const _Vector& v2 );
 
     /**
-     * @brief Returns the global minimum value of this.
-     *
-     * @return   the global minimum value of this vector.
-     */
-    virtual Scalar _min() const = 0;
-
-    /**
-     * @brief Returns the global maximum value of this.
-     *
-     * @return the global maximum value of this vector.
-     */
-    virtual Scalar _max() const = 0;
-
-    /**
-     * @brief Returns the sum of all vector elements.
-     *
-     * @return the sum of all vector elements.
-     *
-     * As the summation of the values depends on the mapping of the values to
-     * the processors, this routine might return slightly different results
-     * for different parallel environments.
-     */
-    virtual Scalar _sum() const = 0;
-
-    /**
-     * @brief Returns the L1 norm of this.
-     *
-     * @return the L1 norm of this.
-     *
-     * l1Norm computes the sum of the absolute values of this.
-     */
-    virtual Scalar _l1Norm() const = 0;
-
-    /**
-     * @brief Returns the L2 norm of this.
-     *
-     * @return the L2 norm of this.
-     *
-     * l2Norm computes the sum of the absolute values of this.
-     */
-    virtual Scalar _l2Norm() const = 0;
-
-    /**
-     * @brief Returns the max norm of this.
-     *
-     * @return the max norm of this.
-     *
-     * maxNorm computes the value of this with the largest magnitude.
-     */
-    virtual Scalar _maxNorm() const = 0;
-
-    /**
-     * @brief Returns the max norm of the difference with another vector
-     *
-     *  v1.maxDiffNorm( v2 ) is equivalent to:
-     *
-     *  \code
-     *      Vector tmp = v1 - v2;
-     *      maxNorm( tmp )
-     *  \endcode
-     *
-     *  But it avoids the temporary vector wherever possible
-     */
-    virtual Scalar _maxDiffNorm( const _Vector& other ) const = 0;
-
-    /**
-     *  Method to create a new vector of the same kind and same type
-     *
-     *  /code
-     *    const _Vector& old = ...
-     *    _Vector* new = _Vector::create( old.getCreateValue() );
-     *  /endcode
-     *
-     *  This routine is very important to write code that can deal with arbitrary types
-     *  but does not have a template param for the value type.
-     */
-
-    virtual VectorCreateKeyType getCreateValue() const = 0;
-
-    /**
      *  @brief Creates a new Vector of the same kind and value type, and same context
      *
      *  /code
      *    const Vector& old = ...
      *    ....
-     *    Vector* new = old.newVector();
-     *
-     *    // is same as
-     *
-     *    Vector* new = Vector::create( old.getCreateValue() );
-     *    new->setContextPtr( old.getContextPtr() );
-     *  /endcode
      *
      *  The new vector is a zero vector, neither allocated, nor initialized.
      */
@@ -787,14 +695,6 @@ public:
      * Each vector class has to implement its own version of this assignment. 
      */
     virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS ) = 0;
-
-    /**
-     * @brief Returns the dot product of this and other.
-     *
-     * @param[in] other   the vector to calculate the dot product with.
-     * @return            the dot product of this and other
-     */
-    virtual Scalar _dotProduct( const _Vector& other ) const = 0;
 
     /**
      *  @brief Update this vector with another vector elementwise

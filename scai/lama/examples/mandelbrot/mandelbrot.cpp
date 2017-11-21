@@ -42,7 +42,7 @@
 #endif
 
 #include <scai/lama/DenseVector.hpp>
-#include <scai/lama/matrix/_Matrix.hpp>
+#include <scai/lama/matrix/Matrix.hpp>
 #include <scai/lama/expression/VectorExpressions.hpp>
 
 #include <scai/hmemo/WriteAccess.hpp>

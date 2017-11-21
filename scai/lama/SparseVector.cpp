@@ -1676,7 +1676,9 @@ void SparseVector<ValueType>::writeLocalToFile(
     }
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
+/*       Factory methods (must be provided to register)                      */
+/* ========================================================================= */
 
 template<typename ValueType>
 _Vector* SparseVector<ValueType>::create()
@@ -1688,12 +1690,6 @@ template<typename ValueType>
 VectorCreateKeyType SparseVector<ValueType>::createValue()
 {
     return VectorCreateKeyType( VectorKind::SPARSE, common::getScalarType<ValueType>() );
-}
-
-template<typename ValueType>
-VectorCreateKeyType SparseVector<ValueType>::getCreateValue() const
-{
-    return createValue();
 }
 
 /* ---------------------------------------------------------------------------------*/

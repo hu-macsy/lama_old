@@ -54,7 +54,9 @@ class COMMON_DLL_IMPORTEXPORT Matrix:
 public:
 
     /**
-     * @brief ExpressionMemberType is the type that is used the template Expression to store a _Vector.
+     * @brief ExpressionMemberType is the type that is used to represent a matrix in a template expression.
+     *
+     * When a matrix is used in an expression, a const reference is used. 
      */
     typedef const Matrix<ValueType>& ExpressionMemberType;
 

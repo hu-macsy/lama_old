@@ -2051,7 +2051,9 @@ void DenseVector<ValueType>::clearValues()
     mLocalValues.clear();
 }
 
-/* ---------------------------------------------------------------------------------*/
+/* ========================================================================= */
+/*       Factory methods (must be provided to register)                      */
+/* ========================================================================= */
 
 template<typename ValueType>
 _Vector* DenseVector<ValueType>::create()
@@ -2063,12 +2065,6 @@ template<typename ValueType>
 VectorCreateKeyType DenseVector<ValueType>::createValue()
 {
     return VectorCreateKeyType( VectorKind::DENSE, common::getScalarType<ValueType>() );
-}
-
-template<typename ValueType>
-VectorCreateKeyType DenseVector<ValueType>::getCreateValue() const
-{
-    return createValue();
 }
 
 /* ---------------------------------------------------------------------------------*/

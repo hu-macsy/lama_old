@@ -175,34 +175,6 @@ BOOST_AUTO_TEST_CASE( setContextTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( _copyTest )
-{
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    // For copy we just take one arithmetic type to reduce number of test cases
-    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    _Matrices allMatrices( stype, context );    // is created by factory
-    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for copy method" )
-
-    for ( size_t s = 0; s < allMatrices.size(); ++s )
-    {
-        _Matrix& matrix = *allMatrices[s];
-        initMatrix( matrix, "BLOCK", "BLOCK" );
-        _MatrixPtr copyMatrix( matrix.copy() );
-        SCAI_LOG_DEBUG( logger, "copyTest: " << matrix << " with copy " << *copyMatrix );
-        // verify for same matrix
-        BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getRowDistribution() );
-        BOOST_CHECK_EQUAL( matrix.getColDistribution(), copyMatrix->getColDistribution() );
-        BOOST_CHECK_EQUAL( matrix.getFormat(), copyMatrix->getFormat() );
-        BOOST_CHECK_EQUAL( matrix.getValueType(), copyMatrix->getValueType() );
-        BOOST_CHECK_EQUAL( matrix.getContextPtr(), copyMatrix->getContextPtr() );
-        Scalar maxDiff = copyMatrix->_maxDiffNorm( matrix );
-        // value should be exactly 0
-        BOOST_CHECK_EQUAL( 0, maxDiff.getValue<float>() );
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
@@ -230,23 +202,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( l1NormTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
-    const Scalar scale( 2 );
-    const Scalar expectedNorm = scale * Scalar( N );
+    const ValueType scale = 2;
+    const NormType<ValueType> expectedNorm = scale * ValueType( N );
+    const NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    _Matrices allMatrices( context );    // is created by factory
+    Matrices<ValueType> allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for l1Norm" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices[s];
+        Matrix<ValueType>& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
-        Scalar l1Norm = matrix._l1Norm();
-        SCAI_CHECK_CLOSE( expectedNorm, l1Norm, 0.001 );
+        NormType<ValueType> l1Norm = matrix.l1Norm();
+        BOOST_CHECK( common::Math::abs( expectedNorm - l1Norm ) <  eps );
     }
 }
 
@@ -670,7 +644,7 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( reduceTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 {
     const IndexType nRows = 10;
     const IndexType nCols = 8;
@@ -686,6 +660,8 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( IndexType dim = 0; dim < 2; ++dim )
     {
         DenseVector<RealType> sRow;
@@ -699,40 +675,40 @@ BOOST_AUTO_TEST_CASE( reduceTest )
             {
                 DistributionPtr colDist = colDistributions[j];
 
-                _Matrices allMatrices( context );    // is created by factory
+                Matrices<ValueType> allMatrices( context );    // is created by factory
 
                 for ( size_t s = 0; s < allMatrices.size(); ++s )
                 {
-                    _Matrix& matrix = *allMatrices[s];
+                    Matrix<ValueType>& matrix = *allMatrices[s];
 
-                    matrix = csr;
+                    matrix = csr;   // format + type conversion
 
                     matrix.redistribute( rowDist, colDist );
 
-                    _VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                    DenseVector<ValueType> row;
 
                     // reduce on the parallel matrix
 
-                    matrix.reduce( *row, dim, reduceOp, elemOp );
+                    matrix.reduce( row, dim, reduceOp, elemOp );
 
                     if ( dim == 0 )
                     {
-                        BOOST_CHECK_EQUAL( row->size(), nRows );
+                        BOOST_CHECK_EQUAL( row.size(), nRows );
                     }
                     else
                     {
-                        BOOST_CHECK_EQUAL( row->size(), nCols );
+                        BOOST_CHECK_EQUAL( row.size(), nCols );
                     }
 
-                    row->redistribute( sRow.getDistributionPtr() );
+                    row.redistribute( sRow.getDistributionPtr() );
 
-                    if ( ! ( row->_maxDiffNorm( sRow ) < Scalar( 0.001 ) ) )
+                    if ( ! ( row.maxDiffNorm( sRow ) < eps ) )
                     {
                         SCAI_LOG_ERROR( logger,  "i = " << i << ", j = " << j << ", s = " << s
                                         << ", fail for this matrix: " << matrix << std::endl );
                     }
 
-                    BOOST_CHECK( row->_maxDiffNorm( sRow ) < Scalar( 0.001 ) );
+                    BOOST_CHECK( row.maxDiffNorm( sRow ) < eps );
                 }
             }
         }

@@ -100,11 +100,6 @@ public:
     static _Matrix* getMatrix( const Format format, const common::ScalarType valueType );
 
     /**
-     * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
-     */
-    typedef const _Matrix& ExpressionMemberType;
-
-    /**
      * @brief Destructor, releases all allocated resources.
      */
     virtual ~_Matrix();

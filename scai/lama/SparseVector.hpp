@@ -592,8 +592,6 @@ public:
     // key for factory
 
     static VectorCreateKeyType createValue();
-
-    virtual VectorCreateKeyType getCreateValue() const;
 };
 
 /* ------------------------------------------------------------------------- */

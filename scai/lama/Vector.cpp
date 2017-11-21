@@ -135,56 +135,6 @@ void Vector<ValueType>::scale( ValueType value )
 }
 
 /* ========================================================================= */
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_l1Norm() const
-{
-    return Scalar( l1Norm() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_l2Norm() const
-{
-    return Scalar( l2Norm() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_maxNorm() const
-{
-    return Scalar( maxNorm() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_maxDiffNorm( const _Vector& other ) const
-{
-    return Scalar( maxDiffNorm( other ) );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_min() const
-{
-    return Scalar( min() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_max() const
-{
-    return Scalar( min() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_sum() const
-{
-    return Scalar( sum() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_dotProduct( const _Vector& other ) const
-{
-    return Scalar( dotProduct( other ) );
-}
-
-/* ========================================================================= */
 /*        operator= < vector expression>                                     */
 /* ========================================================================= */
 
@@ -290,7 +240,7 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
     if ( &vectorX == this )
     {
         SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( _Vector::create( this->getCreateValue() ) );
+        tmpResult.reset( this->newVector() );
         resultPtr = tmpResult.get();
     }
 

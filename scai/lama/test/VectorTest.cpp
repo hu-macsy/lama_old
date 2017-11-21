@@ -261,46 +261,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( ExpLogTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( ExpLogTest, ValueType, scai_numeric_test_types )
 {
     dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
 
     const IndexType n = 100;
 
-    _TestVectors vectors;
+    TestVectors<ValueType> vectors;
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
-        _Vector& v1 = *vectors[i];
-
-        if ( ! common::isNumeric( v1.getValueType() ) )
-        {
-            continue;   // this test will fail for IndexType
-        }
+        Vector<ValueType>& v1 = *vectors[i];
 
         float fillRate = 0.1f;
 
-        Scalar zero = 0;
+        ValueType zero = 0;
 
         v1.setSparseRandom( dist, zero, fillRate, 1 );
 
         v1 += 2;
 
-        _VectorPtr v2Ptr( v1.copy() );
-        const _Vector& v2 = *v2Ptr;
+        VectorPtr<ValueType> v2Ptr( v1.copy() );
+        const Vector<ValueType>& v2 = *v2Ptr;
 
         v1.exp();
         v1.log();
 
         v1 -= v2;
 
-        Scalar diff = v1._maxNorm();
+        NormType<ValueType> diff = v1.maxNorm();
+        NormType<ValueType> eps  = common::TypeTraits<ValueType>::small();
 
         SCAI_LOG_DEBUG( logger, "v = " << v1 << ": maxNorm( log( exp ( v ) ) - v ) = " << diff )
 
-        BOOST_CHECK( diff < Scalar( 0.0001 ) );
+        BOOST_CHECK( diff < eps );
     }
 }
 
@@ -573,7 +569,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( dotProductTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( dotProductTest, ValueType, scai_numeric_test_types )
 {
     // This test does not verify the correctness of the dot product
     // but that it is the same, either computed replicated or distributed.
@@ -584,8 +580,8 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
     // we want to compare all combination of sparse/dense vectors
 
-    _TestVectors vectors1;
-    _TestVectors vectors2;
+    TestVectors<ValueType> vectors1;
+    TestVectors<ValueType> vectors2;
 
     dmemo::TestDistributions dists( n );
 
@@ -595,36 +591,23 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
     {
         for ( size_t j = 0; j < vectors2.size(); ++j )
         {
-            _VectorPtr v1 = vectors1[i];
-            _VectorPtr v2 = vectors2[j];
-
-            if ( ! common::isNumeric( v1->getValueType() ) )
-            {
-                continue;   // this test does not work for int, uint, ....
-            }
-
-            if ( v1->getValueType() != v2->getValueType() )
-            {
-                continue;   // not yet: v1 and v2 must have same type
-            }
+            Vector<ValueType>& v1 = *vectors1[i];
+            Vector<ValueType>& v2 = *vectors2[j];
 
             // generate two arrays of same value type with random numbers
 
-            std::shared_ptr<_HArray> data1( _HArray::create( v1->getValueType() ) );
-            std::shared_ptr<_HArray> data2( _HArray::create( v2->getValueType() ) );
+            HArray<ValueType> data1( n );
+            HArray<ValueType> data2( n );
 
-            data1->resize( n );
-            data2->resize( n );
+            utilskernel::HArrayUtils::setRandom( data1, 1 );
+            utilskernel::HArrayUtils::setRandom( data2, 1 );
 
-            utilskernel::HArrayUtils::setRandom( *data1, 1 );
-            utilskernel::HArrayUtils::setRandom( *data2, 1 );
+            v1.assign( data1 );
+            v2.assign( data2 );
 
-            v1->assign( *data1 );
-            v2->assign( *data2 );
+            SCAI_LOG_DEBUG( logger, "dotProduct, v1 = " << v1 << ", v2 = " << v2 );
 
-            SCAI_LOG_DEBUG( logger, "dotProduct, v1 = " << *v1 << ", v2 = " << *v2 );
-
-            Scalar dotp = v1->_dotProduct( *v2 );  // replicated computation
+            ValueType dotp = v1.dotProduct( v2 );  // replicated computation
 
             for ( size_t j = 0; j < dists.size(); ++j )
             {
@@ -632,14 +615,16 @@ BOOST_AUTO_TEST_CASE( dotProductTest )
 
                 dmemo::DistributionPtr dist = dists[j];
 
-                v1->redistribute( dist );
-                v2->redistribute( dist );
+                v1.redistribute( dist );
+                v2.redistribute( dist );
 
-                Scalar distDotp = v1->_dotProduct( *v2 );
+                ValueType distDotp = v1.dotProduct( v2 );
 
                 // we cannot check for equality due to different rounding errors
 
-                SCAI_CHECK_CLOSE( dotp, distDotp, 0.001 );
+                NormType<ValueType> eps = 0.0001;
+
+                BOOST_CHECK( common::Math::abs( dotp - distDotp ) < eps );
             }
         }
     }
