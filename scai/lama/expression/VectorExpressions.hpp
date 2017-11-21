@@ -403,6 +403,26 @@ inline Expression_SV_SV<ValueType> operator-( const Expression_SV_SV<ValueType>&
     return Expression_SV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
 }
 
+/* ------------------------------------------------------------------------- */
+/*   Failing operator's to give useful error messages                        */
+/* ------------------------------------------------------------------------- */
+
+// Note: using of delete more convenient but does not give a useful error message
+
+template<typename ValueType, typename X>
+inline Expression_SV_SV<ValueType> operator+( const Expression_SV_SV<ValueType>& exp, const X& any ) 
+{
+    static_assert( sizeof( X ) == -1, "too complex expression, introduce temporary" );
+    return exp;
+}
+
+template<typename ValueType, typename X>
+inline Expression_SV_SV<ValueType> operator+( const X& any, const Expression_SV_SV<ValueType>& exp )
+{
+    static_assert( sizeof( X ) == -1, "too complex expression, introduce temporary" );
+    return exp;
+}
+
 } /* end namespace lama */
 
 } /* end namespace scai */
