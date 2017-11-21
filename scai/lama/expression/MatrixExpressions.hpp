@@ -119,6 +119,12 @@ inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, cons
  */
 
 template<typename ValueType>
+inline Expression_SM<ValueType> operator-( const Matrix<ValueType>& m )
+{
+    return Expression_SM<ValueType>( Scalar( -1 ), m );
+}
+
+template<typename ValueType>
 inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, const Scalar& alpha )
 {
     // build 1.0/ alpha as new scalar for a symbolic expression Scalar * Matrix
@@ -171,40 +177,6 @@ template<typename ValueType>
 inline Expression_SMM<ValueType> operator*( const Expression_SM<ValueType>& exp, const Matrix<ValueType>& matrix )
 {
     return Expression_SMM<ValueType>( exp, matrix );
-}
-
-/* --------------------------------------------------------------- */
-/*                                                                 */
-/*  expressions:   'Scalar * Matrix * Matrix'  * Scalar            */
-/*                                                                 */
-/* --------------------------------------------------------------- */
-
-/**
- * @brief This times operator creates an expression that represents the product
- *        of Scalar times Matrix times Matrix.
- *
- * @param[in] scalar  The Scalar
- * @param[in] exp     The expression 'Scalar * Matrix * Matrix'
- * @return            The expression representing this product.
- */
-template<typename ValueType>
-inline Expression_SMM<ValueType> operator*( const Scalar& scalar, const Expression_SMM<ValueType>& exp )
-{
-    return Expression_SMM<ValueType>( scalar * exp.getArg1(), exp.getArg2() );
-}
-
-/**
- * @brief This times operator creates an expression that represents the product
- *        of Scalar times Matrix times Matrix.
- *
- * @param[in] exp     The expression scalar times matrix.
- * @param[in] scalar  The Scalar
- * @return            The expression representing this product.
- */
-template<typename ValueType>
-inline Expression_SMM<ValueType> operator*( const Expression_SMM<ValueType>& exp, const Scalar& scalar )
-{
-    return Expression_SMM<ValueType>( scalar * exp.getArg1(), exp.getArg2() );
 }
 
 /* --------------------------------------------------------------- */
@@ -433,14 +405,84 @@ inline Expression_SM_SM<ValueType> operator-( const Expression_SM<ValueType>& ex
 }
 
 /* ------------------------------------------------------------------------- */
-/*   unary operator -                                                        */
+/*   Scaling of matrix expressions                                           */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-inline Expression_SM<ValueType> operator-( const Matrix<ValueType>& m )
+inline Expression_SM<ValueType> operator*( const Scalar alpha, const Expression_SM<ValueType>& exp )
 {
-    return Expression_SM<ValueType>( Scalar( -1 ), m );
+    return Expression_SM<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
 }
+
+template<typename ValueType>
+inline Expression_SMM<ValueType> operator*( const Scalar alpha, const Expression_SMM<ValueType>& exp )
+{
+    return Expression_SMM<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SM_SM<ValueType> operator*( const Scalar alpha, const Expression_SM_SM<ValueType>& exp )
+{
+    return Expression_SM_SM<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMM_SM<ValueType> operator*( const Scalar alpha, const Expression_SMM_SM<ValueType>& exp )
+{
+    return Expression_SMM_SM<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator*( const Expression_SM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SM<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMM<ValueType> operator*( const Expression_SMM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMM<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SM_SM<ValueType> operator*( const Expression_SM_SM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SM_SM<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
+}
+
+template<typename ValueType>
+inline Expression_SMM_SM<ValueType> operator*( const Expression_SMM_SM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMM_SM<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
+}
+
+template<typename ValueType>
+inline Expression_SM<ValueType> operator/( const Expression_SM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SM<ValueType>( exp.getArg1() / alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMM<ValueType> operator/( const Expression_SMM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMM<ValueType>( exp.getArg1() / alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SM_SM<ValueType> operator/( const Expression_SM_SM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SM_SM<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
+}
+
+template<typename ValueType>
+inline Expression_SMM_SM<ValueType> operator/( const Expression_SMM_SM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMM_SM<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   unary operator -  same as scaling with -1                               */
+/* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
 inline Expression_SM<ValueType> operator-( const Expression_SM<ValueType>& exp )
