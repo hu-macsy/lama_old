@@ -6,6 +6,7 @@
 #include <scai/common/Settings.hpp>
 
 #include <scai/testsupport/detail/common.hpp>
+#include <scai/testsupport/global_temp_dir.hpp>
 
 namespace scai
 {
@@ -15,7 +16,7 @@ namespace testsupport
 
 int commonTestMain( int argc, char* argv[] )
 {
-    using scai::testsupport::detail::rebuildArgs;
+    using scai::testsupport::detail::parseAndRebuildArgs;
 
     scai::common::Settings::parseArgs( argc, const_cast<const char**>( argv ) );
 
@@ -23,12 +24,14 @@ int commonTestMain( int argc, char* argv[] )
     const auto testSuiteName = boostTestModuleName;
 
     // Building args as a vector<vector<char>> ensures that lifetime of modified args is bounded by main() call
-    auto newArgs = rebuildArgs(argc, argv, testSuiteName);
+    auto parseResult = parseAndRebuildArgs(argc, argv, testSuiteName);
     std::vector<char *> charPointers;
-    for (auto & arg : newArgs)
+    for (auto & arg : parseResult.args)
     {
         charPointers.push_back(arg.data());
     }
+
+    GlobalTempDir::setPathOrDefault(parseResult.tempDir);
 
     return boost::unit_test::unit_test_main(&init_unit_test, charPointers.size(), charPointers.data());
 }

@@ -70,7 +70,7 @@ if    ( NOT SCAI_CMAKE_VERBOSE )
     include ( scai_function/setCMakeQuiet )
 endif ( NOT SCAI_CMAKE_VERBOSE )
 
-add_subdirectory("testsupport" EXCLUDE_FROM_ALL)
+
 
 ### General stuff for all projects
 
@@ -184,6 +184,8 @@ include ( Package/OpenMP )
 include ( Package/CUDA )
 
 include ( ConcludeFlags )
+
+add_subdirectory("testsupport" EXCLUDE_FROM_ALL)
 
 ### Traverse all module projects for configuration
 

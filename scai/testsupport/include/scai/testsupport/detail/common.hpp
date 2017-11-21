@@ -48,17 +48,25 @@ std::vector<char> intoNullTerminatedChars(const std::string & str)
     return chars;
 }
 
-std::vector<std::vector<char>> rebuildArgs(int argc, char ** argv, const std::string & testSuiteName)
+struct ArgParseResult
+{
+    std::string tempDir;
+    std::vector<std::vector<char>> args;
+};
+
+ArgParseResult parseAndRebuildArgs(int argc, char ** argv, const std::string & testSuiteName)
 {
     static const std::string REPORT_SINK_ARG = "--report_sink";
     static const std::string LOG_SINK_ARG = "--log_sink";
     static const std::string OUTPUT_DIR_ARG = "--output_dir";
+    static const std::string TEMP_DIR_ARG = "--temp_dir";
+
+    ArgParseResult result;
 
     const std::array<std::string, 4> forbiddenSinks {
         { REPORT_SINK_ARG, LOG_SINK_ARG, std::string("-e"), std::string("-k") }
     };
 
-    std::vector<std::vector<char>> args;
     std::string outputDir;
     bool sinkIsPresent = false;
     for (int i = 0; i < argc; ++i)
@@ -71,12 +79,19 @@ std::vector<std::vector<char>> rebuildArgs(int argc, char ** argv, const std::st
                     [&key] (const std::string & sink) { return sink == key; });
         sinkIsPresent = sinkIsPresent || argHasSink;
 
+        // Do not include non-Boost options in new list of arguments,
+        // since Boost does not recognize them and will complain
         if (key == OUTPUT_DIR_ARG)
         {
-            // Do not include in new list of arguments, since Boost does not recognize it and will complain
             outputDir = value;
-        } else {
-            args.push_back(intoNullTerminatedChars(arg));
+        }
+        else if (key == TEMP_DIR_ARG)
+        {
+            result.tempDir = value;
+        }
+        else
+        {
+            result.args.push_back(intoNullTerminatedChars(arg));
         }
     }
 
@@ -91,11 +106,11 @@ std::vector<std::vector<char>> rebuildArgs(int argc, char ** argv, const std::st
     {
         const auto report_sink = REPORT_SINK_ARG + "=" + outputDir + "/" + testSuiteName + "_report.xml";
         const auto log_sink = LOG_SINK_ARG + "=" + outputDir + "/" + testSuiteName + "_log.xml";
-        args.push_back(intoNullTerminatedChars(report_sink));
-        args.push_back(intoNullTerminatedChars(log_sink));
+        result.args.push_back(intoNullTerminatedChars(report_sink));
+        result.args.push_back(intoNullTerminatedChars(log_sink));
     }
 
-    return args;
+    return result;
 }
 
 } // namespace detail

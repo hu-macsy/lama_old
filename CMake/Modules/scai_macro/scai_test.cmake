@@ -82,7 +82,7 @@ macro ( scai_test )
         if ( WIN32 )
             link_directories ( ${Boost_LIBRARY_DIRS} )
         else ()
-            target_link_libraries ( ${scai_test_EXECUTABLE} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+            target_link_libraries ( ${scai_test_EXECUTABLE} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} testsupport)
         endif ()
     endif ()
 
