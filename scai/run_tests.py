@@ -42,7 +42,7 @@ PASSED = " " + colors.PASS + "[ PASSED ]" + colors.NOCOLOR + " "
 FAILED = " " + colors.FAIL + "[ FAILED ]" + colors.NOCOLOR + " "
 
 
-def run_test(test, output_dir, prepend_args = []):
+def run_test(test, output_dir, temp_dir = None, prepend_args = []):
     # Note: we are implicitly assuming unique test names here
     stdout_path = os.path.join(output_dir, "{}_stdout.txt".format(test.name))
     stderr_path = os.path.join(output_dir, "{}_stderr.txt".format(test.name))
@@ -56,6 +56,8 @@ def run_test(test, output_dir, prepend_args = []):
             "--output_format=XML",
             "--output_dir={}".format(output_dir)
         ]
+        if temp_dir:
+            args += [ "--temp_dir={}".format(temp_dir) ]
 
     testsupport.ensure_directory_exists(output_dir)
 
@@ -64,7 +66,7 @@ def run_test(test, output_dir, prepend_args = []):
         return retcode == 0
 
 
-def run_tests(tests, output_dir, prepend_args = []):
+def run_tests(tests, output_dir, temp_dir = None, prepend_args = []):
     failed_tests = []
     successful_tests = []
     status_messages = [ "  Running test #{} {} ... ".format(index + 1, test.name)
@@ -79,7 +81,7 @@ def run_tests(tests, output_dir, prepend_args = []):
         start = time.time()
 
         try:
-            passed = run_test(test, output_dir, prepend_args=prepend_args)
+            passed = run_test(test, output_dir, temp_dir=temp_dir, prepend_args=prepend_args)
         except Exception as e:
             passed = False;
             print("\nException when running test {}:\n{}\n".format(test.name, e))
@@ -98,14 +100,14 @@ def run_tests(tests, output_dir, prepend_args = []):
     return (successful_tests, failed_tests)
 
 
-def run_mpi_tests(tests, output_dir, np):
+def run_mpi_tests(tests, output_dir, np, temp_dir=None):
     failed_tests = []
     passed_tests = []
 
     for n in np:
         print("Running {} MPI tests ({} processors) ...".format(len(tests), n))
         mpi_args = [ "mpirun", "-np", str(n), "--tag-output" ]
-        (passed, failed) = run_tests(tests, output_dir, prepend_args=mpi_args)
+        (passed, failed) = run_tests(tests, output_dir, temp_dir=temp_dir, prepend_args=mpi_args)
         print()
         passed_tests += passed
         failed_tests += failed
@@ -122,6 +124,8 @@ def main():
     parser = argparse.ArgumentParser(description='Run LAMA tests.')
     parser.add_argument('--output_dir', dest='output_dir', default=None,
                         help='The directory in which to store the standard output, test logs and test reports.')
+    parser.add_argument('--temp_dir', dest='temp_dir', default=None,
+                        help='The directory in which to store temporary files used by tests.')
     parser.add_argument('--mpi', dest='mpi', action='store_true',
                         help='Whether or not to use MPI for MPI-enabled tests.')
     parser.add_argument('--np', dest='np', type=int, nargs='+', required=False, default=[ 1 ],
@@ -140,7 +144,9 @@ def main():
 
     print("Running LAMA tests.")
     print("Output from individual tests (logs, reports, stdout/stderr) will be stored in the following output directory.")
-    print("Output directory: {}\n".format(output_dir))
+    print("Output directory:          {}".format(output_dir))
+    print("Temporary files directory: {}\n".format(args.temp_dir if args.temp_dir else "Not specified. Determined by test binary."))
+    print()
 
     if args.tests:
         for name in args.tests:
@@ -156,13 +162,13 @@ def main():
     filtered_mpi_tests = [ test for test in MPI_TESTS if test.name in args.tests ] if args.tests else MPI_TESTS
 
     print("Running {} normal tests ...".format(len(filtered_normal_tests)))
-    (normal_passed, normal_failed) = run_tests(filtered_normal_tests, output_dir)
+    (normal_passed, normal_failed) = run_tests(filtered_normal_tests, output_dir, temp_dir=args.temp_dir)
     print()
 
     mpi_passed = []
     mpi_failed = []
     if args.mpi:
-        (mpi_passed, mpi_failed) = run_mpi_tests(filtered_mpi_tests, output_dir, args.np)
+        (mpi_passed, mpi_failed) = run_mpi_tests(filtered_mpi_tests, output_dir, args.np, temp_dir=args.temp_dir)
     else:
         print("MPI tests not requested. Skipping ...")
 
