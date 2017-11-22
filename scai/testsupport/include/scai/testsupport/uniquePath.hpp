@@ -11,7 +11,7 @@ namespace scai
 namespace testsupport
 {
 
-std::string unique_path(const std::string & dir, const std::string & namePrefix = "");
+std::string uniquePath(const std::string & dir, const std::string & namePrefix = "");
 
 } // namespace testsupport
 

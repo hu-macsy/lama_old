@@ -8,7 +8,7 @@
 #include <scai/hmemo.hpp>
 #include <scai/testsupport/detail/common.hpp>
 #include <scai/testsupport/detail/common_hmemo.hpp>
-#include <scai/testsupport/global_temp_dir.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 #include <iostream>
 #include <sstream>

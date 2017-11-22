@@ -1,6 +1,6 @@
-#include <scai/testsupport/unique_path.hpp>
+#include <scai/testsupport/uniquePath.hpp>
 
-#include <scai/testsupport/random_string.hpp>
+#include <scai/testsupport/randomString.hpp>
 
 #include <string>
 #include <random>
@@ -43,7 +43,7 @@ struct RandomGen
 };
 }
 
-std::string scai::testsupport::unique_path(const std::string & dir, const std::string & namePrefix)
+std::string scai::testsupport::uniquePath(const std::string & dir, const std::string & namePrefix)
 {
     static RandomGen generator;
     constexpr auto random_part_len = 8;

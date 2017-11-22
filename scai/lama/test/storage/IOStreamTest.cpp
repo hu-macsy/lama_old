@@ -41,15 +41,15 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/TypeTraits.hpp>
 
-#include <scai/testsupport/unique_path.hpp>
-#include <scai/testsupport/global_temp_dir.hpp>
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
 using namespace common;
 using namespace lama;
 using namespace utilskernel;
 
-using scai::testsupport::unique_path;
+using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
 
 /* ------------------------------------------------------------------------- */
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeFormatted, ValueType, scai_numeric_test_type
 
     int precision = 3;
 
-    const auto testFileName = unique_path(GlobalTempDir::getPath(), "IOStreamTest.writeFormatted");
+    const auto testFileName = uniquePath(GlobalTempDir::getPath(), "IOStreamTest.writeFormatted");
 
     IOStream outFile( testFileName, std::ios::out );
     outFile.writeFormatted( data, precision );
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryTest, ValueType, scai_numeric_test_types )
 
     // ScalarType type = TypeTraits<ValueType>::stype;
 
-    const auto testFileName = unique_path(GlobalTempDir::getPath(), "IOStreamTest.BinaryTest");
+    const auto testFileName = uniquePath(GlobalTempDir::getPath(), "IOStreamTest.BinaryTest");
 
     IOStream outFile( testFileName, std::ios::out | std::ios::binary );
 
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryConvertTest, ValueType, scai_numeric_test_t
 
     ScalarType stype = TypeTraits<ScalarRepType>::stype;
 
-    const auto testFileName = unique_path(GlobalTempDir::getPath(), "BinaryConvertTest");
+    const auto testFileName = uniquePath(GlobalTempDir::getPath(), "BinaryConvertTest");
 
     IOStream outFile( testFileName, std::ios::out | std::ios::binary );
     outFile.writeBinary( data, stype );

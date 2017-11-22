@@ -41,13 +41,13 @@
 #include <scai/lama/GridReadAccess.hpp>
 #include <scai/lama/GridWriteAccess.hpp>
 
-#include <scai/testsupport/unique_path.hpp>
-#include <scai/testsupport/global_temp_dir.hpp>
+#include <scai/testsupport/uniquePath.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
 using namespace lama;
 
-using scai::testsupport::unique_path;
+using scai::testsupport::uniquePath;
 using scai::testsupport::GlobalTempDir;
 
 /* --------------------------------------------------------------------- */
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ioTest, ValueType, scai_numeric_test_types )
     const IndexType n4 = 4;
 
     // Matlab binary format supports io of grids
-    const auto fileName = unique_path(GlobalTempDir::getPath(), "tmpGrid") + ".mat";
+    const auto fileName = uniquePath(GlobalTempDir::getPath(), "tmpGrid") + ".mat";
 
     GridVector<RealType> gv1( common::Grid4D( n1, n2, n3, n4 ) );
 

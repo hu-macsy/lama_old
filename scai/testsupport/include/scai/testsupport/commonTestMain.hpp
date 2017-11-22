@@ -6,7 +6,7 @@
 #include <scai/common/Settings.hpp>
 
 #include <scai/testsupport/detail/common.hpp>
-#include <scai/testsupport/global_temp_dir.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 namespace scai
 {

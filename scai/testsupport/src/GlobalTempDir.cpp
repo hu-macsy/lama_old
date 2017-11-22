@@ -1,4 +1,4 @@
-#include <scai/testsupport/global_temp_dir.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 #include <memory>
 #include <string>

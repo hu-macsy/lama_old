@@ -1,7 +1,7 @@
 #pragma once
 
 #include <scai/dmemo/Communicator.hpp>
-#include <scai/testsupport/unique_path.hpp>
+#include <scai/testsupport/uniquePath.hpp>
 
 #include <string>
 #include <sstream>
@@ -17,7 +17,7 @@ namespace testsupport
                                   const std::string & namePrefix = "")
     {
         std::stringstream path;
-        path << unique_path(unique_dir, namePrefix);
+        path << uniquePath(unique_dir, namePrefix);
         path << '_' << comm.getSize() << '_' << comm.getRank();
         return path.str();
     }
@@ -30,7 +30,7 @@ namespace testsupport
         std::string path;
         if (comm.getRank() == 0)
         {
-            path = ::scai::testsupport::unique_path(unique_dir, namePrefix);
+            path = ::scai::testsupport::uniquePath(unique_dir, namePrefix);
         }
         comm.bcast(path, 0);
         return path;

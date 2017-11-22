@@ -52,8 +52,8 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
-#include <scai/testsupport/unique_path_comm.hpp>
-#include <scai/testsupport/global_temp_dir.hpp>
+#include <scai/testsupport/uniquePathComm.hpp>
+#include <scai/testsupport/GlobalTempDir.hpp>
 
 using namespace scai;
 using namespace lama;
