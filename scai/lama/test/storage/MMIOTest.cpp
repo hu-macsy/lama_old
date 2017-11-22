@@ -41,10 +41,16 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/macros/assert.hpp>
 
+#include <scai/testsupport/unique_path.hpp>
+#include <scai/testsupport/global_temp_dir.hpp>
+
 using namespace scai;
 using namespace common;
 using namespace lama;
 using namespace hmemo;
+
+using scai::testsupport::unique_path;
+using scai::testsupport::GlobalTempDir;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
@@ -71,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadGeneralDenseTest, ValueType, scai_numeric_tes
 
     const char header[] = "%%MatrixMarket matrix array real general";
 
-    std::string fileName = "mm_array_gen.mtx";
+    const auto fileName = unique_path(GlobalTempDir::getPath(), "mm_array_gen") + ".mtx";
 
     {
         using namespace std;
@@ -136,10 +142,10 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
 
     const IndexType ncases = sizeof( header ) / sizeof( char* );
 
-    std::string fileName = "mm_wrong.mtx";
-
     for ( IndexType icase = 0; icase < ncases; ++icase )
     {
+        const auto fileName = unique_path(GlobalTempDir::getPath(), "mm_wrong") + ".mtx";
+
         {
             fstream myFile;
             IndexType zero = 0;    // used to write sizes
@@ -158,12 +164,12 @@ BOOST_AUTO_TEST_CASE( ReadErrorTest )
             IndexType N = 0;
             reader.readArrayInfo( N, fileName );
         }, common::IOException );
+
+        int rc = FileIO::removeFile( fileName );
+
+        BOOST_CHECK_EQUAL( rc, 0 );
+        BOOST_CHECK( ! FileIO::fileExists( fileName ) );
     }
-
-    int rc = FileIO::removeFile( fileName );
-
-    BOOST_CHECK_EQUAL( rc, 0 );
-    BOOST_CHECK( ! FileIO::fileExists( fileName ) );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -186,7 +192,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ReadSymmetricDenseTest, ValueType, scai_numeric_t
 
     const char header[] = "%%MatrixMarket matrix array real symmetric";
 
-    std::string fileName = "mm_array_symm.mtx";
+    const auto fileName = unique_path(GlobalTempDir::getPath(), "mm_array_symm") + ".mtx";
 
     {
         using namespace std;
@@ -259,7 +265,7 @@ BOOST_AUTO_TEST_CASE( RectangularTest )
 
     denseOut.setRawDenseData( m, n, vals, 0.001 );
 
-    std::string fileName = "dense.mtx";
+    const auto fileName = unique_path(GlobalTempDir::getPath(), "dense") + ".mtx";
 
     MatrixMarketIO io;
     FileIO& fio = io;

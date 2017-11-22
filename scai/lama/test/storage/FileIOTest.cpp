@@ -46,6 +46,9 @@
 #include <scai/common/test/TestMacros.hpp>
 #include <scai/common/exception/UnsupportedException.hpp>
 
+#include <scai/testsupport/unique_path.hpp>
+#include <scai/testsupport/global_temp_dir.hpp>
+
 #include <memory>
 
 using std::unique_ptr;
@@ -56,6 +59,9 @@ using namespace lama;
 using namespace hmemo;
 
 using utilskernel::LArray;
+
+using scai::testsupport::unique_path;
+using scai::testsupport::GlobalTempDir;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
@@ -251,8 +257,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedStorage, ValueType, scai_numeric_test_ty
 
         BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outStorageFormatted_" + typeName + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outStorageFormatted_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("FormattedStorage: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIOFormatted: write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
@@ -362,8 +369,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryStorage, ValueType, scai_numeric_test_types
 
         BOOST_CHECK( csrStorage.hasDiagonalProperty() );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outStorageBinary" + typeName + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outStorageBinary_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("BinaryStorage: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIO(binary): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
@@ -440,8 +448,9 @@ BOOST_AUTO_TEST_CASE( NonSquareStorage )
         LArray<IndexType> firstColIndexes1;
         csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outStorageNonSquare" + typeName + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outStorageNonSquare_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("NonSquareStorage: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
@@ -524,8 +533,9 @@ BOOST_AUTO_TEST_CASE( SymmetricStorage )
         LArray<IndexType> firstColIndexes1;
         csrStorage.getFirstColumnIndexes( firstColIndexes1 );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outStorageSymmetric" + typeName + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outStorageSymmetric_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("SymmetricStorage: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIO(default): write this storage: " << csrStorage << " via " << *fileIO << " to " << fileName )
 
@@ -605,8 +615,9 @@ BOOST_AUTO_TEST_CASE( EmptyStorage )
         {
             MatrixStorage<ValueType>& m = *storages[j];
 
-            std::string typeName = TypeTraits<ValueType>::id();
-            std::string fileName = "outEmptyStorage" + typeName + fileSuffix;
+            const std::string typeName = TypeTraits<ValueType>::id();
+            const std::string fileName = unique_path(GlobalTempDir::getPath(), "outStorageEmpty_" + typeName) + fileSuffix;
+            BOOST_TEST_MESSAGE("EmptyStorage: fileName = " << fileName);
 
             m.clear();
 
@@ -677,8 +688,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( FormattedArray, ValueType, scai_numeric_test_type
 
         array.setRandom( 100 );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outArrayFormatted" + typeName + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outArrayFormatted_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("FormattedArray: fileName = " << fileName);
 
         SCAI_LOG_DEBUG( logger, "FileIO(formatted): write this array: " << array << " via " << *fileIO << " to " << fileName )
 
@@ -805,8 +817,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( BinaryArray, ValueType, scai_numeric_test_types )
 
         array.setRandom( range );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outArrayBinary_" + typeName  + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outArrayBinary_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("BinaryArray: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIO(binary): write this array: " << array << " via " << *fileIO << " to " << fileName )
 
@@ -866,8 +879,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EmptyArray, ValueType, scai_numeric_test_types )
 
         LArray<ValueType> array;
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outEmptyArray_" + typeName  + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outEmptyArray_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("EmptyArray: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIO: write this empty array: " << array << " via " << *fileIO << " to " << fileName )
 
@@ -943,8 +957,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( writeSparseTest, ValueType, scai_numeric_test_typ
 
         utilskernel::HArrayUtils::buildSparseArray( sparseArray, sparseIndexes, array );
 
-        std::string typeName = TypeTraits<ValueType>::id();
-        std::string fileName = "outArraySparse" + typeName + fileSuffix;
+        const std::string typeName = TypeTraits<ValueType>::id();
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outArraySparse_" + typeName) + fileSuffix;
+        BOOST_TEST_MESSAGE("writeSparseTest: fileName = " << fileName);
 
         SCAI_LOG_INFO( logger, "FileIO(sparse): write this sparse array: " << array << " via " << *fileIO << " to " << fileName )
 
@@ -1039,7 +1054,8 @@ BOOST_AUTO_TEST_CASE( PatternIOTest )
 
         fileIO->setDataType( common::ScalarType::PATTERN );
 
-        std::string fileName = "outStoragePattern" + fileSuffix;
+        const std::string fileName = unique_path(GlobalTempDir::getPath(), "outStoragePattern") + fileSuffix;
+        BOOST_TEST_MESSAGE("PatternIOTest: fileName = " << fileName);
 
         CSRStorage<ValueType> csrStorage;
         setNonSquareData( csrStorage );

@@ -51,8 +51,14 @@
 
 #include <scai/common/TypeTraits.hpp>
 
+#include <scai/testsupport/unique_path.hpp>
+#include <scai/testsupport/global_temp_dir.hpp>
+
 using namespace scai;
 using namespace lama;
+
+using scai::testsupport::unique_path;
+using scai::testsupport::GlobalTempDir;
 
 /* ------------------------------------------------------------------------- */
 
@@ -580,7 +586,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, MatrixType, MatrixTypes )
     const IndexType numRows = 16;
     const IndexType numCols = 16;
 
-    std::string fileName = "myMatrix.psc";   // binary type, so no loss of precision
+    const auto fileName = unique_path(GlobalTempDir::getPath(), "myMatrix") + ".psc";
 
     float fillRate = 0.2;
 

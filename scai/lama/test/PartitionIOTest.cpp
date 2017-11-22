@@ -52,9 +52,15 @@
 #include <scai/dmemo/GenBlockDistribution.hpp>
 #include <scai/dmemo/NoDistribution.hpp>
 
+#include <scai/testsupport/unique_path_comm.hpp>
+#include <scai/testsupport/global_temp_dir.hpp>
+
 using namespace scai;
 using namespace lama;
 using namespace dmemo;
+
+using scai::testsupport::uniquePathSharedAmongNodes;
+using scai::testsupport::GlobalTempDir;
 
 /** Output files should be deleted unless for debugging it might be useful to check them. */
 
@@ -120,7 +126,14 @@ BOOST_AUTO_TEST_CASE( DistributionSingleIO )
         SCAI_LOG_INFO( logger, "DistributionSingleIO: dist[" << i <<  "] = " << *dist )
 
         CommunicatorPtr comm = dist->getCommunicatorPtr();
-        const std::string distFileName = "TestDist.txt";
+        const std::string distFileName = uniquePathSharedAmongNodes(
+                                            GlobalTempDir::getPath(),
+                                            *comm,
+                                            "TestDist"
+                                         ) + ".txt";
+
+        BOOST_TEST_MESSAGE("DistributionSingleIO: distFilename = " << distFileName);
+
         SCAI_LOG_INFO( logger, *comm << ": writeDistribution " << *dist )
         PartitionIO::write( *dist, distFileName );
         // Hint:      We assume a common file system for all processors
@@ -162,7 +175,14 @@ BOOST_AUTO_TEST_CASE( DistributionMultipleIO )
         DistributionPtr dist = testDists[i];
         CommunicatorPtr comm = dist->getCommunicatorPtr();
 
-        const std::string fileName  = "TestDist%r.txt";
+        const std::string fileName = uniquePathSharedAmongNodes(
+                                        GlobalTempDir::getPath(),
+                                        *comm,
+                                        "TestDist%r"
+                                        ) + ".txt";
+
+        BOOST_TEST_MESSAGE("DistributionMultipleIO: fileName = " << fileName);
+
         std::string pFileName = fileName;
         bool isPartitioned;
         PartitionIO::getPartitionFileName( pFileName, isPartitioned, *comm );
