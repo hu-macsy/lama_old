@@ -95,6 +95,7 @@ public:
 
     using Vector<ValueType>::operator=;
     using Vector<ValueType>::getValueType;
+    using Vector<ValueType>::binaryOp;    
 
     /** Default constructor, creates empty (not initilized) vector, that is replicated (without distribution) */
 
@@ -339,10 +340,6 @@ public:
 
     DenseVector& operator=( const DenseVector<ValueType>& other );
 
-    /** Reimplement _Vector::operator= as otherwise a constructor of DenseVector might be called */
-
-    DenseVector& operator=( const Scalar );
-
     // All other assignment operators are inherited from class Vector, but using is required
 
     /** Implementation of pure method _Vector::asign 
@@ -494,17 +491,17 @@ public:
 
     virtual NormType<ValueType> maxNorm() const;
 
-    /** Implementation of pure method _Vector::maxDiffNorm */
+    /** Implementation of pure method Vector<ValueType>::maxDiffNorm */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Vector& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const;
 
-    /** Implementation of pure method _Vector::all */
+    /** Implementation of pure method Vector<ValueType>::all */
 
-    virtual bool all( common::CompareOp op, const Scalar value ) const;
+    virtual bool all( common::CompareOp op, const ValueType value ) const;
 
-    /** Implementation of pure method _Vector::all */
+    /** Implementation of pure method Vector<ValueType>::all */
 
-    virtual bool all( common::CompareOp op, const _Vector& other ) const;
+    virtual bool all( common::CompareOp op, const Vector<ValueType>& other ) const;
 
     virtual void swap( _Vector& other );
 
@@ -523,41 +520,41 @@ public:
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Implementation of pure method _Vector::vectorPlusVector */
+    /** Implementation of pure method Vector<ValueType>::unaryOp for dense vector. */
 
-    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y );
+    void unaryOp( const Vector<ValueType>& x, common::UnaryOp op );
 
-    /** vectorPlusVector with one zero term */
+    /** Implementation of pure method Vector<ValueType>::binaryOp for dense vector. */
 
-    void assignScaledVector( const Scalar& alpha, const _Vector& x );
+    void binaryOp( const Vector<ValueType>& x, common::BinaryOp op, const Vector<ValueType>& y );
+
+    /** Implementation of pure method Vector<ValueType>::binaryOpScalar for dense vector. */
+
+    void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
+
+    /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
+
+    virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta, const Vector<ValueType>& y );
 
     /** vectorPlusVector with aliased */
 
-    void axpy( const Scalar& alpha, const _Vector& x );
+    void axpy( const ValueType& alpha, const Vector<ValueType>& x );
 
-    /** Implementation of pure method _Vector::vectorTimesVector */
+    /** Implementation of pure method Vector<ValueType>::vectorTimesVector */
 
-    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y );
+    virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& x, const Vector<ValueType>& y );
 
-    /** Implementation of pure method _Vector::vectorPlusScalar */
+    /** Implementation of pure method Vector<ValueType>::vectorPlusScalar */
 
-    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS );
+    virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta );
 
-    /** Assign this vector with a scalar values, does not change size, distribution. */
+    /** Implementation for pure method Vector<ValueType>::setScalar */
 
-    virtual void assign( const Scalar value );
-
-    /** Implementation of pure method _Vector::setScalar */
-
-    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false );
+    virtual void setScalar( const ValueType& alpha );
 
     /** Implementation of pure method _Vector::setVector */
 
     virtual void setVector( const _Vector& other, const common::BinaryOp op, const bool swapScalar = false );
-
-    /** Implementation of pure method _Vector::applyUnary */
-
-    virtual void applyUnary( common::UnaryOp op );
 
     /** Setting this vector by gathering vector elements from another vector.
      *

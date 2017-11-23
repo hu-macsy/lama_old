@@ -72,8 +72,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( L2NormVectorTests, ValueType, scai_numeric_test_t
     hwa[3] = -4.0;
     hwa.release();
     expected = static_cast<ValueType>( 5.47722 );
-    Scalar s = l2norm( vec );
-    SCAI_CHECK_CLOSE( expected, s.getValue<ValueType>(), 1 );
+    ValueType s = l2norm( vec );
+    NormType<ValueType> eps = 0.001; // 
+    BOOST_CHECK( common::Math::abs( expected - s ) < eps );
     BOOST_CHECK_EQUAL( vec.l2Norm(), l2norm( vec ) );
 }
 

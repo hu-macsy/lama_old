@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/TestVectors.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 
         v = 4;
 
-        v.invert();
+        v.unaryOpInPlace( common::UnaryOp::RECIPROCAL );
 
         ValueType s = v[n / 2 ];
 
@@ -228,6 +228,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
     dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t i = 0; i < vectors.size(); ++i )
     {
         Vector<ValueType>& v = *vectors[i];
@@ -239,23 +241,61 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ConjTest, ValueType, scai_numeric_test_types )
 
         std::srand( i + 3351 );  // same values on each processor
 
-        float fillRate = 0.1f;
+        float fillRate = 0.2f;
 
         v.setSparseRandom( dist, 0, fillRate, 1 );
         
         VectorPtr<ValueType> v1Ptr( v.copy() );
         Vector<ValueType>& v1 = *v1Ptr;
 
-        v.conj();
+        v.unaryOpInPlace( common::UnaryOp::CONJ );
 
-        v.cwiseProduct( v1 );  // ( a + b i ) ( a - b i ), elementwise multiplication
+        v.binaryOp( v, common::BinaryOp::MULT, v1 );  // ( a + b i ) ( a - b i ), elementwise multiplication
         
         ValueType s1 = v.sum();
         ValueType s2 = v1.dotProduct( v1 );
 
-        SCAI_LOG_DEBUG( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 )
+        SCAI_LOG_INFO( logger, "sum( v * conj(v ) = " << s1 << ", dotProduct( v, v ) = " << s2 << ", v = " << v )
 
-        BOOST_CHECK( common::Math::abs( s1 - s2 ) < 0.0001 );
+        BOOST_CHECK( common::Math::abs( s1 - s2 ) < eps );
+
+        break;
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( BinaryOpTest )
+{
+    typedef RealType ValueType;
+
+    const IndexType N = 3;
+
+    SparseVector<ValueType> v1( N, ValueType( 3 ) );
+    SparseVector<ValueType> v2( N, ValueType( 5 ) );
+
+    v1.binaryOp( v1, common::BinaryOp::MULT, v2 );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType s = v1[i];
+        BOOST_CHECK_EQUAL( s, ValueType( 15 ) );
+    }
+
+    v1.binaryOp( v1, common::BinaryOp::SUB, 5 );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType s = v1[i];
+        BOOST_CHECK_EQUAL( s, ValueType( 10 ) );
+    }
+ 
+    v1.binaryOp( 17, common::BinaryOp::SUB, v1 );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType s = v1[i];
+        BOOST_CHECK_EQUAL( s, ValueType( 7 ) );
     }
 }
 
@@ -286,8 +326,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ExpLogTest, ValueType, scai_numeric_test_types )
         VectorPtr<ValueType> v2Ptr( v1.copy() );
         const Vector<ValueType>& v2 = *v2Ptr;
 
-        v1.exp();
-        v1.log();
+        v1 = exp( v1 );
+        // v1.assign ( v1 );
+        // v1.applyUnary( common::UnaryOp::EXP );
+        v1 = log( v1 );
+        // v1.assign( v1 );
+        // v1.applyUnary( common::UnaryOp::LOG );
 
         v1 -= v2;
 
@@ -320,20 +364,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SinCosTest, ValueType, scai_numeric_test_types )
 
         v1.setSparseRandom( vectorDist, 0, fillRate, 1 );
 
-        VectorPtr<ValueType> v2Ptr( v1.copy() );
+        VectorPtr<ValueType> v2Ptr( v1.newVector() );
         Vector<ValueType>& v2 = *v2Ptr;
 
         // build:  sin(v1) * sin(v1) + cos(v2) * cos(v2) - 1, must all be 0
 
-        v1.sin();
-        v2.cos();
+        v2 = cos( v1 );
+        v1 = sin( v1 );
 
         // v1 = v1 * v1 - v2 * v2 - 1
 
-        v1.cwiseProduct( v1 );
-        v2.cwiseProduct( v2 );
+        v1.binaryOp( v1, common::BinaryOp::MULT, v1 );
+        v2.binaryOp( v2, common::BinaryOp::MULT, v2 );
+
         v1 += v2;
-        v1 -= ValueType( 1 );
+        v1 -= 1;
 
         NormType<ValueType> diff = v1.maxNorm();
         NormType<ValueType> eps  = 0.00001;
@@ -371,8 +416,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
         VectorPtr<ValueType> v2Ptr( v1.copy() );
         Vector<ValueType>& v2 = *v2Ptr;
 
-        v1.powExp( 2 );   // v[i] = v[i] ** 2.0
-        v1.powExp( 0.5 ); 
+        v1.binaryOp( v1, common::BinaryOp::POW, ValueType( 2 ) );     // v[i] = v[i] ** 2.0
+        v1.binaryOp( v1, common::BinaryOp::POW, ValueType( 0.5 ) );   // v[i] = v[i] ** 0.5;
 
         v1 -= v2;
 
@@ -383,8 +428,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( PowTest, ValueType, scai_numeric_test_types )
  
         ValueType e( common::Math::exp( ValueType( 0 ) ) );
 
-        v1.powBase( e );  // v1[i] = 2 ** v1
-        v2.exp();
+        v1.binaryOp( e, common::BinaryOp::POW, v1 );  // v1[i] = e ** v1
+        v2 = exp( v2 );
         v1 -= v2;
 
         BOOST_CHECK( diff < eps );
@@ -667,18 +712,22 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
             Vector<ValueType>& v2 = *v2Ptr;
 
             v2 = v1;
-            v2 += v1;
-            v2 -= v1;
-            v2 *= 2;
-            v2 /= 2;
 
-            v2.cwiseProduct( v2 );   // is v1 * v1 elementwise
+            // v2 += v1;
+            // v2 -= v1;
+            // v2 *= 2;
+            // v2 /= 2;
+
+            v2 = v1 * v2;   // is v2 * v2 elementwise
 
             VectorPtr<ValueType> v3Ptr( v1.newVector() );
             Vector<ValueType>& v3 = *v3Ptr;
 
-            v3 = 2 * m * v1 - v2;   // is v1 * v1
-            v3 -= v2;
+            // v3 = 2 * m * v1 - v2;   // is v1 * v1
+
+            v3 = m * v1 - v2;   // is v1 * v1
+
+            // v3 -= v2;
 
             NormType<ValueType> eps = 0.0001;
             BOOST_CHECK( v3.maxNorm() < eps );
@@ -688,7 +737,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( allTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( allTest, ValueType, scai_numeric_test_types )
 {
     using namespace hmemo;
 
@@ -702,28 +751,28 @@ BOOST_AUTO_TEST_CASE( allTest )
 
     // we want to compare all combination of sparse/dense vectors
 
-    _TestVectors vectors1;
-    _TestVectors vectors2;
+    TestVectors<ValueType> vectors1;
+    TestVectors<ValueType> vectors2;
 
     for ( size_t i = 0; i < vectors1.size(); ++i )
     {
-        _VectorPtr v1 = vectors1[i];
+        Vector<ValueType>& v1 = *vectors1[i];
 
-        v1->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+        v1.setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
 
-        BOOST_CHECK( v1->all( common::CompareOp::GE, 0 ) );
+        BOOST_CHECK( v1.all( common::CompareOp::GE, 0 ) );
 
-        v1->setRawData( 5, denseData );
+        v1.setRawData( 5, denseData );
 
-        BOOST_CHECK( v1->all( common::CompareOp::GE, 0 ) );
+        BOOST_CHECK( v1.all( common::CompareOp::GE, 0 ) );
 
         for ( size_t j = 0; j < vectors2.size(); ++j )
         {
-            _VectorPtr v2 = vectors2[j];
+            Vector<ValueType>& v2 = *vectors2[j];
 
-            v2->setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
+            v2.setSparseRawData( n, 3, sparseIndexes, sparseData, zero );
 
-            BOOST_CHECK( v1->all( common::CompareOp::EQ, *v2 ) );
+            BOOST_CHECK( v1.all( common::CompareOp::EQ, v2 ) );
         }
     }
 }

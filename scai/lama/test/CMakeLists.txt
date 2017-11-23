@@ -40,7 +40,6 @@ scai_project (
 
     HEADERS
         
-       TestMacros
        TestVectors
 
     SOURCES

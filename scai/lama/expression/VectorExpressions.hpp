@@ -162,6 +162,12 @@ inline Expression_SV_S<ValueType> operator+( const Scalar& alpha, const Vector<V
     return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), alpha );
 }
 
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator-( const Scalar& alpha, const Vector<ValueType>& x )
+{
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( -1 ), x ), alpha );
+}
+
 /**
  * @brief The plus operator creates an expression that represents the sum
  *        a vector adding a scalar to each vector element.
@@ -176,6 +182,13 @@ inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const S
 {
     // return Expression_S_V( alpha, vectorX );
     return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), alpha );
+}
+
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator-( const Vector<ValueType>& x, const Scalar& alpha )
+{
+    // return Expression_S_V( alpha, vectorX );
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), -alpha );
 }
 
 /* ------------------------------------------------------------------------- */

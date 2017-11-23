@@ -44,7 +44,7 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>

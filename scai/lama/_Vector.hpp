@@ -150,54 +150,6 @@ public:
     virtual VectorKind getVectorKind() const = 0;
 
     /**
-     * @brief Assigns the values of other to the elements of this.
-     *
-     * @param[in] other   the vector to get values from.
-     * @return            a reference to this.
-     */
-    _Vector& operator=( const _Vector& other );
-
-    /**
-     * @brief Returns the addition of this and other.
-     *
-     * @param[in] other the vector to do the addition with.
-     * @return          a reference to this.
-     */
-    _Vector& operator+=( const _Vector& other );
-
-    /**
-     * @brief Returns the subtraction of this and other.
-     *
-     * @param[in] other the vector to do the subtraction with.
-     * @return          a reference to this.
-     */
-    _Vector& operator-=( const _Vector& other );
-
-    /**
-     * @brief Add a scalar value to all elements of this vector.
-     *
-     * @param[in] value   the value to add all elements of this with.
-     * @return            a reference to this.
-     */
-    _Vector& operator+=( const Scalar value );
-
-    /**
-     * @brief Sub a scalar value to all elements of this vector.
-     *
-     * @param[in] value   the value to add all elements of this with.
-     * @return            a reference to this.
-     */
-    _Vector& operator-=( const Scalar value );
-
-    /**
-     * @brief Assigns the passed value to all elements of this.
-     *
-     * @param[in] value   the value to assign to all elements of this.
-     * @return            a reference to this.
-     */
-    _Vector& operator=( const Scalar value );
-
-    /**
      * @brief Sets the local values of a vector by a dense array.
      *
      * @param[in] values    is the array with all local vector values.
@@ -274,45 +226,6 @@ public:
     template<typename OtherValueType>
     void setRawData( const IndexType size, const OtherValueType values[] );
 
-    /** Set a replicated vector with sparse vector data
-     *
-     *  @param[in] n will be the size of the vector
-     *  @param[in] nonZeroIndexes positions with non-zero values
-     *  @param[in] nonZeroValues values for the non-zero value
-     *  @param[in] zeroValue is the 'zero' value, defaults to 0
-     *
-     *  nonZeroIndexes and nonZeroValues must have the same size. nonZeroIndexes must 
-     *  contain valid indexes. They do not have to be sorted.
-     */
-    void setSparseData( 
-        const IndexType n, 
-        const hmemo::HArray<IndexType>& nonZeroIndexes, 
-        const hmemo::_HArray& nonZeroValues, 
-        const Scalar zeroValue = Scalar( 0 ) )
-    {
-        setSameValue( n, zeroValue );
-        fillSparseData( nonZeroIndexes, nonZeroValues, common::BinaryOp::COPY );
-    } 
-
-    /** Same as setSparseData but here with raw data for non-zero indexes and values. 
-     *
-     *  @tparam OtherValueType is the type of the raw data 
-     *  @param[in] n will be the size of the vector
-     *  @param[in] nnz stands for the number of the non-zero values
-     *  @param[in] nonZeroIndexes pointer to array with positions of non-zero values
-     *  @param[in] nonZeroValues pointer to array with values
-     *  @param[in] zeroValue is the value for all positions that do not appear in nonZeroIndexes
-     *
-     *  Note: The value type of the raw data might be different to the value type of the vector.
-     */
-    template<typename OtherValueType>
-    void setSparseRawData( 
-        const IndexType n, 
-        const IndexType nnz,
-        const IndexType nonZeroIndexes[],
-        const OtherValueType nonZeroValues[],
-        const Scalar zeroValue = Scalar( 0 ) );
-
     /**
      * @brief Sets the local values of a vector by a sparse pattern, i.e. non-zero indexes and values
      *
@@ -384,46 +297,6 @@ public:
         fillRandom( bound );
     }
 
-    /** 
-     *  This method gives the vector a size and initializes it with a value.
-     *
-     *  @param[in] n is the size of the replicated vector
-     *  @param[in] value is the value assigned to all elements
-     *
-     *  \code
-     *    DenseVector<double> v1; 
-     *    v1.setSameValue( n, value );
-     *    DenseVector<double> v2( n );
-     *    v2 = value;
-     *    DenseVector<double> v3( n, value );
-     *  \endcode
-     */
-    void setSameValue( const IndexType n, const Scalar value )
-    {
-        allocate( n );
-        assign( value );
-    }
-
-    /** 
-     *  This method gives the vector a distribution and initializes it with a value.
-     *
-     *  @param[in] dist specifies size of the vector and mapping to the processors
-     *  @param[in] value is the value assigned to all elements
-     *
-     *  \code
-     *    DenseVector<double> v1; 
-     *    v1.setSameValue( n, value );
-     *    DenseVector<double> v2( n );
-     *    v2 = value;
-     *    DenseVector<double> v3( n, value );
-     *  \endcode
-     */
-    void setSameValue( dmemo::DistributionPtr dist, const Scalar value )
-    {
-        allocate( dist );
-        assign( value );
-    }
-
     /**
      *  Similiar to fillRandom but only replaces the vector elements with a certain probability.
      *
@@ -438,54 +311,6 @@ public:
      * \endcode
      */
     virtual void fillSparseRandom( const float fillRate, const IndexType bound ) = 0;
-
-    /**
-     *  Allocate a vector by its size, initialize it with a zero value and fill it sparsely.
-     *
-     * \code
-     *     A.allocate( n );
-     *     A = zeroValue;
-     *     A.fillSparseRandom( fill, bound );
-     * \endcode
-     */
-    void setSparseRandom( const IndexType n, const Scalar& zeroValue, const float fillRate, const IndexType bound );
-
-    /**
-     *  Allocate a vector by its distribution, initialize it with a zero value and fill it sparsely.
-     *
-     * \code
-     *     A.allocate( dist );
-     *     A = zeroValue;
-     *     A.fillSparseRandom( fill, bound );
-     * \endcode
-     */
-    void setSparseRandom( dmemo::DistributionPtr dist, const Scalar& zeroValue, const float fillRate, const IndexType bound );
-
-    /** @brief This method scales all vector values with a scalar.
-     *
-     * @param[in] scaling   is the source value.
-     *
-     * \deprecated{Please use operator*= or operator/= of Vector<ValueType>}
-     */
-    virtual void _scale( const Scalar scaling );
-
-    /**
-     * @brief Elementwise multiplication with another vector (same size), i.e. this[i] = this[i] * other[i]
-     *
-     * @param[in] other   the vector to multiply to do the multiplication per element
-     *
-     * \deprecated{Please use Vector<ValueType>::cwiseProdouct}
-     */
-    virtual void _cwiseProduct( const _Vector& other );
-
-    /**
-     * @brief Elementwise disision with another vector (same size), i.e. this[i] = this[i] / other[i]
-     *
-     * @param[in] other   the vector used for elementwise division
-     *
-     * \deprecated{Please use Vector<ValueType>::cwiseDivision}
-     */
-    virtual void _cwiseDivision( const _Vector& other );
 
     /**
      * This method sets a vector by reading its values from one or multiple files.
@@ -669,35 +494,7 @@ public:
         hmemo::ContextPtr prefLoc = hmemo::ContextPtr() ) const = 0;
 
     /**
-     * @brief Assigns the passed value to all elements of this.
-     *
-     * @param[in] value   the value to assign to all elements of this.
-     */
-    virtual void assign( const Scalar value ) = 0;
-
-    /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
-     *
-     * Each vector class has to implement its own version of this assignment. 
-     */
-    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y ) = 0;
-
-    /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * vectorY
-     *
-     * Each vector class has to implement its own version of this assignment. 
-     */
-    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y ) = 0;
-
-    /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * scalarBeta
-     *
-     * Each vector class has to implement its own version of this assignment. 
-     */
-    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS ) = 0;
-
-    /**
-     *  @brief Update this vector with another vector elementwise
+     *  @brief Update this vector with another vector of any value elementwise
      * 
      *  @param[in] other is the input vector for setting, must have same distribution
      *  @param[in] op specifies the binary operation for the update
@@ -717,47 +514,6 @@ public:
      *  In contrary to the loop, it can be assumed that the vector operation is full parallel.
      */
     virtual void setVector( const _Vector& other, common::BinaryOp op, const bool swapArgs = false ) = 0;
-
-    /**
-     *  @brief Update this vector with a scalar value elementswise
-     * 
-     *  @param[in] value is th scalar element used for the operation
-     *  @param[in] op specifies the binary operation for the update
-     *  @param[in] swapScalar if true the operands are swapped
-     * 
-     *  The call v.setScalar( s, op ) is equivalent to the following code:
-     *
-     *  \code
-     *      for ( IndexType i = 0; i < v1.size(); ++i )
-     *      {
-     *          v[i] = v[i] op s;    // swapScalar = false
-     *          v[i] = s op v[i];    // swapScalar = true
-     *      }
-     *  \endcode
-     *
-     *  Here are some examples how this method is used:
-     *  \code
-     *      v.invert()      v.setScalar( Scalar( 1 ), BinaryOp::DIVIDE, true );
-     *      v += s;         v.setScalar( s, BinaryOp::ADD, false );
-     *      v *= s;         v.setScalar( s, BinaryOp::MULT, false );
-     *  \endcode
-     */
-    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapScalar = false ) = 0;
-
-    /**
-     *  @brief Apply a UnaryOp operation for each element of the vector.
-     */
-    virtual void applyUnary( common::UnaryOp op ) = 0;
-
-    /**
-     *  @brief Boolean reduction returns true if all elements fullfill the compare operation with a scalar.
-     */
-    virtual bool all( common::CompareOp op, const Scalar value ) const = 0;
-
-    /**
-     *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
-     */
-    virtual bool all( common::CompareOp op, const _Vector& other ) const = 0;
 
     /**
      * @brief Starts a prefetch to make this valid at the passed context.
@@ -851,86 +607,6 @@ public:
      * @brief Replicate this vector, i.e. redistribute with NoDistribution( size() )
      */
     void replicate();
-
-    /**
-     * @brief This method inverts all elements of the vector and is completely local.
-     */
-    void invert();
-
-    /**
-     *  Build the conjugate vector in place.
-     */
-    void conj();
-
-    /**
-     *  Build the absolute in place.
-     */
-    void abs();
-
-    /**
-     *  Calculates the exponentional function of the vector elements in place.
-     */
-    void exp();
-
-    /**
-     *  Calculates the logarithm of the vector elements in place.
-     */
-    void log();
-
-    /**
-     *  Calculates the floor function of the vector elements in place.
-     */
-    void floor();
-
-    /**
-     *  Calculates the ceil function of the vector elements in place.
-     */
-    void ceil();
-
-    /**
-     *  Calculates the square root of the vector elements.
-     */
-    void sqrt();
-
-    /**
-     *  Calculates the sinus of the vector elements.
-     */
-    void sin();
-
-    /**
-     *  Calculates the cosinus of the vector elements.
-     */
-    void cos();
-
-    /**
-     *  Calculates the tangens of the vector elements.
-     */
-    void tan();
-
-    /**
-     *  Calculates the arcus tangens of the vector elements.
-     */
-    void atan();
-
-    /**
-     *  Calculates the pow function for the vector elements with the elements of another vector.
-     */
-    void powBase( const _Vector& other );
-
-    /**
-     *  Calculates the pow function for the vector elements with the elements of another vector.
-     */
-    void powExp( const _Vector& other );
-
-    /**
-     *  Calculates the pow function for a base the vector elements as exponents.
-     */
-    void powBase( const Scalar base );
-
-    /**
-     *  Calculates the pow function for the vector elements as base and an exponent.
-     */
-    void powExp( const Scalar exp );
 
 protected:
 
@@ -1045,20 +721,6 @@ void _Vector::setRawData( const IndexType size, const OtherValueType values[] )
     setDenseValues( valuesArrayRef );
 }
 
-template<typename OtherValueType>
-void _Vector::setSparseRawData( 
-    const IndexType n, 
-    const IndexType nnz,
-    const IndexType nonZeroIndexes[],
-    const OtherValueType nonZeroValues[],
-    const Scalar zeroValue )
-{
-    setSameValue( n, zeroValue );
-    hmemo::HArrayRef<IndexType> aNonZeroIndexes( nnz, nonZeroIndexes );
-    hmemo::HArrayRef<OtherValueType> aNonZeroValues( nnz, nonZeroValues );
-    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::BinaryOp::COPY );
-} 
-  
 } /* end namespace lama */
 
 } /* end namespace scai */

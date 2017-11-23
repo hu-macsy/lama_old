@@ -113,7 +113,7 @@ public:
         dmemo::CommunicatorPtr comm( new dmemo::NoCommunicator() );
         dmemo::DistributionPtr dist( new dmemo::GridDistribution( grid, comm ) );
         this->allocate( dist );
-        this->assign( initVal );
+        this->setScalar( initVal );
     }
 
     GridVector( dmemo::DistributionPtr dist ) : DenseVector<ValueType>()
@@ -124,7 +124,7 @@ public:
     GridVector( dmemo::DistributionPtr dist, const ValueType initVal ) : DenseVector<ValueType>()
     {
         this->allocate( dist );
-        this->assign( initVal );
+        this->setScalar( initVal );
     }
 
     const common::Grid& globalGrid() const

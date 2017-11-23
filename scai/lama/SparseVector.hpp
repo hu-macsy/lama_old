@@ -91,6 +91,7 @@ public:
 
     using Vector<ValueType>::operator=;
     using Vector<ValueType>::getValueType;
+    using Vector<ValueType>::binaryOp;
 
     /** Default constructor, creates zero-sized replicated vector */
 
@@ -208,7 +209,7 @@ public:
         dmemo::DistributionPtr distribution,
         const hmemo::HArray<IndexType>& indexes, 
         const hmemo::_HArray& values, 
-        const Scalar zero = Scalar( 0 ) );
+        const ValueType zero = ValueType( 0 ) );
 
     /**
      * @brief creates a distributed SparseVector with given local values.
@@ -343,13 +344,13 @@ public:
 
     /** Query the zero value, i.e. default value at positions not in nonZeroIndexes. */
     
-    inline Scalar getZero() const;
+    inline ValueType getZero() const;
 
     /** Override the default assignment operator.  */
 
     SparseVector& operator=( const SparseVector<ValueType>& other );
 
-    /** Implementation of pure method _Vector::asign 
+    /** Implementation of pure method _Vector::assign 
      *
      *  uses metaprogramming to call assignImpl with actual type and kind
      */
@@ -485,42 +486,56 @@ public:
 
     virtual NormType<ValueType> maxNorm() const;
 
-    /** Implementation of pure method _Vector::maxDiffNorm */
+    /** Implementation of pure method Vector<ValueType>::maxDiffNorm */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Vector& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const;
 
-    /** Implementation of pure method _Vector::all */
+    /** Implementation of pure method Vector<ValueType>::all */
 
-    virtual bool all( common::CompareOp op, const Scalar value ) const;
+    virtual bool all( common::CompareOp op, const ValueType alpha ) const;
 
-    /** Implementation of pure method _Vector::all */
+    /** Implementation of pure method Vector<ValueType>::all */
 
-    virtual bool all( common::CompareOp op, const _Vector& other ) const;
+    virtual bool all( common::CompareOp op, const Vector<ValueType>& x ) const;
 
     virtual void swap( _Vector& other );
 
     virtual void writeAt( std::ostream& stream ) const;
 
-    /** Implementation of pure method _Vector::vectorPlusVector */
+    /** Implementation for pure method Vector<ValueType>::setScalar for sparse vector 
+     *
+     *  Note: value becomes the zero element of the sparse vector.
+     */
+    virtual void setScalar( const ValueType& alpha );
 
-    virtual void vectorPlusVector( const Scalar& alphaS, const _Vector& x, const Scalar& betaS, const _Vector& y );
+    /** Implementation of pure method Vector<ValueType>::unaryOp for sparse vector. */
+
+    void unaryOp( const Vector<ValueType>& x, const common::UnaryOp op );
+
+    /** Implementation of pure method Vector<ValueType>::binaryOp for sparse vector. */
+
+    void binaryOp( const Vector<ValueType>& x, const common::BinaryOp op, const Vector<ValueType>& y );
+
+    /** Implementation of pure method Vector<ValueType>::binaryOpScalar for sparse vector. */
+
+    void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap );
+
+    /** Implementation of pure method Vector<ValueType>::vectorPlusVector */
+
+    virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta, const Vector<ValueType>& y );
 
     /** Implmentation of vectorPlusVector for sparse vectors of same type */
 
     void vectorPlusVectorImpl( const ValueType alpha, const SparseVector<ValueType>& x, 
                                const ValueType beta, const SparseVector<ValueType>& y );
 
-    /** Implementation of pure method _Vector::vectorTimesVector */
+    /** Implementation of pure method Vector<ValueType>::vectorTimesVector */
 
-    virtual void vectorTimesVector( const Scalar& alphaS, const _Vector& x, const _Vector& y );
+    virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& x, const Vector<ValueType>& y );
 
-    /** Implementation of pure method _Vector::vectorPlusScalar */
+    /** Implementation of pure method Vector<ValueType>::vectorPlusScalar */
 
-    virtual void vectorPlusScalar( const Scalar& alphaS, const _Vector& x, const Scalar& betaS );
-
-    /** Assign this vector with a scalar values, does not change size, distribution. */
-
-    virtual void assign( const Scalar value );
+    virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta );
 
     /** Implementation of pure method _Vector::dotProduct */
 
@@ -529,14 +544,6 @@ public:
     /** Implementation of pure method _Vector::setVector */
 
     virtual void setVector( const _Vector& other, const common::BinaryOp op, const bool swapArgs = false );
-
-    /** Implementation of pure method _Vector::setScalar */
-
-    virtual void setScalar( const Scalar value, common::BinaryOp op, const bool swapArgs = false );
-
-    /** Implementation of pure method _Vector::applyUnary */
-
-    virtual void applyUnary( common::UnaryOp op );
 
     virtual void prefetch( const hmemo::ContextPtr location ) const;
 
@@ -556,7 +563,7 @@ private:
 
     /** Help routine for binary operation of two sparse vectors */
 
-    void binOpSparse( const SparseVector<ValueType>& other, const common::BinaryOp op, bool swapArgs );
+    void binaryOpSparse( const SparseVector<ValueType>& x, const common::BinaryOp op, const SparseVector<ValueType>& y );
 
     utilskernel::LArray<IndexType> mNonZeroIndexes;  //!< my local indexes for non-zero values
     utilskernel::LArray<ValueType> mNonZeroValues;   //!< my local non-zero values
@@ -626,7 +633,7 @@ void SparseVector<ValueType>::setSparseValues(
     const OtherValueType nonZeroValues[],
     const OtherValueType zeroValue )
 {
-    assign( zeroValue );
+    setScalar( zeroValue );
 
     // use LAMA array reference to avoid copy of the raw data
 
@@ -657,9 +664,9 @@ const hmemo::HArray<IndexType>& SparseVector<ValueType>::getNonZeroIndexes() con
 }
 
 template<typename ValueType>
-Scalar SparseVector<ValueType>::getZero() const
+ValueType SparseVector<ValueType>::getZero() const
 {
-    return Scalar( mZeroValue );
+    return mZeroValue;
 }
 
 } /* end namespace lama */

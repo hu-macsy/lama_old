@@ -61,6 +61,7 @@ using scai::hmemo::ReadAccess;
 using scai::hmemo::WriteAccess;
 using scai::dmemo::Distributed;
 using scai::common::Math;
+using scai::common::UnaryOp;
 
 
 typedef RealType ValueType;
@@ -134,8 +135,7 @@ void randomBodies( )
     mass.setValue( 0, maxMass );
 
     inversemass = mass;
-    inversemass.invert( );
-
+    inversemass.unaryOp( inversemass, UnaryOp::RECIPROCAL);
 }
 
 void updateParticles( )

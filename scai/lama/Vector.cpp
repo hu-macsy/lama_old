@@ -109,29 +109,14 @@ common::ScalarType Vector<ValueType>::getValueType() const
     return TypeTraits<ValueType>::stype;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*   element-wise operations on vector                                                    */
-/* ---------------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void Vector<ValueType>::cwiseProduct( const _Vector& other )
-{
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::MULT, noSwapArgs );
-}
-
-template<typename ValueType>
-void Vector<ValueType>::cwiseDivision( const _Vector& other )
-{
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
-}
+/* ========================================================================= */
+/*        operator= < vector expression>                                     */
+/* ========================================================================= */
 
 template<typename ValueType>
 void Vector<ValueType>::scale( ValueType value )
 {
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
+    binaryOp( *this, common::BinaryOp::MULT, value );
 }
 
 /* ========================================================================= */
@@ -322,6 +307,52 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>
     return *this;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+/*   vector [?]= scalar                                                                   */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ValueType value )
+{
+    setScalar( value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::ADD, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::SUB, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::MULT, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const ValueType value )
+{
+    SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
+
+    // binaryOp( ValueType( 1 ), common::BinaryOp::DIVIDE, value ) 
+
+    binaryOp( *this, common::BinaryOp::MULT, ValueType( 1 ) / value );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   vector [?]= scalar * vector                                                          */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SV<ValueType>& exp )
@@ -372,6 +403,43 @@ Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SMV<ValueType
     return operator=( Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
 }
 
+/* ---------------------------------------------------------------------------------------*/
+/*   setRandom, setSparseRandom                                                           */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( const IndexType n, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( n );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( dmemo::DistributionPtr dist, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( dist );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
 
 /* ========================================================================= */
 /*       Template instantiations                                             */

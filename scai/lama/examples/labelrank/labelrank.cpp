@@ -47,6 +47,7 @@ using namespace std;
 using namespace scai::lama;
 using namespace scai::hmemo;
 using scai::common::Walltime;
+using scai::common::UnaryOp;
 
 /** ValueType is the type used for matrix and vector elements. */
 
@@ -251,7 +252,7 @@ int main( int argc, char* argv[] )
     const IndexType numCols = affinityMatrix.getNumColumns();
     DenseVector<ValueType> oneVector( numCols, 1.0 );
     DenseVector<ValueType> y( affinityMatrix * oneVector );  // rowSums
-    y.invert();   // y(i) = 1.0 / y(i)
+    y.unaryOp( y, UnaryOp::RECIPROCAL );   // y(i) = 1.0 / y(i)
     affinityMatrix.scale( y );  // scales each row
     cout << "invert/scale calculations took " << Walltime::get() - start << " secs." << endl;
     // update affinityMatrix so that labelsMatrix remains unchanged

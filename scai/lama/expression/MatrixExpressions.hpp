@@ -111,18 +111,21 @@ inline Expression_SM<ValueType> operator*( const Matrix<ValueType>& matrix, cons
 }
 
 /**
+ * @brief Create a symbolic expression 'Scalar * Matrix' if the - operator is applied to a matrix.
+ */
+template<typename ValueType>
+inline Expression_SM<ValueType> operator-( const Matrix<ValueType>& matrix )
+{
+    return Expression_SM<ValueType>( Scalar( -1 ), matrix );
+}
+
+/**
  * @brief Create a symbolic expression 'Scalar * Matrix' for the division matrix / alpha
  *
  * @param[in] matrix   The matrix.
  * @param[in] alpha    The scalar.
  * @return             symbolic expression [1.0/alpha] *  matrixA
  */
-
-template<typename ValueType>
-inline Expression_SM<ValueType> operator-( const Matrix<ValueType>& m )
-{
-    return Expression_SM<ValueType>( Scalar( -1 ), m );
-}
 
 template<typename ValueType>
 inline Expression_SM<ValueType> operator/( const Matrix<ValueType>& matrix, const Scalar& alpha )
