@@ -75,10 +75,10 @@ PASSED = " " + colors.PASS + "[ PASSED ]" + colors.NOCOLOR + " "
 FAILED = " " + colors.FAIL + "[ FAILED ]" + colors.NOCOLOR + " "
 
 
-def run_test(test, output_dir, temp_dir = None, prepend_args = []):
+def run_test(test, output_dir, temp_dir = None, prepend_args = [], tag = ""):
     # Note: we are implicitly assuming unique test names here
-    stdout_path = os.path.join(output_dir, "{}_stdout.txt".format(test.name))
-    stderr_path = os.path.join(output_dir, "{}_stderr.txt".format(test.name))
+    stdout_path = os.path.join(output_dir, "{}{}_stdout.txt".format(test.name, tag))
+    stderr_path = os.path.join(output_dir, "{}{}_stderr.txt".format(test.name, tag))
 
     args = prepend_args + deepcopy(test.args)
 
@@ -94,12 +94,15 @@ def run_test(test, output_dir, temp_dir = None, prepend_args = []):
 
     testsupport.ensure_directory_exists(output_dir)
 
+    if temp_dir:
+        testsupport.ensure_directory_exists(temp_dir)
+
     with open(stdout_path, 'w') as stdout, open(stderr_path, 'w') as stderr:
         retcode = subprocess.call(args, stdout=stdout, stderr=stderr)
         return retcode == 0
 
 
-def run_tests(tests, output_dir, temp_dir = None, prepend_args = []):
+def run_tests(tests, output_dir, temp_dir = None, prepend_args = [], tag = ""):
     failed_tests = []
     successful_tests = []
     status_messages = [ "  Running test #{} {} ... ".format(index + 1, test.name)
@@ -114,7 +117,7 @@ def run_tests(tests, output_dir, temp_dir = None, prepend_args = []):
         start = time.time()
 
         try:
-            passed = run_test(test, output_dir, temp_dir=temp_dir, prepend_args=prepend_args)
+            passed = run_test(test, output_dir, temp_dir=temp_dir, prepend_args=prepend_args, tag=tag)
         except Exception as e:
             passed = False;
             print("\nException when running test {}:\n{}\n".format(test.name, e))
@@ -139,8 +142,10 @@ def run_mpi_tests(tests, output_dir, np, temp_dir=None):
 
     for n in np:
         print("Running {} MPI tests ({} processors) ...".format(len(tests), n))
+        tag = "_mpi_{}".format(str(n))
+        print(tag)
         mpi_args = [ "mpirun", "-np", str(n), "--tag-output" ]
-        (passed, failed) = run_tests(tests, output_dir, temp_dir=temp_dir, prepend_args=mpi_args)
+        (passed, failed) = run_tests(tests, output_dir, temp_dir=temp_dir, prepend_args=mpi_args, tag=tag)
         print()
         passed_tests += passed
         failed_tests += failed
