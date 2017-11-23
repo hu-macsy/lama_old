@@ -66,7 +66,7 @@ public:
      * If this has not previously been set through a call to setPath(),
      * an std::logic_error exception is thrown.
      */
-    static std::string getPath()
+    inline static std::string getPath()
     {
         if (m_tempDirPath)
         {
@@ -86,7 +86,7 @@ public:
      * If a second attempt to set the path is made, an std::logic_error exception
      * is thrown.
      */
-    static void setPath(std::string path)
+    inline static void setPath(std::string path)
     {
         if (!m_tempDirPath)
         {

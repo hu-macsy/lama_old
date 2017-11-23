@@ -52,12 +52,12 @@ namespace testsupport
 namespace detail
 {
 
-std::string boostTestModuleName()
+inline std::string boostTestModuleName()
 {
     return std::string(LAMATEST_STRINGIFY(BOOST_TEST_MODULE));
 }
 
-std::pair<std::string, std::string> getKeyValueFromArg(const std::string & arg)
+inline std::pair<std::string, std::string> getKeyValueFromArg(const std::string & arg)
 {
     const auto equalsPos = std::find(arg.begin(), arg.end(), '=');
     std::string key, value;
@@ -66,14 +66,14 @@ std::pair<std::string, std::string> getKeyValueFromArg(const std::string & arg)
     return std::make_pair(std::move(key), std::move(value));
 }
 
-bool argIsSink(const std::string & arg, const std::string & sinkName)
+inline bool argIsSink(const std::string & arg, const std::string & sinkName)
 {
     std::string key;
     std::tie(key, std::ignore) = getKeyValueFromArg(arg);
     return key == sinkName;
 }
 
-std::vector<char> intoNullTerminatedChars(const std::string & str)
+inline std::vector<char> intoNullTerminatedChars(const std::string & str)
 {
     std::vector<char> chars;
     std::copy(str.begin(), str.end(), std::back_inserter(chars));
@@ -87,7 +87,7 @@ struct ArgParseResult
     std::vector<std::vector<char>> args;
 };
 
-ArgParseResult parseAndRebuildArgs(int argc, char ** argv, const std::string & testSuiteName)
+inline ArgParseResult parseAndRebuildArgs(int argc, char ** argv, const std::string & testSuiteName)
 {
     static const std::string REPORT_SINK_ARG = "--report_sink";
     static const std::string LOG_SINK_ARG = "--log_sink";

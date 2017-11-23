@@ -50,7 +50,7 @@ namespace testsupport
      *
      * See uniquePath() for the role of `dir` and `namePrefix`.
      */
-    std::string uniquePathPerNode(const std::string & dir,
+    inline std::string uniquePathPerNode(const std::string & dir,
                                   const scai::dmemo::Communicator & comm,
                                   const std::string & namePrefix = "")
     {
@@ -65,7 +65,7 @@ namespace testsupport
      *
      * See uniquePath() for the role of `dir` and `namePrefix`.
      */
-    std::string uniquePathSharedAmongNodes(const std::string & dir,
+    inline std::string uniquePathSharedAmongNodes(const std::string & dir,
                                            const scai::dmemo::Communicator & comm,
                                            const std::string & namePrefix = "")
     {
