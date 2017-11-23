@@ -222,8 +222,7 @@ int main( int argc, const char* argv[] )
 
             if ( isNumeric( val, rhsFilename ) )
             {
-                rhs.allocate( matrix.getRowDistributionPtr() );
-                rhs = Scalar( val );
+                rhs.setSameValue( matrix.getRowDistributionPtr(), val );
 
                 HOST_PRINT( myRank, "Set rhs = " << val )
             }
@@ -258,8 +257,7 @@ int main( int argc, const char* argv[] )
             }
             else
             {
-                solution.allocate( matrix.getRowDistributionPtr() );
-                solution = Scalar( 0 );   // initialize of a vector
+                solution.setSameValue( matrix.getRowDistributionPtr(), ValueType( 0 ) );
                 HOST_PRINT( myRank, "Set initial solution = 0" )
             }
 
