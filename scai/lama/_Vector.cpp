@@ -403,22 +403,6 @@ void _Vector::writeToSingleFile(
 
 /* ---------------------------------------------------------------------------------------*/
 
-void _Vector::cat( const _Vector& v1, const _Vector& v2 )
-{
-    std::vector<const _Vector*> vectors;
-
-    vectors.push_back( &v1 );
-    vectors.push_back( &v2 );
-
-    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
-
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
-
-    concatenate( dist, vectors );
-}
-
-/* ---------------------------------------------------------------------------------------*/
-
 void _Vector::replicate()
 {
     if ( getDistribution().isReplicated() )

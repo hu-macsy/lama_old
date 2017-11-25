@@ -78,7 +78,7 @@ static void setDenseData( MatrixStorage<ValueType>& storage )
     // values: take numRows x numColums random numbers of required type
 
     LArray<ValueType> values( numRows * numColumns, ValueType( 0 ) );
-    SCAI_LOG_ERROR( logger, "setDenseData, values = " << values )
+    SCAI_LOG_INFO( logger, "setDenseData, values = " << values )
 
     values.setSparseRandom( 0.2f, 1 );
 

@@ -364,27 +364,6 @@ public:
     virtual common::ScalarType getValueType() const = 0;
 
     /**
-     * @brief Concatenate multiple vectors to a new vector.
-     *
-     * @param[in] dist specifies the distribution of the concatenated vector.
-     * @param[in] vectors is a vector with const pointers/references to the concatenated vectors
-     *
-     * Note: dist.getGlobalSize() == v[0]->size() + ... v[n-1]->size() 
-     *
-     * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
-     * this vector itself.
-     */
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors ) = 0;
-
-    /**
-     * @brief Concatenate two vectors to a new vector.
-     *
-     * @param[in] v1 first part of the new vector
-     * @param[in] v2 second part of the new vector
-     */
-    virtual void cat( const _Vector& v1, const _Vector& v2 );
-
-    /**
      *  @brief Creates a new Vector of the same kind and value type, and same context
      *
      *  /code
@@ -570,12 +549,7 @@ public:
      *
      *  Note: vector itself remains uninitialized.
      */
-    void setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
-    {
-        // set the context before the allocate so it will be allocated at the right place
-        setContextPtr( ctx );
-        allocate( distributionPtr );
-    }
+    inline void setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx );
 
     /**
      *  @brief Allocates or reallocates this vector as replicted with the given size.
@@ -693,6 +667,14 @@ private:
 /* ------------------------------------------------------------------------- */
 /*  Implementation of inline methods                                         */
 /* ------------------------------------------------------------------------- */
+
+void _Vector::setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
+{
+    // set the context before the allocate so it will be allocated at the right place
+
+    setContextPtr( ctx );
+    allocate( distributionPtr );
+}
 
 IndexType _Vector::size() const
 {

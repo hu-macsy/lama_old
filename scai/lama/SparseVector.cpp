@@ -614,7 +614,7 @@ void SparseVector<ValueType>::gatherLocalValues(
     const common::BinaryOp op,
     ContextPtr loc ) const
 {
-    HArrayUtils::sparseGather( values, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
+    HArrayUtils::sparseGather( values, mZeroValue, mNonZeroValues, mNonZeroIndexes, indexes, op, loc );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -841,7 +841,7 @@ void SparseVector<ValueType>::setValue( const IndexType globalIndex, const Value
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors )
+void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors )
 {
     SparseVector<ValueType> newVector( dist, ValueType( 0 ) );
 
@@ -871,6 +871,8 @@ void SparseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const st
             }
         }
     }
+
+    swap( newVector );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1527,16 +1529,19 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     }
 
     SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "setVector only with same distributions supported" );
-    SCAI_ASSERT_EQ_ERROR( getValueType(), other.getValueType(), "setVector only with same value type supported" );
 
     SCAI_ASSERT_ERROR( !swapArgs, "swapping arguments not supported yet" )
 
     if ( mZeroValue == ValueType( 0 ) && op == common::BinaryOp::MULT )
     {
+        SCAI_LOG_INFO( logger, "setVector: thisSparse( zero = 0 ) *= otherSparse, other = " << other )
+
         // gather the values from other vector at the non-zero positions 
 
         HArray<ValueType> otherValues;  // = other[ nonZeroIndexes ]
+
         other.gatherLocalValues( otherValues, mNonZeroIndexes, common::BinaryOp::COPY, getContextPtr() );
+
         HArrayUtils::binaryOp( mNonZeroValues, mNonZeroValues, otherValues, op, getContextPtr() );
     }
     else if ( other.getValueType() == getValueType() )
@@ -1554,7 +1559,18 @@ void SparseVector<ValueType>::setVector( const _Vector& other, common::BinaryOp 
     }
     else
     {
-        COMMON_THROWEXCEPTION( "setVector with different value type not supported, op = " << op << ", other = " << other )
+        // Maybe not very efficient if other vector is dense
+
+        SparseVector<ValueType> tmpOther( other );
+
+        if ( !swapArgs )
+        {
+            binaryOpSparse( *this, op, tmpOther );
+        }
+        else
+        {
+            binaryOpSparse( tmpOther, op, *this );
+        }
     }
 }
 

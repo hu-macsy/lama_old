@@ -362,9 +362,9 @@ public:
     template<typename OtherValueType>
     void assignImpl( const DenseVector<OtherValueType>& other );
 
-    /** Implemenation of pure method _Vector::concatenate */
+    /** Implemenation of pure method Vector<ValueType>::concatenate */
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
 
     /**
      * Implementation of _Vector::fillRandom for sparse vectors.

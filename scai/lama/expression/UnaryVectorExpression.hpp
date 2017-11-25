@@ -41,87 +41,148 @@ namespace scai
 namespace lama
 {
 
+/**
+ * @brief The template class Expression1 represents a unary expression.
+ *
+ * @param T     the type of the operand of the expression
+ */
+template<typename T>
+class Expression1
+{
+public:
+    typedef T ArgType;
+    typedef const Expression1 ExpressionMemberType;
+
+private:
+
+    const common::UnaryOp mOp;
+
+    typename ArgType::ExpressionMemberType mArg;
+
+public:
+
+    /**
+     * @brief This constructor creates an Expression1 for the given type.
+     *
+     * @param arg is the operand of the expression
+     */
+    Expression1( const ArgType& arg, const common::UnaryOp type ) :
+
+        mOp( type ),
+        mArg( arg )
+
+    {
+    }
+
+    /**
+     * @brief The destructor destroys this Expression1.
+     */
+    virtual ~Expression1()
+    {
+    }
+
+    /**
+     * @brief getExpressionType returns the expression type of this Expression.
+     *
+     * @return the type of this Expression.
+     */
+    inline common::UnaryOp getOp() const
+    {
+        return mOp;
+    }
+
+    /**
+     * @brief getArg() returns a reference to the operand of this Expression.
+     *
+     * @return the operand of this Expression.
+     */
+    inline const ArgType& getArg() const
+    {
+        return mArg;
+    }
+};
+
 template<typename ValueType>
 class Vector;
 
-template<typename ValueType>
-class UnaryVectorExpression
-{
-public:
-    common::UnaryOp mOp;
-    const Vector<ValueType>& mV;
 
-    UnaryVectorExpression( common::UnaryOp op, const Vector<ValueType>& v ) : mOp( op ), mV( v ) 
-    {}
-};
+/* ============================================================================ */
+/*    Vector expressions                                                        */
+/* ============================================================================ */
+
+/** Symbolic expression op ( Vector ) */
+
+template<typename ValueType>
+using UnaryVectorExpression = Expression1<Vector<ValueType> >;
 
 /** Symbolic expression: apply conj element-wise to the elements. */
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> conj( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::CONJ, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::CONJ );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> abs( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::ABS, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::ABS );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> exp( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::EXP, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::EXP );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> log( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::LOG, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::LOG );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> floor( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::FLOOR, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::FLOOR );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> ceil( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::CEIL, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::CEIL );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> sqrt( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::SQRT, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::SQRT );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> sin( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::SIN, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::SIN );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> cos( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::COS, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::COS );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> tan( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::TAN, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::TAN );
 }
 
 template<typename ValueType>
 UnaryVectorExpression<ValueType> atan( const Vector<ValueType>& v )
 {
-    return UnaryVectorExpression<ValueType>( common::UnaryOp::ATAN, v );
+    return UnaryVectorExpression<ValueType>( v, common::UnaryOp::ATAN );
 }
+
 
 } /* end namespace lama */
 

@@ -378,9 +378,9 @@ public:
      */
     void fillLinearValues( const ValueType startValue, const ValueType inc );
 
-    /** Implemenation of pure method _Vector::cat */
+    /** Implemenation of pure method Vector<ValueType>::concatenate */
 
-    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors );
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors );
 
     /** Sort all elements of this vector.
      *
@@ -485,9 +485,15 @@ public:
 
     virtual ValueType sum() const;
 
+    /** Implementation of pure method Vector<ValueType>::l1Norm() for dense vector */
+
     virtual NormType<ValueType> l1Norm() const;
 
+    /** Implementation of pure method Vector<ValueType>::l2Norm() for dense vector */
+
     virtual NormType<ValueType> l2Norm() const;
+
+    /** Implementation of pure method Vector<ValueType>::maxNorm() for dense vector */
 
     virtual NormType<ValueType> maxNorm() const;
 

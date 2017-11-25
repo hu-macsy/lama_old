@@ -168,16 +168,11 @@ public:
         return getValue( i );
     }
 
-    /**
-     * @brief Multiplies the passed value with all elements of this.
-     *
+    /** 
+     * @brief Assignment 'vector *= value' to scale all elements of a vector. 
      * @param[in] value   the value to multiply all elements of this with.
      * @return            a reference to this.
      */
-    void scale( const ValueType value );
-
-    /** @brief Assignment 'vector *= value' is same as vector.scale( value ) */
-
     Vector& operator*=( const ValueType value );
 
     /** @brief Assignment 'vector /= value' is same as vector.scale( 1 / value ) */
@@ -365,9 +360,9 @@ public:
 
     Vector<ValueType>& operator-=( const Expression_SV<ValueType>& expression );
 
-    void operator=( const UnaryVectorExpression<ValueType>& uv )
+    void operator=( const UnaryVectorExpression<ValueType>& unaryVectorExp )
     {
-        unaryOp( uv.mV, uv.mOp );
+        unaryOp( unaryVectorExp.getArg(), unaryVectorExp.getOp() );
     }
 
     /** Initialization of an allocated vector with one value, does not change size/distribution  */
@@ -565,6 +560,44 @@ public:
         const ValueType zeroValue = ValueType( 0 ) );
 
     /**
+     * This method initilaizes all values of an allocated vector with random numbers.
+     *
+     * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
+     *
+     * For complex vectors a random value is drawn for each real and imaginary part.
+     *
+     * Keep in mind that bound is an integer value. If you need randonm numbers with other numerical
+     * boundaries you should scale them as follows:
+     *
+     * \code
+     *     DistributionPtr dist ( ... );
+     *     DenseVector<ValueType> v( dist );
+     *     ValueType lb = -1.5, ub = 2.6;
+     *     v.fillRandom( 1 );
+     *     A = lb + v * ( ub - lb );   // random numbers in the range of lb .. ub
+     * \endcode
+     */
+    virtual void fillRandom( const IndexType bound ) = 0;
+
+    /**
+     * @brief Allocate a replicated vector and fill it with random numbers
+     *
+     * \code
+     *    v.setRandom( n, bound ); // same as:  v.allocate( n ); v.fillRandom( bound );
+     * \endcode
+     *
+     * Be careful: in a parallel environment each processor might initialize the array with different
+     * values. By calling Math::srandom( seed ) with the same seed on each processor, it can be forced
+     * to have the same values.
+     */
+    void setRandom( const IndexType n, const IndexType bound );
+
+    /**
+     * This method sets a distributed vector by its distribution and initializes it with random numbers.
+     */
+    void setRandom( dmemo::DistributionPtr dist, const IndexType bound );
+
+    /**
      *  Allocate a vector by its size, initialize it with a zero value and fill it sparsely.
      *
      * \code
@@ -585,6 +618,27 @@ public:
      * \endcode
      */
     void setSparseRandom( dmemo::DistributionPtr dist, const ValueType& zeroValue, const float fillRate, const IndexType bound );
+
+    /**
+     * @brief Concatenate multiple vectors to a new vector.
+     *
+     * @param[in] dist specifies the distribution of the concatenated vector.
+     * @param[in] vectors is a vector with const pointers/references to the concatenated vectors
+     *
+     * Note: dist.getGlobalSize() == v[0]->size() + ... v[n-1]->size() 
+     *
+     * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
+     * this vector itself.
+     */
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors ) = 0;
+
+    /**
+     * @brief Concatenate two vectors to a new vector.
+     *
+     * @param[in] v1 first part of the new vector
+     * @param[in] v2 second part of the new vector
+     */
+    virtual void cat( const Vector<ValueType>& v1, const Vector<ValueType>& v2 );
 
 protected:
 

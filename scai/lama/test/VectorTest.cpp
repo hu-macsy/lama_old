@@ -179,6 +179,84 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SetGetTest, ValueType, scai_array_test_types )
         v[1] = v[2];
         s = v[1];
         BOOST_CHECK_EQUAL( s, ValueType( 1 ) );
+
+        // Indexing of const vector has its own methods
+
+        const Vector<ValueType>& cv = v;
+
+        BOOST_CHECK_EQUAL( cv[1], ValueType( 1 ) );
+        BOOST_CHECK_EQUAL( cv(2), ValueType( 1 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( ConversionTest, ValueType, scai_numeric_test_types )
+{
+    typedef SCAI_TEST_TYPE OtherValueType;
+
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const IndexType n = 13;
+
+    // define some vector used for operations later
+
+    const IndexType raw_indexes[] = { 1, 7, 11 };
+    const OtherValueType raw_values[] = { 5, 7, 9 };
+
+    hmemo::HArray<IndexType> indexes( 3, raw_indexes );
+    hmemo::HArray<OtherValueType> values( 3, raw_values );
+
+    SparseVector<OtherValueType> sparseVector;
+    sparseVector.setSparseData( n, indexes, values, OtherValueType( 1 ) );
+
+    DenseVector<OtherValueType> denseVector( sparseVector );
+
+    TestVectors<ValueType> vectors;
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
+
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
+    for ( size_t i = 0; i < vectors.size(); ++i )
+    {
+        Vector<ValueType>& v = *vectors[i];
+
+        v.setSameValue( dist, 4 );
+
+        sparseVector.redistribute( dist );
+        denseVector.redistribute( dist );
+
+        v += denseVector;
+        v -= denseVector;
+        v += sparseVector;
+        v -= sparseVector;
+        v *= sparseVector;
+        v /= sparseVector;
+        v *= denseVector;
+        v /= denseVector;
+
+        ValueType s = v.sum();
+        ValueType expected = 4 * n;
+
+        SCAI_LOG_INFO( logger, "sum( v ) = " << s << ", expected " << expected 
+                                 << " = 4 * " << n << ", v = " << v )
+
+        BOOST_CHECK( common::Math::abs( s - expected )  < eps );
+
+        v = denseVector;
+        
+        s = v.sum();
+        expected= denseVector.sum();
+
+        BOOST_CHECK( common::Math::abs( s - expected )  < eps );
+
+        v = sparseVector;
+        
+        s = v.sum();
+        expected= sparseVector.sum();
+
+        BOOST_CHECK( common::Math::abs( s - expected )  < eps );
     }
 }
 
@@ -213,6 +291,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
         NormType<ValueType> eps  = 0.00001;
 
         BOOST_CHECK( common::Math::abs( s - expected )  < eps );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( ConcatenateTest )
+{
+    typedef SCAI_TEST_TYPE ValueType;
+
+    dmemo::CommunicatorPtr comm( dmemo::Communicator::getCommunicatorPtr() );
+
+    const ValueType raw_values1[] = { 5, 11, 3, 2, 7, 8, 1 };
+    const ValueType raw_values2[] = { 8, 14, 1, 5 };
+
+    IndexType n1 = sizeof( raw_values1 ) / sizeof( ValueType );
+    IndexType n2 = sizeof( raw_values2 ) / sizeof( ValueType );
+
+    // build serial result by hand that is used for comparison
+
+    DenseVector<ValueType> result( n1 + n2 );
+
+    for ( IndexType i = 0; i < result.size(); ++i )
+    {
+        if ( i < n1 )
+        {
+            result[i] = raw_values1[i];
+        }
+        else
+        {
+            result[i] = raw_values2[i - n1];
+        }
+    }
+
+    TestVectors<ValueType> vectors1;
+    TestVectors<ValueType> vectors2;
+
+    for ( size_t i1 = 0; i1 < vectors1.size(); ++i1 )
+    {
+        for ( size_t i2 = 0; i2 < vectors2.size(); ++i2 )
+        {
+            Vector<ValueType>& v1 = *vectors1[i1];
+            Vector<ValueType>& v2 = *vectors2[i2];
+
+            v1.setRawData( n1, raw_values1 );
+            v2.setRawData( n2, raw_values2 );
+
+            DenseVector<ValueType> sv;
+
+            sv.cat( v1, v2 );
+
+            BOOST_CHECK_EQUAL( sv.maxDiffNorm( result ), 0 );
+        }
     }
 }
 

@@ -35,6 +35,8 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
 
+#include <scai/dmemo/BlockDistribution.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -107,16 +109,6 @@ template<typename ValueType>
 common::ScalarType Vector<ValueType>::getValueType() const
 {
     return TypeTraits<ValueType>::stype;
-}
-
-/* ========================================================================= */
-/*        operator= < vector expression>                                     */
-/* ========================================================================= */
-
-template<typename ValueType>
-void Vector<ValueType>::scale( ValueType value )
-{
-    binaryOp( *this, common::BinaryOp::MULT, value );
 }
 
 /* ========================================================================= */
@@ -440,6 +432,46 @@ void Vector<ValueType>::setSparseRandom( dmemo::DistributionPtr dist, const Valu
         fillRandom( bound );
     }
 }
+
+/* ---------------------------------------------------------------------------------------*/
+/*   assign concatenation of vectors                                                      */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::cat( const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
+{
+    std::vector<const Vector<ValueType>*> vectors;
+
+    vectors.push_back( &v1 );
+    vectors.push_back( &v2 );
+
+    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
+
+    SCAI_LOG_INFO( logger, "this = " << *this << ", dist of concat vector = " << *dist )
+
+    concatenate( dist, vectors );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   miscallaneous                                                                        */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setRandom( const IndexType n, const IndexType bound )
+{
+    allocate ( n );
+    fillRandom( bound );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::setRandom( dmemo::DistributionPtr dist, const IndexType bound )
+{
+    allocate ( dist );
+    fillRandom( bound );
+}
+
 
 /* ========================================================================= */
 /*       Template instantiations                                             */

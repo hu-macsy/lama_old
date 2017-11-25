@@ -924,7 +924,7 @@ DenseVector<ValueType>* DenseVector<ValueType>::newVector() const
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const _Vector*>& vectors ) 
+void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors ) 
 {
     DenseVector<ValueType> newVector( dist );
     {
@@ -934,7 +934,7 @@ void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std
 
         for ( size_t k = 0; k < vectors.size(); ++k )
         {
-            const _Vector& v = *vectors[k];
+            const Vector<ValueType>& v = *vectors[k];
 
             if ( offset + v.size() > dist->getGlobalSize() )
             {
@@ -951,7 +951,7 @@ void DenseVector<ValueType>::concatenate( dmemo::DistributionPtr dist, const std
             {
                 IndexType globalI = v.getDistribution().local2global( i );
 
-                SCAI_LOG_ERROR( logger, "push " << offset + globalI << ", " << rData[i] )
+                SCAI_LOG_TRACE( logger, "push " << offset + globalI << ", " << rData[i] )
 
                 assembly.push( offset + globalI, rData[i] );
             }
