@@ -303,7 +303,7 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual ValueType maxDiffNorm( const _Matrix& ) const
+    virtual ValueType maxDiffNorm( const Matrix<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

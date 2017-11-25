@@ -2204,7 +2204,7 @@ NormType<ValueType> DenseMatrix<ValueType>::l2Norm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     if ( !( ( getNumColumns() == other.getNumColumns() ) && ( getNumRows() == other.getNumRows() ) ) )
     {
@@ -2214,7 +2214,7 @@ NormType<ValueType> DenseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) 
     // Implementation works only for same distributions and same type
 
     if ( ( getRowDistribution() == other.getRowDistribution() ) && ( getColDistribution() == other.getColDistribution() )
-            && ( getValueType() == other.getValueType() ) )
+            && ( MatrixKind::DENSE == other.getMatrixKind() ) )
     {
         const DenseMatrix<ValueType>* typedOther = dynamic_cast<const DenseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )

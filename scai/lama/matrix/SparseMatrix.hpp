@@ -489,7 +489,7 @@ public:
 
     /** Implementation of pure method of class _Matrix for sparse matrices. */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
 
     /**
      * @brief Same as maxDiffNorm but with other as sparse matrix of same value type.

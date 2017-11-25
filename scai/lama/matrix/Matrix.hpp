@@ -267,14 +267,34 @@ public:
      * l1Norm computes the sum of the absolute values of all entries
      */
     virtual NormType<ValueType> l1Norm( void ) const = 0;
+
+    /**
+     * @brief Returns the L2 norm of this.
+     *
+     * @return the L2 norm of this.
+     *
+     * l2Norm computes the sum of the absolute values of this.
+     */
     virtual NormType<ValueType> l2Norm( void ) const = 0;
+
+    /**
+     * @brief Returns the max norm of this matrix
+     *
+     * @return the maximal absolute value for elements of this matrix
+     */
     virtual NormType<ValueType> maxNorm( void ) const = 0;
 
-    /** 
-     * we provide here an implementation that works for any kind of
-     * matrices.
+    /**
+     * @brief Returns the max norm of ( this - other ).
+     *
+     * @param[in] other another matrix with the same shape as this matrix
+     * @return the max norm of ( this - other )
+     *
+     * The maximal value is given by the largest difference between two elements
+     * at the same position of the matrices. This method must be implemented by
+     * derived classes.
      */
-    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const = 0;
+    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const = 0;
 
 protected:
 
@@ -330,13 +350,6 @@ protected:
         const DenseVector<ValueType>& denseX,
         const ValueType betaValue,
         const DenseVector<ValueType>& denseY ) const;
-
-    // Implementations of pure _Matrix methods to guarantee upward compatibilty
-
-    Scalar _l1Norm()  const;
-    Scalar _l2Norm()  const;
-    Scalar _maxNorm() const;
-    Scalar _maxDiffNorm( const _Matrix& other ) const;
 };
 
 /** 

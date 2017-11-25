@@ -1069,10 +1069,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 
     common::Math::srandom( 1711 );  // all processors draw same replicated matrix
 
-    CSRSparseMatrix<RealType> csr( n, m );
+    CSRSparseMatrix<ValueType> csr( n, m );
     MatrixCreator::fillRandom( csr, 0.1f );
 
-    CSRSparseMatrix<RealType> csr2;
+    CSRSparseMatrix<ValueType> csr2;
     csr2.hcat( csr, csr );           
 
     TestDistributions distributions( n );

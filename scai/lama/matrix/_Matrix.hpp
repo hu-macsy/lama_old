@@ -839,43 +839,6 @@ public:
     virtual void invert( const _Matrix& other ) = 0;
 
     /**
-     * @brief Returns the L1 norm of this matrix.
-     *
-     * @return the L1 norm of this as 'anonymous' scalar
-     *
-     * l1Norm computes the sum of the absolute values of all entries
-     */
-    virtual Scalar _l1Norm( void ) const = 0;
-
-    /**
-     * @brief Returns the L2 norm of this.
-     *
-     * @return the L2 norm of this.
-     *
-     * l2Norm computes the sum of the absolute values of this.
-     */
-    virtual Scalar _l2Norm( void ) const = 0;
-
-    /**
-     * @brief Returns the max norm of this matrix
-     *
-     * @return the maximal absolute value for elements of this matrix
-     */
-    virtual Scalar _maxNorm( void ) const = 0;
-
-    /**
-     * @brief Returns the max norm of ( this - other ).
-     *
-     * @param[in] other another matrix with the same shape as this matrix
-     * @return the max norm of ( this - other )
-     *
-     * The maximal value is given by the largest difference between two elements
-     * at the same position of the matrices. This method must be implemented by
-     * derived classes.
-     */
-    virtual Scalar _maxDiffNorm( const _Matrix& other ) const = 0;
-
-    /**
      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.
      *
      * \code

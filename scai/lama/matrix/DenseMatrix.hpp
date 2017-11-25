@@ -501,7 +501,7 @@ public:
 
     /** Implementation of _Matrix::maxDiffNorm for dense matrices. */
 
-    virtual NormType<ValueType> maxDiffNorm( const _Matrix& other ) const;
+    virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const;
 
     /** Get the maximal difference between two elements for dense matrices of same type. */
 

@@ -449,31 +449,7 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 /* ========================================================================= */
 
 template<typename ValueType>
-Scalar Matrix<ValueType>::_l1Norm() const
-{
-    return Scalar( l1Norm() );
-}
-
-template<typename ValueType>
-Scalar Matrix<ValueType>::_l2Norm() const
-{
-    return Scalar( l2Norm() );
-}
-
-template<typename ValueType>
-Scalar Matrix<ValueType>::_maxNorm() const
-{
-    return Scalar( maxNorm() );
-}
-
-template<typename ValueType>
-Scalar Matrix<ValueType>::_maxDiffNorm( const _Matrix& other ) const
-{
-    return Scalar( maxDiffNorm( other ) );
-}
-
-template<typename ValueType>
-NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> Matrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     IndexType nRows = getNumRows();
     IndexType nCols = getNumColumns();

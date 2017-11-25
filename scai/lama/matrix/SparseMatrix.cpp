@@ -2114,32 +2114,33 @@ NormType<ValueType> SparseMatrix<ValueType>::maxNorm() const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other ) const
+NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const Matrix<ValueType>& other ) const
 {
     // Implementation works only for same row distribution, replicated col distribution
     // and the same type
     SCAI_REGION( "Mat.Sp.maxDiffNorm" )
 
-    if ( ( getRowDistribution() == other.getRowDistribution() ) && getColDistribution().isReplicated()
-            && other.getColDistribution().isReplicated() && ( getValueType() == other.getValueType() ) )
+    bool distributionMatch = getRowDistribution() == other.getRowDistribution();
+    bool kindMatch = other.getMatrixKind() == MatrixKind::SPARSE;
+
+    if ( distributionMatch && kindMatch )
     {
         const SparseMatrix<ValueType>* typedOther = dynamic_cast<const SparseMatrix<ValueType>*>( &other );
         SCAI_ASSERT_DEBUG( typedOther, "SERIOUS: wrong dynamic cast: " << other )
         return maxDiffNormImpl( *typedOther );
     }
-    else if ( !getColDistribution().isReplicated() )
+    else 
     {
-        // take default implementation of base class
+        if ( !distributionMatch )
+        {
+            SCAI_UNSUPPORTED( "maxDiffNorm might be inefficient as distributions do not match" )
+        }
+        else
+        {
+            SCAI_UNSUPPORTED( "maxDiffNorm might be inefficient as one matrix is sparse and the other dense" )
+        }
+
         return Matrix<ValueType>::maxDiffNorm( other );
-    }
-    else
-    {
-        SCAI_UNSUPPORTED( "maxDiffNorm requires temporary of " << other )
-        shared_ptr<MatrixStorage<ValueType> > tmpPtr( getLocalStorage().newMatrixStorage() );
-        SparseMatrix<ValueType> typedOther( tmpPtr );
-        typedOther.assign( other );
-        typedOther.redistribute( getRowDistributionPtr(), getColDistributionPtr() );
-        return maxDiffNormImpl( typedOther );
     }
 }
 
@@ -2148,14 +2149,40 @@ NormType<ValueType> SparseMatrix<ValueType>::maxDiffNorm( const _Matrix& other )
 template<typename ValueType>
 ValueType SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix<ValueType>& other ) const
 {
-    // implementation only supported for same row distributions, replicated columns
-    SCAI_ASSERT_EQUAL_ERROR( getRowDistribution(), other.getRowDistribution() )
-    SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), *this << ": not replicated column dist" )
-    SCAI_ASSERT_ERROR( other.getColDistribution().isReplicated(), other << ": not replicated column dist" )
-    ValueType myMaxDiff = mLocalData->maxDiffNorm( other.getLocalStorage() );
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), other.getRowDistribution(), "maxDiffNorm: space mismatch" )
+
+    const MatrixStorage<ValueType>* myLocalStorage    = &getLocalStorage();
+    const MatrixStorage<ValueType>* otherLocalStorage = &other.getLocalStorage();
+
+    // we might need temporaries for the joined local storage if halo exists
+
+    std::unique_ptr<MatrixStorage<ValueType> > tmp1;
+    std::unique_ptr<MatrixStorage<ValueType> > tmp2;
+
+    // ToDo: if col distribution is the same, local and halo might be compared separately.
+    //       But halo must be translated to global index space in any case
+
+    if ( !getColDistribution().isReplicated() )
+    {
+        tmp1.reset( new CSRStorage<ValueType>() );
+        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), true );
+        myLocalStorage = tmp1.get();
+    }
+
+    if ( !other.getColDistribution().isReplicated() )
+    {
+        tmp2.reset( new CSRStorage<ValueType>() );
+        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution(), true );
+        otherLocalStorage = tmp2.get();
+    }
+
+    ValueType myMaxDiff = myLocalStorage->maxDiffNorm( *otherLocalStorage );
+
     const Communicator& comm = getRowDistribution().getCommunicator();
     ValueType allMaxDiff = comm.max( myMaxDiff );
+
     SCAI_LOG_INFO( logger, "max diff norm: local max = " << myMaxDiff << ", global max = " << allMaxDiff )
+
     return allMaxDiff;
 }
 
