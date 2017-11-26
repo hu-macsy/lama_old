@@ -225,23 +225,80 @@ public:
      */
     bool checkSymmetry() const;
 
-    /** Implementation of _Matrix::matrixTimesVector */
-
+    /**
+     * @brief Computes result = alpha * this * x + beta * y.
+     *
+     * @param[out]  result  the vector to store the result to
+     * @param[in]   alpha   the scalar alpha of the expression
+     * @param[in]   x       the vector x of the expression
+     * @param[in]   beta    the scalar beta of the expression
+     * @param[in]   y       the vector y of the expression
+     *
+     * This method computes result = alpha * this * x + beta * y. If
+     * result == x or result == y new storage is allocated to store the result.
+     */
     void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const;
+        Vector<ValueType>& result,
+        const ValueType alpha,
+        const Vector<ValueType>& x,
+        const ValueType beta,
+        const Vector<ValueType>& y ) const;
 
-    /** Implementation of _Matrix::vectorTimesMatrix */
-
+    /**
+     * @brief Computes result = alpha * transpose( this ) * x + beta * y.
+     *
+     * @param[out]  result  the vector to store the result to
+     * @param[in]   alpha   the scalar alpha of the expression
+     * @param[in]   x       the vector x of the expression
+     * @param[in]   beta    the scalar beta of the expression
+     * @param[in]   y       the vector y of the expression
+     *
+     * Note: The transposed matrix is not built explicitly here. But keep
+     *       in mind that this operation is usually slower than matrixTimesVector
+     *       for an explicit transpose matrix. But memory overhead and time to build
+     *       the transposed matrix can be avoided by this routine.
+     */
     void vectorTimesMatrix(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const;
+        Vector<ValueType>& result,
+        const ValueType alpha,
+        const Vector<ValueType>& x,
+        const ValueType beta,
+        const Vector<ValueType>& y ) const;
+ 
+    /**
+     * @brief Computes this = alpha * A.
+     *
+     * @param[out]  A       the matrix to multiply
+     * @param[in]   alpha   the Scalar of the expression
+     */
+    virtual void matrixTimesScalar( const Matrix<ValueType>& A, const ValueType alpha ) = 0;
+
+    /**
+     * @brief Computes this = alpha * A + beta * B.
+     *
+     * @param[in]   alpha   the Scalar alpha of the expression
+     * @param[in]   A       the _Matrix A of the expression
+     * @param[in]   beta    the Scalar beta of the expression
+     * @param[in]   B       the _Matrix B of the expression
+     */
+    virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, 
+                                   const ValueType beta,  const Matrix<ValueType>& B ) = 0;
+
+    /**
+     * @brief Computes result = alpha * this * B + beta * C.
+     *
+     * @param[out]  result  the matrix to store the result to
+     * @param[in]   alpha   the scalar alpha of the expression
+     * @param[in]   B       the matrix B of the expression
+     * @param[in]   beta    the scalar beta of the expression
+     * @param[in]   C       the matrix C of the expression
+     */
+    virtual void matrixTimesMatrix(
+        Matrix<ValueType>& result,
+        const ValueType alpha,
+        const Matrix<ValueType>& B,
+        const ValueType beta,
+        const Matrix<ValueType>& C ) const = 0;
 
     /** Implementation of _Matrix::setRow for all typed matrices
      *
@@ -295,6 +352,36 @@ public:
      * derived classes.
      */
     virtual NormType<ValueType> maxDiffNorm( const Matrix<ValueType>& other ) const = 0;
+
+    /* ======================================================================= */
+    /*     setter / getter for diagonal of a matrix                            */
+    /* ======================================================================= */
+
+    /** @brief Get the diagonal of a (square) matrix
+     *
+     * @param[out]   diagonal will contain the diagonal of this matrix
+     *
+     *  This matrix must be a square matrix with the same row and column distribution.
+     *  Note: diagonal will have the same distribution.
+     */
+    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const = 0;
+
+    /** @brief This method replaces the diagonal
+     *
+     * @param[in] diagonal  contains the new diagonal, must have row distribution of matrix
+     *
+     * For a sparse matrix, the matrix must have the diagonal property, i.e. the sparse
+     * pattern has an entry for each diagonal element.
+     */
+    virtual void setDiagonal( const DenseVector<ValueType>& diagonal ) = 0;
+
+    /** @brief This method replaces the diagonal by a diagonal value.
+     *
+     * @param[in] scalar  is the source value
+     *
+     * Calculations are dependent to the diagonal property.
+     */
+    virtual void setDiagonal( const ValueType& scalar ) = 0;
 
 protected:
 

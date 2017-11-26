@@ -402,17 +402,17 @@ public:
 
     virtual void redistribute( const dmemo::Redistributor& redistributor, dmemo::DistributionPtr colDistributionPtr );
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
-    virtual void getDiagonal( _Vector& diagonal ) const;
+    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const _Vector& diagonal );
+    virtual void setDiagonal( const DenseVector<ValueType>& diagonal );
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const Scalar diagonalValue );
+    virtual void setDiagonal( const ValueType& scalar );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -446,18 +446,18 @@ public:
         const ValueType val,
         const common::BinaryOp op = common::BinaryOp::COPY );
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
-    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha );
+    virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
 
     /**
-     *  @brief _Matrix times vector with same value types and correct distributions.
+     *  @brief Provide method matrixTimesVector where all vectors are now dense
      *
-     * @param[out] denseResult   TODO[doxy] Complete Description.
-     * @param[in]  alphaValue    TODO[doxy] Complete Description.
-     * @param[in]  denseX        TODO[doxy] Complete Description.
-     * @param[in]  betaValue     TODO[doxy] Complete Description.
-     * @param[in]  denseY        TODO[doxy] Complete Description.
+     * @param[out] denseResult   result vector 
+     * @param[in]  alphaValue    scaling factor for matrix * vector
+     * @param[in]  denseX        vector that is used for multiplication
+     * @param[in]  betaValue     scaling factor for additional summand
+     * @param[in]  denseY        additional summand ( beta = 0 if not available )
      *
      *  Note: _Matrix::matrixTimesMatrix is implemented in the CRTPMatrix class.
      *        that requires this method.
@@ -507,18 +507,18 @@ public:
 
     ValueType maxDiffNormImpl( const DenseMatrix<ValueType>& other ) const;
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
-    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B );
+    virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
 
-    /** Implementation of pure method _Matrix::matrixTimesMatrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
-    void matrixTimesMatrix(
-        _Matrix& result,
-        const Scalar alpha,
-        const _Matrix& x,
-        const Scalar beta,
-        const _Matrix& y ) const;
+    virtual void matrixTimesMatrix(
+        Matrix<ValueType>& result,
+        const ValueType alpha,
+        const Matrix<ValueType>& B,
+        const ValueType beta,
+        const Matrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class _Matrix. */
 

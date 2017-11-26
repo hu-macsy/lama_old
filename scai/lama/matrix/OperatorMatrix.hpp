@@ -192,15 +192,15 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getDiagonal( _Vector& ) const
+    virtual void getDiagonal( DenseVector<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setDiagonal( const _Vector& )
+    virtual void setDiagonal( const DenseVector<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setDiagonal(Scalar)
+    virtual void setDiagonal( const ValueType& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -243,15 +243,15 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void matrixTimesScalar(const _Matrix&, Scalar)
+    virtual void matrixTimesScalar( const Matrix<ValueType>&, ValueType )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void matrixPlusMatrix(Scalar, const _Matrix&, Scalar, const _Matrix&)
+    virtual void matrixPlusMatrix( const ValueType, const Matrix<ValueType>&, const ValueType, const Matrix<ValueType>&)
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void matrixTimesMatrix( _Matrix&, Scalar, const _Matrix&, Scalar, const _Matrix& ) const
+    virtual void matrixTimesMatrix( Matrix<ValueType>&, ValueType, const Matrix<ValueType>&, ValueType, const Matrix<ValueType>& ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

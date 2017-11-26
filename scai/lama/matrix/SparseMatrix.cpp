@@ -1185,34 +1185,21 @@ void SparseMatrix<ValueType>::setLocalColumn( const HArray<ValueType>& column,
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
+void SparseMatrix<ValueType>::getDiagonal( DenseVector<ValueType>& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for square matrices with same row/col distribution" )
     }
 
-    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
-    {
-        SCAI_UNSUPPORTED( "getDiagonal: diagonal not DenseVector<" << getValueType() << ">, temporary + conversion needed" )
-        DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
-        getDiagonal( tmpDiagonal );
-        diagonal.assign( tmpDiagonal );   // does the correct type / kind conversion
-        return;
-    }
-
-    // we can recast it now to dense vector, so we have access to its local values
-
-    DenseVector<ValueType>& denseDiagonal = reinterpret_cast<DenseVector<ValueType>&>( diagonal );
-
-    denseDiagonal.allocate( getRowDistributionPtr() );
-    mLocalData->getDiagonal( denseDiagonal.getLocalValues() );
+    diagonal.allocate( getRowDistributionPtr() );
+    mLocalData->getDiagonal( diagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
+void SparseMatrix<ValueType>::setDiagonal( const DenseVector<ValueType>& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
@@ -1224,30 +1211,20 @@ void SparseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
         COMMON_THROWEXCEPTION( "diagonal must have same distribution as matrix" )
     }
 
-    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
-    {
-        SCAI_UNSUPPORTED( "setDiagonal: diagonal not DenseVector<" << getValueType() << ">, temporary + conversion needed" )
-        DenseVector<ValueType> tmpDiagonal( diagonal );
-        setDiagonal( tmpDiagonal );
-        return;
-    }
-
-    const DenseVector<ValueType>& denseDiagonal = reinterpret_cast<const DenseVector<ValueType>&>( diagonal );
-
-    mLocalData->setDiagonalV( denseDiagonal.getLocalValues() );
+    mLocalData->setDiagonalV( diagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::setDiagonal( Scalar value )
+void SparseMatrix<ValueType>::setDiagonal( const ValueType& value )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    mLocalData->setDiagonal( value.getValue<ValueType>() );
+    mLocalData->setDiagonal( value );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1472,11 +1449,11 @@ void SparseMatrix<ValueType>::concatenate(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::matrixTimesMatrix(
-    _Matrix& result,
-    const Scalar alpha,
-    const _Matrix& B,
-    const Scalar beta,
-    const _Matrix& C ) const
+    Matrix<ValueType>& result,
+    const ValueType alpha,
+    const Matrix<ValueType>& B,
+    const ValueType beta,
+    const Matrix<ValueType>& C ) const
 {
     SCAI_LOG_INFO( logger,
                    "result = alpha * A * B + beta * C with result = " << result << ", alpha = " << alpha << ", A = " << *this << ", B = " << B << ", beta = " << beta << ", C = " << C )
@@ -1489,10 +1466,9 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
         SCAI_ASSERT_ERROR( typedResult, "Must be dense matrix<" << getValueType() << "> : " << result )
         const DenseMatrix<ValueType>* typedB = dynamic_cast<const DenseMatrix<ValueType>*>( &B );
         SCAI_ASSERT_ERROR( typedB, "Must be dense matrix<" << getValueType() << "> : " << B )
-        ValueType betaVal = beta.getValue<ValueType>();
         const DenseMatrix<ValueType>* typedC = dynamic_cast<const DenseMatrix<ValueType>*>( &C );
 
-        if ( betaVal != common::Constants::ZERO )
+        if ( beta != common::Constants::ZERO )
         {
             SCAI_ASSERT_ERROR( typedC, "Must be dense matrix<" << getValueType() << "> : " << C )
         }
@@ -1502,8 +1478,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
         }
 
         // Now the typed version can be used
-        matrixTimesVectorNImpl( *typedResult, alpha.getValue<ValueType>(), *typedB, beta.getValue<ValueType>(),
-                                *typedC );
+        matrixTimesVectorNImpl( *typedResult, alpha, *typedB, beta, *typedC );
     }
     else
     {
@@ -1514,8 +1489,7 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
         const SparseMatrix<ValueType>* typedC = dynamic_cast<const SparseMatrix<ValueType>*>( &C );
         SCAI_ASSERT_ERROR( typedC, "Must be sparse matrix<" << getValueType() << "> : " << C )
         // Now the typed version can be used
-        typedResult->matrixTimesMatrixImpl( alpha.getValue<ValueType>(), *this, *typedB, beta.getValue<ValueType>(),
-                                            *typedC );
+        typedResult->matrixTimesMatrixImpl( alpha, *this, *typedB, beta, *typedC );
     }
 }
 
@@ -1523,10 +1497,10 @@ void SparseMatrix<ValueType>::matrixTimesMatrix(
 
 template<typename ValueType>
 void SparseMatrix<ValueType>::matrixPlusMatrix(
-    const Scalar alpha,
-    const _Matrix& matA,
-    const Scalar beta,
-    const _Matrix& matB )
+    const ValueType alpha,
+    const Matrix<ValueType>& matA,
+    const ValueType beta,
+    const Matrix<ValueType>& matB )
 {
     SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
     const SparseMatrix<ValueType>* sparseA = dynamic_cast<const SparseMatrix<ValueType>*>( &matA );
@@ -1534,7 +1508,7 @@ void SparseMatrix<ValueType>::matrixPlusMatrix(
     const SparseMatrix<ValueType>* sparseB = dynamic_cast<const SparseMatrix<ValueType>*>( &matB );
     SCAI_ASSERT_ERROR( sparseB, "Must be sparse matrix<" << getValueType() << "> : " << matB )
     // Now we can add sparse matrices
-    matrixPlusMatrixImpl( alpha.getValue<ValueType>(), *sparseA, beta.getValue<ValueType>(), *sparseB );
+    matrixPlusMatrixImpl( alpha, *sparseA, beta, *sparseB );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1547,9 +1521,11 @@ void SparseMatrix<ValueType>::matrixPlusMatrixImpl(
     const SparseMatrix<ValueType>& B )
 {
     SCAI_REGION( "Mat.plusMatrix" )
+
     // already verified
-    SCAI_ASSERT_EQUAL_DEBUG( A.getRowDistribution(), B.getRowDistribution() )
-    SCAI_ASSERT_EQUAL_DEBUG( A.getColDistribution(), B.getColDistribution() )
+
+    SCAI_ASSERT_EQ_DEBUG( A.getRowDistribution(), B.getRowDistribution(), "added matrices have different target space" )
+    SCAI_ASSERT_EQ_DEBUG( A.getColDistribution(), B.getColDistribution(), "added matrices have different source space" )
 
     if ( !B.getColDistribution().isReplicated() )
     {
@@ -2044,16 +2020,17 @@ void SparseMatrix<ValueType>::matrixTimesVectorNImpl(
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::matrixTimesScalar( const _Matrix& other, Scalar alpha )
+void SparseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& A, ValueType alpha )
 {
-    SCAI_LOG_INFO( logger, "this  = " << alpha << " * " << other )
-    // should also work fine if other == *this, will not create new data
-    assign( other );
-    mLocalData->scale( alpha.getValue<ValueType>() );
+    SCAI_LOG_INFO( logger, "this  = " << alpha << " * " << A )
+
+    assign( A );  // can also deal with alias
+
+    mLocalData->scale( alpha );
 
     if ( mHaloData->getNumRows() * mHaloData->getNumColumns() > 0 )
     {
-        mHaloData->scale( alpha.getValue<ValueType>() );
+        mHaloData->scale( alpha );
     }
 }
 

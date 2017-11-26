@@ -298,7 +298,8 @@ void DenseMatrix<ValueType>::setIdentity( DistributionPtr dist )
 
         if ( i == rank )
         {
-            mData[i]->setDiagonal( ValueType( 1 ) );
+            ValueType one = 1;
+            mData[i]->setDiagonal( one );
         }
     }
 }
@@ -1494,33 +1495,23 @@ void DenseMatrix<ValueType>::setLocalColumn(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getDiagonal( _Vector& diagonal ) const
+void DenseMatrix<ValueType>::getDiagonal( DenseVector<ValueType>& diagonal ) const
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
-    {
-        DenseVector<ValueType> tmpDiagonal( diagonal.getContextPtr() );
-        getDiagonal( tmpDiagonal );
-        diagonal.assign( tmpDiagonal );   // does the correct type / kind conversion
-        return;
-    }
-
     // we can recast it now to dense vector, so we have access to its local values
 
-    DenseVector<ValueType>& denseDiagonal = reinterpret_cast<DenseVector<ValueType>&>( diagonal );
-
-    denseDiagonal.allocate( getRowDistributionPtr() );
-    getLocalStorage().getDiagonal( denseDiagonal.getLocalValues() );
+    diagonal.allocate( getRowDistributionPtr() );
+    getLocalStorage().getDiagonal( diagonal.getLocalValues() );
 }
 
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
+void DenseMatrix<ValueType>::setDiagonal( const DenseVector<ValueType>& diagonal )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
@@ -1532,28 +1523,20 @@ void DenseMatrix<ValueType>::setDiagonal( const _Vector& diagonal )
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    if ( diagonal.getVectorKind() != VectorKind::DENSE || diagonal.getValueType() != getValueType() )
-    {
-        SCAI_LOG_WARN( logger, "setDiagonal: diagonal will be converted" )
-        DenseVector<ValueType> tmpDiagonal( diagonal );
-        setDiagonal( tmpDiagonal );
-        return;
-    }
-
     const DenseVector<ValueType>& diagonalDense = reinterpret_cast<const DenseVector<ValueType>&>( diagonal );
 
     getLocalStorage().setDiagonalV( diagonalDense.getLocalValues() );
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::setDiagonal( const Scalar diagonalValue )
+void DenseMatrix<ValueType>::setDiagonal( const ValueType& diagonalValue )
 {
     if ( getRowDistribution() != getColDistribution() )
     {
         COMMON_THROWEXCEPTION( "Diagonal calculation only for equal distributions." )
     }
 
-    getLocalStorage().setDiagonal( diagonalValue.getValue<ValueType>() );
+    getLocalStorage().setDiagonal( diagonalValue );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1759,7 +1742,7 @@ void DenseMatrix<ValueType>::setValue(
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::matrixTimesScalar( const _Matrix& other, Scalar alpha )
+void DenseMatrix<ValueType>::matrixTimesScalar( const Matrix<ValueType>& other, ValueType alpha )
 {
     SCAI_LOG_INFO( logger, " this = " << alpha << " * " << other )
     assign( other );
@@ -1767,7 +1750,7 @@ void DenseMatrix<ValueType>::matrixTimesScalar( const _Matrix& other, Scalar alp
 
     for ( size_t i = 0; i < mData.size(); ++i )
     {
-        mData[i]->scale( alpha.getValue<ValueType>() );
+        mData[i]->scale( alpha );
     }
 }
 
@@ -2021,10 +2004,10 @@ void DenseMatrix<ValueType>::vectorTimesMatrixImpl(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::matrixPlusMatrix(
-    const Scalar alpha,
-    const _Matrix& matA,
-    const Scalar beta,
-    const _Matrix& matB )
+    const ValueType alpha,
+    const Matrix<ValueType>& matA,
+    const ValueType beta,
+    const Matrix<ValueType>& matB )
 {
     SCAI_LOG_INFO( logger, "this = " << alpha << " * A + " << beta << " * B" << ", A = " << matA << ", B = " << matB )
     const DenseMatrix<ValueType>* denseA = dynamic_cast<const DenseMatrix<ValueType>*>( &matA );
@@ -2032,7 +2015,7 @@ void DenseMatrix<ValueType>::matrixPlusMatrix(
     const DenseMatrix<ValueType>* denseB = dynamic_cast<const DenseMatrix<ValueType>*>( &matB );
     SCAI_ASSERT_ERROR( denseB, "Must be dense matrix<" << getValueType() << "> : " << matB )
 // Now we can add sparse matrices
-    matrixPlusMatrixImpl( alpha.getValue<ValueType>(), *denseA, beta.getValue<ValueType>(), *denseB );
+    matrixPlusMatrixImpl( alpha, *denseA, beta, *denseB );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -2077,11 +2060,11 @@ void DenseMatrix<ValueType>::matrixPlusMatrixImpl(
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::matrixTimesMatrix(
-    _Matrix& result,
-    const Scalar alpha,
-    const _Matrix& B,
-    const Scalar beta,
-    const _Matrix& C ) const
+    Matrix<ValueType>& result,
+    const ValueType alpha,
+    const Matrix<ValueType>& B,
+    const ValueType beta,
+    const Matrix<ValueType>& C ) const
 {
     SCAI_ASSERT_ERROR( getRowDistribution().isReplicated(), "this->rows are distributed" )
     SCAI_ASSERT_ERROR( getColDistribution().isReplicated(), "this->cols are distributed" )
@@ -2119,7 +2102,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with B matrix" )
     }
-    else if ( res == Cp && beta.getValue<ValueType>() != 0.0 )
+    else if ( res == Cp && beta != common::Constants::ZERO )
     {
         SCAI_LOG_DEBUG( logger, "result is aliased with C matrix" )
     }
@@ -2138,8 +2121,7 @@ void DenseMatrix<ValueType>::matrixTimesMatrix(
 //because we have to sync in this method anyway (returning void not SyncToken)
 // Note: any alias will be resolved by the matrix storage routine and not here
 //       as it might introduce a temporary in any case
-    res->mData[0]->matrixTimesMatrix( alpha.getValue<ValueType>(), *mData[0], *Bp->mData[0], beta.getValue<ValueType>(),
-                                      *Cp->mData[0] );
+    res->mData[0]->matrixTimesMatrix( alpha, *mData[0], *Bp->mData[0], beta, *Cp->mData[0] );
 }
 
 /* -------------------------------------------------------------------------- */

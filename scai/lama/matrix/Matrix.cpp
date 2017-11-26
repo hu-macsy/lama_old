@@ -170,11 +170,11 @@ bool Matrix<ValueType>::checkSymmetry() const
 
 template<typename ValueType>
 void Matrix<ValueType>::matrixTimesVector(
-    _Vector& result,
-    const Scalar alpha,
-    const _Vector& x,
-    const Scalar beta,
-    const _Vector& y ) const
+    Vector<ValueType>& result,
+    const ValueType alpha,
+    const Vector<ValueType>& x,
+    const ValueType beta,
+    const Vector<ValueType>& y ) const
 {
     SCAI_REGION( "Mat.timesVector" )
 
@@ -193,7 +193,7 @@ void Matrix<ValueType>::matrixTimesVector(
         result.allocate( this->getRowDistributionPtr() );
     }
 
-    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getColDistribution() )
+    if ( x.getVectorKind() != VectorKind::DENSE || &result == &x || x.getDistribution() != this->getColDistribution() )
     {
         SCAI_UNSUPPORTED( "alpha * M * x, x requires temporary DenseVector<" << this->getValueType() << ">" )
 
@@ -206,7 +206,7 @@ void Matrix<ValueType>::matrixTimesVector(
 
     // Note: in case of beta == 0, we might skip this test
 
-    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getRowDistribution() )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getDistribution() != this->getRowDistribution() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpY( y, this->getRowDistributionPtr() );
@@ -216,7 +216,7 @@ void Matrix<ValueType>::matrixTimesVector(
 
     const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
+    if ( result.getVectorKind() != VectorKind::DENSE )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpResult( this->getRowDistributionPtr() );
@@ -227,29 +227,26 @@ void Matrix<ValueType>::matrixTimesVector(
 
     DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
 
-    const ValueType alphaV = alpha.getValue<ValueType>();
-    const ValueType betaV  = beta.getValue<ValueType>();
-
     // Now call the typed version implemented by derived class
 
-    matrixTimesVectorImpl( denseResult, alphaV, denseX, betaV, denseY );
+    matrixTimesVectorImpl( denseResult, alpha, denseX, beta, denseY );
 }
 
 /* ========================================================================= */
 
 template<typename ValueType>
 void Matrix<ValueType>::vectorTimesMatrix(
-    _Vector& result,
-    const Scalar alpha,
-    const _Vector& x,
-    const Scalar beta,
-    const _Vector& y ) const
+    Vector<ValueType>& result,
+    const ValueType alpha,
+    const Vector<ValueType>& x,
+    const ValueType beta,
+    const Vector<ValueType>& y ) const
 {
     SCAI_REGION( "Mat.vectorTimes" )
 
     SCAI_LOG_INFO( logger, result << " = " << alpha << " * " << *this << " * " << x << " + " << beta << " * " << y )
 
-    if ( x.getVectorKind() != VectorKind::DENSE || x.getValueType() != this->getValueType() || &result == &x || x.getDistribution() != this->getRowDistribution() )
+    if ( x.getVectorKind() != VectorKind::DENSE || &result == &x || x.getDistribution() != this->getRowDistribution() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for x in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpX( x, this->getRowDistributionPtr() );
@@ -259,7 +256,7 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
     const DenseVector<ValueType>& denseX = reinterpret_cast<const DenseVector<ValueType>&>( x );
 
-    if ( y.getVectorKind() != VectorKind::DENSE || y.getValueType() != this->getValueType() || y.getDistribution() != this->getColDistribution() )
+    if ( y.getVectorKind() != VectorKind::DENSE || y.getDistribution() != this->getColDistribution() )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for y in alpha * x * M + beta * y" )
         DenseVector<ValueType> tmpY( y, this->getColDistributionPtr() );
@@ -269,7 +266,7 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
     const DenseVector<ValueType>& denseY = reinterpret_cast<const DenseVector<ValueType>&>( y );
 
-    if ( result.getVectorKind() != VectorKind::DENSE || result.getValueType() != this->getValueType() )
+    if ( result.getVectorKind() != VectorKind::DENSE )
     {
         SCAI_UNSUPPORTED( "temporary DenseVector<" << this->getValueType() << "> required for result in alpha * M * x + beta * y" )
         DenseVector<ValueType> tmpResult( this->getColDistributionPtr() );
@@ -289,19 +286,16 @@ void Matrix<ValueType>::vectorTimesMatrix(
 
     DenseVector<ValueType>& denseResult = reinterpret_cast<DenseVector<ValueType>&>( result );
 
-    const ValueType alphaV = alpha.getValue<ValueType>();
-    const ValueType betaV  = beta.getValue<ValueType>();
-
     if ( this->getColDistribution().getCommunicator().getSize() == 1 )
     {
         // Each processor has full columns, resultVector is replicated, communication only needed to sum up results
         // use routine provided by this CRTP
 
-        this->vectorTimesMatrixRepCols( denseResult, alphaV, denseX, betaV, denseY );
+        this->vectorTimesMatrixRepCols( denseResult, alpha, denseX, beta, denseY );
     }
     else
     {
-        this->vectorTimesMatrixImpl( denseResult, alphaV, denseX, betaV, denseY );
+        this->vectorTimesMatrixImpl( denseResult, alpha, denseX, beta, denseY );
     }
 }
 

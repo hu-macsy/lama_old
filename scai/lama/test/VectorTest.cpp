@@ -819,49 +819,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
 
     std::srand( 1311 );   // same random numbers on all processors
 
-    for ( size_t i = 0; i < vectors.size(); ++i )
+    DenseVector<ValueType> v1;
+
+    HArray<ValueType> data1( n );
+    utilskernel::HArrayUtils::setRandom( data1, 1 );
+
+    v1.assign( data1 );
+
+    for ( size_t j = 0; j < dists.size(); ++j )
     {
-        VectorPtr<ValueType> v1Ptr = vectors[i];
-        Vector<ValueType>& v1 = *v1Ptr;
+        v1.redistribute( dists[j] );
 
-        HArray<ValueType> data1( n );
-        utilskernel::HArrayUtils::setRandom( data1, 1 );
+        CSRSparseMatrix<ValueType> m;
 
-        v1.assign( data1 );
+        m.setIdentity( dists[j] );
+        m.setDiagonal( v1 );
 
-        for ( size_t j = 0; j < dists.size(); ++j )
-        {
-            v1.redistribute( dists[j] );
+        DenseVector<ValueType> v2( v1 );
 
-            CSRSparseMatrix<ValueType> m;
+        v2 = v1;
 
-            m.setIdentity( dists[j] );
-            m.setDiagonal( v1 );
+        // v2 += v1;
+        // v2 -= v1;
+        // v2 *= 2;
+        // v2 /= 2;
 
-            VectorPtr<ValueType> v2Ptr( v1.newVector() );
-            Vector<ValueType>& v2 = *v2Ptr;
+        v2 = v1 * v2;   // is v2 * v2 elementwise
 
-            v2 = v1;
+        DenseVector<ValueType> v3;
 
-            // v2 += v1;
-            // v2 -= v1;
-            // v2 *= 2;
-            // v2 /= 2;
+        // v3 = 2 * m * v1 - v2;   // is v1 * v1
 
-            v2 = v1 * v2;   // is v2 * v2 elementwise
+        v3 = m * v1 - v2;   // is v1 * v1
 
-            VectorPtr<ValueType> v3Ptr( v1.newVector() );
-            Vector<ValueType>& v3 = *v3Ptr;
+        // v3 -= v2;
 
-            // v3 = 2 * m * v1 - v2;   // is v1 * v1
-
-            v3 = m * v1 - v2;   // is v1 * v1
-
-            // v3 -= v2;
-
-            NormType<ValueType> eps = 0.0001;
-            BOOST_CHECK( v3.maxNorm() < eps );
-        }
+        NormType<ValueType> eps = 0.0001;
+        BOOST_CHECK( v3.maxNorm() < eps );
     }
 }
 

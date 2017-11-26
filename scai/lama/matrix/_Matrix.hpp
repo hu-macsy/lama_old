@@ -528,30 +528,6 @@ public:
         const IndexType globalColIndex,
         const common::BinaryOp op ) = 0;
 
-    /** @brief This method returns the diagonal.
-     *
-     * @param[out]   diagonal is the destination array
-     *
-     * Calculations are dependent to the diagonal property.
-     */
-    virtual void getDiagonal( _Vector& diagonal ) const = 0;
-
-    /** @brief This method replaces the diagonal.
-     *
-     * @param[in] diagonal  is the source array
-     *
-     * Calculations are dependent to the diagonal property.
-     */
-    virtual void setDiagonal( const _Vector& diagonal ) = 0;
-
-    /** @brief This method replaces the diagonal by a diagonal value.
-     *
-     * @param[in] scalar  is the source value
-     *
-     * Calculations are dependent to the diagonal property.
-     */
-    virtual void setDiagonal( const Scalar scalar ) = 0;
-
     /** @brief This method reduces the rows ( dim = 0 ) to a column vector or the columns ( dim = 1 ) 
      *         to a row vector.
      *
@@ -626,66 +602,6 @@ public:
      * @return the sparsity rate ( numValues / (numRows * numColumns)) of the whole matrix.
      */
     double getSparsityRate() const;
-
-    /**
-     * @brief Computes result = alpha * this * x + beta * y.
-     *
-     * @param[out]  result  the vector to store the result to
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   x       the vector x of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   y       the vector y of the expression
-     *
-     * This method computes result = alpha * this * x + beta * y. If
-     * result == x or result == y new storage is allocated to store the result.
-     */
-    virtual void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const = 0;
-
-    virtual void vectorTimesMatrix(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const = 0;
-
-    /**
-     * @brief Computes this = alpha * other.
-     *
-     * @param[out]  other   the _Matrix to multiply
-     * @param[in]   alpha   the Scalar of the expression
-     */
-    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha ) = 0;
-
-    /**
-     * @brief Computes this = alpha * A + beta * B.
-     *
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   A       the _Matrix A of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   B       the _Matrix B of the expression
-     */
-    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B ) = 0;
-
-    /**
-     * @brief Computes result = alpha * this * B + beta * C.
-     *
-     * @param[out]  result  the _Matrix to store the result to
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   B       the _Matrix B of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   C       the _Matrix C of the expression
-     */
-    virtual void matrixTimesMatrix(
-        _Matrix& result,
-        const Scalar alpha,
-        const _Matrix& B,
-        const Scalar beta,
-        const _Matrix& C ) const = 0;
 
     /**
      * @brief Concatenate multiple matrices horizontally/vertically to a new matrix.

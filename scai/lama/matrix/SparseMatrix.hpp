@@ -300,17 +300,17 @@ public:
      */
     virtual ~SparseMatrix();
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::getDiagonal */
 
-    virtual void getDiagonal( _Vector& diagonal ) const;
+    virtual void getDiagonal( DenseVector<ValueType>& diagonal ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const _Vector& diagonal );
+    virtual void setDiagonal( const DenseVector<ValueType>& diagonal );
 
-    /* Implementation of pure method of class _Matrix. */
+    /** Implementation of pure method Matrix<ValueType>::setDiagonal */
 
-    virtual void setDiagonal( const Scalar scalar );
+    virtual void setDiagonal( const ValueType& scalar );
 
     /* Implementation of pure method of class _Matrix. */
 
@@ -332,15 +332,9 @@ public:
 
     virtual void conj();
 
-    /*
-     *  Set local data of the matrix.
-     *  The local part of the distributed matrix will be splitted into local / halo part.
-     *  corresponding to the column distribution, builds new halo
-     */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesScalar */
 
-    /* Implemenation of pure method of class _Matrix */
-
-    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha );
+    virtual void matrixTimesScalar( const Matrix<ValueType>& other, const ValueType alpha );
 
     /**
      * @brief Same as matrixTimesVectorImpl but with multiple results and y
@@ -453,9 +447,9 @@ public:
             hmemo::HArray<ValueType>& localResult,
             const hmemo::HArray<ValueType>& haloX ) > haloF ) const;
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixPlusMatrix */
 
-    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B );
+    virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
 
     /**
      * Override _Matrix::cat
@@ -467,14 +461,14 @@ public:
      */
     virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const _Matrix*>& matrices );
 
-    /* Implemenation of pure method of class _Matrix */
+    /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
     virtual void matrixTimesMatrix(
-        _Matrix& result,
-        const Scalar alpha,
-        const _Matrix& B,
-        const Scalar beta,
-        const _Matrix& C ) const;
+        Matrix<ValueType>& result,
+        const ValueType alpha,
+        const Matrix<ValueType>& B,
+        const ValueType beta,
+        const Matrix<ValueType>& C ) const;
 
     /* Implementation of pure method of class Matrix. */
 

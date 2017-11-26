@@ -150,50 +150,47 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>& expression )
 {
-    SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
 
-    const ValueType beta = 0;
-    Expression_SV<ValueType> exp2( beta, *this );
-    Expression_SMV_SV<ValueType> tmpExp( expression, exp2 );
-    const Vector<ValueType>& vectorX = expression.getArg2().getArg2();
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
+    const Vector<ValueType>& vector = expression.getArg2().getArg2();
 
-    if ( &vectorX != this )
-    {
-        // so this is not aliased to the vector on the rhs
-        // as this will be used on rhs we do allocate it here
-        // distribution is given by the row distribution of the matrix
-        const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
-        dmemo::DistributionPtr dist = matrix.getRowDistributionPtr();
-        allocate( dist );
-        // values remain uninitialized as we assume that 0.0 * this (undefined) will
-        // never be executed as an operation
-    }
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix * vector" )
 
-    return operator=( tmpExp );
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM<ValueType>& expression )
 {   
-    SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
-    const ValueType beta = 0;
-    Expression_SV<ValueType> exp2( beta, *this );
-    Expression_SVM_SV<ValueType> tmpExp( expression, exp2 );
-    const Vector<ValueType>& vectorX = expression.getArg2().getArg1();
-    
-    if ( &vectorX != this )
-    {   
-        // so this is not aliased to the vector on the rhs
-        // as this will be used on rhs we do allocate it here
-        // distribution is given by the row distribution of the matrix
-        const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
-        dmemo::DistributionPtr dist = matrix.getColDistributionPtr();
-        allocate( dist );
-        // values remain uninitialized as we assume that 0.0 * this (undefined) will
-        // never be executed as an operation
-    }
-    
-    return operator=( tmpExp );
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
+
+    const Vector<ValueType>& vector = expression.getArg2().getArg1();
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
+
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * vector * matrix" )
+
+    matrix.vectorTimesMatrix( *this, alpha, vector, ValueType( 0 ), *this );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
@@ -211,24 +208,15 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
     const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
     const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
 
-    _Vector* resultPtr = this;
-    _VectorPtr tmpResult;
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY );
 
-    if ( &vectorX == this )
-    {
-        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( this->newVector() );
-        resultPtr = tmpResult.get();
-    }
+    return *this;
+}
 
-    SCAI_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
-    matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
-
-    if ( resultPtr != this )
-    {
-        swap( *tmpResult );
-    }
-
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV_SV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
     return *this;
 }
 
@@ -253,6 +241,13 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueTy
     
     matrix.vectorTimesMatrix( *this, alpha, vectorX, beta, vectorY );
     
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM_SV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
     return *this;
 }
 

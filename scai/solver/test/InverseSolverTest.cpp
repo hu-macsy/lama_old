@@ -62,10 +62,11 @@
 
 #include <scai/solver/logger/CommonLogger.hpp>
 
-using namespace scai::solver;
-using namespace scai::lama;
-using namespace scai::hmemo;
-using namespace scai::dmemo;
+using namespace scai;
+using namespace lama;
+using namespace solver;
+using namespace hmemo;
+using namespace dmemo;
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -100,24 +101,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InverseTest2, ValueType, scai_numeric_test_types 
     DenseMatrix<ValueType> origin = DenseMatrix<ValueType>( system.coefficients );
     DenseMatrix<ValueType> result = DenseMatrix<ValueType>( system.coefficients );
     inverseSolver.initialize( origin );
-    const _Matrix& inverse = inverseSolver.getInverse();
+    const Matrix<ValueType>& inverse = inverseSolver.getInverse();
     origin.matrixTimesMatrix( result, 1.0, inverse, 0.0, result );
 
-    typedef typename scai::common::TypeTraits<ValueType>::AbsType AbsType;
+
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( IndexType i = 0; i < n; ++i )
     {
         for ( IndexType j = 0; j < n; ++j )
         {
-            Scalar scalar = result.getValue( i, j );
+            ValueType scalar = result.getValue( i, j );
 
             if ( i == j )
             {
-                SCAI_CHECK_CLOSE( 1.0, scalar.getValue<AbsType>(), 1 );
+                BOOST_CHECK( common::Math::abs( scalar - 1 ) < eps  );
             }
             else
             {
-                BOOST_CHECK( scalar.getValue<AbsType>() < 1E-6 );
+                BOOST_CHECK( common::Math::abs( scalar ) < eps  );
             }
         }
     }
