@@ -54,6 +54,7 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/logging.hpp>
@@ -268,6 +269,69 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, scai_numeric_test_types )
         SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
         NormType<ValueType> maxNorm = matrix.maxNorm();
         BOOST_CHECK_CLOSE( expectedNorm, maxNorm, 0.01 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
+{
+    const IndexType M = 10;
+    const IndexType N = 8;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for scale" )
+
+    std::srand( 10113 );  // same random numbers on each processor
+
+    CSRSparseMatrix<ValueType> input( M, N);
+    MatrixCreator::fillRandom( input, 0.5f );
+
+    DenseVector<ValueType> scaleY( M );
+    scaleY.fillLinearValues( 1, 1 );
+
+    CSRSparseMatrix<ValueType> output( input );
+    output.scaleRows( scaleY );
+    output.scale( 0.5 );
+
+    TestDistributions rowDist( M );
+    TestDistributions colDist( N );
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix<ValueType>& matrix = *allMatrices[s];
+
+        for ( size_t i = 0; i < rowDist.size(); ++i ) 
+        {
+            scaleY.redistribute( rowDist[i] );
+
+            for ( size_t j = 0; j < colDist.size(); ++j ) 
+            {
+                matrix = input;   // serial matrix
+
+                matrix.redistribute( rowDist[i], colDist[j] );
+ 
+                // now scale parallel
+
+                matrix.scaleRows( scaleY );
+                matrix.scale( 0.5 );
+
+                // verify correct results by replication of matrix
+
+                matrix.redistribute( input.getRowDistributionPtr(), input.getColDistributionPtr() );
+
+                NormType<ValueType> diff = output.maxDiffNorm( matrix );
+ 
+                SCAI_LOG_DEBUG( logger, "diff = " << diff << ", matrix = " << matrix )
+
+                // there should be no rounding errors, so we check here for exact results
+
+                BOOST_CHECK_EQUAL( diff, 0 );
+            }
+        }
     }
 }
 
