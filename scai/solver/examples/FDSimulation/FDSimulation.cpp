@@ -227,7 +227,8 @@ void derivatives( lama::SparseMatrix<ValueType>& A,
  */
 template<typename ValueType>
 void initializeMatrices( lama::SparseMatrix<ValueType>& A, lama::SparseMatrix<ValueType>& B, lama::SparseMatrix<ValueType>& C,
-                         lama::_Matrix& D, lama::_Matrix& E, lama::_Matrix& F, dmemo::DistributionPtr dist, hmemo::ContextPtr ctx,
+                         lama::Matrix<ValueType>& D, lama::Matrix<ValueType>& E, lama::Matrix<ValueType>& F, 
+                         dmemo::DistributionPtr dist, hmemo::ContextPtr ctx,
                          IndexType NX, IndexType NY, IndexType NZ, dmemo::CommunicatorPtr comm )
 {
     SCAI_REGION( "initializeMatrices" )
@@ -241,15 +242,15 @@ void initializeMatrices( lama::SparseMatrix<ValueType>& A, lama::SparseMatrix<Va
     F.setContextPtr( ctx );
 
     D.assignTranspose( A );
-    D.scale( -1.0 );
+    D.scale( -1 );
     HOST_PRINT( comm, "Matrix D finished\n" );
 
     E.assignTranspose( B );
-    E.scale( -1.0 );
+    E *= -1;
     HOST_PRINT( comm, "Matrix E finished\n" );
 
     F.assignTranspose( C );
-    F.scale( -1.0 );
+    F *= -1;
     HOST_PRINT( comm, "Matrix F finished\n" );
 
     HOST_PRINT( comm, "Finished with initialization of the matrices!\n" );

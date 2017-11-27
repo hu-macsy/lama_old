@@ -161,6 +161,10 @@ public:
     Matrix<ValueType>& operator-=( const Expression_SM<ValueType>& exp );
 
     /**
+     *  @brief Use of assignment operator '*=' to scale this matrix.
+     */
+    Matrix<ValueType>& operator*=( const ValueType alpha );
+    /**
      * @brief Returns a copy of the value at the passed global indexes.
      *
      * @param[in] i   the global row index
@@ -233,6 +237,7 @@ public:
      * @param[in]   x       the vector x of the expression
      * @param[in]   beta    the scalar beta of the expression
      * @param[in]   y       the vector y of the expression
+     * @param[in]   transposeFlag if set the transposed matrix is used
      *
      * This method computes result = alpha * this * x + beta * y. If
      * result == x or result == y new storage is allocated to store the result.
@@ -242,29 +247,9 @@ public:
         const ValueType alpha,
         const Vector<ValueType>& x,
         const ValueType beta,
-        const Vector<ValueType>& y ) const;
+        const Vector<ValueType>& y,
+        bool transposeFlag ) const;
 
-    /**
-     * @brief Computes result = alpha * transpose( this ) * x + beta * y.
-     *
-     * @param[out]  result  the vector to store the result to
-     * @param[in]   alpha   the scalar alpha of the expression
-     * @param[in]   x       the vector x of the expression
-     * @param[in]   beta    the scalar beta of the expression
-     * @param[in]   y       the vector y of the expression
-     *
-     * Note: The transposed matrix is not built explicitly here. But keep
-     *       in mind that this operation is usually slower than matrixTimesVector
-     *       for an explicit transpose matrix. But memory overhead and time to build
-     *       the transposed matrix can be avoided by this routine.
-     */
-    void vectorTimesMatrix(
-        Vector<ValueType>& result,
-        const ValueType alpha,
-        const Vector<ValueType>& x,
-        const ValueType beta,
-        const Vector<ValueType>& y ) const;
- 
     /**
      * @brief Computes this = alpha * A.
      *
@@ -382,6 +367,25 @@ public:
      * Calculations are dependent to the diagonal property.
      */
     virtual void setDiagonal( const ValueType& scalar ) = 0;
+
+    /* ======================================================================= */
+    /*     scaling of matrix entries                                           */
+    /* ======================================================================= */
+
+    /** @brief This method scales all matrix elements with a scalar value.
+     *
+     * @param[in] alpha is the scaling factor.
+     */
+    virtual void scale( const ValueType& alpha ) = 0;
+
+    /** @brief This method scales the matrix elements individually for each row.
+     *
+     * @param[in] scaleY  is a vector whose distribution must match the row distribution
+     *
+     * This operation corresponds to $this = diagonalMatrix( scaleY ) * this$, i.e.
+     * pre-multiplying this matrix with a diagonal marix built by the vector scaleY.
+     */
+    virtual void scaleRows( const DenseVector<ValueType>& scaleY ) = 0;
 
 protected:
 

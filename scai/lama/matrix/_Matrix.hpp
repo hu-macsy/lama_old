@@ -549,20 +549,6 @@ public:
         const common::BinaryOp reduceOp, 
         const common::UnaryOp elemOp ) const = 0;
 
-    /** @brief This method scales all values with a vector.
-     *
-     * @param[in] scaling   is the source array
-     *
-     * row wise calculations.
-     */
-    virtual void scale( const _Vector& scaling ) = 0;
-
-    /** @brief This method scales all matrix values with a scalar.
-     *
-     * @param[in] scaling   is the source value.
-     */
-    virtual void scale( const Scalar scaling ) = 0;
-
     /** @brief This method replaces all elements with its conjugate value. */
 
     virtual void conj() = 0;
@@ -735,13 +721,6 @@ public:
      * value type of the matrix elements.
      */
     _Matrix& operator=( const _Matrix& other );
-
-    /**
-     * @brief The assignment operator this *= alpha
-     *
-     * @param[in] val   Factor used for scaling of the matrix
-     */
-    _Matrix& operator*=( const Scalar val );
 
     /**
      * @brief Computes the inverse of a matrix.

@@ -1084,12 +1084,23 @@ NormType<ValueType> DenseVector<ValueType>::maxNorm() const
 template<typename ValueType>
 NormType<ValueType> DenseVector<ValueType>::maxDiffNorm( const Vector<ValueType>& other ) const
 {
-    SCAI_ASSERT_EQ_ERROR( getDistribution(), other.getDistribution(), "maxDiffNorm: distribution mismatch" )
+    bool temporaryNeeded = false;
 
-    if ( other.getVectorKind() != VectorKind::DENSE    )
+    if ( other.getDistribution() != getDistribution() )
     {
-        // ToDo: this might be improved but requires some more kernel support
+        SCAI_UNSUPPORTED( "maxDiffNorm( x ), distribution mismatch implies temporary" )
+        temporaryNeeded = true;
+    }
 
+    if ( other.getVectorKind() != VectorKind::DENSE )
+    {
+        // ToDo: should be supported maxDiff for SPARSE-DENSE 
+        SCAI_UNSUPPORTED( "maxDiffNorm( x ), x not DENSE, uses temporary" )
+        temporaryNeeded = true;
+    }
+
+    if ( temporaryNeeded )
+    {
         DenseVector<ValueType> tmpOther( other, getDistributionPtr() );
         return maxDiffNorm( tmpOther );
     }

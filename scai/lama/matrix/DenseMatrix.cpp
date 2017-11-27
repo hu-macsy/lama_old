@@ -1633,38 +1633,39 @@ void DenseMatrix<ValueType>::reduce(
 }
 
 /* -------------------------------------------------------------------------- */
+/*   scaling of matrix entries                                                */
+/* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::scale( const _Vector& vector )
+void DenseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 {
-    if ( getRowDistribution() != vector.getDistribution() )
-    {
-        COMMON_THROWEXCEPTION( "scale vector must have same distribution as matrix row distribution" )
-    }
+    SCAI_ASSERT_EQ_ERROR( getRowDistribution(), scaleY.getDistribution(), 
+                          "distribution of scale vector does not match" )
 
-    if ( vector.getVectorKind() != VectorKind::DENSE || vector.getValueType() != getValueType() )
-    {
-        SCAI_LOG_WARN( logger, "scale: vector requires temporary" )
-        DenseVector<ValueType> tmpVector( vector );
-        scale( tmpVector );
-        return;
-    }
-    
-    const DenseVector<ValueType>& denseVector = reinterpret_cast<const DenseVector<ValueType>&>( vector );
+    const HArray<ValueType>& localY = scaleY.getLocalValues();
 
-    getLocalStorage().scaleRows( denseVector.getLocalValues() );
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->scaleRows( localY );
+    }
 }
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::scale( const Scalar scaleValue )
+void DenseMatrix<ValueType>::scale( const ValueType& alpha )
 {
-    getLocalStorage().scale( scaleValue.getValue<ValueType>() );
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->scale( alpha );
+    }
 }
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::conj()
 {
-    getLocalStorage().conj();
+    for ( size_t i = 0; i < mData.size(); ++i )
+    {
+        mData[i]->conj();
+    }
 }
 
 template<typename ValueType>

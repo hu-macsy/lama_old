@@ -422,13 +422,17 @@ public:
         const common::BinaryOp reduceOp, 
         const common::UnaryOp elemOp ) const;
 
-    /* Implementation of pure method of class _Matrix. */
+    /* ======================================================================= */
+    /*     scaling of matrix entries                                           */
+    /* ======================================================================= */
 
-    virtual void scale( const _Vector& values );
+    /* Implementation of pure method Matrix<ValueType>::scale */
 
-    /* Implementation of pure method of class _Matrix. */
+    virtual void scale( const ValueType& alpha );
 
-    virtual void scale( const Scalar value );
+    /* Implementation of pure method Matrix<ValueType>::scale */
+
+    virtual void scaleRows( const DenseVector<ValueType>& scaleY );
 
     /* Implementation of pure method of class _Matrix. */
 

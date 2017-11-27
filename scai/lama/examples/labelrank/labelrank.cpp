@@ -253,7 +253,7 @@ int main( int argc, char* argv[] )
     DenseVector<ValueType> oneVector( numCols, 1.0 );
     DenseVector<ValueType> y( affinityMatrix * oneVector );  // rowSums
     y.unaryOp( y, UnaryOp::RECIPROCAL );   // y(i) = 1.0 / y(i)
-    affinityMatrix.scale( y );  // scales each row
+    affinityMatrix.scaleRows( y );  // scales each row
     cout << "invert/scale calculations took " << Walltime::get() - start << " secs." << endl;
     // update affinityMatrix so that labelsMatrix remains unchanged
     // where initial entries are set

@@ -1312,11 +1312,12 @@ void SparseMatrix<ValueType>::reduce(
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::scale( const _Vector& scaling )
+void SparseMatrix<ValueType>::scaleRows( const DenseVector<ValueType>& scaleY )
 {
-    SCAI_ASSERT_EQUAL( scaling.getDistribution(), getRowDistribution(), "distribution mismatch" )
-    HArray<ValueType> localValues;
-    scaling.buildLocalValues( localValues );
+    SCAI_ASSERT_EQUAL( scaleY.getDistribution(), getRowDistribution(), "distribution mismatch" )
+
+    const HArray<ValueType>& localValues = scaleY.getLocalValues();
+
     mLocalData->scaleRows( localValues );
 
     // scale Halo storage only if it is used; otherwise there might be a size mismatch
@@ -1330,14 +1331,13 @@ void SparseMatrix<ValueType>::scale( const _Vector& scaling )
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void SparseMatrix<ValueType>::scale( Scalar scaling )
+void SparseMatrix<ValueType>::scale( const ValueType& alpha )
 {
-    ValueType value = scaling.getValue<ValueType>();
-    mLocalData->scale( value );
+    mLocalData->scale( alpha );
 
     if ( mHaloData->getNumRows() )
     {
-        mHaloData->scale( value );
+        mHaloData->scale( alpha );
     }
 }
 
@@ -2142,14 +2142,14 @@ ValueType SparseMatrix<ValueType>::maxDiffNormImpl( const SparseMatrix<ValueType
     if ( !getColDistribution().isReplicated() )
     {
         tmp1.reset( new CSRStorage<ValueType>() );
-        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), true );
+        tmp1->joinHalo( *mLocalData, *mHaloData, mHalo, getColDistribution(), false );
         myLocalStorage = tmp1.get();
     }
 
     if ( !other.getColDistribution().isReplicated() )
     {
         tmp2.reset( new CSRStorage<ValueType>() );
-        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution(), true );
+        tmp2->joinHalo( *other.mLocalData, *other.mHaloData, other.mHalo, other.getColDistribution(), false );
         otherLocalStorage = tmp2.get();
     }
 

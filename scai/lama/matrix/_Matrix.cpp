@@ -308,15 +308,6 @@ _Matrix& _Matrix::operator=( const Expression_SM<ValueType>& exp )
 
 /* ---------------------------------------------------------------------------------*/
 
-_Matrix& _Matrix::operator*=( const Scalar exp )
-{
-    // this *= alpha  -> this->scale( exp )
-    this->scale( exp );
-    return *this;
-}
-
-/* ---------------------------------------------------------------------------------*/
-
 /*
 template<typename ValueType>
 _Matrix& _Matrix::operator+=( const Expression_SM<ValueType>& exp )

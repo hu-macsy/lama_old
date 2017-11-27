@@ -122,7 +122,7 @@ void MyJacobi<ValueType>::initialize( const lama::Matrix<ValueType>& coefficient
     lama::Matrix<ValueType>& diagonalTimesLU = *runtime.mDiagonalTimesLU;
 
     diagonalTimesLU.setDiagonal( ValueType( 0 ) );
-    diagonalTimesLU.scale( runtime.mDiagonalInverted );
+    diagonalTimesLU.scaleRows( runtime.mDiagonalInverted );
 
     runtime.mOldSolution.setContextPtr( ctx );
 
