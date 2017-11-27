@@ -1219,7 +1219,7 @@ void DenseMatrix<ValueType>::getLocalRow( HArray<ValueType>& row, const IndexTyp
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRowLocal( _Vector&, const IndexType ) const
+void DenseMatrix<ValueType>::getRowLocal( Vector<ValueType>&, const IndexType ) const
 {
     COMMON_THROWEXCEPTION( "not available yet" )
 }
@@ -1227,11 +1227,11 @@ void DenseMatrix<ValueType>::getRowLocal( _Vector&, const IndexType ) const
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowIndex ) const
+void DenseMatrix<ValueType>::getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const
 {
     // if v is not a dense vector or not of same type, use a temporary dense vector
 
-    if ( row.getVectorKind() != VectorKind::DENSE || row.getValueType() != getValueType() )
+    if ( row.getVectorKind() != VectorKind::DENSE )
     {
         SCAI_LOG_WARN( logger, "getRow requires temporary" )
         DenseVector<ValueType> denseRow;
@@ -1353,11 +1353,11 @@ void DenseMatrix<ValueType>::getRow( _Vector& row, const IndexType globalRowInde
 /* -------------------------------------------------------------------------- */
 
 template<typename ValueType>
-void DenseMatrix<ValueType>::getColumn( _Vector& col, const IndexType globalColIndex ) const
+void DenseMatrix<ValueType>::getColumn( Vector<ValueType>& col, const IndexType globalColIndex ) const
 {
     // if col is not a dense vector, use a temporary dense vector
 
-    if ( col.getVectorKind() != VectorKind::DENSE || col.getValueType() != getValueType() )
+    if ( col.getVectorKind() != VectorKind::DENSE )
     {
         SCAI_LOG_WARN( logger, "getCol requires temporary, use DenseVector on DenseMatrix" )
         DenseVector<ValueType> denseColumn;
@@ -1543,26 +1543,22 @@ void DenseMatrix<ValueType>::setDiagonal( const ValueType& diagonalValue )
 
 template<typename ValueType>
 void DenseMatrix<ValueType>::reduce(
-    _Vector& v, 
+    DenseVector<ValueType>& v, 
     const IndexType dim, 
     const common::BinaryOp reduceOp, 
     const common::UnaryOp elemOp ) const
 {
     SCAI_REGION( "Mat.Dense.reduce" )
 
-    // SCAI_ASSERT_EQ_ERROR( v.getValueType(), 
-
-    DenseVector<ValueType>& denseV = reinterpret_cast<DenseVector<ValueType>&>( v );
-
     if ( dim == 0 )
     {
-        denseV.allocate( getRowDistributionPtr() );
+        v.allocate( getRowDistributionPtr() );
 
-        denseV = ValueType( 0 );   // initialize v with neutral element
+        v = ValueType( 0 );   // initialize v with neutral element
 
         for ( size_t k = 0; k < mData.size(); ++k )
         {
-            mData[k]->reduce( denseV.getLocalValues(), 0, reduceOp, elemOp );
+            mData[k]->reduce( v.getLocalValues(), 0, reduceOp, elemOp );
         }
 
         return;
@@ -1570,9 +1566,9 @@ void DenseMatrix<ValueType>::reduce(
 
     if ( dim == 1 )
     {
-        denseV.allocate( getColDistributionPtr() );
+        v.allocate( getColDistributionPtr() );
 
-        denseV = ValueType( 0 );   // initialize v with neutral element
+        v = ValueType( 0 );   // initialize v with neutral element
 
         if ( getRowDistribution().getCommunicator().getSize() == 1 )
         {
@@ -1580,7 +1576,7 @@ void DenseMatrix<ValueType>::reduce(
 
             PartitionId rank = getColDistribution().getCommunicator().getRank();
 
-            mData[rank]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
+            mData[rank]->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
 
             return;   // matrix is replicated, compute just my values
         }
@@ -1593,8 +1589,8 @@ void DenseMatrix<ValueType>::reduce(
         {
              SCAI_ASSERT_EQ_ERROR( reduceOp, common::BinaryOp::ADD, "only add supported" )
 
-             mData[0]->reduce( denseV.getLocalValues(), 1, reduceOp, elemOp );
-             getRowDistribution().getCommunicator().sumArray( denseV.getLocalValues() );
+             mData[0]->reduce( v.getLocalValues(), 1, reduceOp, elemOp );
+             getRowDistribution().getCommunicator().sumArray( v.getLocalValues() );
              return;
         }
 
@@ -1611,7 +1607,7 @@ void DenseMatrix<ValueType>::reduce(
         recvValues.reserve( contextPtr, maxSize );
         sendValues.reserve( contextPtr, maxSize );
 
-        utilskernel::HArrayUtils::assign( sendValues, denseV.getLocalValues() );
+        utilskernel::HArrayUtils::assign( sendValues, v.getLocalValues() );
 
         const Communicator& comm = getColDistribution().getCommunicator();
 
@@ -1624,7 +1620,7 @@ void DenseMatrix<ValueType>::reduce(
             std::swap( sendValues, recvValues );
         }
 
-        utilskernel::HArrayUtils::assign( denseV.getLocalValues(), sendValues );
+        utilskernel::HArrayUtils::assign( v.getLocalValues(), sendValues );
     }
     else
     {

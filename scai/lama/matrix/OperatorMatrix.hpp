@@ -172,23 +172,23 @@ public:
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getRow( _Vector&, IndexType ) const
+    virtual void getRow( Vector<ValueType>&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getRowLocal( _Vector&, IndexType ) const
+    virtual void getRowLocal( Vector<ValueType>&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void getColumn( _Vector&, IndexType ) const
+    virtual void getColumn( Vector<ValueType>&, IndexType ) const
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setRow( const _Vector&, IndexType, common::BinaryOp )
+    virtual void setRow( const Vector<ValueType>&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void setColumn( const _Vector&, IndexType, common::BinaryOp )
+    virtual void setColumn( const Vector<ValueType>&, IndexType, common::BinaryOp )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
@@ -205,7 +205,7 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
-    virtual void reduce( _Vector&, 
+    virtual void reduce( DenseVector<ValueType>&, 
                          const IndexType,
                          const common::BinaryOp,
                          const common::UnaryOp ) const
@@ -213,11 +213,11 @@ public:
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
 
-    virtual void scale(const _Vector&)
+    virtual void scaleRows( const DenseVector<ValueType>& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }
-    virtual void scale(Scalar)
+    virtual void scale( const ValueType& )
     {
         COMMON_THROWEXCEPTION( "not implemented for operator matrix" )
     }

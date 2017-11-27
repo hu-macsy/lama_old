@@ -414,10 +414,10 @@ public:
 
     virtual void setDiagonal( const ValueType& scalar );
 
-    /* Implementation of pure method of class _Matrix. */
+    /* Implementation of pure method Matrix<ValueType>::reduce */
 
     virtual void reduce( 
-        _Vector& v, 
+        DenseVector<ValueType>& v, 
         const IndexType dim, 
         const common::BinaryOp reduceOp, 
         const common::UnaryOp elemOp ) const;
@@ -597,17 +597,17 @@ public:
 
     std::vector<std::shared_ptr<DenseStorage<ValueType> > > mData;
 
-    /** Implementation of pure methode _Matrix::getRow */
+    /** Implementation of pure methode Matrix<ValueType>::getRow */
 
-    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    /** Implementation of pure methode _Matrix::getRowLocal */
+    /** Implementation of pure methode Matrix<ValueType>::getRowLocal */
 
-    virtual void getRowLocal( _Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRowLocal( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    /** Implementation of pure methode _Matrix::getColumn */
+    /** Implementation of pure method Matrix<ValueType>::getColumn */
 
-    virtual void getColumn( _Vector& col, const IndexType globalColIndex ) const;
+    virtual void getColumn( Vector<ValueType>& col, const IndexType globalColIndex ) const;
 
     /** Get a complete row of the local storage */
 

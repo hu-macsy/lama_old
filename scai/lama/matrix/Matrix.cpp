@@ -35,6 +35,10 @@
 #include <scai/lama/matrix/Matrix.hpp>
 
 #include <scai/tracing.hpp>
+
+#include <scai/dmemo/BlockDistribution.hpp>
+#include <scai/dmemo/NoDistribution.hpp>
+
 #include <scai/common/macros/unsupported.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -43,6 +47,7 @@ namespace scai
 {
 
 using common::TypeTraits;
+using namespace dmemo;
 
 namespace lama
 {
@@ -77,7 +82,7 @@ Matrix<ValueType>::Matrix( const IndexType numRows, const IndexType numColumns )
 }
 
 template<typename ValueType>
-Matrix<ValueType>::Matrix( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution ) :
+Matrix<ValueType>::Matrix( DistributionPtr rowDistribution, DistributionPtr colDistribution ) :
 
     _Matrix( rowDistribution, colDistribution )
 {
@@ -85,8 +90,8 @@ Matrix<ValueType>::Matrix( dmemo::DistributionPtr rowDistribution, dmemo::Distri
 
 template<typename ValueType>
 Matrix<ValueType>::Matrix( const _Matrix& other, 
-                           dmemo::DistributionPtr rowDistribution, 
-                           dmemo::DistributionPtr colDistribution ) :
+                           DistributionPtr rowDistribution, 
+                           DistributionPtr colDistribution ) :
 
     _Matrix( other, rowDistribution, colDistribution )
 
@@ -185,8 +190,8 @@ void Matrix<ValueType>::matrixTimesVector(
                    << ">[" << this->getNumRows() << " x " << this->getNumColumns() << "]"
                    << " * x[" << x.size() << "] + " << beta << " * y[" << y.size() << "]" )
 
-    dmemo::DistributionPtr sourceDist = transposeFlag ? getRowDistributionPtr() : getColDistributionPtr();
-    dmemo::DistributionPtr targetDist = transposeFlag ? getColDistributionPtr() : getRowDistributionPtr();
+    DistributionPtr sourceDist = transposeFlag ? getRowDistributionPtr() : getColDistributionPtr();
+    DistributionPtr targetDist = transposeFlag ? getColDistributionPtr() : getRowDistributionPtr();
 
     // temorary X required if not DENSE, distribution does not match or if an alias
 
@@ -296,7 +301,7 @@ void Matrix<ValueType>::matrixTimesVector(
 
 template<typename ValueType>
 void Matrix<ValueType>::setRow( 
-    const _Vector& row, 
+    const Vector<ValueType>& row, 
     const IndexType globalRowIndex,
     const common::BinaryOp op )
 {
@@ -306,12 +311,6 @@ void Matrix<ValueType>::setRow(
 
     bool needsTmp = false;
 
-    if ( row.getValueType() != this->getValueType() )
-    {
-        needsTmp = true;
-        SCAI_UNSUPPORTED( "setRow, matrix has type " << this->getValueType() 
-                           << ", row has type " << row.getValueType() << ", use temporary" )
-    }
     if ( ! row.getDistribution().isReplicated() )
     {
         needsTmp = true;
@@ -331,21 +330,15 @@ void Matrix<ValueType>::setRow(
         return;
     }
 
-    using namespace scai::hmemo;
-
     SCAI_ASSERT_VALID_INDEX_ERROR( globalRowIndex, this->getNumRows(), "illegal row index" )
 
     // row should be a DenseVector of same type, otherwise use a temporary
 
-    std::shared_ptr<DenseVector<ValueType> > tmpVector;  // only allocated if needed
+    const DenseVector<ValueType>& denseRow = reinterpret_cast<const DenseVector<ValueType>&>( row );
 
-    const DenseVector<ValueType>* typedRow = dynamic_cast<const DenseVector<ValueType>*>( &row );
+    SCAI_ASSERT_ERROR( denseRow.getDistribution().isReplicated(), "cannot set distributed row" )
 
-    SCAI_ASSERT_ERROR( typedRow, "illegal dynamic cast" )
-
-    SCAI_ASSERT_ERROR( typedRow->getDistribution().isReplicated(), "cannot set distributed row" )
-
-    SCAI_ASSERT_EQ_ERROR( typedRow->size(), this->getNumColumns(), "row to set has wrong size" )
+    SCAI_ASSERT_EQ_ERROR( denseRow.size(), this->getNumColumns(), "row to set has wrong size" )
 
     // owner sets the row, maybe each processor for replicated row distribution
 
@@ -353,7 +346,7 @@ void Matrix<ValueType>::setRow(
 
     if ( localRowIndex != nIndex )
     {
-        this->setLocalRow( typedRow->getLocalValues(), localRowIndex, op );
+        this->setLocalRow( denseRow.getLocalValues(), localRowIndex, op );
     }
 }
 
@@ -361,30 +354,39 @@ void Matrix<ValueType>::setRow(
 
 template<typename ValueType>
 void Matrix<ValueType>::setColumn( 
-    const _Vector& column,
+    const Vector<ValueType>& column,
     const IndexType colIndex,
     const common::BinaryOp op )
 {
     using namespace scai::hmemo;
 
-    SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this->getNumColumns(), "illegal col index" )
+    bool needsTmp = false;
 
-    // col should be a DenseVector of same type, otherwise use a temporary
-
-    std::shared_ptr<const DenseVector<ValueType> > tmpVector;  // only allocated if needed
-
-    const DenseVector<ValueType>* typedColumn = dynamic_cast<const DenseVector<ValueType>*>( &column );
-
-    if ( !typedColumn )
+    if ( column.getDistribution() != this->getRowDistribution() )
     {
-        // so we create a temporaray DenseVector of same type, has already correct size
-        tmpVector.reset( new DenseVector<ValueType>( column ) );
-        typedColumn = tmpVector.get();
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setColumn, distribution of col does not match distribution of matrix, use temporary" )
+    }
+    if ( column.getVectorKind() != VectorKind::DENSE )
+    {
+        needsTmp = true;
+        SCAI_UNSUPPORTED( "setColumn, col is not DENSE vector" )
     }
 
-    SCAI_ASSERT_EQ_ERROR( typedColumn->getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+    if ( needsTmp )
+    {
+        DenseVector<ValueType> tmpColumn( column, this->getRowDistributionPtr() );
+        setColumn( tmpColumn, colIndex, op );
+        return;
+    }
 
-    this->setLocalColumn( typedColumn->getLocalValues(), colIndex, op );
+    SCAI_ASSERT_VALID_INDEX_ERROR( colIndex, this->getNumColumns(), "illegal col index" )
+
+    const DenseVector<ValueType>& denseColumn = reinterpret_cast<const DenseVector<ValueType>&>( column );
+
+    SCAI_ASSERT_EQ_ERROR( denseColumn.getDistribution(), this->getRowDistribution(), "distribution mismatch" )
+
+    this->setLocalColumn( denseColumn.getLocalValues(), colIndex, op );
 }
 
 /* ========================================================================= */
@@ -404,14 +406,14 @@ void Matrix<ValueType>::vectorTimesMatrixRepCols(
 
     hmemo::HArray<ValueType>& localResult = denseResult.getLocalValues();
 
-    const dmemo::Distribution& colDist = this->getColDistribution();
+    const Distribution& colDist = this->getColDistribution();
 
     // this routine is only for non-replicated columns, i.e. mHaloData is empty
 
     SCAI_ASSERT( 1, colDist.getNumPartitions() );
 
-    const dmemo::Distribution& rowDist = this->getRowDistribution();
-    const dmemo::Communicator& comm = rowDist.getCommunicator();
+    const Distribution& rowDist = this->getRowDistribution();
+    const Communicator& comm = rowDist.getCommunicator();
 
     const MatrixStorage<ValueType>& localData = reinterpret_cast<const MatrixStorage<ValueType>&>( this->getLocalStorage() );
 
@@ -625,6 +627,59 @@ Matrix<ValueType>& Matrix<ValueType>::operator*=( const ValueType alpha )
 {
     this->scale( alpha );
     return *this;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Matrix<ValueType>::concatenate( 
+    DistributionPtr rowDist, 
+    DistributionPtr colDist, 
+    const std::vector<const Matrix<ValueType>*>& matrices )
+{
+    COMMON_THROWEXCEPTION( "concatenation of matrices not supported:"
+                           << " matrix kind = " << this->getMatrixKind() << ", format = " << this->getFormat()
+                           << " , #matrices = " << matrices.size()
+                           << ", row dist = " << *rowDist << ", col dist = " << *colDist )
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Matrix<ValueType>::vcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
+{
+    SCAI_ASSERT_EQ_ERROR( m1.getRowDistribution(), m2.getRowDistribution(), "vcat: matrices must have same row distribution" )
+
+    DistributionPtr rowDist = m1.getRowDistributionPtr();
+
+    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() + m2.getNumColumns() ) );
+
+    std::vector<const Matrix<ValueType>*> matrices;
+
+    matrices.push_back( &m1 );
+    matrices.push_back( &m2 );
+
+    concatenate( rowDist, colDist, matrices );
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Matrix<ValueType>::hcat( const Matrix<ValueType>& m1, const Matrix<ValueType>& m2 )
+{
+    SCAI_ASSERT_EQ_ERROR( m1.getNumColumns(), m2.getNumColumns(), "No horizontal cut possible due to different column sizes" )
+
+    CommunicatorPtr comm = Communicator::getCommunicatorPtr();
+
+    DistributionPtr rowDist( new BlockDistribution( m1.getNumRows() + m2.getNumRows(), comm ) );
+    DistributionPtr colDist( new NoDistribution( m1.getNumColumns() ) );
+
+    std::vector<const Matrix<ValueType>*> matrices;
+
+    matrices.push_back( &m1 );
+    matrices.push_back( &m2 );
+
+    concatenate( rowDist, colDist, matrices );
 }
 
 /* ========================================================================= */

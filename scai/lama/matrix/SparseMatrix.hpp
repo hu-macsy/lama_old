@@ -57,7 +57,6 @@ namespace lama
 
 // forward declarations
 
-class _Vector;
 template<typename > class DenseMatrix;
 
 /**
@@ -240,11 +239,12 @@ public:
 
     virtual void allocate( dmemo::DistributionPtr rowDistribution, dmemo::DistributionPtr colDistribution );
 
-    /** @brief Implementation of pure method _Matrix::getColumn 
+    /** @brief Implementation of pure method Matrix<ValueType>::getColumn 
      *
      *  It is recommended to call getColumn with a SparseVector for a sparse matrix.
+     *  It works also with a dense vector but setting the zero values causes a significant overhead.
      */
-    virtual void getColumn( _Vector& column, const IndexType globalColIndex ) const;
+    virtual void getColumn( Vector<ValueType>& column, const IndexType globalColIndex ) const;
 
     /** Set matrix to a identity square matrix with same row and column distribution. */
 
@@ -312,10 +312,10 @@ public:
 
     virtual void setDiagonal( const ValueType& scalar );
 
-    /* Implementation of pure method of class _Matrix. */
+    /* Implementation of pure method Matrix<ValueType>::reduce */
 
     virtual void reduce( 
-        _Vector& v, 
+        DenseVector<ValueType>& v, 
         const IndexType dim, 
         const common::BinaryOp reduceOp, 
         const common::UnaryOp elemOp ) const;
@@ -456,14 +456,12 @@ public:
     virtual void matrixPlusMatrix( const ValueType alpha, const Matrix<ValueType>& A, const ValueType beta, const Matrix<ValueType>& B );
 
     /**
-     * Override _Matrix::cat
+     * Implementation of pure method Matrix<ValueType>::concatenate
      */
-    virtual void cat( const IndexType dim, const _Matrix* other[], const IndexType n );
-
-    /**
-     * Implementation of pure method _Matrix::concatenate
-     */
-    virtual void concatenate( dmemo::DistributionPtr rowDist, dmemo::DistributionPtr colDist, const std::vector<const _Matrix*>& matrices );
+    virtual void concatenate( 
+        dmemo::DistributionPtr rowDist, 
+        dmemo::DistributionPtr colDist, 
+        const std::vector<const Matrix<ValueType>*>& matrices );
 
     /* Implemenation of pure method Matrix<ValueType>::matrixTimesMatrix */
 
@@ -599,13 +597,13 @@ public:
 
     void getLocalRowSparse( hmemo::HArray<IndexType>& indexes, hmemo::_HArray& values, const IndexType localRowIndex ) const;
 
-    /** Implementation of pure method _Matrix::getRow */
+    /** Implementation of pure method Matrix<ValueType>::getRow */
 
-    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const;
+    virtual void getRow( Vector<ValueType>& row, const IndexType globalRowIndex ) const;
 
-    /** Implementation of pure method _Matrix::getRowLocal */
+    /** Implementation of pure method Matrix<ValueType>::getRowLocal */
 
-    virtual void getRowLocal( _Vector& row, const IndexType localRowIndex ) const;
+    virtual void getRowLocal( Vector<ValueType>& row, const IndexType localRowIndex ) const;
 
     /** Set a complete row of this matrix in its local part. */
 
