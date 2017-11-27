@@ -85,20 +85,18 @@ typedef std::shared_ptr<class _Vector> _VectorPtr;
 
 typedef std::pair<VectorKind, common::ScalarType> VectorCreateKeyType;
 
+/* ========================================================================= */
+/*  class _Vector                                                            */
+/* ========================================================================= */
+
 /**
- * @brief The class Vector is a abstract type that represents a distributed 1D real or complex vector.
- *
- * Vector is one of the LAMA base types and should be used in all situations where it is not necessary to access a
- * single element or to create a new Vector.
+ * @brief The class _Vector is an abstract class that represents a distributed 1D real or complex vector.
  *
  * As this class is an abstract class, all constructors are protected.
  *
- * The following methods must be implemented by derived classes:
- *
- *  - buildLocalValues to get all local elements on one processor
- *
- * This base class can be used to define dense and sparse vectors of
- * any type.
+ * This base class just provides all methods that are independent of the type used for
+ * the representation of vector elements. Furthermore it provides a factory to generate vectors
+ * of any kind (DENSE, SPARSE ) and any value Type.
  */
 class COMMON_DLL_IMPORTEXPORT _Vector:
 
@@ -108,20 +106,12 @@ class COMMON_DLL_IMPORTEXPORT _Vector:
 {
 public:
 
-    /** @brief More convenient use of the create routine of factory that avoids use of CreateKeyType.
-     */
-    static _Vector* getVector( const VectorKind format, const common::ScalarType valueType );
-
-    /** @brief More convenient routine to create a dense vector with certain properties.
+    /** @brief More convenient interface of the create routine of factory that avoids the use of CreateKeyType.
      *
-     *  @param[in] valueType specifies the type of the Vector to be created
-     *  @param[in] distribution becomes the distribution of the new vector
-     *  @param[in] context optional, becomes the context of the new vector
+     *  @param[in] kind is either VectorKind::SPARSE or VectorKind::DENSE
+     *  @param[in] type is value type of elements, e.g. ScalarType::FLOAT, ScalarType::DOUBLE 
      */
-    static _Vector* getDenseVector(
-        const common::ScalarType valueType,
-        dmemo::DistributionPtr distribution,
-        hmemo::ContextPtr context = hmemo::ContextPtr() );
+    static _Vector* getVector( const VectorKind kind, const common::ScalarType type );
 
     /**
      * @brief Checks for this vector whether the content of its data is sound.
@@ -664,9 +654,9 @@ private:
     void readFromPartitionedFile( const std::string& myPartitionFileName, dmemo::DistributionPtr dist );
 };
 
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
 /*  Implementation of inline methods                                         */
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
 
 void _Vector::setSpace( dmemo::DistributionPtr distributionPtr, hmemo::ContextPtr ctx )
 {

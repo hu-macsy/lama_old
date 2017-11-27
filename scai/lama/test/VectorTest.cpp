@@ -721,33 +721,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assign_VM_Test, ValueType, scai_numeric_test_type
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( GetDenseVectorTest, ValueType, scai_numeric_test_types )
-{
-    hmemo::ContextPtr ctx = hmemo::Context::getContextPtr();
-    dmemo::CommunicatorPtr comm = dmemo::Communicator::getCommunicatorPtr();
-
-    IndexType n = 111;
-
-    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( n, comm ) );
-
-    common::ScalarType stype = common::TypeTraits<ValueType>::stype;
-
-    _VectorPtr v( _Vector::getDenseVector( stype, dist, ctx ) );
-
-    std::string format = vectorKind2Str( v->getVectorKind() );
-
-    BOOST_CHECK_EQUAL( "DENSE", format );
-    BOOST_CHECK_EQUAL( str2VectorKind( "DENSE" ), v->getVectorKind() );
-
-    DenseVector<ValueType>* denseV = dynamic_cast<DenseVector<ValueType>* >( v.get() );
-
-    BOOST_REQUIRE( denseV != NULL );
-
-    BOOST_CHECK_EQUAL( denseV->getContextPtr(), ctx );
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( dotProductTest, ValueType, scai_numeric_test_types )
 {
     // This test does not verify the correctness of the dot product

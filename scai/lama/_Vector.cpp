@@ -71,27 +71,9 @@ SCAI_LOG_DEF_LOGGER( _Vector::logger, "Vector" )
 /*    Factory to create a vector                                                          */
 /* ---------------------------------------------------------------------------------------*/
 
-_Vector* _Vector::getVector( const VectorKind kind, const common::ScalarType valueType )
+_Vector* _Vector::getVector( const VectorKind kind, const common::ScalarType type )
 {
-    VectorCreateKeyType vectype( kind, valueType );
-    return _Vector::create( vectype );
-}
-
-_Vector* _Vector::getDenseVector(
-    const common::ScalarType valueType,
-    DistributionPtr distribution,
-    ContextPtr context )
-{
-    VectorCreateKeyType vectype( VectorKind::DENSE, valueType );
-    _Vector* v = _Vector::create( vectype );
-    v->allocate( distribution );
-
-    if ( context )
-    {
-        v->setContextPtr( context );
-    }
-
-    return v;
+    return _Vector::create( VectorCreateKeyType( kind, type ) );
 }
 
 /* ---------------------------------------------------------------------------------------*/
