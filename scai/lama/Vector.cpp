@@ -35,6 +35,8 @@
 #include <scai/lama/Vector.hpp>
 #include <scai/lama/matrix/Matrix.hpp>
 
+#include <scai/dmemo/BlockDistribution.hpp>
+
 #include <scai/common/TypeTraits.hpp>
 #include <scai/common/mepr/TypeList.hpp>
 #include <scai/common/macros/instantiate.hpp>
@@ -109,81 +111,6 @@ common::ScalarType Vector<ValueType>::getValueType() const
     return TypeTraits<ValueType>::stype;
 }
 
-/* ---------------------------------------------------------------------------------------*/
-/*   element-wise operations on vector                                                    */
-/* ---------------------------------------------------------------------------------------*/
-
-template<typename ValueType>
-void Vector<ValueType>::cwiseProduct( const _Vector& other )
-{
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::MULT, noSwapArgs );
-}
-
-template<typename ValueType>
-void Vector<ValueType>::cwiseDivision( const _Vector& other )
-{
-    bool noSwapArgs = false;
-    setVector( other, common::BinaryOp::DIVIDE, noSwapArgs );
-}
-
-template<typename ValueType>
-void Vector<ValueType>::scale( ValueType value )
-{
-    bool noSwapArgs = false;
-    setScalar( value, common::BinaryOp::MULT, noSwapArgs );
-}
-
-/* ========================================================================= */
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_l1Norm() const
-{
-    return Scalar( l1Norm() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_l2Norm() const
-{
-    return Scalar( l2Norm() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_maxNorm() const
-{
-    return Scalar( maxNorm() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_maxDiffNorm( const _Vector& other ) const
-{
-    return Scalar( maxDiffNorm( other ) );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_min() const
-{
-    return Scalar( min() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_max() const
-{
-    return Scalar( min() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_sum() const
-{
-    return Scalar( sum() );
-}
-
-template<typename ValueType>
-Scalar Vector<ValueType>::_dotProduct( const _Vector& other ) const
-{
-    return Scalar( dotProduct( other ) );
-}
-
 /* ========================================================================= */
 /*        operator= < vector expression>                                     */
 /* ========================================================================= */
@@ -223,50 +150,47 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SV_S<ValueType
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV<ValueType>& expression )
 {
-    SCAI_LOG_INFO( logger, "this = alpha * matrix * vectorX -> this = alpha * matrix * vectorX + 0.0 * this" )
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
 
-    const ValueType beta = 0;
-    Expression_SV<ValueType> exp2( beta, *this );
-    Expression_SMV_SV<ValueType> tmpExp( expression, exp2 );
-    const Vector<ValueType>& vectorX = expression.getArg2().getArg2();
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
+    const Vector<ValueType>& vector = expression.getArg2().getArg2();
 
-    if ( &vectorX != this )
-    {
-        // so this is not aliased to the vector on the rhs
-        // as this will be used on rhs we do allocate it here
-        // distribution is given by the row distribution of the matrix
-        const Matrix<ValueType>& matrix = expression.getArg2().getArg1();
-        dmemo::DistributionPtr dist = matrix.getRowDistributionPtr();
-        allocate( dist );
-        // values remain uninitialized as we assume that 0.0 * this (undefined) will
-        // never be executed as an operation
-    }
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * matrix * vector" )
 
-    return operator=( tmpExp );
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, false );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM<ValueType>& expression )
 {   
-    SCAI_LOG_INFO( logger, "this = alpha * vectorX * matrix -> this = alpha * vectorX * matrix + 0.0 * this" )
-    const ValueType beta = 0;
-    Expression_SV<ValueType> exp2( beta, *this );
-    Expression_SVM_SV<ValueType> tmpExp( expression, exp2 );
-    const Vector<ValueType>& vectorX = expression.getArg2().getArg1();
-    
-    if ( &vectorX != this )
-    {   
-        // so this is not aliased to the vector on the rhs
-        // as this will be used on rhs we do allocate it here
-        // distribution is given by the row distribution of the matrix
-        const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
-        dmemo::DistributionPtr dist = matrix.getColDistributionPtr();
-        allocate( dist );
-        // values remain uninitialized as we assume that 0.0 * this (undefined) will
-        // never be executed as an operation
-    }
-    
-    return operator=( tmpExp );
+    Scalar alphaS = expression.getArg1(); 
+    ValueType alpha = alphaS.getValue<ValueType>();
+
+    const Vector<ValueType>& vector = expression.getArg2().getArg1();
+    const Matrix<ValueType>& matrix = expression.getArg2().getArg2();
+
+    SCAI_LOG_INFO( logger, "this = " << alpha << " * vector * matrix" )
+
+    matrix.matrixTimesVector( *this, alpha, vector, ValueType( 0 ), *this, true );
+
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
+    return *this;
 }
 
 template<typename ValueType>
@@ -284,24 +208,15 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SMV_SV<ValueTy
     const Matrix<ValueType>& matrix = matrixTimesVectorExp.getArg1();
     const Vector<ValueType>& vectorX = matrixTimesVectorExp.getArg2();
 
-    _Vector* resultPtr = this;
-    _VectorPtr tmpResult;
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, false );
 
-    if ( &vectorX == this )
-    {
-        SCAI_LOG_DEBUG( logger, "Temporary for X required" )
-        tmpResult.reset( _Vector::create( this->getCreateValue() ) );
-        resultPtr = tmpResult.get();
-    }
+    return *this;
+}
 
-    SCAI_LOG_DEBUG( logger, "call matrixTimesVector with matrix = " << matrix )
-    matrix.matrixTimesVector( *resultPtr, alpha, vectorX, beta, vectorY );
-
-    if ( resultPtr != this )
-    {
-        swap( *tmpResult );
-    }
-
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SMV_SV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
     return *this;
 }
 
@@ -324,8 +239,15 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVM_SV<ValueTy
     const Vector<ValueType>& vectorX = vectorTimesMatrixExp.getArg1();
     const Matrix<ValueType>& matrix = vectorTimesMatrixExp.getArg2();
     
-    matrix.vectorTimesMatrix( *this, alpha, vectorX, beta, vectorY );
+    matrix.matrixTimesVector( *this, alpha, vectorX, beta, vectorY, true );
     
+    return *this;
+}
+
+template<>
+Vector<IndexType>& Vector<IndexType>::operator=( const Expression_SVM_SV<IndexType>& )
+{
+    COMMON_THROWEXCEPTION( "Matrix<IndexType> not supported" )
     return *this;
 }
 
@@ -372,6 +294,52 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression_SVV<ValueType>
     return *this;
 }
 
+/* ---------------------------------------------------------------------------------------*/
+/*   vector [?]= scalar                                                                   */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const ValueType value )
+{
+    setScalar( value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::ADD, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::SUB, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const ValueType value )
+{
+    binaryOp( *this, common::BinaryOp::MULT, value );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const ValueType value )
+{
+    SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
+
+    // binaryOp( ValueType( 1 ), common::BinaryOp::DIVIDE, value ) 
+
+    binaryOp( *this, common::BinaryOp::MULT, ValueType( 1 ) / value );
+    return *this;
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   vector [?]= scalar * vector                                                          */
+/* ---------------------------------------------------------------------------------------*/
 
 template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator+=( const Expression_SV<ValueType>& exp )
@@ -420,6 +388,83 @@ Vector<ValueType>& Vector<ValueType>::operator-=( const Expression_SMV<ValueType
 {
     Expression_SMV<ValueType> minusExp( -exp.getArg1(), exp.getArg2() );
     return operator=( Expression_SMV_SV<ValueType>( minusExp, Expression_SV<ValueType>( ValueType( 1 ), *this ) ) );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   setRandom, setSparseRandom                                                           */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( const IndexType n, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( n );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+template<typename ValueType>
+void Vector<ValueType>::setSparseRandom( dmemo::DistributionPtr dist, const ValueType& zeroValue, const float fillRate, const IndexType bound )
+{
+    allocate( dist );
+
+    if ( fillRate < 1.0f )
+    {
+        setScalar( zeroValue );
+        fillSparseRandom( fillRate, bound );
+    }
+    else
+    {
+        // initialization with zero value not required
+        fillRandom( bound );
+    }
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   assign concatenation of vectors                                                      */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::cat( const Vector<ValueType>& v1, const Vector<ValueType>& v2 )
+{
+    std::vector<const Vector<ValueType>*> vectors;
+
+    vectors.push_back( &v1 );
+    vectors.push_back( &v2 );
+
+    dmemo::CommunicatorPtr comm = v1.getDistribution().getCommunicatorPtr();
+
+    dmemo::DistributionPtr dist( new dmemo::BlockDistribution( v1.size() + v2.size(), comm ) );
+
+    SCAI_LOG_INFO( logger, "this = " << *this << ", dist of concat vector = " << *dist )
+
+    concatenate( dist, vectors );
+}
+
+/* ---------------------------------------------------------------------------------------*/
+/*   miscallaneous                                                                        */
+/* ---------------------------------------------------------------------------------------*/
+
+template<typename ValueType>
+void Vector<ValueType>::setRandom( const IndexType n, const IndexType bound )
+{
+    allocate ( n );
+    fillRandom( bound );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::setRandom( dmemo::DistributionPtr dist, const IndexType bound )
+{
+    allocate ( dist );
+    fillRandom( bound );
 }
 
 

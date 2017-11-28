@@ -814,7 +814,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SparseGatherTest, ValueType, scai_numeric_test_ty
 
     LArray<ValueType> target;
 
-    HArrayUtils::sparseGather( target, sourceVA, sourceIA, indexes, BinaryOp::COPY );
+    ValueType sourceZero = 0;
+
+    HArrayUtils::sparseGather( target, sourceZero, sourceVA, sourceIA, indexes, BinaryOp::COPY );
 
     BOOST_REQUIRE_EQUAL( target.size(), indexes.size() );
 

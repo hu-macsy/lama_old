@@ -144,6 +144,12 @@ BOOST_AUTO_TEST_CASE( UnaryOpTest )
             count++;
         }
 
+        if ( op == UnaryOp::RECIPROCAL )
+        {
+            BOOST_CHECK_EQUAL( s.str(), "RECIPROCAL" );
+            count++;
+        }
+
     }
 
     // check if all types are tested

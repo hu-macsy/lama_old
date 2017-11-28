@@ -144,7 +144,7 @@ inline Expression_SVV<ValueType> operator*( const Vector<ValueType>& v, const Ex
 }
 
 /* ------------------------------------------------------------------------- */
-/*   operator+ to generate Expression_S_V                                    */
+/*   operator+ to generate Expression_SV_S                                   */
 /* ------------------------------------------------------------------------- */
 
 /**
@@ -162,6 +162,12 @@ inline Expression_SV_S<ValueType> operator+( const Scalar& alpha, const Vector<V
     return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), alpha );
 }
 
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator-( const Scalar& alpha, const Vector<ValueType>& x )
+{
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( -1 ), x ), alpha );
+}
+
 /**
  * @brief The plus operator creates an expression that represents the sum
  *        a vector adding a scalar to each vector element.
@@ -176,6 +182,13 @@ inline Expression_SV_S<ValueType> operator+( const Vector<ValueType>& x, const S
 {
     // return Expression_S_V( alpha, vectorX );
     return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), alpha );
+}
+
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator-( const Vector<ValueType>& x, const Scalar& alpha )
+{
+    // return Expression_S_V( alpha, vectorX );
+    return Expression_SV_S<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), -alpha );
 }
 
 /* ------------------------------------------------------------------------- */
@@ -212,8 +225,6 @@ inline Expression_SV_S<ValueType> operator+( const Expression_SV<ValueType>& exp
 template<typename ValueType>
 inline Expression_SV_SV<ValueType> operator+( const Vector<ValueType>& x, const Vector<ValueType>& y )
 {
-    std::cout << "operator+( Vector, Vector)"  << std::endl;
-
     return Expression_SV_SV<ValueType>( Expression_SV<ValueType>( Scalar( 1 ), x ), 
                                         Expression_SV<ValueType>( Scalar( 1 ), y ) );
 }
@@ -317,6 +328,112 @@ inline Expression_SV_SV<ValueType> operator-( const Expression_SV<ValueType>& ex
 {
     Expression_SV<ValueType> minusExp2( -exp2.getArg1(), exp2.getArg2() );
     return Expression_SV_SV<ValueType>( exp1, minusExp2 );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   operator* to scale supported expressions                                */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline Expression_SV<ValueType> operator*( const Scalar alpha, const Expression_SV<ValueType> exp )
+{
+    return Expression_SV<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SV<ValueType> operator*( const Expression_SV<ValueType> exp, const Scalar& alpha )
+{
+    return Expression_SV<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVV<ValueType> operator*( const Scalar alpha, const Expression_SVV<ValueType> exp )
+{
+    return Expression_SVV<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVV<ValueType> operator*( const Expression_SVV<ValueType> exp, const Scalar alpha )
+{
+    return Expression_SVV<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator*( const Scalar alpha, const Expression_SV_S<ValueType> exp )
+{
+    return Expression_SV_S<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator*( const Expression_SV_S<ValueType> exp, const Scalar alpha )
+{
+    return Expression_SV_S<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
+}
+
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator*( const Scalar alpha, const Expression_SV_SV<ValueType> exp )
+{
+    return Expression_SV_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator*( const Expression_SV_SV<ValueType> exp, const Scalar alpha )
+{
+    return Expression_SV_SV<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   unary operator -, similiar to scale with -1                             */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline Expression_SV<ValueType> operator-( const Vector<ValueType>& v )
+{
+    return Expression_SV<ValueType>( Scalar( -1 ), v );
+}
+
+template<typename ValueType>
+inline Expression_SV<ValueType> operator-( const Expression_SV<ValueType>& exp )
+{
+    return Expression_SV<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVV<ValueType> operator-( const Expression_SVV<ValueType>& exp )
+{
+    return Expression_SVV<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SV_S<ValueType> operator-( const Expression_SV_S<ValueType>& exp )
+{
+    return Expression_SV_S<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SV_SV<ValueType> operator-( const Expression_SV_SV<ValueType>& exp )
+{
+    return Expression_SV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   Failing operator's to give useful error messages                        */
+/* ------------------------------------------------------------------------- */
+
+// Note: using of delete more convenient but does not give a useful error message
+
+template<typename ValueType, typename X>
+inline Expression_SV_SV<ValueType> operator+( const Expression_SV_SV<ValueType>& exp, const X& any ) 
+{
+    static_assert( sizeof( X ) == -1, "too complex expression, introduce temporary" );
+    return exp;
+}
+
+template<typename ValueType, typename X>
+inline Expression_SV_SV<ValueType> operator+( const X& any, const Expression_SV_SV<ValueType>& exp )
+{
+    static_assert( sizeof( X ) == -1, "too complex expression, introduce temporary" );
+    return exp;
 }
 
 } /* end namespace lama */

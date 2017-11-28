@@ -34,7 +34,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
 
 #include <scai/utilskernel/LArray.hpp>
@@ -54,6 +54,7 @@
 #include <scai/lama/expression/all.hpp>
 #include <scai/lama/matrix/CSRSparseMatrix.hpp>
 #include <scai/lama/matrix/DIASparseMatrix.hpp>
+#include <scai/lama/matrix/DenseMatrix.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
 #include <scai/logging.hpp>
@@ -175,34 +176,6 @@ BOOST_AUTO_TEST_CASE( setContextTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( _copyTest )
-{
-    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    // For copy we just take one arithmetic type to reduce number of test cases
-    common::ScalarType stype = common::TypeTraits<SCAI_TEST_TYPE>::stype;
-    _Matrices allMatrices( stype, context );    // is created by factory
-    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for copy method" )
-
-    for ( size_t s = 0; s < allMatrices.size(); ++s )
-    {
-        _Matrix& matrix = *allMatrices[s];
-        initMatrix( matrix, "BLOCK", "BLOCK" );
-        _MatrixPtr copyMatrix( matrix.copy() );
-        SCAI_LOG_DEBUG( logger, "copyTest: " << matrix << " with copy " << *copyMatrix );
-        // verify for same matrix
-        BOOST_CHECK_EQUAL( matrix.getRowDistribution(), copyMatrix->getRowDistribution() );
-        BOOST_CHECK_EQUAL( matrix.getColDistribution(), copyMatrix->getColDistribution() );
-        BOOST_CHECK_EQUAL( matrix.getFormat(), copyMatrix->getFormat() );
-        BOOST_CHECK_EQUAL( matrix.getValueType(), copyMatrix->getValueType() );
-        BOOST_CHECK_EQUAL( matrix.getContextPtr(), copyMatrix->getContextPtr() );
-        Scalar maxDiff = copyMatrix->_maxDiffNorm( matrix );
-        // value should be exactly 0
-        BOOST_CHECK_EQUAL( 0, maxDiff.getValue<float>() );
-    }
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 {
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
@@ -230,23 +203,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( copyTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( l1NormTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( l1NormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
-    const Scalar scale( 2 );
-    const Scalar expectedNorm = scale * Scalar( N );
+    const ValueType scale = 2;
+    const NormType<ValueType> expectedNorm = scale * ValueType( N );
+    const NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    _Matrices allMatrices( context );    // is created by factory
+    Matrices<ValueType> allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for l1Norm" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices[s];
+        Matrix<ValueType>& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test l1Norm for this matrix: " << matrix )
-        Scalar l1Norm = matrix._l1Norm();
-        SCAI_CHECK_CLOSE( expectedNorm, l1Norm, 0.001 );
+        NormType<ValueType> l1Norm = matrix.l1Norm();
+        BOOST_CHECK( common::Math::abs( expectedNorm - l1Norm ) <  eps );
     }
 }
 
@@ -277,23 +252,86 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( l2NormTest, ValueType, scai_numeric_test_types )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( maxNormTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( maxNormTest, ValueType, scai_numeric_test_types )
 {
     const IndexType N = 8;
-    const Scalar scale( 2 );
-    const Scalar expectedNorm = scale;
+    const ValueType scale =  2;
+    const NormType<ValueType> expectedNorm = scale;
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
-    _Matrices allMatrices( context );    // is created by factory
+    Matrices<ValueType> allMatrices( context );    // is created by factory
     SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for maxNorm" )
 
     for ( size_t s = 0; s < allMatrices.size(); ++s )
     {
-        _Matrix& matrix = *allMatrices[s];
+        Matrix<ValueType>& matrix = *allMatrices[s];
         matrix.setIdentity( N );
         matrix *= scale;
         SCAI_LOG_DEBUG( logger, "Test maxNorm for this matrix: " << matrix )
-        Scalar maxNorm = matrix._maxNorm();
-        SCAI_CHECK_CLOSE( expectedNorm, maxNorm, 0.001 );
+        NormType<ValueType> maxNorm = matrix.maxNorm();
+        BOOST_CHECK_CLOSE( expectedNorm, maxNorm, 0.01 );
+    }
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( scaleTest, ValueType, scai_numeric_test_types )
+{
+    const IndexType M = 10;
+    const IndexType N = 8;
+
+    hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
+
+    Matrices<ValueType> allMatrices( context );    // is created by factory
+
+    SCAI_LOG_INFO( logger, "Test " << allMatrices.size() << "  matrices for scale" )
+
+    std::srand( 10113 );  // same random numbers on each processor
+
+    CSRSparseMatrix<ValueType> input( M, N);
+    MatrixCreator::fillRandom( input, 0.5f );
+
+    DenseVector<ValueType> scaleY( M );
+    scaleY.fillLinearValues( 1, 1 );
+
+    CSRSparseMatrix<ValueType> output( input );
+    output.scaleRows( scaleY );
+    output.scale( 0.5 );
+
+    TestDistributions rowDist( M );
+    TestDistributions colDist( N );
+
+    for ( size_t s = 0; s < allMatrices.size(); ++s )
+    {
+        Matrix<ValueType>& matrix = *allMatrices[s];
+
+        for ( size_t i = 0; i < rowDist.size(); ++i ) 
+        {
+            scaleY.redistribute( rowDist[i] );
+
+            for ( size_t j = 0; j < colDist.size(); ++j ) 
+            {
+                matrix = input;   // serial matrix
+
+                matrix.redistribute( rowDist[i], colDist[j] );
+ 
+                // now scale parallel
+
+                matrix.scaleRows( scaleY );
+                matrix.scale( 0.5 );
+
+                // verify correct results by replication of matrix
+
+                matrix.redistribute( input.getRowDistributionPtr(), input.getColDistributionPtr() );
+
+                NormType<ValueType> diff = output.maxDiffNorm( matrix );
+ 
+                SCAI_LOG_DEBUG( logger, "diff = " << diff << ", matrix = " << matrix )
+
+                // there should be no rounding errors, so we check here for exact results
+
+                BOOST_CHECK_EQUAL( diff, 0 );
+            }
+        }
     }
 }
 
@@ -615,7 +653,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diagonalTest, ValueType, scai_numeric_test_types 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getRowTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getRowTest, ValueType, scai_numeric_test_types )
 {
     const IndexType nRows = 10;
     const IndexType nCols = 8;
@@ -627,6 +665,8 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
+
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
 
     for ( size_t i = 0; i < rowDistributions.size(); ++i )
     {
@@ -636,11 +676,11 @@ BOOST_AUTO_TEST_CASE( getRowTest )
         {
             DistributionPtr colDist = colDistributions[j];
 
-            _Matrices allMatrices( context );    // is created by factory
+            Matrices<ValueType> allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                _Matrix& matrix = *allMatrices[s];
+                Matrix<ValueType>& matrix = *allMatrices[s];
 
                 matrix = csr;
 
@@ -650,19 +690,19 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
                 // get each row and subtract it
 
-                _VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                DenseVector<ValueType> row;
 
                 for ( IndexType iRow = 0; iRow < matrix.getNumRows(); ++iRow )
                 {
-                    matrix.getRow( *row, iRow );
+                    matrix.getRow( row, iRow );
                     // BOOST_REQUIRE_EQUAL( nCols, row->size() );
                     // BOOST_REQUIRE( row->isConsistent() );
-                    matrix.setRow( *row, iRow, common::BinaryOp::SUB );
+                    matrix.setRow( row, iRow, common::BinaryOp::SUB );
                 }
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix._maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix.maxNorm() < eps );
             }
         }
     }
@@ -670,14 +710,14 @@ BOOST_AUTO_TEST_CASE( getRowTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( reduceTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( reduceTest, ValueType, scai_numeric_test_types )
 {
     const IndexType nRows = 10;
     const IndexType nCols = 8;
 
     hmemo::ContextPtr context = hmemo::Context::getContextPtr();  // test context
 
-    CSRSparseMatrix<RealType> csr( nRows, nCols );
+    CSRSparseMatrix<ValueType> csr( nRows, nCols );
     MatrixCreator::fillRandom( csr, 0.1f );
 
     common::BinaryOp reduceOp = common::BinaryOp::ADD;
@@ -686,9 +726,11 @@ BOOST_AUTO_TEST_CASE( reduceTest )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( IndexType dim = 0; dim < 2; ++dim )
     {
-        DenseVector<RealType> sRow;
+        DenseVector<ValueType> sRow;
         csr.reduce( sRow, dim, reduceOp, elemOp );
 
         for ( size_t i = 0; i < rowDistributions.size(); ++i )
@@ -699,40 +741,40 @@ BOOST_AUTO_TEST_CASE( reduceTest )
             {
                 DistributionPtr colDist = colDistributions[j];
 
-                _Matrices allMatrices( context );    // is created by factory
+                Matrices<ValueType> allMatrices( context );    // is created by factory
 
                 for ( size_t s = 0; s < allMatrices.size(); ++s )
                 {
-                    _Matrix& matrix = *allMatrices[s];
+                    Matrix<ValueType>& matrix = *allMatrices[s];
 
-                    matrix = csr;
+                    matrix = csr;   // format + type conversion
 
                     matrix.redistribute( rowDist, colDist );
 
-                    _VectorPtr row ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                    DenseVector<ValueType> row;
 
                     // reduce on the parallel matrix
 
-                    matrix.reduce( *row, dim, reduceOp, elemOp );
+                    matrix.reduce( row, dim, reduceOp, elemOp );
 
                     if ( dim == 0 )
                     {
-                        BOOST_CHECK_EQUAL( row->size(), nRows );
+                        BOOST_CHECK_EQUAL( row.size(), nRows );
                     }
                     else
                     {
-                        BOOST_CHECK_EQUAL( row->size(), nCols );
+                        BOOST_CHECK_EQUAL( row.size(), nCols );
                     }
 
-                    row->redistribute( sRow.getDistributionPtr() );
+                    row.redistribute( sRow.getDistributionPtr() );
 
-                    if ( ! ( row->_maxDiffNorm( sRow ) < Scalar( 0.001 ) ) )
+                    if ( ! ( row.maxDiffNorm( sRow ) < eps ) )
                     {
                         SCAI_LOG_ERROR( logger,  "i = " << i << ", j = " << j << ", s = " << s
                                         << ", fail for this matrix: " << matrix << std::endl );
                     }
 
-                    BOOST_CHECK( row->_maxDiffNorm( sRow ) < Scalar( 0.001 ) );
+                    BOOST_CHECK( row.maxDiffNorm( sRow ) < eps );
                 }
             }
         }
@@ -741,7 +783,7 @@ BOOST_AUTO_TEST_CASE( reduceTest )
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( getColTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( getColTest, ValueType, scai_numeric_test_types )
 {
     const IndexType nRows = 10;
     const IndexType nCols = 8;
@@ -754,6 +796,8 @@ BOOST_AUTO_TEST_CASE( getColTest )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t i = 0; i < rowDistributions.size(); ++i )
     {
         DistributionPtr rowDist = rowDistributions[i];
@@ -762,16 +806,11 @@ BOOST_AUTO_TEST_CASE( getColTest )
         {
             DistributionPtr colDist = colDistributions[j];
 
-            _Matrices allMatrices( context );    // is created by factory
+            Matrices<ValueType> allMatrices( context );    // is created by factory
 
             for ( size_t s = 0; s < allMatrices.size(); ++s )
             {
-                _Matrix& matrix = *allMatrices[s];
-
-                if ( matrix.getMatrixKind() != MatrixKind::DENSE )
-                {
-                    // continue;
-                }
+                Matrix<ValueType>& matrix = *allMatrices[s];
 
                 matrix = csr;
 
@@ -779,19 +818,19 @@ BOOST_AUTO_TEST_CASE( getColTest )
 
                 // get each row and subtract it
 
-                _VectorPtr col ( _Vector::getVector( VectorKind::DENSE, matrix.getValueType() ) );
+                DenseVector<ValueType> col;
 
                 SCAI_LOG_INFO( logger, "getColTest for this matrix: " << matrix )
 
                 for ( IndexType iCol = 0; iCol < matrix.getNumColumns(); ++iCol )
                 {
-                    matrix.getColumn( *col, iCol );
-                    matrix.setColumn( *col, iCol, common::BinaryOp::SUB );
+                    matrix.getColumn( col, iCol );
+                    matrix.setColumn( col, iCol, common::BinaryOp::SUB );
                 }
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix._maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix.maxNorm() < eps );
             }
         }
     }
@@ -868,6 +907,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getSetTest, ValueType, scai_numeric_test_types )
     TestDistributions rowDistributions( nRows );
     TestDistributions colDistributions( nCols );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t rd = 0; rd < rowDistributions.size(); ++rd )
     {
         DistributionPtr rowDist = rowDistributions[rd];
@@ -905,7 +946,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( getSetTest, ValueType, scai_numeric_test_types )
 
                 // the final matrix should be zero
 
-                BOOST_CHECK( matrix.maxNorm() < Scalar( 0.001 ) );
+                BOOST_CHECK( matrix.maxNorm() < eps );
             }
         }
     }
@@ -1081,9 +1122,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( redistributeTest, ValueType, scai_numeric_test_ty
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-BOOST_AUTO_TEST_CASE( hcatTest )
+BOOST_AUTO_TEST_CASE_TEMPLATE( hcatTest, ValueType, scai_numeric_test_types )
 {
-    return;
+    return;  // not yet for all distributions
 
     const IndexType n = 15; 
     const IndexType m =  8;  
@@ -1092,10 +1133,10 @@ BOOST_AUTO_TEST_CASE( hcatTest )
 
     common::Math::srandom( 1711 );  // all processors draw same replicated matrix
 
-    CSRSparseMatrix<RealType> csr( n, m );
+    CSRSparseMatrix<ValueType> csr( n, m );
     MatrixCreator::fillRandom( csr, 0.1f );
 
-    CSRSparseMatrix<RealType> csr2;
+    CSRSparseMatrix<ValueType> csr2;
     csr2.hcat( csr, csr );           
 
     TestDistributions distributions( n );
@@ -1103,15 +1144,17 @@ BOOST_AUTO_TEST_CASE( hcatTest )
     DistributionPtr rowDist( new NoDistribution( n ) );
     DistributionPtr colDist( new NoDistribution( m ) );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t d1 = 0; d1 < distributions.size(); ++d1 )
     {
         DistributionPtr dist = distributions[d1];
 
-        _Matrices allMatrices( context );    // is created by factory
+        Matrices<ValueType> allMatrices( context );    // is created by factory
 
         for ( size_t s = 0; s < allMatrices.size(); ++s )
         {
-            _Matrix& matrix = *allMatrices[s];
+            Matrix<ValueType>& matrix = *allMatrices[s];
 
             if ( matrix.getMatrixKind() == MatrixKind::DENSE )
             {
@@ -1129,7 +1172,7 @@ BOOST_AUTO_TEST_CASE( hcatTest )
 
             csr2.redistribute( matrix.getRowDistributionPtr(), matrix.getColDistributionPtr() );
 
-            BOOST_CHECK( matrix._maxDiffNorm( csr2 ) < 0.001 );
+            BOOST_CHECK( matrix.maxDiffNorm( csr2 ) < eps );
         }
     }
 }

@@ -35,7 +35,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
+#include <scai/common/test/TestMacros.hpp>
 #include <scai/lama/test/storage/Storages.hpp>
 #include <scai/lama/matutils/MatrixCreator.hpp>
 
@@ -115,9 +115,7 @@ BOOST_AUTO_TEST_CASE( buildReplicatedDiagTest )
                 {
                     IndexType j = j1 * nCols + j2;
 
-
-                    Scalar s = matrix.getValue( i, j );
-                    ValueType v = s.getValue<ValueType>();
+                    ValueType v = matrix.getValue( i, j );
 
                     SCAI_LOG_TRACE( logger, "i = " << i << " ( " << i1 << " * " << nRows << " + " << i2 << " )"
                                     << ", j = " << j << " ( " << j1 << " * " << nCols << " + " << i2 << " )"

@@ -35,8 +35,11 @@
 
 #include <scai/lama/_Vector.hpp>
 
-#include <memory>
+#include <scai/lama/expression/UnaryVectorExpression.hpp>
+
 #include <scai/common/TypeTraits.hpp>
+
+#include <memory>
 
 namespace scai
 {
@@ -84,9 +87,6 @@ public:
 
     using _Vector::getContext;
     using _Vector::getDistribution;
-    using _Vector::operator=;
-    using _Vector::operator+=;
-    using _Vector::operator-=;
 
     /** Help class to observe the further use of operator[] for Vector */
 
@@ -165,34 +165,19 @@ public:
      */
     ValueType operator[]( const IndexType i ) const
     {
-        Scalar s = getValue( i );
-        return s.getValue<ValueType>();
+        return getValue( i );
     }
 
-    /**
-     * @brief Multiplies the passed value with all elements of this.
-     *
+    /** 
+     * @brief Assignment 'vector *= value' to scale all elements of a vector. 
      * @param[in] value   the value to multiply all elements of this with.
      * @return            a reference to this.
      */
-    void scale( const ValueType value );
-
-    /** @brief Assignment 'vector *= value' is same as vector.scale( value ) */
-
-    Vector& operator*=( const ValueType value )
-    {
-        this->scale( value );
-        return *this;
-    }
+    Vector& operator*=( const ValueType value );
 
     /** @brief Assignment 'vector /= value' is same as vector.scale( 1 / value ) */
 
-    Vector& operator/=( const ValueType value )
-    {
-        SCAI_ASSERT_NE_ERROR( value, ValueType( 0 ), "Divide by zero for vector" )
-        this->scale( ValueType( 1 ) / value );
-        return *this;
-    }
+    Vector& operator/=( const ValueType value );
 
     /**
      * @brief Elementwise multiplication with another vector (same size), i.e. this[i] = this[i] * other[i]
@@ -201,15 +186,7 @@ public:
      *
      * Note: the other vector can be any type, no temporary is created here
      */
-    void cwiseProduct( const _Vector& other );
-
-    /** @brief Assignment 'vector1 *= vector2' is same as vector1.cwiseProduct( vector2 ) */
-
-    Vector& operator*=( const _Vector& other )
-    {
-        this->cwiseProduct( other );
-        return *this;
-    }
+    Vector& operator*=( const _Vector& other );
 
     /**
      * @brief Elementwise division with another vector (same size), i.e. this[i] = this[i] / other[i]
@@ -218,15 +195,7 @@ public:
      *
      * Note: the other vector can be any type, no temporary is created here
      */
-    void cwiseDivision( const _Vector& other );
-
-    /** @brief Assignment 'vector1 /= vector2' is same as vector1.cwiseDivision( vector2 ) */
-
-    Vector& operator/=( const _Vector& other )
-    {
-        this->cwiseDivision( other );
-        return *this;
-    }
+    Vector& operator/=( const _Vector& other );
 
     /**
      * @brief Returns the L1 norm of this.
@@ -267,7 +236,7 @@ public:
      *
      *  But it avoids the temporary vector wherever possible
      */
-    virtual NormType<ValueType> maxDiffNorm( const _Vector& other ) const = 0;
+    virtual NormType<ValueType> maxDiffNorm( const Vector<ValueType>& other ) const = 0;
 
     /**
      * @brief Returns the global minimum value of this.
@@ -342,6 +311,31 @@ public:
 
     Vector<ValueType>& operator=( const Expression_SVV<ValueType>& );
 
+    /** set same value for all vector elements */
+
+    Vector<ValueType>& operator=( const ValueType value );
+
+    /** @brief Add a scalar elementwise to a vector by using operator $+=$ */
+
+    Vector<ValueType>& operator+=( const ValueType value );
+
+    /** @brief Subtract a scalar elementwise to a vector by using operator $-=$  */
+
+    Vector<ValueType>& operator-=( const ValueType value );
+
+    /** @brief this = vector, supported also for mixed value types */
+
+    Vector<ValueType>& operator=( const _Vector& other );
+    Vector<ValueType>& operator=( const Vector<ValueType>& other );
+
+    /** @brief this += vector, supported also for mixed value types */
+
+    Vector<ValueType>& operator+=( const _Vector& other );
+
+    /** @brief this -= vector, supported also for mixed value types */
+
+    Vector<ValueType>& operator-=( const _Vector& other );
+
     /** this +=  alpha * A * x */
 
     Vector<ValueType>& operator+=( const Expression_SMV<ValueType>& expression );
@@ -366,6 +360,286 @@ public:
 
     Vector<ValueType>& operator-=( const Expression_SV<ValueType>& expression );
 
+    void operator=( const UnaryVectorExpression<ValueType>& unaryVectorExp )
+    {
+        unaryOp( unaryVectorExp.getArg(), unaryVectorExp.getOp() );
+    }
+
+    /** Initialization of an allocated vector with one value, does not change size/distribution  */
+  
+    virtual void setScalar( const ValueType& alpha ) = 0;
+
+    /**
+     *  @brief Set this vector by applying a unary operation to another vector.
+     * 
+     *  @param[in] x is the input vector
+     *  @param[in] op specifies the unary operation applied to x
+     * 
+     *  The call y.unaryOp( x, op ) is equivalent to the following code:
+     *
+     *  \code
+     *      for ( IndexType i = 0; i < v1.size(); ++i )
+     *      {
+     *          y[i] = op( x[i] ); 
+     *      }
+     *  \endcode
+     *
+     *  Here are some examples how this method is used:
+     *  \code
+     *      y = sin( x )  : y.unaryOp( x, common::UnaryOp::SIN )
+     *      y = 1 / x     : y.unaryOp( x, common::UnaryOp::RECIPROCAL )
+     *  \endcode
+     *
+     *  Alias of x with this vector is allowed and must be supported, should be faster
+     *  due to in-place updates.
+     */
+    virtual void unaryOp( const Vector<ValueType>& x, const common::UnaryOp op ) = 0;
+
+    /**
+     *  @brief Convenient abbreviation for unaryOp where input vector this vector. 
+     */
+    void unaryOpInPlace( const common::UnaryOp op )
+    {
+        unaryOp( *this, op );
+    }
+
+    /** Apply binary operation elementwise to elements of vector */
+
+    virtual void binaryOp( const Vector<ValueType>& x, const common::BinaryOp op, const Vector<ValueType>& y ) = 0;
+
+    /**
+     *  @brief Set this vector by applying a binary operation to another vector and a scalar
+     * 
+     *  @param[in] x is the input vector
+     *  @param[in] alpha is the scalar element used for the operation
+     *  @param[in] op specifies the binary operation for the update
+     *  @param[in] swap if true the operands are swapped (op is not always commutative)
+     * 
+     *  The call y.binaryOp( alhpa, x, op, swap ) is equivalent to the following code:
+     *
+     *  \code
+     *      for ( IndexType i = 0; i < v1.size(); ++i )
+     *      {
+     *          x[i] = y[i] op s;    // swap = false
+     *          x[i] = s op y[i];    // swap = true
+     *      }
+     *  \endcode
+     *
+     *  Here are some examples how this method is used:
+     *  \code
+     *     v = pow( alpha, v )  -> v.binaryOpScalar( v, alpha, common::BinaryOp::POW, true )
+     *     v = pow( v, alpha )  -> v.binaryOpScalar( v, alpha, common::BinaryOp::POW, false )
+     *     v = 2 / x            -> v.binaryOpScalar( x, ValueType( 2 ), common::BinaryOp::DIVIDE, true )
+     *  \endcode
+     */
+    virtual void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap ) = 0;
+
+    /** Binary op but first argument is a scalar and not a vector. */
+
+    virtual void binaryOp( const ValueType& alpha, const common::BinaryOp op, const Vector<ValueType>& x )
+    {
+        binaryOpScalar( x, alpha, op, true );    // swap order of the arguments
+    }
+
+    /** Binary op but second argument is a scalar and not a vector. */
+
+    virtual void binaryOp(  const Vector<ValueType>& x, const common::BinaryOp op, const ValueType& alpha ) 
+    {
+        binaryOpScalar( x, alpha, op, false );   // keep order of the arguments
+    }
+
+    /**
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
+     *
+     * Each vector class has to implement its own version of this assignment. 
+     */
+    virtual void vectorPlusVector( const ValueType& alpha, const Vector<ValueType>& x, 
+                                   const ValueType& beta, const Vector<ValueType>& y ) = 0;
+
+    /**
+     * @brief Element-wise multiplication of two vectors and a scalar
+     *
+     * Each vector class has to implement its own version of this assignment. 
+     */
+    virtual void vectorTimesVector( const ValueType& alpha, const Vector<ValueType>& x, const Vector<ValueType>& y ) = 0;
+
+    /**
+     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX * scalarBeta
+     *
+     * Each vector class has to implement its own version of this assignment. 
+     */
+    virtual void vectorPlusScalar( const ValueType& alpha, const Vector<ValueType>& x, const ValueType& beta ) = 0;
+
+    /**
+     *  @brief Boolean reduction returns true if all elements fullfill the compare operation with a scalar.
+     */
+    virtual bool all( common::CompareOp op, const ValueType alpha ) const = 0;
+
+    /**
+     *  @brief Boolean reduction returns true if elementwise comparison with other vector is true for all elements
+     */
+    virtual bool all( common::CompareOp op, const Vector<ValueType>& x ) const = 0;
+
+    /** 
+     *  This method gives the vector a size and initializes it with a value.
+     *
+     *  @param[in] n is the size of the replicated vector
+     *  @param[in] value is the value assigned to all elements
+     *
+     *  \code
+     *    DenseVector<double> v1; 
+     *    v1.setSameValue( n, value );
+     *    DenseVector<double> v2( n );
+     *    v2 = value;
+     *    DenseVector<double> v3( n, value );
+     *  \endcode
+     */
+    void setSameValue( const IndexType n, const ValueType value )
+    {
+        allocate( n );
+        setScalar( value );
+    }
+
+    /** 
+     *  This method gives the vector a distribution and initializes it with a value.
+     *
+     *  @param[in] dist specifies size of the vector and mapping to the processors
+     *  @param[in] value is the value assigned to all elements
+     *
+     *  \code
+     *    DenseVector<double> v1; 
+     *    v1.setSameValue( n, value );
+     *    DenseVector<double> v2( n );
+     *    v2 = value;
+     *    DenseVector<double> v3( n, value );
+     *  \endcode
+     */
+    void setSameValue( dmemo::DistributionPtr dist, const ValueType value )
+    {
+        allocate( dist );
+        setScalar( value );
+    }
+
+    /** Set a replicated vector with sparse vector data
+     *
+     *  @param[in] n will be the size of the vector
+     *  @param[in] nonZeroIndexes positions with non-zero values
+     *  @param[in] nonZeroValues values for the non-zero value
+     *  @param[in] zeroValue is the 'zero' value, defaults to 0
+     *
+     *  nonZeroIndexes and nonZeroValues must have the same size. nonZeroIndexes must 
+     *  contain valid indexes. They do not have to be sorted.
+     */
+    void setSparseData(
+        const IndexType n,
+        const hmemo::HArray<IndexType>& nonZeroIndexes,
+        const hmemo::_HArray& nonZeroValues,
+        const ValueType zeroValue = ValueType( 0 ) )
+    {
+        setSameValue( n, zeroValue );
+        fillSparseData( nonZeroIndexes, nonZeroValues, common::BinaryOp::COPY );
+    }
+
+    /** Same as setSparseData but here with raw data for non-zero indexes and values. 
+     *
+     *  @tparam OtherValueType is the type of the raw data 
+     *  @param[in] n will be the size of the vector
+     *  @param[in] nnz stands for the number of the non-zero values
+     *  @param[in] nonZeroIndexes pointer to array with positions of non-zero values
+     *  @param[in] nonZeroValues pointer to array with values
+     *  @param[in] zeroValue is the value for all positions that do not appear in nonZeroIndexes
+     *
+     *  Note: The value type of the raw data might be different to the value type of the vector.
+     */
+    template<typename OtherValueType>
+    void setSparseRawData(
+        const IndexType n,
+        const IndexType nnz,
+        const IndexType nonZeroIndexes[],
+        const OtherValueType nonZeroValues[],
+        const ValueType zeroValue = ValueType( 0 ) );
+
+    /**
+     * This method initilaizes all values of an allocated vector with random numbers.
+     *
+     * @param[in] bound draw random numbers in the range between 0 and bound (inclusive)
+     *
+     * For complex vectors a random value is drawn for each real and imaginary part.
+     *
+     * Keep in mind that bound is an integer value. If you need randonm numbers with other numerical
+     * boundaries you should scale them as follows:
+     *
+     * \code
+     *     DistributionPtr dist ( ... );
+     *     DenseVector<ValueType> v( dist );
+     *     ValueType lb = -1.5, ub = 2.6;
+     *     v.fillRandom( 1 );
+     *     A = lb + v * ( ub - lb );   // random numbers in the range of lb .. ub
+     * \endcode
+     */
+    virtual void fillRandom( const IndexType bound ) = 0;
+
+    /**
+     * @brief Allocate a replicated vector and fill it with random numbers
+     *
+     * \code
+     *    v.setRandom( n, bound ); // same as:  v.allocate( n ); v.fillRandom( bound );
+     * \endcode
+     *
+     * Be careful: in a parallel environment each processor might initialize the array with different
+     * values. By calling Math::srandom( seed ) with the same seed on each processor, it can be forced
+     * to have the same values.
+     */
+    void setRandom( const IndexType n, const IndexType bound );
+
+    /**
+     * This method sets a distributed vector by its distribution and initializes it with random numbers.
+     */
+    void setRandom( dmemo::DistributionPtr dist, const IndexType bound );
+
+    /**
+     *  Allocate a vector by its size, initialize it with a zero value and fill it sparsely.
+     *
+     * \code
+     *     A.allocate( n );
+     *     A = zeroValue;
+     *     A.fillSparseRandom( fill, bound );
+     * \endcode
+     */
+    void setSparseRandom( const IndexType n, const ValueType& zeroValue, const float fillRate, const IndexType bound );
+
+    /**
+     *  Allocate a vector by its distribution, initialize it with a zero value and fill it sparsely.
+     *
+     * \code
+     *     A.allocate( dist );
+     *     A = zeroValue;
+     *     A.fillSparseRandom( fill, bound );
+     * \endcode
+     */
+    void setSparseRandom( dmemo::DistributionPtr dist, const ValueType& zeroValue, const float fillRate, const IndexType bound );
+
+    /**
+     * @brief Concatenate multiple vectors to a new vector.
+     *
+     * @param[in] dist specifies the distribution of the concatenated vector.
+     * @param[in] vectors is a vector with const pointers/references to the concatenated vectors
+     *
+     * Note: dist.getGlobalSize() == v[0]->size() + ... v[n-1]->size() 
+     *
+     * This routine should also be able to deal with aliases, i.e. one ore more of the pointers might be
+     * this vector itself.
+     */
+    virtual void concatenate( dmemo::DistributionPtr dist, const std::vector<const Vector<ValueType>*>& vectors ) = 0;
+
+    /**
+     * @brief Concatenate two vectors to a new vector.
+     *
+     * @param[in] v1 first part of the new vector
+     * @param[in] v2 second part of the new vector
+     */
+    virtual void cat( const Vector<ValueType>& v1, const Vector<ValueType>& v2 );
+
 protected:
 
     /**
@@ -374,7 +648,7 @@ protected:
      * @param[in] size    number of entries for the vector
      * @param[in] context is optional, will be Host context.
      *
-     * Note: this constructor overrides also the default constructor.
+     * Note:ithis constructor overrides also the default constructor.
      */
     explicit Vector( const IndexType size = 0, hmemo::ContextPtr context = hmemo::ContextPtr() );
 
@@ -398,22 +672,6 @@ protected:
     /** Override the default copy constructor */
 
     Vector( const Vector<ValueType>& other );
-
-    // Implementations of pure _Vector methods to guarantee upward compatibilty
-
-    Scalar _l1Norm() const;
-
-    Scalar _l2Norm() const;
-
-    Scalar _maxNorm() const;
-
-    Scalar _maxDiffNorm( const _Vector& other ) const;
-
-    Scalar _sum() const;
-    Scalar _min() const;
-    Scalar _max() const;
-
-    Scalar _dotProduct( const _Vector& other ) const;
 };
   
 /** 
@@ -439,7 +697,7 @@ template<typename ValueType>
 using VectorPtr1 = std::unique_ptr<Vector<ValueType> >;
 
 /* ------------------------------------------------------------------------- */
-/*  Implementation of inline methods                                         */
+/*  Implementation of inline methods for VectorElemProxy                     */
 /* ------------------------------------------------------------------------- */
 
 template<typename ValueType>
@@ -469,6 +727,71 @@ typename Vector<ValueType>::VectorElemProxy& Vector<ValueType>::VectorElemProxy:
 {
     ValueType tmp = other.mVector.getValue( other.mIndex );
     mVector.setValue( mIndex, tmp );
+    return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Implementation of inline methods                                         */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<typename OtherValueType>
+void Vector<ValueType>::setSparseRawData(
+    const IndexType n,
+    const IndexType nnz,
+    const IndexType nonZeroIndexes[],
+    const OtherValueType nonZeroValues[],
+    const ValueType zeroValue )
+{
+    setSameValue( n, zeroValue );
+    hmemo::HArrayRef<IndexType> aNonZeroIndexes( nnz, nonZeroIndexes );
+    hmemo::HArrayRef<OtherValueType> aNonZeroValues( nnz, nonZeroValues );
+    fillSparseData( aNonZeroIndexes, aNonZeroValues, common::BinaryOp::COPY );
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Inline translation for operators                                         */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const _Vector& other )
+{
+    setVector( other, common::BinaryOp::COPY );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const Vector<ValueType>& other )
+{
+    setVector( other, common::BinaryOp::COPY );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator+=( const _Vector& other )
+{
+    setVector( other, common::BinaryOp::ADD );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator-=( const _Vector& other )
+{
+    setVector( other, common::BinaryOp::SUB );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator*=( const _Vector& other )
+{
+    setVector( other, common::BinaryOp::MULT );
+    return *this;
+}
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator/=( const _Vector& other )
+{
+    setVector( other, common::BinaryOp::DIVIDE );
     return *this;
 }
 

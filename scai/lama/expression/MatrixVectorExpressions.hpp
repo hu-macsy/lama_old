@@ -103,31 +103,6 @@ inline Expression_SVM<ValueType> operator*( const Scalar& scalar, const Expressi
     return Expression_SVM<ValueType>( scalar, exp );
 }
 
-template<typename ValueType>
-inline Expression_SMV<ValueType> operator*( const Scalar& scalar, const Expression_SMV<ValueType>& exp )
-{
-    return Expression_SMV<ValueType>( scalar * exp.getArg1(), exp.getArg2() );
-}
-
-template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Scalar& scalar, const Expression_SVM<ValueType>& exp )
-{
-    const Expression_VM<ValueType>& vm = exp.getArg2();
-    return Expression_SVM<ValueType>( scalar * exp.getArg1(), vm );
-}
-
-template<typename ValueType>
-inline Expression_SMV<ValueType> operator*( const Expression_SMV<ValueType>& exp, const Scalar& scalar )
-{
-    return Expression_SMV<ValueType>( exp.getArg1() * scalar, exp.getArg2() );
-}
-
-template<typename ValueType>
-inline Expression_SVM<ValueType> operator*( const Expression_SVM<ValueType>& exp, const Scalar& scalar )
-{
-    return Expression_SVM<ValueType>( exp.getArg1() * scalar, exp.getArg2() );
-}
-
 /**
  * @brief This times operator creates an expression that represents the product
  *        of a matrix, Vector and scalar.
@@ -378,6 +353,86 @@ template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator+( const Expression_SVM<ValueType>& exp1, const Expression_SV<ValueType>& exp2 )
 {
     return Expression_SVM_SV<ValueType>( exp1, exp2 );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   scaling of matrix-vector operations                                     */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline Expression_SMV<ValueType> operator*( const Expression_SMV<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMV<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM<ValueType> operator*( const Expression_SVM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SVM<ValueType>( exp.getArg1() * alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMV_SV<ValueType> operator*( const Expression_SMV_SV<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMV_SV<ValueType>( exp.getArg1() * alpha, exp.getArg2() * alpha );
+}
+
+template<typename ValueType>
+inline Expression_SVM_SV<ValueType> operator*( const Expression_SVM_SV<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMV_SV<ValueType>( exp.getArg1() * alpha , exp.getArg2() * alpha );
+}
+
+template<typename ValueType>
+inline Expression_SMV<ValueType> operator*( const Scalar alpha, const Expression_SMV<ValueType>& exp )
+{
+    return Expression_SMV<ValueType>( exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM<ValueType> operator*( const Scalar alpha, const Expression_SVM<ValueType>& exp )
+{
+    return Expression_SVM<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMV_SV<ValueType> operator*( const Scalar alpha, const Expression_SMV_SV<ValueType>& exp )
+{
+    return Expression_SMV_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM_SV<ValueType> operator*( const Scalar alpha, const Expression_SVM_SV<ValueType>& exp )
+{
+    return Expression_SMV_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+/* ------------------------------------------------------------------------- */
+/*   unary operator -                                                        */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+inline Expression_SMV<ValueType> operator-( const Expression_SMV<ValueType>& exp )
+{
+    return Expression_SMV<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM<ValueType> operator-( const Expression_SVM<ValueType>& exp )
+{
+    return Expression_SVM<ValueType>( -exp.getArg1(), exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMV_SV<ValueType> operator-( const Expression_SMV_SV<ValueType>& exp )
+{
+    return Expression_SMV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM_SV<ValueType> operator-( const Expression_SVM_SV<ValueType>& exp )
+{
+    return Expression_SMV_SV<ValueType>( -exp.getArg1(), -exp.getArg2() );
 }
 
 } /* end namespace lama */

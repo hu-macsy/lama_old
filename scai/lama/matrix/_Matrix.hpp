@@ -100,11 +100,6 @@ public:
     static _Matrix* getMatrix( const Format format, const common::ScalarType valueType );
 
     /**
-     * @brief ExpressionMemberType is the type that is used the template Expression to store a Vector.
-     */
-    typedef const _Matrix& ExpressionMemberType;
-
-    /**
      * @brief Destructor, releases all allocated resources.
      */
     virtual ~_Matrix();
@@ -464,134 +459,6 @@ public:
      */
     virtual void redistribute( const dmemo::Redistributor& redistributor );
 
-    /** @brief This method returns one row of this matrix.
-     *
-     * @param[out] row              is the vector that will contain the queried row of this matrix
-     * @param[in]  globalRowIndex   global index of the row that should be extracted
-     *
-     * - The result vector will have the same distribution as the column distribution of this matrix
-     * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
-     * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
-     *   of a dense matrix and a sparse vector on a sparse matrix.
-     * - This method implies communication as one row resides only on one processor but here the communication
-     *   pattern for sparse or dense matrices are exploited.
-     */
-    virtual void getRow( _Vector& row, const IndexType globalRowIndex ) const = 0;
-
-    /** @brief This method returns a row of this matrix locally for one processor.
-     *
-     * @param[out] row            is the vector that will contain the queried row of this matrix
-     * @param[in]  localRowIndex  local index of the row that should be extracted
-     *
-     * - The result vector is not distributed, only valid results on the corresponding partition
-     * - the vector row might be of any value type but for efficiency it should have the same value type as this matrix
-     * - row might be a sparse or a dense vector, but it is recommended to use a dense vector to get the row 
-     *   of a dense matrix and a sparse vector on a sparse matrix.
-     * - This method is completely local, no communication
-     *   pattern for sparse or dense matrices are exploited.
-     */
-    virtual void getRowLocal( _Vector& row, const IndexType localRowIndex ) const = 0;
-
-    /** @brief This method returns one column of the matrix.
-     *
-     * @param[out] column           is a distributed vector with all values of the col
-     * @param[in]  globalColIndex   global column index of the col that should be extracted
-     *
-     * - the vector column might be of any type but for efficiency it should have the same type as the matrix
-     *   (otherwise conversion)
-     * - the distribution of col will be the same as the row distribution of the matrix
-     */
-    virtual void getColumn( _Vector& column, const IndexType globalColIndex ) const = 0;
-
-    /** @brief This method sets one row of the matrix.
-     *
-     * @param[in]  row              is a non-distributed vector
-     * @param[in]  globalRowIndex   global row index of the row that should be set
-     * @param[in]  op               specifies the binary op how to combine old and new element
-     *
-     * - the vector row might be of any type but for efficiency it should have the same type as the matrix
-     *   (otherwise conversion)
-     * - this method throws an exception for a sparse matrix if the pattern must be changed
-     */
-    virtual void setRow( const _Vector& row,
-                         const IndexType globalRowIndex,
-                         const common::BinaryOp op ) = 0;
-
-    /** @brief Pure method to set one column of the matrix.
-     *
-     * @param[in]  column           is a distributed vector with all values of the col
-     * @param[in]  globalColIndex   global column index of the col that should be set
-     * @param[in]  op               specifies the binary op how to combine old and new element
-     *
-     * - the vector col might be of any type but for efficiency it should have the same type as the matrix
-     *   (otherwise conversion)
-     * - the distribution of col must be the same as the row distribution of the matrix
-     * - this method does not change the pattern of a sparse matrix, so throws an exception if it is insufficient
-     */
-    virtual void setColumn(
-        const _Vector& column,
-        const IndexType globalColIndex,
-        const common::BinaryOp op ) = 0;
-
-    /** @brief This method returns the diagonal.
-     *
-     * @param[out]   diagonal is the destination array
-     *
-     * Calculations are dependent to the diagonal property.
-     */
-    virtual void getDiagonal( _Vector& diagonal ) const = 0;
-
-    /** @brief This method replaces the diagonal.
-     *
-     * @param[in] diagonal  is the source array
-     *
-     * Calculations are dependent to the diagonal property.
-     */
-    virtual void setDiagonal( const _Vector& diagonal ) = 0;
-
-    /** @brief This method replaces the diagonal by a diagonal value.
-     *
-     * @param[in] scalar  is the source value
-     *
-     * Calculations are dependent to the diagonal property.
-     */
-    virtual void setDiagonal( const Scalar scalar ) = 0;
-
-    /** @brief This method reduces the rows ( dim = 0 ) to a column vector or the columns ( dim = 1 ) 
-     *         to a row vector.
-     *
-     *  @param[out] v is the result vector, has rowDistribution for dim = 1 or colDistribution for dim = 0 
-     *  @param[in]  dim must be either 0 or 1
-     *  @param[in]  reduceOp specifies operation used for reduction, e.g. ADD, MIN, MAX
-     *  @param[in]  elemOp specfies operatin applied to the elements before reduction
-     *
-     *  \code
-     *     const _Matrix& m; _Vector& v;
-     *     m.reduce( v, dim = 0, common::BinaryOp::ADD, common::BinaryOp::SQR );  // builds row sums 
-     *     m.reduce( v, dim = 1, common::BinaryOp::ADD, common::BinaryOp::SQR );  // builds diagonal of m' m 
-     *  \endcode
-     */
-
-    virtual void reduce( 
-        _Vector& v, 
-        const IndexType dim, 
-        const common::BinaryOp reduceOp, 
-        const common::UnaryOp elemOp ) const = 0;
-
-    /** @brief This method scales all values with a vector.
-     *
-     * @param[in] scaling   is the source array
-     *
-     * row wise calculations.
-     */
-    virtual void scale( const _Vector& scaling ) = 0;
-
-    /** @brief This method scales all matrix values with a scalar.
-     *
-     * @param[in] scaling   is the source value.
-     */
-    virtual void scale( const Scalar scaling ) = 0;
-
     /** @brief This method replaces all elements with its conjugate value. */
 
     virtual void conj() = 0;
@@ -631,66 +498,6 @@ public:
      * @return the sparsity rate ( numValues / (numRows * numColumns)) of the whole matrix.
      */
     double getSparsityRate() const;
-
-    /**
-     * @brief Computes result = alpha * this * x + beta * y.
-     *
-     * @param[out]  result  the vector to store the result to
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   x       the vector x of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   y       the vector y of the expression
-     *
-     * This method computes result = alpha * this * x + beta * y. If
-     * result == x or result == y new storage is allocated to store the result.
-     */
-    virtual void matrixTimesVector(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const = 0;
-
-    virtual void vectorTimesMatrix(
-        _Vector& result,
-        const Scalar alpha,
-        const _Vector& x,
-        const Scalar beta,
-        const _Vector& y ) const = 0;
-
-    /**
-     * @brief Computes this = alpha * other.
-     *
-     * @param[out]  other   the _Matrix to multiply
-     * @param[in]   alpha   the Scalar of the expression
-     */
-    virtual void matrixTimesScalar( const _Matrix& other, const Scalar alpha ) = 0;
-
-    /**
-     * @brief Computes this = alpha * A + beta * B.
-     *
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   A       the _Matrix A of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   B       the _Matrix B of the expression
-     */
-    virtual void matrixPlusMatrix( const Scalar alpha, const _Matrix& A, const Scalar beta, const _Matrix& B ) = 0;
-
-    /**
-     * @brief Computes result = alpha * this * B + beta * C.
-     *
-     * @param[out]  result  the _Matrix to store the result to
-     * @param[in]   alpha   the Scalar alpha of the expression
-     * @param[in]   B       the _Matrix B of the expression
-     * @param[in]   beta    the Scalar beta of the expression
-     * @param[in]   C       the _Matrix C of the expression
-     */
-    virtual void matrixTimesMatrix(
-        _Matrix& result,
-        const Scalar alpha,
-        const _Matrix& B,
-        const Scalar beta,
-        const _Matrix& C ) const = 0;
 
     /**
      * @brief Concatenate multiple matrices horizontally/vertically to a new matrix.
@@ -826,13 +633,6 @@ public:
     _Matrix& operator=( const _Matrix& other );
 
     /**
-     * @brief The assignment operator this *= alpha
-     *
-     * @param[in] val   Factor used for scaling of the matrix
-     */
-    _Matrix& operator*=( const Scalar val );
-
-    /**
      * @brief Computes the inverse of a matrix.
      *
      * @param[in] other   another matrix with the same shape as this matrix
@@ -842,43 +642,6 @@ public:
      * other matrix.
      */
     virtual void invert( const _Matrix& other ) = 0;
-
-    /**
-     * @brief Returns the L1 norm of this matrix.
-     *
-     * @return the L1 norm of this as 'anonymous' scalar
-     *
-     * l1Norm computes the sum of the absolute values of all entries
-     */
-    virtual Scalar _l1Norm( void ) const = 0;
-
-    /**
-     * @brief Returns the L2 norm of this.
-     *
-     * @return the L2 norm of this.
-     *
-     * l2Norm computes the sum of the absolute values of this.
-     */
-    virtual Scalar _l2Norm( void ) const = 0;
-
-    /**
-     * @brief Returns the max norm of this matrix
-     *
-     * @return the maximal absolute value for elements of this matrix
-     */
-    virtual Scalar _maxNorm( void ) const = 0;
-
-    /**
-     * @brief Returns the max norm of ( this - other ).
-     *
-     * @param[in] other another matrix with the same shape as this matrix
-     * @return the max norm of ( this - other )
-     *
-     * The maximal value is given by the largest difference between two elements
-     * at the same position of the matrices. This method must be implemented by
-     * derived classes.
-     */
-    virtual Scalar _maxDiffNorm( const _Matrix& other ) const = 0;
 
     /**
      * @brief Constructor function which creates a 'zero' matrix of same type as a given matrix.

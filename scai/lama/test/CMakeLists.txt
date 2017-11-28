@@ -40,7 +40,6 @@ scai_project (
 
     HEADERS
         
-       TestMacros
        TestVectors
 
     SOURCES
@@ -58,6 +57,7 @@ scai_project (
         PartitionIOTest
         SparseVectorTest
         VectorTest
+        VectorKindTest
         VectorAssemblyTest
         VersionTest
 

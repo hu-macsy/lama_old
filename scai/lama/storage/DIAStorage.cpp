@@ -519,7 +519,7 @@ void DIAStorage<ValueType>::scaleImpl( const HArray<OtherType>& diagonal )
 
                 if ( common::Utils::validIndex( j, mNumColumns ) )
                 {
-                    wValues[ii * mNumRows + i] *= static_cast<ValueType>( rDiagonal[j] );
+                    wValues[ii * mNumRows + i] *= static_cast<ValueType>( rDiagonal[i] );
                 }
             }
         }

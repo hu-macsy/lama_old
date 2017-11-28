@@ -113,7 +113,7 @@ void MyJacobi<ValueType>::initialize( const lama::Matrix<ValueType>& coefficient
 
     runtime.mDiagonalInverted.setContextPtr( ctx );
     coefficients.getDiagonal( runtime.mDiagonalInverted );
-    runtime.mDiagonalInverted.invert();
+    runtime.mDiagonalInverted.unaryOp( runtime.mDiagonalInverted, common::UnaryOp::RECIPROCAL );
 
     // mDiagonalTimesLU = ( A - D ) * ( D * rhs )
 
@@ -122,7 +122,7 @@ void MyJacobi<ValueType>::initialize( const lama::Matrix<ValueType>& coefficient
     lama::Matrix<ValueType>& diagonalTimesLU = *runtime.mDiagonalTimesLU;
 
     diagonalTimesLU.setDiagonal( ValueType( 0 ) );
-    diagonalTimesLU.scale( runtime.mDiagonalInverted );
+    diagonalTimesLU.scaleRows( runtime.mDiagonalInverted );
 
     runtime.mOldSolution.setContextPtr( ctx );
 

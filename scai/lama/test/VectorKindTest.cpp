@@ -1,5 +1,5 @@
 /**
- * @file solver/test/TestMacros.hpp
+ * @file VectorKindTest.cpp
  *
  * @license
  * Copyright (c) 2009-2017
@@ -27,11 +27,34 @@
  * Fraunhofer SCAI. Please contact our distributor via info[at]scapos.com.
  * @endlicense
  *
- * @brief ToDo: Missing description in ./solver/test/TestMacros.hpp
- * @author eschricker
- * @date 16.03.2015
+ * @brief Test enum class VectorKind
+ * @author Thomas Brandes
+ * @date 24.11.2017
  */
 
-#pragma once
+#include <boost/test/unit_test.hpp>
 
+#include <scai/lama/VectorKind.hpp>
 #include <scai/common/test/TestMacros.hpp>
+#include <sstream>
+
+using namespace scai;
+using namespace lama;
+
+BOOST_AUTO_TEST_CASE( VecorKindTest )
+{
+    // arithmetic binary operations
+
+    for ( int kind = 0; kind < static_cast<int>( VectorKind::UNDEFINED ); ++kind )
+    {
+        std::ostringstream s;
+        s << VectorKind( kind );
+        BOOST_CHECK( s.str().length() > 0 );
+    }
+
+
+    BOOST_CHECK_EQUAL( str2VectorKind( "SPARSE" ), VectorKind::SPARSE );
+    BOOST_CHECK_EQUAL( str2VectorKind( "DENSE" ), VectorKind::DENSE );
+    BOOST_CHECK_EQUAL( str2VectorKind( "JOINED" ), VectorKind::JOINED );
+    BOOST_CHECK_EQUAL( str2VectorKind( "NONSENSE" ), VectorKind::UNDEFINED );
+}

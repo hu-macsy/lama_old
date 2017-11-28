@@ -35,8 +35,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
 
-#include <scai/lama/test/TestMacros.hpp>
 #include <scai/lama/test/matrix/Matrices.hpp>
+#include <scai/common/test/TestMacros.hpp>
 
 #include <scai/dmemo/test/TestDistributions.hpp>
 #include <scai/dmemo/BlockDistribution.hpp>
@@ -534,6 +534,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
     dmemo::TestDistributions colDists( nCols );
     dmemo::TestDistributions rowDists( nRows );
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
         dmemo::DistributionPtr rowDist = rowDists[i];
@@ -562,7 +564,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( _MatrixVectorMultTest, ValueType, scai_numeric_te
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
 
-                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res1.maxNorm() < eps );
             }
         }
     }
@@ -618,6 +620,8 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
         SCAI_LOG_DEBUG( logger, "Col distribution [ " << j << " ] = " << *colDists[j] )
     }
 
+    NormType<ValueType> eps = common::TypeTraits<ValueType>::small();
+
     for ( size_t i = 0; i < rowDists.size(); ++i )
     {
         dmemo::DistributionPtr rowDist = rowDists[i];
@@ -654,7 +658,7 @@ BOOST_AUTO_TEST_CASE( VectorMatrixMultTest )
                 res1.redistribute( res.getDistributionPtr() );
                 res1 -= res;
 
-                BOOST_CHECK( res1.maxNorm() < Scalar( 0.0001 ) );
+                BOOST_CHECK( res1.maxNorm() < eps );
             }
         }
     }
