@@ -57,6 +57,8 @@ numThreads=@NUM_THREADS_TEST@
 # we should use 4 threads for all tests
 export OMP_NUM_THREADS=$numThreads
 
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $SCRIPTDIR
 
 # =====================================================================================================================
 # Function that prepares a new test case. It removes all existing .ct and .time files in the folder, sets the
