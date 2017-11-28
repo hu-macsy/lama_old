@@ -280,7 +280,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( InvertTest, ValueType, scai_numeric_test_types )
 
         v = 4;
 
-        v.unaryOpInPlace( common::UnaryOp::RECIPROCAL );
+        // v.unaryOpInPlace( common::UnaryOp::RECIPROCAL );
+ 
+        v = 1 / v;
 
         ValueType s = v[n / 2 ];
 
@@ -426,6 +428,29 @@ BOOST_AUTO_TEST_CASE( BinaryOpTest )
     {
         ValueType s = v1[i];
         BOOST_CHECK_EQUAL( s, ValueType( 7 ) );
+    }
+}
+
+/* --------------------------------------------------------------------- */
+
+BOOST_AUTO_TEST_CASE( BinaryOpExpTest )
+{
+    typedef RealType ValueType;
+
+    const IndexType N = 20;
+
+    DenseVector<ValueType> v( N );
+    v.fillLinearValues( -5, 1 );
+
+    v = min( 0, v );
+    v = max( v, 5 );
+
+    for ( IndexType i = 0; i < N; ++i )
+    {
+        ValueType s = v[i];
+        ValueType expected = common::Math::min<ValueType>( 0, i - 5 );
+        expected = common::Math::max<ValueType>( expected, 5 );
+        BOOST_CHECK_EQUAL( expected, s );
     }
 }
 

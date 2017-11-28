@@ -117,9 +117,13 @@ void SingleGridSetup<ValueType>::initialize( const Matrix<ValueType>& coefficien
     SCAI_LOG_DEBUG( logger, "after identity" )
     SCAI_LOG_DEBUG( logger, "Identity matrix = " << *mIdentity )
     dmemo::DistributionPtr dist = coefficients.getRowDistributionPtr();
-    mSolutionVector.reset( coefficients.newVector( dist ) );
-    mRhsVector.reset( coefficients.newVector( dist ) );
-    mTmpResVector.reset( coefficients.newVector( dist ) );
+    hmemo::ContextPtr ctx = coefficients.getContextPtr();
+    mSolutionVector.reset( new DenseVector<ValueType>( dist ) );
+    mSolutionVector->setContextPtr( ctx );
+    mRhsVector.reset( new DenseVector<ValueType>( dist ) );
+    mRhsVector->setContextPtr( ctx );
+    mTmpResVector.reset( new DenseVector<ValueType>( dist ) );
+    mTmpResVector->setContextPtr( ctx );
 }
 
 /* ========================================================================= */

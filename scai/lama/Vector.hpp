@@ -311,6 +311,17 @@ public:
 
     Vector<ValueType>& operator=( const Expression_SVV<ValueType>& );
 
+    /** this = x binaryOp y */
+
+    template<common::BinaryOp op>
+    Vector<ValueType>& operator=( const Expression<Scalar, Vector<ValueType>, op>& exp );
+
+    template<common::BinaryOp op>
+    Vector<ValueType>& operator=( const Expression<Vector<ValueType>, Scalar, op>& exp );
+
+    template<common::BinaryOp op>
+    Vector<ValueType>& operator=( const Expression<Vector<ValueType>, Vector<ValueType>, op>& exp );
+
     /** set same value for all vector elements */
 
     Vector<ValueType>& operator=( const ValueType value );
@@ -792,6 +803,36 @@ template<typename ValueType>
 Vector<ValueType>& Vector<ValueType>::operator/=( const _Vector& other )
 {
     setVector( other, common::BinaryOp::DIVIDE );
+    return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Inline translation:  operator=  scalar/vector binop scalar/vector        */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+template<common::BinaryOp op>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Scalar, Vector<ValueType>, op>& exp )
+{
+    Scalar alpha = exp.getArg1();
+    this->binaryOpScalar( exp.getArg2(), alpha.getValue<ValueType>(), op, true );  // swap 
+    return *this;
+}
+
+template<typename ValueType>
+template<common::BinaryOp op>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Vector<ValueType>, Scalar, op>& exp )
+{
+    Scalar alpha = exp.getArg2();
+    this->binaryOpScalar( exp.getArg1(), alpha.getValue<ValueType>(), op, false );  // no swap
+    return *this;
+}
+
+template<typename ValueType>
+template<common::BinaryOp op>
+Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Vector<ValueType>, Vector<ValueType>, op>& exp )
+{
+    this->binaryOp( exp.getArg1(), exp.getArg2(), op, false );  
     return *this;
 }
 

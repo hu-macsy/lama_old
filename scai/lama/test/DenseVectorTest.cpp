@@ -246,32 +246,6 @@ BOOST_AUTO_TEST_CASE( RangeTest )
 
 /* --------------------------------------------------------------------- */
 
-BOOST_AUTO_TEST_CASE( vecAddExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    // for ( size_t i = 0; i < dists.size(); ++i )
-    for ( size_t i = 0; i < 1; ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( 1 * a + 1 * b );
-        DenseVector<ValueType> r( dist , 6 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
 BOOST_AUTO_TEST_CASE( ScanTest )
 {
     // Note: it is sufficient to consider one value type
@@ -372,31 +346,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( fileConstructorTest, ValueType, scai_numeric_test
     {
         int rc = FileIO::removeFile( fileName );
         BOOST_CHECK_EQUAL( 0, rc );
-    }
-}
-
-/* --------------------------------------------------------------------- */
-
-BOOST_AUTO_TEST_CASE( vecMultExpConstructorTest )
-{
-    typedef RealType ValueType;
-
-    IndexType n = 4;
-
-    dmemo::TestDistributions dists( n );
-
-    for ( size_t i = 0; i < dists.size(); ++i )
-    {
-        dmemo::DistributionPtr dist = dists[i];
-
-        DenseVector<ValueType> b( dist , 3 );
-        DenseVector<ValueType> a( dist , 3 );
-        DenseVector<ValueType> c( a * b );
-        DenseVector<ValueType> r( dist , 9 );
-
-        // prove same distribution, same values of r and c
-
-        BOOST_CHECK( r.getLocalValues().maxDiffNorm( c.getLocalValues() ) == 0 );
     }
 }
 

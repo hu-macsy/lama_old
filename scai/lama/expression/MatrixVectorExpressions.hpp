@@ -380,13 +380,13 @@ inline Expression_SMV_SV<ValueType> operator*( const Expression_SMV_SV<ValueType
 template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator*( const Expression_SVM_SV<ValueType>& exp, const Scalar alpha )
 {
-    return Expression_SMV_SV<ValueType>( exp.getArg1() * alpha , exp.getArg2() * alpha );
+    return Expression_SVM_SV<ValueType>( exp.getArg1() * alpha , exp.getArg2() * alpha );
 }
 
 template<typename ValueType>
 inline Expression_SMV<ValueType> operator*( const Scalar alpha, const Expression_SMV<ValueType>& exp )
 {
-    return Expression_SMV<ValueType>( exp.getArg1(), exp.getArg2() );
+    return Expression_SMV<ValueType>( alpha * exp.getArg1(), exp.getArg2() );
 }
 
 template<typename ValueType>
@@ -404,7 +404,31 @@ inline Expression_SMV_SV<ValueType> operator*( const Scalar alpha, const Express
 template<typename ValueType>
 inline Expression_SVM_SV<ValueType> operator*( const Scalar alpha, const Expression_SVM_SV<ValueType>& exp )
 {
-    return Expression_SMV_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+    return Expression_SVM_SV<ValueType>( alpha * exp.getArg1(), alpha * exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMV<ValueType> operator/( const Expression_SMV<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMV<ValueType>( exp.getArg1() / alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SVM<ValueType> operator/( const Expression_SVM<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SVM<ValueType>( exp.getArg1() / alpha, exp.getArg2() );
+}
+
+template<typename ValueType>
+inline Expression_SMV_SV<ValueType> operator/( const Expression_SMV_SV<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SMV_SV<ValueType>( exp.getArg1() / alpha, exp.getArg2() / alpha );
+}
+
+template<typename ValueType>
+inline Expression_SVM_SV<ValueType> operator/( const Expression_SVM_SV<ValueType>& exp, const Scalar alpha )
+{
+    return Expression_SVM_SV<ValueType>( exp.getArg1() / alpha , exp.getArg2() / alpha );
 }
 
 /* ------------------------------------------------------------------------- */

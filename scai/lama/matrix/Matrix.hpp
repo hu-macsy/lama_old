@@ -74,32 +74,6 @@ public:
 
     virtual Matrix<ValueType>* copy( void ) const = 0;
 
-    /**
-     *  @brief Create a new dense vector with same value type and context as matrix
-     */
-    DenseVector<ValueType>* newVector( void ) const
-    {
-        DenseVector<ValueType>* v = new DenseVector<ValueType>();
-        v->setContextPtr( getContextPtr() );
-        return v;
-    }
-
-    /*
-     *  @brief Create a dense vector with same value type and context as matrix
-     *
-     *  @param dist specifies the distribution of the vector
-     *
-     *  Be careful: the vector remains uninitialized.
-     */
-
-    DenseVector<ValueType>* newVector( dmemo::DistributionPtr dist ) const
-    {
-        DenseVector<ValueType>* v = new DenseVector<ValueType>();
-        v->setContextPtr( getContextPtr() );
-        v->allocate( dist );
-        return v;
-    }
-
     // Important: pass assign operator so it can also be used here
 
     using _Matrix::operator=;

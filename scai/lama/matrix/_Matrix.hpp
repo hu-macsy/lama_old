@@ -670,26 +670,6 @@ public:
     virtual _Matrix* newMatrix( void ) const = 0;
 
     /**
-     *  @brief Create a new dense vector with same value type and context as matrix
-     *
-     *  Be careful: the new vector has size zero.
-     *
-     *  This routine might be very helpful for writing linear algebra code that works
-     *  for any value type of matrices.
-     */
-    virtual _Vector* newVector( void ) const = 0;
-
-    /*
-     *  @brief Create a dense vector with same value type and context as matrix
-     *
-     *  @param dist specifies the distribution of the vector
-     *
-     *  Be careful: the vector remains uninitialized.
-     */
-
-    virtual _Vector* newVector( dmemo::DistributionPtr dist ) const = 0;
-
-    /**
      * @brief Constructor function which creates a copy of this matrix.
      *
      * \code
