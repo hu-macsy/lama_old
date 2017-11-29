@@ -371,10 +371,9 @@ public:
 
     Vector<ValueType>& operator-=( const Expression_SV<ValueType>& expression );
 
-    void operator=( const UnaryVectorExpression<ValueType>& unaryVectorExp )
-    {
-        unaryOp( unaryVectorExp.getArg(), unaryVectorExp.getOp() );
-    }
+    /** this = unaryop( x ) */
+
+    Vector<ValueType>& operator=( const UnaryVectorExpression<ValueType>& unaryVectorExp );
 
     /** Initialization of an allocated vector with one value, does not change size/distribution  */
   
@@ -407,12 +406,17 @@ public:
     virtual void unaryOp( const Vector<ValueType>& x, const common::UnaryOp op ) = 0;
 
     /**
-     *  @brief Convenient abbreviation for unaryOp where input vector this vector. 
+     *  @brief Convenient abbreviation for unaryOp where input vector this vector.
+     *  
+     *  \code
+     *     lama::DenseVector<ValueType> x;
+     *     ....
+     *     x = sin ( x );       // text book syntax
+     *     x.unaryOp( x, common::UnaryOp::SIN );
+     *     x.unaryOpInPlace( common::UnaryOp::SIN );
+     *  \endcode;
      */
-    void unaryOpInPlace( const common::UnaryOp op )
-    {
-        unaryOp( *this, op );
-    }
+    void unaryOpInPlace( const common::UnaryOp op );
 
     /** Apply binary operation elementwise to elements of vector */
 
@@ -445,22 +449,34 @@ public:
      */
     virtual void binaryOpScalar( const Vector<ValueType>& x, const ValueType& alpha, const common::BinaryOp op, const bool swap ) = 0;
 
-    /** Binary op but first argument is a scalar and not a vector. */
+    /** @brief Method for binarOp with scalar as left operand (for convenience) 
+     *
+     *  \code
+     *     DenseVector<ValueType> x( .. );
+     *     DenseVector<ValueType> y;
+     *     ValueType alpha = 3;
+     *     y = alpha / x;     
+     *     y.binaryOpScalar( x, alpha, common::BinaryOp::DIVIDE, true );   // internal use only
+     *     y.binaryOp( alpha, common::BinaryOp::DIVIDE, x );
+     *  \endcode
+     */
+    inline void binaryOp( const ValueType& alpha, const common::BinaryOp op, const Vector<ValueType>& x );
 
-    virtual void binaryOp( const ValueType& alpha, const common::BinaryOp op, const Vector<ValueType>& x )
-    {
-        binaryOpScalar( x, alpha, op, true );    // swap order of the arguments
-    }
-
-    /** Binary op but second argument is a scalar and not a vector. */
-
-    virtual void binaryOp(  const Vector<ValueType>& x, const common::BinaryOp op, const ValueType& alpha ) 
-    {
-        binaryOpScalar( x, alpha, op, false );   // keep order of the arguments
-    }
+    /** @brief Method for binarOp with scalar as right operand (for convenience) 
+     *
+     *  \code
+     *     DenseVector<ValueType> x( .. );
+     *     DenseVector<ValueType> y;
+     *     ValueType alpha = 3;
+     *     y = pow( x, alpha );                                          // text book syntax
+     *     y.binaryOpScalar( x, alpha, common::BinaryOp::POW, false );   // internal use only
+     *     y.binaryOp( x, common::BinaryOp::POW, alpha );                // more conveninent method call
+     *  \endcode
+     */
+    inline void binaryOp(  const Vector<ValueType>& x, const common::BinaryOp op, const ValueType& alpha );
 
     /**
-     * @brief Assignment of a 'full' vector expression vectorResult = scalarAlpha * vectorX + scalarBeta * vectorY 
+     * @brief Assignment of a 'full' vector expression this = alpha * x + beta * y 
      *
      * Each vector class has to implement its own version of this assignment. 
      */
@@ -834,6 +850,35 @@ Vector<ValueType>& Vector<ValueType>::operator=( const Expression<Vector<ValueTy
 {
     this->binaryOp( exp.getArg1(), exp.getArg2(), op, false );  
     return *this;
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Inline translation:  operator=  unaryFunction( x )                       */
+/* ------------------------------------------------------------------------- */
+
+template<typename ValueType>
+Vector<ValueType>& Vector<ValueType>::operator=( const UnaryVectorExpression<ValueType>& unaryVectorExp )
+{
+    unaryOp( unaryVectorExp.getArg(), unaryVectorExp.getOp() );
+    return* this;
+}
+
+template<typename ValueType>
+void Vector<ValueType>::unaryOpInPlace( const common::UnaryOp op )
+{
+    unaryOp( *this, op );
+}
+
+template<typename ValueType>
+void Vector<ValueType>::binaryOp( const ValueType& alpha, const common::BinaryOp op, const Vector<ValueType>& x )
+{
+    binaryOpScalar( x, alpha, op, true );    // swap order of the arguments
+}
+
+template<typename ValueType>
+void Vector<ValueType>::binaryOp( const Vector<ValueType>& x, const common::BinaryOp op, const ValueType& alpha ) 
+{
+    binaryOpScalar( x, alpha, op, false );   // keep order of the arguments
 }
 
 } /* end namespace lama */

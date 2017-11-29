@@ -535,9 +535,11 @@ inline Expression_SV_SV<ValueType> operator+( const X& any, const Expression_SV_
     return exp;
 }
 
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
 /*   other binary operators                                                  */
-/* ------------------------------------------------------------------------- */
+/* ========================================================================= */
+
+/*  min( alpha, x ), min( x, alpha ), min( x, y ) */
 
 template<typename ValueType>
 inline Expression<Scalar, Vector<ValueType>, common::BinaryOp::MIN> min( const Scalar& alpha, const Vector<ValueType>& x )
@@ -558,6 +560,8 @@ inline Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MIN>
     return Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MIN>( x, y );
 }
 
+/*  max( alpha, x ), max( x, alpha ), max( x, y ) */
+
 template<typename ValueType>
 inline Expression<Scalar, Vector<ValueType>, common::BinaryOp::MAX> max( const Scalar& alpha, const Vector<ValueType>& x )
 {
@@ -576,6 +580,8 @@ inline Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MAX>
 {
     return Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::MAX>( x, y );
 }
+
+/*  pow( alpha, x ), pow( x, alpha ), pow( x, y ) */
 
 template<typename ValueType>
 inline Expression<Scalar, Vector<ValueType>, common::BinaryOp::POW> pow( const Scalar& alpha, const Vector<ValueType>& x )
@@ -596,10 +602,19 @@ inline Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::POW>
     return Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::POW>( x, y );
 }
 
+/*  alpha / x, x / y,  but NOT here: x / alpha is handled as x * ( 1/alpha ) */
+
 template<typename ValueType>
 inline Expression<Scalar, Vector<ValueType>, common::BinaryOp::DIVIDE> operator/( const Scalar& alpha, const Vector<ValueType>& x )
 {
     return Expression<Scalar, Vector<ValueType>, common::BinaryOp::DIVIDE>( alpha, x );
+}
+
+template<typename ValueType>
+inline Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::DIVIDE> operator/( 
+    const Vector<ValueType>& x, const Vector<ValueType>& y )
+{
+    return Expression<Vector<ValueType>, Vector<ValueType>, common::BinaryOp::DIVIDE>( x, y );
 }
 
 } /* end namespace lama */
